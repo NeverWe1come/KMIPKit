@@ -1,0 +1,14 @@
+{
+  "ignores": [
+    "target/**",
+    ".agents/**",
+    ".specify/scripts/**",
+    ".specify/templates/**"
+  ],
+  "config": {
+    "MD013": {
+      "line_length": 100,
+      "tables": false
+    }
+  }
+}

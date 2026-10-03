@@ -1,0 +1,20 @@
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+*.dll binary
+*.lib binary
+*.so binary
+*.dylib binary
+*.a binary
+
+# Preserve pinned upstream standards byte-for-byte for checksum verification.
+specification/oasis/**/upstream/* -text -diff

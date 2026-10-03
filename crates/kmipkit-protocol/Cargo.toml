@@ -1,0 +1,13 @@
+[package]
+name = "kmipkit-protocol"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "KMIP protocol models and validation for KMIPKit"
+[dependencies]
+kmipkit-ttlv.workspace = true
+
+[lints]
+workspace = true

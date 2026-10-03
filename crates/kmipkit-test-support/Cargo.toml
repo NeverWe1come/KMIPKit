@@ -1,0 +1,19 @@
+[package]
+name = "kmipkit-test-support"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Test fixtures and helpers for KMIPKit"
+publish = false
+
+[dependencies]
+kmipkit-client.workspace = true
+kmipkit-protocol.workspace = true
+kmipkit-transport.workspace = true
+kmipkit-ttlv.workspace = true
+kmipkit.workspace = true
+
+[lints]
+workspace = true
