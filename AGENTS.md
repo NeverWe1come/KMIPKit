@@ -73,8 +73,13 @@ Agents must not:
 - Change repository protections, credentials, or secrets.
 - Change the constitution or an accepted architectural boundary without an
   explicitly approved task.
-- Edit files under `specification/oasis/`; they are immutable upstream copies.
-- Modify generated files manually.
+- Do not edit, reformat, translate, or otherwise modify the exact upstream
+  source copies under `specification/oasis/kmip-2.1/upstream/`; these pinned
+  OASIS files are immutable. Project-authored inventory documentation at
+  `specification/oasis/kmip-2.1/README.md` and
+  `specification/oasis/kmip-2.1/SOURCES.md` may be edited when the task
+  authorizes it.
+- Do not manually modify generated files.
 
 ## 5. OASIS requirements and conformance
 

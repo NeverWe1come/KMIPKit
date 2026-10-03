@@ -3,8 +3,8 @@
 The `upstream/` files are exact HTML responses downloaded from official OASIS
 URLs on 2026-10-03. They are reference inputs for humans and AI agents.
 
-Do not edit, reformat, translate, or apply the FreeKMIP license to these files.
-Their original copyright and notices remain inside each document. FreeKMIP is
+Do not edit, reformat, translate, or apply the KMIPKit license to these files.
+Their original copyright and notices remain inside each document. KMIPKit is
 an independent implementation and is not endorsed or certified by OASIS.
 
 Use [`SOURCES.md`](SOURCES.md) for canonical URLs and document status and
