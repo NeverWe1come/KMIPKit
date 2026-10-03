@@ -94,10 +94,10 @@
 
 ## Phase 7: Polish and cross-cutting review
 
-- [ ] T027 Run Spec Kit convergence against the final diff and add/complete any remaining work before review.
-- [ ] T028 Run QA review against FRs, SCs, contracts, documentation, and test evidence; resolve findings.
-- [ ] T029 Run independent security review of fork permissions, action pins, WSL argument flow, and coverage path/schema handling; resolve findings.
-- [ ] T030 Verify the final branch is based on `release/1.0.0`, run all locally available checks, confirm no ignored generated/OASIS source was changed, and prepare a draft PR with scope, rationale, Red/Green/Refactor evidence, verification, risks, and limitations.
+- [x] T027 Run Spec Kit convergence against the final diff; no remaining gaps or convergence tasks were found.
+- [x] T028 Run QA review against FRs, SCs, contracts, documentation, and test evidence; resolve findings. Final review found no gaps.
+- [x] T029 Run independent security review of fork permissions, action pins, WSL argument flow, and coverage path/schema handling; resolve findings. Final review found no blocking issues.
+- [x] T030 Verify the final branch is based on `release/1.0.0`, run all locally available checks, confirm no ignored generated/OASIS source was changed, and prepare draft PR #3 with scope, rationale, Red/Green/Refactor evidence, verification, risks, and limitations.
 
 ## Dependencies
 
