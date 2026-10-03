@@ -64,6 +64,9 @@ Invoke-Test 'parses WSL verbose listing and trims the default marker' {
     $entries = ConvertFrom-WslListVerbose -Output $wslListing
     Assert-Equal @('Ubuntu-26.04', 'Ubuntu-Test', 'Debian') @($entries.Name) 'Distribution names were not parsed.'
     Assert-Equal @(2, 2, 1) @($entries.Version) 'WSL versions were not parsed.'
+    $nulDelimitedListing = [string]::Join('', ($wslListing.ToCharArray() | ForEach-Object { "$_`0" }))
+    $nulDelimitedEntries = ConvertFrom-WslListVerbose -Output $nulDelimitedListing
+    Assert-Equal @($entries.Name) @($nulDelimitedEntries.Name) 'NUL-delimited WSL output was not normalized.'
 }
 
 Invoke-Test 'selects the sole installed Ubuntu distribution by default' {
@@ -94,8 +97,8 @@ Invoke-Test 'rejects WSL 1 for the selected Ubuntu distribution' {
 }
 
 Invoke-Test 'builds direct argv with translated checkout as --cd, preserving Unicode and spaces' {
-    $arguments = New-WslCargoArgumentList -Distribution 'Ubuntu-26.04' -LinuxRepositoryRoot '/mnt/c/Users/Ada Lovelace/Prueba ñ/KMIPKit'
-    Assert-Equal @('--distribution', 'Ubuntu-26.04', '--cd', '/mnt/c/Users/Ada Lovelace/Prueba ñ/KMIPKit', '--exec', 'cargo', '+1.94.0', 'test', '--workspace', '--all-features') $arguments 'WSL argv changed or was split.'
+    $arguments = New-WslCargoArgumentList -Distribution 'Ubuntu-26.04' -LinuxRepositoryRoot '/mnt/c/Users/Ada Lovelace/Prueba ñ/KMIPKit' -CargoPath '/home/ada/.cargo/bin/cargo'
+    Assert-Equal @('--distribution', 'Ubuntu-26.04', '--cd', '/mnt/c/Users/Ada Lovelace/Prueba ñ/KMIPKit', '--exec', '/home/ada/.cargo/bin/cargo', '+1.94.0', 'test', '--workspace', '--all-features') $arguments 'WSL argv changed or was split.'
 }
 
 Invoke-Test 'preserves the native Cargo process exit status' {

@@ -53,10 +53,10 @@
 
 **Independent Test**: Inspect a workflow run for all six OS/toolchain combinations and confirm a deliberately failing core check fails its job.
 
-- [ ] T008 [US1] Add `.github/workflows/ci.yml` with `pull_request` targets `master` and `release/**`, explicit `contents: read`, no secrets, no privileged triggers, and checkout with credentials not persisted.
-- [ ] T009 [US1] Pin checkout v7.0.1, upload-artifact v7.0.1, and download-artifact v8.0.1 in `.github/workflows/ci.yml` to the verified full commit SHAs and annotate each release.
-- [ ] T010 [US1] Add the Ubuntu/Windows/macOS × Rust 1.94/stable matrix to `.github/workflows/ci.yml`; run `cargo fmt --all --check`, workspace Clippy with `-D warnings`, workspace tests with all features, and rustdoc with warnings denied.
-- [ ] T011 [US1] Run the static workflow contract tests in `scripts/tests/test_workflow.py`; confirm target branches, read-only permissions, safe triggers, and full SHA pins match the approved spec.
+- [x] T008 [US1] Add `.github/workflows/ci.yml` with `pull_request` targets `master` and `release/**`, explicit `contents: read`, no secrets, no privileged triggers, and checkout with credentials not persisted.
+- [x] T009 [US1] Pin checkout v7.0.1, upload-artifact v7.0.1, and download-artifact v8.0.1 in `.github/workflows/ci.yml` to the verified full commit SHAs and annotate each release.
+- [x] T010 [US1] Add the Ubuntu/Windows/macOS × Rust 1.94/stable matrix to `.github/workflows/ci.yml`; run `cargo fmt --all --check`, workspace Clippy with `-D warnings`, workspace tests with all features, and rustdoc with warnings denied.
+- [x] T011 [US1] Run the static workflow contract tests in `scripts/tests/test_workflow.py`; confirm target branches, read-only permissions, safe triggers, and full SHA pins match the approved spec.
 
 ## Phase 4: User Story 2 - Run tests from Windows through WSL (Priority: P1)
 
@@ -64,10 +64,10 @@
 
 **Independent Test**: Run the command in the current checkout; exercise default and explicit distro selection; confirm missing prerequisites and test failures return non-zero.
 
-- [ ] T012 [US2] Implement pure parsing, Ubuntu selection, WSL2 checks, and native argument builder functions in `scripts/KmipKit.WslTest.psm1` to satisfy the RED tests.
-- [ ] T013 [US2] Implement `scripts/Test-Wsl.ps1` to preflight PowerShell 7.3+, repository root, WSL2 Ubuntu, existing Cargo 1.94.0, and `wslpath`; invoke Cargo via `wsl.exe --exec` without shell interpolation.
-- [ ] T014 [US2] Run `scripts/tests/Test-Wsl.ps1` and the documented workspace command on WSL Ubuntu; verify output and native non-zero status propagation.
-- [ ] T015 [US2] Extend `docs/development/rust-workspace.md` and `docs/development/testing.md` with the exact PowerShell command, prerequisites, multi-Ubuntu selection behavior, no-provisioning guarantee, and troubleshooting.
+- [x] T012 [US2] Implement pure parsing, Ubuntu selection, WSL2 checks, and native argument builder functions in `scripts/KmipKit.WslTest.psm1` to satisfy the RED tests.
+- [x] T013 [US2] Implement `scripts/Test-Wsl.ps1` to preflight PowerShell 7.3+, repository root, WSL2 Ubuntu, existing Cargo 1.94.0, and `wslpath`; invoke Cargo via `wsl.exe --exec` without shell interpolation.
+- [x] T014 [US2] Run `scripts/tests/Test-Wsl.ps1` and the documented workspace command on WSL Ubuntu; verify output and native non-zero status propagation.
+- [x] T015 [US2] Extend `docs/development/rust-workspace.md` and `docs/development/testing.md` with the exact PowerShell command, prerequisites, multi-Ubuntu selection behavior, no-provisioning guarantee, and troubleshooting.
 
 ## Phase 5: User Story 3 - Coverage readiness (Priority: P2)
 
@@ -75,18 +75,18 @@
 
 **Independent Test**: Run the fixture suite for valid, below-threshold, missing, malformed, path-escaping, platform-specific, and no-code cases; verify exit status and diagnostics.
 
-- [ ] T016 [US3] Implement strict LLVM JSON parsing and Rust executable source region extraction in `scripts/coverage_gate.py`; reject unsupported schema, invalid counts, and paths outside the workspace.
-- [ ] T017 [US3] Implement exact base-commit-to-checked-merge-commit Rust diff extraction and changed executable line aggregation across Linux, Windows, and macOS reports in `scripts/coverage_gate.py`.
-- [ ] T018 [US3] Enforce 95% changed-code when changed executable lines exist, 95% TTLV/protocol, 85% transport/FFI/bindings, and 90% workspace line coverage in `scripts/coverage_gate.py`; return `not applicable` for zero changed executable lines and `unavailable` only when source preflight finds no production function bodies.
-- [ ] T019 [US3] Add stable three-OS coverage jobs and uniquely named JSON report or no-code sentinel artifacts, plus a dependent Linux aggregation job, to `.github/workflows/ci.yml`; use the exact checked merge SHA and base SHA.
-- [ ] T020 [US3] Add a separate nightly Linux branch-coverage job with `continue-on-error: true` to `.github/workflows/ci.yml`; publish branch data as informational and ensure job/tool failures cannot gate pull-request success.
-- [ ] T021 [US3] Update `docs/development/testing.md` with report semantics, thresholds, unavailable/failure distinctions, exclusions, and reproduction commands.
+- [x] T016 [US3] Implement strict LLVM JSON parsing; derive per-line counts from file segments, cross-check file line summaries, validate function-region schema and source coordinates, and reject unsupported schema, invalid counts, and paths outside the workspace.
+- [x] T017 [US3] Implement exact base-commit-to-checked-merge-commit Rust diff extraction, Git-quoted UTF-8 path decoding, and changed executable line aggregation across Linux, Windows, and macOS reports in `scripts/coverage_gate.py`.
+- [x] T018 [US3] Enforce 95% changed-code when changed executable lines exist, 95% TTLV/protocol, 85% transport/FFI/bindings, and 90% workspace line coverage in `scripts/coverage_gate.py`; return `not applicable` for zero changed executable lines and `unavailable` only when source preflight finds no production function bodies.
+- [x] T019 [US3] Add stable three-OS coverage jobs and uniquely named JSON report or no-code sentinel artifacts, plus a dependent Linux aggregation job, to `.github/workflows/ci.yml`; use the exact checked merge SHA and base SHA.
+- [x] T020 [US3] Add a separate nightly Linux branch-coverage job with `continue-on-error: true` to `.github/workflows/ci.yml`; publish branch data as informational and ensure job/tool failures cannot gate pull-request success.
+- [x] T021 [US3] Update `docs/development/testing.md` with report-segment semantics, per-file summary validation, thresholds, unavailable/failure distinctions, source-tree inclusion, and reproduction commands.
 
 ## Phase 6: Green and Refactor evidence
 
 **Purpose**: Establish passing behavior and improve maintainability without changing scope.
 
-- [ ] T022 Run all script tests after the minimal implementation and record GREEN commands/results.
+- [x] T022 Run all script tests after the minimal implementation and record GREEN commands/results.
 - [ ] T023 Commit the minimal passing implementation with `git commit -s`, separate from RED and Refactor commits.
 - [ ] T024 Refactor parsing, diagnostics, path normalization, and workflow organization; retain tests and error semantics.
 - [ ] T025 Run format, Clippy, Rust tests, Rust docs, PowerShell tests, Python tests, workflow syntax/action-pin checks, and `git diff --check`; record REFACTOR results.

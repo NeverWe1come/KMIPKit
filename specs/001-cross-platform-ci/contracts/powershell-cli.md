@@ -14,8 +14,9 @@ Run from the repository root with PowerShell 7.3 or newer, WSL2, one installed U
 2. If `-Distribution` is absent, require exactly one distribution whose name begins with `Ubuntu`; if more than one exists, show the names and request an explicit command argument.
 3. If supplied, require the exact selected name to be an installed Ubuntu distribution running as WSL2.
 4. Translate the current checkout with `wslpath -u`; preserve native output.
-5. Set the translated checkout as the WSL working directory with `wsl.exe --cd <linux-repository-root>`.
-6. Run `cargo +1.94.0 test --workspace --all-features` through `wsl.exe --exec`, passing each argument separately and without a shell command string.
+5. Read the selected distribution user's home directory with `printenv HOME`, then use its rustup-managed Cargo at `<home>/.cargo/bin/cargo`. This avoids depending on interactive shell startup files while keeping direct execution.
+6. Set the translated checkout as the WSL working directory with `wsl.exe --cd <linux-repository-root>`.
+7. Run `cargo +1.94.0 test --workspace --all-features` through `wsl.exe --exec`, passing each argument separately and without a shell command string.
 
 ## Exit and output contract
 
