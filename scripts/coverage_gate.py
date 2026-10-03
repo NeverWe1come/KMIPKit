@@ -230,6 +230,18 @@ def _inline_test_attribute(source: str) -> bool:
     return False
 
 
+def _find_symlinked_directories(
+    parent: Path,
+    names: Iterable[str],
+    walk_errors: list[str],
+    directory_kind: str,
+) -> set[str]:
+    symlinked = {name for name in names if (parent / name).is_symlink()}
+    for name in sorted(symlinked):
+        walk_errors.append(f"{directory_kind} is a symlink and was not traversed: {parent / name}")
+    return symlinked
+
+
 def scan_production_sources(workspace_root: str | Path) -> SourceScanResult:
     """Scan every production Rust file; uncertainty requires coverage."""
     root = Path(workspace_root).resolve()
@@ -251,23 +263,21 @@ def scan_production_sources(workspace_root: str | Path) -> SourceScanResult:
             if len(parts) >= 3 and parts[0] == "crates" and parts[2] != "src":
                 directories[:] = []
             elif len(parts) == 1 and parts[0] == "crates":
-                symlinked_crates = [name for name in directories if (current_path / name).is_symlink()]
-                for name in symlinked_crates:
-                    walk_errors.append(
-                        f"crate directory is a symlink and was not traversed: {current_path / name}"
-                    )
+                symlinked_crates = _find_symlinked_directories(
+                    current_path, directories, walk_errors, "crate directory"
+                )
                 directories[:] = [name for name in directories if name not in symlinked_crates]
             elif len(parts) == 2 and parts[0] == "crates":
-                source_directory = current_path / "src"
-                if source_directory.is_symlink():
-                    walk_errors.append(
-                        f"source directory is a symlink and was not traversed: {source_directory}"
-                    )
-                directories[:] = [name for name in directories if name == "src"]
+                symlinked_sources = _find_symlinked_directories(
+                    current_path, ("src",), walk_errors, "source directory"
+                )
+                directories[:] = [
+                    name for name in directories if name == "src" and name not in symlinked_sources
+                ]
             continue
-        symlinked_directories = [name for name in directories if (current_path / name).is_symlink()]
-        for name in symlinked_directories:
-            walk_errors.append(f"source directory is a symlink and was not traversed: {current_path / name}")
+        symlinked_directories = _find_symlinked_directories(
+            current_path, directories, walk_errors, "source directory"
+        )
         directories[:] = [name for name in directories if name not in symlinked_directories]
         for filename in filenames:
             candidate = current_path / filename

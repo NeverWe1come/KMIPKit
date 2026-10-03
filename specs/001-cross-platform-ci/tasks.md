@@ -87,10 +87,10 @@
 **Purpose**: Establish passing behavior and improve maintainability without changing scope.
 
 - [x] T022 Run all script tests after the minimal implementation and record GREEN commands/results.
-- [ ] T023 Commit the minimal passing implementation with `git commit -s`, separate from RED and Refactor commits.
-- [ ] T024 Refactor parsing, diagnostics, path normalization, and workflow organization; retain tests and error semantics.
-- [ ] T025 Run format, Clippy, Rust tests, Rust docs, PowerShell tests, Python tests, workflow syntax/action-pin checks, and `git diff --check`; record REFACTOR results.
-- [ ] T026 Commit refactoring and CI/docs integration with `git commit -s` and confirm distinct RED, GREEN, and Refactor commits remain visible.
+- [x] T023 Commit the minimal passing implementation with `git commit -s`, separate from RED and Refactor commits (`9bd52db`).
+- [x] T024 Refactor symlink-scan diagnostics into a shared helper while retaining tests and error semantics.
+- [x] T025 Run format, Clippy, Rust tests, Rust docs, PowerShell tests, Python tests, workflow syntax/action-pin checks, and `git diff --check`; record REFACTOR results.
+- [x] T026 Commit refactoring and CI/docs integration with `git commit -s`; confirm distinct RED, GREEN, and Refactor commits remain visible.
 
 ## Phase 7: Polish and cross-cutting review
 
