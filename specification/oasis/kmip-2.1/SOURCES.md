@@ -14,5 +14,5 @@ OASIS notices permit copying the documents and preparing material that comments
 on, explains, or assists implementation when the copyright notice and notices
 section are retained. Always consult the notice inside the exact work product.
 
-The source inventory records what FreeKMIP uses; it does not relicense OASIS
+The source inventory records what KMIPKit uses; it does not relicense OASIS
 content or make a trademark, conformance, or endorsement claim.
