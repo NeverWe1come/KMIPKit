@@ -1,0 +1,10 @@
+[package]
+name = "kmipkit-ttlv"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "TTLV types, encoding, and decoding for KMIPKit"
+[lints]
+workspace = true

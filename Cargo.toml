@@ -1,6 +1,36 @@
-[package]
-name = "KMIPKit"
+[workspace]
+members = [
+    "crates/kmipkit-ttlv",
+    "crates/kmipkit-protocol",
+    "crates/kmipkit-transport",
+    "crates/kmipkit-client",
+    "crates/kmipkit",
+    "crates/kmipkit-ffi",
+    "crates/kmipkit-test-support",
+]
+resolver = "3"
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.94"
+license = "Apache-2.0"
+repository = "https://github.com/NeverWe1come/KMIPKit"
 
-[dependencies]
+[workspace.dependencies]
+kmipkit-ttlv = { path = "crates/kmipkit-ttlv", version = "0.1.0" }
+kmipkit-protocol = { path = "crates/kmipkit-protocol", version = "0.1.0" }
+kmipkit-transport = { path = "crates/kmipkit-transport", version = "0.1.0" }
+kmipkit-client = { path = "crates/kmipkit-client", version = "0.1.0" }
+kmipkit = { path = "crates/kmipkit", version = "0.1.0" }
+kmipkit-ffi = { path = "crates/kmipkit-ffi", version = "0.1.0" }
+kmipkit-test-support = { path = "crates/kmipkit-test-support", version = "0.1.0" }
+
+[workspace.lints.rust]
+rust_2018_idioms = "deny"
+unused_must_use = "deny"
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }

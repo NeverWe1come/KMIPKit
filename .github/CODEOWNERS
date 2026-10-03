@@ -1,0 +1,9 @@
+* @NeverWe1come
+
+# Explicitly list security and normative surfaces for review visibility.
+/AGENTS.md @NeverWe1come
+/.github/ @NeverWe1come
+/docs/adr/ @NeverWe1come
+/specification/ @NeverWe1come
+/crates/kmipkit-ffi/ @NeverWe1come
+/crates/kmipkit-transport/ @NeverWe1come

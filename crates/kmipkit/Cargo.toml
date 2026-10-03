@@ -1,0 +1,16 @@
+[package]
+name = "kmipkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "High-level Rust client library for KMIP"
+[dependencies]
+kmipkit-client.workspace = true
+kmipkit-protocol.workspace = true
+kmipkit-transport.workspace = true
+kmipkit-ttlv.workspace = true
+
+[lints]
+workspace = true
