@@ -42,10 +42,10 @@
 
 **Purpose**: Define expected WSL and coverage behavior before production scripts exist.
 
-- [ ] T004 Add self-contained PowerShell tests for WSL listing parsing, Ubuntu filtering, explicit/ambiguous selection, WSL2 validation, translated `--cd` working-directory arguments, safe native argv, and exit-code preservation in `scripts/tests/Test-Wsl.ps1`.
-- [ ] T005 Add Python `unittest` cases for LLVM JSON function-region validation, conservative Rust executable-function preflight (body vs semicolon declaration, nested comments, raw strings containing `fn`, excluded test paths, unreadable/invalid input and ambiguous syntax treated as eligible, and inline `#[cfg(test)]` rejection), coverage paths, changed Rust line parsing, executable region handling, multi-platform merge, threshold boundaries, unavailable source, and fail-closed report errors in `scripts/tests/test_coverage_gate.py`; include static workflow policy cases in `scripts/tests/test_workflow.py`.
-- [ ] T006 Run the PowerShell and Python test suites before implementation; confirm their failures identify the missing modules/functions rather than syntax or harness errors.
-- [ ] T007 Commit the failing tests and record the exact RED commands/results with `git commit -s`.
+- [x] T004 Add self-contained PowerShell tests for WSL listing parsing, Ubuntu filtering, explicit/ambiguous selection, WSL2 validation, translated `--cd` working-directory arguments, safe native argv, and exit-code preservation in `scripts/tests/Test-Wsl.ps1`.
+- [x] T005 Add Python `unittest` cases for LLVM JSON function-region validation, conservative Rust executable-function preflight (body vs semicolon declaration, nested comments, raw strings containing `fn`, excluded test paths, unreadable/invalid input and ambiguous syntax treated as eligible, and inline `#[cfg(test)]` rejection), coverage paths, changed Rust line parsing, executable region handling, multi-platform merge, threshold boundaries, unavailable source, and fail-closed report errors in `scripts/tests/test_coverage_gate.py`; include static workflow policy cases in `scripts/tests/test_workflow.py`.
+- [x] T006 Run the PowerShell and Python test suites before implementation; confirm their failures identify the missing modules/functions rather than syntax or harness errors.
+- [x] T007 Commit the failing tests and record the exact RED commands/results with `git commit -s`.
 
 ## Phase 3: User Story 1 - Pull request platform checks (Priority: P1)
 
