@@ -34,6 +34,10 @@ fn local_failure_categories_are_distinct() {
     assert_eq!(validation.category(), ClientErrorCategory::Validation);
     assert_eq!(protocol.category(), ClientErrorCategory::Protocol);
     assert_eq!(transport.category(), ClientErrorCategory::Transport);
+    for error in [&validation, &protocol, &transport] {
+        assert_eq!(error.server_operation_result(), None);
+        assert_eq!(error.server_status(), None);
+    }
 }
 
 #[test]
@@ -85,6 +89,38 @@ fn safe_cause_categories_and_delivery_evidence_remain_inspectable() {
         transport.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
     );
+    assert!(!format!("{protocol}").contains("unsafe protocol text"));
+    assert!(!format!("{protocol:?}").contains("unsafe protocol text"));
+    assert!(!format!("{transport}").contains("unsafe transport text"));
+    assert!(!format!("{transport:?}").contains("unsafe transport text"));
+    assert_eq!(
+        protocol
+            .cause_category()
+            .map(|category| category.to_string()),
+        Some("protocol: invalid value".to_owned())
+    );
+    assert_eq!(
+        transport
+            .cause_category()
+            .map(|category| category.to_string()),
+        Some("transport: timeout".to_owned())
+    );
+    assert!(protocol.source().is_some());
+    assert!(transport.source().is_some());
+}
+
+#[test]
+fn other_validation_cause_has_safe_formatting_and_source() {
+    let error = ClientError::validation(
+        ClientCauseCategory::Other,
+        None,
+        synthetic_error("sensitive validation source"),
+    );
+
+    assert_eq!(error.cause_category(), Some(ClientCauseCategory::Other));
+    assert!(error.to_string().contains("other validation cause"));
+    assert!(!format!("{error:?}").contains("sensitive validation source"));
+    assert!(error.source().is_some());
 }
 
 #[test]
@@ -126,6 +162,7 @@ fn complete_server_result_is_distinct_redacted_and_has_no_delivery_state() {
     let error = ClientError::server_result(result);
 
     assert_eq!(error.category(), ClientErrorCategory::ServerResult);
+    assert_eq!(error.cause_category(), None);
     assert_eq!(error.delivery_state(), None);
     assert_redacted(&error, sentinel);
 }
