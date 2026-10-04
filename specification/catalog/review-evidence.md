@@ -122,7 +122,7 @@ Independent QA rechecked the acceptance evidence and found no additional catalog
 
 Fresh verification on 2026-10-04:
 
-- `python -B -m unittest discover -s tools/normative_catalog/tests -v`: 129 passed, 5 skipped (Windows directory-symlink privilege unavailable).
+- `python -B -m unittest discover -s tools/normative_catalog/tests -v`: 130 passed, 6 skipped (Windows directory-symlink privilege unavailable).
 - `python -B -m unittest discover -s scripts/tests -v`: 36 passed, 3 skipped (same Windows symlink limitation).
 - `pwsh -NoProfile -File scripts/tests/Test-Wsl.ps1`: all 8 passed.
 - `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`, and `cargo test --workspace --all-features --locked`: passed with Windows stable and WSL Rust 1.94.0.
@@ -132,7 +132,7 @@ Fresh verification on 2026-10-04:
 - `python -B tools/normative_catalog/report.py --check` and `git diff --check`: passed.
 - Coverage preflight scanned all 7 Rust source files and found no production function bodies, so line-percentage gates are not applicable to this catalog-only feature. `cargo llvm-cov` is not installed in this environment; no coverage percentage is claimed.
 
-The independent QA review and these command results complete T039. Security review (T040) is complete; draft PR creation (T041) remains pending at this evidence snapshot.
+The independent QA review and these command results complete T039. Security review (T040) and draft PR creation (T041) are complete; draft PR #4 is open for review.
 
 ## Security review and follow-up
 
@@ -144,4 +144,6 @@ The follow-up used distinct Red, Green, and Refactor commits:
 - Green `fcc5e55`: POSIX reads use nonblocking flags before checking file type; Git tree output is capped at 16 MiB and 100,000 entries; numeric section sorting now has a stable text tie-breaker. All three focused regression tests passed.
 - Refactor `2a0c558`: consolidated link-safe, nonblocking read flags in one helper; the three focused tests passed again.
 
-The full Windows catalog suite then passed 129 tests with 5 platform-specific skips. The three POSIX regression tests also passed in WSL. The full WSL suite could not resolve this Windows worktree's `.git` pointer, so native Linux CI remains the full-suite Linux confirmation. T040 is complete; T041 remains pending until the draft PR exists.
+The full Windows catalog suite then passed 130 tests with 6 platform-specific skips. The three POSIX regression tests also passed in WSL. The full WSL suite could not resolve this Windows worktree's `.git` pointer, so native Linux CI remains the full-suite Linux confirmation. T040 and T041 are complete; draft PR #4 is open for review.
+
+The final Codex Security diff scan (a745d0fd-1e54-4d35-af9c-e919fa0f09d3) covered the exact PR range `ce34179cd8bf96812af53b5ec88daeae330fce35..957d277b403f27e323923fc52163796e5a45170f`. It completed with zero reportable findings. Three candidates were suppressed after validation: duplicate clause IDs are rejected by the following catalog validator; bare report URLs require a user click and have no automatic fetch path; and source immutability is gated against the exact PR base before catalog validation. The scan report and retained threat model are available in the Codex Security scan artifacts.
