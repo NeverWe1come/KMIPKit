@@ -96,6 +96,29 @@ class SourceAuditTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("normative source candidates", result.stdout)
 
+    def test_script_check_requires_exact_reviewed_candidate_ledger(self) -> None:
+        base_sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        script = ROOT / "tools" / "normative_catalog" / "audit_sources.py"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "--base-sha",
+                base_sha,
+                "--repo-root",
+                str(ROOT),
+                "--check",
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Audited 1411 normative source candidates", result.stdout)
+
     def test_git_audit_does_not_read_normative_documents_from_working_tree(self) -> None:
         base_sha = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True, capture_output=True, text=True
