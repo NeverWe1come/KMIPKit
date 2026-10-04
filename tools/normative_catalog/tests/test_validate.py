@@ -960,6 +960,10 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(actual_members, source_members)
         self.assertEqual(len(members), len(source_members))
+        self.assertEqual(
+            sum(row.get("kind") == "structure_member" for row in elements),
+            241,
+        )
         for row in members:
             self.assertEqual(row["direction"], "both")
             self.assertEqual(row["scope_state"], "client_1_0")
