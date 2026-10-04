@@ -31,6 +31,6 @@
 ## Notes
 
 - The unchecked ADR item is an implementation gate, not an implied OASIS interpretation. The KMIPKIT-0004 model implementation is already merged into the release base; implementation still requires specification approval and the ADR disposition.
-- OASIS §10.1.2 does not explicitly define empty Big Integer behavior; this draft records a project validity rule rejecting it. Schema field-order requirement `KMIPKIT-REQ-SPEC-10.1.2-001` remains unassigned pending named follow-on typed operation/model specification(s).
-- Full roadmap traceability remains gated on assigning that schema-order requirement to named typed specification(s); this gap does not block implementation of the generic codec, and this PR does not claim the assignment is complete.
+- OASIS §10.1.2 does not explicitly define empty Big Integer behavior; this draft records a project validity rule rejecting it. Schema field-order requirement `KMIPKIT-REQ-SPEC-10.1.2-001` remains unassigned pending typed-spec ownership for every applicable client 1.0 Structure.
+- Full roadmap traceability remains gated until those Structures have approved typed-spec ownership plus implementation and executable order-verification references; this gap does not block implementation of the generic codec, and this PR does not claim the assignment is complete.
 - The normative traceability table separates OASIS requirements from KMIPKit API and security policy.

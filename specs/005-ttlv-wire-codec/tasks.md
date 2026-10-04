@@ -4,7 +4,7 @@
 
 **Prerequisites**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/rust-ttlv-codec.md`, and `quickstart.md`.
 
-**Implementation gate**: Before T001, verify the feature specification is approved under repository governance, the branch is updated from the active `release/1.0.0` head, the merged 004 Tag/Item APIs and Accepted ADR-0010 are inspected, and `docs/adr/0011-reserved-tag-decoding-policy.md` has been reviewed/accepted. If any gate is unmet, do not start implementation tasks; update this gate evidence and stop. The separate 1.0 traceability gate for `KMIPKIT-REQ-SPEC-10.1.2-001` remains open until named typed protocol specifications are created; it does not block generic codec implementation.
+**Implementation gate**: Before T001, verify the feature specification is approved under repository governance, the branch is updated from the active `release/1.0.0` head, the merged 004 Tag/Item APIs and Accepted ADR-0010 are inspected, and `docs/adr/0011-reserved-tag-decoding-policy.md` has been reviewed/accepted. If any gate is unmet, do not start implementation tasks; update this gate evidence and stop. The separate 1.0 traceability gate for `KMIPKIT-REQ-SPEC-10.1.2-001` remains open until every applicable client 1.0 Structure has approved typed-spec ownership, implementation, and executable order-verification references; it does not block generic codec implementation.
 
 **Organization**: Strict Red, Green, Refactor commits with DCO sign-off. Each phase's Red commit records failing tests before production code changes.
 
@@ -51,7 +51,7 @@
 
 ## Phase 5: Traceability, documentation, and hardening
 
-- [ ] T012 Update applicable `requirements[]` rows and close `KMIPKIT-DISC-037` with the accepted ADR decision in `specification/catalog/kmip-2.1.json`; add code/test traceability for requirements assigned to this codec, retain `KMIPKIT-REQ-SPEC-10.1.2-001` as an explicit follow-on assignment gap until typed protocol specifications exist, then regenerate and validate every affected artifact with its pinned repository generator. Do not claim 100% roadmap traceability while that gap remains.
+- [ ] T012 Update applicable `requirements[]` rows and close `KMIPKIT-DISC-037` with the accepted ADR decision in `specification/catalog/kmip-2.1.json`; add code/test traceability for requirements assigned to this codec, retain `KMIPKIT-REQ-SPEC-10.1.2-001` as an explicit follow-on gap until every applicable Structure has approved typed-spec ownership plus implementation and executable order-verification references, then regenerate and validate every affected artifact with its pinned repository generator. Do not claim 100% roadmap traceability while that gap remains.
 - [ ] T013 Turn `specs/005-ttlv-wire-codec/quickstart.md` scenarios into an executable example and tested documentation in the final `kmipkit-ttlv` public API docs after the merged API is stable.
 - [ ] T014 Add reviewed OASIS vectors and malformed-input fixtures under `crates/kmipkit-ttlv/tests/fixtures/` with exact source document, section, and requirement ID attribution; add a bounded decoder fuzz target in `fuzz/fuzz_targets/ttlv_decode.rs` and its package wiring in `fuzz/Cargo.toml`.
 - [ ] T015 Run repository automation for format, Clippy, focused/workspace tests, property tests, coverage, generator `--check`, dependency/license/security scans, and supported-platform CI; record actual results and confirm at least 95% coverage for changed codec/model code and workspace gates in the draft PR.
@@ -75,7 +75,7 @@ First unblock the feature at T001. Then implement encoder, decoder, and limits i
 
 ## Traceability map
 
-Catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` for schema-specific field order remains unassigned until the inventory names the follow-on typed operation/model specification(s). This is a 1.0 traceability gate, not a blocker for generic codec implementation; the codec only preserves order and cannot complete that normative requirement by itself.
+Catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` for schema-specific field order remains unassigned until all applicable client 1.0 Structures have approved typed-spec ownership and implementation/verification refs. This is a global 1.0 traceability gate, not a blocker for generic codec implementation; the codec only preserves order and cannot complete that normative requirement by itself.
 
 | Requirement | Planned task(s) | Executable verification artifact |
 |---|---|---|

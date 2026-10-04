@@ -79,7 +79,7 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 
 - Confirm the source digest and clauses in the pinned local OASIS copy.
 - PR #14 is merged; verify the actual public model API and accepted ADR-0010 on the updated release base.
-- Record `KMIPKIT-REQ-SPEC-10.1.2-001` as follow-on typed-protocol scope: the generic codec preserves supplied child order but cannot validate operation schemas. Keep the 1.0 traceability gate open until named typed protocol specifications assign it.
+- Record `KMIPKIT-REQ-SPEC-10.1.2-001` as follow-on typed-protocol scope: the generic codec preserves supplied child order but cannot validate operation schemas. Keep the 1.0 traceability gate open until every applicable client 1.0 Structure has approved typed-spec ownership, implementation, and executable order-verification references.
 - Obtain review/acceptance of proposed ADR-0011 resolving `KMIPKIT-DISC-037`; update the catalog decision reference before coding.
 
 ### Phase 1 — Contracts and data invariants
