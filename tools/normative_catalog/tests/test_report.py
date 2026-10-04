@@ -116,6 +116,19 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("prohibited", report)
         self.assertIn("required", report)
 
+    def test_report_lists_requirement_level_official_test_evidence_gaps(self) -> None:
+        catalog = report_catalog()
+        requirement = catalog["requirements"][0]
+        requirement["review_note"] = (
+            "No requirement-specific official Test Cases ID is linked by the pinned sources."
+        )
+
+        report = render_report(catalog)
+
+        self.assertIn("## Requirements without official test-case links", report)
+        self.assertIn("KMIPKIT-REQ-SPEC-8.1-001", report)
+        self.assertIn("No requirement-specific official Test Cases ID", report)
+
     def test_reports_profile_states_missing_fixtures_and_open_discrepancies(self) -> None:
         catalog = report_catalog()
         catalog["profiles"] = [
