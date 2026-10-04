@@ -175,6 +175,7 @@ jobs:
   branch-coverage:
     name: Informational branch coverage / nightly
     runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
     continue-on-error: true
     steps:
       - name: Checkout workflow commit
