@@ -29,7 +29,7 @@ The signatures are a design proposal layered on the merged 004 API. The model cu
 
 ## Behavioral contract
 
-- `encode` emits exactly one canonical Item. It checks tree depth/count and predicted output size before growth. It preserves Structure child order.
+- `encode` emits exactly one canonical Item. It validates the complete tree, checks depth/count and predicted output size, then reserves the complete output capacity before copying payload bytes. It preserves Structure child order and has no fallible exit after payload copying begins; if that invariant cannot be maintained, partial output is zeroized on every error path.
 - `decode` accepts exactly one complete Item and rejects empty input or trailing bytes. It validates lengths and available bytes before payload allocation.
 - Both default entry points use 16 MiB, 64 Structure levels, and 100,000 Items.
 - `decode_with_limits` may use lower or higher message/count limits. Maximum Structure depth remains 64 unless the 004 model contract is deliberately changed.
@@ -50,5 +50,5 @@ The signatures are a design proposal layered on the merged 004 API. The model cu
 - Input size is checked before decoder traversal.
 - Declared Item Length is checked against allowed type lengths, parent end, total input, and caller limits before allocating/copying value bytes.
 - Structure parsing stops at its declared parent boundary and increments element/depth counters before accepting each child.
-- Allocation uses fallible reserve APIs where available; allocation failure returns an error, never panic.
+- Allocation uses one complete fallible output reservation before any payload copy; allocation failure returns an error, never panic. Decoded payload allocations are also fallible and occur only after length/limit preflight.
 - The codec crate continues to forbid unsafe code.

@@ -1,6 +1,6 @@
 # Data Model: TTLV Wire Codec
 
-This document defines the wire facts and per-call safety state consumed by the codec. It does not add a second public value tree; input/output values use the KMIPKIT-0004 generic model after that implementation lands.
+This document defines the wire facts and per-call safety state consumed by the codec. It does not add a second public value tree; input/output values use the KMIPKIT-0004 generic model merged into `release/1.0.0`.
 
 ## Codec Limits
 

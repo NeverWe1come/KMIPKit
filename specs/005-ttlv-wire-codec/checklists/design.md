@@ -12,7 +12,7 @@
 - [x] All eleven Item Types have a type-specific representation and vector expectation.
 - [x] Length accounting distinguishes Structure, Big Integer, fixed 4-byte values, and strings/bytes.
 - [x] Unknown Enumeration values, mask bits, and accepted extension Tags retain raw data.
-- [x] Requirements outside generic codec scope (schema order enforcement and operation semantics) are assigned to typed protocol specifications.
+- [ ] The normative inventory names typed protocol specification(s) that own schema-order enforcement; this codec only preserves supplied Structure order.
 
 ## Parser and security design
 
@@ -40,4 +40,4 @@
 
 ## Notes
 
-- The unchecked ADR acceptance and implementation evidence items are gates. This is a design review artifact, not permission to bypass them.
+- The unchecked ADR acceptance, schema-order assignment, and implementation evidence items are gates. This design does not claim 100% traceability while the inventory assignment is open.

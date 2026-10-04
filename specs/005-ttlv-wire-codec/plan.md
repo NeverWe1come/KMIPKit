@@ -79,6 +79,7 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 
 - Confirm the source digest and clauses in the pinned local OASIS copy.
 - PR #14 is merged; verify the actual public model API and accepted ADR-0010 on the updated release base.
+- Confirm the normative inventory assigns `KMIPKIT-REQ-SPEC-10.1.2-001` to named typed protocol specification(s) for schema-order enforcement.
 - Obtain review/acceptance of proposed ADR-0011 resolving `KMIPKIT-DISC-037`; update the catalog decision reference before coding.
 
 ### Phase 1 — Contracts and data invariants
@@ -89,8 +90,8 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 
 ### Phase 2 — Encoder (strict TDD)
 
-- Write failing exact byte vectors for all eleven types and nested Structures.
-- Implement bounded length calculation and canonical encoding, including checked big-endian headers and padding.
+- Write failing exact byte vectors for all eleven types and nested Structures, plus U32 maximum/one-over output-size planner boundaries without multi-gigabyte allocation.
+- Validate the complete tree, compute bounded lengths, and reserve the complete output before copying payload bytes; then emit canonical encoding with no fallible exits after payload copying begins.
 - Refactor the writer for one focused responsibility, document invariants, and verify checked arithmetic and error redaction.
 
 ### Phase 3 — Decoder (strict TDD)

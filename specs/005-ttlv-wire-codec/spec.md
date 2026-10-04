@@ -33,6 +33,7 @@ A KMIP client developer needs to turn a valid generic TTLV item into the standar
 3. **Given** a Big Integer whose byte count is not a multiple of eight, **When** it is encoded, **Then** the minimum leading sign-extension bytes are added and counted in the Item Length.
 4. **Given** an Integer, Enumeration, or Interval, **When** it is encoded, **Then** exactly four padding bytes follow the value and are excluded from Item Length.
 5. **Given** a Text String or Byte String, **When** it is encoded, **Then** the minimum number of following padding bytes aligns the complete item to an eight-byte boundary and those bytes are excluded from Item Length.
+6. **Given** a model tree that fails validation or size/limit preflight, **When** encoding fails, **Then** no value payload has been copied into an output buffer. Once payload copying begins, no fallible operation remains.
 
 ### User Story 2 — Decode bounded TTLV input into generic values (Priority: P1)
 
@@ -92,7 +93,8 @@ A KMIP client developer needs per-call resource limits so malformed or hostile s
 - **KMIPKIT-0005-FR-008**: The decoder MUST check declared lengths and cumulative Structure lengths against the U32 wire representation, available bytes, parent boundaries, and configured limits before reserving or allocating storage based on those lengths.
 - **KMIPKIT-0005-FR-009**: Codec errors MUST preserve useful source/location context while never formatting, logging, or exposing raw TTLV bodies or value payloads.
 - **KMIPKIT-0005-FR-010**: The decoder MUST reject a received Tag classified as Reserved under §11.56 before constructing a public generic Item, as proposed in ADR-0011. This project decision remains gated on review/acceptance of that ADR and is not an OASIS clarification. Other Tags rejected by the 004 allocation-checked Tag API MUST return an error and MUST NOT enter the public generic tree.
-- **KMIPKIT-0005-FR-011**: Every in-scope normative requirement MUST be linked to its exact OASIS source, stable catalog/project requirement ID, implementation location, and executable verification before feature completion. Open or out-of-scope inventory rows MUST be assigned to a follow-on specification with a recorded reason.
+- **KMIPKIT-0005-FR-011**: Every normative requirement applicable to this codec MUST be linked to its exact OASIS source, stable catalog/project requirement ID, implementation location, and executable verification before feature completion. The schema-order catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` is not implemented by generic order preservation alone; the normative inventory MUST assign schema enforcement to named typed protocol specification(s) before 1.0 traceability can be declared complete.
+- **KMIPKIT-0005-FR-012**: The encoder MUST validate the complete Item tree, calculate all lengths and enforce limits, and reserve the complete output capacity before copying any value payload. After the first payload byte is copied, encoding MUST have no fallible exit. If implementation cannot guarantee that invariant, every error path MUST zeroize the partial output buffer before releasing it.
 
 ### Normative Traceability
 
@@ -140,3 +142,4 @@ Do not start implementation until all of the following are true:
 2. Proposed ADR-0011 receives review/acceptance, resolving `KMIPKIT-DISC-037` by rejecting received Reserved Tags before generic model construction.
 3. Reconfirm the accepted ADR-0010 Tag allocation policy and use the merged 004 public APIs.
 4. `CodecLimits.max_structure_depth` remains configurable from 0 through the model's hard maximum of 64; no implementation may claim support above that limit without a separate reviewed change.
+5. The normative inventory assigns `KMIPKIT-REQ-SPEC-10.1.2-001` to named typed protocol specification(s) for schema-order enforcement; generic order-preservation coverage alone is not a complete traceability result.
