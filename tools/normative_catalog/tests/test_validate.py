@@ -1796,6 +1796,18 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "source clause scope"):
             validate(document)
 
+    def test_accepts_stable_subrecords_for_multiple_obligations_in_one_clause(self) -> None:
+        document = deviation_catalog(decision_record())
+        base_id = "KMIPKIT-REQ-SPEC-8.1-001"
+        subrecord_id = f"{base_id}-002"
+        document["requirements"][0]["requirement_id"] = subrecord_id
+        document["source_clauses"][0]["requirement_ids"] = [subrecord_id]
+        document["requirements"][0]["decision_id"] = None
+        document["requirements"][0]["status"] = "unassigned"
+        document["decisions"] = []
+
+        self.assertGreater(validate(document)["record_count"], 0)
+
     def test_requirement_keyword_must_appear_in_a_linked_source_clause(self) -> None:
         document = deviation_catalog(decision_record())
         requirement = document["requirements"][0]
