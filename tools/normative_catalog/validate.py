@@ -73,12 +73,21 @@ CLAUSE_DISPOSITIONS = {
 }
 CLAUSE_ROLES = {"client", "server", "both", "not_applicable", "unclear"}
 CLAUSE_DIRECTIONS = {"client_to_server", "server_to_client", "both", "not_applicable", "unclear"}
-CLAUSE_SCOPES = {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope", "mixed", "unclear"}
+CLAUSE_SCOPES = {
+    "client_1_0",
+    "client_1_1",
+    "profile_conditional",
+    "server_only",
+    "out_of_scope",
+    "mixed",
+    "unclear",
+}
+REQUIREMENT_ID_PATTERN = r"KMIPKIT-REQ-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}(?:-[0-9]{3})?"
 TOP_LEVEL_ID_FIELDS = {
     "source_clauses": ("clause_id", r"KMIPKIT-CLAUSE-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}"),
     "elements": ("element_id", r"KMIPKIT-ELEM-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
     "tag_ranges": ("range_id", r"KMIPKIT-RANGE-[0-9]{3}"),
-    "requirements": ("requirement_id", r"KMIPKIT-REQ-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}(?:-[0-9]{3})?"),
+    "requirements": ("requirement_id", REQUIREMENT_ID_PATTERN),
     "policies": ("policy_id", r"KMIPKIT-POLICY-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
     "profiles": ("profile_id", r"KMIPKIT-PROFILE-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
     "test_cases": ("test_id", r"KMIPKIT-TEST-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
@@ -447,6 +456,14 @@ def _check_clause_scope_metadata(clause: dict[str, Any]) -> None:
         _fail("source clause condition must be null or non-empty text")
 
 
+def _linked_clause_scope(clause: dict[str, Any], requirements: dict[str, dict[str, Any]]) -> str | None:
+    """Return the common linked scope, or mixed when separable scopes differ."""
+    scopes = {requirements[item]["scope_state"] for item in clause["requirement_ids"]}
+    if not scopes:
+        return None
+    return next(iter(scopes)) if len(scopes) == 1 else "mixed"
+
+
 def _strongest_source_authority(
     references: list[dict[str, Any]],
     authority_by_source: dict[str, str],
@@ -704,11 +721,9 @@ def _check_semantics(
     for clause in catalog["source_clauses"]:
         if any(item not in requirements for item in clause["requirement_ids"]):
             _fail("source clause has an unresolved requirement reference")
-        linked_scopes = {requirements[item]["scope_state"] for item in clause["requirement_ids"]}
-        if linked_scopes:
-            expected_scope = next(iter(linked_scopes)) if len(linked_scopes) == 1 else "mixed"
-            if clause["scope_state"] != expected_scope:
-                _fail("source clause scope does not match linked requirement scopes")
+        expected_scope = _linked_clause_scope(clause, requirements)
+        if expected_scope is not None and clause["scope_state"] != expected_scope:
+            _fail("source clause scope does not match linked requirement scopes")
 
     for element in catalog["elements"]:
         if set(element) - ELEMENT_FIELDS:
