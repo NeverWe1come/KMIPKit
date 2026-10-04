@@ -1,6 +1,8 @@
 //! Ordered generic KMIP Structure values.
 
-use crate::{Item, ModelError};
+use crate::{Item, ModelError, ValueView};
+
+const MAX_STRUCTURE_DEPTH: usize = 64;
 
 /// An ordered collection of child items.
 ///
@@ -28,10 +30,12 @@ impl Structure {
     ///
     /// # Errors
     ///
-    /// This signature reserves a local construction error for Structure
-    /// constraints. Nesting depth is not yet enforced, so this method currently
-    /// appends each item.
+    /// Returns an error if appending would exceed the local nesting-depth limit.
     pub fn try_push(&mut self, item: Item) -> Result<(), ModelError> {
+        if item_structure_depth(&item) >= MAX_STRUCTURE_DEPTH {
+            return Err(ModelError::StructureDepthExceeded);
+        }
+
         self.children.push(item);
         Ok(())
     }
@@ -55,4 +59,20 @@ impl StructureView<'_> {
     pub const fn children(&self) -> &[Item] {
         self.children
     }
+}
+
+fn item_structure_depth(item: &Item) -> usize {
+    item.with_value(|value| match value {
+        ValueView::Structure(structure) => structure_depth(&structure),
+        _ => 0,
+    })
+}
+
+fn structure_depth(structure: &StructureView<'_>) -> usize {
+    structure
+        .children()
+        .iter()
+        .map(item_structure_depth)
+        .fold(0, usize::max)
+        .saturating_add(1)
 }

@@ -10,6 +10,8 @@ pub enum ModelError {
     RawTagOutOfRange,
     /// The tag is reserved or not allocated by the KMIP 2.1 catalog policy.
     TagNotAllocated,
+    /// Appending the item would exceed the local Structure nesting-depth limit.
+    StructureDepthExceeded,
 }
 
 impl Display for ModelError {
@@ -17,6 +19,9 @@ impl Display for ModelError {
         match self {
             Self::RawTagOutOfRange => formatter.write_str("raw tag exceeds the 24-bit range"),
             Self::TagNotAllocated => formatter.write_str("tag is reserved or unallocated"),
+            Self::StructureDepthExceeded => {
+                formatter.write_str("Structure nesting exceeds the local depth limit")
+            }
         }
     }
 }
