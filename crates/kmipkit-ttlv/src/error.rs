@@ -3,6 +3,7 @@
 use std::fmt::{Display, Formatter};
 
 /// A local construction error that never retains caller-provided tag values.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ModelError {
     /// The raw tag exceeds the 24-bit KMIP tag width.
