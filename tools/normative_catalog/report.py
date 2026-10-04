@@ -1,0 +1,230 @@
+"""Render and verify the deterministic Markdown coverage report."""
+
+from __future__ import annotations
+
+import argparse
+import sys
+import unicodedata
+from pathlib import Path
+from typing import Any
+
+
+REPORT_PATH = Path("specification/catalog/coverage-report.md")
+SECTION_ORDER = (
+    "Source documents",
+    "Count reconciliation",
+    "Source clause dispositions",
+    "Unassigned requirements",
+    "Profile states",
+    "Test fixture availability",
+    "Open discrepancies",
+    "Project policies",
+)
+
+
+def _visible_controls(value: Any) -> str:
+    text = str(value if value is not None else "")
+    output: list[str] = []
+    for character in text:
+        category = unicodedata.category(character)
+        if character == "\n":
+            output.append("\\n")
+        elif character == "\r":
+            output.append("\\r")
+        elif character == "\t":
+            output.append("\\t")
+        elif category in {"Cc", "Cf"}:
+            output.append(f"\\u{ord(character):04X}")
+        else:
+            output.append(character)
+    return "".join(output)
+
+
+def _escape_table_text(value: Any) -> str:
+    text = _visible_controls(value)
+    replacements = (
+        ("\\", "\\\\"),
+        ("&", "&amp;"),
+        ("<", "&lt;"),
+        (">", "&gt;"),
+        ("|", "\\|"),
+        ("`", "\\`"),
+        ("[", "\\["),
+        ("]", "\\]"),
+        ("(", "\\("),
+        (")", "\\)"),
+        ("*", "\\*"),
+        ("_", "\\_"),
+        ("~", "\\~"),
+    )
+    for old, new in replacements:
+        text = text.replace(old, new)
+    return text
+
+
+def _escape_link_label(value: Any) -> str:
+    text = _visible_controls(value)
+    text = text.replace("\\", "\\\\")
+    text = text.replace("[", "\\[").replace("]", "\\]")
+    text = text.replace("<", "&lt;").replace(">", "&gt;")
+    return text
+
+
+def _table(headers: tuple[str, ...], rows: list[tuple[Any, ...]]) -> list[str]:
+    lines = ["| " + " | ".join(_escape_table_text(item) for item in headers) + " |"]
+    lines.append("| " + " | ".join("---" for _ in headers) + " |")
+    for row in rows:
+        lines.append("| " + " | ".join(_escape_table_text(item) for item in row) + " |")
+    if not rows:
+        lines.append("| " + " | ".join("—" for _ in headers) + " |")
+    return lines
+
+
+def _count_by(records: list[dict[str, Any]], field: str) -> list[tuple[str, int]]:
+    counts: dict[str, int] = {}
+    for record in records:
+        key = str(record.get(field, "unspecified"))
+        counts[key] = counts.get(key, 0) + 1
+    return sorted(counts.items())
+
+
+def _source_reference(record: dict[str, Any]) -> str:
+    references = record.get("source_refs") or []
+    return ", ".join(f"{item.get('source_id', '?')} §{item.get('section', '?')}" for item in references)
+
+
+def render_report(catalog: dict[str, Any]) -> str:
+    """Render a stable report; all catalog strings are inert escaped text."""
+    lines = [
+        "# KMIP 2.1 inventory coverage",
+        "",
+        "This report records inventory coverage and evidence state. It does not claim profile conformance or certification.",
+        "",
+    ]
+
+    sources = sorted(catalog.get("sources", []), key=lambda row: row.get("source_id", ""))
+    lines.extend(["## Source documents", ""])
+    lines.extend(_table(
+        ("Source ID", "Title", "Authority", "SHA-256"),
+        [(row.get("source_id"), row.get("title"), row.get("authority_class"), row.get("sha256")) for row in sources],
+    ))
+    lines.append("")
+
+    elements = catalog.get("elements", [])
+    requirements = catalog.get("requirements", [])
+    operations = [row for row in elements if row.get("kind") == "operation"]
+    count_rows: list[tuple[Any, ...]] = [
+        ("Sources", len(sources)),
+        ("Source clauses", len(catalog.get("source_clauses", []))),
+        ("Protocol elements", len(elements)),
+        ("Client-to-server operations", sum(row.get("direction") == "client_to_server" for row in operations)),
+        ("Server-to-client operations", sum(row.get("direction") == "server_to_client" for row in operations)),
+        ("Tag ranges", len(catalog.get("tag_ranges", []))),
+        ("Normative requirements", len(requirements)),
+        ("Profiles", len(catalog.get("profiles", []))),
+        ("Test cases", len(catalog.get("test_cases", []))),
+        ("Open discrepancies", sum(row.get("state") == "open" for row in catalog.get("discrepancies", []))),
+        ("Project policies", len(catalog.get("policies", []))),
+    ]
+    lines.extend(["## Count reconciliation", ""])
+    lines.extend(_table(("Record class", "Count"), count_rows))
+    lines.extend(["", "### Elements by kind", ""])
+    lines.extend(_table(("Kind", "Count"), _count_by(elements, "kind")))
+    lines.extend(["", "### Requirements by strength and scope", ""])
+    lines.extend(_table(("Dimension", "Value", "Count"), [
+        *(("Strength", key, value) for key, value in _count_by(requirements, "normative_strength")),
+        *(("Scope", key, value) for key, value in _count_by(requirements, "scope_state")),
+    ]))
+    lines.append("")
+
+    lines.extend(["## Source clause dispositions", ""])
+    lines.extend(_table(("Disposition", "Count"), _count_by(catalog.get("source_clauses", []), "disposition")))
+    lines.append("")
+
+    unassigned = [
+        row for row in requirements
+        if not row.get("feature_spec") or not row.get("implementation_refs") or not row.get("verification_refs")
+    ]
+    unassigned.sort(key=lambda row: row.get("requirement_id", ""))
+    lines.extend(["## Unassigned requirements", ""])
+    lines.extend(_table(
+        ("Requirement", "Strength", "Scope", "Source"),
+        [(row.get("requirement_id"), row.get("normative_strength"), row.get("scope_state"), _source_reference(row)) for row in unassigned],
+    ))
+    lines.append("")
+
+    profiles = sorted(catalog.get("profiles", []), key=lambda row: row.get("profile_id", ""))
+    lines.extend(["## Profile states", ""])
+    lines.extend(_table(
+        ("Profile", "Name", "Applicability", "Claim state", "Source"),
+        [(row.get("profile_id"), row.get("name"), row.get("applicability"), row.get("claim_state"), _source_reference(row)) for row in profiles],
+    ))
+    lines.append("")
+
+    test_cases = sorted(catalog.get("test_cases", []), key=lambda row: (row.get("source_id", ""), row.get("official_case_id", ""), row.get("test_id", "")))
+    lines.extend(["## Test fixture availability", ""])
+    lines.extend(_table(
+        ("Test", "Official ID", "Fixture status", "Local fixture"),
+        [(row.get("test_id"), row.get("official_case_id"), row.get("fixture_availability"), row.get("fixture_path") or "—") for row in test_cases],
+    ))
+    lines.append("")
+
+    discrepancies = sorted(catalog.get("discrepancies", []), key=lambda row: row.get("discrepancy_id", ""))
+    lines.extend(["## Open discrepancies", ""])
+    lines.extend(_table(
+        ("Discrepancy", "State", "Summary", "Source"),
+        [(row.get("discrepancy_id"), row.get("state"), row.get("summary"), _source_reference(row)) for row in discrepancies],
+    ))
+    lines.append("")
+
+    policies = sorted(catalog.get("policies", []), key=lambda row: row.get("policy_id", ""))
+    lines.extend(["## Project policies", ""])
+    lines.extend(_table(
+        ("Policy", "Provenance", "Summary"),
+        [(row.get("policy_id"), row.get("provenance"), row.get("summary")) for row in policies],
+    ))
+    lines.append("")
+
+    return "\n".join(lines)
+
+
+def write_report(catalog: dict[str, Any], path: Path, *, check: bool) -> bool:
+    """Check byte equality or write the deterministic UTF-8/LF report."""
+    expected = render_report(catalog).encode("utf-8")
+    try:
+        current = path.read_bytes()
+    except FileNotFoundError:
+        current = None
+    if check:
+        return current == expected
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(expected)
+    return True
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--write", action="store_true", help="write the generated report")
+    mode.add_argument("--check", action="store_true", help="fail if the checked-in report is stale")
+    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
+    arguments = parser.parse_args(argv)
+    try:
+        from tools.normative_catalog.validate import validate_catalog
+
+        catalog_path = arguments.repo_root / "specification" / "catalog" / "kmip-2.1.json"
+        report_path = arguments.repo_root / REPORT_PATH
+        catalog = validate_catalog(catalog_path.read_bytes(), arguments.repo_root)
+        valid = write_report(catalog, report_path, check=arguments.check)
+    except (OSError, ValueError) as error:
+        print(f"coverage report failed: {error}", file=sys.stderr)
+        return 1
+    if not valid:
+        print("coverage report is stale; run report.py --write", file=sys.stderr)
+        return 1
+    print(f"Coverage report {'verified' if arguments.check else 'written'}: {report_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

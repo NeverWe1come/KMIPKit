@@ -106,14 +106,21 @@ class CoverageReportTests(unittest.TestCase):
             }
         ]
         report = render_report(catalog)
-        self.assertIn("evidence_incomplete", report)
+        self.assertIn("evidence\\_incomplete", report)
         self.assertIn("unavailable", report)
         self.assertIn("KMIPKIT-DISC-001", report)
         self.assertIn("open", report)
 
     def test_escapes_markdown_html_newlines_and_control_characters(self) -> None:
         catalog = report_catalog()
-        catalog["requirements"][0]["summary"] = "| `x` [evil](https://bad) ![img](https://bad)\\\r\n\x1b"
+        catalog["discrepancies"] = [
+            {
+                "discrepancy_id": "KMIPKIT-DISC-001",
+                "summary": "| `x` [evil](https://bad) ![img](https://bad)\\\r\n\x1b",
+                "state": "open",
+                "source_refs": [],
+            }
+        ]
         report = render_report(catalog)
         self.assertNotIn("][https://bad]", report)
         self.assertNotIn("![img]", report)
@@ -121,7 +128,7 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("\\`", report)
         self.assertIn("\\[", report)
         self.assertIn("\\\\", report)
-        self.assertIn("\\u001B", report)
+        self.assertIn("\\\\u001B", report)
 
     def test_source_url_is_never_taken_from_untrusted_catalog_text(self) -> None:
         catalog = report_catalog()
