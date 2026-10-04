@@ -625,9 +625,16 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
         if not isinstance(clause["requirement_ids"], list):
             _fail("source clause requirement_ids must be an array")
         rationale = clause["exclusion_rationale"]
-        if clause["disposition"] == "requirement":
+        if clause["disposition"] in {"requirement", "profile_conditional"}:
             if not clause["requirement_ids"] or rationale is not None:
-                _fail("requirement clauses need requirement links and no exclusion rationale")
+                _fail("applicable clauses need requirement links and no exclusion rationale")
+        elif clause["disposition"] == "source_discrepancy":
+            if clause["requirement_ids"] and rationale is not None:
+                _fail("source-discrepancy clauses with linked requirements cannot have an exclusion rationale")
+            if not clause["requirement_ids"] and (
+                not isinstance(rationale, str) or not rationale.strip()
+            ):
+                _fail("unresolved source-discrepancy clauses need an exclusion rationale")
         elif clause["requirement_ids"] or not isinstance(rationale, str) or not rationale.strip():
             _fail("excluded source clauses need a rationale and no requirement links")
     return clauses
