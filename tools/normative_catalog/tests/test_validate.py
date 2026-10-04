@@ -1589,6 +1589,37 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertTrue(all(profile["encoding_requirements"] for profile in profiles))
         self.assertTrue(all(profile["applicability"] for profile in profiles))
 
+    def test_checked_in_catalog_preserves_pinned_source_discrepancies(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        document = json.loads(catalog_path.read_bytes())
+        discrepancies = document["discrepancies"]
+        cited_sections = {
+            (reference["source_id"], reference["section"])
+            for discrepancy in discrepancies
+            for reference in discrepancy["source_refs"]
+        }
+        expected_sections = {
+            ("KMIPKIT-SRC-spec", "11.5"),
+            ("KMIPKIT-SRC-profiles", "5.3.1"),
+            ("KMIPKIT-SRC-profiles", "5.9.7.13"),
+            ("KMIPKIT-SRC-profiles", "5.9.7.14"),
+            ("KMIPKIT-SRC-profiles", "6.1"),
+            ("KMIPKIT-SRC-profiles", "6.2"),
+            ("KMIPKIT-SRC-profiles", "6.3"),
+            ("KMIPKIT-SRC-profiles", "6.9"),
+            ("KMIPKIT-SRC-testcases", "2.48"),
+            ("KMIPKIT-SRC-testcases", "2.60"),
+            ("KMIPKIT-SRC-testcases", "2.68"),
+            ("KMIPKIT-SRC-testcases", "2.69"),
+            ("KMIPKIT-SRC-testcases", "2.90"),
+            ("KMIPKIT-SRC-testcases", "2.97"),
+        }
+
+        self.assertTrue(expected_sections.issubset(cited_sections))
+        self.assertTrue(discrepancies)
+        self.assertTrue(all(row["state"] == "open" for row in discrepancies))
+        self.assertTrue(all(row["decision_id"] is None for row in discrepancies))
+
     def test_rejects_unknown_top_level_fields(self) -> None:
         document = minimal_catalog()
         document["unexpected"] = []
