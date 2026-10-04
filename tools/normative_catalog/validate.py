@@ -1066,6 +1066,74 @@ COMPLETE_ELEMENT_COUNTS = {
     "bitmask": 3,
     "tag": 374,
 }
+RESERVED_TAGS = {
+    "420009": "(Reserved)", "420014": "(Reserved)", "420015": "(Reserved)",
+    "420016": "(Reserved)", "420017": "(Reserved)", "42001A": "(Reserved)",
+    "42001B": "(Reserved)", "42001C": "(Reserved)", "42001F": "(Reserved)",
+    "42002D": "(Reserved)", "42003B": "(Reserved)", "42005D": "(Reserved)",
+    "420065": "(Reserved)", "42006E": "(Reserved)", "420087": "(Reserved)",
+    "420090": "(Reserved)", "420091": "(Reserved)", "420137": "Reserved",
+    "42013E": "(Reserved)", "42013F": "(Reserved)",
+}
+EXPECTED_TAG_RANGES = (
+    ("unused", "000000 - 420000"),
+    ("reserved", "420XXX \u2013 42FFFF"),
+    ("unused", "430000 \u2013 53FFFF"),
+    ("extension", "540000 \u2013 54FFFF"),
+    ("unused", "550000 - FFFFFF"),
+)
+
+
+def _check_tag_registry(
+    elements: list[dict[str, Any]],
+    tag_ranges: list[dict[str, Any]],
+) -> None:
+    """Reconcile single-value Tag Enumeration rows and separate ranges."""
+    tags = [record for record in elements if record.get("kind") == "tag"]
+    if len(tags) != 374:
+        _fail(f"tag registry requires 374 single-value rows; found {len(tags)}")
+
+    observed_values: set[str] = set()
+    observed_reserved: dict[str, str] = {}
+    assigned_count = 0
+    for tag in tags:
+        value = tag.get("wire_value")
+        if not isinstance(value, str):
+            _fail("tag registry contains a missing wire value")
+        normalized = value[2:].upper() if value.lower().startswith("0x") else value.upper()
+        if re.fullmatch(r"[0-9A-F]{6}", normalized) is None:
+            _fail("tag registry contains a non-singleton wire value")
+        if normalized in observed_values:
+            _fail("tag registry contains a duplicate single-value tag")
+        observed_values.add(normalized)
+        if tag.get("element_id") != f"KMIPKIT-ELEM-TAG-{normalized}":
+            _fail("tag registry element ID does not match its wire value")
+        if tag.get("source_refs") != [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}]:
+            _fail("tag registry row has an incorrect source reference")
+        allocation = tag.get("allocation")
+        if allocation == "assigned":
+            assigned_count += 1
+            if normalized in RESERVED_TAGS:
+                _fail("reserved tag is incorrectly classified as assigned")
+        elif allocation == "reserved":
+            observed_reserved[normalized] = tag.get("name")
+        else:
+            _fail("tag registry singleton must be assigned or reserved")
+
+    if assigned_count != 354 or observed_reserved != RESERVED_TAGS:
+        _fail("tag registry does not match the 354 assigned and exact reserved tag rows")
+    if len(tag_ranges) != len(EXPECTED_TAG_RANGES):
+        _fail("tag registry requires five separate range rows")
+    for index, (tag_range, expected) in enumerate(zip(tag_ranges, EXPECTED_TAG_RANGES, strict=True), start=1):
+        allocation, value_range = expected
+        if (
+            tag_range.get("range_id") != f"KMIPKIT-RANGE-{index:03}"
+            or tag_range.get("source_order") != index
+            or tag_range.get("allocation") != allocation
+            or tag_range.get("value_range") != value_range
+            or tag_range.get("source_refs") != [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}]
+        ):
+            _fail("tag registry range does not match its exact source row")
 
 
 def _check_complete_inventory(catalog: dict[str, Any]) -> None:
@@ -1076,13 +1144,7 @@ def _check_complete_inventory(catalog: dict[str, Any]) -> None:
         actual = sum(row.get("kind") == kind for row in elements)
         if actual != expected:
             _fail(f"complete inventory requires {expected} {kind} records; found {actual}")
-    tag_rows = [row for row in elements if row.get("kind") == "tag"]
-    if sum(row.get("allocation") == "assigned" for row in tag_rows) != 354:
-        _fail("complete inventory requires 354 assigned single-value tags")
-    if sum(row.get("allocation") == "reserved" for row in tag_rows) != 20:
-        _fail("complete inventory requires 20 reserved single-value tags")
-    if len(catalog["tag_ranges"]) != 5:
-        _fail("complete inventory requires five separate tag-range records")
+    _check_tag_registry(elements, catalog["tag_ranges"])
 
     required_collections = ("source_clauses", "requirements", "profiles", "test_cases", "policies")
     if any(not catalog[name] for name in required_collections):
