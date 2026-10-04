@@ -33,7 +33,7 @@
 
 **Independent test**: `cargo test -p kmipkit-ttlv` verifies all eleven variants, exact numeric widths/sign, Unicode/text and byte preservation, exact Big Integer Item Value octets, Item Type derivation, child order, and required construction errors.
 
-- [ ] T010 [US1] Write and run failing tests for all eleven Item Types, public constructors, Item Type derivation, numeric boundaries, Unicode, bytes, exact Big Integer octets, ordered/repeated Structure children, and payload-free construction errors in `crates/kmipkit-ttlv/tests/value_model.rs` (Red commit).
+- [x] T010 [US1] Write and run failing tests for all eleven Item Types, public constructors, Item Type derivation, numeric boundaries, Unicode, bytes, exact Big Integer octets, ordered/repeated Structure children, and payload-free construction errors in `crates/kmipkit-ttlv/tests/value_model.rs` (Red `3314a6e`; coverage/redaction/citations fixed in `8ecb463` and `e66de47`; expected missing API Red confirmed with Rust 1.94; reviewed clean).
 - [ ] T011 [US1] Implement opaque `Value` constructors, `Item`, ordered `Structure`, borrowed `ValueView` exposure, and local `ModelError` in `crates/kmipkit-ttlv/src/value.rs`, `crates/kmipkit-ttlv/src/item.rs`, `crates/kmipkit-ttlv/src/structure.rs`, and `crates/kmipkit-ttlv/src/error.rs` (Green commit).
 - [ ] T012 [US1] Refactor the public modules and rustdoc to match `contracts/rust-value-model.md`; verify `ItemType` is derived from the private value representation and no unsafe code is introduced (Refactor commit).
 
