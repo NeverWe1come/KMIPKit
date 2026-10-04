@@ -69,8 +69,41 @@ result, and known workaround.
 - Changed code: 95 percent line minimum.
 - Normative requirement traceability: 100 percent.
 
-Use `cargo llvm-cov`. Report branch coverage initially and promote it to a gate
-after tool reliability is proven. Exclusions require a documented reason.
+Use `cargo llvm-cov`. CI collects LLVM JSON coverage on Linux, Windows, and
+macOS for the checked-out pull-request merge commit. The changed-code gate
+compares that exact tree with the pull-request base and derives executable Rust
+line counts from LLVM file segments across the three reports. It validates the
+parsed line and covered-line totals against each file's LLVM summary while
+checking function code-region schemas and file references. This preserves
+nested-region counts and prevents missing function records from shrinking the
+denominator. It requires at
+least 95 percent changed executable-line coverage. The 95 percent package gate
+applies to `kmipkit-ttlv` and `kmipkit-protocol`; 85 percent applies to
+`kmipkit-transport` and `kmipkit-ffi`; the workspace gate is 90 percent.
+
+The changed-code metric is `not applicable` when a pull request changes no
+executable Rust lines; the package and workspace gates still apply. Coverage
+is `unavailable` only when a complete scan finds no production function
+bodies. Each required platform then uploads an explicit unavailable status.
+Unreadable or unclassifiable source requires coverage, inline `#[cfg(test)]`
+modules fail preflight, and missing or malformed reports fail once production
+code is eligible. Keep tests in crate-level external test directories outside
+`src/`. Every Rust file under `src/` is included regardless of its name or
+nested directory; for example, a file named `parser_tests.rs` can still be
+selected as a production module with `#[path]`. Generated source may be excluded
+only with a documented reason.
+
+CI attempts branch coverage separately with nightly Rust only on a daily
+schedule; it does not run on pull requests. That job is informational and
+cannot gate pull-request success; promote branch coverage to a required check
+only in a separately reviewed change after its reliability has been
+demonstrated. Reproduce the local source, workflow-contract, and coverage
+parser checks with:
+
+```powershell
+pwsh -File .\scripts\tests\Test-Wsl.ps1
+python -m unittest discover -s scripts/tests -p 'test_*.py' -v
+```
 
 ## CI levels
 
