@@ -51,14 +51,14 @@ impl Error for ClientCauseCategory {}
 #[non_exhaustive]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ClientError {
-    /// A local validation failure; arbitrary source text is discarded.
+    /// A local validation failure with delivery evidence; arbitrary source text is discarded.
     Validation {
         /// The safe cause category.
         cause: ClientCauseCategory,
         /// The strongest available request delivery evidence.
         delivery_state: RequestDeliveryState,
     },
-    /// A protocol-processing failure with sanitized protocol cause.
+    /// A protocol-processing failure with required delivery evidence and sanitized cause.
     Protocol {
         /// The sanitized protocol cause.
         error: ProtocolError,
@@ -72,7 +72,7 @@ pub enum ClientError {
 }
 
 impl ClientError {
-    /// Creates a validation failure and immediately discards its source.
+    /// Creates a validation failure with delivery evidence and immediately discards its source.
     pub fn validation<E>(
         cause: ClientCauseCategory,
         delivery_state: RequestDeliveryState,
@@ -88,12 +88,9 @@ impl ClientError {
         }
     }
 
-    /// Wraps a protocol failure without restoring its discarded source text.
+    /// Wraps a protocol failure with delivery evidence and no discarded source text.
     #[must_use]
-    pub const fn protocol(
-        error: ProtocolError,
-        delivery_state: RequestDeliveryState,
-    ) -> Self {
+    pub const fn protocol(error: ProtocolError, delivery_state: RequestDeliveryState) -> Self {
         Self::Protocol {
             error,
             delivery_state,
@@ -136,7 +133,7 @@ impl ClientError {
         }
     }
 
-    /// Returns local request-delivery evidence, if this is a local failure.
+    /// Returns delivery evidence for a local failure, or `None` for a complete server result.
     #[must_use]
     pub const fn delivery_state(&self) -> Option<RequestDeliveryState> {
         match self {

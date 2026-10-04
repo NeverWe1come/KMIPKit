@@ -37,7 +37,7 @@ Implementation is gated on the normative inventory and catalog artifact from KMI
 
 - kmipkit-protocol owns result status/reason value wrappers, optional untrusted Result Message, value-level result validation, and safe protocol-processing errors.
 - kmipkit-transport owns the three request delivery states and attaches the strongest known state to transport failures.
-- kmipkit-client combines protocol, validation, transport, and server-result failures while preserving only safe cause categories and exposing delivery state when applicable.
+- kmipkit-client combines protocol, validation, transport, and server-result failures while preserving only safe cause categories and requiring exactly one delivery state for each local failure.
 - kmipkit re-exports the supported result and client error surface.
 - No changes to kmipkit-ffi, Java, or Python in this feature.
 

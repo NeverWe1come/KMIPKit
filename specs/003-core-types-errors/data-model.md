@@ -49,9 +49,9 @@ Represents local protocol-processing or value-validation failure. It retains a s
 
 Contains:
 - Safe category: validation, protocol processing, or transport.
-- Optional request delivery state when the failure occurred while handling a request.
+- Exactly one request delivery state for every local failure. Validation before transmission is `NotSent`; transmission or response-processing failures use the strongest observed state.
 - Safe cause category retained for explicit inspection.
 - Unsafe original source strings and payloads are discarded before retention, the original source is dropped during construction, and it is not reachable through the public error/source chain.
 - Safe default display that does not format cause text or protocol message text.
 
-A KMIP server operation failure is surfaced through a dedicated client-error case containing the complete KmipOperationResult. It is distinct from local ClientFailure and has no local request delivery state because a complete response was received.
+A KMIP server operation result is surfaced through a dedicated client-error case containing the complete KmipOperationResult. It is distinct from local ClientFailure and has no local request delivery state because a complete response was received.
