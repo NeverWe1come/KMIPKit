@@ -27,6 +27,54 @@ def _git(root: Path, *arguments: str) -> bytes:
     return result.stdout
 
 
+def _git_differs(root: Path, *arguments: str) -> bool:
+    """Use Git's status code so changed-path output is never buffered."""
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--quiet", *arguments],
+            cwd=root,
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError as error:
+        raise ImmutableSourceError("could not inspect the repository's Git tree") from error
+    if result.returncode not in {0, 1}:
+        raise ImmutableSourceError("could not inspect the repository's Git tree")
+    return result.returncode == 1
+
+
+def _has_untracked_sources(root: Path) -> bool:
+    """Read one byte of the NUL-delimited listing and stop at the first path."""
+    try:
+        process = subprocess.Popen(
+            ["git", "ls-files", "--others", "-z", "--", "specification/oasis/"],
+            cwd=root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError as error:
+        raise ImmutableSourceError("could not inspect the repository's Git tree") from error
+    if process.stdout is None:
+        process.kill()
+        process.wait()
+        raise ImmutableSourceError("Git did not provide a readable untracked-path stream")
+    try:
+        has_path = bool(process.stdout.read(1))
+        if has_path:
+            process.kill()
+        return_code = process.wait()
+    except OSError as error:
+        process.kill()
+        process.wait()
+        raise ImmutableSourceError("could not inspect untracked OASIS paths") from error
+    finally:
+        process.stdout.close()
+    if not has_path and return_code != 0:
+        raise ImmutableSourceError("could not inspect the repository's Git tree")
+    return has_path
+
+
 def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]:
     """Require every tracked and untracked OASIS path to match ``base_sha``."""
     root = repo_root.resolve(strict=True)
@@ -40,30 +88,24 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
     if resolved != base_sha:
         raise ImmutableSourceError("base SHA does not resolve to that exact commit")
 
-    working_tree_diff = _git(
+    working_tree_diff = _git_differs(
         root,
-        "diff",
         "--no-renames",
-        "--raw",
-        "--full-index",
         "--no-ext-diff",
         base_sha,
         "--",
         "specification/oasis/",
     )
-    index_diff = _git(
+    index_diff = _git_differs(
         root,
-        "diff",
         "--cached",
         "--no-renames",
-        "--raw",
-        "--full-index",
         "--no-ext-diff",
         base_sha,
         "--",
         "specification/oasis/",
     )
-    untracked = _git(root, "ls-files", "--others", "-z", "--", "specification/oasis/")
+    untracked = _has_untracked_sources(root)
     if working_tree_diff or index_diff or untracked:
         raise ImmutableSourceError("specification/oasis differs from the exact base commit")
     return {"base_sha": base_sha, "changed_path_count": 0}
