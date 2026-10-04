@@ -17,7 +17,7 @@
 | FR-006 | T004, T013, T015 |
 | FR-007 | T004, T012, T013, T014 |
 | FR-008 | T008, T009, T011 |
-| FR-009 | T005, T016, T017, T018, T019, T021, T025, T034, T035, T036 |
+| FR-009 | T005, T016, T017, T018, T019, T021, T025, T034, T035, T036, T037, T038, T039 |
 | FR-010 | T008, T011, T019, T020 |
 | FR-011 | T005, T020, T021 |
 | FR-012 | T009, T011 |
@@ -25,7 +25,7 @@
 | SC-002 | T010, T011 |
 | SC-003 | T013, T014, T015 |
 | SC-004 | T013, T014 |
-| SC-005 | T005, T016, T017, T018, T019, T021, T025, T034, T035, T036 |
+| SC-005 | T005, T016, T017, T018, T019, T021, T025, T034, T035, T036, T037, T038, T039 |
 | SC-006 | T008, T009, T011 |
 | SC-007 | T020, T021, T025 |
 | SC-008 | T008, T009, T011 |
@@ -104,6 +104,9 @@
 - [x] T034 [US3] Add regressions for LLVM export schema 3.1, per-function line summaries, function region start-line mapping, summary-only uncovered residuals, platform residual aggregation, and shared physical lines. RED evidence: commit `62752f5`; `python -m unittest discover -s scripts/tests -p 'test_coverage_gate.py' -v` ran 38 tests and exposed 9 failures against the prior parser (8 errors, 1 assertion failure; 3 Windows symlink skips).
 - [x] T035 [US3] Reconcile LLVM function summaries and physical file segments, validate region start-line mappings, and conservatively count unexplained uncovered residuals in package, workspace, and changed-code coverage. GREEN evidence: commit `b914cb4`; `python -m unittest discover -s scripts/tests -p 'test_coverage_gate.py'` passed 38 tests with 3 Windows symlink skips.
 - [x] T036 [US3] Update the approved coverage specification, data model, research record, and testing guide to state reviewed schema support and conservative summary reconciliation; verify the documentation and full script suite. Evidence: `python -m unittest discover -s scripts/tests -p 'test_*.py'` passed 45 tests with 3 Windows symlink skips; normative catalog tests passed 130 tests with 6 platform skips; catalog validation/report checks and `git diff --check` passed.
+- [x] T037 [US3] Add a multi-export regression where one `CoverageMapping` reports an uncovered shared line and another reports it covered; require the parser to preserve or reject the repeated workspace source path rather than reconciling across mappings. RED evidence: commit `863bab2`; the focused test failed because the parser returned without raising.
+- [x] T038 [US3] Reject repeated workspace source paths across distinct LLVM export mappings and duplicate file records within one mapping. GREEN evidence: commit `24a3567`; the focused regression passed and the coverage-gate suite passed 39 tests with 3 Windows symlink skips.
+- [ ] T039 [US3] Document the repeated-path fail-closed rule and the LLVM export-object boundary in the specification, data model, research record, and testing guide; rerun all script/catalog checks and obtain a scoped review.
 
 ## Dependencies
 
