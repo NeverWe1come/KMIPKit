@@ -128,7 +128,7 @@
 - [x] T038 Update `specification/catalog/README.md` and `docs/compliance/conformance.md` to explain the catalog/report, stable IDs, scope states, evidence gaps, and discrepancy lifecycle.
 - [x] T039 Run an independent QA review against every acceptance criterion and requirement; record check outputs and residual limitations in the draft PR.
 - [x] T040 Run an independent security review of file parsing, path handling, deterministic generation, dependencies, and untrusted catalog references; resolve actionable findings.
-- [ ] T041 Prepare and push a draft PR from `feature/KMIPKIT-0002-normative-inventory`; include Red, Green, Refactor evidence, source counts, checksum results, coverage report, risks, and the explicit no-profile-claim limitation.
+- [x] T041 Prepare and push a draft PR from `feature/KMIPKIT-0002-normative-inventory`; include Red, Green, Refactor evidence, source counts, checksum results, coverage report, risks, and the explicit no-profile-claim limitation. Draft: https://github.com/NeverWe1come/KMIPKit/pull/4
 
 ## Requirement-to-Task Traceability
 
