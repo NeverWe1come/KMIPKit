@@ -1771,6 +1771,19 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertEqual(validate(document)["record_count"], 5)
 
+    def test_source_clause_requires_valid_role_direction_scope_and_condition(self) -> None:
+        document = deviation_catalog(decision_record())
+        clause = document["source_clauses"][0]
+        clause.update({
+            "role": "client",
+            "direction": "client_to_server",
+            "scope_state": "invalid",
+            "condition": None,
+        })
+
+        with self.assertRaisesRegex(CatalogValidationError, "source clause scope"):
+            validate(document)
+
     def test_requirement_keyword_must_appear_in_a_linked_source_clause(self) -> None:
         document = deviation_catalog(decision_record())
         requirement = document["requirements"][0]
