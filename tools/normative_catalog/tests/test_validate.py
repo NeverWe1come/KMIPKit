@@ -1079,11 +1079,14 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-TEST-PROF-5-17-2": {"KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD"},
         }
         elements = {row["element_id"]: row for row in catalog["elements"]}
+        non_operation_ids = {
+            element_id for element_id, row in elements.items() if row["kind"] != "operation"
+        }
         cases = {row["test_id"]: row for row in catalog["test_cases"]}
 
         for test_id, expected in expected_by_test_id.items():
             with self.subTest(test_id=test_id):
-                actual = set(cases[test_id]["element_ids"])
+                actual = set(cases[test_id]["element_ids"]) & non_operation_ids
                 self.assertEqual(actual, expected)
                 for element_id in expected:
                     self.assertIn(test_id, elements[element_id]["test_case_ids"])

@@ -28107,7 +28107,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-41"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -28136,7 +28138,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-91"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -28164,7 +28168,10 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-12-6-2",
+        "KMIPKIT-TEST-PROF-5-12-6-3"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -28215,7 +28222,9 @@
       "parent_element_ids": [],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-11"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -28692,7 +28701,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-39"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -28804,7 +28815,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-63"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -28918,7 +28931,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-66"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -28947,7 +28962,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-40"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -28976,7 +28993,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-39"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -29256,7 +29275,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-17-2"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -29340,7 +29361,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-88"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -29593,7 +29616,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-91"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -29817,7 +29842,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-12-6-3"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -33266,7 +33293,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-12-6-2"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -33506,7 +33535,11 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-34",
+        "KMIPKIT-TEST-CN01-2-35",
+        "KMIPKIT-TEST-CN01-2-36"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -33554,7 +33587,10 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-37",
+        "KMIPKIT-TEST-CN01-2-38"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -33842,7 +33878,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-15"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -35042,7 +35080,11 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-16",
+        "KMIPKIT-TEST-CN01-2-17",
+        "KMIPKIT-TEST-CN01-2-18"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -36386,7 +36428,10 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-14",
+        "KMIPKIT-TEST-CN01-2-18"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -37130,7 +37175,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-34"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -37250,7 +37297,10 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-68",
+        "KMIPKIT-TEST-CN01-2-69"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -37274,7 +37324,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-35"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -37682,7 +37734,11 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-34",
+        "KMIPKIT-TEST-CN01-2-35",
+        "KMIPKIT-TEST-CN01-2-36"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -38378,7 +38434,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-108"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -38426,7 +38484,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-109"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -39482,7 +39542,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -39554,7 +39616,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -39578,7 +39642,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -39602,7 +39668,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -39626,7 +39694,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -39674,7 +39744,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -39698,7 +39770,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -39722,7 +39796,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -42938,7 +43014,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -42962,7 +43040,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -46322,7 +46402,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -46706,7 +46788,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -46778,7 +46862,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -47594,7 +47680,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-98"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -49452,7 +49540,10 @@
       "parent_element_ids": [],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-108",
+        "KMIPKIT-TEST-CN01-2-109"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -50194,7 +50285,10 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-12-6-2",
+        "KMIPKIT-TEST-PROF-5-12-6-3"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -50450,7 +50544,11 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-3-3-1",
+        "KMIPKIT-TEST-PROF-5-4-4-1",
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -52418,7 +52516,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-11"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -52510,7 +52610,11 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-34",
+        "KMIPKIT-TEST-CN01-2-35",
+        "KMIPKIT-TEST-CN01-2-37"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -52533,7 +52637,10 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-36",
+        "KMIPKIT-TEST-CN01-2-37"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -52556,7 +52663,10 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-12",
+        "KMIPKIT-TEST-PROF-5-11-3-2"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -52579,7 +52689,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-97"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -52602,7 +52714,18 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-100",
+        "KMIPKIT-TEST-CN01-2-101",
+        "KMIPKIT-TEST-CN01-2-65",
+        "KMIPKIT-TEST-CN01-2-89",
+        "KMIPKIT-TEST-CN01-2-95",
+        "KMIPKIT-TEST-CN01-2-96",
+        "KMIPKIT-TEST-CN01-2-98",
+        "KMIPKIT-TEST-CN01-2-99",
+        "KMIPKIT-TEST-PROF-5-12-6-2",
+        "KMIPKIT-TEST-PROF-5-12-6-3"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -55614,7 +55737,13 @@
       "parent_element_ids": [],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-11-3-1",
+        "KMIPKIT-TEST-PROF-5-12-6-1",
+        "KMIPKIT-TEST-PROF-5-3-3-1",
+        "KMIPKIT-TEST-PROF-5-4-4-1",
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -55680,7 +55809,13 @@
       "parent_element_ids": [],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-11-3-1",
+        "KMIPKIT-TEST-PROF-5-12-6-1",
+        "KMIPKIT-TEST-PROF-5-3-3-1",
+        "KMIPKIT-TEST-PROF-5-4-4-1",
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -55702,7 +55837,13 @@
       "parent_element_ids": [],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-11-3-1",
+        "KMIPKIT-TEST-PROF-5-12-6-1",
+        "KMIPKIT-TEST-PROF-5-3-3-1",
+        "KMIPKIT-TEST-PROF-5-4-4-1",
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -55988,7 +56129,10 @@
       "parent_element_ids": [],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-11-3-1",
+        "KMIPKIT-TEST-PROF-5-12-6-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -57232,7 +57376,11 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-61",
+        "KMIPKIT-TEST-CN01-2-62",
+        "KMIPKIT-TEST-CN01-2-63"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -58840,7 +58988,10 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-12-6-1",
+        "KMIPKIT-TEST-PROF-5-12-6-2"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -58982,7 +59133,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-42"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -59150,7 +59303,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-11"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -62465,7 +62620,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -62513,7 +62670,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -64083,7 +64242,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -64251,7 +64412,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -64275,7 +64438,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-64"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -64685,7 +64850,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -64709,7 +64876,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -64733,7 +64902,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -64950,7 +65121,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65022,7 +65195,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65046,7 +65221,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65070,7 +65247,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65094,7 +65273,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65118,7 +65299,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65142,7 +65325,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65166,7 +65351,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65190,7 +65377,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65214,7 +65403,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -65673,7 +65864,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-PROF-5-5-4-1"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -68433,7 +68626,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-13"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -68457,7 +68652,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-13"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -68481,7 +68678,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-38"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": []
@@ -93290,7 +93489,11 @@
         "KMIPKIT-REQ-PROF-6.4-004"
       ],
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-QUERY"
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+        "KMIPKIT-ELEM-OP-C2S-QUERY",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS"
       ],
       "raw_href": "test-cases/kmip-v2.1/mandatory/MSGENC-HTTPS-M-1-21.xml",
       "fixture_path": null,
@@ -93311,7 +93514,11 @@
       ],
       "requirement_ids": [],
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-QUERY"
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+        "KMIPKIT-ELEM-OP-C2S-QUERY",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS"
       ],
       "raw_href": "test-cases/kmip-v2.1/mandatory/MSGENC-XML-M-1-21.xml",
       "fixture_path": null,
@@ -93332,7 +93539,42 @@
       ],
       "requirement_ids": [],
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-QUERY"
+        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-CERTIFICATE-00000001",
+        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-OPAQUE-OBJECT-00000008",
+        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-PGP-KEY-00000009",
+        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-PRIVATE-KEY-00000004",
+        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-PUBLIC-KEY-00000003",
+        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-SECRET-DATA-00000007",
+        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-SPLIT-KEY-00000005",
+        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-SYMMETRIC-KEY-00000002",
+        "KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OBJECTS-00000002",
+        "KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OPERATIONS-00000001",
+        "KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESPONSE-TOO-LARGE-00000002",
+        "KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-OPERATION-FAILED-00000001",
+        "KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-SUCCESS-00000000",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+        "KMIPKIT-ELEM-OP-C2S-QUERY",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+        "KMIPKIT-ELEM-TAG-42000D",
+        "KMIPKIT-ELEM-TAG-42000F",
+        "KMIPKIT-ELEM-TAG-420050",
+        "KMIPKIT-ELEM-TAG-420057",
+        "KMIPKIT-ELEM-TAG-420069",
+        "KMIPKIT-ELEM-TAG-42006A",
+        "KMIPKIT-ELEM-TAG-42006B",
+        "KMIPKIT-ELEM-TAG-420074",
+        "KMIPKIT-ELEM-TAG-420077",
+        "KMIPKIT-ELEM-TAG-420078",
+        "KMIPKIT-ELEM-TAG-420079",
+        "KMIPKIT-ELEM-TAG-42007A",
+        "KMIPKIT-ELEM-TAG-42007B",
+        "KMIPKIT-ELEM-TAG-42007C",
+        "KMIPKIT-ELEM-TAG-42007D",
+        "KMIPKIT-ELEM-TAG-42007E",
+        "KMIPKIT-ELEM-TAG-42007F",
+        "KMIPKIT-ELEM-TAG-420092"
       ],
       "raw_href": "test-cases/kmip-v2.1/mandatory/MSGENC-JSON-M-1-21.xml",
       "fixture_path": null,
@@ -94825,7 +95067,12 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-6.26-004"
       ],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
       "raw_href": "test-cases/kmip-v2.1/mandatory/SASED-M-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -94846,7 +95093,9 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-6.26-004"
       ],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"
+      ],
       "raw_href": "test-cases/kmip-v2.1/mandatory/SASED-M-2-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -94888,7 +95137,13 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-6.28-006"
       ],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE"
+      ],
       "raw_href": "test-cases/kmip-v2.1/mandatory/TL-M-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -94909,7 +95164,13 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-6.28-006"
       ],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+        "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-AES-00000003",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE"
+      ],
       "raw_href": "test-cases/kmip-v2.1/mandatory/TL-M-2-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -94931,6 +95192,10 @@
         "KMIPKIT-REQ-PROF-6.28-006"
       ],
       "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+        "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
         "KMIPKIT-ELEM-OP-C2S-GET",
         "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
         "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
@@ -95018,6 +95283,7 @@
       ],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
         "KMIPKIT-ELEM-OP-C2S-CREATE"
       ],
       "raw_href": "test-cases/kmip-v2.1/mandatory/QS-M-2-21.xml",
@@ -95205,7 +95471,11 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
+        "KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-63-SUBJECT-DISTINGUISHED-NAME"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-CERTATTR-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95220,7 +95490,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-CREATE-SD-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95235,7 +95507,10 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-TAG-420105",
+        "KMIPKIT-ELEM-TAG-420106"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-CS-CORVAL-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95251,6 +95526,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-256-00000006",
         "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-DERIVEKEY-1-21.xml",
@@ -95268,6 +95544,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA256-00000009",
         "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-DERIVEKEY-2-21.xml",
@@ -95285,6 +95562,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001",
         "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-DERIVEKEY-3-21.xml",
@@ -95302,6 +95580,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001",
         "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-DERIVEKEY-4-21.xml",
@@ -95319,6 +95598,8 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001",
+        "KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-256-00000006",
         "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-DERIVEKEY-5-21.xml",
@@ -95588,7 +95869,12 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-ECPRIVATEKEY-00000006",
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
+        "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-ECC-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95603,7 +95889,12 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-8-00000004",
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
+        "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-ECC-2-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95618,7 +95909,11 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
+        "KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-ECC-3-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95634,6 +95929,9 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDSA-00000006",
+        "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY",
+        "KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY",
         "KMIPKIT-ELEM-OP-C2S-SIGN",
         "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY"
       ],
@@ -95651,7 +95949,10 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDSA-00000006",
+        "KMIPKIT-ELEM-TAG-420107"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-ECDSA-SIGN-DIGESTEDDATA-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95666,7 +95967,10 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
+        "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-EXTRACTABLE-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95681,7 +95985,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-NAME"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-I18N-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95696,7 +96002,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-I18N-2-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -95711,7 +96019,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-I18N-3-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96017,7 +96327,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-MDO-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96033,7 +96345,8 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-LOCATE"
+        "KMIPKIT-ELEM-OP-C2S-LOCATE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-MDO-2-21.xml",
       "fixture_path": null,
@@ -96050,7 +96363,9 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-LOCATE"
+        "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
+        "KMIPKIT-ELEM-OP-C2S-LOCATE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-MDO-3-21.xml",
       "fixture_path": null,
@@ -96067,7 +96382,8 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-LOCATE"
+        "KMIPKIT-ELEM-OP-C2S-LOCATE",
+        "KMIPKIT-ELEM-TAG-420058"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-OFFSET-1-21.xml",
       "fixture_path": null,
@@ -96084,6 +96400,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
         "KMIPKIT-ELEM-OP-C2S-LOCATE"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-OFFSET-2-21.xml",
@@ -96100,7 +96417,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-LINK"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-PGP-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96133,6 +96452,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-12-00000016",
         "KMIPKIT-ELEM-OP-C2S-GET"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-PKCS12-1-21.xml",
@@ -96150,6 +96470,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-12-00000016",
         "KMIPKIT-ELEM-OP-C2S-GET"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-PKCS12-2-21.xml",
@@ -96460,7 +96781,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-RNG-ATTR-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96475,7 +96798,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-RNG-ATTR-2-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96505,7 +96830,10 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
+        "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-SENSITIVE-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96571,7 +96899,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-SJ-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96586,7 +96916,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-SJ-2-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96601,7 +96933,9 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SPLIT-KEY"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-SJ-2-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96616,7 +96950,10 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-SPLIT-KEY-METHOD-XOR-00000001",
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-SJ-4-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96632,6 +96969,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-STREAM-ENC-1-21.xml",
@@ -96649,6 +96987,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
         "KMIPKIT-ELEM-OP-C2S-DECRYPT",
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT"
       ],
@@ -96667,6 +97006,7 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-STREAM-ENCDEC-1-21.xml",
@@ -96786,7 +97126,10 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-AS-REGISTERED-00000002",
+        "KMIPKIT-ELEM-ENUMERATION-KEY-WRAP-TYPE"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-WRAP-1-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
@@ -96801,7 +97144,10 @@
       "mandatory_status": "unspecified",
       "profile_ids": [],
       "requirement_ids": [],
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-NOT-WRAPPED-00000001",
+        "KMIPKIT-ELEM-ENUMERATION-KEY-WRAP-TYPE"
+      ],
       "raw_href": "test-cases/kmip-v2.1/TC-WRAP-2-21.xml",
       "fixture_path": null,
       "fixture_availability": "unavailable",
