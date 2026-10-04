@@ -11,22 +11,28 @@ use kmipkit_protocol::{
 #[test]
 fn known_status_values_match_catalog() {
     let values = ResultStatus::known_values();
-    assert!(!values.is_empty());
+    assert_ne!(values, []);
 
     for (status, expected_name) in values {
         assert_eq!(status.known_name(), Some(*expected_name));
-        assert_eq!(ResultStatus::from_raw(status.raw()).known_name(), Some(*expected_name));
+        assert_eq!(
+            ResultStatus::from_raw(status.raw()).known_name(),
+            Some(*expected_name)
+        );
     }
 }
 
 #[test]
 fn known_reason_values_match_catalog() {
     let values = ResultReason::known_values();
-    assert!(!values.is_empty());
+    assert_ne!(values, []);
 
     for (reason, expected_name) in values {
         assert_eq!(reason.known_name(), Some(*expected_name));
-        assert_eq!(ResultReason::from_raw(reason.raw()).known_name(), Some(*expected_name));
+        assert_eq!(
+            ResultReason::from_raw(reason.raw()).known_name(),
+            Some(*expected_name)
+        );
     }
 }
 
@@ -53,17 +59,17 @@ fn result_message_preserves_presence_and_text() {
     let empty = KmipOperationResult::new(success, None, Some(ResultMessage::new(String::new())))
         .expect("valid success result with empty message");
     let text = "arbitrary server text: \u{1f512} \nnot trusted";
-    let present = KmipOperationResult::new(
-        success,
-        None,
-        Some(ResultMessage::new(text.to_owned())),
-    )
-    .expect("valid success result with message");
+    let present =
+        KmipOperationResult::new(success, None, Some(ResultMessage::new(text.to_owned())))
+            .expect("valid success result with message");
 
     assert!(absent.message().is_none());
     assert_eq!(empty.message().map(ResultMessage::as_bytes), Some(&[][..]));
     assert_eq!(present.message().map(ResultMessage::as_str), Some(text));
-    assert_eq!(present.message().map(ResultMessage::as_bytes), Some(text.as_bytes()));
+    assert_eq!(
+        present.message().map(ResultMessage::as_bytes),
+        Some(text.as_bytes())
+    );
 }
 
 #[test]
@@ -83,13 +89,15 @@ fn success_forbids_a_reason() {
 
 #[test]
 fn other_statuses_do_not_gain_reason_presence_rules() {
-    let pending = known_status("Pending");
-    let undone = known_status("Undone");
+    let pending = known_status("Operation Pending");
+    let undone = known_status("Operation Undone");
     let unknown = ResultStatus::from_raw(u32::MAX);
 
     for status in [pending, undone, unknown] {
         assert!(KmipOperationResult::new(status, None, None).is_ok());
-        assert!(KmipOperationResult::new(status, Some(ResultReason::from_raw(u32::MAX)), None).is_ok());
+        assert!(
+            KmipOperationResult::new(status, Some(ResultReason::from_raw(u32::MAX)), None).is_ok()
+        );
     }
 }
 

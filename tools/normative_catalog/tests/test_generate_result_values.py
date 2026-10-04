@@ -56,8 +56,8 @@ class ResultValueGeneratorTests(unittest.TestCase):
     def test_renders_only_assigned_numeric_values_in_stable_order(self) -> None:
         rendered = render_rust(small_catalog())
 
-        self.assertIn('(ResultStatus::from_raw(0x00000000), "Success")', rendered)
-        self.assertIn('(ResultReason::from_raw(0x00000004), "Invalid Message")', rendered)
+        self.assertIn('(ResultStatus::from_raw(0x0000_0000), "Success")', rendered)
+        self.assertIn('(ResultReason::from_raw(0x0000_0004), "Invalid Message")', rendered)
         self.assertNotIn("Extensions", rendered)
         self.assertNotIn("Reserved", rendered)
         self.assertLess(rendered.index("RESULT_STATUSES"), rendered.index("RESULT_REASONS"))
