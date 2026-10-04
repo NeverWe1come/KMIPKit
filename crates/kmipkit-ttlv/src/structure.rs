@@ -29,8 +29,8 @@ impl Structure {
     /// # Errors
     ///
     /// This signature reserves a local construction error for Structure
-    /// constraints. Nesting depth enforcement is added in a later task, so this
-    /// implementation currently accepts each item.
+    /// constraints. Nesting depth is not yet enforced, so this method currently
+    /// appends each item.
     pub fn try_push(&mut self, item: Item) -> Result<(), ModelError> {
         self.children.push(item);
         Ok(())

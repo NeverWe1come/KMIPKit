@@ -35,7 +35,7 @@
 
 - [x] T010 [US1] Write and run failing tests for all eleven Item Types, public constructors, Item Type derivation, numeric boundaries, Unicode, bytes, exact Big Integer octets, ordered/repeated Structure children, and payload-free construction errors in `crates/kmipkit-ttlv/tests/value_model.rs` (Red `3314a6e`; coverage/redaction/citations fixed in `8ecb463` and `e66de47`; strict Clippy test fixes `1db6566`; expected missing API Red confirmed with Rust 1.94; all scoped reviews clean).
 - [x] T011 [US1] Implement opaque `Value` constructors, `Item`, ordered `Structure`, borrowed `ValueView` exposure, and local `ModelError` in `crates/kmipkit-ttlv/src/value.rs`, `crates/kmipkit-ttlv/src/item.rs`, `crates/kmipkit-ttlv/src/structure.rs`, and `crates/kmipkit-ttlv/src/error.rs` (Green `27c429d`; all-feature tests 19/19, format and full crate Clippy passed on Rust 1.94; review approved; depth/zeroization remain assigned to T014/T017).
-- [ ] T012 [US1] Refactor the public modules and rustdoc to match `contracts/rust-value-model.md`; verify `ItemType` is derived from the private value representation and no unsafe code is introduced (Refactor commit).
+- [x] T012 [US1] Refactor the public modules and rustdoc to match `contracts/rust-value-model.md`; verify `ItemType` is derived from the private value representation and no unsafe code is introduced (Refactor; Rust 1.94 format, all-feature tests/doctest, Clippy, and rustdoc passed).
 
 ## Phase 4: User Story 2 — Preserve tags, unknown values, and Structure bounds (Priority: P1)
 
