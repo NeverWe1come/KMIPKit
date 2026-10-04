@@ -15,13 +15,13 @@
 
 **Purpose**: Confirm reviewed source material before implementation.
 
-- [ ] T001 Rebase feature/KMIPKIT-0003-core-types-errors onto active release/1.0.0 after KMIPKIT-0002 is merged; confirm specification/catalog/kmip-2.1.json and specification/catalog/coverage-report.md include Result Status and Result Reason before implementation begins.
+- [x] T001 Rebase feature/KMIPKIT-0003-core-types-errors onto active release/1.0.0 after KMIPKIT-0002 is merged; confirm specification/catalog/kmip-2.1.json and specification/catalog/coverage-report.md include Result Status and Result Reason before implementation begins. Evidence: the merged catalog contains the Result Status and Result Reason enumeration records at Specification §§11.47 and 11.46; the generated report includes both stable enumeration IDs and their child value IDs/source sections.
 
 ## Phase 2: Foundational
 
 **Purpose**: Establish normative traceability before implementation.
 
-- [ ] T002 Create specification/compliance/requirements/KMIPKIT-0003.csv using the merged inventory record schema, with stable IDs, exact OASIS clauses, normative level, scope, implementation locations, test IDs, and status.
+- [x] T002 Create specification/compliance/requirements/KMIPKIT-0003.csv using the merged inventory record schema, with stable IDs, exact OASIS clauses, normative level, scope, implementation locations, test IDs, and status.
 
 ## Phase 3: User Story 1 - Inspect a KMIP Operation Result (Priority: P1)
 
