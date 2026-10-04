@@ -31,7 +31,9 @@ impl RequestDeliveryState {
         }
     }
 
-    /// Advances after a read yields bytes; a zero-byte read adds no evidence.
+    /// Advances after a response read yields bytes, once request transmission has begun.
+    ///
+    /// A zero-byte read adds no evidence.
     #[must_use]
     pub const fn response_bytes_received(self, byte_count: usize) -> Self {
         match (self, byte_count) {
