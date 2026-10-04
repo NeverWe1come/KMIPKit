@@ -1212,6 +1212,26 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Table 315", discrepancy["summary"])
         self.assertIn("RNG Retrieve Errors", discrepancy["summary"])
 
+    def test_requirement_test_evidence_is_bidirectional_or_has_gap_reason(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        expected_by_requirement: dict[str, set[str]] = {
+            row["requirement_id"]: set() for row in catalog["requirements"]
+        }
+        for test_case in catalog["test_cases"]:
+            for requirement_id in test_case["requirement_ids"]:
+                expected_by_requirement[requirement_id].add(test_case["test_id"])
+
+        for requirement in catalog["requirements"]:
+            requirement_id = requirement["requirement_id"]
+            with self.subTest(requirement_id=requirement_id):
+                actual = set(requirement["test_case_ids"])
+                self.assertEqual(actual, expected_by_requirement[requirement_id])
+                if not actual:
+                    review_note = requirement["review_note"]
+                    self.assertIsInstance(review_note, str)
+                    self.assertIn("official Test Cases", review_note)
+                    self.assertIn("pinned", review_note)
+
     def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
         cases = (
             ("MAX_DEPTH", 1, '{"schema_version":{"nested":{"again":1}}}', "nesting depth"),
