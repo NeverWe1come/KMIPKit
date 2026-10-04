@@ -1,10 +1,10 @@
 # Quickstart: TTLV Codec Review Scenarios
 
-The KMIPKIT-0004 generic model API is available in the updated release tree. The codec calls below are proposed by `contracts/rust-ttlv-codec.md`; these scenarios become an executable doctest/integration example when the codec is implemented. Reserved-tag behavior follows proposed ADR-0011 and remains implementation-gated until review.
+The KMIPKIT-0004 generic model API is available in the updated release tree. The codec calls below are proposed by `contracts/rust-ttlv-codec.md`; these review scenarios are not an approved public API or authorization to encode secret-bearing values. The current `AGENTS.md` §8 prohibition remains in force until a human accepts ADR-0012 and approves this feature specification. The final API must restrict any approved secret-bearing output to an explicitly caller-requested KMIP operation and must not expose general-purpose serialization. Reserved-tag behavior follows proposed ADR-0011 and remains implementation-gated until review.
 
-## Encode a request item
+## Review an encoder vector
 
-The merged 004 constructors are stable. The codec function below is the proposed 0005 contract and becomes executable when implemented.
+The merged 004 constructors are stable. The codec function below is the proposed 0005 contract and becomes executable when implemented. This non-secret vector demonstrates wire bytes only; it does not resolve or authorize a standalone secret-bearing serialization API.
 
 ```rust
 fn encode_example() -> Result<(), Box<dyn std::error::Error>> {

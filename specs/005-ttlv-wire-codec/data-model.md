@@ -14,9 +14,9 @@ Limit values are per operation. The codec has no global mutable limit state. A l
 
 ## Encoded TTLV Owner
 
-`EncodedTtlv` owns one successful encoder result, which may contain credentials or secret key material. It exposes the bytes through an immutable borrow for protocol transport and zeroizes its initialized bytes and backing capacity when dropped. It is not cloneable, formattable, or generally serializable and cannot be converted into an ordinary `Vec<u8>` through its public API. Copies made by callers or external TLS/runtime libraries are outside KMIPKit's zeroization guarantee.
+The proposed `EncodedTtlv` owner holds one successful encoder result, which may contain credentials or secret key material. Only after human acceptance of ADR-0012 and approval of this feature may it expose bytes through an immutable borrow for an explicitly caller-requested operation's transport write; it zeroizes its initialized bytes and backing capacity when dropped. It must not be cloneable, formattable, generally serializable, or convertible into an ordinary `Vec<u8>` through its public API. Copies made by callers or external TLS/runtime libraries are outside KMIPKit's zeroization guarantee. This owner is a proposed design and does not authorize secret-bearing wire encoding while either approval gate is unmet.
 
-The repository rule against serializing secrets is applied to diagnostics, general-purpose serialization, and persistence. TTLV wire encoding remains permitted only as the representation needed to carry a caller-requested KMIP exchange; the owner must live through the protocol write and be dropped afterward. The encoded bytes must not be logged, formatted, persisted, or copied unnecessarily.
+`AGENTS.md` §8 currently prohibits serialization of credentials, keys, secret material, and raw KMIP bodies; that rule remains in force. ADR-0012 proposes only a conditional exception for temporary outbound TTLV generated solely to carry an explicitly caller-requested KMIP operation. If both human approval gates are satisfied, the owner must live through the transport write and be dropped afterward. The proposal does not permit diagnostics, general-purpose serialization, serialization traits, logging, formatting, error inclusion, persistence, or arbitrary inbound raw-byte retention or re-emission. Encoded bytes must not be copied unnecessarily.
 
 ## TTLV Item
 
@@ -59,6 +59,7 @@ A decoder error records a stable class and safe position metadata (byte offset, 
 ## Open Model Interactions
 
 - A decoded Tag must enter the 004 allocation-checked Tag/Item model. Proposed ADR-0011 recommends rejecting a received Reserved Tag before model construction; that policy remains gated on review.
+- FR-013's proposed outbound exception remains gated on human acceptance of ADR-0012 and approval of this feature specification. The generic `encode(&Item)` proposal does not carry caller-operation intent; its visibility and invocation path must be resolved before approval or implementation.
 - The generic catalog requirement for schema-defined Structure field ordering remains unassigned pending named follow-on typed operation/model specification(s). The codec only guarantees preservation of the supplied child order.
 - Unsupported Type bytes have no 004 value variant and are rejected by this codec draft.
 - Structure schema field order is not derivable from a generic tree. The encoder preserves model order; typed protocol models must construct known Structures in their OASIS-defined order.

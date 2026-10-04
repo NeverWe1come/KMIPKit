@@ -129,6 +129,17 @@ ownership transfer, copies deliberately made from borrowed views, temporary
 stack or register copies, and copies retained by Java, Python, or another
 runtime are outside this Rust model's guarantee.
 
+The current policy in `AGENTS.md` §8 prohibits serialization of credentials,
+private keys, secret key material, OTPs, tickets, and raw KMIP bodies. KMIPKIT-0005
+FR-013 and Proposed ADR-0012 only propose a narrow exception for temporary
+outbound TTLV generated solely to carry an explicitly caller-requested KMIP
+operation, held in a zeroizing KMIPKit-owned buffer through the transport write.
+That exception is not in force unless a human accepts ADR-0012 and approves the
+KMIPKIT-0005 feature specification. It does not authorize diagnostics,
+general-purpose serialization, logging, formatting, error inclusion,
+persistence, or arbitrary inbound raw-byte retention or re-emission. ADR-0011
+addresses received Reserved Tags and does not authorize wire encoding.
+
 ## Errors
 
 The shared Rust result/error contract is exposed by the `kmipkit` facade:

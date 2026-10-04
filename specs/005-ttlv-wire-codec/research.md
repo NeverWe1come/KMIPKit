@@ -41,9 +41,11 @@ An independent source audit verified the pinned copy against its SHA-256 digest 
 
 ### Encoded output ownership and secret handling
 
-**Selected**: Return a dedicated `EncodedTtlv` owner backed by the already pinned `zeroize` 1.9.0 dependency. Callers can borrow immutable bytes for a protocol write; dropping the owner clears the initialized bytes and backing capacity. Do not expose cloning, formatting, general-purpose serialization, mutation, or extraction into an ordinary `Vec<u8>`. Caller-created copies and copies inside external TLS/runtime libraries remain outside KMIPKit's zeroization guarantee.
+**Proposed, not authorized**: If ADR-0012 is accepted by a human and this feature specification is approved, return a dedicated `EncodedTtlv` owner backed by the already pinned `zeroize` 1.9.0 dependency. The request path would borrow immutable bytes for the transport write; dropping the owner would clear the initialized bytes and backing capacity. Do not expose cloning, formatting, general-purpose serialization, mutation, or extraction into an ordinary `Vec<u8>`. Caller-created copies and copies inside external TLS/runtime libraries remain outside KMIPKit's zeroization guarantee. Until both gates are satisfied, the existing `AGENTS.md` §8 prohibition remains in force.
 
-**Policy boundary**: The repository prohibition on serializing credentials, key material, and raw KMIP bodies applies to diagnostics, general-purpose serialization, and persistence. TTLV wire encoding is permitted only as the protocol representation required for a caller-requested KMIP exchange. The encoded bytes remain payload-free from error and logging paths and must not be persisted or copied unnecessarily.
+**Policy boundary**: FR-013 is a KMIPKit policy proposal and has no OASIS source clause. ADR-0012 proposes a single narrow exception: temporary outbound TTLV generated solely to carry an explicitly caller-requested KMIP operation, with KMIPKit retaining the zeroizing owner through the transport write. The proposal preserves the bans on diagnostic or general-purpose serialization, serialization traits, persistence, logging, formatting, error inclusion, and arbitrary inbound raw-byte retention or re-emission. It does not authorize this path before ADR-0012 is human-accepted and KMIPKIT-0005 is approved.
+
+**Unresolved API boundary**: The contract's proposed public `encode(&Item)` function does not itself carry evidence that the caller requested a KMIP operation. Before feature approval, resolve its visibility and invocation path so the request-only policy can be enforced without exposing a general-purpose serialization API. If no compliant boundary is defined, the secret-bearing wire-encoding exception cannot be implemented.
 
 **Alternative**: Return `Vec<u8>` and zeroize only partial buffers after errors. Rejected because a successful buffer can contain credentials or key material and ordinary Vec ownership does not clear it on drop.
 
@@ -58,6 +60,10 @@ The U32 Item Length ceiling is unconditional even if a caller raises `max_messag
 ### Reserved Tags
 
 Proposed ADR-0011 selects rejection of received Reserved Tags before generic model construction. This is the recommended project policy, not an OASIS clarification, and remains an implementation blocker until reviewed/accepted. Opaque preservation would require a separate wire representation incompatible with the current checked-Tag tree.
+
+### Secret-bearing wire-encoding policy
+
+Proposed ADR-0012 is separate from ADR-0011 and remains Proposed. ADR-0011 addresses received Reserved Tags and does not authorize serialization. The current `AGENTS.md` §8 prohibition remains in force unless ADR-0012 is accepted by a human and this feature specification is approved. The proposed exception is limited to request-bound outbound TTLV in a zeroizing owner through the transport write; it does not allow diagnostic/general-purpose serialization, persistence, or arbitrary inbound raw-byte retention/re-emission. There is no OASIS clause for FR-013.
 
 ### Unknown Item Type codes and Enumeration values
 

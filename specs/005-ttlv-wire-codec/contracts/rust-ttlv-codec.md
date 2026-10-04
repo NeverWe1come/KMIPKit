@@ -2,6 +2,8 @@
 
 **Status**: Proposed public Rust contract for review. Final names and signatures must be reconciled with the merged KMIPKIT-0004 crate API before implementation.
 
+Secret-bearing wire encoding is not authorized by this proposed contract. `AGENTS.md` §8 remains in force until a human accepts ADR-0012 and approves the KMIPKIT-0005 feature specification. The proposed `encode(&Item)` signature does not carry caller-operation intent; resolve its visibility and invocation path before feature approval. If the API cannot enforce request-only output without general-purpose serialization, do not implement the proposed exception.
+
 ## Public operations
 
 ```rust
@@ -39,7 +41,7 @@ The signatures are a design proposal layered on the merged 004 API. The model cu
 
 ## Behavioral contract
 
-- `encode` emits exactly one canonical Item in an `EncodedTtlv` owner. It validates the complete tree, checks depth/count and predicted output size, then reserves the complete output capacity before copying payload bytes. It preserves Structure child order and has no fallible exit after payload copying begins; if that invariant cannot be maintained, partial output is zeroized on every error path. Successful output is zeroized when its owner is dropped.
+- After both FR-013 approval gates and the request-bound API design are approved, the outbound operation path may emit exactly one canonical Item in an `EncodedTtlv` owner. It validates the complete tree, checks depth/count and predicted output size, then reserves the complete output capacity before copying payload bytes. It preserves Structure child order and has no fallible exit after payload copying begins; if that invariant cannot be maintained, partial output is zeroized on every error path. Successful output is zeroized when its owner is dropped. Before approval, this is a proposal only and cannot be used to serialize secret-bearing data.
 - `decode` accepts exactly one complete Item and rejects empty input or trailing bytes. It validates lengths and available bytes before payload allocation.
 - Both default entry points use 16 MiB, 64 Structure levels, and 100,000 Items.
 - `decode_with_limits` may use lower or higher message/count limits. Maximum Structure depth remains 64 unless the 004 model contract is deliberately changed.
@@ -47,10 +49,10 @@ The signatures are a design proposal layered on the merged 004 API. The model cu
 - The decoder rejects unsupported Item Type bytes, type-specific invalid lengths, invalid UTF-8, noncanonical Boolean encodings, truncated values/padding, arithmetic overflow, parent-boundary violations, and configured limit excess.
 - The codec rejects an empty Big Integer as KMIPKit project policy. OASIS §10.1.2 requires a two's-complement byte sequence with a length multiple of eight but does not explicitly set a minimum length.
 - Padding octets whose values are not constrained by OASIS are accepted at the required extent; the encoder writes zero for those padding octets. Big Integer leading sign-extension bytes are part of the represented Item Value and are not discarded.
-- A Reserved Tag received from the wire is rejected before construction under proposed ADR-0011; implementation remains gated on review/acceptance of that ADR.
+- A Reserved Tag received from the wire is rejected before construction under proposed ADR-0011; implementation remains gated on review/acceptance of that ADR. Decoding must not retain or expose arbitrary original inbound raw bytes for later re-emission.
 - No operation performs I/O, retries requests, validates a KMIP operation schema, or logs payloads.
-- Protocol TTLV encoding is the wire transformation required to carry a caller-requested KMIP exchange. The prohibition on serializing secrets applies to diagnostics, general-purpose serialization, and persistence. Encoded bytes are exposed only as an immutable borrow for protocol transport; callers must not log, format, persist, or make unnecessary copies of them.
-- Keep the `EncodedTtlv` owner alive until a synchronous protocol write using its borrowed bytes has completed, then drop it to clear KMIPKit-owned storage. The codec itself does no I/O and does not control copies made by a transport implementation.
+- Proposed FR-013 is a KMIPKit policy requirement, not an OASIS requirement. Only after ADR-0012 is human-accepted and the feature specification approved may temporary outbound TTLV be generated solely for an explicitly caller-requested KMIP operation. The proposal preserves the prohibition on diagnostics, general-purpose serialization, persistence, logging, formatting, error inclusion, and arbitrary inbound raw-byte retention/re-emission.
+- If the exception is approved, keep the `EncodedTtlv` owner alive until the transport write using its borrowed bytes has completed, then drop it to clear KMIPKit-owned storage. The codec itself does no I/O and does not control copies made by a transport implementation.
 
 ## Errors
 

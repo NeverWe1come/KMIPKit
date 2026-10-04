@@ -8,7 +8,7 @@
 
 Add canonical TTLV encoding and bounded decoding for the eleven KMIP 2.1 Item Types represented by the KMIPKIT-0004 generic tree. Apply OASIS big-endian headers, exact type-specific lengths, value widths, and padding. Preserve child order, unknown enum/mask bits, and accepted extension Tags. Check message, Structure depth, and Item-count limits before allocation. Keep transport and operation/schema handling outside the codec.
 
-The 004 model implementation landed in `release/1.0.0` at `cf6c4c0d87c4de7dc159aba046a8fe5638ccc6bf`; implementation remains gated on approval of this feature and review/acceptance of proposed ADR-0011 for inbound Reserved Tags.
+The 004 model implementation landed in `release/1.0.0` at `cf6c4c0d87c4de7dc159aba046a8fe5638ccc6bf`; implementation remains gated on approval of this feature, review/acceptance of proposed ADR-0011 for inbound Reserved Tags, and human acceptance of proposed ADR-0012 for the narrowly scoped outbound wire-encoding policy. The existing `AGENTS.md` §8 prohibition remains in force until both the ADR-0012 and feature-spec gates are satisfied.
 
 ## Technical Context
 
@@ -19,7 +19,7 @@ The 004 model implementation landed in `release/1.0.0` at `cf6c4c0d87c4de7dc159a
 **Target Platform**: Rust workspace supported platforms.
 **Project Type**: Public Rust library crate/module in `crates/kmipkit-ttlv`.
 **Performance Goals**: No throughput target is specified. Length and limit checks must be bounded and avoid body-sized allocation before validation.
-**Constraints**: No unsafe code; no raw payload diagnostics; no automatic retries; all integer length arithmetic checked; no OASIS download/scraping; no hand-edited generated output. One item per call, no I/O or schema validation.
+**Constraints**: No unsafe code; no raw payload diagnostics; no automatic retries; all integer length arithmetic checked; no OASIS download/scraping; no hand-edited generated output. One item per call, no I/O or schema validation. Secret-bearing outbound TTLV is only a proposed conditional exception and is not authorized before ADR-0012 acceptance and feature approval.
 **Scale/Scope**: 11 Item Types; 16 MiB default message cap; 64 Structure-level cap; 100,000 Items by default. See `research.md` for exact limit counting and configuration semantics.
 
 ## Constitution Check
@@ -31,12 +31,12 @@ The 004 model implementation landed in `release/1.0.0` at `cf6c4c0d87c4de7dc159a
 | I. Specification and traceability | Pass for design; completion gated | Stable FR/NR IDs and exact clauses are recorded. Implementation and executable verification links remain required. |
 | II. Test first and evidence based conformance | Pass with mandatory TDD | Tasks require separate Red, Green, and Refactor commits, OASIS vectors, malformed inputs, and coverage evidence. |
 | III. One core, explicit language boundaries | Pass | Rust-only codec over the common model; FFI and language adapters are out of scope. |
-| IV. Secure defaults and lossless handling | Pass with policy gate | Input lengths and limits are checked before allocation; model values and order are preserved. ADR-0011 proposes rejection of Reserved Tags; `max_structure_depth` is caller-configurable from 0 to the model cap of 64. |
+| IV. Secure defaults and lossless handling | Pass with policy gates | Input lengths and limits are checked before allocation; model values and order are preserved. ADR-0011 proposes rejection of Reserved Tags. ADR-0012 proposes a request-only outbound TTLV exception; the current prohibition remains in force until ADR-0012 is accepted and this feature is approved. `max_structure_depth` is caller-configurable from 0 to the model cap of 64. |
 | V. Human governed, reviewable changes | Pass with hard gates | Dedicated worktree and branch. No code until this spec is approved and dependencies/policies are resolved. Only a human approves or merges the PR. |
 
 ### Post-design gate
 
-No architecture boundary changes are proposed. Codec remains below protocol/message and transport layers. The parser operates on bounded slices and the encoder on model data. The design does not claim OASIS profile conformance or schema validity. Proposed ADR-0011 recommends rejection of received Reserved Tags and must be accepted before implementing that decoder branch.
+No architecture boundary change is approved by this draft. The codec remains below protocol/message and transport layers. The parser operates on bounded slices and the encoder on model data. The design does not claim OASIS profile conformance or schema validity. Proposed ADR-0011 recommends rejection of received Reserved Tags and must be accepted before implementing that decoder branch. Proposed ADR-0012 is a separate human-acceptance gate; the current prohibition on secret-bearing serialization remains in force. The proposed `encode(&Item)` API does not establish caller-operation intent, so its final visibility and invocation path must be resolved before feature approval.
 
 ## Project Structure
 
@@ -55,7 +55,7 @@ specs/005-ttlv-wire-codec/
 └── tasks.md
 ```
 
-Related repository decision record: `docs/adr/0011-reserved-tag-decoding-policy.md`.
+Related repository decision records: `docs/adr/0011-reserved-tag-decoding-policy.md` and `docs/adr/0012-caller-requested-wire-encoding-policy.md`.
 
 ### Source and verification
 
@@ -84,17 +84,19 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 - PR #14 is merged; verify the actual public model API and accepted ADR-0010 on the updated release base.
 - Record `KMIPKIT-REQ-SPEC-10.1.2-001` as follow-on typed-protocol scope: the generic codec preserves supplied child order but cannot validate operation schemas. Keep the 1.0 traceability gate open until every applicable client 1.0 Structure has approved typed-spec ownership, implementation, and executable order-verification references.
 - Obtain review/acceptance of proposed ADR-0011 resolving `KMIPKIT-DISC-037`; update the catalog decision reference before coding.
+- Obtain human acceptance of proposed ADR-0012 and approval of this feature before relying on FR-013. Resolve a request-bound encoding API that does not expose general-purpose serialization; if this cannot be enforced, do not implement the proposed exception.
 
 ### Phase 1 — Contracts and data invariants
 
 - Define per-call limits, error classes, exact one-item API, and canonical output in `contracts/rust-ttlv-codec.md`.
 - Define Item Length/padding accounting for each Item Type in `data-model.md`.
+- Keep the FR-013 proposal conditional on both human approval gates; do not treat a generic `encode(&Item)` call as sufficient evidence of caller-requested operation intent.
 - Keep operation field-order/schema checking and transport framing outside this crate.
 
 ### Phase 2 — Encoder (strict TDD)
 
 - Write failing exact byte vectors for all eleven types and nested Structures, plus U32 maximum/one-over output-size planner boundaries without multi-gigabyte allocation.
-- Validate the complete tree, compute bounded lengths, and reserve the complete zeroizing output before copying payload bytes; then emit canonical encoding with no fallible exits after payload copying begins. Return the result in `EncodedTtlv`, which exposes an immutable byte borrow and zeroizes its owned bytes and capacity on drop.
+- After the FR-013 gates and request-bound API design are approved, validate the complete tree, compute bounded lengths, and reserve the complete zeroizing output before copying payload bytes; then emit canonical encoding with no fallible exits after payload copying begins. Return the result in `EncodedTtlv`, which exposes an immutable byte borrow and zeroizes its owned bytes and capacity on drop. Until then, do not implement secret-bearing wire encoding.
 - Refactor the writer for one focused responsibility, document invariants, and verify checked arithmetic and error redaction.
 
 ### Phase 3 — Decoder (strict TDD)
@@ -114,6 +116,8 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 - KMIPKIT-0004 implementation PR #14 and KMIPKIT-0003 core types/errors are merged into the release ancestry.
 - ADR-0010 is Accepted in the updated release tree.
 - Proposed ADR-0011 needs review/acceptance for received Reserved Tags; the branch remains gated for that path.
+- Proposed ADR-0012 must be accepted by a human and this feature specification approved before any secret-bearing outbound TTLV exception is used. Acceptance does not authorize diagnostics, general-purpose serialization, persistence, or arbitrary inbound raw-byte retention/re-emission.
+- Resolve a request-only API/invocation boundary before feature approval; the standalone proposed `encode(&Item)` contract does not currently carry operation intent.
 - Depth is configurable from 0 to the generic model's hard maximum of 64; exceeding 64 requires a separately reviewed model change.
 
 ## Risks and Mitigations
@@ -122,8 +126,9 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 - **Allocation denial of service**: Check total input size and declared/cumulative lengths before value allocation; enforce item/depth counters incrementally.
 - **Loss of wire padding bytes**: Specify semantic canonicalization and zero-fill output; do not promise byte identity for accepted noncanonical padding.
 - **Reserved-tag policy**: Keep Reserved-tag decoding gated until proposed ADR-0011 is reviewed; never fold it into unknown extension preservation.
+- **Secret-bearing wire policy**: Keep the current prohibition in force until ADR-0012 is accepted and the feature is approved. Keep the proposal limited to temporary outbound TTLV for an explicit caller-requested operation, owned in a zeroizing buffer through the transport write; preserve all diagnostic, logging, formatting, general-purpose serialization, persistence, and arbitrary inbound raw-byte exclusions.
 - **Model API integration**: Reconcile implementation with the merged 004 API and its accepted ADR-0010; do not code against guessed interfaces.
 
 ## Complexity Tracking
 
-No constitution exception or new architecture layer is proposed. The reserved-tag policy remains a formal review gate; the empty Big Integer and U32 Item Length behaviors are explicit project constraints in this draft.
+No constitution exception or new architecture layer is approved by this draft. Reserved-tag handling and the narrowly proposed secret-bearing wire policy remain separate formal review gates; the empty Big Integer and U32 Item Length behaviors are explicit project constraints in this draft.

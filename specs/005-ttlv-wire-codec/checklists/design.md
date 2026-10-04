@@ -20,11 +20,13 @@
 - [x] Default message/depth/element limits and counting semantics are explicit.
 - [x] Errors contain no raw body or value payload.
 - [x] Successful encoder output uses a borrow-only owner that zeroizes its initialized bytes and backing capacity on drop.
-- [x] The protocol-wire encoding exception is distinguished from diagnostic/general-purpose serialization and persistence.
+- [x] The draft identifies the secret-bearing protocol-wire encoding as a conditional proposal and preserves the current prohibition until approval.
 - [x] Encoded output cannot be cloned, formatted, generally serialized, mutated, or extracted as an ordinary byte vector through the public API.
 - [x] Unsupported Type behavior, exact-one-item behavior, and trailing data are explicit.
 - [x] Padding octet acceptance follows the source; canonical encoder fill is labeled as project policy.
 - [ ] Proposed ADR-0011 has been reviewed/accepted, resolving `KMIPKIT-DISC-037`.
+- [ ] Proposed ADR-0012 has been human-accepted and this feature specification approved before any secret-bearing wire-encoding exception is implemented.
+- [ ] The public API/invocation path enforces encoding solely for an explicitly caller-requested operation and does not expose general-purpose serialization; the current proposed `encode(&Item)` contract does not resolve this boundary.
 - [x] Depth configurability is bounded to 0–64, matching the 004 model hard cap and preserving a configurable decoder limit.
 
 ## Architecture and compatibility

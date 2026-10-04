@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0005-ttlv-wire-codec`
 **Created**: 2026-10-04
-**Status**: Draft — KMIPKIT-0004 is merged into `release/1.0.0` at `cf6c4c0d87c4de7dc159aba046a8fe5638ccc6bf`; implementation remains gated on approval of this feature and the proposed Reserved-tag policy in ADR-0011.
+**Status**: Draft — KMIPKIT-0004 is merged into `release/1.0.0` at `cf6c4c0d87c4de7dc159aba046a8fe5638ccc6bf`; implementation remains gated on human approval of this feature, acceptance of the proposed Reserved-tag policy in ADR-0011, and acceptance of the proposed secret-bearing wire-encoding policy in ADR-0012.
 **Input**: KMIPKit roadmap: implement the strict TTLV encoder and decoder with bounded resource use after the generic TTLV value model.
 
 ## Clarification Record
@@ -11,6 +11,7 @@ This specification uses the pinned local OASIS KMIP Specification v2.1 source. I
 
 - **Normative padding interpretation**: §10.1.3 defines Item Length as the Item Value length. §10.1.5 explicitly excludes padding from Item Length for Integer, Enumeration, Text String, Byte String, and Interval; Structure Item Length includes all child encodings and their padding. §10.1.2 explicitly includes Big Integer sign-extension padding in Item Length. The decoder therefore computes these cases separately. OASIS does not assign a required byte value to the four-byte or trailing string/byte padding; the decoder accepts any padding octets of the required length, while the encoder emits zero octets for deterministic canonical output. This zero-fill is a KMIPKit canonicalization rule, not an OASIS requirement.
 - **Open reserved-tag policy**: `KMIPKIT-DISC-037` remains open in `specification/catalog/kmip-2.1.json`. It lists two alternatives for a received Reserved tag: reject it, or preserve it through a separate opaque representation. The 004 public generic tree accepts allocation-checked Tags and does not define an opaque Reserved-tag node. This specification proposes rejection in ADR-0011 but does not claim an OASIS interpretation. The decision remains an implementation blocker until the proposed ADR is reviewed.
+- **Open secret-bearing wire-encoding policy**: `AGENTS.md` §8 currently prohibits serialization of credentials, keys, secret material, and raw KMIP bodies. This draft proposes a narrow outbound TTLV exception in ADR-0012; the proposal grants no permission while ADR-0012 is Proposed or this feature specification is unapproved. FR-013 is a KMIPKit policy requirement, not an OASIS requirement. The final API must also resolve how encoding is restricted to an explicitly caller-requested operation without exposing general-purpose serialization.
 - **Depth configuration boundary**: security defaults are 16 MiB per message, 64 Structure levels, and 100,000 elements. The existing 004 model caps constructed trees at 64 levels. The codec limit may be configured downward; callers cannot raise it above 64 under this feature.
 - **Big Integer empty value**: OASIS §10.1.2 requires a Big Integer to be represented as a big-endian two's-complement byte sequence and requires its length to be a multiple of eight, but does not state a minimum length. KMIPKit will reject a zero-length Big Integer as a project validity rule because an empty octet sequence cannot represent a two's-complement integer. This is not presented as an explicit OASIS minimum-length clause.
 - **Item Length representability**: Every Item Length field is unsigned 32-bit under §10.1.3. A raised per-call message limit never permits any individual Item Value to exceed `u32::MAX`; implementation must check this independently of platform size and caller limits.
@@ -34,7 +35,7 @@ A KMIP client developer needs to turn a valid generic TTLV item into the standar
 4. **Given** an Integer, Enumeration, or Interval, **When** it is encoded, **Then** exactly four padding bytes follow the value and are excluded from Item Length.
 5. **Given** a Text String or Byte String, **When** it is encoded, **Then** the minimum number of following padding bytes aligns the complete item to an eight-byte boundary and those bytes are excluded from Item Length.
 6. **Given** a model tree that fails validation or size/limit preflight, **When** encoding fails, **Then** no value payload has been copied into an output buffer. Once payload copying begins, no fallible operation remains.
-7. **Given** an encoded Item that may contain credential or key material, **When** encoding succeeds, **Then** the caller receives a non-cloneable zeroizing owner, can borrow its bytes for protocol transport, and the owner clears its storage when dropped.
+7. **Given** a caller-requested KMIP operation and both FR-013 approval gates have been satisfied, **When** its outbound TTLV is generated, **Then** KMIPKit retains it in a non-cloneable zeroizing owner through the transport write, exposes only a borrow to transport, and clears its owned storage when dropped. This scenario is not authorized while either gate is unmet.
 
 ### User Story 2 — Decode bounded TTLV input into generic values (Priority: P1)
 
@@ -96,7 +97,7 @@ A KMIP client developer needs per-call resource limits so malformed or hostile s
 - **KMIPKIT-0005-FR-010**: The decoder MUST reject a received Tag classified as Reserved under §11.56 before constructing a public generic Item, as proposed in ADR-0011. This project decision remains gated on review/acceptance of that ADR and is not an OASIS clarification. Other Tags rejected by the 004 allocation-checked Tag API MUST return an error and MUST NOT enter the public generic tree.
 - **KMIPKIT-0005-FR-011**: Every normative requirement applicable to this codec MUST be linked to its exact OASIS source, stable catalog/project requirement ID, implementation location, and executable verification before feature completion. The schema-order catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` is not implemented by generic order preservation alone. It MUST remain open until every applicable client 1.0 Structure is assigned to an approved typed protocol specification and has implementation plus executable order-verification references in the catalog; merely naming future specifications is insufficient. This global traceability gate does not block implementation of the generic codec, which preserves caller order but cannot validate operation schemas.
 - **KMIPKIT-0005-FR-012**: The encoder MUST validate the complete Item tree, calculate all lengths and enforce limits, and reserve the complete output capacity before copying any value payload. After the first payload byte is copied, encoding MUST have no fallible exit. If implementation cannot guarantee that invariant, every error path MUST zeroize the partial output buffer before releasing it. Successful output MUST be returned in a dedicated `EncodedTtlv` owner that zeroizes its initialized bytes and backing capacity when dropped; it MUST expose bytes only through an immutable borrow and MUST NOT implement `Clone`, `Copy`, `Debug`, `Display`, or general-purpose serialization traits, nor allow extraction into an ordinary `Vec<u8>`.
-- **KMIPKIT-0005-FR-013**: The security rule against serializing credentials, keys, secret material, and raw KMIP bodies MUST prohibit diagnostic/general-purpose serialization and persistence, while allowing only the TTLV wire encoding required for a caller-requested KMIP exchange. Encoded bytes MUST NOT be logged, formatted, or included in errors; callers MUST avoid persistence and unnecessary copies. Copies made by a caller or external TLS/runtime library are outside KMIPKit's zeroization guarantee.
+- **KMIPKIT-0005-FR-013 (KMIPKit policy; not an OASIS requirement)**: The current policy in `AGENTS.md` §8 remains in force unless and until a human accepts ADR-0012 and approves this feature specification. Only after both approvals, this feature MAY produce a temporary outbound TTLV representation solely to carry a KMIP operation explicitly requested by the caller. KMIPKit MUST retain that representation in a dedicated zeroizing owner through the transport write and clear its owned storage when the owner is dropped. This proposal MUST NOT authorize diagnostic or general-purpose serialization, serialization traits, logging, formatting, inclusion in errors, persistence, or arbitrary inbound raw-byte retention or re-emission. Callers MUST avoid unnecessary copies; copies made by a caller or external TLS/runtime library remain outside KMIPKit's zeroization guarantee. The proposed public `encode(&Item)` contract does not itself carry caller-operation intent, so its final visibility and invocation path MUST be resolved before feature approval; if it cannot enforce this boundary, the exception MUST NOT be implemented.
 
 ### Normative Traceability
 
@@ -108,6 +109,12 @@ A KMIP client developer needs per-call resource limits so malformed or hostile s
 | KMIPKIT-0005-NR-004 | OASIS KMIP Specification v2.1, §10.1.3 | Item Length is a 32-bit big-endian value counting Item Value bytes; allowed lengths depend on Item Type. | Exact length vectors, fixed-width invalid-length negatives, overflow and boundary tests. |
 | KMIPKIT-0005-NR-005 | OASIS KMIP Specification v2.1, §10.1.5 | Structure length includes encoded sub-items and padding; Integer, Enumeration, Text String, Byte String, and Interval lengths exclude their following padding; string/byte padding is minimal and 4-byte values receive four following padding bytes. | Exact byte vectors and decoder boundary tests. Catalog IDs: `KMIPKIT-REQ-SPEC-10.1.5-001-001`, `KMIPKIT-REQ-SPEC-10.1.5-001-002`. |
 | KMIPKIT-0005-NR-006 | OASIS KMIP Specification v2.1, Chapter 11 introduction and §11.56 | Implementations SHALL NOT use Tags marked Reserved; §11.56 assigns the 0x42 and 0x54 prefixes to specification and extension Tags. | Encoder uses the checked Tag policy from 004 and MUST NOT emit a Reserved Tag. Inbound Reserved-tag disposition follows proposed ADR-0011; other allocation-rejected Tags are rejected by the checked Tag API. Catalog IDs `KMIPKIT-REQ-SPEC-11-001` and `KMIPKIT-REQ-SPEC-11.56-001`. |
+
+### KMIPKit Policy Traceability
+
+| Requirement ID | Source and status | Policy/owner coverage and verification |
+|---|---|---|
+| KMIPKIT-0005-FR-013 | `AGENTS.md` §8 is the current policy baseline. Proposed ADR-0012 and this Draft requirement propose a conditional exception; there is no OASIS clause for this project policy. | T001 is the hard gate for ADR/spec approval and an enforceable request-only invocation design. KMIPKIT-0005 codec policy/owner tests verify the zeroizing borrow-only owner and absence of formatting, logging, error, general-purpose serialization, persistence, and arbitrary inbound raw-byte retention/re-emission paths. The first client feature/spec owns the separate request-path integration test, which must pass before any client sends secret-bearing TTLV; KMIPKIT-0005 does not claim that client test exists. |
 
 ### Key Entities
 
@@ -135,6 +142,7 @@ A KMIP client developer needs per-call resource limits so malformed or hostile s
 - The generic value model's allocation-checked Tag and 64-level cap are upstream API contracts merged in PR #14.
 - Canonical re-encoding is expected; byte-for-byte preservation is guaranteed only for fields the generic model represents, not for unsupported Item Types or discarded padding bytes.
 - Decoder handling of Reserved tags follows the proposed project policy in ADR-0011; acceptance of that policy remains open.
+- The proposed FR-013 exception is not in force. The final codec API must resolve how request-only encoding is enforced; the proposed standalone `encode(&Item)` signature is not approved as a general-purpose serialization API.
 
 ## Implementation Gates
 
@@ -142,5 +150,7 @@ Do not start implementation until all of the following are true:
 
 1. This feature specification and implementation plan are approved under repository governance.
 2. Proposed ADR-0011 receives review/acceptance, resolving `KMIPKIT-DISC-037` by rejecting received Reserved Tags before generic model construction.
-3. Reconfirm the accepted ADR-0010 Tag allocation policy and use the merged 004 public APIs.
-4. `CodecLimits.max_structure_depth` remains configurable from 0 through the model's hard maximum of 64; no implementation may claim support above that limit without a separate reviewed change.
+3. Proposed ADR-0012 is accepted by a human before any implementation relies on the FR-013 exception; acceptance of the ADR alone does not approve this feature.
+4. Resolve and approve a public API/invocation path that restricts secret-bearing TTLV output to an explicitly caller-requested KMIP operation and does not expose general-purpose serialization. If the boundary cannot be enforced, do not implement the proposed exception.
+5. Reconfirm the accepted ADR-0010 Tag allocation policy and use the merged 004 public APIs.
+6. `CodecLimits.max_structure_depth` remains configurable from 0 through the model's hard maximum of 64; no implementation may claim support above that limit without a separate reviewed change.
