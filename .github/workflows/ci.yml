@@ -15,7 +15,7 @@ jobs:
   core:
     if: github.event_name == 'pull_request'
     name: Core / ${{ matrix.os }} / Rust ${{ matrix.rust }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && github.event.pull_request.head.repo.full_name == github.repository && fromJSON('["self-hosted","Linux","ARM64"]') || matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -51,7 +51,7 @@ jobs:
   script-contracts:
     if: github.event_name == 'pull_request'
     name: Script contracts / ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && github.event.pull_request.head.repo.full_name == github.repository && fromJSON('["self-hosted","Linux","ARM64"]') || matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -79,7 +79,7 @@ jobs:
   normative-inventory:
     if: github.event_name == 'pull_request'
     name: Normative inventory / immutable sources and coverage
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.full_name == github.repository && fromJSON('["self-hosted","Linux","ARM64"]') || 'ubuntu-latest' }}
     steps:
       - name: Checkout pull request merge commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
@@ -109,7 +109,7 @@ jobs:
   coverage:
     if: github.event_name == 'pull_request'
     name: Coverage / ${{ matrix.platform }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && github.event.pull_request.head.repo.full_name == github.repository && fromJSON('["self-hosted","Linux","ARM64"]') || matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -178,7 +178,7 @@ jobs:
   coverage-gate:
     if: always() && github.event_name == 'pull_request'
     name: Coverage gate / three platforms
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.full_name == github.repository && fromJSON('["self-hosted","Linux","ARM64"]') || 'ubuntu-latest' }}
     needs: coverage
     steps:
       - name: Require successful platform coverage collection
@@ -206,7 +206,7 @@ jobs:
 
   branch-coverage:
     name: Informational branch coverage / nightly
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, ARM64]
     if: github.event_name == 'schedule'
     continue-on-error: true
     steps:
