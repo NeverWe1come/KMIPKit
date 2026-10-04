@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
+import stat
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -76,6 +80,11 @@ ELEMENT_KINDS = {
     "object_type", "object_structure", "attribute", "attribute_structure",
     "operation_structure", "tag", "enumeration", "enumeration_value", "bitmask",
     "bitmask_value", "option", "result", "extension_rule",
+}
+TEST_CASE_FIELDS = {
+    "test_id", "official_case_id", "source_id", "source_section", "evidence_category",
+    "mandatory_status", "profile_ids", "requirement_ids", "element_ids", "raw_href",
+    "fixture_path", "fixture_availability", "mapping_confidence",
 }
 
 
@@ -224,6 +233,47 @@ def _source_refs(value: Any, sources: set[str], field: str) -> None:
             _fail(f"{field} contains an invalid source section")
 
 
+def _git_tree(root: Path) -> dict[str, tuple[str, str]]:
+    try:
+        result = subprocess.run(
+            ["git", "ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", "specification/oasis/"],
+            cwd=root,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise CatalogValidationError("could not read the pinned OASIS Git tree metadata") from error
+    tree: dict[str, tuple[str, str]] = {}
+    for entry in result.stdout.split(b"\0"):
+        if not entry:
+            continue
+        try:
+            metadata, path_bytes = entry.split(b"\t", 1)
+            mode, object_type, _object_id = metadata.decode("ascii").split(" ", 2)
+            path = path_bytes.decode("utf-8", errors="strict")
+        except (ValueError, UnicodeDecodeError) as error:
+            raise CatalogValidationError("Git returned malformed OASIS tree metadata") from error
+        tree[path] = (mode, object_type)
+    if not tree:
+        _fail("the pinned OASIS Git tree is empty")
+    return tree
+
+
+def _reject_reparse_points(root: Path, tree: dict[str, tuple[str, str]]) -> None:
+    reparse_attribute = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    for relative, (mode, object_type) in tree.items():
+        if mode == "120000" or object_type != "blob":
+            _fail("the pinned OASIS tree contains a symlink or non-file entry")
+        path = root / Path(relative)
+        try:
+            metadata = path.lstat()
+        except OSError as error:
+            raise CatalogValidationError("a pinned OASIS tree entry is unavailable") from error
+        if stat.S_ISLNK(metadata.st_mode) or getattr(metadata, "st_file_attributes", 0) & reparse_attribute:
+            _fail("the pinned OASIS tree contains a symlink or reparse point")
+
+
 def _check_identifiers(catalog: dict[str, Any]) -> None:
     seen: set[str] = set()
     for collection, (field, pattern) in TOP_LEVEL_ID_FIELDS.items():
@@ -250,7 +300,7 @@ def _check_link_ids(record: dict[str, Any], field: str, known_ids: set[str], col
         _fail(f"{collection} contains an unresolved {field} reference")
 
 
-def _check_source_records(catalog: dict[str, Any], root: Path) -> set[str]:
+def _check_source_records(catalog: dict[str, Any], root: Path, tree: dict[str, tuple[str, str]]) -> set[str]:
     expected = _source_manifest(root)
     sources = catalog["sources"]
     if not isinstance(sources, list) or len(sources) != len(expected):
@@ -269,6 +319,8 @@ def _check_source_records(catalog: dict[str, Any], root: Path) -> set[str]:
         source = by_id.get(identifier)
         if source is None or any(source.get(key) != value for key, value in metadata.items()):
             _fail(f"pinned source metadata or checksum mismatch for {identifier}")
+        if metadata["local_path"] not in tree:
+            _fail("pinned source metadata does not exist in the Git tree")
     return set(expected)
 
 
@@ -317,7 +369,12 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
     return clauses
 
 
-def _check_semantics(catalog: dict[str, Any], sources: set[str], clauses: set[str]) -> None:
+def _check_semantics(
+    catalog: dict[str, Any],
+    sources: set[str],
+    clauses: set[str],
+    tree: dict[str, tuple[str, str]],
+) -> None:
     requirements = {record["requirement_id"]: record for record in catalog["requirements"]}
     elements = _records_by_id(catalog, "elements", "element_id")
     profiles = _records_by_id(catalog, "profiles", "profile_id")
@@ -371,6 +428,54 @@ def _check_semantics(catalog: dict[str, Any], sources: set[str], clauses: set[st
         if decision_id is not None and decision_id not in decisions:
             _fail("requirement refers to an unresolved decision")
 
+    for test_case in catalog["test_cases"]:
+        if not isinstance(test_case, dict) or set(test_case) != TEST_CASE_FIELDS:
+            _fail("test case has missing or unknown fields")
+        if not isinstance(test_case["official_case_id"], str) or not test_case["official_case_id"].strip():
+            _fail("test case must retain its official case ID")
+        if test_case["source_id"] not in {"KMIPKIT-SRC-testcases", "KMIPKIT-SRC-profiles"}:
+            _fail("test case points to a source that cannot define test evidence")
+        if not re.fullmatch(r"[0-9]+(?:\.[0-9]+)*", test_case["source_section"]):
+            _fail("test case has an invalid source section")
+        if test_case["mandatory_status"] not in {"mandatory", "optional", "unspecified"}:
+            _fail("test case has an invalid mandatory/optional status")
+        if test_case["fixture_availability"] not in {"available", "unavailable"}:
+            _fail("test case has an invalid fixture availability")
+        if test_case["mapping_confidence"] not in {"explicit", "strong", "weak", "unmapped"}:
+            _fail("test case has an invalid mapping confidence")
+        for field, valid_ids, name in (
+            ("profile_ids", set(profiles), "test case"),
+            ("requirement_ids", set(requirements), "test case"),
+            ("element_ids", set(elements), "test case"),
+        ):
+            _check_link_ids(test_case, field, valid_ids, name)
+        raw_href = test_case["raw_href"]
+        if raw_href is not None and not isinstance(raw_href, str):
+            _fail("test case raw_href must be a string or null")
+        fixture_path = test_case["fixture_path"]
+        if fixture_path is None:
+            if test_case["fixture_availability"] != "unavailable":
+                _fail("test case without a local fixture path must be unavailable")
+            continue
+        if not isinstance(fixture_path, str) or "\\" in fixture_path:
+            _fail("fixture path must be a repository-relative POSIX path")
+        parts = fixture_path.split("/")
+        if (
+            fixture_path.startswith("/")
+            or re.match(r"^[A-Za-z]:", fixture_path)
+            or not fixture_path.startswith("specification/oasis/kmip-2.1/")
+            or any(part in {"", ".", ".."} for part in parts)
+        ):
+            _fail("fixture path escapes the pinned OASIS directory")
+        metadata = tree.get(fixture_path)
+        if metadata is None:
+            _fail("fixture path is absent from the pinned Git tree")
+        mode, object_type = metadata
+        if mode == "120000" or object_type != "blob":
+            _fail("fixture path resolves to a symlink or non-file entry")
+        if test_case["fixture_availability"] != "available":
+            _fail("fixture path and availability status disagree")
+
     for tag_range in catalog["tag_ranges"]:
         if tag_range.get("allocation") not in {"unused", "reserved", "extension"}:
             _fail("tag range must have a range allocation")
@@ -414,10 +519,12 @@ def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
     _reject_surrogates(catalog)
     catalog = _validate_catalog_header(catalog)
 
-    sources = _check_source_records(catalog, repo_root)
+    tree = _git_tree(repo_root)
+    _reject_reparse_points(repo_root, tree)
+    sources = _check_source_records(catalog, repo_root, tree)
     clauses = _check_clauses(catalog, sources)
     _check_identifiers(catalog)
-    _check_semantics(catalog, sources, clauses)
+    _check_semantics(catalog, sources, clauses, tree)
 
     for source in catalog["sources"]:
         path = repo_root / source["local_path"]
@@ -428,4 +535,32 @@ def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
         if digest != source["sha256"]:
             _fail(f"pinned source checksum mismatch for {source['source_id']}")
 
-    return {"source_count": len(sources), "clause_count": len(clauses), "record_count": sum(len(catalog[key]) for key in TOP_LEVEL_FIELDS - {"schema_version"})}
+    return {
+        "source_count": len(sources),
+        "clause_count": len(clauses),
+        "record_count": sum(len(catalog[key]) for key in TOP_LEVEL_FIELDS - {"schema_version"}),
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
+    arguments = parser.parse_args(argv)
+    root = arguments.repo_root.resolve(strict=True)
+    catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+    try:
+        result = validate_catalog(catalog_path.read_bytes(), root)
+    except (OSError, CatalogValidationError) as error:
+        print(f"catalog validation failed: {error}", file=sys.stderr)
+        return 1
+    print(
+        "Catalog valid: "
+        f"sources={result['source_count']} "
+        f"clauses={result['clause_count']} "
+        f"records={result['record_count']}"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

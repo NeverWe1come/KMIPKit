@@ -151,6 +151,14 @@ class CoverageReportTests(unittest.TestCase):
             catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
             catalog_path.parent.mkdir(parents=True)
             catalog_path.write_text(json.dumps(minimal_catalog(), indent=2) + "\n", encoding="utf-8")
+            for arguments in (
+                ["git", "init", "--quiet", "--initial-branch=main"],
+                ["git", "config", "user.name", "KMIPKit test"],
+                ["git", "config", "user.email", "tests@example.invalid"],
+                ["git", "add", "specification/oasis"],
+                ["git", "commit", "--quiet", "-m", "pinned test evidence"],
+            ):
+                subprocess.run(arguments, cwd=root, check=True, capture_output=True)
             script = Path(__file__).resolve().parents[1] / "report.py"
             result = subprocess.run(
                 [sys.executable, str(script), "--write", "--repo-root", str(root)],

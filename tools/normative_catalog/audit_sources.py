@@ -201,6 +201,9 @@ def audit_document(raw: bytes, source_id: str) -> list[dict[str, Any]]:
 
 def audit_git_sources(repo_root: Path, base_sha: str) -> list[dict[str, Any]]:
     """Audit only the allowlisted, checksum-verified normative HTML Git blobs."""
+    code_root = Path(__file__).resolve().parents[2]
+    if str(code_root) not in sys.path:
+        sys.path.insert(0, str(code_root))
     from tools.normative_catalog.check_immutable_sources import check_immutable_sources
     from tools.normative_catalog.validate import _source_manifest
 
