@@ -14,6 +14,17 @@ class PathSecurityError(ValueError):
     """Raised when a catalog path is unsafe or exceeds its input bound."""
 
 
+_WINDOWS_DIRECTORY_ATTRIBUTE = 0x00000010
+_WINDOWS_REPARSE_ATTRIBUTE = 0x00000400
+_WINDOWS_FILE_READ_ATTRIBUTES = 0x00000080
+_WINDOWS_DELETE_ACCESS = 0x00010000
+_WINDOWS_SHARE_READ_WRITE = 0x00000003
+_WINDOWS_OPEN_EXISTING = 3
+_WINDOWS_OPEN_REPARSE_POINT = 0x00200000
+_WINDOWS_BACKUP_SEMANTICS = 0x02000000
+_WINDOWS_FILE_ATTRIBUTE_TAG_INFO = 9
+
+
 def _reparse(metadata: os.stat_result) -> bool:
     reparse_attribute = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
     return stat.S_ISLNK(metadata.st_mode) or bool(getattr(metadata, "st_file_attributes", 0) & reparse_attribute)
@@ -109,7 +120,7 @@ def _windows_handle_attributes(kernel32: object, handle: object) -> int:
     information = FileAttributeTagInfo()
     succeeded = kernel32.GetFileInformationByHandleEx(  # type: ignore[attr-defined]
         handle,
-        9,  # FileAttributeTagInfo
+        _WINDOWS_FILE_ATTRIBUTE_TAG_INFO,
         ctypes.byref(information),
         ctypes.sizeof(information),
     )
@@ -158,21 +169,16 @@ def _windows_open_handle(
     import ctypes
 
     generic_read = 0x80000000
-    file_read_attributes = 0x0080
-    delete_access = 0x00010000
-    share_read_write = 0x00000001 | 0x00000002
-    open_existing = 3
-    open_reparse_point = 0x00200000
-    backup_semantics = 0x02000000 if directory else 0
+    backup_semantics = _WINDOWS_BACKUP_SEMANTICS if directory else 0
     handle = kernel32.CreateFileW(  # type: ignore[attr-defined]
         str(path),
-        file_read_attributes | (delete_access if lock_for_replacement else 0)
+        _WINDOWS_FILE_READ_ATTRIBUTES | (_WINDOWS_DELETE_ACCESS if lock_for_replacement else 0)
         if directory
-        else generic_read | file_read_attributes,
-        share_read_write,
+        else generic_read | _WINDOWS_FILE_READ_ATTRIBUTES,
+        _WINDOWS_SHARE_READ_WRITE,
         None,
-        open_existing,
-        open_reparse_point | backup_semantics,
+        _WINDOWS_OPEN_EXISTING,
+        _WINDOWS_OPEN_REPARSE_POINT | backup_semantics,
         None,
     )
     if handle == wintypes.HANDLE(-1).value:  # type: ignore[attr-defined]
@@ -202,7 +208,7 @@ def _windows_directory_guard(root: Path, components: tuple[str, ...]) -> Iterato
             )
             try:
                 attributes = _windows_handle_attributes(kernel32, handle)
-                if attributes & 0x400 or not attributes & 0x10:
+                if attributes & _WINDOWS_REPARSE_ATTRIBUTE or not attributes & _WINDOWS_DIRECTORY_ATTRIBUTE:
                     raise PathSecurityError("repository directory is a reparse point or non-directory")
                 final_path = _windows_final_path(kernel32, handle)
                 if not _windows_is_within_root(resolved_root, final_path):
@@ -235,7 +241,7 @@ def _windows_open_confined_file(root: Path, components: tuple[str, ...]) -> Iter
         descriptor: int | None = None
         try:
             attributes = _windows_handle_attributes(kernel32, handle)
-            if attributes & (0x400 | 0x10):
+            if attributes & (_WINDOWS_REPARSE_ATTRIBUTE | _WINDOWS_DIRECTORY_ATTRIBUTE):
                 raise PathSecurityError("repository input is a reparse point or directory")
             final_path = _windows_final_path(kernel32, handle)
             if not _windows_is_within_root(resolved_root, final_path):
