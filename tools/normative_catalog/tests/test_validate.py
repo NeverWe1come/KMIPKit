@@ -829,7 +829,10 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_checked_in_catalog_orders_evidence_policies_and_relationships_deterministically(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
-        section_key = lambda value: tuple(int(part) for part in value.split("."))
+
+        def section_key(value: str) -> tuple[int, ...]:
+            return tuple(int(part) for part in value.split("."))
+
         expected_tests = sorted(
             catalog["test_cases"],
             key=lambda row: (row["source_id"], section_key(row["source_section"]), row["test_id"]),
@@ -848,7 +851,10 @@ class CatalogValidationTests(unittest.TestCase):
             for record in catalog[collection]:
                 for field in relationship_fields:
                     if field in record:
-                        self.assertEqual(record[field], sorted(record[field]), (collection, record.get("test_id"), field))
+                        self.assertEqual(
+                            record[field], sorted(record[field]),
+                            (collection, record.get("test_id"), field),
+                        )
 
     def test_official_cases_link_only_html_explicitly_named_operations(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
@@ -856,49 +862,51 @@ class CatalogValidationTests(unittest.TestCase):
 
         cases_source = "KMIPKIT-SRC-testcases"
         profiles_source = "KMIPKIT-SRC-profiles"
-        derive = "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
-        delegated_login = "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
+        def link(
+            source_id: str,
+            sections: tuple[str, ...] | tuple[int, ...] | range,
+            *element_ids: str,
+        ) -> None:
+            for section in sections:
+                normalized = (
+                    f"2.{section}"
+                    if source_id == cases_source and isinstance(section, int)
+                    else str(section)
+                )
+                expected_by_source_section[(source_id, normalized)] = set(element_ids)
+
+        def link_cases(sections: range | tuple[int, ...], *element_ids: str) -> None:
+            link(cases_source, sections, *element_ids)
+
         sign = "KMIPKIT-ELEM-OP-C2S-SIGN"
         verify = "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY"
-        for section in ("2.14", "2.15", "2.16", "2.17", "2.18", "2.19"):
-            expected_by_source_section[(cases_source, section)] = {derive}
-        for section in ("2.21", "2.22", "2.23", "2.24", "2.25", "2.26", "2.27", "2.28", "2.29", "2.30", "2.31", "2.32", "2.33"):
-            expected_by_source_section[(cases_source, section)] = {delegated_login}
-        expected_by_source_section[(cases_source, "2.37")] = {sign, verify}
-        for section in ("2.43", "2.44", "2.45", "2.46", "2.47"):
-            expected_by_source_section[(cases_source, section)] = {
-                "KMIPKIT-ELEM-OP-C2S-IMPORT", "KMIPKIT-ELEM-OP-C2S-EXPORT",
-            }
-        for section in ("2.48", "2.49", "2.50"):
-            expected_by_source_section[(cases_source, section)] = {"KMIPKIT-ELEM-OP-C2S-LOGIN"}
-        for section in ("2.62", "2.63", "2.64", "2.65"):
-            expected_by_source_section[(cases_source, section)] = {"KMIPKIT-ELEM-OP-C2S-LOCATE"}
-        expected_by_source_section[(cases_source, "2.67")] = {"KMIPKIT-ELEM-OP-C2S-PING"}
-        for section in ("2.68", "2.69"):
-            expected_by_source_section[(cases_source, section)] = {"KMIPKIT-ELEM-OP-C2S-GET"}
-        for section in ("2.76", "2.77", "2.78", "2.79", "2.80", "2.81", "2.82", "2.83", "2.84", "2.85", "2.86", "2.87"):
-            expected_by_source_section[(cases_source, section)] = {"KMIPKIT-ELEM-OP-C2S-RE-KEY"}
-        for section in ("2.92", "2.93", "2.94"):
-            expected_by_source_section[(cases_source, section)] = {"KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE"}
-        expected_by_source_section[(cases_source, "2.99")] = {"KMIPKIT-ELEM-OP-C2S-ENCRYPT"}
-        expected_by_source_section[(cases_source, "2.100")] = {
-            "KMIPKIT-ELEM-OP-C2S-ENCRYPT", "KMIPKIT-ELEM-OP-C2S-DECRYPT",
-        }
-        expected_by_source_section[(cases_source, "2.101")] = {"KMIPKIT-ELEM-OP-C2S-ENCRYPT"}
-        for section in ("2.102", "2.103", "2.104"):
-            expected_by_source_section[(cases_source, section)] = {"KMIPKIT-ELEM-OP-C2S-HASH"}
-        expected_by_source_section[(cases_source, "2.105")] = {"KMIPKIT-ELEM-OP-C2S-MAC"}
-        expected_by_source_section[(cases_source, "2.106")] = {sign}
-        expected_by_source_section[(cases_source, "2.107")] = {sign, verify}
+        link_cases(range(14, 20), "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY")
+        link_cases(range(21, 34), "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN")
+        link_cases((37,), sign, verify)
+        link_cases(range(43, 48), "KMIPKIT-ELEM-OP-C2S-IMPORT", "KMIPKIT-ELEM-OP-C2S-EXPORT")
+        link_cases(range(48, 51), "KMIPKIT-ELEM-OP-C2S-LOGIN")
+        link_cases(range(62, 66), "KMIPKIT-ELEM-OP-C2S-LOCATE")
+        link_cases((67,), "KMIPKIT-ELEM-OP-C2S-PING")
+        link_cases(range(68, 70), "KMIPKIT-ELEM-OP-C2S-GET")
+        link_cases(range(76, 88), "KMIPKIT-ELEM-OP-C2S-RE-KEY")
+        link_cases(range(92, 95), "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE")
+        link_cases((99, 101), "KMIPKIT-ELEM-OP-C2S-ENCRYPT")
+        link_cases((100,), "KMIPKIT-ELEM-OP-C2S-ENCRYPT", "KMIPKIT-ELEM-OP-C2S-DECRYPT")
+        link_cases(range(102, 105), "KMIPKIT-ELEM-OP-C2S-HASH")
+        link_cases((105,), "KMIPKIT-ELEM-OP-C2S-MAC")
+        link_cases((106,), sign)
+        link_cases((107,), sign, verify)
 
-        query = "KMIPKIT-ELEM-OP-C2S-QUERY"
-        for section in ("5.3.3.1", "5.4.4.1", "5.5.4.1", "5.17.1"):
-            expected_by_source_section[(profiles_source, section)] = {query}
+        link(
+            profiles_source,
+            ("5.3.3.1", "5.4.4.1", "5.5.4.1", "5.17.1"),
+            "KMIPKIT-ELEM-OP-C2S-QUERY",
+        )
         expected_by_source_section[(profiles_source, "5.12.6.3")] = {
             "KMIPKIT-ELEM-OP-C2S-GET", "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
             "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
         }
-        expected_by_source_section[(profiles_source, "5.17.2")] = {"KMIPKIT-ELEM-OP-C2S-CREATE"}
+        link(profiles_source, ("5.17.2",), "KMIPKIT-ELEM-OP-C2S-CREATE")
 
         operation_ids = {row["element_id"] for row in catalog["elements"] if row["kind"] == "operation"}
         for test_case in catalog["test_cases"]:
