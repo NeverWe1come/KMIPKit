@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 436 |
+| Protocol elements | 468 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -31,6 +31,9 @@ This report records inventory coverage and evidence state. It does not claim pro
 
 | Kind | Count |
 | --- | --- |
+| data\_type | 11 |
+| object\_structure | 12 |
+| object\_type | 9 |
 | operation | 62 |
 | tag | 374 |
 
@@ -56,6 +59,38 @@ This report records inventory coverage and evidence state. It does not claim pro
 
 | Element | Kind | Direction | Scope | Source |
 | --- | --- | --- | --- | --- |
+| KMIPKIT-ELEM-DATA-TYPE-BIG-INTEGER | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-BOOLEAN | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-DATE-TIME | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-DATE-TIME-EXTENDED | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-ENUMERATION | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-INTEGER | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-INTERVAL | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-LONG-INTEGER | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-STRUCTURE | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-DATA-TYPE-TEXT-STRING | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.1 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.2 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.2 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.3 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.4 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.5 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.6 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.7 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.8 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.9 |
+| KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE | object\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §11.34 |
+| KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE-REQUEST | object\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §11.34 |
+| KMIPKIT-ELEM-OBJECT-TYPE-OPAQUE-OBJECT | object\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §11.34 |
+| KMIPKIT-ELEM-OBJECT-TYPE-PGP-KEY | object\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §11.34 |
+| KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY | object\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §11.34 |
+| KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY | object\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §11.34 |
+| KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA | object\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §11.34 |
+| KMIPKIT-ELEM-OBJECT-TYPE-SPLIT-KEY | object\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §11.34 |
+| KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY | object\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §11.34 |
 | KMIPKIT-ELEM-OP-C2S-ACTIVATE | operation | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §6.1.1 |
 | KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE | operation | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §6.1.2 |
 | KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE | operation | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §6.1.3 |

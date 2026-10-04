@@ -49,6 +49,739 @@
   "source_clauses": [],
   "elements": [
     {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-BIG-INTEGER",
+      "kind": "data_type",
+      "name": "Big Integer",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000004"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-BOOLEAN",
+      "kind": "data_type",
+      "name": "Boolean",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000006"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING",
+      "kind": "data_type",
+      "name": "Byte String",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000008"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-DATE-TIME",
+      "kind": "data_type",
+      "name": "Date Time",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000009"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-DATE-TIME-EXTENDED",
+      "kind": "data_type",
+      "name": "Date Time Extended",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "0000000B"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-ENUMERATION",
+      "kind": "data_type",
+      "name": "Enumeration",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000005"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-INTEGER",
+      "kind": "data_type",
+      "name": "Integer",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000002"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-INTERVAL",
+      "kind": "data_type",
+      "name": "Interval",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "0000000A"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-LONG-INTEGER",
+      "kind": "data_type",
+      "name": "Long Integer",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000003"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-STRUCTURE",
+      "kind": "data_type",
+      "name": "Structure",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000001"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-DATA-TYPE-TEXT-STRING",
+      "kind": "data_type",
+      "name": "Text String",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000007"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE",
+      "kind": "object_structure",
+      "name": "Certificate",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST",
+      "kind": "object_structure",
+      "name": "Certificate Request",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE-REQUEST"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK",
+      "kind": "object_structure",
+      "name": "Key Block",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY",
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY",
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY",
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA",
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY",
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE",
+      "kind": "object_structure",
+      "name": "Key Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA",
+      "kind": "object_structure",
+      "name": "Key Wrapping Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT",
+      "kind": "object_structure",
+      "name": "Opaque Object",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-OPAQUE-OBJECT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY",
+      "kind": "object_structure",
+      "name": "PGP Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.4"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-PGP-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY",
+      "kind": "object_structure",
+      "name": "Private Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY",
+      "kind": "object_structure",
+      "name": "Public Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA",
+      "kind": "object_structure",
+      "name": "Secret Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY",
+      "kind": "object_structure",
+      "name": "Split Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SPLIT-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY",
+      "kind": "object_structure",
+      "name": "Symmetric Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE",
+      "kind": "object_type",
+      "name": "Certificate",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000001"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE-REQUEST",
+      "kind": "object_type",
+      "name": "Certificate Request",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "0000000A"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-OPAQUE-OBJECT",
+      "kind": "object_type",
+      "name": "Opaque Object",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000008"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-PGP-KEY",
+      "kind": "object_type",
+      "name": "PGP Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000009"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY",
+      "kind": "object_type",
+      "name": "Private Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000004"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY",
+      "kind": "object_type",
+      "name": "Public Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000003"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA",
+      "kind": "object_type",
+      "name": "Secret Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000007"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-SPLIT-KEY",
+      "kind": "object_type",
+      "name": "Split Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000005"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
+      "kind": "object_type",
+      "name": "Symmetric Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "wire_value": "00000002"
+    },
+    {
       "element_id": "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
       "kind": "operation",
       "name": "Activate",
