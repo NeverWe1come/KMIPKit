@@ -63,7 +63,13 @@ fn every_value_constructor_derives_its_item_type() {
 
 #[test]
 fn integer_preserves_signed_boundaries_and_high_bit_patterns() {
-    for expected in [i32::MIN, -1, 0, i32::MAX, 0x8000_0105_u32 as i32] {
+    for expected in [
+        i32::MIN,
+        -1,
+        0,
+        i32::MAX,
+        i32::from_be_bytes([0x80, 0x00, 0x01, 0x05]),
+    ] {
         let item = Item::new(checked_tag(0x0042_0173), Value::integer(expected))
             .expect("a checked tag and Integer value must construct an item");
 
@@ -255,7 +261,7 @@ fn structure_preserves_caller_order_repeated_tags_and_child_values() {
             )
         );
         assert!(children[2].with_value(
-            |child| matches!(child, ValueView::ByteString(bytes) if bytes == &[0xC3, 0x28])
+            |child| matches!(child, ValueView::ByteString(bytes) if bytes == [0xC3, 0x28].as_slice())
         ));
     });
 }
