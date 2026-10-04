@@ -25,6 +25,7 @@ kmipkit-client = { path = "crates/kmipkit-client", version = "0.1.0" }
 kmipkit = { path = "crates/kmipkit", version = "0.1.0" }
 kmipkit-ffi = { path = "crates/kmipkit-ffi", version = "0.1.0" }
 kmipkit-test-support = { path = "crates/kmipkit-test-support", version = "0.1.0" }
+zeroize = { version = "=1.9.0", default-features = false, features = ["alloc"] }
 
 [workspace.lints.rust]
 rust_2018_idioms = "deny"

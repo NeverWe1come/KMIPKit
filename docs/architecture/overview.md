@@ -1,5 +1,10 @@
 # Architecture overview
 
+This document describes the target KMIPKit 1.0 architecture. Components and
+responsibilities are planned unless explicitly marked **Implemented**; the
+message flow below is also a target design, not evidence that each step exists
+in the current code.
+
 ## System shape
 
 ```mermaid
@@ -49,19 +54,18 @@ docs/
 fuzz/
 ```
 
-The five runtime Rust crates are published with synchronized versions. The
-facade is the normal entry point; lower crates are stable public APIs for
-advanced integration.
+The planned 1.0 workspace targets five publishable runtime crates with
+synchronized package versions. `kmipkit-ffi` is an additional, non-published
+runtime crate; `kmipkit-test-support` is also non-published. The facade is
+intended as the normal entry point; lower published crates are intended to
+provide stable public APIs for advanced integration.
 
 ## Layer responsibilities
 
 ### `kmipkit-ttlv`
 
-- Validated TTLV tags and types.
-- Generic ordered tree preserving unknown values.
-- Canonical encoder.
-- Strict decoder and resource limits.
-- Incremental framing primitives for transports.
+- Implemented: in-memory typed value model, catalog-checked tags, ordered generic tree, and bounded Structure depth.
+- Planned: canonical encoder, strict decoder and resource limits, and incremental framing primitives for transports.
 - No KMIP operation semantics and no I/O.
 
 ### `kmipkit-protocol`

@@ -31,10 +31,24 @@ extensions. `Client::execute(request)` returns the complete typed outcome.
 
 ### Generic TTLV
 
-Advanced users can build and inspect structurally valid ordered TTLV nodes.
-This level supports vendor and future values. It validates framing, types,
-lengths, padding, and limits. Arbitrary malformed bytes are restricted to test
-tools.
+Advanced users can build and inspect an in-memory ordered tree of KMIP items.
+Each item has an allocation-checked Tag, including accepted extension tags,
+and one of the eleven supported KMIP 2.1 typed Value variants; an unknown Item
+Type code has no Value representation. The model checks that the Value
+determines the Item Type. It also preserves child order, raw Enumeration
+values, bitmask bits, and exact Big Integer Item Value octets. The tree has
+KMIPKit's 64-level Structure limit.
+
+The model is not a TTLV wire message and does not establish wire or protocol
+validity. It does not store original framing, encoded lengths, or padding
+bytes, and it does not validate schema-specific field order, cardinality,
+required fields, or operation semantics. The planned TTLV codec will handle
+framing, exact wire lengths, endianness, padding, and configured decoder
+resource limits. Schema validation for known KMIP Structures and operation
+rules belongs in the protocol/client layer before transmission. Re-encoding a
+model makes no promise to reproduce the original input bytes. See the
+[generic value-model specification](../../specs/004-generic-ttlv-model/spec.md)
+for the model's exact scope and constraints.
 
 ## Builder policy
 
@@ -51,13 +65,16 @@ optional profile selection.
 
 ## Unknown values
 
-- Rust public enums are non-exhaustive and retain an unknown raw value.
-- Bitmasks retain unknown bits.
-- Tags retain their numeric value.
-- Generic nodes retain field order.
-- Java and Python avoid closed enums where they would lose data.
-- Encoding a valid generic tree after decoding must reproduce the canonical
-  input bytes.
+- Generic Enumeration values preserve their raw 32-bit value, including
+  unassigned values; bitmasks preserve unknown bits.
+- Allocation-checked Tags retain their numeric value, including accepted
+  extension tags.
+- Generic nodes retain child order.
+- Unknown Item Type codes are not represented by this model.
+- Rust protocol enums remain non-exhaustive where the typed API retains raw
+  values; Java and Python avoid closed enums where they would lose data.
+- Value preservation does not imply preservation of the original wire bytes or
+  padding; see [Generic TTLV](#generic-ttlv).
 
 ## Validation boundary
 
@@ -97,8 +114,20 @@ Exposure requires an explicit operation and produces a controlled temporary
 view or copy. Rust uses closure-scoped access, C an opaque secret handle, Java
 an `AutoCloseable` secret, and Python a context-managed secret.
 
-The library clears its owned memory. It cannot clear copies created by the
-caller or managed language runtime.
+In `kmipkit-ttlv`, each `Value` privately owns a boxed representation and calls
+the safe `Zeroize` API before releasing it. Payloads in nested Structures are
+zeroized recursively. The dependency is locked to `zeroize` 1.9.0 with only
+its `alloc` feature enabled; see the [dependency review](../../specs/004-generic-ttlv-model/dependency-review.md)
+and the [pinned 1.9.0 source](https://docs.rs/crate/zeroize/1.9.0/source/src/lib.rs).
+
+In that version, `Vec::zeroize` clears initialized elements, sets the length to
+zero, and zeroizes the entire current allocation capacity. `String::zeroize`
+delegates to its backing vector. This describes the current storage owned by
+KMIPKit when it is dropped; it is not a guarantee that every process copy of a
+value has been erased. Caller-side copies, buffers left by reallocations before
+ownership transfer, copies deliberately made from borrowed views, temporary
+stack or register copies, and copies retained by Java, Python, or another
+runtime are outside this Rust model's guarantee.
 
 ## Errors
 

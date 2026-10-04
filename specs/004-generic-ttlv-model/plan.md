@@ -1,14 +1,14 @@
 # Implementation Plan: KMIP Generic TTLV Value Model
 
-**Branch**: `feature/KMIPKIT-0004-generic-ttlv-model` | **Date**: 2026-10-04 | **Spec**: [spec.md](spec.md)
+**Branch**: `feature/KMIPKIT-0004-generic-ttlv-model-implementation` | **Date**: 2026-10-04 | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `/specs/004-generic-ttlv-model/spec.md`
 
 ## Summary
 
-Define the lossless in-memory Rust model for all eleven KMIP 2.1 Item Types, preserving 24-bit tag identity, numeric bits, exact Big Integer Item Value octets, and caller-specified Structure order. A catalog-driven, deterministic Rust tag-allocation table will implement the proposed allocation gate. Payload values use a private zeroizing wrapper, redacted diagnostics, and closure-borrowed inspection. This feature does not encode or decode TTLV and cannot claim a model is wire-valid.
+Define the lossless in-memory Rust model for all eleven KMIP 2.1 Item Types, preserving 24-bit tag identity, numeric bits, exact Big Integer Item Value octets, and caller-specified Structure order. A catalog-driven, deterministic Rust tag-allocation table will implement the accepted allocation policy. Payload values use a private zeroizing wrapper, redacted diagnostics, and closure-borrowed inspection. This feature does not encode or decode TTLV and cannot claim a model is wire-valid.
 
-Implementation is blocked until (1) this specification is approved, (2) ADR-0010's tag precedence is accepted, and (3) the KMIPKIT-0003 implementation PR is merged into the release branch. This plan prepares design and task artifacts only; it does not authorize bypassing those gates.
+Implementation gates are satisfied: the approved specification and accepted ADR-0010 were merged in PR #10 (`3638c6c7929992e8ced59a3903a0a6640f847069`), and the KMIPKIT-0003 implementation was merged in PR #13 (`b52df30648312f8c7703f511afe80a412cda66cd`).
 
 ## Technical Context
 
@@ -32,13 +32,13 @@ Implementation is blocked until (1) this specification is approved, (2) ADR-0010
 | II. Test first and evidence based conformance | Pass with mandatory TDD tasks | Tasks require distinct Red, Green, Refactor commits with DCO sign-off; model tests do not substitute for later OASIS codec conformance. |
 | III. One core, explicit language boundaries | Pass | Rust-only model crate, which already forbids unsafe; FFI and bindings are excluded. |
 | IV. Secure defaults and lossless protocol handling | Pass with security review | Unknown values and child order are preserved; payloads use zeroization and redacted diagnostics. A safe probe verifies the Drop path without inspecting freed memory. |
-| V. Human governed, reviewable changes | Pass with hard gates | Dedicated feature worktree and branch; ADR/spec review and KMIPKIT-0003 merge precede implementation; only a human approves or merges the PR. |
+| V. Human governed, reviewable changes | Pass | Dedicated feature worktree and branch; the accepted ADR/spec and KMIPKIT-0003 merge precede implementation; only a human approves or merges the PR. |
 
-No architectural boundary changes are proposed. The unresolved §11.56 overlap is made explicit as project policy in Proposed ADR-0010 and is a hard implementation gate, not an assumed OASIS interpretation.
+No architectural boundary changes are proposed. The §11.56 overlap is resolved by the accepted project policy in ADR-0010, not by an assumed OASIS interpretation.
 
 ### Post-design gate
 
-Pass, subject to the same implementation gates. The generated allocation table is derived only from checked-in catalog records and ranges. Model errors remain local to `kmipkit-ttlv`; no dependency cycle is introduced. Serialization is not added. The memory-erasure contract is limited to current KMIPKit-owned buffers and explicitly excludes caller/runtime copies and prior allocations that KMIPKit no longer owns.
+Pass. The generated allocation table is derived only from checked-in catalog records and ranges. Model errors remain local to `kmipkit-ttlv`; no dependency cycle is introduced. Serialization is not added. The memory-erasure contract is limited to current KMIPKit-owned buffers and explicitly excludes caller/runtime copies and prior allocations that KMIPKit no longer owns.
 
 ## Design and implementation phases
 
@@ -46,7 +46,7 @@ Pass, subject to the same implementation gates. The generated allocation table i
 
 - Confirm source clauses in the pinned KMIP 2.1 OASIS copy and catalog (see [research.md](research.md)).
 - Record generator, tag precedence, secret storage, closure borrowing, and error-layer decisions with alternatives.
-- Keep ADR-0010 Proposed until maintainer acceptance; do not represent its policy as OASIS clarification.
+- Follow accepted ADR-0010; do not represent its policy as an OASIS clarification.
 
 ### Phase 1 — Model and contracts
 
@@ -57,7 +57,7 @@ Pass, subject to the same implementation gates. The generated allocation table i
 
 ### Phase 2 — Prerequisites and deterministic allocation data
 
-- Before implementation begins, verify the three approval/dependency gates above against the release branch.
+- The implementation worktree re-confirms the merged approvals and dependency against the active release branch before coding.
 - Add a deterministic generator under `tools/normative_catalog/` that reads only `specification/catalog/kmip-2.1.json` and reuses `load_validated_catalog` from `validate.py`; select `elements` with `kind: "tag"` and consume `tag_ranges`.
 - Generate private Rust allocation metadata (not public tag declarations or APIs) in `crates/kmipkit-ttlv/src/generated/`; sort records by numeric value and emit exact assignments/classifications and numeric range data. Keep runtime precedence lookup hand-written and reviewable in `tag.rs`.
 - Provide `--write` and read-only `--check` modes using the catalog tooling's safe I/O conventions. Test malformed/duplicate/out-of-range input, precedence, boundaries, stable output, clean/stale/missing generated files, and idempotent writing. Add `--check` to `.github/workflows/ci.yml` beside catalog validation/report. Do not create the future cross-language public API manifest in this feature.
@@ -126,4 +126,4 @@ Tests belong beside the Rust crate (`crates/kmipkit-ttlv/tests/`) and with the g
 
 ## Complexity Tracking
 
-No constitution violations or architecture exceptions are proposed.
+No constitution violations or architecture exceptions are required.
