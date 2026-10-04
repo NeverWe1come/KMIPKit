@@ -18,8 +18,8 @@
 
 **Purpose**: Establish the pinned evidence baseline and deterministic tooling layout.
 
-- [ ] T001 Record and independently verify the four pinned source IDs, stages, dates, local paths, and SHA-256 values from `specification/oasis/kmip-2.1/SOURCES.md` and `CHECKSUMS.sha256`.
-- [ ] T002 Create the catalog, validator, report, and unit-test paths specified in `plan.md`; do not modify or regenerate files under `specification/oasis/`.
+- [x] T001 Record and independently verify the four pinned source IDs, stages, dates, local paths, and SHA-256 values from `specification/oasis/kmip-2.1/SOURCES.md` and `CHECKSUMS.sha256`.
+- [x] T002 Create the catalog, validator, report, and unit-test paths specified in `plan.md`; do not modify or regenerate files under `specification/oasis/`.
 
 ## Phase 2: Foundational Contracts, Clause Audit, and Validation
 
@@ -27,7 +27,7 @@
 
 ### Red
 
-- [ ] T003 [P] Add failing tests for source metadata, source-clause ledger dispositions, `tag_ranges`, policy records, stable IDs, top-level record collections, and required source references in `tools/normative_catalog/tests/test_validate.py`.
+- [x] T003 [P] Add failing tests for source metadata, source-clause ledger dispositions, `tag_ranges`, policy records, stable IDs, top-level record collections, and required source references in `tools/normative_catalog/tests/test_validate.py`.
 - [ ] T004 [P] Add failing tests for duplicate JSON keys, unknown fields, invalid UTF-8, unpaired escaped surrogates, unresolved references, invalid scope/direction, checksum mismatch, absolute/traversal/symlink/reparse paths, JSON/HTML size-depth-node-record-string and global token/member limits, and immutable-base changes including add/delete/rename/mode/symlink changes in `tools/normative_catalog/tests/test_validate.py` and `test_immutable_sources.py`.
 - [ ] T005 [P] Add failing report tests for unassigned coverage, source-count mismatch, absent fixture status, negative-test flags, SHOULD/SHOULD NOT/RECOMMENDED deviations without an accepted decision, malicious Markdown/HTML/link payloads (including parentheses, backslashes, line breaks, and image syntax), control characters, and locale-independent output in `tools/normative_catalog/tests/test_report.py`.
 - [ ] T006 [P] Add failing source-audit tests for the documented case-insensitive token vocabulary and block boundaries, inline text split across HTML nodes, declared charset handling independent of locale, malformed/unsupported charset, stable structural IDs, limits, non-fetching parsing, exact candidate/ledger equality, and independently reviewed missed-block fixtures in `tools/normative_catalog/tests/test_audit_sources.py`.
