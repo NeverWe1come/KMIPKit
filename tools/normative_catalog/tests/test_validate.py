@@ -595,6 +595,56 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "accepted decision"):
             validate(document)
 
+    def test_deviation_decision_must_name_the_affected_requirement(self) -> None:
+        with self.assertRaisesRegex(CatalogValidationError, "decision.*requirement"):
+            validate(deviation_catalog(decision_record()))
+
+    def test_resolved_discrepancy_decision_must_name_the_discrepancy(self) -> None:
+        document = minimal_catalog()
+        document["decisions"] = [decision_record()]
+        document["discrepancies"] = [
+            discrepancy_record(state="resolved_by_approved_decision", decision_id="KMIPKIT-DEC-001")
+        ]
+        with self.assertRaisesRegex(CatalogValidationError, "decision.*discrepancy"):
+            validate(document)
+
+    def test_profile_cannot_claim_complete_evidence_without_resolved_links(self) -> None:
+        document = minimal_catalog()
+        document["profiles"] = [profile_record(claim_state="evidence_complete")]
+        with self.assertRaisesRegex(CatalogValidationError, "profile.*evidence"):
+            validate(document)
+
+    def test_discrepancy_authority_must_derive_from_cited_source(self) -> None:
+        document = minimal_catalog()
+        document["discrepancies"] = [
+            discrepancy_record(
+                source_refs=[{"source_id": "KMIPKIT-SRC-usage-guide", "section": "4.1"}],
+                source_authority="primary_normative",
+            )
+        ]
+        with self.assertRaisesRegex(CatalogValidationError, "source authority"):
+            validate(document)
+
+    def test_erratum_resolution_requires_pinned_erratum_source(self) -> None:
+        document = minimal_catalog()
+        document["discrepancies"] = [discrepancy_record(state="resolved_by_erratum")]
+        with self.assertRaisesRegex(CatalogValidationError, "erratum.*pinned"):
+            validate(document)
+
+    def test_policy_provenance_requires_a_verifiable_locator(self) -> None:
+        document = minimal_catalog()
+        document["policies"] = [
+            {
+                "policy_id": "KMIPKIT-POLICY-UNKNOWN-VALUES",
+                "summary": "Preserve unknown values.",
+                "provenance": "AGENTS.md",
+                "affected_element_kinds": ["enumeration_value"],
+                "requirement_ids": [],
+            }
+        ]
+        with self.assertRaisesRegex(CatalogValidationError, "policy.*provenance"):
+            validate(document)
+
     def test_rejects_requirement_with_unresolved_source_references(self) -> None:
         document = minimal_catalog()
         document["requirements"] = [
