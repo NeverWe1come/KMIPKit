@@ -86,6 +86,15 @@ class CoverageReportTests(unittest.TestCase):
         self.assertEqual(render_report(first), render_report(second))
         self.assertNotIn("Generated at", render_report(first))
 
+    def test_output_is_independent_of_permutations_in_every_catalog_collection(self) -> None:
+        first = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        second = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        for collection in second.values():
+            if isinstance(collection, list):
+                collection.reverse()
+
+        self.assertEqual(render_report(first), render_report(second))
+
     def test_output_is_independent_of_process_locale(self) -> None:
         catalog = report_catalog()
         expected = render_report(catalog)
