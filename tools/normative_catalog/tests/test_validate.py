@@ -1771,6 +1771,17 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertEqual(validate(document)["record_count"], 5)
 
+    def test_requirement_keyword_must_appear_in_a_linked_source_clause(self) -> None:
+        document = deviation_catalog(decision_record())
+        requirement = document["requirements"][0]
+        requirement["source_keyword"] = "MUST"
+        requirement["normative_strength"] = "mandatory"
+        requirement["status"] = "unassigned"
+        requirement["decision_id"] = None
+
+        with self.assertRaisesRegex(CatalogValidationError, "keyword.*linked source clause"):
+            validate(document)
+
     def test_rejects_tag_range_using_singleton_tag_allocation(self) -> None:
         document = minimal_catalog()
         document["tag_ranges"] = [
