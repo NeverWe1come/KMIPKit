@@ -98938,6 +98938,41 @@
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-038",
+      "summary": "JSON profile example uses Template for a reserved Object Type value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-profiles",
+          "section": "5.5.4.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "source_defect",
+      "alternatives": [
+        "Follow Specification §11.34 and keep Object Type value 0x00000006 reserved; the JSON example is erroneous.",
+        "Treat the JSON example's Template label as intended for value 0x00000006; this conflicts with the reserved registry entry."
+      ],
+      "affected_requirement_ids": [],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-ENUMERATION-OBJECT-TYPE",
+        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-RESERVED-00000006",
+        "KMIPKIT-ELEM-TAG-420057"
+      ],
+      "affected_profile_ids": [
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-JSON-SERVER"
+      ],
+      "affected_policy_ids": [],
+      "downstream_impact": "JSON profile example interpretation and Object Type value handling remain gated; value 0x00000006 must not be treated as an assigned Template value without authoritative resolution.",
+      "state": "open",
+      "decision_id": null,
+      "erratum_source_refs": []
     }
   ],
   "decisions": []
