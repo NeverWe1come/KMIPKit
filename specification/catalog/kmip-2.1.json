@@ -98979,6 +98979,32 @@
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-039",
+      "summary": "Query Asynchronous Requests response table is labeled as a PKCS#11 response",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.41"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "source_defect",
+      "alternatives": [
+        "Table 286 is the Query Asynchronous Requests response payload and its printed PKCS#11 caption is erroneous.",
+        "The PKCS#11 caption is intentional and the table is misplaced in the Query Asynchronous Requests operation section."
+      ],
+      "affected_requirement_ids": [],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "The response payload mapping for Query Asynchronous Requests must remain gated until the table caption/context inconsistency is resolved; the catalog preserves the printed caption.",
+      "state": "open",
+      "decision_id": null,
+      "erratum_source_refs": []
     }
   ],
   "decisions": []
