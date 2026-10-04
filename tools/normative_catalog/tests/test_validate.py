@@ -433,9 +433,8 @@ class CatalogValidationTests(unittest.TestCase):
                 "policy_id": "KMIPKIT-POLICY-UNKNOWN-VALUES",
                 "summary": "Preserve unknown values.",
                 "provenance": "a random note",
-                "affected_element_classes": ["enumeration_value"],
+                "affected_element_kinds": ["enumeration_value"],
                 "requirement_ids": [],
-                "source_refs": [],
             }
         ]
         with self.assertRaises(CatalogValidationError):
@@ -445,6 +444,12 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["profiles"] = [profile_record(claim_state="certified")]
         with self.assertRaisesRegex(CatalogValidationError, "profile"):
+            validate(document)
+
+    def test_profile_enum_with_non_string_json_type_fails_as_validation_error(self) -> None:
+        document = minimal_catalog()
+        document["profiles"] = [profile_record(role=[])]
+        with self.assertRaises(CatalogValidationError):
             validate(document)
 
     def test_open_discrepancy_cannot_select_a_decision(self) -> None:
