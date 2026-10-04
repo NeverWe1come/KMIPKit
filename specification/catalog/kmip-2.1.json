@@ -33563,7 +33563,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-19"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -34840,7 +34842,9 @@
       ],
       "requirement_ids": [],
       "profile_ids": [],
-      "test_case_ids": [],
+      "test_case_ids": [
+        "KMIPKIT-TEST-CN01-2-19"
+      ],
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
@@ -95617,6 +95621,8 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDH-0000000E",
+        "KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-ASYMMETRIC-KEY-00000008",
         "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-DERIVEKEY-6-21.xml",
