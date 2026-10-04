@@ -6,8 +6,9 @@ import unittest
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
-from tools.normative_catalog.audit_sources import SourceAuditError, audit_document
+from tools.normative_catalog.audit_sources import SourceAuditError, audit_document, audit_git_sources
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -94,6 +95,14 @@ class SourceAuditTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("normative source candidates", result.stdout)
+
+    def test_git_audit_does_not_read_normative_documents_from_working_tree(self) -> None:
+        base_sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        with patch.object(Path, "read_bytes", side_effect=AssertionError("working-tree read")):
+            candidates = audit_git_sources(ROOT, base_sha)
+        self.assertTrue(candidates)
 
 
 if __name__ == "__main__":
