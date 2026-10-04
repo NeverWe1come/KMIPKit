@@ -139,6 +139,45 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaises(CatalogValidationError):
             validate(document)
 
+    def test_rejects_unknown_protocol_element_fields(self) -> None:
+        document = minimal_catalog()
+        document["elements"] = [
+            {
+                "element_id": "KMIPKIT-ELEM-OP-CREATE",
+                "kind": "operation",
+                "name": "Create",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.1"}],
+                "direction": "client_to_server",
+                "scope_state": "client_1_0",
+                "parent_element_ids": [],
+                "requirement_ids": [],
+                "profile_ids": [],
+                "test_case_ids": [],
+                "unexpected": "value",
+            }
+        ]
+        with self.assertRaises(CatalogValidationError):
+            validate(document)
+
+    def test_rejects_unresolved_protocol_element_relationships(self) -> None:
+        document = minimal_catalog()
+        document["elements"] = [
+            {
+                "element_id": "KMIPKIT-ELEM-OP-CREATE",
+                "kind": "operation",
+                "name": "Create",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.1"}],
+                "direction": "client_to_server",
+                "scope_state": "client_1_0",
+                "parent_element_ids": [],
+                "requirement_ids": [],
+                "profile_ids": ["KMIPKIT-PROFILE-MISSING"],
+                "test_case_ids": [],
+            }
+        ]
+        with self.assertRaises(CatalogValidationError):
+            validate(document)
+
     def test_requires_every_top_level_record_collection(self) -> None:
         document = minimal_catalog()
         del document["policies"]
