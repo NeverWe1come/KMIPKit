@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from bisect import bisect_left, bisect_right
 import json
 import os
 import re
@@ -15,6 +16,18 @@ from typing import Any, Iterable, Mapping
 
 class CoverageDataError(RuntimeError):
     """Raised when required coverage input is missing, unsafe, or malformed."""
+
+
+class CoverageReport(dict[str, dict[int, int]]):
+    """A physical-line map plus conservative per-file summary residuals."""
+
+    def __init__(
+        self,
+        lines: dict[str, dict[int, int]],
+        summary_uncovered_excess: dict[str, int],
+    ) -> None:
+        super().__init__(lines)
+        self.summary_uncovered_excess = summary_uncovered_excess
 
 
 class InlineTestModuleError(CoverageDataError):
@@ -345,7 +358,7 @@ def _load_json_document(document: str | bytes | Mapping[str, Any]) -> dict[str, 
     if value.get("type") != "llvm.coverage.json.export":
         raise CoverageDataError("LLVM report has an unsupported or missing export type.")
     version = value.get("version")
-    if not isinstance(version, str) or re.fullmatch(r"3\.0\.\d+", version) is None:
+    if not isinstance(version, str) or re.fullmatch(r"3\.(?:0|1)\.\d+", version) is None:
         raise CoverageDataError(f"LLVM report has an unsupported or missing schema version: {version!r}")
     if not isinstance(value.get("data"), list) or not value["data"]:
         raise CoverageDataError("LLVM report is missing a non-empty data array.")
@@ -435,15 +448,18 @@ def _parse_file_segments(file_record: Mapping[str, Any], source_path: Path) -> d
         or expected_covered > expected_lines
     ):
         raise CoverageDataError("LLVM file summary has no valid line count.")
-    if len(line_counts) != expected_lines:
+    # LLVM sums line summaries per source-level function group, but file
+    # segments merge coverage by physical source location. Shared lines can
+    # therefore make the summary larger than the unique segment line map.
+    if len(line_counts) > expected_lines:
         raise CoverageDataError(
-            "LLVM file segments do not account for the file summary line count "
+            "LLVM file segments exceed the file summary line count "
             f"({len(line_counts)} parsed, {expected_lines} reported)."
         )
     covered_lines = sum(count > 0 for count in line_counts.values())
-    if covered_lines != expected_covered:
+    if covered_lines > expected_covered:
         raise CoverageDataError(
-            "LLVM file segments do not account for the file summary covered-line count "
+            "LLVM file segments exceed the file summary covered-line count "
             f"({covered_lines} parsed, {expected_covered} reported)."
         )
     return line_counts
@@ -454,6 +470,10 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
     root = Path(workspace_root).resolve()
     parsed = _load_json_document(document)
     lines: dict[str, dict[int, int]] = {}
+    summary_uncovered_counts: dict[str, int] = {}
+    function_region_lines: dict[str, set[int]] = {}
+    function_region_ranges: dict[str, list[tuple[str, int, int, int]]] = {}
+    source_lines_by_path: dict[str, list[str]] = {}
     regions_seen = 0
 
     for data_item in parsed["data"]:
@@ -470,7 +490,13 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
                 except (OSError, ValueError) as error:
                     raise CoverageDataError(f"LLVM report path is outside the workspace: {file_record['filename']}") from error
                 continue
-            for line, count in _parse_file_segments(file_record, root / source).items():
+            file_lines = _parse_file_segments(file_record, root / source)
+            line_summary = file_record["summary"]["lines"]
+            summary_uncovered_counts[source] = max(
+                summary_uncovered_counts.get(source, 0),
+                line_summary["count"] - line_summary["covered"],
+            )
+            for line, count in file_lines.items():
                 current = lines.setdefault(source, {}).get(line, 0)
                 lines[source][line] = max(current, count)
         for function in data_item["functions"]:
@@ -501,10 +527,77 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
                 if source is None or kind != 0:
                     continue
                 regions_seen += 1
+                if source not in source_lines_by_path:
+                    try:
+                        source_lines_by_path[source] = (root / source).read_text(
+                            encoding="utf-8", errors="strict"
+                        ).splitlines()
+                    except (OSError, UnicodeError) as error:
+                        raise CoverageDataError(f"LLVM source file could not be read as UTF-8: {source}") from error
+                source_lines = source_lines_by_path[source]
+                last_line = end_line - 1 if end_line > start_line and end_column == 1 else end_line
+                if start_line > len(source_lines) or last_line > len(source_lines):
+                    raise CoverageDataError(f"LLVM function code region is outside the source file: {source}:{start_line}.")
+                start_maximum_column = len(source_lines[start_line - 1].encode("utf-8")) + 1
+                if start_column > start_maximum_column:
+                    raise CoverageDataError(
+                        f"LLVM function region column is outside the source file: {source}:{start_line}:{start_column}."
+                    )
+                if end_line <= len(source_lines):
+                    end_maximum_column = len(source_lines[end_line - 1].encode("utf-8")) + 1
+                    if end_column > end_maximum_column:
+                        raise CoverageDataError(
+                            f"LLVM function region column is outside the source file: {source}:{end_line}:{end_column}."
+                        )
+                # A region can span source lines that have no executable code (for
+                # example braces and `else` clauses). Its start line is the
+                # executable location that must be represented in file segments.
+                function_region_lines.setdefault(source, set()).add(start_line)
+                function_region_ranges.setdefault(source, []).append(
+                    (function["name"], start_line, last_line, count)
+                )
 
     if regions_seen == 0:
         raise CoverageDataError("LLVM report contains no production code regions.")
-    return lines
+    for source, region_lines in function_region_lines.items():
+        missing_lines = region_lines.difference(lines.get(source, {}))
+        if missing_lines:
+            first_missing = min(missing_lines)
+            raise CoverageDataError(
+                "LLVM function code region line is missing from file segments "
+                f"and would shrink the denominator: {source}:{first_missing}."
+            )
+    summary_uncovered_excess: dict[str, int] = {}
+    for source, summary_uncovered in summary_uncovered_counts.items():
+        line_counts = lines.get(source, {})
+        segment_uncovered = sum(count == 0 for count in line_counts.values())
+        line_numbers = sorted(line_counts)
+        function_line_counts: dict[str, dict[int, int]] = {}
+        for function_name, start_line, last_line, count in function_region_ranges.get(source, []):
+            first_index = bisect_left(line_numbers, start_line)
+            after_last_index = bisect_right(line_numbers, last_line)
+            function_lines = function_line_counts.setdefault(function_name, {})
+            for line in line_numbers[first_index:after_last_index]:
+                function_lines[line] = max(function_lines.get(line, 0), count)
+        known_shared_uncovered = 0
+        for line in line_numbers:
+            group_counts = [
+                function_lines[line]
+                for function_lines in function_line_counts.values()
+                if line in function_lines
+            ]
+            if len(group_counts) < 2:
+                continue
+            group_uncovered = sum(count == 0 for count in group_counts)
+            known_shared_uncovered += max(
+                0,
+                group_uncovered - int(line_counts[line] == 0),
+            )
+        summary_uncovered_excess[source] = max(
+            0,
+            summary_uncovered - segment_uncovered - known_shared_uncovered,
+        )
+    return CoverageReport(lines, summary_uncovered_excess)
 
 
 def normalize_llvm_export(document: str | bytes, workspace_root: str | Path) -> str:
@@ -704,6 +797,11 @@ def _load_platform_artifacts(report_root: Path, workspace: Path) -> dict[str, An
 
 def _evaluate_coverage(workspace: Path, reports: Mapping[str, Mapping[str, Mapping[int, int]]], diff: str) -> list[str]:
     merged = merge_platform_reports(reports)
+    summary_uncovered_excess: dict[str, int] = {}
+    for report in reports.values():
+        if isinstance(report, CoverageReport):
+            for source, count in report.summary_uncovered_excess.items():
+                summary_uncovered_excess[source] = summary_uncovered_excess.get(source, 0) + count
     source_scan = scan_production_sources(workspace)
     if not source_scan.eligible:
         raise CoverageDataError("Coverage reports contain production code but source preflight found no executable production files.")
@@ -727,11 +825,21 @@ def _evaluate_coverage(workspace: Path, reports: Mapping[str, Mapping[str, Mappi
     }
     if changed_executable:
         covered = sum(all_lines[item] > 0 for item in changed_executable)
-        total = len(changed_executable)
+        changed_sources = {source for source in changed if source in merged}
+        summary_only = sum(summary_uncovered_excess.get(source, 0) for source in changed_sources)
+        total = len(changed_executable) + summary_only
         if not meets_threshold(covered, total, 95):
             raise CoverageDataError(f"Changed Rust code coverage {covered}/{total} is below 95%.")
-        results.append(f"Changed executable Rust lines: {covered}/{total} (95% minimum).")
+        results.append(
+            f"Changed Rust coverage: {covered}/{total} including {summary_only} summary-only line(s) as uncovered (95% minimum)."
+        )
     else:
+        changed_sources = {source for source in changed if source in merged}
+        summary_only = sum(summary_uncovered_excess.get(source, 0) for source in changed_sources)
+        if summary_only:
+            raise CoverageDataError(
+                "Changed Rust code coverage cannot be marked not applicable while LLVM summary lines are absent from segments."
+            )
         results.append("Changed executable Rust lines: not applicable.")
 
     groups = {
@@ -746,16 +854,24 @@ def _evaluate_coverage(workspace: Path, reports: Mapping[str, Mapping[str, Mappi
         }
         if group_lines:
             covered = sum(count > 0 for count in group_lines.values())
-            total = len(group_lines)
+            summary_only = sum(
+                count
+                for source, count in summary_uncovered_excess.items()
+                if PurePosixPath(source).parts[1] in crate_names
+            )
+            total = len(group_lines) + summary_only
             if not meets_threshold(covered, total, threshold):
                 raise CoverageDataError(f"{label} coverage {covered}/{total} is below {threshold}%.")
-            results.append(f"{label} coverage: {covered}/{total} ({threshold}% minimum).")
+            results.append(
+                f"{label} coverage: {covered}/{total} including {summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
+            )
 
     covered = sum(count > 0 for count in all_lines.values())
-    total = len(all_lines)
+    summary_only = sum(summary_uncovered_excess.values())
+    total = len(all_lines) + summary_only
     if not meets_threshold(covered, total, 90):
         raise CoverageDataError(f"Workspace coverage {covered}/{total} is below 90%.")
-    results.append(f"Workspace coverage: {covered}/{total} (90% minimum).")
+    results.append(f"Workspace coverage: {covered}/{total} including {summary_only} summary-only line(s) as uncovered (90% minimum).")
     return results
 
 
