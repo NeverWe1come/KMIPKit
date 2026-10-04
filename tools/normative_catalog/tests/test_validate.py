@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.normative_catalog.validate import CatalogValidationError, _check_operation_inventory, validate_catalog
+from tools.normative_catalog.validate import CatalogValidationError, _JsonPreflight, _check_operation_inventory, validate_catalog
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -266,6 +266,15 @@ def operation_element(name: str, section: str, direction: str) -> dict[str, obje
 
 
 class CatalogValidationTests(unittest.TestCase):
+    def test_json_number_preflight_matches_without_copying_remaining_input(self) -> None:
+        class NoSlice(str):
+            def __getitem__(self, key: object) -> str:
+                if isinstance(key, slice) and key.stop is None:
+                    raise AssertionError("preflight copied the unconsumed JSON suffix")
+                return super().__getitem__(key)  # type: ignore[arg-type]
+
+        _JsonPreflight(NoSlice('{"schema_version":1}')).validate()
+
     def test_operation_inventory_matches_all_client_and_server_definitions(self) -> None:
         elements = [
             *(operation_element(name, section, "client_to_server") for name, section in CLIENT_OPERATIONS.items()),
