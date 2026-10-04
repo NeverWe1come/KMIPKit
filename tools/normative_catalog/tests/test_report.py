@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+import json
+import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 from tools.normative_catalog.report import render_report, write_report
 from tools.normative_catalog.tests.test_validate import minimal_catalog
+
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def report_catalog() -> dict[str, object]:
@@ -136,6 +142,25 @@ class CoverageReportTests(unittest.TestCase):
         report = render_report(catalog)
         self.assertNotIn("attacker.invalid", report)
         self.assertNotIn("https://", report)
+
+    def test_script_entrypoint_works_from_a_clean_repository_root(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = ROOT / "specification" / "oasis" / "kmip-2.1"
+            shutil.copytree(source, root / "specification" / "oasis" / "kmip-2.1")
+            catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+            catalog_path.parent.mkdir(parents=True)
+            catalog_path.write_text(json.dumps(minimal_catalog(), indent=2) + "\n", encoding="utf-8")
+            script = Path(__file__).resolve().parents[1] / "report.py"
+            result = subprocess.run(
+                [sys.executable, str(script), "--write", "--repo-root", str(root)],
+                cwd=root,
+                capture_output=True,
+                check=False,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((root / "specification" / "catalog" / "coverage-report.md").is_file())
 
     def test_check_detects_stale_report_and_write_replaces_it(self) -> None:
         catalog = report_catalog()
