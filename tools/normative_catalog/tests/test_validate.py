@@ -365,6 +365,72 @@ def _pinned_message_structure_rows() -> set[tuple[str, str, str | None, str | No
     return records
 
 
+def _pinned_message_field_types() -> set[tuple[str, str, str, str | None]]:
+    """Return the non-credential field types and nested rows in Tables 400–426."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    records: set[tuple[str, str, str, str | None]] = set()
+    for table in parser.tables:
+        caption = table.get("caption")
+        heading = table.get("heading")
+        rows = table.get("rows")
+        if not isinstance(caption, str) or not isinstance(heading, str) or not isinstance(rows, list) or not rows:
+            continue
+        table_match = re.match(r"^Table\s+(\d+)", caption)
+        if not table_match or not (400 <= int(table_match.group(1)) <= 409 or 417 <= int(table_match.group(1)) <= 426):
+            continue
+        section_match = re.match(r"^(9\.[0-9]+)\s+", heading)
+        if not section_match:
+            continue
+        section = section_match.group(1)
+        headers = [cell.strip().casefold() for cell in rows[0]]
+        if len(headers) < 2 or headers[0] != "object" or headers[1] != "encoding":
+            continue
+        required_index = next((index for index, value in enumerate(headers) if value == "required"), None)
+        for row in rows[1:]:
+            if len(row) > 1:
+                requiredness = row[required_index] if required_index is not None and len(row) > required_index else None
+                records.add((section, row[0], row[1], requiredness))
+    return records
+
+
+def _pinned_credential_forms() -> tuple[dict[str, tuple[str, str]], set[tuple[str, str, str, str]]]:
+    """Return the Credential root, six forms, and literal member rows from Tables 410–416."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    roots: dict[str, tuple[str, str]] = {}
+    members: set[tuple[str, str, str, str]] = set()
+    for table in parser.tables:
+        caption = table.get("caption")
+        rows = table.get("rows")
+        if not isinstance(caption, str) or not isinstance(rows, list) or not rows:
+            continue
+        table_match = re.match(r"^Table\s+(41[0-6])\s*:", caption)
+        if not table_match:
+            continue
+        table_number = int(table_match.group(1))
+        headers = [cell.strip().casefold() for cell in rows[0]]
+        if len(headers) < 3 or headers[:2] != ["object", "encoding"]:
+            continue
+        root_row = rows[1]
+        form_name = "Credential" if table_number == 410 else re.search(
+            r"Credential Value Structure for the (.+?)(?: Credential)?$", caption
+        ).group(1)
+        roots[form_name] = (root_row[1], root_row[2] if len(root_row) > 2 else "")
+        for row in rows[2:]:
+            if len(row) >= 3:
+                members.add((form_name, row[0], row[1], row[2]))
+    return roots, members
+
+
 def minimal_catalog() -> dict[str, object]:
     """Return the smallest catalog with exact pinned source metadata."""
     source_rows = [
@@ -1058,6 +1124,51 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(actual_rows, source_rows)
         self.assertEqual(len(messages), len(source_rows))
 
+    def test_message_field_types_match_tables_400_to_409_and_417_to_426(self) -> None:
+        source_rows = _pinned_message_field_types()
+        self.assertEqual(len(source_rows), 28)
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        messages = [
+            row for row in catalog["elements"]
+            if row.get("kind") == "message_field"
+            and any(reference["section"].startswith("9.") for reference in row["source_refs"])
+        ]
+        actual_rows = {
+            (reference["section"], row["name"], row["source_encoding"], row.get("source_requiredness"))
+            for row in messages
+            for reference in row["source_refs"]
+            if reference["section"].startswith("9.")
+        }
+        self.assertEqual(actual_rows, source_rows)
+        self.assertEqual(len(messages), len(source_rows))
+
+    def test_credential_forms_and_fields_match_tables_410_to_416(self) -> None:
+        source_roots, source_members = _pinned_credential_forms()
+        self.assertEqual(len(source_roots), 7)
+        self.assertEqual(len(source_members), 22)
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        elements = catalog["elements"]
+        credentials = [row for row in elements if row.get("kind") == "credential"]
+        self.assertEqual(
+            {row["name"]: (row["source_encoding"], row["source_requiredness"]) for row in credentials},
+            source_roots,
+        )
+        credential_names = {row["element_id"]: row["name"] for row in credentials}
+        members = [
+            row for row in elements
+            if row.get("kind") == "structure_member"
+            and row["source_refs"][0]["section"] == "9.11"
+        ]
+        actual_members = {
+            (
+                credential_names[row["parent_element_ids"][0]], row["name"],
+                row["source_encoding"], row["source_requiredness"],
+            )
+            for row in members
+        }
+        self.assertEqual(actual_members, source_members)
+        self.assertEqual(len(members), len(source_members))
+
     def test_accepts_source_encodings_on_option_and_result_records(self) -> None:
         document = minimal_catalog()
         common = {
@@ -1110,6 +1221,29 @@ class CatalogValidationTests(unittest.TestCase):
                 "verification_refs": [],
                 "source_requiredness": "No, MAY be repeated",
                 "source_comment": "If omitted, the default applies.",
+            },
+        ]
+        self.assertEqual(validate(document)["record_count"], 5)
+
+    def test_accepts_source_metadata_on_credential_roots(self) -> None:
+        document = minimal_catalog()
+        document["elements"] = [
+            {
+                "element_id": "KMIPKIT-ELEM-CREDENTIAL-TEST",
+                "kind": "credential",
+                "name": "Test Credential",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "9.11"}],
+                "direction": "client_to_server",
+                "scope_state": "client_1_0",
+                "parent_element_ids": [],
+                "requirement_ids": [],
+                "profile_ids": [],
+                "test_case_ids": [],
+                "feature_spec": None,
+                "implementation_refs": [],
+                "verification_refs": [],
+                "source_encoding": "Structure",
+                "source_requiredness": "",
             },
         ]
         self.assertEqual(validate(document)["record_count"], 5)
