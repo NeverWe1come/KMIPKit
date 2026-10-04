@@ -199,6 +199,21 @@ def render_report(catalog: dict[str, Any]) -> str:
     ))
     lines.append("")
 
+    requirements_without_tests = sorted(
+        (row for row in requirements if not row.get("test_case_ids")),
+        key=lambda row: row.get("requirement_id", ""),
+    )
+    lines.extend(["## Requirements without official test-case links", ""])
+    lines.extend(_table(
+        ("Requirement", "Evidence gap", "Source"),
+        [(
+            row.get("requirement_id"),
+            row.get("review_note") or "No requirement-level official test evidence is linked.",
+            _source_reference(row),
+        ) for row in requirements_without_tests],
+    ))
+    lines.append("")
+
     negative_requirements = sorted(
         (row for row in requirements if row.get("negative_verification_required") is True),
         key=lambda row: row.get("requirement_id", ""),
