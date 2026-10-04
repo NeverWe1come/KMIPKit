@@ -834,6 +834,57 @@ def _validate_catalog_header(catalog: Any) -> dict[str, Any]:
     return catalog
 
 
+CLIENT_OPERATION_SECTIONS = {
+    "Activate": "6.1.1", "Add Attribute": "6.1.2", "Adjust Attribute": "6.1.3",
+    "Archive": "6.1.4", "Cancel": "6.1.5", "Certify": "6.1.6", "Check": "6.1.7",
+    "Create": "6.1.8", "Create Key Pair": "6.1.9", "Create Split Key": "6.1.10",
+    "Decrypt": "6.1.11", "Delegated Login": "6.1.12", "Delete Attribute": "6.1.13",
+    "Derive Key": "6.1.14", "Destroy": "6.1.15", "Discover Versions": "6.1.16",
+    "Encrypt": "6.1.17", "Export": "6.1.18", "Get": "6.1.19",
+    "Get Attributes": "6.1.20", "Get Attribute List": "6.1.21", "Get Constraints": "6.1.22",
+    "Get Usage Allocation": "6.1.23", "Hash": "6.1.24", "Import": "6.1.25",
+    "Interop": "6.1.26", "Join Split Key": "6.1.27", "Locate": "6.1.28", "Log": "6.1.29",
+    "Login": "6.1.30", "Logout": "6.1.31", "MAC": "6.1.32", "MAC Verify": "6.1.33",
+    "Modify Attribute": "6.1.34", "Obtain Lease": "6.1.35", "Ping": "6.1.36",
+    "PKCS#11": "6.1.37", "Poll": "6.1.38", "Process": "6.1.39", "Query": "6.1.40",
+    "Query Asynchronous Requests": "6.1.41", "Recover": "6.1.42", "Register": "6.1.43",
+    "Revoke": "6.1.44", "Re-certify": "6.1.45", "Re-key": "6.1.46",
+    "Re-key Key Pair": "6.1.47", "Re-Provision": "6.1.48", "RNG Retrieve": "6.1.49",
+    "RNG Seed": "6.1.50", "Set Attribute": "6.1.51", "Set Constraints": "6.1.52",
+    "Set Defaults": "6.1.53", "Set Endpoint Role": "6.1.54", "Sign": "6.1.55",
+    "Signature Verify": "6.1.56", "Validate": "6.1.57",
+}
+SERVER_OPERATION_SECTIONS = {
+    "Discover Versions": "6.2.1", "Notify": "6.2.2", "Put": "6.2.3",
+    "Query": "6.2.4", "Set Endpoint Role": "6.2.5",
+}
+
+
+def _check_operation_inventory(elements: list[dict[str, Any]]) -> None:
+    expected = {
+        **{("client_to_server", name): section for name, section in CLIENT_OPERATION_SECTIONS.items()},
+        **{("server_to_client", name): section for name, section in SERVER_OPERATION_SECTIONS.items()},
+    }
+    operations = [row for row in elements if row.get("kind") == "operation"]
+    observed: dict[tuple[Any, Any], dict[str, Any]] = {}
+    for operation in operations:
+        key = (operation.get("direction"), operation.get("name"))
+        if key in observed:
+            _fail("operation inventory contains a duplicate operation direction/name pair")
+        observed[key] = operation
+    if set(observed) != set(expected):
+        _fail("operation inventory does not match all 57 client and 5 server definitions")
+    for key, section in expected.items():
+        operation = observed[key]
+        if operation.get("source_refs") != [{"source_id": "KMIPKIT-SRC-spec", "section": section}]:
+            _fail(f"operation {operation.get('name')} has an incorrect source section")
+        required_scope = "client_1_0" if key[0] == "client_to_server" else "client_1_1"
+        if operation.get("scope_state") != required_scope:
+            _fail(f"operation {operation.get('name')} has an incorrect scope disposition")
+        if key[0] == "server_to_client" and not operation.get("scope_reason"):
+            _fail(f"operation {operation.get('name')} requires a 1.1 scope rationale")
+
+
 COMPLETE_ELEMENT_COUNTS = {
     "data_type": 11,
     "object_type": 9,
@@ -849,15 +900,7 @@ COMPLETE_ELEMENT_COUNTS = {
 
 def _check_complete_inventory(catalog: dict[str, Any]) -> None:
     elements = catalog["elements"]
-    operations = [row for row in elements if row.get("kind") == "operation"]
-    client_operations = [row for row in operations if row.get("direction") == "client_to_server"]
-    server_operations = [row for row in operations if row.get("direction") == "server_to_client"]
-    if len(client_operations) != 57 or len(server_operations) != 5 or len(operations) != 62:
-        _fail("complete inventory requires 57 client and 5 server operation records")
-    if any(row.get("scope_state") != "client_1_0" for row in client_operations):
-        _fail("complete inventory has an incorrectly scoped client operation")
-    if any(row.get("scope_state") != "client_1_1" for row in server_operations):
-        _fail("complete inventory has an incorrectly scoped server operation")
+    _check_operation_inventory(elements)
 
     for kind, expected in COMPLETE_ELEMENT_COUNTS.items():
         actual = sum(row.get("kind") == kind for row in elements)

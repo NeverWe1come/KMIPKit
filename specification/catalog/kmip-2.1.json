@@ -47,7 +47,1253 @@
     }
   ],
   "source_clauses": [],
-  "elements": [],
+  "elements": [
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
+      "kind": "operation",
+      "name": "Activate",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.1"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+      "kind": "operation",
+      "name": "Add Attribute",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+      "kind": "operation",
+      "name": "Adjust Attribute",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.3"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
+      "kind": "operation",
+      "name": "Archive",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.4"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-CANCEL",
+      "kind": "operation",
+      "name": "Cancel",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.5"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+      "kind": "operation",
+      "name": "Certify",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.6"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-CHECK",
+      "kind": "operation",
+      "name": "Check",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.7"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-CREATE",
+      "kind": "operation",
+      "name": "Create",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.8"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+      "kind": "operation",
+      "name": "Create Key Pair",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.9"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+      "kind": "operation",
+      "name": "Create Split Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.10"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "kind": "operation",
+      "name": "Decrypt",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "kind": "operation",
+      "name": "Delegated Login",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+      "kind": "operation",
+      "name": "Delete Attribute",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.13"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+      "kind": "operation",
+      "name": "Derive Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-DESTROY",
+      "kind": "operation",
+      "name": "Destroy",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.15"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "kind": "operation",
+      "name": "Discover Versions",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.16"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "kind": "operation",
+      "name": "Encrypt",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.17"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-EXPORT",
+      "kind": "operation",
+      "name": "Export",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-GET",
+      "kind": "operation",
+      "name": "Get",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+      "kind": "operation",
+      "name": "Get Attribute List",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.21"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+      "kind": "operation",
+      "name": "Get Attributes",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.20"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+      "kind": "operation",
+      "name": "Get Constraints",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.22"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "kind": "operation",
+      "name": "Get Usage Allocation",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.23"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-HASH",
+      "kind": "operation",
+      "name": "Hash",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.24"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "kind": "operation",
+      "name": "Import",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.25"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-INTEROP",
+      "kind": "operation",
+      "name": "Interop",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.26"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+      "kind": "operation",
+      "name": "Join Split Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.27"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "kind": "operation",
+      "name": "Locate",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.28"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-LOG",
+      "kind": "operation",
+      "name": "Log",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.29"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "kind": "operation",
+      "name": "Login",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.30"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-LOGOUT",
+      "kind": "operation",
+      "name": "Logout",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.31"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-MAC",
+      "kind": "operation",
+      "name": "MAC",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.32"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+      "kind": "operation",
+      "name": "MAC Verify",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.33"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "kind": "operation",
+      "name": "Modify Attribute",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.34"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
+      "kind": "operation",
+      "name": "Obtain Lease",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.35"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-PING",
+      "kind": "operation",
+      "name": "Ping",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.36"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+      "kind": "operation",
+      "name": "PKCS#11",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.37"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-POLL",
+      "kind": "operation",
+      "name": "Poll",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.38"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-PROCESS",
+      "kind": "operation",
+      "name": "Process",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.39"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-QUERY",
+      "kind": "operation",
+      "name": "Query",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.40"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+      "kind": "operation",
+      "name": "Query Asynchronous Requests",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.41"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+      "kind": "operation",
+      "name": "Re-certify",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.45"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "kind": "operation",
+      "name": "Re-key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.46"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
+      "kind": "operation",
+      "name": "Re-key Key Pair",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.47"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-RE-PROVISION",
+      "kind": "operation",
+      "name": "Re-Provision",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.48"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-RECOVER",
+      "kind": "operation",
+      "name": "Recover",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.42"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+      "kind": "operation",
+      "name": "Register",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.43"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-REVOKE",
+      "kind": "operation",
+      "name": "Revoke",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.44"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
+      "kind": "operation",
+      "name": "RNG Retrieve",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.49"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
+      "kind": "operation",
+      "name": "RNG Seed",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.50"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+      "kind": "operation",
+      "name": "Set Attribute",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.51"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+      "kind": "operation",
+      "name": "Set Constraints",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.52"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "kind": "operation",
+      "name": "Set Defaults",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.53"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
+      "kind": "operation",
+      "name": "Set Endpoint Role",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.54"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-SIGN",
+      "kind": "operation",
+      "name": "Sign",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.55"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+      "kind": "operation",
+      "name": "Signature Verify",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.56"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "kind": "operation",
+      "name": "Validate",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.57"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-S2C-DISCOVER-VERSIONS",
+      "kind": "operation",
+      "name": "Discover Versions",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.2.1"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_1",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-S2C-NOTIFY",
+      "kind": "operation",
+      "name": "Notify",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.2.2"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_1",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-S2C-PUT",
+      "kind": "operation",
+      "name": "Put",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.2.3"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_1",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-S2C-QUERY",
+      "kind": "operation",
+      "name": "Query",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.2.4"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_1",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OP-S2C-SET-ENDPOINT-ROLE",
+      "kind": "operation",
+      "name": "Set Endpoint Role",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.2.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_1",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+    }
+  ],
   "tag_ranges": [],
   "requirements": [],
   "policies": [],
