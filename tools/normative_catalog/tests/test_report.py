@@ -12,7 +12,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.normative_catalog.report import render_report, write_report
+from tools.normative_catalog.report import _clause_section_rows, render_report, write_report
 from tools.normative_catalog.tests.test_validate import minimal_catalog
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -77,6 +77,14 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("KMIPKIT-SRC-spec", report)
         self.assertIn("8.1", report)
         self.assertIn("requirement: 1", report)
+
+    def test_numeric_section_sort_breaks_equivalent_value_ties_stably(self) -> None:
+        clauses = [
+            {"source_id": "source", "section": "1.1", "disposition": "requirement"},
+            {"source_id": "source", "section": "1.01", "disposition": "reviewed_exclusion"},
+        ]
+
+        self.assertEqual(_clause_section_rows(clauses), _clause_section_rows(list(reversed(clauses))))
 
     def test_output_is_independent_of_record_order_and_contains_no_timestamp(self) -> None:
         first = report_catalog()

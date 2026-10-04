@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import json
 import hashlib
+import os
 import re
 import subprocess
 import sys
+import tempfile
 import unittest
 from html.parser import HTMLParser
 from pathlib import Path
@@ -15,6 +17,7 @@ from unittest.mock import patch
 from tools.normative_catalog.validate import (
     CatalogValidationError,
     _JsonPreflight,
+    _git_tree,
     _check_operation_inventory,
     _check_tag_registry,
     validate_catalog,
@@ -2277,6 +2280,23 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("sources=4", result.stdout)
+
+    @unittest.skipUnless(os.name == "posix", "POSIX executable fixtures are required")
+    def test_git_tree_output_over_limit_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fake_git = Path(directory) / "git"
+            fake_git.write_text(
+                f"#!{sys.executable}\nimport sys\nsys.stdout.buffer.write(b'x' * 4096)\n",
+                encoding="utf-8",
+            )
+            fake_git.chmod(0o755)
+            search_path = os.pathsep.join((directory, os.environ["PATH"]))
+            with (
+                patch.dict(os.environ, {"PATH": search_path}),
+                patch.object(catalog_validate, "MAX_GIT_TREE_BYTES", 1024, create=True),
+                self.assertRaisesRegex(CatalogValidationError, "metadata size limit"),
+            ):
+                _git_tree(ROOT)
 
     def test_requires_every_top_level_record_collection(self) -> None:
         document = minimal_catalog()

@@ -5,6 +5,8 @@ from __future__ import annotations
 import tempfile
 import unittest
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 from tools.normative_catalog.safe_io import (
@@ -40,6 +42,34 @@ class SafeIoTests(unittest.TestCase):
             self.assertEqual(safe_read_bytes(root, "small.json", max_bytes=2), b"{}")
             with self.assertRaisesRegex(PathSecurityError, "size limit"):
                 safe_read_bytes(root, "large.json", max_bytes=5)
+
+    @unittest.skipUnless(os.name == "posix" and hasattr(os, "mkfifo"), "POSIX FIFO support is required")
+    def test_rejects_fifo_without_blocking(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            os.mkfifo(root / "input.fifo")
+            script = (
+                "import sys\n"
+                "from pathlib import Path\n"
+                "from tools.normative_catalog.safe_io import PathSecurityError, safe_read_bytes\n"
+                "try:\n"
+                "    safe_read_bytes(Path(sys.argv[1]), 'input.fifo', max_bytes=8)\n"
+                "except PathSecurityError:\n"
+                "    raise SystemExit(0)\n"
+                "raise SystemExit(1)\n"
+            )
+            repo_root = Path(__file__).resolve().parents[3]
+            try:
+                result = subprocess.run(
+                    [sys.executable, "-c", script, str(root)],
+                    cwd=repo_root,
+                    capture_output=True,
+                    check=False,
+                    timeout=2,
+                )
+            except subprocess.TimeoutExpired:
+                self.fail("safe_read_bytes blocked while opening a FIFO")
+            self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", errors="replace"))
 
     def test_rejects_symlinked_parent_and_final_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory, tempfile.TemporaryDirectory() as outside:
