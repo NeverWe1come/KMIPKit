@@ -62,6 +62,15 @@ Inventory records keep profile applicability, selected target, fixture
 availability, evidence completion, and public claim state separate. A profile
 record is not a conformance claim; current inventory claims remain
 `not_claimed` until all applicable clauses and official tests have evidence.
+The generated inventory report includes each profile's source clauses,
+requirements, elements, dependencies, linked official test IDs and status,
+transport, and encoding so reviewers can inspect that evidence without
+cross-referencing the JSON catalog manually.
+
+The same report lists each tag range separately, groups named tags by their
+OASIS allocation, and shows wire values and allocation states for unassigned
+protocol elements. OASIS allocation states remain distinct from KMIPKit's
+implementation and verification assignments.
 
 ## Source discrepancies and evidence gaps
 
