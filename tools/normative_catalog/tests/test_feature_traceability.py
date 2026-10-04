@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import json
 import re
+import tempfile
 import unittest
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
@@ -144,6 +145,37 @@ class FeatureTraceabilityTests(unittest.TestCase):
         for reference in references:
             with self.subTest(reference=reference):
                 self.assertFalse(self._is_executable_test_ref(reference))
+
+    def test_executable_test_refs_reject_symlinks_outside_repository(self) -> None:
+        test_name = "Outside.test_referenced_test"
+        with tempfile.TemporaryDirectory(dir=ROOT) as repo_temporary:
+            with tempfile.TemporaryDirectory() as external_temporary:
+                external_test = Path(external_temporary) / "outside.py"
+                external_test.write_text(
+                    "class Outside:\\n    def test_referenced_test(self):\\n        pass\\n",
+                    encoding="utf-8",
+                )
+                link = Path(repo_temporary) / "outside.py"
+                try:
+                    link.symlink_to(external_test)
+                except OSError as error:
+                    self.skipTest(f"symlink creation is unavailable: {error}")
+
+                reference = f"{link.relative_to(ROOT).as_posix()}::{test_name}"
+                self.assertFalse(self._is_executable_test_ref(reference))
+
+    def test_executable_test_refs_reject_oversized_source_files(self) -> None:
+        test_name = "Oversized.test_referenced_test"
+        with tempfile.TemporaryDirectory(dir=ROOT) as repo_temporary:
+            source = (
+                "class Oversized:\\n    def test_referenced_test(self):\\n        pass\\n"
+                + (" " * (1024 * 1024))
+            )
+            test_file = Path(repo_temporary) / "oversized.py"
+            test_file.write_text(source, encoding="utf-8")
+            reference = f"{test_file.relative_to(ROOT).as_posix()}::{test_name}"
+
+            self.assertFalse(self._is_executable_test_ref(reference))
 
     @staticmethod
     def _is_executable_test_ref(test_ref: str) -> bool:
