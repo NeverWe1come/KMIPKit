@@ -10,7 +10,13 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.normative_catalog.validate import CatalogValidationError, _JsonPreflight, _check_operation_inventory, validate_catalog
+from tools.normative_catalog.validate import (
+    CatalogValidationError,
+    _JsonPreflight,
+    _check_operation_inventory,
+    _check_tag_registry,
+    validate_catalog,
+)
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -256,6 +262,22 @@ SERVER_OPERATION_PAYLOAD_TABLES = {
     "Discover Versions": (343, None), "Notify": (None, None), "Put": (None, None),
     "Query": (347, None), "Set Endpoint Role": (349, 350),
 }
+RESERVED_TAGS = {
+    "420009": "(Reserved)", "420014": "(Reserved)", "420015": "(Reserved)",
+    "420016": "(Reserved)", "420017": "(Reserved)", "42001A": "(Reserved)",
+    "42001B": "(Reserved)", "42001C": "(Reserved)", "42001F": "(Reserved)",
+    "42002D": "(Reserved)", "42003B": "(Reserved)", "42005D": "(Reserved)",
+    "420065": "(Reserved)", "42006E": "(Reserved)", "420087": "(Reserved)",
+    "420090": "(Reserved)", "420091": "(Reserved)", "420137": "Reserved",
+    "42013E": "(Reserved)", "42013F": "(Reserved)",
+}
+EXPECTED_TAG_RANGES = (
+    ("unused", "000000 - 420000"),
+    ("reserved", "420XXX \u2013 42FFFF"),
+    ("unused", "430000 \u2013 53FFFF"),
+    ("extension", "540000 \u2013 54FFFF"),
+    ("unused", "550000 - FFFFFF"),
+)
 
 
 def operation_element(name: str, section: str, direction: str) -> dict[str, object]:
@@ -345,6 +367,46 @@ class CatalogValidationTests(unittest.TestCase):
         poll["payload_tables"].append({"role": "response", "table_number": 277, "caption": "Poll Response Payload"})
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
             _check_operation_inventory(elements)
+
+    def test_tag_inventory_reconciles_all_reserved_values_and_ranges(self) -> None:
+        elements = [
+            {
+                "element_id": f"KMIPKIT-ELEM-TAG-{value}",
+                "kind": "tag",
+                "name": name,
+                "wire_value": value,
+                "allocation": "reserved",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}],
+            }
+            for value, name in RESERVED_TAGS.items()
+        ]
+        for index in range(354):
+            value = f"A{index:05X}"
+            elements.append(
+                {
+                    "element_id": f"KMIPKIT-ELEM-TAG-{value}",
+                    "kind": "tag",
+                    "name": f"Test Tag {index}",
+                    "wire_value": value,
+                    "allocation": "assigned",
+                    "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}],
+                }
+            )
+        ranges = [
+            {
+                "range_id": f"KMIPKIT-RANGE-{index:03}",
+                "value_range": value_range,
+                "allocation": allocation,
+                "source_order": index,
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}],
+            }
+            for index, (allocation, value_range) in enumerate(EXPECTED_TAG_RANGES, start=1)
+        ]
+        _check_tag_registry(elements, ranges)
+
+        elements[17]["name"] = "(Reserved)"
+        with self.assertRaisesRegex(CatalogValidationError, "reserved tag"):
+            _check_tag_registry(elements, ranges)
 
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
