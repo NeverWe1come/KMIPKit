@@ -43,6 +43,35 @@ def _requirements_by_id() -> dict[str, dict[str, str]]:
         return {row["requirement_id"]: row for row in csv.DictReader(stream)}
 
 
+def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
+    posix_path = PurePosixPath(test_path)
+    windows_path = PureWindowsPath(test_path)
+    if (
+        not test_path
+        or "\\" in test_path
+        or posix_path.is_absolute()
+        or windows_path.is_absolute()
+        or windows_path.drive
+        or ".." in posix_path.parts
+    ):
+        return None
+
+    try:
+        root = ROOT.resolve(strict=True)
+        path = (root / test_path).resolve(strict=True)
+        path.relative_to(root)
+        if not path.is_file() or path.suffix not in {".py", ".rs"}:
+            return None
+        with path.open("rb") as source_file:
+            source_bytes = source_file.read(MAX_TEST_SOURCE_BYTES + 1)
+        if len(source_bytes) > MAX_TEST_SOURCE_BYTES:
+            return None
+        source = source_bytes.decode("utf-8")
+    except (OSError, RuntimeError, ValueError, UnicodeDecodeError):
+        return None
+    return path, source
+
+
 class FeatureTraceabilityTests(unittest.TestCase):
     def test_result_contract_elements_link_to_their_spec_code_and_tests(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
@@ -184,7 +213,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
         if not separator or not test_name:
             return False
 
-        source_file = FeatureTraceabilityTests._read_confined_test_source(test_path)
+        source_file = _read_confined_test_source(test_path)
         if source_file is None:
             return False
         path, source = source_file
@@ -198,36 +227,6 @@ class FeatureTraceabilityTests(unittest.TestCase):
             class_exists = re.search(rf"^class {re.escape(class_name)}(?:\(|:)", source, re.MULTILINE)
             return class_exists is not None and f"def {function_name}(" in source
         return False
-
-    @staticmethod
-    def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
-        posix_path = PurePosixPath(test_path)
-        windows_path = PureWindowsPath(test_path)
-        if (
-            not test_path
-            or "\\" in test_path
-            or posix_path.is_absolute()
-            or windows_path.is_absolute()
-            or windows_path.drive
-            or ".." in posix_path.parts
-        ):
-            return None
-
-        try:
-            root = ROOT.resolve(strict=True)
-            path = (root / test_path).resolve(strict=True)
-            path.relative_to(root)
-            if not path.is_file() or path.suffix not in {".py", ".rs"}:
-                return None
-            with path.open("rb") as source_file:
-                source_bytes = source_file.read(MAX_TEST_SOURCE_BYTES + 1)
-            if len(source_bytes) > MAX_TEST_SOURCE_BYTES:
-                return None
-            source = source_bytes.decode("utf-8")
-        except (OSError, RuntimeError, ValueError, UnicodeDecodeError):
-            return None
-        return path, source
-
 
 if __name__ == "__main__":
     unittest.main()
