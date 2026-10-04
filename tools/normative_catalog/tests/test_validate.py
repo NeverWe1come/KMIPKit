@@ -1571,6 +1571,24 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
             validate_catalog(raw, ROOT, require_complete=True)
 
+    def test_checked_in_catalog_reconciles_profile_and_official_test_evidence(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        raw = catalog_path.read_bytes()
+
+        validated = validate_catalog(raw, ROOT, require_complete=True)
+
+        self.assertGreater(validated["record_count"], 0)
+        document = json.loads(raw)
+        profiles = document["profiles"]
+        self.assertTrue(profiles)
+        self.assertTrue({"client", "server"}.issubset({profile["role"] for profile in profiles}))
+        self.assertTrue(all(profile["claim_state"] == "not_claimed" for profile in profiles))
+        self.assertTrue(all(profile["source_refs"] for profile in profiles))
+        self.assertTrue(all(profile["test_case_ids"] for profile in profiles))
+        self.assertTrue(all(profile["transport_requirements"] for profile in profiles))
+        self.assertTrue(all(profile["encoding_requirements"] for profile in profiles))
+        self.assertTrue(all(profile["applicability"] for profile in profiles))
+
     def test_rejects_unknown_top_level_fields(self) -> None:
         document = minimal_catalog()
         document["unexpected"] = []
