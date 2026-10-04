@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
+import locale
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.normative_catalog.report import render_report, write_report
 from tools.normative_catalog.tests.test_validate import minimal_catalog
@@ -75,6 +77,27 @@ class CoverageReportTests(unittest.TestCase):
         second["source_clauses"].reverse()
         self.assertEqual(render_report(first), render_report(second))
         self.assertNotIn("Generated at", render_report(first))
+
+    def test_output_is_independent_of_process_locale(self) -> None:
+        catalog = report_catalog()
+        expected = render_report(catalog)
+        with patch.object(locale, "strxfrm", side_effect=AssertionError("locale sort used")):
+            self.assertEqual(render_report(catalog), expected)
+
+    def test_report_surfaces_negative_verification_requirements(self) -> None:
+        catalog = report_catalog()
+        requirement = catalog["requirements"][0]
+        requirement["source_keyword"] = "MUST NOT"
+        requirement["normative_strength"] = "prohibited"
+        requirement["negative_verification_required"] = True
+        catalog["source_clauses"][0]["source_keywords"] = ["MUST NOT"]
+
+        report = render_report(catalog)
+
+        self.assertIn("## Requirements needing negative verification", report)
+        self.assertIn("KMIPKIT-REQ-SPEC-8.1-001", report)
+        self.assertIn("prohibited", report)
+        self.assertIn("required", report)
 
     def test_reports_profile_states_missing_fixtures_and_open_discrepancies(self) -> None:
         catalog = report_catalog()
