@@ -12,7 +12,7 @@ fn checked_tag() -> Tag {
 
 fn integer_payload_address(item: &Item) -> *const i32 {
     item.with_value(|view| match view {
-        ValueView::Integer(value) => value as *const i32,
+        ValueView::Integer(value) => std::ptr::from_ref(value),
         _ => std::ptr::null(),
     })
 }

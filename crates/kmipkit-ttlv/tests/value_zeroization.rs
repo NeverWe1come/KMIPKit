@@ -105,15 +105,13 @@ mod value {
                 .skip(1)
                 .map(|value| match value.as_view() {
                     ValueView::Integer(number) => *number == 0,
-                    ValueView::LongInteger(number) => *number == 0,
-                    ValueView::BigInteger(bytes) => bytes.is_empty(),
-                    ValueView::Enumeration(number) => *number == 0,
+                    ValueView::LongInteger(number)
+                    | ValueView::DateTime(number)
+                    | ValueView::DateTimeExtended(number) => *number == 0,
+                    ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) => bytes.is_empty(),
+                    ValueView::Enumeration(number) | ValueView::Interval(number) => *number == 0,
                     ValueView::Boolean(boolean) => !boolean,
                     ValueView::TextString(text) => text.is_empty(),
-                    ValueView::ByteString(bytes) => bytes.is_empty(),
-                    ValueView::DateTime(number) => *number == 0,
-                    ValueView::Interval(number) => *number == 0,
-                    ValueView::DateTimeExtended(number) => *number == 0,
                     ValueView::Structure(_) => false,
                 })
                 .collect::<Vec<_>>();
