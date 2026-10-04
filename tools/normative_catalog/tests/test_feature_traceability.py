@@ -11,6 +11,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 
 
 ROOT = Path(__file__).resolve().parents[3]
+MAX_TEST_SOURCE_BYTES = 1_048_576
 CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
 FEATURE_SPEC = "KMIPKIT-0003"
 RESULT_ELEMENT_IDS = {
@@ -183,27 +184,10 @@ class FeatureTraceabilityTests(unittest.TestCase):
         if not separator or not test_name:
             return False
 
-        posix_path = PurePosixPath(test_path)
-        windows_path = PureWindowsPath(test_path)
-        if (
-            not test_path
-            or "\\" in test_path
-            or posix_path.is_absolute()
-            or windows_path.is_absolute()
-            or windows_path.drive
-            or ".." in posix_path.parts
-        ):
+        source_file = FeatureTraceabilityTests._read_confined_test_source(test_path)
+        if source_file is None:
             return False
-
-        try:
-            root = ROOT.resolve(strict=True)
-            path = (root / test_path).resolve(strict=True)
-            path.relative_to(root)
-            if not path.is_file():
-                return False
-            source = path.read_text(encoding="utf-8")
-        except (OSError, RuntimeError, ValueError, UnicodeDecodeError):
-            return False
+        path, source = source_file
 
         if path.suffix == ".rs":
             return f"fn {test_name}(" in source
@@ -214,6 +198,35 @@ class FeatureTraceabilityTests(unittest.TestCase):
             class_exists = re.search(rf"^class {re.escape(class_name)}(?:\(|:)", source, re.MULTILINE)
             return class_exists is not None and f"def {function_name}(" in source
         return False
+
+    @staticmethod
+    def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
+        posix_path = PurePosixPath(test_path)
+        windows_path = PureWindowsPath(test_path)
+        if (
+            not test_path
+            or "\\" in test_path
+            or posix_path.is_absolute()
+            or windows_path.is_absolute()
+            or windows_path.drive
+            or ".." in posix_path.parts
+        ):
+            return None
+
+        try:
+            root = ROOT.resolve(strict=True)
+            path = (root / test_path).resolve(strict=True)
+            path.relative_to(root)
+            if not path.is_file() or path.suffix not in {".py", ".rs"}:
+                return None
+            with path.open("rb") as source_file:
+                source_bytes = source_file.read(MAX_TEST_SOURCE_BYTES + 1)
+            if len(source_bytes) > MAX_TEST_SOURCE_BYTES:
+                return None
+            source = source_bytes.decode("utf-8")
+        except (OSError, RuntimeError, ValueError, UnicodeDecodeError):
+            return None
+        return path, source
 
 
 if __name__ == "__main__":
