@@ -82,8 +82,9 @@ class WorkflowContractTests(unittest.TestCase):
         guide = TESTING_GUIDE.read_text(encoding="utf-8")
         paragraph = re.search(r"(?ms)^CI attempts branch coverage separately.*?(?=\n\n|\Z)", guide)
         self.assertIsNotNone(paragraph, "The branch-coverage documentation must exist.")
-        self.assertIn("only on a daily schedule", paragraph.group(0))
-        self.assertIn("does not run on pull requests", paragraph.group(0))
+        normalized_paragraph = " ".join(paragraph.group(0).split())
+        self.assertIn("only on a daily schedule", normalized_paragraph)
+        self.assertIn("does not run on pull requests", normalized_paragraph)
 
 
 if __name__ == "__main__":
