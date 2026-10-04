@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import shutil
 import subprocess
 import sys
@@ -263,9 +264,13 @@ class TagAllocationGeneratorCliTests(unittest.TestCase):
             self.assertEqual(second_write.returncode, 0, second_write.stderr)
             self.assertEqual(output.read_bytes(), first_bytes)
 
+            old_timestamp_ns = 946_684_800_000_000_000
+            os.utime(output, ns=(old_timestamp_ns, old_timestamp_ns))
+            expected_mtime_ns = output.stat().st_mtime_ns
             clean_check = _run_generator(root, "--check")
             self.assertEqual(clean_check.returncode, 0, clean_check.stderr)
             self.assertEqual(output.read_bytes(), first_bytes)
+            self.assertEqual(output.stat().st_mtime_ns, expected_mtime_ns)
 
     def test_check_reports_stale_output_without_rewriting_it(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
