@@ -76,6 +76,36 @@ cargo test --workspace --all-features
 `cargo doc --workspace --no-deps` builds crate documentation. The lockfile is
 committed so workspace dependency resolution remains reviewable and reproducible.
 
+## Run workspace tests through WSL from PowerShell
+
+On Windows, KMIPKit supports running the Rust suite in an existing WSL2 Ubuntu
+distribution. Use PowerShell 7.3 or newer, WSL2, and Rust 1.94.0 installed in
+that distribution. From the repository root, run:
+
+```powershell
+pwsh -File .\scripts\Test-Wsl.ps1
+```
+
+The command requires exactly one installed Ubuntu distribution. If more than
+one is installed, select one by its exact registered name:
+
+```powershell
+pwsh -File .\scripts\Test-Wsl.ps1 -Distribution Ubuntu-26.04
+```
+
+The runner converts the current checkout path with `wslpath`, sets it as the
+WSL working directory with `wsl.exe --cd`, and calls Cargo through
+`wsl.exe --exec`. It returns Cargo's exit status and preserves its output. It
+does not install Rust, create or convert a distribution, or modify host
+configuration. Install missing prerequisites manually and rerun the command.
+
+For script and coverage-gate tests, run:
+
+```powershell
+pwsh -File .\scripts\tests\Test-Wsl.ps1
+python -m unittest discover -s scripts/tests -p 'test_*.py' -v
+```
+
 ## Current implementation boundary
 
 The crates currently contain crate-level documentation and compile-time lint
