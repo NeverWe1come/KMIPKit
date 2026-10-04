@@ -130,20 +130,30 @@
 - [x] T040 Run an independent security review of file parsing, path handling, deterministic generation, dependencies, and untrusted catalog references; resolve actionable findings.
 - [x] T041 Prepare and push a draft PR from `feature/KMIPKIT-0002-normative-inventory`; include Red, Green, Refactor evidence, source counts, checksum results, coverage report, risks, and the explicit no-profile-claim limitation. Draft: https://github.com/NeverWe1come/KMIPKit/pull/4
 
+## Post-inventory traceability corrections
+
+These follow-up tasks correct gaps found when downstream implementation records
+were checked against the accepted inventory criteria. They remain within FR-003,
+FR-007, FR-012, FR-019, and SC-002; they do not change protocol scope.
+
+- [x] T042 **Red**: Add report tests for tag allocation counts, exact tag ranges, wire-value/allocation columns, full profile relationships, and source directions for the three response-result clauses; record the expected failures in the Red commit.
+- [x] T043 **Green**: Correct the three response-result clause directions from the pinned response text and extend the deterministic report with tag/range and profile traceability details; pass the focused tests.
+- [x] T044 **Refactor**: Regenerate the report, update inventory/conformance documentation, run catalog, immutable-source, report, and full Python checks, obtain independent QA/security review, and prepare a terminal-created draft PR. Draft: https://github.com/NeverWe1come/KMIPKit/pull/9
+
 ## Requirement-to-Task Traceability
 
 | Requirement | Tasks |
 |---|---|
 | FR-001, FR-020 | T001, T008, T037, T039, T041 |
 | FR-002, FR-006 | T012, T014, T016, T018, T019 |
-| FR-003, FR-019 | T013, T015, T016, T019, T033 |
+| FR-003, FR-019 | T013, T015, T016, T019, T033, T042, T043, T044 |
 | FR-004, FR-021 | T003, T006, T007, T008, T020, T022, T027 |
 | FR-005 | T020, T021, T022, T026 |
-| FR-007, FR-008 | T023, T029, T031, T034, T035 |
+| FR-007, FR-008 | T023, T029, T031, T034, T035, T042, T043, T044 |
 | FR-009 | T017, T024, T025, T034 |
 | FR-010 | T030, T032, T034, T035 |
 | FR-011 | T003, T033 |
-| FR-012 | T005, T028, T033 |
+| FR-012 | T005, T028, T033, T042, T043, T044 |
 | FR-013, FR-018 | T002, T006, T007, T008, T009, T010, T011, T019, T036, T037 |
 | FR-014 | T038 |
 | FR-015, FR-016 | T002, T004, T007, T009, T040 |
@@ -156,10 +166,10 @@
 | Success Criterion | Tasks |
 |---|---|
 | SC-001 | T012, T014, T018 |
-| SC-002 | T013, T015, T016, T033 |
+| SC-002 | T013, T015, T016, T033, T042, T043, T044 |
 | SC-003 | T006, T020, T022, T027 |
-| SC-004 | T017, T024, T029, T031, T032 |
-| SC-005 | T005, T025, T028, T033 |
+| SC-004 | T017, T024, T029, T031, T032, T042, T043, T044 |
+| SC-005 | T005, T025, T028, T033, T042, T043, T044 |
 | SC-006 | T005, T010, T036 |
 | SC-007 | T004, T005, T009, T010 |
 | SC-008 | T004, T008, T037 |

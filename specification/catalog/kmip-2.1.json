@@ -27723,7 +27723,7 @@
       "requirement_ids": [],
       "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
       "role": "both",
-      "direction": "client_to_server",
+      "direction": "server_to_client",
       "scope_state": "server_only",
       "condition": null
     },
@@ -27743,7 +27743,7 @@
       "requirement_ids": [],
       "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
       "role": "both",
-      "direction": "client_to_server",
+      "direction": "server_to_client",
       "scope_state": "server_only",
       "condition": null
     },
@@ -27762,7 +27762,7 @@
       "requirement_ids": [],
       "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
       "role": "both",
-      "direction": "client_to_server",
+      "direction": "server_to_client",
       "scope_state": "server_only",
       "condition": null
     },
