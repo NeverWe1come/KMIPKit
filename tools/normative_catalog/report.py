@@ -210,11 +210,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
     arguments = parser.parse_args(argv)
     try:
+        repository = arguments.repo_root.resolve(strict=True)
+        code_root = Path(__file__).resolve().parents[2]
+        if str(code_root) not in sys.path:
+            sys.path.insert(0, str(code_root))
         from tools.normative_catalog.validate import validate_catalog
 
-        catalog_path = arguments.repo_root / "specification" / "catalog" / "kmip-2.1.json"
-        report_path = arguments.repo_root / REPORT_PATH
-        catalog = validate_catalog(catalog_path.read_bytes(), arguments.repo_root)
+        catalog_path = repository / "specification" / "catalog" / "kmip-2.1.json"
+        report_path = repository / REPORT_PATH
+        catalog = validate_catalog(catalog_path.read_bytes(), repository)
         valid = write_report(catalog, report_path, check=arguments.check)
     except (OSError, ValueError) as error:
         print(f"coverage report failed: {error}", file=sys.stderr)
