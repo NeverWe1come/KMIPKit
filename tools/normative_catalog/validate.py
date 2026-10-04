@@ -66,6 +66,17 @@ TOP_LEVEL_ID_FIELDS = {
     "discrepancies": ("discrepancy_id", r"KMIPKIT-DISC-[0-9]{3}"),
     "decisions": ("decision_id", r"KMIPKIT-DEC-[0-9]{3}"),
 }
+ELEMENT_FIELDS = {
+    "element_id", "kind", "name", "source_refs", "wire_value", "allocation",
+    "direction", "scope_state", "scope_reason", "parent_element_ids",
+    "requirement_ids", "profile_ids", "test_case_ids",
+}
+ELEMENT_KINDS = {
+    "operation", "message_field", "structure_member", "credential", "data_type",
+    "object_type", "object_structure", "attribute", "attribute_structure",
+    "operation_structure", "tag", "enumeration", "enumeration_value", "bitmask",
+    "bitmask_value", "option", "result", "extension_rule",
+}
 
 
 class CatalogValidationError(ValueError):
@@ -227,6 +238,18 @@ def _check_identifiers(catalog: dict[str, Any]) -> None:
             seen.add(identifier)
 
 
+def _records_by_id(catalog: dict[str, Any], collection: str, field: str) -> dict[str, dict[str, Any]]:
+    return {record[field]: record for record in catalog[collection]}
+
+
+def _check_link_ids(record: dict[str, Any], field: str, known_ids: set[str], collection: str) -> None:
+    values = record.get(field)
+    if not isinstance(values, list) or any(not isinstance(value, str) for value in values):
+        _fail(f"{collection} {field} must be an array of identifiers")
+    if any(value not in known_ids for value in values):
+        _fail(f"{collection} contains an unresolved {field} reference")
+
+
 def _check_source_records(catalog: dict[str, Any], root: Path) -> set[str]:
     expected = _source_manifest(root)
     sources = catalog["sources"]
@@ -296,6 +319,10 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
 
 def _check_semantics(catalog: dict[str, Any], sources: set[str], clauses: set[str]) -> None:
     requirements = {record["requirement_id"]: record for record in catalog["requirements"]}
+    elements = _records_by_id(catalog, "elements", "element_id")
+    profiles = _records_by_id(catalog, "profiles", "profile_id")
+    test_cases = _records_by_id(catalog, "test_cases", "test_id")
+    decisions = _records_by_id(catalog, "decisions", "decision_id")
     for requirement in catalog["requirements"]:
         _source_refs(requirement.get("source_refs"), sources, "requirement source_refs")
         if not requirement.get("source_clause_ids") or any(item not in clauses for item in requirement["source_clause_ids"]):
@@ -314,11 +341,35 @@ def _check_semantics(catalog: dict[str, Any], sources: set[str], clauses: set[st
             _fail("source clause has an unresolved requirement reference")
 
     for element in catalog["elements"]:
+        if set(element) - ELEMENT_FIELDS:
+            _fail("protocol element has unknown fields")
+        if element.get("kind") not in ELEMENT_KINDS:
+            _fail("protocol element has an invalid kind")
+        if not isinstance(element.get("name"), str) or not element["name"].strip():
+            _fail("protocol element name is required")
         _source_refs(element.get("source_refs"), sources, "element source_refs")
         if element.get("direction") not in {"client_to_server", "server_to_client", "both", "not_applicable"}:
             _fail("protocol element has an invalid direction")
         if element.get("scope_state") not in {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope"}:
             _fail("protocol element has an invalid scope state")
+        if element.get("scope_state") != "client_1_0" and not isinstance(element.get("scope_reason"), str):
+            _fail("non-default protocol element scope requires a rationale")
+        _check_link_ids(element, "parent_element_ids", set(elements), "protocol element")
+        _check_link_ids(element, "requirement_ids", set(requirements), "protocol element")
+        _check_link_ids(element, "profile_ids", set(profiles), "protocol element")
+        _check_link_ids(element, "test_case_ids", set(test_cases), "protocol element")
+        if "wire_value" in element and element["wire_value"] is not None and not isinstance(element["wire_value"], str):
+            _fail("protocol element wire_value must be a string")
+        if "allocation" in element and element["allocation"] not in {None, "assigned", "reserved", "unused"}:
+            _fail("protocol element has an invalid tag allocation")
+
+    for requirement in catalog["requirements"]:
+        _check_link_ids(requirement, "element_ids", set(elements), "requirement")
+        _check_link_ids(requirement, "profile_ids", set(profiles), "requirement")
+        _check_link_ids(requirement, "test_case_ids", set(test_cases), "requirement")
+        decision_id = requirement.get("decision_id")
+        if decision_id is not None and decision_id not in decisions:
+            _fail("requirement refers to an unresolved decision")
 
     for tag_range in catalog["tag_ranges"]:
         if tag_range.get("allocation") not in {"unused", "reserved", "extension"}:
