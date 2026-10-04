@@ -158,6 +158,37 @@ def _pinned_enumeration_groups() -> dict[str, tuple[str, list[tuple[str, str]]]]
     return groups
 
 
+def _pinned_bitmask_groups() -> dict[str, tuple[str, list[tuple[str, str]]]]:
+    """Return the three §12 bitmask enumerations from the pinned Specification."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    groups: dict[str, tuple[str, list[tuple[str, str]]]] = {}
+    for table in parser.tables:
+        caption = table.get("caption")
+        if not isinstance(caption, str) or not re.match(r"Table 49[6-8]:", caption):
+            continue
+        heading = table.get("heading")
+        rows = table.get("rows")
+        if not isinstance(heading, str) or not isinstance(rows, list):
+            continue
+        match = re.match(r"^(12\.[1-3])\s+(.+)$", heading)
+        if not match:
+            continue
+        section, name = match.groups()
+        header_index = next(
+            (index for index, row in enumerate(rows) if [cell.casefold() for cell in row] == ["name", "value"]),
+            None,
+        )
+        if header_index is None:
+            raise AssertionError(f"pinned bitmask table has no Name/Value header: {caption}")
+        groups[section] = (name, [tuple(row) for row in rows[header_index + 1 :] if len(row) == 2])
+    return groups
+
+
 def minimal_catalog() -> dict[str, object]:
     """Return the smallest catalog with exact pinned source metadata."""
     source_rows = [
@@ -649,6 +680,37 @@ class CatalogValidationTests(unittest.TestCase):
             for row in (item for item in elements if item.get("kind") == kind):
                 parent_name = {"data_type": "Item Type", "object_type": "Object Type", "tag": "Tag"}[kind]
                 self.assertIn(definitions_by_name[parent_name]["element_id"], row["parent_element_ids"])
+
+    def test_bitmask_definitions_and_bits_reconcile_with_pinned_section_12(self) -> None:
+        groups = _pinned_bitmask_groups()
+        self.assertEqual(set(groups), {"12.1", "12.2", "12.3"})
+        self.assertEqual(sum(len(values) for _, values in groups.values()), 44)
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        elements = catalog["elements"]
+        definitions = [row for row in elements if row.get("kind") == "bitmask"]
+        values = [row for row in elements if row.get("kind") == "bitmask_value"]
+        expected_definitions = {(name, section) for section, (name, _) in groups.items()}
+        actual_definitions = {(row["name"], row["source_refs"][0]["section"]) for row in definitions}
+        self.assertEqual(actual_definitions, expected_definitions)
+
+        expected_values: set[tuple[str, str, str, str]] = set()
+        for section, (name, rows) in groups.items():
+            definition_slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
+            parent_id = f"KMIPKIT-ELEM-BITMASK-{definition_slug}"
+            for value_name, wire_value in rows:
+                allocation = (
+                    "extension" if "X" in wire_value
+                    else "reserved" if value_name == "(Reserved)"
+                    else "assigned"
+                )
+                expected_values.add((parent_id, value_name, wire_value, allocation))
+        actual_values = {
+            (row["parent_element_ids"][0], row["name"], row["wire_value"], row["allocation"])
+            for row in values
+            if len(row["parent_element_ids"]) == 1
+        }
+        self.assertEqual(actual_values, expected_values)
+        self.assertEqual(len(values), 44)
 
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
