@@ -283,6 +283,42 @@ def _pinned_attribute_value_structures() -> tuple[dict[str, tuple[str, str, str 
     return structures, members
 
 
+def _pinned_operation_structures() -> tuple[dict[str, tuple[str, str, str | None]], set[tuple[str, str, str, str | None]]]:
+    """Return §7 operation data structure roots and literal members from Tables 352–393."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    structures: dict[str, tuple[str, str, str | None]] = {}
+    members: set[tuple[str, str, str, str | None]] = set()
+    for table in parser.tables:
+        heading = table.get("heading")
+        rows = table.get("rows")
+        if not isinstance(heading, str) or not isinstance(rows, list) or len(rows) < 2:
+            continue
+        match = re.match(r"^(7\.[0-9]+)\s+", heading)
+        if not match:
+            continue
+        headers = [cell.strip().casefold() for cell in rows[0]]
+        if len(headers) < 2 or headers[0] not in {"object", "item"} or headers[1] != "encoding":
+            continue
+        section = match.group(1)
+        encoding_index = 1
+        required_index = next((index for index, value in enumerate(headers) if value == "required"), None)
+        root_row = rows[1]
+        if len(root_row) <= encoding_index:
+            raise AssertionError(f"pinned operation structure table is incomplete: {heading}")
+        requiredness = root_row[required_index] if required_index is not None and len(root_row) > required_index else None
+        structures[section] = (root_row[0], root_row[encoding_index], requiredness)
+        for row in rows[2:]:
+            if len(row) > encoding_index:
+                raw_requiredness = row[required_index] if required_index is not None and len(row) > required_index else None
+                members.add((section, row[0], row[encoding_index], raw_requiredness))
+    return structures, members
+
+
 def minimal_catalog() -> dict[str, object]:
     """Return the smallest catalog with exact pinned source metadata."""
     source_rows = [
@@ -895,6 +931,43 @@ class CatalogValidationTests(unittest.TestCase):
             if section in source_structures:
                 self.assertEqual(member["parent_element_ids"], [attributes_by_section[section]["element_id"]])
 
+    def test_operation_structures_match_pinned_tables_352_to_393(self) -> None:
+        source_structures, source_members = _pinned_operation_structures()
+        self.assertEqual(set(source_structures), {f"7.{number}" for number in range(1, 42)})
+        self.assertEqual(len(source_members), 94)
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        elements = catalog["elements"]
+        structures = [row for row in elements if row.get("kind") == "operation_structure"]
+        self.assertEqual(len(structures), 41)
+        actual_structures = {
+            (
+                row["source_refs"][0]["section"], row["name"], row["source_encoding"],
+                row.get("source_requiredness"),
+            )
+            for row in structures
+        }
+        self.assertEqual(
+            actual_structures,
+            {(section, name, encoding, requiredness) for section, (name, encoding, requiredness) in source_structures.items()},
+        )
+        structure_ids = {row["source_refs"][0]["section"]: row["element_id"] for row in structures}
+        members = [
+            row for row in elements
+            if row.get("kind") == "structure_member" and row["source_refs"][0]["section"].startswith("7.")
+        ]
+        actual_members = {
+            (
+                row["source_refs"][0]["section"], row["name"], row["source_encoding"],
+                row.get("source_requiredness"),
+            )
+            for row in members
+        }
+        self.assertEqual(actual_members, source_members)
+        self.assertEqual(len(members), len(source_members))
+        for member in members:
+            section = member["source_refs"][0]["section"]
+            self.assertEqual(member["parent_element_ids"], [structure_ids[section]])
+
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
         self.assertEqual(result["source_count"], 4)
@@ -975,6 +1048,29 @@ class CatalogValidationTests(unittest.TestCase):
                 "kind": "attribute",
                 "name": "Test Attribute",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "4.2"}],
+                "direction": "both",
+                "scope_state": "client_1_0",
+                "parent_element_ids": [],
+                "requirement_ids": [],
+                "profile_ids": [],
+                "test_case_ids": [],
+                "feature_spec": None,
+                "implementation_refs": [],
+                "verification_refs": [],
+                "source_encoding": "Structure",
+                "source_requiredness": "",
+            },
+        ]
+        self.assertEqual(validate(document)["record_count"], 5)
+
+    def test_accepts_source_metadata_on_operation_structure_roots(self) -> None:
+        document = minimal_catalog()
+        document["elements"] = [
+            {
+                "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-TEST",
+                "kind": "operation_structure",
+                "name": "Test Structure",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "7.1"}],
                 "direction": "both",
                 "scope_state": "client_1_0",
                 "parent_element_ids": [],
