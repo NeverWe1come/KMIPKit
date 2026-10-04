@@ -22,20 +22,25 @@ pub struct StructureView<'a> {
 
 impl Debug for Structure {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("Structure")
-            .field("child_count", &self.children.len())
-            .finish()
+        debug_structure_metadata(formatter, "Structure", self.children.len())
     }
 }
 
 impl Debug for StructureView<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("StructureView")
-            .field("child_count", &self.children.len())
-            .finish()
+        debug_structure_metadata(formatter, "StructureView", self.children.len())
     }
+}
+
+fn debug_structure_metadata(
+    formatter: &mut fmt::Formatter<'_>,
+    name: &str,
+    child_count: usize,
+) -> fmt::Result {
+    formatter
+        .debug_struct(name)
+        .field("child_count", &child_count)
+        .finish()
 }
 
 impl Structure {

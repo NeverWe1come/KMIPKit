@@ -78,44 +78,49 @@ enum ValueRepr {
 
 impl Debug for Value {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut debug = formatter.debug_struct("Value");
-        debug.field("item_type", &self.item_type());
+        let child_count = match self.inner.boxed.as_ref() {
+            ValueRepr::Structure(structure) => Some(structure.as_view().children().len()),
+            _ => None,
+        };
 
-        if let ValueRepr::Structure(structure) = self.inner.boxed.as_ref() {
-            debug.field("child_count", &structure.as_view().children().len());
-        }
-
-        debug.finish()
+        debug_value_metadata(formatter, "Value", self.item_type(), child_count)
     }
 }
 
 impl Debug for ValueView<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Structure(structure) => formatter
-                .debug_struct("ValueView")
-                .field("item_type", &ItemType::Structure)
-                .field("child_count", &structure.children().len())
-                .finish(),
-            Self::Integer(_) => debug_value_view(formatter, ItemType::Integer),
-            Self::LongInteger(_) => debug_value_view(formatter, ItemType::LongInteger),
-            Self::BigInteger(_) => debug_value_view(formatter, ItemType::BigInteger),
-            Self::Enumeration(_) => debug_value_view(formatter, ItemType::Enumeration),
-            Self::Boolean(_) => debug_value_view(formatter, ItemType::Boolean),
-            Self::TextString(_) => debug_value_view(formatter, ItemType::TextString),
-            Self::ByteString(_) => debug_value_view(formatter, ItemType::ByteString),
-            Self::DateTime(_) => debug_value_view(formatter, ItemType::DateTime),
-            Self::Interval(_) => debug_value_view(formatter, ItemType::Interval),
-            Self::DateTimeExtended(_) => debug_value_view(formatter, ItemType::DateTimeExtended),
-        }
+        let (item_type, child_count) = match self {
+            Self::Structure(structure) => (ItemType::Structure, Some(structure.children().len())),
+            Self::Integer(_) => (ItemType::Integer, None),
+            Self::LongInteger(_) => (ItemType::LongInteger, None),
+            Self::BigInteger(_) => (ItemType::BigInteger, None),
+            Self::Enumeration(_) => (ItemType::Enumeration, None),
+            Self::Boolean(_) => (ItemType::Boolean, None),
+            Self::TextString(_) => (ItemType::TextString, None),
+            Self::ByteString(_) => (ItemType::ByteString, None),
+            Self::DateTime(_) => (ItemType::DateTime, None),
+            Self::Interval(_) => (ItemType::Interval, None),
+            Self::DateTimeExtended(_) => (ItemType::DateTimeExtended, None),
+        };
+
+        debug_value_metadata(formatter, "ValueView", item_type, child_count)
     }
 }
 
-fn debug_value_view(formatter: &mut fmt::Formatter<'_>, item_type: ItemType) -> fmt::Result {
-    formatter
-        .debug_struct("ValueView")
-        .field("item_type", &item_type)
-        .finish()
+fn debug_value_metadata(
+    formatter: &mut fmt::Formatter<'_>,
+    name: &str,
+    item_type: ItemType,
+    child_count: Option<usize>,
+) -> fmt::Result {
+    let mut debug = formatter.debug_struct(name);
+    debug.field("item_type", &item_type);
+
+    if let Some(child_count) = child_count {
+        debug.field("child_count", &child_count);
+    }
+
+    debug.finish()
 }
 
 impl Zeroize for ValueRepr {
