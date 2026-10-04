@@ -2294,7 +2294,7 @@ class CatalogValidationTests(unittest.TestCase):
             with (
                 patch.dict(os.environ, {"PATH": search_path}),
                 patch.object(catalog_validate, "MAX_GIT_TREE_BYTES", 1024, create=True),
-                self.assertRaisesRegex(CatalogValidationError, "metadata size limit"),
+                self.assertRaisesRegex(CatalogValidationError, "size limit"),
             ):
                 _git_tree(ROOT)
 

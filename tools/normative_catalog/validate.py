@@ -19,6 +19,7 @@ else:
 
 
 MAX_BYTES = 16 * 1024 * 1024
+MAX_GIT_TREE_BYTES = MAX_BYTES
 MAX_DEPTH = 32
 MAX_RECORDS = 100_000
 MAX_TOKENS = 1_000_000
@@ -520,19 +521,49 @@ def _check_policy_provenance(
 
 def _git_tree(root: Path) -> dict[str, tuple[str, str]]:
     try:
-        result = subprocess.run(
+        process = subprocess.Popen(
             ["git", "ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", "specification/oasis/"],
             cwd=root,
-            check=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
         )
-    except (OSError, subprocess.CalledProcessError) as error:
+    except OSError as error:
         raise CatalogValidationError("could not read the pinned OASIS Git tree metadata") from error
+    if process.stdout is None:
+        process.kill()
+        process.wait()
+        raise CatalogValidationError("Git did not provide a readable OASIS tree stream")
+    chunks: list[bytes] = []
+    total_bytes = 0
+    try:
+        while True:
+            chunk = process.stdout.read(min(65_536, MAX_GIT_TREE_BYTES - total_bytes + 1))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            total_bytes += len(chunk)
+            if total_bytes > MAX_GIT_TREE_BYTES:
+                process.kill()
+                process.wait()
+                raise CatalogValidationError("pinned OASIS Git tree metadata exceeds its size limit")
+        return_code = process.wait()
+    except OSError as error:
+        process.kill()
+        process.wait()
+        raise CatalogValidationError("could not read the pinned OASIS Git tree metadata") from error
+    finally:
+        process.stdout.close()
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+    if return_code != 0:
+        raise CatalogValidationError("could not read the pinned OASIS Git tree metadata")
     tree: dict[str, tuple[str, str]] = {}
-    for entry in result.stdout.split(b"\0"):
+    for entry in b"".join(chunks).split(b"\0"):
         if not entry:
             continue
+        if len(tree) >= MAX_RECORDS:
+            _fail("pinned OASIS Git tree exceeds its entry limit")
         try:
             metadata, path_bytes = entry.split(b"\t", 1)
             mode, object_type, _object_id = metadata.decode("ascii").split(" ", 2)

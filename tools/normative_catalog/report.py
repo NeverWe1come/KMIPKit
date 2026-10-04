@@ -107,11 +107,11 @@ def _clause_section_rows(clauses: list[dict[str, Any]]) -> list[tuple[str, str, 
         counts = grouped[key]
         counts[disposition] = counts.get(disposition, 0) + 1
 
-    def section_key(value: str) -> tuple[int, ...] | tuple[str]:
+    def section_key(value: str) -> tuple[int, tuple[int, ...], str]:
         parts = value.split(".")
         if all(part.isdigit() for part in parts):
-            return tuple(int(part) for part in parts)
-        return (value,)
+            return (0, tuple(int(part) for part in parts), value)
+        return (1, (), value)
 
     rows = []
     for (source_id, section), counts in sorted(

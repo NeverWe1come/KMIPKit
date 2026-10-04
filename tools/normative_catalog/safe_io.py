@@ -281,7 +281,12 @@ def safe_read_bytes(root: Path, relative_path: str | Path, *, max_bytes: int) ->
             components = _parts(relative_path)
             descriptor = _open_confined_file(root, components)
         else:
-            flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+            flags = (
+                os.O_RDONLY
+                | getattr(os, "O_BINARY", 0)
+                | getattr(os, "O_NOFOLLOW", 0)
+                | getattr(os, "O_NONBLOCK", 0)
+            )
             descriptor = os.open(path, flags)
     except OSError as error:
         raise PathSecurityError("repository file could not be opened safely") from error
@@ -315,7 +320,7 @@ def _open_rooted_directory(root: Path, components: tuple[str, ...]) -> int:
 def _open_confined_file(root: Path, components: tuple[str, ...]) -> int:
     directory_fd = _open_rooted_directory(root, components[:-1])
     try:
-        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
         return os.open(components[-1], flags, dir_fd=directory_fd)
     finally:
         os.close(directory_fd)
