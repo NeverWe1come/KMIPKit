@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.normative_catalog.validate import CatalogValidationError, validate_catalog
+from tools.normative_catalog.validate import CatalogValidationError, _check_operation_inventory, validate_catalog
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -214,7 +215,77 @@ def deviation_catalog(decision: dict[str, object]) -> dict[str, object]:
     return document
 
 
+CLIENT_OPERATIONS = {
+    "Activate": "6.1.1", "Add Attribute": "6.1.2", "Adjust Attribute": "6.1.3",
+    "Archive": "6.1.4", "Cancel": "6.1.5", "Certify": "6.1.6", "Check": "6.1.7",
+    "Create": "6.1.8", "Create Key Pair": "6.1.9", "Create Split Key": "6.1.10",
+    "Decrypt": "6.1.11", "Delegated Login": "6.1.12", "Delete Attribute": "6.1.13",
+    "Derive Key": "6.1.14", "Destroy": "6.1.15", "Discover Versions": "6.1.16",
+    "Encrypt": "6.1.17", "Export": "6.1.18", "Get": "6.1.19",
+    "Get Attributes": "6.1.20", "Get Attribute List": "6.1.21", "Get Constraints": "6.1.22",
+    "Get Usage Allocation": "6.1.23", "Hash": "6.1.24", "Import": "6.1.25",
+    "Interop": "6.1.26", "Join Split Key": "6.1.27", "Locate": "6.1.28", "Log": "6.1.29",
+    "Login": "6.1.30", "Logout": "6.1.31", "MAC": "6.1.32", "MAC Verify": "6.1.33",
+    "Modify Attribute": "6.1.34", "Obtain Lease": "6.1.35", "Ping": "6.1.36",
+    "PKCS#11": "6.1.37", "Poll": "6.1.38", "Process": "6.1.39", "Query": "6.1.40",
+    "Query Asynchronous Requests": "6.1.41", "Recover": "6.1.42", "Register": "6.1.43",
+    "Revoke": "6.1.44", "Re-certify": "6.1.45", "Re-key": "6.1.46",
+    "Re-key Key Pair": "6.1.47", "Re-Provision": "6.1.48", "RNG Retrieve": "6.1.49",
+    "RNG Seed": "6.1.50", "Set Attribute": "6.1.51", "Set Constraints": "6.1.52",
+    "Set Defaults": "6.1.53", "Set Endpoint Role": "6.1.54", "Sign": "6.1.55",
+    "Signature Verify": "6.1.56", "Validate": "6.1.57",
+}
+SERVER_OPERATIONS = {
+    "Discover Versions": "6.2.1", "Notify": "6.2.2", "Put": "6.2.3",
+    "Query": "6.2.4", "Set Endpoint Role": "6.2.5",
+}
+
+
+def operation_element(name: str, section: str, direction: str) -> dict[str, object]:
+    slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
+    direction_code = "C2S" if direction == "client_to_server" else "S2C"
+    scope = "client_1_0" if direction == "client_to_server" else "client_1_1"
+    record: dict[str, object] = {
+        "element_id": f"KMIPKIT-ELEM-OP-{direction_code}-{slug}",
+        "kind": "operation",
+        "name": name,
+        "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": section}],
+        "direction": direction,
+        "scope_state": scope,
+        "parent_element_ids": [],
+        "requirement_ids": [],
+        "profile_ids": [],
+        "test_case_ids": [],
+        "feature_spec": None,
+        "implementation_refs": [],
+        "verification_refs": [],
+    }
+    if direction == "server_to_client":
+        record["scope_reason"] = "Server-initiated operation support is scheduled for KMIPKit 1.1."
+    return record
+
+
 class CatalogValidationTests(unittest.TestCase):
+    def test_operation_inventory_matches_all_client_and_server_definitions(self) -> None:
+        elements = [
+            *(operation_element(name, section, "client_to_server") for name, section in CLIENT_OPERATIONS.items()),
+            *(operation_element(name, section, "server_to_client") for name, section in SERVER_OPERATIONS.items()),
+        ]
+        _check_operation_inventory(elements)
+
+        missing_operation = elements[:-1]
+        with self.assertRaisesRegex(CatalogValidationError, "operation"):
+            _check_operation_inventory(missing_operation)
+
+    def test_operation_inventory_rejects_a_wrong_source_section(self) -> None:
+        elements = [
+            *(operation_element(name, section, "client_to_server") for name, section in CLIENT_OPERATIONS.items()),
+            *(operation_element(name, section, "server_to_client") for name, section in SERVER_OPERATIONS.items()),
+        ]
+        elements[0]["source_refs"] = [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.2"}]
+        with self.assertRaisesRegex(CatalogValidationError, "operation"):
+            _check_operation_inventory(elements)
+
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
         self.assertEqual(result["source_count"], 4)
