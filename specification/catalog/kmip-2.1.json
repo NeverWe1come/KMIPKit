@@ -44895,9 +44895,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000000F",
       "allocation": "assigned"
     },
@@ -44919,9 +44927,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000015",
       "allocation": "assigned"
     },
@@ -44943,9 +44959,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000014",
       "allocation": "assigned"
     },
@@ -44967,9 +44991,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000020",
       "allocation": "assigned"
     },
@@ -44991,9 +45023,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000021",
       "allocation": "assigned"
     },
@@ -45015,9 +45055,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000022",
       "allocation": "assigned"
     },
@@ -45039,9 +45087,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000023",
       "allocation": "assigned"
     },
@@ -45063,9 +45119,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000003",
       "allocation": "assigned"
     },
@@ -45087,9 +45151,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000024",
       "allocation": "assigned"
     },
@@ -45111,9 +45183,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000025",
       "allocation": "assigned"
     },
@@ -45135,9 +45215,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000026",
       "allocation": "assigned"
     },
@@ -45159,9 +45247,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000004B",
       "allocation": "assigned"
     },
@@ -45183,9 +45279,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000000A",
       "allocation": "assigned"
     },
@@ -45207,9 +45311,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000004C",
       "allocation": "assigned"
     },
@@ -45231,9 +45343,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000012",
       "allocation": "assigned"
     },
@@ -45255,9 +45375,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "8XXXXXXX",
       "allocation": "extension"
     },
@@ -45279,9 +45406,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000008",
       "allocation": "assigned"
     },
@@ -45303,9 +45438,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000100",
       "allocation": "assigned"
     },
@@ -45327,9 +45470,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000028",
       "allocation": "assigned"
     },
@@ -45351,9 +45502,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000029",
       "allocation": "assigned"
     },
@@ -45375,9 +45534,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000002A",
       "allocation": "assigned"
     },
@@ -45399,9 +45566,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000002B",
       "allocation": "assigned"
     },
@@ -45423,9 +45598,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000002C",
       "allocation": "assigned"
     },
@@ -45447,9 +45630,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000002D",
       "allocation": "assigned"
     },
@@ -45471,9 +45662,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000002E",
       "allocation": "assigned"
     },
@@ -45495,9 +45694,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000002F",
       "allocation": "assigned"
     },
@@ -45519,9 +45726,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000001C",
       "allocation": "assigned"
     },
@@ -45543,9 +45758,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000007",
       "allocation": "assigned"
     },
@@ -45567,9 +45790,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000004",
       "allocation": "assigned"
     },
@@ -45591,9 +45822,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000030",
       "allocation": "assigned"
     },
@@ -45615,9 +45854,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000019",
       "allocation": "assigned"
     },
@@ -45639,9 +45886,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000001",
       "allocation": "assigned"
     },
@@ -45663,9 +45918,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000011",
       "allocation": "assigned"
     },
@@ -45687,9 +45950,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000010",
       "allocation": "assigned"
     },
@@ -45711,9 +45982,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000013",
       "allocation": "assigned"
     },
@@ -45735,9 +46014,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000032",
       "allocation": "assigned"
     },
@@ -45759,9 +46046,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000006",
       "allocation": "assigned"
     },
@@ -45783,9 +46078,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000034",
       "allocation": "assigned"
     },
@@ -45807,9 +46110,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000001E",
       "allocation": "assigned"
     },
@@ -45831,9 +46142,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000035",
       "allocation": "assigned"
     },
@@ -45855,9 +46174,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000039",
       "allocation": "assigned"
     },
@@ -45879,9 +46206,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000017",
       "allocation": "assigned"
     },
@@ -45903,9 +46238,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000001B",
       "allocation": "assigned"
     },
@@ -45927,9 +46270,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000018",
       "allocation": "assigned"
     },
@@ -45951,9 +46302,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000000D",
       "allocation": "assigned"
     },
@@ -45975,9 +46334,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000036",
       "allocation": "assigned"
     },
@@ -45999,9 +46366,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000037",
       "allocation": "assigned"
     },
@@ -46023,9 +46398,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000009",
       "allocation": "assigned"
     },
@@ -46047,9 +46430,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000005",
       "allocation": "assigned"
     },
@@ -46071,9 +46462,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000000C",
       "allocation": "assigned"
     },
@@ -46095,9 +46494,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000045",
       "allocation": "assigned"
     },
@@ -46119,9 +46526,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000046",
       "allocation": "assigned"
     },
@@ -46143,9 +46558,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000047",
       "allocation": "assigned"
     },
@@ -46167,9 +46590,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000048",
       "allocation": "assigned"
     },
@@ -46191,9 +46622,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000044",
       "allocation": "assigned"
     },
@@ -46215,9 +46654,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000049",
       "allocation": "assigned"
     },
@@ -46239,9 +46686,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000001D",
       "allocation": "assigned"
     },
@@ -46409,9 +46864,17 @@
       "test_case_ids": [
         "KMIPKIT-TEST-PROF-5-5-4-1"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000002",
       "allocation": "assigned"
     },
@@ -46433,9 +46896,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000016",
       "allocation": "assigned"
     },
@@ -46457,9 +46928,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000003A",
       "allocation": "assigned"
     },
@@ -46481,9 +46960,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000003B",
       "allocation": "assigned"
     },
@@ -46505,9 +46992,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000003C",
       "allocation": "assigned"
     },
@@ -46529,9 +47024,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000004A",
       "allocation": "assigned"
     },
@@ -46553,9 +47056,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000003D",
       "allocation": "assigned"
     },
@@ -46577,9 +47088,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000001F",
       "allocation": "assigned"
     },
@@ -46601,9 +47120,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000003E",
       "allocation": "assigned"
     },
@@ -46625,9 +47152,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000003F",
       "allocation": "assigned"
     },
@@ -46649,9 +47184,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "0000001A",
       "allocation": "assigned"
     },
@@ -46673,9 +47216,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000040",
       "allocation": "assigned"
     },
@@ -46697,9 +47248,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000041",
       "allocation": "assigned"
     },
@@ -46721,9 +47280,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000042",
       "allocation": "assigned"
     },
@@ -46745,9 +47312,17 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "wire_value": "00000043",
       "allocation": "assigned"
     },
@@ -46769,9 +47344,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_status_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_status_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::other_statuses_do_not_gain_reason_presence_rules"
+      ],
       "wire_value": "8XXXXXXX",
       "allocation": "extension"
     },
@@ -46795,9 +47376,16 @@
       "test_case_ids": [
         "KMIPKIT-TEST-PROF-5-5-4-1"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_status_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_status_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::other_statuses_do_not_gain_reason_presence_rules"
+      ],
       "wire_value": "00000001",
       "allocation": "assigned"
     },
@@ -46819,9 +47407,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_status_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_status_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::other_statuses_do_not_gain_reason_presence_rules"
+      ],
       "wire_value": "00000002",
       "allocation": "assigned"
     },
@@ -46843,9 +47438,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_status_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_status_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::other_statuses_do_not_gain_reason_presence_rules"
+      ],
       "wire_value": "00000003",
       "allocation": "assigned"
     },
@@ -46869,9 +47471,16 @@
       "test_case_ids": [
         "KMIPKIT-TEST-PROF-5-5-4-1"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/result_values_generated.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_status_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_status_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::other_statuses_do_not_gain_reason_presence_rules"
+      ],
       "wire_value": "00000000",
       "allocation": "assigned"
     },
@@ -49908,9 +50517,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": []
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
@@ -49928,9 +50544,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": []
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_status_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_status_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::other_statuses_do_not_gain_reason_presence_rules"
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE",
@@ -56468,9 +57090,14 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::result_message_preserves_presence_and_text",
+        "crates/kmipkit-protocol/tests/result_contract.rs::operation_result_display_and_debug_redact_message"
+      ],
       "source_encoding": "Text String"
     },
     {
@@ -56493,9 +57120,16 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_reason_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_reason_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::failure_requires_a_reason",
+        "crates/kmipkit-protocol/tests/result_contract.rs::success_forbids_a_reason"
+      ],
       "source_encoding": "Enumeration"
     },
     {
@@ -56518,9 +57152,15 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0003",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/result_contract.rs::known_status_values_match_catalog",
+        "crates/kmipkit-protocol/tests/result_contract.rs::unknown_status_preserves_raw_value",
+        "crates/kmipkit-protocol/tests/result_contract.rs::other_statuses_do_not_gain_reason_presence_rules"
+      ],
       "source_encoding": "Enumeration"
     },
     {
