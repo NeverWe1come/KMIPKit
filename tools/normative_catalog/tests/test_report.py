@@ -188,12 +188,14 @@ class CoverageReportTests(unittest.TestCase):
         catalog = report_catalog()
         catalog["elements"] = [
             {
-                "element_id": "KMIPKIT-ELEM-OP-GET",
-                "kind": "operation",
-                "name": "Get",
+                "element_id": "KMIPKIT-ELEM-TAG-420001",
+                "kind": "tag",
+                "name": "Activation Date",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.7"}],
                 "direction": "client_to_server",
                 "scope_state": "client_1_0",
+                "wire_value": "420001",
+                "allocation": "assigned",
                 "feature_spec": None,
                 "implementation_refs": [],
                 "verification_refs": [],
@@ -201,8 +203,67 @@ class CoverageReportTests(unittest.TestCase):
         ]
         report = render_report(catalog)
         self.assertIn("## Unassigned protocol elements", report)
-        self.assertIn("KMIPKIT-ELEM-OP-GET", report)
+        self.assertIn("| Element | Name | Kind | Direction | Scope | Wire value | Allocation | Source |", report)
+        self.assertIn("KMIPKIT-ELEM-TAG-420001", report)
         self.assertIn(r"client\_to\_server", report)
+        self.assertIn("| KMIPKIT-ELEM-TAG-420001 | Activation Date | tag |", report)
+        self.assertIn(r"| client\_1\_0 | 420001 | assigned | KMIPKIT-SRC-spec §6.1.7 |", report)
+
+    def test_reports_tag_allocation_counts_and_each_range(self) -> None:
+        catalog = report_catalog()
+        catalog["elements"] = [
+            {"element_id": "tag-assigned", "kind": "tag", "allocation": "assigned"},
+            {"element_id": "tag-reserved", "kind": "tag", "allocation": "reserved"},
+        ]
+        catalog["tag_ranges"] = [
+            {
+                "range_id": "KMIPKIT-RANGE-001",
+                "value_range": "420001 - 4200FF",
+                "allocation": "unused",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}],
+            }
+        ]
+
+        report = render_report(catalog)
+
+        self.assertIn("## Tag allocation and ranges", report)
+        self.assertIn("| assigned | 1 |", report)
+        self.assertIn("| reserved | 1 |", report)
+        self.assertIn("| KMIPKIT-RANGE-001 | 420001 - 4200FF | unused |", report)
+
+    def test_profile_report_includes_traceability_and_transport_contract(self) -> None:
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE",
+                "name": "Baseline",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-profiles", "section": "5.1"}],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-PROF-5.1-001"],
+                "requirement_ids": ["KMIPKIT-REQ-PROF-5.1-001"],
+                "dependency_profile_ids": ["KMIPKIT-PROFILE-OTHER"],
+                "test_case_ids": ["KMIPKIT-TEST-PROF-5-1-1"],
+                "transport_requirements": ["TLS 1.3"],
+                "encoding_requirements": ["TTLV"],
+            }
+        ]
+
+        report = render_report(catalog)
+
+        self.assertIn("Source clauses", report)
+        self.assertIn("Requirements", report)
+        self.assertIn("Dependencies", report)
+        self.assertIn("Test cases", report)
+        self.assertIn("Transport", report)
+        self.assertIn("Encoding", report)
+        self.assertIn("KMIPKIT-CLAUSE-PROF-5.1-001", report)
+        self.assertIn("KMIPKIT-REQ-PROF-5.1-001", report)
+        self.assertIn("KMIPKIT-PROFILE-OTHER", report)
+        self.assertIn("KMIPKIT-TEST-PROF-5-1-1", report)
+        self.assertIn("TLS 1.3", report)
+        self.assertIn("TTLV", report)
 
     def test_escapes_markdown_html_newlines_and_control_characters(self) -> None:
         catalog = report_catalog()
