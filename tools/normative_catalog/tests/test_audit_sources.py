@@ -40,6 +40,10 @@ class SourceAuditTests(unittest.TestCase):
         raw = b'<meta charset="windows-1252"><h2>3 Scope</h2><p>Caf\xe9 MUST work.</p>'
         self.assertEqual(audit_document(raw, "KMIPKIT-SRC-spec")[0]["source_keywords"], ["MUST"])
 
+    def test_reads_charset_from_pinned_oasis_content_type_metadata(self) -> None:
+        raw = b'<meta http-equiv=Content-Type content="text/html; charset=windows-1252"><p>Caf\xe9 MUST work.</p>'
+        self.assertEqual(audit_document(raw, "KMIPKIT-SRC-spec")[0]["source_keywords"], ["MUST"])
+
     def test_rejects_malformed_or_unsupported_charset(self) -> None:
         for raw in (
             b'<meta charset="unknown-codec"><p>MUST work.</p>',
