@@ -363,6 +363,48 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
             _check_operation_inventory(elements)
 
+    def test_item_types_managed_object_types_and_object_structures_reconcile(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        elements = catalog["elements"]
+        data_types = {row["name"]: row for row in elements if row.get("kind") == "data_type"}
+        object_types = {row["name"]: row for row in elements if row.get("kind") == "object_type"}
+        object_structures = {row["name"]: row for row in elements if row.get("kind") == "object_structure"}
+
+        expected_data_types = {
+            "Structure": "00000001", "Integer": "00000002", "Long Integer": "00000003",
+            "Big Integer": "00000004", "Enumeration": "00000005", "Boolean": "00000006",
+            "Text String": "00000007", "Byte String": "00000008", "Date Time": "00000009",
+            "Interval": "0000000A", "Date Time Extended": "0000000B",
+        }
+        self.assertEqual({name: row.get("wire_value") for name, row in data_types.items()}, expected_data_types)
+        self.assertEqual(len(object_types), 9)
+        self.assertEqual(
+            {name: row.get("wire_value") for name, row in object_types.items()},
+            {
+                "Certificate": "00000001", "Symmetric Key": "00000002", "Public Key": "00000003",
+                "Private Key": "00000004", "Split Key": "00000005", "Secret Data": "00000007",
+                "Opaque Object": "00000008", "PGP Key": "00000009", "Certificate Request": "0000000A",
+            },
+        )
+        expected_structures = {
+            "Certificate": "2.1", "Certificate Request": "2.2", "Opaque Object": "2.3",
+            "PGP Key": "2.4", "Private Key": "2.5", "Public Key": "2.6",
+            "Secret Data": "2.7", "Split Key": "2.8", "Symmetric Key": "2.9",
+        }
+        self.assertEqual(
+            {name: row["source_refs"][0]["section"] for name, row in object_structures.items()},
+            expected_structures,
+        )
+        for kind, records in (("data_type", data_types), ("object_type", object_types), ("object_structure", object_structures)):
+            self.assertEqual(len(records), len(expected_data_types) if kind == "data_type" else 9)
+            for name, record in records.items():
+                slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
+                prefix = {"data_type": "DATA-TYPE", "object_type": "OBJECT-TYPE", "object_structure": "OBJECT-STRUCTURE"}[kind]
+                self.assertEqual(record["element_id"], f"KMIPKIT-ELEM-{prefix}-{slug}")
+                self.assertEqual(record["direction"], "both")
+                self.assertEqual(record["scope_state"], "client_1_0")
+                self.assertTrue(record["source_refs"])
+
         poll = next(row for row in elements if row["name"] == "Poll")
         poll["payload_tables"].append({"role": "response", "table_number": 277, "caption": "Poll Response Payload"})
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
