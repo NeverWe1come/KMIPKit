@@ -436,6 +436,17 @@ def _source_refs(value: Any, sources: set[str], field: str) -> None:
             _fail(f"{field} contains an invalid source section")
 
 
+def _check_clause_scope_metadata(clause: dict[str, Any]) -> None:
+    """Validate the reviewed actor, direction, scope, and condition of one candidate."""
+    _enum(clause["role"], CLAUSE_ROLES, "source clause role")
+    _enum(clause["direction"], CLAUSE_DIRECTIONS, "source clause direction")
+    _enum(clause["scope_state"], CLAUSE_SCOPES, "source clause scope")
+    if clause["condition"] is not None and (
+        not isinstance(clause["condition"], str) or not clause["condition"].strip()
+    ):
+        _fail("source clause condition must be null or non-empty text")
+
+
 def _strongest_source_authority(
     references: list[dict[str, Any]],
     authority_by_source: dict[str, str],
@@ -626,13 +637,7 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
         if not isinstance(keywords, list) or not keywords or any(keyword not in KEYWORD_STRENGTH for keyword in keywords):
             _fail("source clause has an invalid source keyword")
         _enum(clause["disposition"], CLAUSE_DISPOSITIONS, "source clause disposition")
-        _enum(clause["role"], CLAUSE_ROLES, "source clause role")
-        _enum(clause["direction"], CLAUSE_DIRECTIONS, "source clause direction")
-        _enum(clause["scope_state"], CLAUSE_SCOPES, "source clause scope")
-        if clause["condition"] is not None and (
-            not isinstance(clause["condition"], str) or not clause["condition"].strip()
-        ):
-            _fail("source clause condition must be null or non-empty text")
+        _check_clause_scope_metadata(clause)
         if not isinstance(clause["requirement_ids"], list):
             _fail("source clause requirement_ids must be an array")
         rationale = clause["exclusion_rationale"]
