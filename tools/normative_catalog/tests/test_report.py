@@ -16,6 +16,14 @@ from tools.normative_catalog.report import _clause_section_rows, render_report, 
 from tools.normative_catalog.tests.test_validate import minimal_catalog
 
 ROOT = Path(__file__).resolve().parents[3]
+OUT_OF_SCOPE_TTLV_WIRE_REQUIREMENTS = (
+    "KMIPKIT-REQ-SPEC-10.1.2-001",
+    "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+    "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+    "KMIPKIT-REQ-SPEC-10.1.5-001-001",
+    "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+    "KMIPKIT-REQ-SPEC-11.56-001",
+)
 
 
 def report_catalog() -> dict[str, object]:
@@ -303,16 +311,8 @@ class CoverageReportTests(unittest.TestCase):
         self.assertEqual(reserved_tag_requirement["feature_spec"], "KMIPKIT-0004")
         self.assertTrue(reserved_tag_requirement["implementation_refs"])
         self.assertTrue(reserved_tag_requirement["verification_refs"])
-        excluded_wire_requirements = (
-            "KMIPKIT-REQ-SPEC-10.1.2-001",
-            "KMIPKIT-REQ-SPEC-10.1.2-002-001",
-            "KMIPKIT-REQ-SPEC-10.1.2-002-002",
-            "KMIPKIT-REQ-SPEC-10.1.5-001-001",
-            "KMIPKIT-REQ-SPEC-10.1.5-001-002",
-            "KMIPKIT-REQ-SPEC-11.56-001",
-        )
         unassigned_requirements = report.split("## Unassigned requirements\n", 1)[1].split("\n## ", 1)[0]
-        for requirement_id in excluded_wire_requirements:
+        for requirement_id in OUT_OF_SCOPE_TTLV_WIRE_REQUIREMENTS:
             requirement = requirements[requirement_id]
             self.assertIsNone(requirement["feature_spec"])
             self.assertEqual(requirement["implementation_refs"], [])
