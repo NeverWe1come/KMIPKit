@@ -154,6 +154,25 @@ class CoverageGateTests(unittest.TestCase):
 
         self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
 
+    def test_repeated_source_across_export_mappings_fails_closed(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n", encoding="utf-8")
+            covered = json.loads(llvm_document([[1, 1, 1, 19, 1, 0, 0, 0]]))
+            uncovered = json.loads(
+                llvm_document([[1, 1, 1, 19, 0, 0, 0, 0]], summary_lines=1)
+            )
+            covered["data"][0]["functions"][0]["name"] = "_ZN7kmipkit7covered"
+            uncovered["data"][0]["functions"][0]["name"] = "_ZN7kmipkit9uncovered"
+            document = covered
+            document["data"].extend(uncovered["data"])
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "multiple coverage mappings"):
+                GATE.parse_llvm_export(json.dumps(document), root)
+
     def test_function_region_line_missing_from_file_segments_fails_closed(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
