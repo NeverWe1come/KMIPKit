@@ -1881,6 +1881,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_conditional_clause_can_link_to_its_requirement(self) -> None:
         document = deviation_catalog(decision_record())
         document["source_clauses"][0]["disposition"] = "profile_conditional"
+        document["source_clauses"][0]["scope_state"] = "profile_conditional"
         document["requirements"][0]["scope_state"] = "profile_conditional"
         document["requirements"][0]["status"] = "unassigned"
         document["requirements"][0]["decision_id"] = None
