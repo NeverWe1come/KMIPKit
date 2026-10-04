@@ -108,6 +108,12 @@
 - [x] T038 [US3] Reject repeated workspace source paths across distinct LLVM export mappings and duplicate file records within one mapping. GREEN evidence: commit `24a3567`; the focused regression passed and the coverage-gate suite passed 39 tests with 3 Windows symlink skips.
 - [x] T039 [US3] Document the repeated-path fail-closed rule and the LLVM export-object boundary in the specification, data model, research record, and testing guide; rerun all script/catalog checks and obtain a scoped review. Evidence: full script suite passed 47 tests with 3 Windows symlink skips; normative catalog suite passed 130 tests with 6 platform skips; catalog validation, report check, source audit, and `git diff --check` passed; scoped review found no remaining findings.
 
+## Phase 8: Self-hosted ARM64 Linux runner routing
+
+- [x] T040 Add a workflow contract requiring same-repository Linux PR jobs and scheduled branch coverage to use the self-hosted ARM64 runner, while fork PRs and Windows/macOS jobs remain hosted. RED evidence: commit `c820eaa`; `python -m unittest scripts.tests.test_workflow -v` failed the new routing contract for all five pull-request jobs and the scheduled job.
+- [x] T041 [US1] Route trusted Linux workflow jobs to the self-hosted ARM64 runner, preserve GitHub-hosted fallback for fork PRs and Windows/macOS, and update the approved requirements and testing guide. GREEN evidence: focused workflow contracts passed 8 tests; full Python script suite passed 48 tests with 3 Windows symlink-permission skips; `pwsh -File scripts/tests/Test-Wsl.ps1` passed; `git diff --check` passed.
+- [x] T042 Run workflow contract and repository validation checks, record GREEN/REFACTOR results, update task evidence, and prepare the draft PR against `release/1.0.0`. REFACTOR contract tests passed (8); full Python suite passed (48, 3 Windows symlink-permission skips); WSL contracts passed (8); `git diff --check` passed. Draft PR: #17.
+
 ## Dependencies
 
 ```text
