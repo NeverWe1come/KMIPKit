@@ -90,6 +90,7 @@ fn debug_redacts_direct_and_nested_payloads_on_every_public_surface() {
             numeric_sentinels(0xDEAD_BEEF_u32),
         ),
         (Value::boolean(true), vec![String::from("true")]),
+        (Value::boolean(false), vec![String::from("false")]),
         (
             Value::text_string(String::from("KMIPKIT_T016_TEXT_SENTINEL_71A9")),
             vec![String::from("KMIPKIT_T016_TEXT_SENTINEL_71A9")],
