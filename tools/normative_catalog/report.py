@@ -20,6 +20,7 @@ SECTION_ORDER = (
     "Count reconciliation",
     "Source clause dispositions",
     "Unassigned requirements",
+    "Requirements needing negative verification",
     "Unassigned protocol elements",
     "Profile states",
     "Profiles by applicability and claim state",
@@ -159,6 +160,20 @@ def render_report(catalog: dict[str, Any]) -> str:
     lines.extend(_table(
         ("Requirement", "Strength", "Scope", "Source"),
         [(row.get("requirement_id"), row.get("normative_strength"), row.get("scope_state"), _source_reference(row)) for row in unassigned],
+    ))
+    lines.append("")
+
+    negative_requirements = sorted(
+        (row for row in requirements if row.get("negative_verification_required") is True),
+        key=lambda row: row.get("requirement_id", ""),
+    )
+    lines.extend(["## Requirements needing negative verification", ""])
+    lines.extend(_table(
+        ("Requirement", "Strength", "Negative verification", "Status", "Source"),
+        [(
+            row.get("requirement_id"), row.get("normative_strength"), "required",
+            row.get("status"), _source_reference(row),
+        ) for row in negative_requirements],
     ))
     lines.append("")
 
