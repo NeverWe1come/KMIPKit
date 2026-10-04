@@ -2417,89 +2417,12 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-RECOMMENDED-CURVE-SECT193R1-0000001F | SECT193R1 | enumeration\_value | both | client\_1\_0 | 0000001F | assigned | KMIPKIT-SRC-spec §11.45 |
 | KMIPKIT-ELEM-ENUM-VALUE-RECOMMENDED-CURVE-SECT193R2-00000020 | SECT193R2 | enumeration\_value | both | client\_1\_0 | 00000020 | assigned | KMIPKIT-SRC-spec §11.45 |
 | KMIPKIT-ELEM-ENUM-VALUE-RECOMMENDED-CURVE-SECT239K1-00000021 | SECT239K1 | enumeration\_value | both | client\_1\_0 | 00000021 | assigned | KMIPKIT-SRC-spec §11.45 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-APPLICATION-NAMESPACE-NOT-SUPPORTED-0000000F | Application Namespace Not Supported | enumeration\_value | both | client\_1\_0 | 0000000F | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-ATTESTATION-FAILED-00000015 | Attestation Failed | enumeration\_value | both | client\_1\_0 | 00000015 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-ATTESTATION-REQUIRED-00000014 | Attestation Required | enumeration\_value | both | client\_1\_0 | 00000014 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-ATTRIBUTE-INSTANCE-NOT-FOUND-00000020 | Attribute Instance Not Found | enumeration\_value | both | client\_1\_0 | 00000020 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-ATTRIBUTE-NOT-FOUND-00000021 | Attribute Not Found | enumeration\_value | both | client\_1\_0 | 00000021 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-ATTRIBUTE-READ-ONLY-00000022 | Attribute Read Only | enumeration\_value | both | client\_1\_0 | 00000022 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-ATTRIBUTE-SINGLE-VALUED-00000023 | Attribute Single Valued | enumeration\_value | both | client\_1\_0 | 00000023 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-AUTHENTICATION-NOT-SUCCESSFUL-00000003 | Authentication Not Successful | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-BAD-CRYPTOGRAPHIC-PARAMETERS-00000024 | Bad Cryptographic Parameters | enumeration\_value | both | client\_1\_0 | 00000024 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-BAD-PASSWORD-00000025 | Bad Password | enumeration\_value | both | client\_1\_0 | 00000025 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-CODEC-ERROR-00000026 | Codec Error | enumeration\_value | both | client\_1\_0 | 00000026 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-CONSTRAINT-VIOLATION-0000004B | Constraint Violation | enumeration\_value | both | client\_1\_0 | 0000004B | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-CRYPTOGRAPHIC-FAILURE-0000000A | Cryptographic Failure | enumeration\_value | both | client\_1\_0 | 0000000A | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-DUPLICATE-PROCESS-REQUEST-0000004C | Duplicate Process Request | enumeration\_value | both | client\_1\_0 | 0000004C | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-ENCODING-OPTION-ERROR-00000012 | Encoding Option Error | enumeration\_value | both | client\_1\_0 | 00000012 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-FEATURE-NOT-SUPPORTED-00000008 | Feature Not Supported | enumeration\_value | both | client\_1\_0 | 00000008 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-GENERAL-FAILURE-00000100 | General Failure | enumeration\_value | both | client\_1\_0 | 00000100 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-ILLEGAL-OBJECT-TYPE-00000028 | Illegal Object Type | enumeration\_value | both | client\_1\_0 | 00000028 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INCOMPATIBLE-CRYPTOGRAPHIC-USAGE-MASK-00000029 | Incompatible Cryptographic Usage Mask | enumeration\_value | both | client\_1\_0 | 00000029 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INTERNAL-SERVER-ERROR-0000002A | Internal Server Error | enumeration\_value | both | client\_1\_0 | 0000002A | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-ASYNCHRONOUS-CORRELATION-VALUE-0000002B | Invalid Asynchronous Correlation Value | enumeration\_value | both | client\_1\_0 | 0000002B | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-ATTRIBUTE-0000002C | Invalid Attribute | enumeration\_value | both | client\_1\_0 | 0000002C | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-ATTRIBUTE-VALUE-0000002D | Invalid Attribute Value | enumeration\_value | both | client\_1\_0 | 0000002D | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-CORRELATION-VALUE-0000002E | Invalid Correlation Value | enumeration\_value | both | client\_1\_0 | 0000002E | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-CSR-0000002F | Invalid CSR | enumeration\_value | both | client\_1\_0 | 0000002F | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-DATA-TYPE-0000001C | Invalid Data Type | enumeration\_value | both | client\_1\_0 | 0000001C | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-FIELD-00000007 | Invalid Field | enumeration\_value | both | client\_1\_0 | 00000007 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-MESSAGE-00000004 | Invalid Message | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-OBJECT-TYPE-00000030 | Invalid Object Type | enumeration\_value | both | client\_1\_0 | 00000030 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-INVALID-TICKET-00000019 | Invalid Ticket | enumeration\_value | both | client\_1\_0 | 00000019 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-ITEM-NOT-FOUND-00000001 | Item Not Found | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-KEY-COMPRESSION-TYPE-NOT-SUPPORTED-00000011 | Key Compression Type Not Supported | enumeration\_value | both | client\_1\_0 | 00000011 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-KEY-FORMAT-TYPE-NOT-SUPPORTED-00000010 | Key Format Type Not Supported | enumeration\_value | both | client\_1\_0 | 00000010 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-KEY-VALUE-NOT-PRESENT-00000013 | Key Value Not Present | enumeration\_value | both | client\_1\_0 | 00000013 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-KEY-WRAP-TYPE-NOT-SUPPORTED-00000032 | Key Wrap Type Not Supported | enumeration\_value | both | client\_1\_0 | 00000032 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-MISSING-DATA-00000006 | Missing Data | enumeration\_value | both | client\_1\_0 | 00000006 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-MISSING-INITIALIZATION-VECTOR-00000034 | Missing Initialization Vector | enumeration\_value | both | client\_1\_0 | 00000034 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-MULTI-VALUED-ATTRIBUTE-0000001E | Multi Valued Attribute | enumeration\_value | both | client\_1\_0 | 0000001E | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-NON-UNIQUE-NAME-ATTRIBUTE-00000035 | Non Unique Name Attribute | enumeration\_value | both | client\_1\_0 | 00000035 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-NOT-AUTHORISED-00000039 | Not Authorised | enumeration\_value | both | client\_1\_0 | 00000039 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-NOT-EXTRACTABLE-00000017 | Not Extractable | enumeration\_value | both | client\_1\_0 | 00000017 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-NUMERIC-RANGE-0000001B | Numeric Range | enumeration\_value | both | client\_1\_0 | 0000001B | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-OBJECT-ALREADY-EXISTS-00000018 | Object Already Exists | enumeration\_value | both | client\_1\_0 | 00000018 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-OBJECT-ARCHIVED-0000000D | Object Archived | enumeration\_value | both | client\_1\_0 | 0000000D | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-OBJECT-DESTROYED-00000036 | Object Destroyed | enumeration\_value | both | client\_1\_0 | 00000036 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-OBJECT-NOT-FOUND-00000037 | Object Not Found | enumeration\_value | both | client\_1\_0 | 00000037 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-OPERATION-CANCELED-BY-REQUESTER-00000009 | Operation Canceled By Requester | enumeration\_value | both | client\_1\_0 | 00000009 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-OPERATION-NOT-SUPPORTED-00000005 | Operation Not Supported | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-PERMISSION-DENIED-0000000C | Permission Denied | enumeration\_value | both | client\_1\_0 | 0000000C | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-PKCS-11-CODEC-ERROR-00000045 | PKCS#11 Codec Error | enumeration\_value | both | client\_1\_0 | 00000045 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-PKCS-11-INVALID-FUNCTION-00000046 | PKCS#11 Invalid Function | enumeration\_value | both | client\_1\_0 | 00000046 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-PKCS-11-INVALID-INTERFACE-00000047 | PKCS#11 Invalid Interface | enumeration\_value | both | client\_1\_0 | 00000047 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-PRIVATE-PROTECTION-STORAGE-UNAVAILABLE-00000048 | Private Protection Storage Unavailable | enumeration\_value | both | client\_1\_0 | 00000048 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-PROTECTION-STORAGE-UNAVAILABLE-00000044 | Protection Storage Unavailable | enumeration\_value | both | client\_1\_0 | 00000044 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-PUBLIC-PROTECTION-STORAGE-UNAVAILABLE-00000049 | Public Protection Storage Unavailable | enumeration\_value | both | client\_1\_0 | 00000049 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-READ-ONLY-ATTRIBUTE-0000001D | Read Only Attribute | enumeration\_value | both | client\_1\_0 | 0000001D | assigned | KMIPKIT-SRC-spec §11.46 |
 | KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESERVED-0000000B | \(Reserved\) | enumeration\_value | both | client\_1\_0 | 0000000B | reserved | KMIPKIT-SRC-spec §11.46 |
 | KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESERVED-0000000E | \(Reserved\) | enumeration\_value | both | client\_1\_0 | 0000000E | reserved | KMIPKIT-SRC-spec §11.46 |
 | KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESERVED-00000027 | \(Reserved\) | enumeration\_value | both | client\_1\_0 | 00000027 | reserved | KMIPKIT-SRC-spec §11.46 |
 | KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESERVED-00000031 | \(Reserved\) | enumeration\_value | both | client\_1\_0 | 00000031 | reserved | KMIPKIT-SRC-spec §11.46 |
 | KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESERVED-00000033 | \(Reserved\) | enumeration\_value | both | client\_1\_0 | 00000033 | reserved | KMIPKIT-SRC-spec §11.46 |
 | KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESERVED-00000038 | \(Reserved\) | enumeration\_value | both | client\_1\_0 | 00000038 | reserved | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESPONSE-TOO-LARGE-00000002 | Response Too Large | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-SENSITIVE-00000016 | Sensitive | enumeration\_value | both | client\_1\_0 | 00000016 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-SERVER-LIMIT-EXCEEDED-0000003A | Server Limit Exceeded | enumeration\_value | both | client\_1\_0 | 0000003A | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-UNKNOWN-ENUMERATION-0000003B | Unknown Enumeration | enumeration\_value | both | client\_1\_0 | 0000003B | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-UNKNOWN-MESSAGE-EXTENSION-0000003C | Unknown Message Extension | enumeration\_value | both | client\_1\_0 | 0000003C | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-UNKNOWN-OBJECT-GROUP-0000004A | Unknown Object Group | enumeration\_value | both | client\_1\_0 | 0000004A | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-UNKNOWN-TAG-0000003D | Unknown Tag | enumeration\_value | both | client\_1\_0 | 0000003D | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-UNSUPPORTED-ATTRIBUTE-0000001F | Unsupported Attribute | enumeration\_value | both | client\_1\_0 | 0000001F | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-UNSUPPORTED-CRYPTOGRAPHIC-PARAMETERS-0000003E | Unsupported Cryptographic Parameters | enumeration\_value | both | client\_1\_0 | 0000003E | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-UNSUPPORTED-PROTOCOL-VERSION-0000003F | Unsupported Protocol Version | enumeration\_value | both | client\_1\_0 | 0000003F | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-USAGE-LIMIT-EXCEEDED-0000001A | Usage Limit Exceeded | enumeration\_value | both | client\_1\_0 | 0000001A | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-WRAPPING-OBJECT-ARCHIVED-00000040 | Wrapping Object Archived | enumeration\_value | both | client\_1\_0 | 00000040 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-WRAPPING-OBJECT-DESTROYED-00000041 | Wrapping Object Destroyed | enumeration\_value | both | client\_1\_0 | 00000041 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-WRAPPING-OBJECT-NOT-FOUND-00000042 | Wrapping Object Not Found | enumeration\_value | both | client\_1\_0 | 00000042 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-WRONG-KEY-LIFECYCLE-STATE-00000043 | Wrong Key Lifecycle State | enumeration\_value | both | client\_1\_0 | 00000043 | assigned | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.47 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-OPERATION-FAILED-00000001 | Operation Failed | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.47 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-OPERATION-PENDING-00000002 | Operation Pending | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.47 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-OPERATION-UNDONE-00000003 | Operation Undone | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.47 |
-| KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-SUCCESS-00000000 | Success | enumeration\_value | both | client\_1\_0 | 00000000 | assigned | KMIPKIT-SRC-spec §11.47 |
 | KMIPKIT-ELEM-ENUM-VALUE-REVOCATION-REASON-CODE-AFFILIATION-CHANGED-00000004 | Affiliation Changed | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.48 |
 | KMIPKIT-ELEM-ENUM-VALUE-REVOCATION-REASON-CODE-CA-COMPROMISE-00000003 | CA Compromise | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.48 |
 | KMIPKIT-ELEM-ENUM-VALUE-REVOCATION-REASON-CODE-CESSATION-OF-OPERATION-00000006 | Cessation of Operation | enumeration\_value | both | client\_1\_0 | 00000006 | assigned | KMIPKIT-SRC-spec §11.48 |
@@ -2633,8 +2556,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUMERATION-PUT-FUNCTION | Put Function | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.43 |
 | KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION | Query Function | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.44 |
 | KMIPKIT-ELEM-ENUMERATION-RECOMMENDED-CURVE | Recommended Curve | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.45 |
-| KMIPKIT-ELEM-ENUMERATION-RESULT-REASON | Result Reason | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS | Result Status | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.47 |
 | KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE | Revocation Reason Code | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.48 |
 | KMIPKIT-ELEM-ENUMERATION-RNG-ALGORITHM | RNG Algorithm | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.49 |
 | KMIPKIT-ELEM-ENUMERATION-RNG-MODE | RNG Mode | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.50 |
@@ -2862,9 +2783,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OPTION-BATCH-ERROR-CONTINUATION-OPTION | Batch Error Continuation Option | option | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.6, KMIPKIT-SRC-spec §11.5 |
 | KMIPKIT-ELEM-OPTION-BATCH-ORDER-OPTION | Batch Order Option | option | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.8 |
 | KMIPKIT-ELEM-RESULT-CANCELLATION-RESULT | Cancellation Result | result | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.7 |
-| KMIPKIT-ELEM-RESULT-RESULT-MESSAGE | Result Message | result | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.17 |
-| KMIPKIT-ELEM-RESULT-RESULT-REASON | Result Reason | result | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.18, KMIPKIT-SRC-spec §11.46 |
-| KMIPKIT-ELEM-RESULT-RESULT-STATUS | Result Status | result | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.19, KMIPKIT-SRC-spec §11.47 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE | Certificate Type | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.1 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE | Certificate Value | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.1 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE | Certificate Request Type | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §2.2 |
