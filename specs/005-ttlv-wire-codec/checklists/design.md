@@ -21,15 +21,15 @@
 - [x] Errors contain no raw body or value payload.
 - [x] Unsupported Type behavior, exact-one-item behavior, and trailing data are explicit.
 - [x] Padding octet acceptance follows the source; canonical encoder fill is labeled as project policy.
-- [ ] Reserved-tag receipt has a reviewed outcome under `KMIPKIT-DISC-037`.
-- [ ] Depth configurability is reconciled with the 004 model's hard cap and the security invariant.
+- [ ] Proposed ADR-0011 has been reviewed/accepted, resolving `KMIPKIT-DISC-037`.
+- [x] Depth configurability is bounded to 0–64, matching the 004 model hard cap and preserving a configurable decoder limit.
 
 ## Architecture and compatibility
 
 - [x] Codec stays in `kmipkit-ttlv`; transport and operation/schema logic stay outside.
 - [x] Public API is proposed as per-call immutable options with no global mutable state.
 - [x] No new external dependency or unsafe code is required by the design.
-- [ ] Implementation is rebased on the merged 004 model and uses its actual public APIs.
+- [x] Implementation branch is updated from the merged 004 release and the proposed contract is checked against its actual public APIs.
 
 ## Implementation evidence
 
@@ -40,4 +40,4 @@
 
 ## Notes
 
-- The unchecked policy and dependency items are hard gates. This is a design review artifact, not permission to bypass them.
+- The unchecked ADR acceptance and implementation evidence items are gates. This is a design review artifact, not permission to bypass them.

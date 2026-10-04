@@ -14,8 +14,10 @@ An independent source audit verified the pinned copy against its SHA-256 digest 
 - §10.1.4: Item Value is interpreted according to Item Type.
 - §10.1.5: Structure Item Length includes child encodings and their padding. Integer, Enumeration, Text String, Byte String, and Interval Item Length exclude their following padding. Text/Byte padding is the minimum trailing amount to an eight-byte boundary; Integer/Enumeration/Interval have four following bytes.
 - §10.1.2 Big Integer rules: minimal leading sign-extension bytes make the value length a multiple of eight; these bytes are part of Item Value and Item Length.
+- §10.1.2 does not explicitly give Big Integer a minimum wire length. KMIPKit adopts the project validity rule that an empty value is rejected because an empty octet sequence represents no two's-complement integer. This policy is distinct from an OASIS MUST.
+- §10.1.3 encodes each Item Length in an unsigned 32-bit field. Raising the configured total-message limit cannot make any individual Item Value larger than `u32::MAX`; this representability check is independent of platform-sized allocation limits.
 - §10.1.5 gives no required value for the following padding octets. The decoder therefore checks padding extent, not content. The encoder emits zero for deterministic canonical output; this is project policy.
-- Chapter 11 introduction prohibits use of Tags marked Reserved. §11.56 supplies the standard and extension prefix ranges, but `KMIPKIT-DISC-037` leaves receipt/preservation behavior open.
+- Chapter 11 introduction prohibits use of Tags marked Reserved. §11.56 supplies the standard and extension prefix ranges. `KMIPKIT-DISC-037` leaves receipt/preservation behavior open; proposed ADR-0011 recommends rejection before generic model construction.
 
 ## Design decisions and alternatives
 
@@ -29,7 +31,7 @@ An independent source audit verified the pinned copy against its SHA-256 digest 
 
 **Selected**: Operate on the approved `kmipkit-ttlv` Item/Structure/Value types from KMIPKIT-0004. Keep all eleven types in one generic model and preserve caller-provided child order.
 
-**Alternative**: Add a second raw wire AST. Rejected for the normal decode path because it duplicates the generic tree and creates conversion/lifetime surfaces. This alternative remains relevant only if the project decides to preserve received Reserved tags under `KMIPKIT-DISC-037`.
+**Alternative**: Add a second raw wire AST. Rejected for the normal decode path because it duplicates the generic tree and creates conversion/lifetime surfaces. This alternative is needed only if the project later revises proposed ADR-0011 to preserve received Reserved Tags under `KMIPKIT-DISC-037`.
 
 ### Allocation strategy
 
@@ -41,9 +43,11 @@ An independent source audit verified the pinned copy against its SHA-256 digest 
 
 Defaults are 16 MiB per message, Structure depth 64, and 100,000 total Items. Count the root Item toward the item limit. Count a root Structure as depth 1; a non-Structure root has Structure depth 0. Per-call message and item limits can be raised or lowered; depth can be configured from 0 through the model's hard ceiling of 64. A depth above 64 would require changing the KMIPKIT-0004 model contract and is a gate, not an implicit extension.
 
+The U32 Item Length ceiling is unconditional even if a caller raises `max_message_bytes`. A Structure's own Item Value (including complete encoded child spans) must also fit the U32 ceiling. Tests must exercise a synthetic U32-max header and checked cumulative arithmetic without allocating a multi-gigabyte buffer.
+
 ### Reserved Tags
 
-No choice is made in this draft for decoding a received Reserved Tag. `KMIPKIT-DISC-037` offers rejection and opaque preservation. The 004 public tree cannot directly represent a rejected allocation, while opaque preservation would require a separate wire representation. Keep this explicit implementation blocker until the discrepancy is decided.
+Proposed ADR-0011 selects rejection of received Reserved Tags before generic model construction. This is the recommended project policy, not an OASIS clarification, and remains an implementation blocker until reviewed/accepted. Opaque preservation would require a separate wire representation incompatible with the current checked-Tag tree.
 
 ### Unknown Item Type codes and Enumeration values
 
@@ -55,4 +59,4 @@ Accept any pad-byte values when the required padding extent is present, since OA
 
 ## Catalog traceability gap
 
-When implementation starts, update only the applicable requirement records in `specification/catalog/kmip-2.1.json` to include this feature and code/test references. Do not manually edit generated outputs. Catalog coverage for schema-specific field order remains jointly owned by this codec's order-preservation contract and each future typed protocol structure specification.
+When implementation starts, update only the applicable requirement records in `specification/catalog/kmip-2.1.json` to include this feature and code/test references. Do not manually edit generated outputs. Catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` for schema-specific field order is not implemented by this generic codec: catalog coverage remains incomplete until the relevant typed operation/model specification(s) are named in the catalog and provide executable order checks. The inventory workflow must assign those rows before a 100% traceability claim.

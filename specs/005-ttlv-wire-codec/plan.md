@@ -8,7 +8,7 @@
 
 Add canonical TTLV encoding and bounded decoding for the eleven KMIP 2.1 Item Types represented by the KMIPKIT-0004 generic tree. Apply OASIS big-endian headers, exact type-specific lengths, value widths, and padding. Preserve child order, unknown enum/mask bits, and accepted extension Tags. Check message, Structure depth, and Item-count limits before allocation. Keep transport and operation/schema handling outside the codec.
 
-The design is ready for review, but implementation is blocked until the 004 model implementation lands in `release/1.0.0`, the Reserved-tag receipt discrepancy is resolved, and the depth-configurability boundary is reconciled.
+The 004 model implementation landed in `release/1.0.0` at `cf6c4c0d87c4de7dc159aba046a8fe5638ccc6bf`; implementation remains gated on approval of this feature and review/acceptance of proposed ADR-0011 for inbound Reserved Tags.
 
 ## Technical Context
 
@@ -31,12 +31,12 @@ The design is ready for review, but implementation is blocked until the 004 mode
 | I. Specification and traceability | Pass for design; completion gated | Stable FR/NR IDs and exact clauses are recorded. Implementation and executable verification links remain required. |
 | II. Test first and evidence based conformance | Pass with mandatory TDD | Tasks require separate Red, Green, and Refactor commits, OASIS vectors, malformed inputs, and coverage evidence. |
 | III. One core, explicit language boundaries | Pass | Rust-only codec over the common model; FFI and language adapters are out of scope. |
-| IV. Secure defaults and lossless handling | Pass with open gates | Input lengths and limits are checked before allocation; model values and order are preserved. Reserved-tag receive policy and depth configurability need resolution. |
+| IV. Secure defaults and lossless handling | Pass with policy gate | Input lengths and limits are checked before allocation; model values and order are preserved. ADR-0011 proposes rejection of Reserved Tags; `max_structure_depth` is caller-configurable from 0 to the model cap of 64. |
 | V. Human governed, reviewable changes | Pass with hard gates | Dedicated worktree and branch. No code until this spec is approved and dependencies/policies are resolved. Only a human approves or merges the PR. |
 
 ### Post-design gate
 
-No architecture boundary changes are proposed. Codec remains below protocol/message and transport layers. The parser operates on bounded slices and the encoder on model data. The design does not claim OASIS profile conformance or schema validity. The two open policy gates are recorded in the spec, checklist, and ADR/dependency notes; they must be resolved before implementation starts.
+No architecture boundary changes are proposed. Codec remains below protocol/message and transport layers. The parser operates on bounded slices and the encoder on model data. The design does not claim OASIS profile conformance or schema validity. Proposed ADR-0011 recommends rejection of received Reserved Tags and must be accepted before implementing that decoder branch.
 
 ## Project Structure
 
@@ -55,7 +55,9 @@ specs/005-ttlv-wire-codec/
 └── tasks.md
 ```
 
-### Source and verification after the 004 implementation lands
+Related repository decision record: `docs/adr/0011-reserved-tag-decoding-policy.md`.
+
+### Source and verification
 
 ```text
 crates/kmipkit-ttlv/src/
@@ -76,8 +78,8 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 ### Phase 0 — Prerequisite confirmation and normative review
 
 - Confirm the source digest and clauses in the pinned local OASIS copy.
-- Verify PR #14 or successor has landed and inspect the actual public model API.
-- Resolve `KMIPKIT-DISC-037` and the depth-limit configurability boundary; update this spec and design artifacts before coding.
+- PR #14 is merged; verify the actual public model API and accepted ADR-0010 on the updated release base.
+- Obtain review/acceptance of proposed ADR-0011 resolving `KMIPKIT-DISC-037`; update the catalog decision reference before coding.
 
 ### Phase 1 — Contracts and data invariants
 
@@ -105,20 +107,19 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 
 ## Dependencies and Gates
 
-- KMIPKIT-0004 implementation PR #14 (currently an open draft at planning time) must be merged into `release/1.0.0`; rebase this branch then.
-- KMIPKIT-0003 core types/errors is already merged in the release ancestry.
-- ADR-0010 and the 004 model gate need their actual status rechecked on the release branch; the local release copy currently labels ADR-0010 Proposed.
-- `KMIPKIT-DISC-037` needs a separate reviewed resolution for received Reserved Tags.
-- Maximum decoder Structure depth must agree with the model's 64-level construction cap and the configurable-limits security rule.
+- KMIPKIT-0004 implementation PR #14 and KMIPKIT-0003 core types/errors are merged into the release ancestry.
+- ADR-0010 is Accepted in the updated release tree.
+- Proposed ADR-0011 needs review/acceptance for received Reserved Tags; the branch remains gated for that path.
+- Depth is configurable from 0 to the generic model's hard maximum of 64; exceeding 64 requires a separately reviewed model change.
 
 ## Risks and Mitigations
 
 - **Length confusion across padding types**: Maintain an explicit per-type table in `data-model.md`; tests assert both the header length and complete encoded extent.
 - **Allocation denial of service**: Check total input size and declared/cumulative lengths before value allocation; enforce item/depth counters incrementally.
 - **Loss of wire padding bytes**: Specify semantic canonicalization and zero-fill output; do not promise byte identity for accepted noncanonical padding.
-- **Unresolved Tag policy**: Keep Reserved-tag decode out of implementation until `KMIPKIT-DISC-037` is decided; never fold it into unknown extension preservation.
-- **Dependency on unmerged model API**: Do not code against guessed interfaces; inspect the merged 004 API after the release base changes.
+- **Reserved-tag policy**: Keep Reserved-tag decoding gated until proposed ADR-0011 is reviewed; never fold it into unknown extension preservation.
+- **Model API integration**: Reconcile implementation with the merged 004 API and its accepted ADR-0010; do not code against guessed interfaces.
 
 ## Complexity Tracking
 
-No constitution exception or new architecture layer is proposed. Resolving the two policy gates may require a narrowly scoped spec/ADR amendment before implementation.
+No constitution exception or new architecture layer is proposed. The reserved-tag policy remains a formal review gate; the empty Big Integer and U32 Item Length behaviors are explicit project constraints in this draft.

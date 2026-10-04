@@ -18,8 +18,8 @@
 - [x] Malformed-input and resource edge cases are identified
 - [x] Scope boundaries and dependencies are explicit
 - [x] Normative references identify exact OASIS document clauses
-- [ ] Reserved-tag receipt has an approved disposition under KMIPKIT-DISC-037
-- [ ] Configurable depth semantics are reconciled with the 004 model contract
+- [ ] Proposed ADR-0011 has an approved disposition for reserved-tag receipt under KMIPKIT-DISC-037
+- [x] Configurable depth semantics are bounded to 0–64, consistent with the 004 model contract
 
 ## Feature Readiness
 
@@ -30,5 +30,6 @@
 
 ## Notes
 
-- The unchecked policy items are explicit implementation gates, not implied OASIS interpretations. Do not begin implementation until they are resolved and the KMIPKIT-0004 model implementation is available on the release base.
+- The unchecked ADR item is an implementation gate, not an implied OASIS interpretation. The KMIPKIT-0004 model implementation is already merged into the release base; implementation still requires specification approval and the ADR disposition.
+- OASIS §10.1.2 does not explicitly define empty Big Integer behavior; this draft records a project validity rule rejecting it. Schema field-order requirement `KMIPKIT-REQ-SPEC-10.1.2-001` remains assigned to follow-on typed operation/model specification(s) until those are named in the catalog.
 - The normative traceability table separates OASIS requirements from KMIPKit API and security policy.

@@ -25,7 +25,7 @@ pub fn decode_with_limits(bytes: &[u8], limits: &CodecLimits)
     -> Result<Item, DecodeError>;
 ```
 
-The signatures are a design proposal, not a promise to code against an unmerged API. The exact constructors may use the project’s established options pattern after PR #14 lands. Limit objects are immutable and scoped to one call.
+The signatures are a design proposal layered on the merged 004 API. The model currently exposes `RawTag::new`, `RawTag::try_checked`, `Item::new`, `Structure::new`, `Structure::try_push`, `Value` constructors for all eleven types, and closure-scoped `Item::with_value`. Codec option names remain proposed; limit objects are immutable and scoped to one call. The eventual public module path is `kmipkit_ttlv::codec` unless implementation review identifies a better existing convention.
 
 ## Behavioral contract
 
@@ -33,9 +33,11 @@ The signatures are a design proposal, not a promise to code against an unmerged 
 - `decode` accepts exactly one complete Item and rejects empty input or trailing bytes. It validates lengths and available bytes before payload allocation.
 - Both default entry points use 16 MiB, 64 Structure levels, and 100,000 Items.
 - `decode_with_limits` may use lower or higher message/count limits. Maximum Structure depth remains 64 unless the 004 model contract is deliberately changed.
+- Each Item Value length must fit `u32::MAX`, even when the configured message limit is larger. The encoder checks this before writing a header; the decoder obtains the value from the U32 header and checks cumulative arithmetic and bounds before allocation.
 - The decoder rejects unsupported Item Type bytes, type-specific invalid lengths, invalid UTF-8, noncanonical Boolean encodings, truncated values/padding, arithmetic overflow, parent-boundary violations, and configured limit excess.
+- The codec rejects an empty Big Integer as KMIPKit project policy. OASIS §10.1.2 requires a two's-complement byte sequence with a length multiple of eight but does not explicitly set a minimum length.
 - Padding octets whose values are not constrained by OASIS are accepted at the required extent; the encoder writes zero for those padding octets. Big Integer leading sign-extension bytes are part of the represented Item Value and are not discarded.
-- A Reserved Tag received from the wire remains blocked pending the reviewed resolution of `KMIPKIT-DISC-037`.
+- A Reserved Tag received from the wire is rejected before construction under proposed ADR-0011; implementation remains gated on review/acceptance of that ADR.
 - No operation performs I/O, retries requests, validates a KMIP operation schema, or logs payloads.
 
 ## Errors

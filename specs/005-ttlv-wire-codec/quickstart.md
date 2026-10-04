@@ -1,8 +1,26 @@
 # Quickstart: TTLV Codec Review Scenarios
 
-This file defines the end-to-end scenarios the 1.0 Rust example must demonstrate once KMIPKIT-0004 is merged and the contract names are reconciled. The example is not yet executable because the model API and Reserved-tag decision are not available on this release-base worktree.
+The KMIPKIT-0004 generic model API is available in the updated release tree. The codec calls below are proposed by `contracts/rust-ttlv-codec.md`; these scenarios become an executable doctest/integration example when the codec is implemented. Reserved-tag behavior follows proposed ADR-0011 and remains implementation-gated until review.
 
 ## Encode a request item
+
+The merged 004 constructors are stable. The codec function below is the proposed 0005 contract and becomes executable when implemented.
+
+```rust
+fn encode_example() -> Result<(), Box<dyn std::error::Error>> {
+    use kmipkit_ttlv::codec::encode; // proposed public path
+    use kmipkit_ttlv::{Item, RawTag, Value};
+
+    let tag = RawTag::new(0x0042_0173)?.try_checked()?;
+    let item = Item::new(tag, Value::integer(42))?;
+    let bytes = encode(&item)?;
+    assert_eq!(bytes, [
+        0x42, 0x01, 0x73, 0x02, 0x00, 0x00, 0x00, 0x04,
+        0x00, 0x00, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x00,
+    ]);
+    Ok(())
+}
+```
 
 1. Construct a generic Structure in the exact field order required by its KMIP 2.1 structure definition.
 2. Add at least one leaf value from each supported Item Type in separate reviewed vectors.
@@ -24,4 +42,4 @@ Run a byte-vector case for each malformed category in `spec.md`: truncated field
 
 ## Implementation readiness
 
-Turn the scenarios above into executable integration tests and an example under the final public contract after PR #14 lands. Do not publish an example using guessed model or codec APIs.
+Turn the scenarios above into executable integration tests and an example under the final public contract during implementation. Use the actual merged 004 constructors and the codec contract; do not expose an untested example as complete.
