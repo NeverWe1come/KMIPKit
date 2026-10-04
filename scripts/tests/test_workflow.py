@@ -26,6 +26,11 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
 
+    def assert_pi_runner_with_hosted_fallback(self, body: str, fallback: str) -> None:
+        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", body)
+        self.assertIn("fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')", body)
+        self.assertIn(fallback, body)
+
     def test_pull_request_targets_only_supported_integration_branches(self) -> None:
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?m)^\s*pull_request\s*:")
@@ -65,22 +70,17 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_linux_jobs_route_to_pi_only_for_same_repository_pull_requests(self) -> None:
         contents = self.require_workflow()
-        pi_labels = "fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')"
 
         for job in ("core", "script-contracts", "coverage"):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
                 self.assertIn("matrix.os == 'ubuntu-latest'", body)
-                self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", body)
-                self.assertIn(pi_labels, body)
-                self.assertIn("|| matrix.os", body)
+                self.assert_pi_runner_with_hosted_fallback(body, "|| matrix.os")
 
         for job in ("normative-inventory", "coverage-gate"):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
-                self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", body)
-                self.assertIn(pi_labels, body)
-                self.assertIn("|| 'ubuntu-latest'", body)
+                self.assert_pi_runner_with_hosted_fallback(body, "|| 'ubuntu-latest'")
 
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assertRegex(branch_coverage, r"(?m)^    runs-on: \[self-hosted, Linux, ARM64\]$")
