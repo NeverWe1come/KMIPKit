@@ -189,6 +189,23 @@ def _pinned_bitmask_groups() -> dict[str, tuple[str, list[tuple[str, str]]]]:
     return groups
 
 
+def _pinned_attribute_headings() -> dict[str, str]:
+    """Return every attribute heading and section from Specification §4."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    result: dict[str, str] = {}
+    for heading in parser.headings:
+        match = re.match(r"^(4\.[0-9]+)\s+(.+)$", heading)
+        if match:
+            section, name = match.groups()
+            result[section] = name
+    return result
+
+
 def minimal_catalog() -> dict[str, object]:
     """Return the smallest catalog with exact pinned source metadata."""
     source_rows = [
@@ -711,6 +728,21 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(actual_values, expected_values)
         self.assertEqual(len(values), 44)
+
+    def test_attribute_records_reconcile_with_all_pinned_section_4_headings(self) -> None:
+        headings = _pinned_attribute_headings()
+        self.assertEqual(set(headings), {f"4.{number}" for number in range(1, 64)})
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        attributes = [row for row in catalog["elements"] if row.get("kind") == "attribute"]
+        expected = {(name, section) for section, name in headings.items()}
+        actual = {(row["name"], row["source_refs"][0]["section"]) for row in attributes}
+        self.assertEqual(actual, expected)
+        self.assertEqual(len(attributes), 63)
+        for row in attributes:
+            slug = re.sub(r"[^A-Z0-9]+", "-", row["name"].upper()).strip("-")
+            self.assertEqual(row["element_id"], f"KMIPKIT-ELEM-ATTRIBUTE-{slug}")
+            self.assertEqual(row["direction"], "both")
+            self.assertEqual(row["scope_state"], "client_1_0")
 
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
