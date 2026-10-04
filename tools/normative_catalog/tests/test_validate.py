@@ -738,11 +738,20 @@ class CatalogValidationTests(unittest.TestCase):
         actual = {(row["name"], row["source_refs"][0]["section"]) for row in attributes}
         self.assertEqual(actual, expected)
         self.assertEqual(len(attributes), 63)
+        tag_ids = {row["name"]: row["element_id"] for row in catalog["elements"] if row.get("kind") == "tag"}
         for row in attributes:
             slug = re.sub(r"[^A-Z0-9]+", "-", row["name"].upper()).strip("-")
             self.assertEqual(row["element_id"], f"KMIPKIT-ELEM-ATTRIBUTE-{slug}")
             self.assertEqual(row["direction"], "both")
             self.assertEqual(row["scope_state"], "client_1_0")
+            section = next(section for section, name in headings.items() if name == row["name"])
+            expected_refs = [{"source_id": "KMIPKIT-SRC-spec", "section": section}]
+            expected_parent_ids = []
+            if row["name"] in tag_ids:
+                expected_refs.append({"source_id": "KMIPKIT-SRC-spec", "section": "11.56"})
+                expected_parent_ids = [tag_ids[row["name"]]]
+            self.assertEqual(row["source_refs"], expected_refs)
+            self.assertEqual(row["parent_element_ids"], expected_parent_ids)
 
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
