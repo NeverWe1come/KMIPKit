@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.normative_catalog.check_immutable_sources import (
     ImmutableSourceError,
@@ -43,6 +44,20 @@ class ImmutableSourceGateTests(unittest.TestCase):
 
     def test_accepts_unchanged_oasis_tree_for_exact_base_commit(self) -> None:
         check_immutable_sources(self.root, self.base_sha)
+
+    def test_change_detection_uses_quiet_diffs_and_streamed_untracked_paths(self) -> None:
+        real_run = subprocess.run
+        with patch(
+            "tools.normative_catalog.check_immutable_sources.subprocess.run",
+            wraps=real_run,
+        ) as run:
+            check_immutable_sources(self.root, self.base_sha)
+
+        commands = [call.args[0] for call in run.call_args_list]
+        diff_commands = [command for command in commands if len(command) > 1 and command[1] == "diff"]
+        self.assertEqual(len(diff_commands), 2)
+        self.assertTrue(all("--quiet" in command for command in diff_commands))
+        self.assertFalse(any(command[1:2] == ["ls-files"] for command in commands))
 
     def test_rejects_missing_or_non_commit_base_sha(self) -> None:
         for invalid in ("", "main", "0" * 40):
