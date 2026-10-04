@@ -97,8 +97,20 @@ Exposure requires an explicit operation and produces a controlled temporary
 view or copy. Rust uses closure-scoped access, C an opaque secret handle, Java
 an `AutoCloseable` secret, and Python a context-managed secret.
 
-The library clears its owned memory. It cannot clear copies created by the
-caller or managed language runtime.
+In `kmipkit-ttlv`, each `Value` privately owns a boxed representation and calls
+the safe `Zeroize` API before releasing it. Payloads in nested Structures are
+zeroized recursively. The dependency is locked to `zeroize` 1.9.0 with only
+its `alloc` feature enabled; see the [dependency review](../../specs/004-generic-ttlv-model/dependency-review.md)
+and the [pinned 1.9.0 source](https://docs.rs/crate/zeroize/1.9.0/source/src/lib.rs).
+
+In that version, `Vec::zeroize` clears initialized elements, sets the length to
+zero, and zeroizes the entire current allocation capacity. `String::zeroize`
+delegates to its backing vector. This describes the current storage owned by
+KMIPKit when it is dropped; it is not a guarantee that every process copy of a
+value has been erased. Caller-side copies, buffers left by reallocations before
+ownership transfer, copies deliberately made from borrowed views, temporary
+stack or register copies, and copies retained by Java, Python, or another
+runtime are outside this Rust model's guarantee.
 
 ## Errors
 

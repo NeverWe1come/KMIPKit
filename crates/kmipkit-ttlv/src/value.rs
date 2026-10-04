@@ -38,7 +38,16 @@ pub enum ItemType {
 /// The value representation is boxed so payload addresses remain stable when
 /// its containing item is moved as part of an ordered Structure. Payloads are
 /// observable only through [`crate::Item::with_value`]. Dropping the value
-/// zeroizes its currently owned payload storage.
+/// zeroizes its currently owned payload storage, including the current backing
+/// allocations for `BigInteger` and `ByteString` vectors and `TextString`
+/// strings. The pinned `zeroize` 1.9.0 implementation clears initialized
+/// elements and the full current `Vec` capacity; `String` delegates to its
+/// backing vector. Payloads in nested Structures are zeroized recursively.
+/// Moving a payload into this value does not clear earlier allocations or
+/// copies made before ownership transfer. Callers can also make
+/// copies from closure-scoped borrowed views, and those copies are outside this
+/// guarantee. See the [public API guide](../../../docs/architecture/public-api.md#secrets)
+/// for the complete limits and dependency reference.
 pub struct Value {
     inner: Secret<ValueRepr>,
 }
