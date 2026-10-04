@@ -61,13 +61,16 @@ Related repository decision record: `docs/adr/0011-reserved-tag-decoding-policy.
 
 ```text
 crates/kmipkit-ttlv/src/
-├── codec.rs                # public facade, shared codec options/errors
-├── encoder.rs              # bounded canonical writer
-└── decoder.rs              # checked slice parser and Structure decode
+├── lib.rs                  # declares the public codec module
+└── codec/
+    ├── mod.rs              # public facade, limits, errors, EncodedTtlv
+    ├── encoder.rs          # bounded canonical writer
+    └── decoder.rs          # checked slice parser and Structure decode
 crates/kmipkit-ttlv/tests/
 ├── codec_vectors.rs        # per-type, exact OASIS wire vectors
 ├── codec_negative.rs      # malformed, unsupported, and limit cases
-└── codec_roundtrip.rs     # generic model properties and canonicalization
+├── codec_roundtrip.rs     # generic model properties and canonicalization
+└── codec_limits.rs        # message, depth, count, and U32 boundary cases
 specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 ```
 
@@ -98,7 +101,7 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 
 - Write failing tests for valid OASIS vectors and all malformed boundaries before implementation.
 - Parse one complete item with checked offsets, parent bounds, supported type lengths, UTF-8/Boolean checks, and resolved Tag policy.
-- Refactor bounded Structure traversal and fallible allocation; reject trailing bytes and never expose raw input.
+- Refactor bounded Structure traversal and fallible allocation; reject trailing bytes and never expose raw input. Property tests compare against a canonicalized expected model: empty Big Integer values are excluded, unaligned Big Integer octets are minimally sign-extended to an eight-byte multiple, and already aligned Big Integer octets remain exact.
 
 ### Phase 4 — Limits and cross-cutting validation
 

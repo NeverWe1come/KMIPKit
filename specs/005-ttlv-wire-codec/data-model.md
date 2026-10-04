@@ -30,6 +30,8 @@ An Item consists of an 8-byte header followed by an Item Value and any type-spec
 
 The item’s full wire span is not always `8 + Length`: for some types padding follows the Item Value and is excluded from Length; Big Integer padding is part of Item Value; Structure Length covers every child’s full wire span.
 
+The KMIPKIT-0004 in-memory model retains Big Integer octets exactly and may hold non-empty octets whose length is not a multiple of eight. Encoding such a value adds the minimum sign-extension octets required for a wire-valid multiple of eight; decoding then preserves those encoded octets exactly. Therefore `decode(encode(item))` compares with a canonicalized expected model for unaligned Big Integer inputs, not necessarily the original in-memory octets.
+
 Every Item Value length must fit the unsigned 32-bit Length field, independently of `max_message_bytes`. A caller may configure a message limit above 4 GiB on a platform that supports it, but no root or child Item Value can exceed `u32::MAX` bytes.
 
 ## Type-Length-Padding Table

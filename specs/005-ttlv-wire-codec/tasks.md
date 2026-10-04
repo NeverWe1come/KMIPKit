@@ -21,8 +21,8 @@
 **Requirements**: `KMIPKIT-0005-FR-001`–`FR-003`, `FR-012`–`FR-013`; `KMIPKIT-0005-NR-001`–`NR-005`; `KMIPKIT-0005-SC-001`.
 
 - [ ] T002 [US1] Write and run failing exact OASIS-derived encoder vectors for all eleven Item Types, big-endian boundaries, child order, repeated tags, lengths, empty Big Integer rejection, Big Integer sign extension, and each padding family in `crates/kmipkit-ttlv/tests/codec_vectors.rs`; add an owner-drop zeroization spy test in the codec unit tests and compile-fail checks for the borrow-only/non-cloneable/non-formatting/non-serializable public surface in the existing public API test harness (Red commit).
-- [ ] T003 [US1] Implement full-tree validation, checked output-size calculation including the U32 Item Length ceiling, a single complete fallible output reservation, a zeroizing `EncodedTtlv` owner, and bounded canonical encoding for all eleven Item Types in `crates/kmipkit-ttlv/src/encoder.rs` and `crates/kmipkit-ttlv/src/codec.rs` (Green commit).
-- [ ] T004 [US1] Refactor the encoder into documented per-type length/value/padding helpers; preserve child order; ensure no fallible exit remains after copying payload bytes (or zeroize any partial output on error); verify successful output zeroizes on owner drop and cannot be cloned, formatted, serialized, mutated, or extracted as an ordinary Vec; and keep encode errors payload-free in `crates/kmipkit-ttlv/src/encoder.rs` and `crates/kmipkit-ttlv/src/codec.rs` (Refactor commit).
+- [ ] T003 [US1] Implement full-tree validation, checked output-size calculation including the U32 Item Length ceiling, a single complete fallible output reservation, a zeroizing `EncodedTtlv` owner, bounded canonical encoding for all eleven Item Types, and the public `codec` export in `crates/kmipkit-ttlv/src/lib.rs` (Green commit; implementation in `crates/kmipkit-ttlv/src/codec/mod.rs` and `crates/kmipkit-ttlv/src/codec/encoder.rs`).
+- [ ] T004 [US1] Refactor the encoder into documented per-type length/value/padding helpers; preserve child order; ensure no fallible exit remains after copying payload bytes (or zeroize any partial output on error); verify successful output zeroizes on owner drop and cannot be cloned, formatted, serialized, mutated, or extracted as an ordinary Vec; and keep encode errors payload-free in `crates/kmipkit-ttlv/src/codec/encoder.rs` and `crates/kmipkit-ttlv/src/codec/mod.rs` (Refactor commit).
 
 ## Phase 3: User Story 2 — Decode a complete generic TTLV item (Priority: P1)
 
@@ -33,9 +33,9 @@
 **Requirements**: `KMIPKIT-0005-FR-004`–`FR-006`, `FR-010`; `KMIPKIT-0005-NR-001`–`NR-006`; `KMIPKIT-0005-SC-002`–`SC-003`.
 
 - [ ] T005 [US2] Write and run failing decoder vectors and negative cases for truncated headers/values, all fixed widths, empty Big Integer, invalid UTF-8/Boolean, unsupported Type, nested boundaries, trailing bytes, assigned/extension Tags, the resolved Reserved-tag behavior, and padding extents in `crates/kmipkit-ttlv/tests/codec_negative.rs` (Red commit).
-- [ ] T006 [US2] Implement one-item checked parsing, type-specific lengths, value decoding, ordered Structure construction, and resolved Tag disposition in `crates/kmipkit-ttlv/src/decoder.rs` (Green commit).
-- [ ] T007 [US2] Refactor offset/boundary handling and errors into focused helpers; verify no input or payload is retained/formatted and no unsafe code is added in `crates/kmipkit-ttlv/src/decoder.rs` and `crates/kmipkit-ttlv/src/codec.rs` (Refactor commit).
-- [ ] T008 [US2] Add bounded property tests that construct generic values, encode/decode them, and compare represented values plus child order in `crates/kmipkit-ttlv/tests/codec_roundtrip.rs`.
+- [ ] T006 [US2] Implement one-item checked parsing, type-specific lengths, value decoding, ordered Structure construction, and resolved Tag disposition in `crates/kmipkit-ttlv/src/codec/decoder.rs` (Green commit).
+- [ ] T007 [US2] Refactor offset/boundary handling and errors into focused helpers; verify no input or payload is retained/formatted and no unsafe code is added in `crates/kmipkit-ttlv/src/codec/decoder.rs` and `crates/kmipkit-ttlv/src/codec/mod.rs` (Refactor commit).
+- [ ] T008 [US2] Add bounded, deterministic generated property tests for codec-acceptable generic values and compare decoded values with a canonicalized expected model plus child order in `crates/kmipkit-ttlv/tests/codec_roundtrip.rs`; exclude empty Big Integers, minimally sign-extend unaligned Big Integer octets to a multiple of eight for the expected model, preserve aligned octets exactly, and keep dedicated vectors for that normalization. Use a fixed seed and no new property-testing dependency.
 
 ## Phase 4: User Story 3 — Enforce configurable resource limits (Priority: P1)
 
@@ -46,8 +46,8 @@
 **Requirements**: `KMIPKIT-0005-FR-007`–`FR-009`, `FR-013`; `KMIPKIT-0005-SC-004`.
 
 - [ ] T009 [US3] Write and run failing tests for 16 MiB, 64 Structure levels, 100,000 Items, lowered depth limits, raised/lowered message and item-count limits, encoder U32 maximum/one-over size-calculation boundaries using synthetic sizes, decoder U32 Item Length rejection via synthetic headers without giant allocations, arithmetic overflow, and pre-allocation rejection in `crates/kmipkit-ttlv/tests/codec_limits.rs` (Red commit).
-- [ ] T010 [US3] Implement immutable `CodecLimits`, checked constructors, per-call counters, preflight checks, and fallible reservations in `crates/kmipkit-ttlv/src/codec.rs`, `crates/kmipkit-ttlv/src/decoder.rs`, and `crates/kmipkit-ttlv/src/encoder.rs` (Green commit).
-- [ ] T011 [US3] Refactor limit accounting to shared documented invariants and verify every rejection occurs before size-driven allocation in `crates/kmipkit-ttlv/src/codec.rs` and `crates/kmipkit-ttlv/src/decoder.rs` (Refactor commit).
+- [ ] T010 [US3] Implement immutable `CodecLimits`, checked constructors, per-call counters, preflight checks, and fallible reservations in `crates/kmipkit-ttlv/src/codec/mod.rs`, `crates/kmipkit-ttlv/src/codec/decoder.rs`, and `crates/kmipkit-ttlv/src/codec/encoder.rs` (Green commit).
+- [ ] T011 [US3] Refactor limit accounting to shared documented invariants and verify every rejection occurs before size-driven allocation in `crates/kmipkit-ttlv/src/codec/mod.rs` and `crates/kmipkit-ttlv/src/codec/decoder.rs` (Refactor commit).
 
 ## Phase 5: Traceability, documentation, and hardening
 
