@@ -6,7 +6,7 @@ import csv
 import json
 import re
 import unittest
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -150,10 +150,29 @@ class FeatureTraceabilityTests(unittest.TestCase):
         test_path, separator, test_name = test_ref.partition("::")
         if not separator or not test_name:
             return False
-        path = ROOT / test_path
-        if not path.is_file():
+
+        posix_path = PurePosixPath(test_path)
+        windows_path = PureWindowsPath(test_path)
+        if (
+            not test_path
+            or "\\" in test_path
+            or posix_path.is_absolute()
+            or windows_path.is_absolute()
+            or windows_path.drive
+            or ".." in posix_path.parts
+        ):
             return False
-        source = path.read_text(encoding="utf-8")
+
+        try:
+            root = ROOT.resolve(strict=True)
+            path = (root / test_path).resolve(strict=True)
+            path.relative_to(root)
+            if not path.is_file():
+                return False
+            source = path.read_text(encoding="utf-8")
+        except (OSError, RuntimeError, ValueError, UnicodeDecodeError):
+            return False
+
         if path.suffix == ".rs":
             return f"fn {test_name}(" in source
         if path.suffix == ".py":
