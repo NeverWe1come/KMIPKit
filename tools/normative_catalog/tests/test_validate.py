@@ -158,6 +158,11 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(raw=raw), self.assertRaises(CatalogValidationError):
                 validate_catalog(raw, ROOT)
 
+    def test_accepts_a_well_formed_escaped_surrogate_pair(self) -> None:
+        from tools.normative_catalog.validate import _reject_surrogates
+
+        _reject_surrogates("\ud83d\ude00")
+
     def test_rejects_excessive_input_before_object_construction(self) -> None:
         with self.assertRaises(CatalogValidationError):
             validate_catalog(b" " * (16 * 1024 * 1024 + 1), ROOT)
