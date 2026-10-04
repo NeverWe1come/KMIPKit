@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 1427 |
+| Protocol elements | 1562 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -41,7 +41,8 @@ This report records inventory coverage and evidence state. It does not claim pro
 | object\_structure | 12 |
 | object\_type | 9 |
 | operation | 62 |
-| structure\_member | 55 |
+| operation\_structure | 41 |
+| structure\_member | 149 |
 | tag | 374 |
 
 ### Requirements by strength and scope
@@ -1064,6 +1065,47 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-OP-S2C-PUT | operation | server\_to\_client | client\_1\_1 | KMIPKIT-SRC-spec §6.2.3 |
 | KMIPKIT-ELEM-OP-S2C-QUERY | operation | server\_to\_client | client\_1\_1 | KMIPKIT-SRC-spec §6.2.4 |
 | KMIPKIT-ELEM-OP-S2C-SET-ENDPOINT-ROLE | operation | server\_to\_client | client\_1\_1 | KMIPKIT-SRC-spec §6.2.5 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.1 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.10 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.11 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-12-DERIVATION-PARAMETERS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.12 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.13 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.14 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.15 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.16 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.17 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-18-KEY-WRAPPING-SPECIFICATION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.18 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-19-LOG-MESSAGE | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.19 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.2 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.20 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.21 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-22-OBJECT-DEFAULTS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.22 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.23 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.24 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.25 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-26-PKCS-11-FUNCTION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.26 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-27-PKCS-11-INPUT-PARAMETERS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.27 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-28-PKCS-11-INTERFACE | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.28 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-29-PKCS-11-OUTPUT-PARAMETERS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.29 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-3-AUTHENTICATED-ENCRYPTION-ADDITIONAL-DATA | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.3 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-30-PKCS-11-RETURN-CODE | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.30 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.31 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.32 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-33-PROTECTION-STORAGE-MASKS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.33 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-34-RIGHT | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.34 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-35-RIGHTS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.35 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.36 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-38-SIGNATURE-DATA | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.38 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-39-TICKET | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.39 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.4 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.40 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-6-CONSTRAINT | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.6 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.7 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.8 |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.9 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-QLENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-RECOMMENDED-CURVE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
@@ -1119,6 +1161,100 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-VENDOR-IDENTIFICATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.5 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-5-6-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.6 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-5-7-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-11-OBJECT-DEFAULTS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-CRYPTOGRAPHIC-PARAMETERS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.12 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-DERIVATION-DATA | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.12 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-INITIALIZATION-VECTOR | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.12 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-ITERATION-COUNT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.12 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-SALT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.12 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-ATTRIBUTE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.13 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-DESCRIPTION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.13 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-ENUMERATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.13 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.13 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-PARENT-STRUCTURE-TAG | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.13 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-TAG | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.13 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.13 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-ATTRIBUTE-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.18 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-ENCODING-OPTION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.18 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-ENCRYPTION-KEY-INFORMATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.18 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-MAC-SIGNATURE-KEY-INFORMATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.18 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-WRAPPING-METHOD | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.18 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-ASYNCHRONOUS-CORRELATION-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-OPERATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-PROCESSING-STAGE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-SUBMISSION-DATE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-21-UNIQUE-IDENTIFIER | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.21 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.22 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-GROUPS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.22 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-TYPE-OBJECTTYPES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.22 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.23 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-24-OBJECT-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.24 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-25-OPERATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.25 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-26-PKCS-11-FUNCTION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.26 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.27 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-28-PKCS-11-INTERFACE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.28 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-29-PKCS-11-OUTPUT-PARAMETERS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.29 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-30-PKCS-11-RETURN-CODE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.30 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.31 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-VERSION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.31 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-PORT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.31 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-URI | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.31 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-32-PROFILE-VERSION-MAJOR | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.32 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-32-PROFILE-VERSION-MINOR | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.32 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-OBJECT-GROUPS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.34 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-OBJECTS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.34 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-OPERATIONS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.34 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-USAGE-LIMITS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.34 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-35-RIGHT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.35 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-CRYPTOGRAPHIC-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.36 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-CRYPTOGRAPHIC-LENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.36 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-DRBG-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.36 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-FIPS186-VARIATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.36 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-HASHING-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.36 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-PREDICTION-RESISTANCE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.36 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-RECOMMENDED-CURVE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.36 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-RNG-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.36 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-ALTERNATIVE-FAILOVER-ENDPOINTS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-BUILD-DATE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-BUILD-LEVEL | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-CLUSTER-INFO | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-PRODUCT-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-LOAD | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-SERIAL-NUMBER | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-VERSION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-VENDOR-SPECIFIC | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.37 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-39-TICKET-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.39 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-39-TICKET-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.39 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-COUNT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.40 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.40 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-UNIT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.40 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-AUTHORITY-COUNTRY | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-AUTHORITY-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-AUTHORITY-URI | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-CERTIFICATE-IDENTIFIER | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-CERTIFICATE-URI | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-LEVEL | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-PROFILE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-VENDOR-URI | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-VERSION-MAJOR | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-VERSION-MINOR | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.41 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-ASYNCHRONOUS-CAPABILITY | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-ATTESTATION-CAPABILITY | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-BATCH-CONTINUE-CAPABILITY | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-BATCH-UNDO-CAPABILITY | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-DESTROY-ACTION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-QUANTUM-SAFE-CAPABILITY | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-RNG-MODE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-SHREDDING-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-STREAMING-CAPABILITY | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-UNWRAP-MODE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.6 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-OBJECT-GROUPS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.6 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-OBJECT-TYPES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.6 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-7-CONSTRAINT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.7 |
 | KMIPKIT-ELEM-TAG-420001 | tag | both | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-TAG-420002 | tag | both | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-TAG-420003 | tag | both | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |

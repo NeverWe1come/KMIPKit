@@ -24377,6 +24377,898 @@
       "asynchronous_response": null
     },
     {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES",
+      "kind": "operation_structure",
+      "name": "Asynchronous Correlation Values",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH",
+      "kind": "operation_structure",
+      "name": "Data Length",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.10"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION",
+      "kind": "operation_structure",
+      "name": "Defaults Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.11"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-12-DERIVATION-PARAMETERS",
+      "kind": "operation_structure",
+      "name": "Derivation Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.12"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION",
+      "kind": "operation_structure",
+      "name": "Extension Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR",
+      "kind": "operation_structure",
+      "name": "Final Indicator",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.14"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION",
+      "kind": "operation_structure",
+      "name": "Interop Function",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.15"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER",
+      "kind": "operation_structure",
+      "name": "Interop identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.16"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "TextString"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
+      "kind": "operation_structure",
+      "name": "Init Indicator",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.17"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-18-KEY-WRAPPING-SPECIFICATION",
+      "kind": "operation_structure",
+      "name": "Key Wrapping Specification",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.18"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-19-LOG-MESSAGE",
+      "kind": "operation_structure",
+      "name": "Log Message",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.19"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST",
+      "kind": "operation_structure",
+      "name": "Asynchronous Request",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA",
+      "kind": "operation_structure",
+      "name": "MAC Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.20"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+      "kind": "operation_structure",
+      "name": "Objects",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.21"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-22-OBJECT-DEFAULTS",
+      "kind": "operation_structure",
+      "name": "Object Defaults",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.22"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS",
+      "kind": "operation_structure",
+      "name": "Object Groups",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+      "kind": "operation_structure",
+      "name": "Object Types",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.24"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+      "kind": "operation_structure",
+      "name": "Operations",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.25"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-26-PKCS-11-FUNCTION",
+      "kind": "operation_structure",
+      "name": "PKCS#11 Function",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.26"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-27-PKCS-11-INPUT-PARAMETERS",
+      "kind": "operation_structure",
+      "name": "PKCS#11 Input Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.27"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-28-PKCS-11-INTERFACE",
+      "kind": "operation_structure",
+      "name": "PKCS#11 Interface",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.28"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-29-PKCS-11-OUTPUT-PARAMETERS",
+      "kind": "operation_structure",
+      "name": "PKCS#11 Output Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.29"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-3-AUTHENTICATED-ENCRYPTION-ADDITIONAL-DATA",
+      "kind": "operation_structure",
+      "name": "Authenticated Encryption Additional Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-30-PKCS-11-RETURN-CODE",
+      "kind": "operation_structure",
+      "name": "PKCS#11 Return Code",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.30"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION",
+      "kind": "operation_structure",
+      "name": "Profile Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.31"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION",
+      "kind": "operation_structure",
+      "name": "Profile Version",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.32"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-33-PROTECTION-STORAGE-MASKS",
+      "kind": "operation_structure",
+      "name": "Protection Storage Masks",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.33"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-34-RIGHT",
+      "kind": "operation_structure",
+      "name": "Right",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-35-RIGHTS",
+      "kind": "operation_structure",
+      "name": "Rights",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.35"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS",
+      "kind": "operation_structure",
+      "name": "RNG Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION",
+      "kind": "operation_structure",
+      "name": "Server Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-38-SIGNATURE-DATA",
+      "kind": "operation_structure",
+      "name": "Signature Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.38"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-39-TICKET",
+      "kind": "operation_structure",
+      "name": "Ticket",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.39"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG",
+      "kind": "operation_structure",
+      "name": "Authenticated Encryption Tag",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.4"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS",
+      "kind": "operation_structure",
+      "name": "Usage Limits",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.40"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION",
+      "kind": "operation_structure",
+      "name": "Validation Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION",
+      "kind": "operation_structure",
+      "name": "Capability Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-6-CONSTRAINT",
+      "kind": "operation_structure",
+      "name": "Constraint",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "YES"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS",
+      "kind": "operation_structure",
+      "name": "Constraints",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "YES"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
+      "kind": "operation_structure",
+      "name": "Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA",
+      "kind": "operation_structure",
+      "name": "Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String, Enumeration or Integer"
+    },
+    {
       "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-QLENGTH",
       "kind": "structure_member",
       "name": "Qlength",
@@ -25693,6 +26585,2262 @@
       "verification_refs": [],
       "source_encoding": "Any",
       "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE",
+      "kind": "structure_member",
+      "name": "Asynchronous Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-1-ASYNCHRONOUS-CORRELATION-VALUES"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-11-OBJECT-DEFAULTS",
+      "kind": "structure_member",
+      "name": "Object Defaults",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.11"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure, may be repeated",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-CRYPTOGRAPHIC-PARAMETERS",
+      "kind": "structure_member",
+      "name": "Cryptographic Parameters,",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.12"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-12-DERIVATION-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No, depends on the PRF."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-DERIVATION-DATA",
+      "kind": "structure_member",
+      "name": "Derivation Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.12"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-12-DERIVATION-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes, unless the Unique Identifier of a Secret Data object is provided. May be repeated."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-INITIALIZATION-VECTOR",
+      "kind": "structure_member",
+      "name": "Initialization Vector",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.12"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-12-DERIVATION-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "No, depends on the PRF (if different than those defined in [PKCS#5]) and mode of operation: an empty IV is assumed if not provided."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-ITERATION-COUNT",
+      "kind": "structure_member",
+      "name": "Iteration Count",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.12"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-12-DERIVATION-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes if Derivation method is PBKDF2."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-SALT",
+      "kind": "structure_member",
+      "name": "Salt",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.12"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-12-DERIVATION-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes if Derivation method is PBKDF2."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-ATTRIBUTE",
+      "kind": "structure_member",
+      "name": "Extension Attribute",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-DESCRIPTION",
+      "kind": "structure_member",
+      "name": "Extension Description",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-ENUMERATION",
+      "kind": "structure_member",
+      "name": "Extension Enumeration",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-NAME",
+      "kind": "structure_member",
+      "name": "Extension Name",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-PARENT-STRUCTURE-TAG",
+      "kind": "structure_member",
+      "name": "Extension Parent Structure Tag",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-TAG",
+      "kind": "structure_member",
+      "name": "Extension Tag",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-13-EXTENSION-TYPE",
+      "kind": "structure_member",
+      "name": "Extension Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration (Item Type)",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-ATTRIBUTE-NAME",
+      "kind": "structure_member",
+      "name": "Attribute Name",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.18"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-18-KEY-WRAPPING-SPECIFICATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String, MAY be repeated",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-ENCODING-OPTION",
+      "kind": "structure_member",
+      "name": "Encoding Option",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.18"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-18-KEY-WRAPPING-SPECIFICATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No. If Encoding Option is not present, the wrapped Key Value SHALL be TTLV encoded."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-ENCRYPTION-KEY-INFORMATION",
+      "kind": "structure_member",
+      "name": "Encryption Key Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.18"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-18-KEY-WRAPPING-SPECIFICATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No, SHALL be present if MAC/Signature Key Information is omitted"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-MAC-SIGNATURE-KEY-INFORMATION",
+      "kind": "structure_member",
+      "name": "MAC/Signature Key Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.18"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-18-KEY-WRAPPING-SPECIFICATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No, SHALL be present if Encryption Key Information is omitted"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-WRAPPING-METHOD",
+      "kind": "structure_member",
+      "name": "Wrapping Method",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.18"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-18-KEY-WRAPPING-SPECIFICATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-ASYNCHRONOUS-CORRELATION-VALUE",
+      "kind": "structure_member",
+      "name": "Asynchronous Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-OPERATION",
+      "kind": "structure_member",
+      "name": "Operation",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-PROCESSING-STAGE",
+      "kind": "structure_member",
+      "name": "Processing Stage",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-SUBMISSION-DATE",
+      "kind": "structure_member",
+      "name": "Submission Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Date Time Extended",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-21-UNIQUE-IDENTIFIER",
+      "kind": "structure_member",
+      "name": "Unique Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.21"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String, Enumeration or Integer",
+      "source_requiredness": "No, May be repeated."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-ATTRIBUTES",
+      "kind": "structure_member",
+      "name": "Attributes",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.22"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-22-OBJECT-DEFAULTS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-GROUPS",
+      "kind": "structure_member",
+      "name": "Object Groups",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.22"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-22-OBJECT-DEFAULTS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-TYPE-OBJECTTYPES",
+      "kind": "structure_member",
+      "name": "Object Type | ObjectTypes",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.22"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-22-OBJECT-DEFAULTS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration | Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP",
+      "kind": "structure_member",
+      "name": "Object Group",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.23"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Attribute, May be repeated",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-24-OBJECT-TYPE",
+      "kind": "structure_member",
+      "name": "Object Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.24"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No, May be repeated."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-25-OPERATION",
+      "kind": "structure_member",
+      "name": "Operation",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.25"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No, May be repeated."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-26-PKCS-11-FUNCTION",
+      "kind": "structure_member",
+      "name": "PKCS#11 Function",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.26"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-26-PKCS-11-FUNCTION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS",
+      "kind": "structure_member",
+      "name": "PKCS#11 Input Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.27"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-27-PKCS-11-INPUT-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "ByteString",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-28-PKCS-11-INTERFACE",
+      "kind": "structure_member",
+      "name": "PKCS#11 Interface",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.28"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-28-PKCS-11-INTERFACE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "TextString",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-29-PKCS-11-OUTPUT-PARAMETERS",
+      "kind": "structure_member",
+      "name": "PKCS#11 Output Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.29"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-29-PKCS-11-OUTPUT-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "ByteString",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-30-PKCS-11-RETURN-CODE",
+      "kind": "structure_member",
+      "name": "PKCS#11 Return Code",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.30"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-30-PKCS-11-RETURN-CODE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-NAME",
+      "kind": "structure_member",
+      "name": "Profile Name",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.31"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-VERSION",
+      "kind": "structure_member",
+      "name": "Profile Version",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.31"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-PORT",
+      "kind": "structure_member",
+      "name": "Server Port",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.31"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-URI",
+      "kind": "structure_member",
+      "name": "Server URI",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.31"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-32-PROFILE-VERSION-MAJOR",
+      "kind": "structure_member",
+      "name": "Profile Version Major",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.32"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-32-PROFILE-VERSION-MINOR",
+      "kind": "structure_member",
+      "name": "Profile Version Minor",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.32"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-OBJECT-GROUPS",
+      "kind": "structure_member",
+      "name": "Object Groups",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-34-RIGHT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-OBJECTS",
+      "kind": "structure_member",
+      "name": "Objects",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-34-RIGHT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-OPERATIONS",
+      "kind": "structure_member",
+      "name": "Operations",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-34-RIGHT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-USAGE-LIMITS",
+      "kind": "structure_member",
+      "name": "Usage Limits",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.34"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-34-RIGHT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-35-RIGHT",
+      "kind": "structure_member",
+      "name": "Right",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.35"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-35-RIGHTS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No, May be repeated."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-CRYPTOGRAPHIC-ALGORITHM",
+      "kind": "structure_member",
+      "name": "Cryptographic Algorithm",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-CRYPTOGRAPHIC-LENGTH",
+      "kind": "structure_member",
+      "name": "Cryptographic Length",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-DRBG-ALGORITHM",
+      "kind": "structure_member",
+      "name": "DRBG Algorithm",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-FIPS186-VARIATION",
+      "kind": "structure_member",
+      "name": "FIPS186 Variation",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-HASHING-ALGORITHM",
+      "kind": "structure_member",
+      "name": "Hashing Algorithm",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-PREDICTION-RESISTANCE",
+      "kind": "structure_member",
+      "name": "Prediction Resistance",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-RECOMMENDED-CURVE",
+      "kind": "structure_member",
+      "name": "Recommended Curve",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-36-RNG-ALGORITHM",
+      "kind": "structure_member",
+      "name": "RNG Algorithm",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-ALTERNATIVE-FAILOVER-ENDPOINTS",
+      "kind": "structure_member",
+      "name": "Alternative failover endpoints",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String, MAY be repeated",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-BUILD-DATE",
+      "kind": "structure_member",
+      "name": "Build date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-BUILD-LEVEL",
+      "kind": "structure_member",
+      "name": "Build level",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-CLUSTER-INFO",
+      "kind": "structure_member",
+      "name": "Cluster info",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-PRODUCT-NAME",
+      "kind": "structure_member",
+      "name": "Product name",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-LOAD",
+      "kind": "structure_member",
+      "name": "Server load",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-NAME",
+      "kind": "structure_member",
+      "name": "Server name",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-SERIAL-NUMBER",
+      "kind": "structure_member",
+      "name": "Server serial number",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-VERSION",
+      "kind": "structure_member",
+      "name": "Server version",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-VENDOR-SPECIFIC",
+      "kind": "structure_member",
+      "name": "Vendor-Specific",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.37"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Any, MAY be repeated",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-39-TICKET-TYPE",
+      "kind": "structure_member",
+      "name": "Ticket Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.39"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-39-TICKET"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-39-TICKET-VALUE",
+      "kind": "structure_member",
+      "name": "Ticket Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.39"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-39-TICKET"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-COUNT",
+      "kind": "structure_member",
+      "name": "Usage Limits Count",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.40"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Long Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL",
+      "kind": "structure_member",
+      "name": "Usage Limits Total",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.40"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Long Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-UNIT",
+      "kind": "structure_member",
+      "name": "Usage Limits Unit",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.40"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-AUTHORITY-COUNTRY",
+      "kind": "structure_member",
+      "name": "Validation Authority Country",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-AUTHORITY-TYPE",
+      "kind": "structure_member",
+      "name": "Validation Authority Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-AUTHORITY-URI",
+      "kind": "structure_member",
+      "name": "Validation Authority URI",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-CERTIFICATE-IDENTIFIER",
+      "kind": "structure_member",
+      "name": "Validation Certificate Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-CERTIFICATE-URI",
+      "kind": "structure_member",
+      "name": "Validation Certificate URI",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-LEVEL",
+      "kind": "structure_member",
+      "name": "Validation Level",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-PROFILE",
+      "kind": "structure_member",
+      "name": "Validation Profile",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String, MAY be repeated",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-TYPE",
+      "kind": "structure_member",
+      "name": "Validation Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-VENDOR-URI",
+      "kind": "structure_member",
+      "name": "Validation Vendor URI",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-VERSION-MAJOR",
+      "kind": "structure_member",
+      "name": "Validation Version Major",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-41-VALIDATION-VERSION-MINOR",
+      "kind": "structure_member",
+      "name": "Validation Version Minor",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.41"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-ASYNCHRONOUS-CAPABILITY",
+      "kind": "structure_member",
+      "name": "Asynchronous Capability",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-ATTESTATION-CAPABILITY",
+      "kind": "structure_member",
+      "name": "Attestation Capability",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-BATCH-CONTINUE-CAPABILITY",
+      "kind": "structure_member",
+      "name": "Batch Continue Capability",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-BATCH-UNDO-CAPABILITY",
+      "kind": "structure_member",
+      "name": "Batch Undo Capability",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-DESTROY-ACTION",
+      "kind": "structure_member",
+      "name": "Destroy Action",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-QUANTUM-SAFE-CAPABILITY",
+      "kind": "structure_member",
+      "name": "Quantum Safe Capability",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-RNG-MODE",
+      "kind": "structure_member",
+      "name": "RNG Mode",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-SHREDDING-ALGORITHM",
+      "kind": "structure_member",
+      "name": "Shredding Algorithm",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-STREAMING-CAPABILITY",
+      "kind": "structure_member",
+      "name": "Streaming Capability",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-5-UNWRAP-MODE",
+      "kind": "structure_member",
+      "name": "Unwrap Mode",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-5-CAPABILITY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-ATTRIBUTES",
+      "kind": "structure_member",
+      "name": "Attributes",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-6-CONSTRAINT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-OBJECT-GROUPS",
+      "kind": "structure_member",
+      "name": "Object Groups",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-6-CONSTRAINT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-OBJECT-TYPES",
+      "kind": "structure_member",
+      "name": "Object Types",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-6-CONSTRAINT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-7-CONSTRAINT",
+      "kind": "structure_member",
+      "name": "Constraint",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No, May be repeated."
     },
     {
       "element_id": "KMIPKIT-ELEM-TAG-420001",
