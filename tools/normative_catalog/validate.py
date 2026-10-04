@@ -704,6 +704,11 @@ def _check_semantics(
     for clause in catalog["source_clauses"]:
         if any(item not in requirements for item in clause["requirement_ids"]):
             _fail("source clause has an unresolved requirement reference")
+        linked_scopes = {requirements[item]["scope_state"] for item in clause["requirement_ids"]}
+        if linked_scopes:
+            expected_scope = next(iter(linked_scopes)) if len(linked_scopes) == 1 else "mixed"
+            if clause["scope_state"] != expected_scope:
+                _fail("source clause scope does not match linked requirement scopes")
 
     for element in catalog["elements"]:
         if set(element) - ELEMENT_FIELDS:
