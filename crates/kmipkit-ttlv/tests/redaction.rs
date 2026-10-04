@@ -1,7 +1,7 @@
 //! Requirement traceability: KMIPKIT-0004-FR-009, FR-010, FR-013, and SC-004.
 //! Authority: approved KMIPKIT-0004 specification and Rust value-model contract.
 
-use std::fmt::Debug;
+use std::fmt::{Binary, Debug, Display, LowerHex, Octal, UpperHex};
 
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, Tag, Value, ValueView};
 
@@ -27,6 +27,47 @@ fn assert_sentinels_absent(formatted: &[String], sentinels: &[String]) {
     }
 }
 
+fn numeric_sentinels<T>(value: T) -> Vec<String>
+where
+    T: Binary + Display + LowerHex + Octal + UpperHex,
+{
+    vec![
+        value.to_string(),
+        format!("{value:b}"),
+        format!("{value:#b}"),
+        format!("{value:o}"),
+        format!("{value:#o}"),
+        format!("{value:x}"),
+        format!("{value:#x}"),
+        format!("{value:X}"),
+        format!("{value:#X}"),
+    ]
+}
+
+fn byte_sentinels(bytes: &[u8]) -> Vec<String> {
+    let lower_hex = bytes
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    let upper_hex = lower_hex.to_uppercase();
+    let spaced_lower_hex = bytes
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let spaced_upper_hex = spaced_lower_hex.to_uppercase();
+
+    vec![
+        format!("{bytes:?}"),
+        lower_hex.clone(),
+        upper_hex.clone(),
+        format!("0x{lower_hex}"),
+        format!("0x{upper_hex}"),
+        spaced_lower_hex,
+        spaced_upper_hex,
+    ]
+}
+
 #[test]
 fn debug_redacts_direct_and_nested_payloads_on_every_public_surface() {
     let big_integer_bytes = vec![0xD1, 0xE2, 0xA3, 0xB4];
@@ -34,40 +75,41 @@ fn debug_redacts_direct_and_nested_payloads_on_every_public_surface() {
     let values = vec![
         (
             Value::integer(-1_234_567_890),
-            vec![String::from("-1234567890")],
+            numeric_sentinels(-1_234_567_890_i32),
         ),
         (
             Value::long_integer(-6_543_210_987_654_321),
-            vec![String::from("-6543210987654321")],
+            numeric_sentinels(-6_543_210_987_654_321_i64),
         ),
         (
             Value::big_integer(big_integer_bytes.clone()),
-            vec![format!("{big_integer_bytes:?}")],
+            byte_sentinels(&big_integer_bytes),
         ),
         (
             Value::enumeration(0xDEAD_BEEF),
-            vec![String::from("3735928559")],
+            numeric_sentinels(0xDEAD_BEEF_u32),
         ),
         (Value::boolean(true), vec![String::from("true")]),
         (
             Value::text_string(String::from("KMIPKIT_T016_TEXT_SENTINEL_71A9")),
             vec![String::from("KMIPKIT_T016_TEXT_SENTINEL_71A9")],
         ),
-        (
-            Value::byte_string(byte_string_bytes.clone()),
-            vec![format!("{byte_string_bytes:?}")],
-        ),
+        (Value::byte_string(byte_string_bytes.clone()), {
+            let mut sentinels = byte_sentinels(&byte_string_bytes);
+            sentinels.push(String::from("SECRET"));
+            sentinels
+        }),
         (
             Value::date_time(9_876_543_210_987_654),
-            vec![String::from("9876543210987654")],
+            numeric_sentinels(9_876_543_210_987_654_i64),
         ),
         (
             Value::interval(0xA1B2_C3D4),
-            vec![String::from("2712847316")],
+            numeric_sentinels(0xA1B2_C3D4_u32),
         ),
         (
             Value::date_time_extended(-8_765_432_109_876_543),
-            vec![String::from("-8765432109876543")],
+            numeric_sentinels(-8_765_432_109_876_543_i64),
         ),
     ];
 
