@@ -813,6 +813,20 @@ def operation_element(name: str, section: str, direction: str) -> dict[str, obje
 
 
 class CatalogValidationTests(unittest.TestCase):
+    def test_checked_in_clause_ledger_covers_all_keyword_strength_mappings(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        expected_keywords = set(catalog_validate.KEYWORD_STRENGTH)
+        observed_keywords = {
+            keyword for clause in catalog["source_clauses"] for keyword in clause["source_keywords"]
+        }
+
+        self.assertEqual(observed_keywords, expected_keywords)
+        for requirement in catalog["requirements"]:
+            self.assertEqual(
+                requirement["normative_strength"],
+                catalog_validate.KEYWORD_STRENGTH[requirement["source_keyword"]],
+            )
+
     def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
         cases = (
             ("MAX_DEPTH", 1, '{"schema_version":{"nested":{"again":1}}}', "nesting depth"),

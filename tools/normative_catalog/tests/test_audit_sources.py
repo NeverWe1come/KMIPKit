@@ -14,6 +14,18 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class SourceAuditTests(unittest.TestCase):
+    def test_recognizes_all_ten_rfc_2119_keywords(self) -> None:
+        keywords = (
+            "MUST NOT", "SHALL NOT", "SHOULD NOT", "RECOMMENDED", "REQUIRED",
+            "OPTIONAL", "MUST", "SHALL", "SHOULD", "MAY",
+        )
+        body = " ".join(f"<span>{keyword}</span> applies." for keyword in keywords)
+        raw = f"<h2>1 Scope</h2><p>{body}</p>".encode("ascii")
+
+        candidates = audit_document(raw, "KMIPKIT-SRC-spec")
+
+        self.assertEqual(candidates[0]["source_keywords"], list(keywords))
+
     def test_concatenates_inline_text_and_detects_compound_keywords(self) -> None:
         candidates = audit_document(
             b"<h2>8.1 Example</h2><p>The client MUST <b>NOT</b> repeat.</p>",
