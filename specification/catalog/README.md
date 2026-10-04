@@ -7,7 +7,8 @@ profiles, test evidence, discrepancies, and accepted decisions. Stable IDs and
 explicit relationships make source coverage and later implementation
 assignments auditable.
 
-The catalog contract is documented in
+The independent source review and its reconciliation evidence are recorded in
+[`review-evidence.md`](review-evidence.md). The catalog contract is documented in
 [`specs/002-normative-inventory/data-model.md`](../../specs/002-normative-inventory/data-model.md)
 and [`contracts/catalog-format.md`](../../specs/002-normative-inventory/contracts/catalog-format.md).
 The Python standard-library validator checks the record shape, source hashes,
@@ -32,9 +33,10 @@ coverage assignments remain visible as unassigned. Prohibited requirements
 that need negative verification are listed explicitly. Open discrepancies show
 their downstream gate and affected record counts; implementation specifications
 must resolve a discrepancy before changing affected behavior. The report
-includes pinned source checksums and count reconciliation. Inventory presence
-does not imply implementation, profile support, certification, or conformance;
-all current profile claims remain `not_claimed`.
+includes pinned source checksums and count reconciliation, plus requirement-
+level gaps where no official Test Cases ID is explicitly source-linked.
+Inventory presence does not imply implementation, profile support,
+certification, or conformance; all current profile claims remain `not_claimed`.
 
 This inventory is evidence for future protocol specifications. It does not
 replace the OASIS work products, amend their wording, resolve open source

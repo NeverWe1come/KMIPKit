@@ -115,3 +115,21 @@ payload contents. Test Cases CN01 does not directly cross-reference Profiles
 profile IDs; the inventory does not infer such a relationship. A later
 conformance specification must obtain the fixtures and keep every open
 discrepancy that affects its scope gated until resolution evidence exists.
+
+## Final QA and execution verification
+
+Independent QA rechecked the acceptance evidence and found no additional catalog blockers. Requirement evidence is reciprocal for 85 official case-to-requirement links across 15 requirements; the remaining 552 requirements carry explicit source-evidence gap notes and appear individually in the generated report. All 19 catalog-readiness criteria were checked against the source review, validation rules, generated report, and recorded reconciliation evidence. There are 40 open discrepancies with no selected interpretations, 35 profile claim states remain `not_claimed`, and all 203 cited XML fixtures are unavailable in the pinned source tree.
+
+Fresh verification on 2026-10-04:
+
+- `python -B -m unittest discover -s tools/normative_catalog/tests -v`: 126 passed, 3 skipped (Windows directory-symlink privilege unavailable).
+- `python -B -m unittest discover -s scripts/tests -v`: 36 passed, 3 skipped (same Windows symlink limitation).
+- `pwsh -NoProfile -File scripts/tests/Test-Wsl.ps1`: all 8 passed.
+- `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`, and `cargo test --workspace --all-features --locked`: passed with Windows stable and WSL Rust 1.94.0.
+- `python -B tools/normative_catalog/validate.py`: 4 sources, 1,411 clauses, 4,018 records valid.
+- `python -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha ce34179cd8bf96812af53b5ec88daeae330fce35 --check`: 1,411 source candidates exactly match the ledger.
+- `python -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha ce34179cd8bf96812af53b5ec88daeae330fce35`: pinned OASIS tree unchanged.
+- `python -B tools/normative_catalog/report.py --check` and `git diff --check`: passed.
+- Coverage preflight scanned all 7 Rust source files and found no production function bodies, so line-percentage gates are not applicable to this catalog-only feature. `cargo llvm-cov` is not installed in this environment; no coverage percentage is claimed.
+
+The independent QA review and these command results complete T039. Security review (T040) and draft PR creation (T041) remain pending at this evidence snapshot.

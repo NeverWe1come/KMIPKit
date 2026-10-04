@@ -28,20 +28,20 @@
 ### Red
 
 - [x] T003 [P] Add failing tests for source metadata, source-clause ledger dispositions, `tag_ranges`, policy records, stable IDs, top-level record collections, and required source references in `tools/normative_catalog/tests/test_validate.py`.
-- [ ] T004 [P] Add failing tests for duplicate JSON keys, unknown fields, invalid UTF-8, unpaired escaped surrogates, unresolved references, invalid scope/direction, checksum mismatch, absolute/traversal/symlink/reparse paths, JSON/HTML size-depth-node-record-string and global token/member limits, and immutable-base changes including add/delete/rename/mode/symlink changes in `tools/normative_catalog/tests/test_validate.py` and `test_immutable_sources.py`.
-- [ ] T005 [P] Add failing report tests for unassigned coverage, source-count mismatch, absent fixture status, negative-test flags, SHOULD/SHOULD NOT/RECOMMENDED deviations without an accepted decision, malicious Markdown/HTML/link payloads (including parentheses, backslashes, line breaks, and image syntax), control characters, and locale-independent output in `tools/normative_catalog/tests/test_report.py`.
-- [ ] T006 [P] Add failing source-audit tests for the documented case-insensitive token vocabulary and block boundaries, inline text split across HTML nodes, declared charset handling independent of locale, malformed/unsupported charset, stable structural IDs, limits, non-fetching parsing, exact candidate/ledger equality, and independently reviewed missed-block fixtures in `tools/normative_catalog/tests/test_audit_sources.py`.
+- [x] T004 [P] Add failing tests for duplicate JSON keys, unknown fields, invalid UTF-8, unpaired escaped surrogates, unresolved references, invalid scope/direction, checksum mismatch, absolute/traversal/symlink/reparse paths, JSON/HTML size-depth-node-record-string and global token/member limits, and immutable-base changes including add/delete/rename/mode/symlink changes in `tools/normative_catalog/tests/test_validate.py` and `test_immutable_sources.py`.
+- [x] T005 [P] Add failing report tests for unassigned coverage, source-count mismatch, absent fixture status, negative-test flags, SHOULD/SHOULD NOT/RECOMMENDED deviations without an accepted decision, malicious Markdown/HTML/link payloads (including parentheses, backslashes, line breaks, and image syntax), control characters, and locale-independent output in `tools/normative_catalog/tests/test_report.py`.
+- [x] T006 [P] Add failing source-audit tests for the documented case-insensitive token vocabulary and block boundaries, inline text split across HTML nodes, declared charset handling independent of locale, malformed/unsupported charset, stable structural IDs, limits, non-fetching parsing, exact candidate/ledger equality, and independently reviewed missed-block fixtures in `tools/normative_catalog/tests/test_audit_sources.py`.
 
 ### Green
 
 - [x] T007 Define the checked-in record contract in `specification/catalog/README.md` and this feature contract; include `source_clauses`, `tag_ranges`, and `policies` in `specification/catalog/kmip-2.1.json`.
-- [ ] T008 Implement `tools/normative_catalog/check_immutable_sources.py` first, requiring the exact PR base commit SHA and failing closed; run it before `audit_sources.py`. Compare the full pinned Git tree and manifest, then implement a non-fetching auditor that reads only allowlisted Git blobs, enforces HTML limits, and emits documented candidate locators. Wire this order into `.github/workflows/ci.yml` with `contents: read`, no secrets, and the PR event base SHA after rebasing on the CI foundation.
-- [ ] T009 Implement strict offline parsing and semantic validation in `tools/normative_catalog/validate.py`, including a bounded preflight scan before object construction, duplicate-key detection, source/fixture Git-tree metadata lookup without following catalog paths, anchored IDs, relationships, source counts, and requirement-level rules; use Python standard library only.
+- [x] T008 Implement `tools/normative_catalog/check_immutable_sources.py` first, requiring the exact PR base commit SHA and failing closed; run it before `audit_sources.py`. Compare the full pinned Git tree and manifest, then implement a non-fetching auditor that reads only allowlisted Git blobs, enforces HTML limits, and emits documented candidate locators. Wire this order into `.github/workflows/ci.yml` with `contents: read`, no secrets, and the PR event base SHA after rebasing on the CI foundation.
+- [x] T009 Implement strict offline parsing and semantic validation in `tools/normative_catalog/validate.py`, including a bounded preflight scan before object construction, duplicate-key detection, source/fixture Git-tree metadata lookup without following catalog paths, anchored IDs, relationships, source counts, and requirement-level rules; use Python standard library only.
 - [x] T010 Implement `tools/normative_catalog/report.py` with separate table-text and link-label encoders, allowlisted constant link destinations, deterministic sort keys, fixed sections, and `--check`/`--write`; add a minimal valid catalog fixture and make the Red tests pass.
 
 ### Refactor
 
-- [ ] T011 Refactor shared identifier, citation, source-integrity, and aggregate-count checks into small documented helpers; preserve all test behavior and byte-identical report output.
+- [x] T011 Refactor shared identifier, citation, source-integrity, and aggregate-count checks into small documented helpers; preserve all test behavior and byte-identical report output.
 
 **Checkpoint**: Small source-audit fixtures prove the documented extraction rules and candidate/ledger set equality; structural validation rejects malformed data. Full-source equality is deferred until T022–T023 populate the ledger and T027 independently checks every source section/table. No inventory completeness claim is made until all catalog sections are populated.
 ## Phase 3: User Story 1 - Review Client Protocol Coverage (Priority: P1)
@@ -59,13 +59,13 @@
 
 - [x] T014 Populate operation records from Specification §§6.1–6.2, including all 57 §6.1 operation names, payload-section references, and the five §6.2 server-initiated operations marked for 1.1.
 - [x] T015 Populate all typed protocol elements and wire values from Specification §§1–5 and 10–12, including every enumeration value, bitmask bit, option, and result; distinguish reserved/unused/range/extension entries from usable named values.
-- [ ] T016 Populate common messages, every message field and nested structure member, credential forms, options, result values, extensions, and protocol asynchronous behavior from Specification §§7–14; record client/server direction per field where required.
-- [ ] T017 Link operation and protocol-element records to official Test Cases IDs only when the pinned HTML establishes the link; preserve the original case label and malformed link separately.
+- [x] T016 Populate common messages, every message field and nested structure member, credential forms, options, result values, extensions, and protocol asynchronous behavior from Specification §§7–14; record client/server direction per field where required.
+- [x] T017 Link operation and protocol-element records to official Test Cases IDs only when the pinned HTML establishes the link; preserve the original case label and malformed link separately.
 - [x] T018 Make all operation, uniqueness, and source-count Red tests pass; do not alter the pinned OASIS sources.
 
 ### Refactor
 
-- [ ] T019 Refactor catalog ordering and element relationships so the serialized data is deterministic and all shared structures retain explicit direction and source references.
+- [x] T019 Refactor catalog ordering and element relationships so the serialized data is deterministic and all shared structures retain explicit direction and source references.
 
 **Checkpoint**: Every operation and named protocol-element category reconciles with the pinned sources and the report distinguishes 1.0 from 1.1.
 
@@ -77,21 +77,21 @@
 
 ### Red
 
-- [ ] T020 [P] Add failing tests requiring source-clause ledger IDs, exact source keyword, canonical strength mapping for all ten OASIS keywords (including REQUIRED and RECOMMENDED), section, role/direction, condition, scope, and verification/evidence fields for every normative requirement in `tools/normative_catalog/tests/test_validate.py`.
-- [ ] T021 [P] Add failing tests that prohibit silent omissions, require negative-verification markers for prohibitions, require accepted decisions for deviations from SHOULD, SHOULD NOT, and RECOMMENDED requirements, and retain MAY/OPTIONAL capabilities.
+- [x] T020 [P] Add failing tests requiring source-clause ledger IDs, exact source keyword, canonical strength mapping for all ten OASIS keywords (including REQUIRED and RECOMMENDED), section, role/direction, condition, scope, and verification/evidence fields for every normative requirement in `tools/normative_catalog/tests/test_validate.py`.
+- [x] T021 [P] Add failing tests that prohibit silent omissions, require negative-verification markers for prohibitions, require accepted decisions for deviations from SHOULD, SHOULD NOT, and RECOMMENDED requirements, and retain MAY/OPTIONAL capabilities.
 
 ### Green
 
-- [ ] T022 Populate the normative clause ledger for applicable client obligations in Specification §§1–14, including shared TTLV/message rules, operations, versioning, security, conformance, and extension behavior.
-- [ ] T023 Populate applicable normative additions and conditions from every client profile clause and profile conformance clause in Profiles §§2–6; separately mark XML/JSON and conditional domain profiles against the 1.0 boundary.
-- [ ] T024 Populate all 110 Test Cases CN01 section identifiers and all 93 Profiles fixture references, including mandatory/optional status where explicit and fixture availability; do not infer undocumented fixture workflows.
-- [ ] T025 Add stable record relationships between requirements, elements, profiles, and test evidence; keep unassigned feature, implementation, and verification references empty until later specifications implement them.
-- [ ] T026 Make all normative-strength, source-coverage, negative-test, SHOULD-deviation, and relationship Red tests pass.
+- [x] T022 Populate the normative clause ledger for applicable client obligations in Specification §§1–14, including shared TTLV/message rules, operations, versioning, security, conformance, and extension behavior.
+- [x] T023 Populate applicable normative additions and conditions from every client profile clause and profile conformance clause in Profiles §§2–6; separately mark XML/JSON and conditional domain profiles against the 1.0 boundary.
+- [x] T024 Populate all 110 Test Cases CN01 section identifiers and all 93 Profiles fixture references, including mandatory/optional status where explicit and fixture availability; do not infer undocumented fixture workflows.
+- [x] T025 Add stable record relationships between requirements, elements, profiles, and test evidence; keep unassigned feature, implementation, and verification references empty until later specifications implement them.
+- [x] T026 Make all normative-strength, source-coverage, negative-test, SHOULD-deviation, and relationship Red tests pass.
 
 ### Refactor
 
-- [ ] T027 Independently review every Specification and Profiles section and table against the source HTML and emitted locator set; record section-by-section completion evidence, reconcile missed/duplicate candidates, conditional clauses, and paraphrase boundaries without copying long OASIS prose.
-- [ ] T028 Refactor report sections to list unassigned records by requirement ID, normative level, scope, and source; retain stable sort order and byte-identical output.
+- [x] T027 Independently review every Specification and Profiles section and table against the source HTML and emitted locator set; record section-by-section completion evidence, reconcile missed/duplicate candidates, conditional clauses, and paraphrase boundaries without copying long OASIS prose.
+- [x] T028 Refactor report sections to list unassigned records by requirement ID, normative level, scope, and source; retain stable sort order and byte-identical output.
 
 **Checkpoint**: Every reviewed normative client clause maps to a stable record or a documented, reviewed exclusion; every evidence gap is visible.
 
@@ -103,19 +103,19 @@
 
 ### Red
 
-- [ ] T029 [P] Add failing tests requiring all client profiles, conformance clause references, dependencies, test IDs, transport/encoding fields, applicability, and separate claim states in `tools/normative_catalog/tests/test_validate.py`.
-- [ ] T030 [P] Add failing tests for the §11.5 Continue wording conflict, Profiles §5.3.1 HTTPS XML/JSON Content-Type versus binary TTLV body conflict, profile cross-reference defects, case-label/link discrepancies, and absent XML fixtures in `tools/normative_catalog/tests/test_validate.py`.
+- [x] T029 [P] Add failing tests requiring all client profiles, conformance clause references, dependencies, test IDs, transport/encoding fields, applicability, and separate claim states in `tools/normative_catalog/tests/test_validate.py`.
+- [x] T030 [P] Add failing tests for the §11.5 Continue wording conflict, Profiles §5.3.1 HTTPS XML/JSON Content-Type versus binary TTLV body conflict, profile cross-reference defects, case-label/link discrepancies, and absent XML fixtures in `tools/normative_catalog/tests/test_validate.py`.
 
 ### Green
 
-- [ ] T031 Populate all client and server profile records from Profiles §§5–6, tagging server-only profiles and keeping applicability, target selection, evidence completion, and conformance claim state distinct.
-- [ ] T032 Add discrepancy records for Batch Error Continuation, Profiles §5.3.1 HTTPS encoding/content-type conflict, reserved-tag preservation policy, profile cross-references, profile case-label/link mismatches, malformed Test Cases links, and absent linked XML fixtures.
-- [ ] T033 Add distinct project-policy records for unknown/future/vendor values and generate `specification/catalog/coverage-report.md` with count reconciliation, unassigned requirements, profile states, missing fixtures, open discrepancies, policy provenance, and source checksums.
-- [ ] T034 Make all profile, discrepancy, fixture-state, and report tests pass; verify that open discrepancies appear as explicit blockers for dependent implementation without causing the inventory validator to choose an interpretation.
+- [x] T031 Populate all client and server profile records from Profiles §§5–6, tagging server-only profiles and keeping applicability, target selection, evidence completion, and conformance claim state distinct.
+- [x] T032 Add discrepancy records for Batch Error Continuation, Profiles §5.3.1 HTTPS encoding/content-type conflict, reserved-tag preservation policy, profile cross-references, profile case-label/link mismatches, malformed Test Cases links, and absent linked XML fixtures.
+- [x] T033 Add distinct project-policy records for unknown/future/vendor values and generate `specification/catalog/coverage-report.md` with count reconciliation, unassigned requirements, profile states, missing fixtures, open discrepancies, policy provenance, and source checksums.
+- [x] T034 Make all profile, discrepancy, fixture-state, and report tests pass; verify that open discrepancies appear as explicit blockers for dependent implementation without causing the inventory validator to choose an interpretation.
 
 ### Refactor
 
-- [ ] T035 Cross-check each profile and discrepancy record against the pinned HTML, normalize labels only in separate display fields, and keep source IDs and citations unchanged.
+- [x] T035 Cross-check each profile and discrepancy record against the pinned HTML, normalize labels only in separate display fields, and keep source IDs and citations unchanged.
 
 **Checkpoint**: Every client profile and identified discrepancy has a traceable record; the catalog makes no unsupported compliance claim.
 
@@ -123,10 +123,10 @@
 
 **Purpose**: Verify generation, documentation, security boundaries, and release readiness for the inventory PR.
 
-- [ ] T036 Regenerate the Markdown report twice and verify byte-identical output, LF line endings, and a clean `--check` result.
-- [ ] T037 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, `cargo test --workspace --all-features`, `cargo llvm-cov --workspace --all-features`, the complete Python unit suite, source checksum verification, workflow checks, and `git diff --check`; verify no network calls or OASIS edits are present, and verify the CI diff guard rejects any source/manifest change against the exact PR base SHA.
-- [ ] T038 Update `specification/catalog/README.md` and `docs/compliance/conformance.md` to explain the catalog/report, stable IDs, scope states, evidence gaps, and discrepancy lifecycle.
-- [ ] T039 Run an independent QA review against every acceptance criterion and requirement; record check outputs and residual limitations in the draft PR.
+- [x] T036 Regenerate the Markdown report twice and verify byte-identical output, LF line endings, and a clean `--check` result.
+- [x] T037 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, `cargo test --workspace --all-features`, `cargo llvm-cov --workspace --all-features`, the complete Python unit suite, source checksum verification, workflow checks, and `git diff --check`; verify no network calls or OASIS edits are present, and verify the CI diff guard rejects any source/manifest change against the exact PR base SHA.
+- [x] T038 Update `specification/catalog/README.md` and `docs/compliance/conformance.md` to explain the catalog/report, stable IDs, scope states, evidence gaps, and discrepancy lifecycle.
+- [x] T039 Run an independent QA review against every acceptance criterion and requirement; record check outputs and residual limitations in the draft PR.
 - [ ] T040 Run an independent security review of file parsing, path handling, deterministic generation, dependencies, and untrusted catalog references; resolve actionable findings.
 - [ ] T041 Prepare and push a draft PR from `feature/KMIPKIT-0002-normative-inventory`; include Red, Green, Refactor evidence, source counts, checksum results, coverage report, risks, and the explicit no-profile-claim limitation.
 
