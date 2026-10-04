@@ -25,6 +25,7 @@ Dispositions are `requirement`, `profile_conditional`, `server_only`, `later_1_1
 | `wire_value`, `allocation` | Optional string-preserving wire value; tag allocation is `assigned`, `reserved`, or `unused`. Values inside extension ranges are not falsely assigned as named OASIS tags. |
 | `direction`, `scope_state` | Direction classification and 1.0/1.1/profile/out-of-scope disposition, each with a reason where it is not directly stated by the source. |
 | `payload_tables`, `asynchronous_response` | Operation-only traceability. `payload_tables` retains each source table's role, number, and printed caption exactly; an empty array means no operation-specific payload table was found. `asynchronous_response` classifies the special Cancel and Poll response behavior; it does not replace the shared message and result model. |
+| `source_encoding`, `source_requiredness` | Required on `structure_member` records and copied verbatim from the source structure table's `Encoding` and `REQUIRED` columns. These fields do not replace the canonical element kind or imply a project policy. |
 | `parent_element_ids`, `requirement_ids`, `profile_ids`, `test_case_ids` | Explicit references; every referenced ID must resolve. Shared fields and nested members carry their own direction and scope instead of inheriting an inaccurate parent classification. |
 | `feature_spec`, `implementation_refs`, `verification_refs` | Explicit coverage assignment. `null`/empty arrays mean unassigned and must appear in the generated report. |
 

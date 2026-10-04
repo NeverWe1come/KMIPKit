@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 1365 |
+| Protocol elements | 1381 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -32,6 +32,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Kind | Count |
 | --- | --- |
 | attribute | 63 |
+| attribute\_structure | 7 |
 | bitmask | 3 |
 | bitmask\_value | 44 |
 | data\_type | 11 |
@@ -40,6 +41,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | object\_structure | 12 |
 | object\_type | 9 |
 | operation | 62 |
+| structure\_member | 9 |
 | tag | 374 |
 
 ### Requirements by strength and scope
@@ -121,6 +123,13 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.55, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.56, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-STATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.57, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES | attribute\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §5.1 |
+| KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-2-COMMON-ATTRIBUTES | attribute\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §5.2 |
+| KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-3-PRIVATE-KEY-ATTRIBUTES | attribute\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §5.3 |
+| KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-4-PUBLIC-KEY-ATTRIBUTES | attribute\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §5.4 |
+| KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-5-ATTRIBUTE-REFERENCE | attribute\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §5.5 |
+| KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-6-CURRENT-ATTRIBUTE | attribute\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §5.6 |
+| KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-7-NEW-ATTRIBUTE | attribute\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §5.7 |
 | KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.58, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.59, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.60 |
@@ -1055,6 +1064,15 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-OP-S2C-PUT | operation | server\_to\_client | client\_1\_1 | KMIPKIT-SRC-spec §6.2.3 |
 | KMIPKIT-ELEM-OP-S2C-QUERY | operation | server\_to\_client | client\_1\_1 | KMIPKIT-SRC-spec §6.2.4 |
 | KMIPKIT-ELEM-OP-S2C-SET-ENDPOINT-ROLE | operation | server\_to\_client | client\_1\_1 | KMIPKIT-SRC-spec §6.2.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-5-2-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-5-3-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-5-4-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.4 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-REFERENCE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-VENDOR-IDENTIFICATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-5-6-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.6 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-5-7-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.7 |
 | KMIPKIT-ELEM-TAG-420001 | tag | both | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-TAG-420002 | tag | both | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-TAG-420003 | tag | both | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |

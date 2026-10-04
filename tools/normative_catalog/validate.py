@@ -87,6 +87,7 @@ ELEMENT_FIELDS = {
     "direction", "scope_state", "scope_reason", "parent_element_ids",
     "requirement_ids", "profile_ids", "test_case_ids", "feature_spec",
     "implementation_refs", "verification_refs", "payload_tables", "asynchronous_response",
+    "source_encoding", "source_requiredness",
 }
 ELEMENT_KINDS = {
     "operation", "message_field", "structure_member", "credential", "data_type",
@@ -686,6 +687,12 @@ def _check_semantics(
         _enum(element.get("kind"), ELEMENT_KINDS, "protocol element kind")
         if not isinstance(element.get("name"), str) or not element["name"].strip():
             _fail("protocol element name is required")
+        if element["kind"] == "structure_member":
+            for field in ("source_encoding", "source_requiredness"):
+                if not isinstance(element.get(field), str) or not element[field].strip():
+                    _fail(f"structure member {field} must be a non-empty string")
+        elif "source_encoding" in element or "source_requiredness" in element:
+            _fail("source structure metadata applies only to structure members")
         _source_refs(element.get("source_refs"), sources, "element source_refs")
         _enum(element.get("direction"), {"client_to_server", "server_to_client", "both", "not_applicable"}, "protocol element direction")
         _enum(
