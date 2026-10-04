@@ -4,13 +4,13 @@
 
 **Prerequisites**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/rust-ttlv-codec.md`, and `quickstart.md`.
 
-**Implementation gate**: Before T001, verify the feature specification is approved under repository governance, the branch is updated from the active `release/1.0.0` head, the merged 004 Tag/Item APIs and Accepted ADR-0010 are inspected, `docs/adr/0011-reserved-tag-decoding-policy.md` has been reviewed/accepted, and the normative inventory has assigned `KMIPKIT-REQ-SPEC-10.1.2-001` to named typed protocol specification(s). If any gate is unmet, do not start implementation tasks; update this gate evidence and stop.
+**Implementation gate**: Before T001, verify the feature specification is approved under repository governance, the branch is updated from the active `release/1.0.0` head, the merged 004 Tag/Item APIs and Accepted ADR-0010 are inspected, and `docs/adr/0011-reserved-tag-decoding-policy.md` has been reviewed/accepted. If any gate is unmet, do not start implementation tasks; update this gate evidence and stop. The separate 1.0 traceability gate for `KMIPKIT-REQ-SPEC-10.1.2-001` remains open until named typed protocol specifications are created; it does not block generic codec implementation.
 
 **Organization**: Strict Red, Green, Refactor commits with DCO sign-off. Each phase's Red commit records failing tests before production code changes.
 
 ## Phase 1: Prerequisite setup
 
-- [ ] T001 Verify every implementation gate above, confirm the dedicated feature worktree is updated from the active `release/1.0.0` head, inspect the merged 004 public API, and record exact gate evidence in `specs/005-ttlv-wire-codec/tasks.md`.
+- [ ] T001 Verify every implementation gate above, confirm the dedicated feature worktree is updated from the active `release/1.0.0` head, inspect the merged 004 public API, record exact gate evidence, and preserve the schema-order requirement as an explicit follow-on traceability gap in `specs/005-ttlv-wire-codec/tasks.md`.
 
 ## Phase 2: User Story 1 — Encode all assigned TTLV Item Types (Priority: P1)
 
@@ -51,7 +51,7 @@
 
 ## Phase 5: Traceability, documentation, and hardening
 
-- [ ] T012 Update applicable `requirements[]` rows and close `KMIPKIT-DISC-037` with the accepted ADR decision in `specification/catalog/kmip-2.1.json`; record the named typed specification assignment for `KMIPKIT-REQ-SPEC-10.1.2-001` from the normative inventory; add feature/code/test traceability, then regenerate and validate every affected artifact with its pinned repository generator.
+- [ ] T012 Update applicable `requirements[]` rows and close `KMIPKIT-DISC-037` with the accepted ADR decision in `specification/catalog/kmip-2.1.json`; add code/test traceability for requirements assigned to this codec, retain `KMIPKIT-REQ-SPEC-10.1.2-001` as an explicit follow-on assignment gap until typed protocol specifications exist, then regenerate and validate every affected artifact with its pinned repository generator. Do not claim 100% roadmap traceability while that gap remains.
 - [ ] T013 Turn `specs/005-ttlv-wire-codec/quickstart.md` scenarios into an executable example and tested documentation in the final `kmipkit-ttlv` public API docs after the merged API is stable.
 - [ ] T014 Add reviewed OASIS vectors and malformed-input fixtures under `crates/kmipkit-ttlv/tests/fixtures/` with exact source document, section, and requirement ID attribution; add a bounded decoder fuzz target in `fuzz/fuzz_targets/ttlv_decode.rs` and its package wiring in `fuzz/Cargo.toml`.
 - [ ] T015 Run repository automation for format, Clippy, focused/workspace tests, property tests, coverage, generator `--check`, dependency/license/security scans, and supported-platform CI; record actual results and confirm at least 95% coverage for changed codec/model code and workspace gates in the draft PR.
@@ -75,7 +75,7 @@ First unblock the feature at T001. Then implement encoder, decoder, and limits i
 
 ## Traceability map
 
-Catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` for schema-specific field order remains unassigned until the inventory names the follow-on typed operation/model specification(s). This is an implementation and 1.0 traceability gate; the generic codec only preserves order and cannot complete that normative requirement by itself.
+Catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` for schema-specific field order remains unassigned until the inventory names the follow-on typed operation/model specification(s). This is a 1.0 traceability gate, not a blocker for generic codec implementation; the codec only preserves order and cannot complete that normative requirement by itself.
 
 | Requirement | Planned task(s) | Executable verification artifact |
 |---|---|---|
@@ -83,7 +83,7 @@ Catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` for schema-specific field orde
 | `KMIPKIT-0005-FR-004`–`FR-006`; `NR-001`–`NR-006` | T005–T008 | `crates/kmipkit-ttlv/tests/codec_negative.rs`, `codec_roundtrip.rs` |
 | `KMIPKIT-0005-FR-007`–`FR-008` | T009–T011 | `crates/kmipkit-ttlv/tests/codec_limits.rs` |
 | `KMIPKIT-0005-FR-009` | T007, T015 | `crates/kmipkit-ttlv/tests/codec_negative.rs` and redaction checks in `codec_vectors.rs` |
-| `KMIPKIT-0005-FR-011` | T001, T012 | Normative catalog assignment and named typed operation/model specification(s) |
+| `KMIPKIT-0005-FR-011` | T001, T012 | Codec requirement links and explicit catalog follow-on gap; full assignment occurs with typed protocol specifications |
 | `KMIPKIT-0005-FR-012` | T002–T004, T009 | Encoder preflight and bounded allocation tests in `codec_limits.rs` and `codec_vectors.rs` |
 | `KMIPKIT-0005-FR-010`; `NR-006` | T001, T005, T006, T012 | Tag-policy tests in `codec_negative.rs` after `KMIPKIT-DISC-037` is decided |
 | `KMIPKIT-0005-FR-011`; `KMIPKIT-0005-SC-005` | T012, T014–T016 | normative catalog `implementation_refs`/`verification_refs`, CI, and coverage report |

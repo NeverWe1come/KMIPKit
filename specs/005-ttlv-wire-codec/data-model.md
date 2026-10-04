@@ -51,6 +51,6 @@ A decoder error records a stable class and safe position metadata (byte offset, 
 ## Open Model Interactions
 
 - A decoded Tag must enter the 004 allocation-checked Tag/Item model. Proposed ADR-0011 recommends rejecting a received Reserved Tag before model construction; that policy remains gated on review.
-- The generic catalog requirement for schema-defined Structure field ordering remains assigned to a follow-on typed operation/model specification. The codec only guarantees preservation of the supplied child order.
+- The generic catalog requirement for schema-defined Structure field ordering remains unassigned pending named follow-on typed operation/model specification(s). The codec only guarantees preservation of the supplied child order.
 - Unsupported Type bytes have no 004 value variant and are rejected by this codec draft.
 - Structure schema field order is not derivable from a generic tree. The encoder preserves model order; typed protocol models must construct known Structures in their OASIS-defined order.
