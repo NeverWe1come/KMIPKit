@@ -136,6 +136,238 @@ class CoverageGateTests(unittest.TestCase):
             report = GATE.parse_llvm_export(document, root)
         self.assertEqual({1: 1, 2: 0}, report["crates/kmipkit-ttlv/src/lib.rs"])
 
+    def test_file_summary_counts_same_source_line_once_per_function(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 19, 1, 0, 0, 0]]))
+            data = document["data"][0]
+            second_function = json.loads(json.dumps(data["functions"][0]))
+            second_function["name"] = "_ZN7kmipkit4other"
+            data["functions"].append(second_function)
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 2}
+
+            report = GATE.parse_llvm_export(json.dumps(document), root)
+
+        self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
+
+    def test_repeated_source_across_export_mappings_fails_closed(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n", encoding="utf-8")
+            covered = json.loads(llvm_document([[1, 1, 1, 19, 1, 0, 0, 0]]))
+            uncovered = json.loads(
+                llvm_document([[1, 1, 1, 19, 0, 0, 0, 0]], summary_lines=1)
+            )
+            covered["data"][0]["functions"][0]["name"] = "_ZN7kmipkit7covered"
+            uncovered["data"][0]["functions"][0]["name"] = "_ZN7kmipkit9uncovered"
+            document = covered
+            document["data"].extend(uncovered["data"])
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "multiple coverage mappings"):
+                GATE.parse_llvm_export(json.dumps(document), root)
+
+    def test_distinct_sources_across_export_mappings_are_preserved(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first_filename = "crates/kmipkit-ttlv/src/lib.rs"
+            second_filename = "crates/kmipkit-protocol/src/lib.rs"
+            first_source = root / first_filename
+            second_source = root / second_filename
+            first_source.parent.mkdir(parents=True)
+            second_source.parent.mkdir(parents=True)
+            first_source.write_text("pub fn first() {}\n", encoding="utf-8")
+            second_source.write_text("pub fn second() {}\n", encoding="utf-8")
+
+            first = json.loads(llvm_document([[1, 1, 1, 18, 2, 0, 0, 0]], filename=first_filename))
+            second = json.loads(llvm_document([[1, 1, 1, 19, 3, 0, 0, 0]], filename=second_filename))
+            first["data"].extend(second["data"])
+
+            report = GATE.parse_llvm_export(json.dumps(first), root)
+
+        self.assertEqual({first_filename: {1: 2}, second_filename: {1: 3}}, report)
+
+    def test_function_region_line_missing_from_file_segments_fails_closed(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\npub fn missing() {}\n", encoding="utf-8")
+            document = llvm_document(
+                [
+                    [1, 1, 1, 19, 1, 0, 0, 0],
+                    [2, 1, 2, 19, 0, 0, 0, 0],
+                ],
+                segments=[
+                    [1, 1, 1, True, True, False],
+                    [1, 19, 0, False, False, False],
+                    [3, 1, 0, False, False, False],
+                ],
+                summary_lines=2,
+            )
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "function code region.*file segments"):
+                GATE.parse_llvm_export(document, root)
+
+    def test_jointly_missing_region_and_segment_cannot_hide_summary_uncovered_line(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn covered() {}\npub fn omitted() {}\n", encoding="utf-8")
+            document = llvm_document(
+                [[1, 1, 1, 19, 1, 0, 0, 0]],
+                segments=[
+                    [1, 1, 1, True, True, False],
+                    [1, 19, 0, False, False, False],
+                    [3, 1, 0, False, False, False],
+                ],
+                summary_lines=2,
+            )
+            reports = {
+                platform: GATE.parse_llvm_export(document, root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+            diff = (
+                "diff --git a/crates/kmipkit-ttlv/src/lib.rs b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "--- a/crates/kmipkit-ttlv/src/lib.rs\n"
+                "+++ b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "@@ -1 +1,2 @@\n"
+                " pub fn covered() {}\n"
+                "+pub fn omitted() {}\n"
+            )
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "Changed Rust code coverage"):
+                GATE._evaluate_coverage(root, reports, diff)
+
+    def test_covered_summary_duplicates_do_not_fail_comment_only_changes(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n// new comment\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 19, 1, 0, 0, 0]], summary_lines=2))
+            data = document["data"][0]
+            repeated_function = json.loads(json.dumps(data["functions"][0]))
+            repeated_function["name"] = "_ZN7kmipkit4other"
+            data["functions"].append(repeated_function)
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 2}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+            diff = (
+                "diff --git a/crates/kmipkit-ttlv/src/lib.rs b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "--- a/crates/kmipkit-ttlv/src/lib.rs\n"
+                "+++ b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "@@ -1,1 +1,2 @@\n"
+                " pub fn shared() {}\n"
+                "+// new comment\n"
+            )
+
+            results = GATE._evaluate_coverage(root, reports, diff)
+
+        self.assertIn("Changed executable Rust lines: not applicable.", results)
+
+    def test_mixed_hit_shared_summary_line_does_not_reserve_uncovered_slot(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n// new comment\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 19, 1, 0, 0, 0]], summary_lines=2))
+            data = document["data"][0]
+            uncovered_function = json.loads(json.dumps(data["functions"][0]))
+            uncovered_function["name"] = "_ZN7kmipkit4other"
+            uncovered_function["count"] = 0
+            uncovered_function["regions"][0][4] = 0
+            data["functions"].append(uncovered_function)
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 1}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+            diff = (
+                "diff --git a/crates/kmipkit-ttlv/src/lib.rs b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "--- a/crates/kmipkit-ttlv/src/lib.rs\n"
+                "+++ b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "@@ -1,1 +1,2 @@\n"
+                " pub fn shared() {}\n"
+                "+// new comment\n"
+            )
+
+            results = GATE._evaluate_coverage(root, reports, diff)
+
+        self.assertIn("Changed executable Rust lines: not applicable.", results)
+
+    def test_platform_uncovered_summary_residuals_are_summed_for_package_coverage(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn f() {}\n" * 19, encoding="utf-8")
+            regions = [[line, 1, line, 14, 1, 0, 0, 0] for line in range(1, 20)]
+            document = json.loads(llvm_document(regions, summary_lines=20))
+            document["data"][0]["files"][0]["summary"]["lines"] = {"count": 20, "covered": 19}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "TTLV/protocol coverage 19/22"):
+                GATE._evaluate_coverage(root, reports, "")
+
+    def test_platform_uncovered_summary_residuals_are_summed_for_workspace_coverage(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-client" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn f() {}\n" * 9, encoding="utf-8")
+            regions = [[line, 1, line, 14, 1, 0, 0, 0] for line in range(1, 10)]
+            document = json.loads(llvm_document(regions, filename="crates/kmipkit-client/src/lib.rs", summary_lines=10))
+            document["data"][0]["files"][0]["summary"]["lines"] = {"count": 10, "covered": 9}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "Workspace coverage 9/12"):
+                GATE._evaluate_coverage(root, reports, "")
+
+    def test_inflated_file_summary_cannot_hide_uncovered_segment_lines(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 19, 0, 0, 0, 0]]))
+            data = document["data"][0]
+            second_function = json.loads(json.dumps(data["functions"][0]))
+            second_function["name"] = "_ZN7kmipkit4other"
+            data["functions"].append(second_function)
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 2}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "TTLV/protocol coverage"):
+                GATE._evaluate_coverage(root, reports, "")
+
     def test_missing_function_record_cannot_hide_an_uncovered_line_from_the_gate(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
@@ -236,7 +468,7 @@ class CoverageGateTests(unittest.TestCase):
         wrong_type = json.loads(json.dumps(valid_report))
         wrong_type["type"] = "other.export"
         invalid_schemas.append(wrong_type)
-        for unsupported_version in ("2.0.0", "3.1.0", "3.x.1"):
+        for unsupported_version in ("2.0.0", "3.2.0", "3.x.1"):
             unsupported = json.loads(json.dumps(valid_report))
             unsupported["version"] = unsupported_version
             invalid_schemas.append(unsupported)
@@ -248,6 +480,18 @@ class CoverageGateTests(unittest.TestCase):
             GATE.parse_llvm_export(llvm_document([[10, 1, 10, 4, -1, 0, 0, 0]]), REPOSITORY_ROOT)
         with self.assertRaises(GATE.CoverageDataError):
             GATE.parse_llvm_export(llvm_document([[10, 1, 10, 4, 0, 0, 0, 99]]), REPOSITORY_ROOT)
+
+    def test_llvm_report_accepts_schema_version_31(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn run() {}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 16, 1, 0, 0, 0]]))
+            document["version"] = "3.1.0"
+            report = GATE.parse_llvm_export(json.dumps(document), root)
+        self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
 
     def test_report_paths_must_resolve_inside_the_checkout(self) -> None:
         self.require_gate()

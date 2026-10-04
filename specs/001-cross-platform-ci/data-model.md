@@ -31,7 +31,7 @@ This feature introduces workflow records only; it does not add application data.
 |---|---|---|
 | platform_reports | One status artifact for each required OS | Exactly one artifact per OS; either a valid LLVM JSON report or explicit no-code unavailable sentinel |
 | source_path | Workspace-relative Rust source path | Must normalize inside the checkout |
-| executable_lines | Lines derived from LLVM file segments and cross-checked against file line summaries; function code-region file IDs are schema-validated | Union across required OS reports |
+| executable_lines | Physical lines derived from LLVM file segments; function code-region start lines must be present; function regions reconcile shared lines before remaining summary-uncovered residuals are added per platform; repeated workspace paths across export mappings fail closed | Union across required OS reports plus conservative uncovered residuals |
 | execution_count | Hit count per executable line | Sum across reports; non-negative integer |
 | changed_lines | Executable source lines changed from PR base to checked merge tree | Computed from exact base and merge commit trees; zero changed executable lines => changed-code metric is not applicable |
 | coverage_percent | Covered executable lines / executable lines | No production executable source => overall coverage unavailable; otherwise thresholds evaluated; no changed executable lines => changed-code metric is not applicable, never 100% |
