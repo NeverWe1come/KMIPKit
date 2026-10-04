@@ -319,6 +319,52 @@ def _pinned_operation_structures() -> tuple[dict[str, tuple[str, str, str | None
     return structures, members
 
 
+def _pinned_message_structure_rows() -> set[tuple[str, str, str | None, str | None, str | None]]:
+    """Return exact root and member rows from the six §8 message structure tables."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    records: set[tuple[str, str, str | None, str | None, str | None]] = set()
+    for table in parser.tables:
+        heading = table.get("heading")
+        rows = table.get("rows")
+        if not isinstance(heading, str) or not isinstance(rows, list):
+            continue
+        match = re.match(r"^(8\.[1-6])\s+", heading)
+        if not match:
+            continue
+        section = match.group(1)
+        header_index = next(
+            (
+                index for index, row in enumerate(rows)
+                if len(row) > 1 and row[0].strip().casefold() == "object"
+                and row[1].strip().casefold() in {"encoding", "required in message"}
+            ),
+            None,
+        )
+        if header_index is None:
+            continue
+        headers = [cell.strip().casefold() for cell in rows[header_index]]
+        encoding_index = headers.index("encoding") if "encoding" in headers else None
+        required_index = next((index for index, value in enumerate(headers) if value.startswith("required")), None)
+        comment_index = headers.index("comment") if "comment" in headers else None
+        data_rows = [row for row in rows[header_index + 1 :] if row]
+        if not data_rows:
+            continue
+        for row in data_rows:
+            name = row[0]
+            encoding = row[encoding_index] if encoding_index is not None and len(row) > encoding_index else None
+            requiredness = row[required_index] if required_index is not None and len(row) > required_index else None
+            comment = row[comment_index] if comment_index is not None and len(row) > comment_index else None
+            if encoding_index is None and name in {"Request Header", "Response Header", "Batch Item"} and comment == "Structure":
+                encoding = comment
+            records.add((section, name, encoding, requiredness, comment or None))
+    return records
+
+
 def minimal_catalog() -> dict[str, object]:
     """Return the smallest catalog with exact pinned source metadata."""
     source_rows = [
@@ -990,6 +1036,28 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(actual, expected)
 
+    def test_message_fields_match_all_rows_in_tables_394_to_399(self) -> None:
+        source_rows = _pinned_message_structure_rows()
+        self.assertEqual(len(source_rows), 43)
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        elements = catalog["elements"]
+        messages = [
+            row for row in elements
+            if row.get("kind") == "message_field"
+            and any(reference["section"].startswith("8.") for reference in row["source_refs"])
+        ]
+        actual_rows = {
+            (
+                reference["section"], row["name"], row.get("source_encoding"),
+                row.get("source_requiredness"), row.get("source_comment"),
+            )
+            for row in messages
+            for reference in row["source_refs"]
+            if reference["section"].startswith("8.")
+        }
+        self.assertEqual(actual_rows, source_rows)
+        self.assertEqual(len(messages), len(source_rows))
+
     def test_accepts_source_encodings_on_option_and_result_records(self) -> None:
         document = minimal_catalog()
         common = {
@@ -1022,6 +1090,29 @@ class CatalogValidationTests(unittest.TestCase):
             },
         ]
         self.assertEqual(validate(document)["record_count"], 6)
+
+    def test_accepts_raw_message_field_comments_and_requiredness(self) -> None:
+        document = minimal_catalog()
+        document["elements"] = [
+            {
+                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-TEST",
+                "kind": "message_field",
+                "name": "Test Message Field",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.2"}],
+                "direction": "both",
+                "scope_state": "client_1_0",
+                "parent_element_ids": [],
+                "requirement_ids": [],
+                "profile_ids": [],
+                "test_case_ids": [],
+                "feature_spec": None,
+                "implementation_refs": [],
+                "verification_refs": [],
+                "source_requiredness": "No, MAY be repeated",
+                "source_comment": "If omitted, the default applies.",
+            },
+        ]
+        self.assertEqual(validate(document)["record_count"], 5)
 
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
