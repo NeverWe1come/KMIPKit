@@ -2,13 +2,15 @@
 
 Status: design baseline
 Scope: planned KMIPKit 1.0 architecture
-Last reviewed: 2026-10-03
+Last reviewed: 2026-10-04
 
-This document models risks that the implementation and its tests must address.
-The repository currently contains design material rather than a runtime
-implementation, so the scenarios below are hypotheses and security
-requirements, not confirmed vulnerabilities or verified controls. The model
-must be revised as each executable boundary is introduced.
+This document models risks for the planned KMIPKit 1.0 architecture and records
+which controls have executable evidence. The repository now includes the
+`kmipkit-ttlv` in-memory value model. Protocol operations, the TTLV wire codec,
+transports, FFI, and language bindings remain design scope unless their source
+and tests establish otherwise. Scenarios below remain hypotheses and security
+requirements unless a control is explicitly tied to executable evidence. The
+model must be revised as each executable boundary is introduced.
 
 The architecture review for this baseline was performed sequentially because
 independent agent delegation was not enabled for this task. An independent
@@ -54,15 +56,21 @@ flowchart LR
 
 ### Components and evidence
 
-| Component | Responsibility | Security relevance | Design evidence |
+Only the generic TTLV value model below is implemented. The codec is planned;
+the remaining product component rows describe design scope, although some
+crates expose partial result, error, or delivery-state types. CI validation is
+implemented, while package publication remains planned.
+
+| Component | Responsibility | Security relevance | Evidence |
 |---|---|---|---|
-| TTLV codec | Frame, encode, and decode untrusted messages | Memory and CPU bounds, canonical output, unknown value preservation | `docs/architecture/overview.md:58-65`; `docs/architecture/transport-security.md:67-78` |
-| Protocol and client | Validate requests and correlate responses | Prevent semantic confusion, wrong-result delivery, and implicit retry | `docs/architecture/overview.md:67-90` |
+| Generic TTLV value model (implemented) | Construct and inspect typed in-memory values; preserve ordered Structures; check tag allocation and depth | Payload redaction and zeroization, bounded nesting, tag allocation; this model does not establish wire validity | `crates/kmipkit-ttlv/src/lib.rs:1-11`; `docs/architecture/public-api.md:34-49` |
+| TTLV wire codec (planned) | Frame, encode, and decode untrusted messages | Memory and CPU bounds, canonical output, unknown value preservation | `docs/architecture/overview.md:65-69`; `docs/architecture/transport-security.md:67-78` |
+| Protocol and client | Validate requests and correlate responses | Prevent semantic confusion, wrong-result delivery, and implicit retry | `docs/architecture/overview.md:71-94` |
 | Raw TLS and HTTPS transports | Authenticate peers and carry messages | Server identity, client identity, confidentiality, framing, delivery state | `docs/architecture/transport-security.md:3-65` |
 | C ABI | Expose native functionality to foreign runtimes | Pointer validity, ownership, panic containment, stable layouts | `docs/architecture/ffi-and-bindings.md:3-33` |
 | Java and Python adapters | Offer idiomatic APIs and load native code | Native package integrity, secret copies, lifecycle and concurrency | `docs/architecture/ffi-and-bindings.md:46-81` |
 | Extension registry | Interpret optional vendor data | Untrusted schemas, semantic ambiguity, denial of service | `docs/architecture/extensions.md:18-59` |
-| CI and release | Build and publish packages | Dependency and artifact substitution, signing authority | `docs/development/git-and-releases.md:44-64` |
+| CI validation and release publication | Run repository checks; build and publish packages | Generated-source integrity, dependency and artifact substitution, signing authority | CI checks: `.github/workflows/ci.yml`; publication design: `docs/development/git-and-releases.md:44-64` |
 
 ### Effective resources and capabilities
 
@@ -101,7 +109,11 @@ flowchart LR
 | Supply-chain attacker | Publish a dependency or package with a confusing name, tamper with an unprotected workflow, or substitute a native artifact | Protected repository administration or release credentials by default |
 | Local same-user attacker | Race or replace files in locations writable by the same OS identity | Privilege isolation from the application when both run as the same user |
 
-### Trust boundaries and invariants
+### Intended trust boundaries and invariants
+
+The controls below are design requirements, not claims that each component is
+implemented. Current executable evidence is listed under Components and
+evidence.
 
 1. **Application to public API.** All sizes, enum values, identifiers, paths,
    endpoints, and generic TTLV are validated before use. High-level APIs do not
@@ -119,7 +131,7 @@ flowchart LR
    (`docs/architecture/transport-security.md:14-43,45-52`).
 5. **Response to request.** Protocol version, correlation, batch count,
    operation, and pending state are validated before delivering a result
-   (`docs/architecture/overview.md:107-118`).
+   (`docs/architecture/overview.md:119-122`).
 6. **Secret to diagnostics.** Keys, credentials, OTPs, tickets, private keys,
    raw bodies, and secret parameters never enter logs, errors, snapshots, or
    fixtures (`docs/architecture/transport-security.md:80-92`).
@@ -172,7 +184,7 @@ relevant implementation exists and evidence demonstrates the behavior.
 | High | A malicious server declares extreme or overflowing TTLV lengths to obtain excessive allocation, CPU exhaustion, or memory corruption | Authenticated or network-reachable server can send a response | Caller process crash, denial of service, or potentially native code execution if unsafe parsing is introduced | Header-first framing, 16 MiB/depth 64/100,000 element defaults, overflow-safe checks, safe Rust codec | Keep codec safe Rust; limit before allocation; property tests, malformed vectors, fuzzing, Miri and sanitizers at native boundaries | `docs/architecture/transport-security.md:5-12,67-78`; `docs/development/testing.md:16-34,104-108` |
 | High | A substituted CA, disabled name check, redirect, or proxy sends secrets to an attacker-controlled server | Caller uses unsafe configuration or transport silently follows a new destination | Disclosure of keys and credentials; unauthorized KMIP operations | No insecure switch, mandatory certificate checks, no redirects/proxies, one explicit endpoint | Make unsafe states unrepresentable; test unknown CA, mismatch, redirects, and alternate endpoints; redact configuration diagnostics | `docs/architecture/transport-security.md:14-43,45-52`; `docs/development/testing.md:42-46` |
 | High | Invalid FFI lengths, stale handles, double free, or panic corrupts memory or unwinds into Java/Python/C | Foreign caller invokes ABI incorrectly or races lifecycle calls | Process compromise or crash | Opaque handles, explicit lengths, Rust-owned frees, panic containment, isolated unsafe crate | Define handle validation and concurrency state machine; compile C consumer; negative ABI tests; sanitizers; review every unsafe block | `docs/architecture/ffi-and-bindings.md:3-24`; `docs/development/testing.md:48-55` |
-| High | A forged or mismatched KMIP response is returned to the wrong operation or batch item | Compromised server, stale connection bytes, or client correlation defect | Application uses the wrong key/object or misreports operation success | Version, correlation, batch, and operation checks; invalid connections discarded | Typed state-machine tests for duplicates, reordering, missing items, stale responses, and pending operations | `docs/architecture/overview.md:84-90,107-118` |
+| High | A forged or mismatched KMIP response is returned to the wrong operation or batch item | Compromised server, stale connection bytes, or client correlation defect | Application uses the wrong key/object or misreports operation success | Version, correlation, batch, and operation checks; invalid connections discarded | Typed state-machine tests for duplicates, reordering, missing items, stale responses, and pending operations | `docs/architecture/overview.md:88-94,119-122` |
 | High | A compromised build action, dependency, registry account, or generated catalog inserts malicious native code | Weak CI protections or publishing credentials | All downstream applications execute attacker code | Pinned actions, protected tags, CI-only publication, hashes, signatures, SBOM, provenance | Least-privilege jobs; trusted publishing; review generated diffs; dependency policy; reproducible release check; incident procedure | `docs/development/git-and-releases.md:44-64` |
 | Medium | Request timeout after partial delivery causes an application to repeat a non-idempotent operation | Network interruption and caller retries without delivery context | Duplicate keys, state changes, or destructive operations | No automatic retry; delivery state distinguishes not sent, possibly sent, and response begun | Preserve delivery state through every binding; document reconciliation; test partial writes and timeouts | `docs/architecture/transport-security.md:45-65` |
 | Medium | Secrets appear in errors, debug output, tracing, exceptions, test snapshots, or language runtime representations | Error path or convenience formatting handles a secret-bearing value | Credential or key disclosure to logs and telemetry | Specialized secret types, redaction policy, logging disabled by default | Deny `Debug`/serialization on secrets; redaction tests through every language; review panic and allocator diagnostics | `docs/architecture/transport-security.md:80-92`; `AGENTS.md:154-172` |

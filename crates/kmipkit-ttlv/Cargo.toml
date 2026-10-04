@@ -6,5 +6,13 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "TTLV types, encoding, and decoding for KMIPKit"
+
+[dependencies]
+zeroize.workspace = true
+
+[dev-dependencies]
+serde = "=1.0.228"
+trybuild = "=1.0.121"
+
 [lints]
 workspace = true
