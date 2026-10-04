@@ -1026,6 +1026,24 @@ class CatalogValidationTests(unittest.TestCase):
                             (collection, record.get("test_id"), field),
                         )
 
+    def test_requirement_and_test_case_requirement_links_must_be_reciprocal(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement = next(row for row in catalog["requirements"] if row["test_case_ids"])
+        test_id = requirement["test_case_ids"][0]
+        test_case = next(row for row in catalog["test_cases"] if row["test_id"] == test_id)
+        test_case["requirement_ids"].remove(requirement["requirement_id"])
+
+        with self.assertRaisesRegex(CatalogValidationError, "requirement/test-case links must be reciprocal"):
+            validate(catalog)
+
+    def test_requirement_without_official_test_case_requires_an_evidence_gap_note(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement = next(row for row in catalog["requirements"] if not row["test_case_ids"])
+        requirement["review_note"] = None
+
+        with self.assertRaisesRegex(CatalogValidationError, "requirement without official test-case links"):
+            validate(catalog)
+
     def test_official_cases_link_only_html_explicitly_named_operations(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         expected_by_source_section: dict[tuple[str, str], set[str]] = {}
