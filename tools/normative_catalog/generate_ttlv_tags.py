@@ -1,4 +1,12 @@
-"""Generate private TTLV tag allocation metadata from the reviewed catalog."""
+"""Generate private TTLV tag allocation metadata from the reviewed catalog.
+
+The local input is ``specification/catalog/kmip-2.1.json`` and the generated
+output is ``crates/kmipkit-ttlv/src/generated/tag_allocations.rs``, both
+relative to ``--repo-root`` (the current directory by default). ``--write``
+validates the catalog and atomically writes the output. ``--check`` safely
+reads the existing output and reports whether it matches without writing or
+creating files.
+"""
 
 from __future__ import annotations
 
