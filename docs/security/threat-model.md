@@ -104,7 +104,11 @@ flowchart LR
 | Supply-chain attacker | Publish a dependency or package with a confusing name, tamper with an unprotected workflow, or substitute a native artifact | Protected repository administration or release credentials by default |
 | Local same-user attacker | Race or replace files in locations writable by the same OS identity | Privilege isolation from the application when both run as the same user |
 
-### Trust boundaries and invariants
+### Intended trust boundaries and invariants
+
+The controls below are design requirements, not claims that each component is
+implemented. Current executable evidence is listed under Components and
+evidence.
 
 1. **Application to public API.** All sizes, enum values, identifiers, paths,
    endpoints, and generic TTLV are validated before use. High-level APIs do not
