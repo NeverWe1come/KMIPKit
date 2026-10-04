@@ -26,7 +26,7 @@ Create a complete, reviewed KMIP 2.1 client-scope catalog and coverage report. U
 
 **Constraints**: No changes under `specification/oasis/`; no downloading or parsing remote documents; exact source identifiers and checksums must match `SOURCES.md` and `CHECKSUMS.sha256`; HTML decoding follows its pinned declared charset, independent of host locale; all build-time validation is offline and deterministic; source paths are allowlisted and fixture presence is read from Git tree metadata; JSON preflight and HTML event parsing are bounded; report fields use context-specific escaping; CI compares pinned sources against the exact PR base SHA before parsing, with read-only permissions and no secrets; source conflicts remain unresolved records.
 
-**Scale/Scope**: 57 client-to-server and 5 server-to-client operations; 11 data types; 9 managed object types; 12 object structures; 63 attributes; 7 attribute structures; 41 operation structures; 64 enumeration definitions; 3 bitmasks; 374 single-value tag rows (354 non-reserved named values and 20 reserved values) plus five range rows; all applicable normative client clauses and every client profile/test reference in the pinned source set.
+**Scale/Scope**: 57 client-to-server and 5 server-to-client operations; 11 data types; 9 managed object types; 23 object structures across §§2.1–3.12; 63 attributes; 7 attribute structures; 41 operation structures; 64 enumeration definitions; 3 bitmasks; 374 single-value tag rows (354 non-reserved named values and 20 reserved values) plus five range rows; all applicable normative client clauses and every client profile/test reference in the pinned source set.
 
 ## Constitution Check
 

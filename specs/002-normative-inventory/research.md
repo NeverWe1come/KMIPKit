@@ -54,7 +54,7 @@ Specification §1.2 and Profiles §1.2 explicitly incorporate RFC 2119 for the l
 
 - Operation definitions: 57 client-to-server (§6.1) and 5 server-to-client (§6.2).
 - Table 487: 374 single-value six-hex-digit rows, including 20 values explicitly marked Reserved; 354 rows are non-reserved named values; five range rows for unused, reserved, and extension ranges are tracked separately.
-- Other verified counts: 11 data types; 9 managed object types; 12 object structures; 63 attributes; 7 attribute structures; 41 operation structures; 64 enumeration definitions; 3 bitmask definitions.
+- Other verified counts: 11 data types; 9 managed object types; 23 object structures across §§2.1–3.12 (nine in §2, twelve numbered key structures, and the two subordinate key-information structures in §3.3); 63 attributes; 7 attribute structures; 41 operation structures; 64 enumeration definitions; 3 bitmask definitions.
 - Test evidence: 110 Test Cases CN01 sections; 93 profile fixture links (86 mandatory and 7 optional); fixture XML is absent locally.
 
 ## Open source issue register

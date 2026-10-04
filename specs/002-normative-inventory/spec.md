@@ -4,7 +4,9 @@
 
 **Created**: 2026-10-04
 
-**Status**: Draft
+**Status**: Approved
+
+**Approval evidence**: The maintainer authorized autonomous implementation of the complete execution plan on 2026-10-04.
 
 **Input**: User description: Build a complete, traceable KMIP 2.1 inventory for the 1.0 client scope, covering operations, protocol elements, normative client requirements, profile applicability, and official test evidence. Preserve unresolved source conflicts and report unassigned coverage.
 
@@ -21,7 +23,7 @@ As a KMIPKit maintainer, I need a single inventory of the KMIP 2.1 elements used
 **Acceptance Scenarios**:
 
 1. **Given** the pinned KMIP 2.1 Specification, **When** a maintainer reviews the operation inventory, **Then** each of its 57 client-to-server and 5 server-to-client operation definitions has an exact section, direction, scope disposition, request/response references where applicable, and linked test evidence when the pinned sources provide it.
-2. **Given** the named protocol-element tables in the pinned Specification, **When** a maintainer reviews the catalog coverage report, **Then** it reconciles the 11 data types, 9 managed object types, 12 object structures, 63 attributes, 7 attribute structures, 41 operation structures, 64 enumeration definitions, 3 bitmasks, and 374 single-value tag rows, comprising 354 non-reserved named values and 20 reserved values, while separately identifying the five range rows and all reserved, unused, extension, and server-direction values.
+2. **Given** the named protocol-element tables in the pinned Specification, **When** a maintainer reviews the catalog coverage report, **Then** it reconciles the 11 data types, 9 managed object types, 23 object structures across §§2.1–3.12, 63 attributes, 7 attribute structures, 41 operation structures, 64 enumeration definitions, 3 bitmasks, and 374 single-value tag rows, comprising 354 non-reserved named values and 20 reserved values, while separately identifying the five range rows and all reserved, unused, extension, and server-direction values.
 3. **Given** a protocol element defined by KMIP 2.1 but outside the 1.0 client direction, **When** the inventory classifies it, **Then** it remains represented and is marked for 1.1 or as outside 1.0 with a cited reason rather than being silently dropped.
 
 ---
@@ -114,7 +116,7 @@ As a maintainer, I need an explicit profile matrix and source discrepancy report
 ### Measurable Outcomes
 
 - **SC-001**: All 57 client-to-server and 5 server-to-client operations in the pinned Specification are represented once each with correct source section and direction.
-- **SC-002**: Counts for the 11 data types, 9 managed object types, 12 object structures, 63 attributes, 7 attribute structures, 41 operation structures, 64 enumeration definitions, 3 bitmasks, and 374 single-value tag rows (354 non-reserved named values and 20 reserved values) reconcile exactly with the pinned Specification tables; every message field, nested structure member, credential form, named enumeration value, defined bit value, option, and result matches its source table or structure; all five range rows and other range/reserved/unused entries are reported separately.
+- **SC-002**: Counts for the 11 data types, 9 managed object types, 23 object structures across §§2.1–3.12, 63 attributes, 7 attribute structures, 41 operation structures, 64 enumeration definitions, 3 bitmasks, and 374 single-value tag rows (354 non-reserved named values and 20 reserved values) reconcile exactly with the pinned Specification tables; every message field, nested structure member, credential form, named enumeration value, defined bit value, option, and result matches its source table or structure; all five range rows and other range/reserved/unused entries are reported separately.
 - **SC-003**: An independent review of every Specification and Profiles section confirms complete coverage of normative prose and table candidates; 100% of the documented extractor's candidates are in the source-clause ledger and each has a linked requirement or explicit reviewed disposition.
 - **SC-004**: Every client profile, every pinned profile/test-case reference, and every discovered source discrepancy has an explicit record and disposition; missing fixtures are visible in the report.
 - **SC-005**: The coverage report identifies all unassigned 1.0/1.1 requirements and capabilities; zero item is represented as implemented or verified without a corresponding assignment.
