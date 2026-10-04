@@ -1580,14 +1580,26 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertGreater(validated["record_count"], 0)
         document = json.loads(raw)
         profiles = document["profiles"]
-        self.assertTrue(profiles)
+        self.assertEqual(len(profiles), 35)
         self.assertTrue({"client", "server"}.issubset({profile["role"] for profile in profiles}))
         self.assertTrue(all(profile["claim_state"] == "not_claimed" for profile in profiles))
         self.assertTrue(all(profile["source_refs"] for profile in profiles))
+        self.assertTrue(all(profile["source_clause_ids"] for profile in profiles))
+        self.assertTrue(all(profile["requirement_ids"] for profile in profiles))
         self.assertTrue(all(profile["test_case_ids"] for profile in profiles))
-        self.assertTrue(all(profile["transport_requirements"] for profile in profiles))
-        self.assertTrue(all(profile["encoding_requirements"] for profile in profiles))
-        self.assertTrue(all(profile["applicability"] for profile in profiles))
+        self.assertTrue(all(isinstance(profile["transport_requirements"], list) for profile in profiles))
+        self.assertTrue(all(isinstance(profile["encoding_requirements"], list) for profile in profiles))
+        self.assertTrue(all(profile["applicability"] in {
+            "client_1_0", "client_1_1", "server_only", "conditional", "out_of_scope"
+        } for profile in profiles))
+        conformance_sections = sorted(
+            reference["section"]
+            for profile in profiles
+            for reference in profile["source_refs"]
+            if reference["source_id"] == "KMIPKIT-SRC-profiles"
+            and reference["section"].startswith("6.")
+        )
+        self.assertEqual(conformance_sections, [f"6.{section}" for section in range(1, 36)])
 
     def test_checked_in_catalog_preserves_pinned_source_discrepancies(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
