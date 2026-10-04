@@ -206,6 +206,40 @@ def _pinned_attribute_headings() -> dict[str, str]:
     return result
 
 
+def _pinned_attribute_structures() -> tuple[dict[str, tuple[str, str]], set[tuple[str, str, str, str]]]:
+    """Return §5 structure roots and literal member rows from Tables 157–163."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    structures: dict[str, tuple[str, str]] = {}
+    members: set[tuple[str, str, str, str]] = set()
+    for table in parser.tables:
+        heading = table.get("heading")
+        rows = table.get("rows")
+        if not isinstance(heading, str) or not isinstance(rows, list):
+            continue
+        match = re.match(r"^(5\.[1-7])\s+(.+)$", heading)
+        if not match or not rows or rows[0][:3] not in (["Item", "Encoding", "REQUIRED"], ["Object", "Encoding", "REQUIRED"]):
+            continue
+        section, _ = match.groups()
+        if len(rows) < 2 or len(rows[1]) != 3:
+            raise AssertionError(f"pinned attribute structure table is incomplete: {heading}")
+        root_name, root_encoding, _ = rows[1]
+        if root_encoding == "Structure":
+            structures[section] = (root_name, root_encoding)
+            member_rows = rows[2:]
+        else:
+            member_rows = rows[1:]
+        for row in member_rows:
+            if len(row) == 3:
+                member_name, encoding, requiredness = row
+                members.add((section, member_name, encoding, requiredness))
+    return structures, members
+
+
 def minimal_catalog() -> dict[str, object]:
     """Return the smallest catalog with exact pinned source metadata."""
     source_rows = [
@@ -752,6 +786,34 @@ class CatalogValidationTests(unittest.TestCase):
                 expected_parent_ids = [tag_ids[row["name"]]]
             self.assertEqual(row["source_refs"], expected_refs)
             self.assertEqual(row["parent_element_ids"], expected_parent_ids)
+
+    def test_attribute_structures_and_members_match_pinned_tables_157_to_163(self) -> None:
+        source_structures, source_members = _pinned_attribute_structures()
+        self.assertEqual(set(source_structures), {f"5.{number}" for number in range(1, 8)})
+        self.assertEqual(len(source_members), 9)
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        elements = catalog["elements"]
+        structures = [row for row in elements if row.get("kind") == "attribute_structure"]
+        members = [row for row in elements if row.get("kind") == "structure_member"]
+        self.assertEqual(
+            {(row["name"], row["source_refs"][0]["section"]) for row in structures},
+            {(name, section) for section, (name, _) in source_structures.items()},
+        )
+        actual_members = {
+            (
+                row["source_refs"][0]["section"],
+                row["name"],
+                row["source_encoding"],
+                row["source_requiredness"],
+            )
+            for row in members
+        }
+        self.assertEqual(actual_members, source_members)
+        self.assertEqual(len(members), len(source_members))
+        structures_by_section = {row["source_refs"][0]["section"]: row for row in structures}
+        for member in members:
+            section = member["source_refs"][0]["section"]
+            self.assertEqual(member["parent_element_ids"], [structures_by_section[section]["element_id"]])
 
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
