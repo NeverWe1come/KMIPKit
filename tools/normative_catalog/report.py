@@ -220,8 +220,28 @@ def render_report(catalog: dict[str, Any]) -> str:
     discrepancies = sorted(catalog.get("discrepancies", []), key=lambda row: row.get("discrepancy_id", ""))
     lines.extend(["## Open discrepancies", ""])
     lines.extend(_table(
-        ("Discrepancy", "State", "Summary", "Source"),
-        [(row.get("discrepancy_id"), row.get("state"), row.get("summary"), _source_reference(row)) for row in discrepancies],
+        ("Discrepancy", "State", "Implementation gate", "Affected records", "Summary", "Source"),
+        [(
+            row.get("discrepancy_id"), row.get("state"),
+            "blocked for affected records"
+            if row.get("state") == "open" and any(
+                row.get(field) for field in (
+                    "affected_requirement_ids", "affected_element_ids", "affected_profile_ids", "affected_policy_ids",
+                )
+            )
+            else "review before dependent implementation",
+            ", ".join(
+                f"{len(row.get(field) or [])} {label}"
+                for field, label in (
+                    ("affected_requirement_ids", "requirements"),
+                    ("affected_element_ids", "elements"),
+                    ("affected_profile_ids", "profiles"),
+                    ("affected_policy_ids", "policies"),
+                )
+                if row.get(field)
+            ) or "none linked",
+            row.get("summary"), _source_reference(row),
+        ) for row in discrepancies],
     ))
     lines.append("")
 
