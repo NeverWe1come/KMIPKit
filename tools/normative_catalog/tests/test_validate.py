@@ -283,6 +283,48 @@ def _pinned_attribute_value_structures() -> tuple[dict[str, tuple[str, str, str 
     return structures, members
 
 
+def _pinned_attribute_encodings() -> dict[str, tuple[str, str, str | None, str]]:
+    """Return attribute names, encodings, and raw requiredness from the source tables."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    headings = _pinned_attribute_headings()
+    aliases = {"4.3": "Sensitive", "4.9": "Description", "4.60": "Attribute"}
+    result: dict[str, tuple[str, str, str | None, str]] = {}
+    for table in parser.tables:
+        heading = table.get("heading")
+        rows = table.get("rows")
+        if not isinstance(heading, str) or not isinstance(rows, list) or not rows:
+            continue
+        match = re.match(r"^(4\.[0-9]+)\s+", heading)
+        if not match:
+            continue
+        section = match.group(1)
+        headers = [cell.strip().casefold() for cell in rows[0]]
+        if not headers or headers[0] not in {"item", "object"} or "encoding" not in headers:
+            continue
+        encoding_index = headers.index("encoding")
+        required_index = next((index for index, value in enumerate(headers) if value == "required"), None)
+        source_name = aliases.get(section, headings[section])
+        root_row = next(
+            (row for row in rows[1:] if row and row[0] == source_name and len(row) > encoding_index),
+            None,
+        )
+        if root_row is not None:
+            requiredness = root_row[required_index] if required_index is not None and len(root_row) > required_index else None
+            result[section] = (source_name, root_row[encoding_index], requiredness, section)
+    usage_limits = next(
+        table for table in parser.tables
+        if table.get("heading", "").startswith("7.40 ")
+        and table.get("rows", [])[1][0] == "Usage Limits"
+    )
+    result["4.59"] = ("Usage Limits", usage_limits["rows"][1][1], None, "7.40")
+    return result
+
+
 def _pinned_operation_structures() -> tuple[dict[str, tuple[str, str, str | None]], set[tuple[str, str, str, str | None]]]:
     """Return §7 operation data structure roots and literal members from Tables 352–393."""
     source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
@@ -1080,6 +1122,29 @@ class CatalogValidationTests(unittest.TestCase):
             section = member["source_refs"][0]["section"]
             self.assertEqual(member["parent_element_ids"], [structure_ids[section]])
 
+    def test_attribute_encodings_match_pinned_value_tables(self) -> None:
+        source_encodings = _pinned_attribute_encodings()
+        self.assertEqual(len(source_encodings), 62)
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        attributes = [row for row in catalog["elements"] if row.get("kind") == "attribute"]
+        attributes_by_section = {
+            reference["section"]: row
+            for row in attributes
+            for reference in row["source_refs"]
+            if reference["source_id"] == "KMIPKIT-SRC-spec" and reference["section"].startswith("4.")
+        }
+        for section, (source_name, encoding, requiredness, source_section) in source_encodings.items():
+            element = attributes_by_section[section]
+            self.assertEqual(element.get("source_name"), source_name)
+            self.assertEqual(element.get("source_encoding"), encoding)
+            if requiredness is not None:
+                self.assertEqual(element.get("source_requiredness"), requiredness)
+            self.assertIn(
+                {"source_id": "KMIPKIT-SRC-spec", "section": source_section},
+                element["source_refs"],
+            )
+        self.assertNotIn("source_encoding", attributes_by_section["4.6"])
+
     def test_options_and_result_values_have_explicit_inventory_records(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
@@ -1339,6 +1404,28 @@ class CatalogValidationTests(unittest.TestCase):
                 "verification_refs": [],
                 "source_encoding": "Structure",
                 "source_requiredness": "",
+            },
+        ]
+        self.assertEqual(validate(document)["record_count"], 5)
+
+    def test_accepts_a_source_name_on_attribute_records(self) -> None:
+        document = minimal_catalog()
+        document["elements"] = [
+            {
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-TEST",
+                "kind": "attribute",
+                "name": "Canonical Attribute",
+                "source_name": "Source Attribute Label",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "4.3"}],
+                "direction": "both",
+                "scope_state": "client_1_0",
+                "parent_element_ids": [],
+                "requirement_ids": [],
+                "profile_ids": [],
+                "test_case_ids": [],
+                "feature_spec": None,
+                "implementation_refs": [],
+                "verification_refs": [],
             },
         ]
         self.assertEqual(validate(document)["record_count"], 5)
