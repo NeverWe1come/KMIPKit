@@ -72,7 +72,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Activation Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME",
@@ -100,7 +102,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "Alternative Name"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
@@ -126,7 +129,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Sensitive",
+      "source_encoding": "Boolean"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
@@ -154,7 +159,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "Application Specific Information"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ARCHIVE-DATE",
@@ -180,7 +186,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Archive Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
@@ -226,7 +234,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Certificate Length",
+      "source_encoding": "Integer"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
@@ -252,7 +262,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Certificate Type",
+      "source_encoding": "Enumeration"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-COMMENT",
@@ -278,7 +290,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Description",
+      "source_encoding": "Text String"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-DATE",
@@ -304,7 +318,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Compromise Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
@@ -330,7 +346,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Compromise Occurrence Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CONTACT-INFORMATION",
@@ -356,7 +374,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Contact Information",
+      "source_encoding": "Text String"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
@@ -382,7 +402,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Cryptographic Algorithm",
+      "source_encoding": "Enumeration"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
@@ -410,7 +432,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": "Yes"
+      "source_requiredness": "Yes",
+      "source_name": "Cryptographic Domain Parameters"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH",
@@ -436,7 +459,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Cryptographic Length",
+      "source_encoding": "Integer"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
@@ -464,7 +489,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "Cryptographic Parameters"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
@@ -490,7 +516,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Cryptographic Usage Mask",
+      "source_encoding": "Integer"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
@@ -516,7 +544,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Deactivation Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION",
@@ -542,7 +572,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Description",
+      "source_encoding": "Text String"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DESTROY-DATE",
@@ -568,7 +600,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Destroy Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
@@ -596,7 +630,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "Digest"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
@@ -622,7 +657,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Digital Signature Algorithm",
+      "source_encoding": "Enumeration"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
@@ -648,7 +685,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Extractable",
+      "source_encoding": "Boolean"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-FRESH",
@@ -674,7 +713,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Fresh",
+      "source_encoding": "Boolean"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE",
@@ -700,7 +741,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Initial Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
@@ -726,7 +769,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Key Format Type",
+      "source_encoding": "Enumeration"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
@@ -754,7 +799,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "Key Value Location"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
@@ -780,7 +826,10 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Key Value Present",
+      "source_encoding": "Boolean",
+      "source_requiredness": "No"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
@@ -806,7 +855,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Last Change Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
@@ -832,7 +883,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Lease Time",
+      "source_encoding": "Interval"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LINK",
@@ -860,7 +913,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "Link"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-NAME",
@@ -888,7 +942,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "Name"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
@@ -914,7 +969,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Never Extractable",
+      "source_encoding": "Boolean"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
@@ -940,7 +997,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "NIST Key Type",
+      "source_encoding": "Enumeration"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP",
@@ -966,7 +1025,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Object Group",
+      "source_encoding": "Text String"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE",
@@ -992,7 +1053,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Object Type",
+      "source_encoding": "Enumeration"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE",
@@ -1018,7 +1081,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Opaque Data Type",
+      "source_encoding": "Enumeration"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
@@ -1044,7 +1109,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Original Creation Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME",
@@ -1070,7 +1137,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "PKCS#12 Friendly Name",
+      "source_encoding": "Text String"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROCESS-START-DATE",
@@ -1096,7 +1165,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Process Start Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECT-STOP-DATE",
@@ -1122,7 +1193,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Protect Stop Date",
+      "source_encoding": "Date-Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-LEVEL",
@@ -1148,7 +1221,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Protection Level",
+      "source_encoding": "Enumeration"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
@@ -1174,7 +1249,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Protection Period",
+      "source_encoding": "Interval"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK",
@@ -1200,7 +1277,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Protection Storage Mask",
+      "source_encoding": "Integer"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-QUANTUM-SAFE",
@@ -1226,7 +1305,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Quantum Safe",
+      "source_encoding": "Boolean"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
@@ -1252,7 +1333,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Random Number Generator",
+      "source_encoding": "RNG Parameters"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
@@ -1280,7 +1363,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "Revocation Reason"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
@@ -1306,7 +1390,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Rotate Automatic",
+      "source_encoding": "Boolean"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-DATE",
@@ -1332,7 +1418,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Rotate Date",
+      "source_encoding": "Date Time"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-GENERATION",
@@ -1358,7 +1446,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Rotate Generation",
+      "source_encoding": "Integer"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
@@ -1384,7 +1474,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Rotate Interval",
+      "source_encoding": "Interval"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-LATEST",
@@ -1410,7 +1502,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Rotate Latest",
+      "source_encoding": "Boolean"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-NAME",
@@ -1437,7 +1531,8 @@
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
-      "source_encoding": "Structure"
+      "source_encoding": "Structure",
+      "source_name": "Rotate Name"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-OFFSET",
@@ -1463,7 +1558,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Rotate Offset",
+      "source_encoding": "Interval"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE",
@@ -1489,7 +1586,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Sensitive",
+      "source_encoding": "Boolean"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER",
@@ -1515,7 +1614,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Short Unique Identifier",
+      "source_encoding": "Byte String"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STATE",
@@ -1541,7 +1642,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "State",
+      "source_encoding": "Enumeration"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
@@ -1707,7 +1810,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Unique Identifier",
+      "source_encoding": "Text String, Enumeration or Integer"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
@@ -1717,6 +1822,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.59"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.40"
         },
         {
           "source_id": "KMIPKIT-SRC-spec",
@@ -1733,7 +1842,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_name": "Usage Limits",
+      "source_encoding": "Structure"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
@@ -1755,7 +1866,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "Attribute"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
@@ -1783,7 +1895,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "X.509 Certificate Identifier"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
@@ -1811,7 +1924,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "X.509 Certificate Issuer"
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
@@ -1839,7 +1953,8 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_requiredness": ""
+      "source_requiredness": "",
+      "source_name": "X.509 Certificate Subject"
     },
     {
       "element_id": "KMIPKIT-ELEM-BITMASK-CRYPTOGRAPHIC-USAGE-MASK",

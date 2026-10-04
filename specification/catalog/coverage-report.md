@@ -136,7 +136,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-6-CURRENT-ATTRIBUTE | attribute\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §5.6 |
 | KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-7-NEW-ATTRIBUTE | attribute\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §5.7 |
 | KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.58, KMIPKIT-SRC-spec §11.56 |
-| KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.59, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.59, KMIPKIT-SRC-spec §7.40, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.60 |
 | KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.61, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.62, KMIPKIT-SRC-spec §11.56 |

@@ -87,7 +87,7 @@ ELEMENT_FIELDS = {
     "direction", "scope_state", "scope_reason", "parent_element_ids",
     "requirement_ids", "profile_ids", "test_case_ids", "feature_spec",
     "implementation_refs", "verification_refs", "payload_tables", "asynchronous_response",
-    "source_encoding", "source_requiredness", "source_comment",
+    "source_encoding", "source_requiredness", "source_comment", "source_name",
 }
 ELEMENT_KINDS = {
     "operation", "message_field", "structure_member", "credential", "data_type",
@@ -697,6 +697,12 @@ def _check_semantics(
                 if field in element and not isinstance(element[field], str):
                     _fail(f"message field {field} must be a string")
         elif element["kind"] in {"attribute", "operation_structure", "option", "result", "credential"}:
+            if "source_name" in element and (
+                element["kind"] != "attribute"
+                or not isinstance(element["source_name"], str)
+                or not element["source_name"].strip()
+            ):
+                _fail("source_name applies only to attributes and must be non-empty")
             if element["kind"] in {"operation_structure", "option", "result", "credential"} and (
                 not isinstance(element.get("source_encoding"), str) or not element["source_encoding"].strip()
             ):
@@ -713,6 +719,8 @@ def _check_semantics(
             _fail("source structure metadata applies only to typed roots and structure members")
         if "source_comment" in element and element["kind"] != "message_field":
             _fail("source_comment applies only to message fields")
+        if "source_name" in element and element["kind"] != "attribute":
+            _fail("source_name applies only to attribute records")
         _source_refs(element.get("source_refs"), sources, "element source_refs")
         _enum(element.get("direction"), {"client_to_server", "server_to_client", "both", "not_applicable"}, "protocol element direction")
         _enum(

@@ -1014,9 +1014,14 @@ class CatalogValidationTests(unittest.TestCase):
             section = next(section for section, name in headings.items() if name == row["name"])
             expected_refs = [{"source_id": "KMIPKIT-SRC-spec", "section": section}]
             expected_parent_ids = []
+            if row["name"] == "Usage Limits":
+                expected_refs.append({"source_id": "KMIPKIT-SRC-spec", "section": "7.40"})
             if row["name"] in tag_ids:
                 expected_refs.append({"source_id": "KMIPKIT-SRC-spec", "section": "11.56"})
                 expected_parent_ids = [tag_ids[row["name"]]]
+            expected_refs.sort(
+                key=lambda reference: tuple(int(part) for part in reference["section"].split("."))
+            )
             self.assertEqual(row["source_refs"], expected_refs)
             self.assertEqual(row["parent_element_ids"], expected_parent_ids)
 
