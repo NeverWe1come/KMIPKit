@@ -65,7 +65,7 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_linux_jobs_route_to_pi_only_for_same_repository_pull_requests(self) -> None:
         contents = self.require_workflow()
-        pi_labels = "fromJSON('[\"self-hosted\",\"linux\",\"ARM64\"]')"
+        pi_labels = "fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')"
 
         for job in ("core", "script-contracts", "coverage"):
             with self.subTest(job=job):
@@ -83,7 +83,7 @@ class WorkflowContractTests(unittest.TestCase):
                 self.assertIn("|| 'ubuntu-latest'", body)
 
         branch_coverage = self.require_job(contents, "branch-coverage")
-        self.assertRegex(branch_coverage, r"(?m)^    runs-on: \[self-hosted, linux, ARM64\]$")
+        self.assertRegex(branch_coverage, r"(?m)^    runs-on: \[self-hosted, Linux, ARM64\]$")
 
     def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
         contents = self.require_workflow()

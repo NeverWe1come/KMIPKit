@@ -177,6 +177,23 @@ python -m unittest discover -s scripts/tests -p 'test_*.py' -v
 - Signatures, hashes, SBOM, and provenance.
 - Independent security review findings resolved or explicitly accepted.
 
+### Self-hosted Linux runner
+
+For pull requests whose head branch is in this repository, Linux jobs run on
+the repository's self-hosted Linux ARM64 runner. Pull requests from forks use
+GitHub-hosted Linux runners so fork-controlled code never runs on the persistent
+runner at home. Windows and macOS jobs remain GitHub-hosted, preserving the
+three-platform checks and coverage reports. The scheduled informational
+branch-coverage job also uses the self-hosted Linux ARM64 runner.
+
+The self-hosted runner must have the default `self-hosted`, `Linux`, and
+`ARM64` labels and remain online while jobs are queued. Its execution account
+needs Git, Python 3, PowerShell 7, Rustup, a C toolchain/linker, and Cargo's
+`bin` directory on the service `PATH`. The workflow installs the required Rust
+toolchains and `cargo-llvm-cov`. Run the runner as an unprivileged account and
+install it as a system service for unattended pull-request and scheduled jobs.
+Do not store production credentials or sensitive files on the runner.
+
 ## Fuzzing
 
 Initial targets include TTLV frame parsing, tree decoding, typed conversion,
