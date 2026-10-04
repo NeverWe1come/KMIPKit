@@ -269,6 +269,20 @@ class CoverageReportTests(unittest.TestCase):
             self.assertEqual(target.read_text(encoding="utf-8"), render_report(catalog))
             self.assertTrue(write_report(catalog, target, check=True))
 
+    @unittest.skipUnless(sys.platform != "win32", "POSIX directory symlinks are required")
+    def test_write_report_accepts_a_resolved_temporary_parent_alias(self) -> None:
+        catalog = report_catalog()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "canonical"
+            root.mkdir()
+            alias = Path(directory) / "alias"
+            alias.symlink_to(root, target_is_directory=True)
+            target = alias / "coverage-report.md"
+
+            self.assertFalse(write_report(catalog, target, check=True))
+            self.assertTrue(write_report(catalog, target, check=False))
+            self.assertEqual(target.read_text(encoding="utf-8"), render_report(catalog))
+
 
 if __name__ == "__main__":
     unittest.main()
