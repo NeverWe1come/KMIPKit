@@ -54,9 +54,11 @@ docs/
 fuzz/
 ```
 
-The planned 1.0 workspace has five runtime Rust crates with synchronized
-package versions. The facade is intended as the normal entry point; lower
-crates are intended to provide stable public APIs for advanced integration.
+The planned 1.0 workspace targets five publishable runtime crates with
+synchronized package versions. `kmipkit-ffi` is an additional, non-published
+runtime crate; `kmipkit-test-support` is also non-published. The facade is
+intended as the normal entry point; lower published crates are intended to
+provide stable public APIs for advanced integration.
 
 ## Layer responsibilities
 

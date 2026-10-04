@@ -56,6 +56,11 @@ flowchart LR
 
 ### Components and evidence
 
+Only the generic TTLV value model below is implemented. The codec is planned;
+the remaining product component rows describe design scope, although some
+crates expose partial result, error, or delivery-state types. CI validation is
+implemented, while package publication remains planned.
+
 | Component | Responsibility | Security relevance | Evidence |
 |---|---|---|---|
 | Generic TTLV value model (implemented) | Construct and inspect typed in-memory values; preserve ordered Structures; check tag allocation and depth | Payload redaction and zeroization, bounded nesting, tag allocation; this model does not establish wire validity | `crates/kmipkit-ttlv/src/lib.rs:1-11`; `docs/architecture/public-api.md:34-49` |
@@ -65,7 +70,7 @@ flowchart LR
 | C ABI | Expose native functionality to foreign runtimes | Pointer validity, ownership, panic containment, stable layouts | `docs/architecture/ffi-and-bindings.md:3-33` |
 | Java and Python adapters | Offer idiomatic APIs and load native code | Native package integrity, secret copies, lifecycle and concurrency | `docs/architecture/ffi-and-bindings.md:46-81` |
 | Extension registry | Interpret optional vendor data | Untrusted schemas, semantic ambiguity, denial of service | `docs/architecture/extensions.md:18-59` |
-| CI and release | Build and publish packages | Dependency and artifact substitution, signing authority | `docs/development/git-and-releases.md:44-64` |
+| CI validation and release publication | Run repository checks; build and publish packages | Generated-source integrity, dependency and artifact substitution, signing authority | CI checks: `.github/workflows/ci.yml`; publication design: `docs/development/git-and-releases.md:44-64` |
 
 ### Effective resources and capabilities
 
