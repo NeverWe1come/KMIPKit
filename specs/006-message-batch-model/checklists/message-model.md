@@ -19,7 +19,7 @@
 - [ ] CHK006 [Spec §FR-001, FR-013] Is the relationship between canonical known-field order and exact preservation of unknown source fields unambiguous?
 - [ ] CHK007 [Spec §FR-008] Are Text String message correlation values distinguished from Byte String batch and async IDs?
 - [ ] CHK008 [Spec §FR-011] Does the spec separate Message Extension structural validation from client-registry recognition and criticality enforcement?
-- [ ] CHK009 [Spec §FR-012] Does the spec preserve raw version data while deferring the `KMIPKIT-DISC-022` compatibility policy?
+- [ ] CHK009 [Spec §FR-012] Does the model preserve raw version data while assigning exact-2.1 send/response acceptance and non-2.1 rejection tests to KMIPKIT-0007 under ADR-0002, with the §9.16 scope exception recorded as `KMIPKIT-DISC-022`?
 - [ ] CHK010 [Spec §FR-017, plan.md] Is the scoped read-only TTLV view sufficient for structural validation without payload copies?
 
 ## Acceptance and Edge Coverage

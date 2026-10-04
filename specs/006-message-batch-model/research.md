@@ -43,9 +43,9 @@
 
 ### Record, do not decide, open source conflicts
 
-- **Decision**: Preserve raw Protocol Version major/minor values without adding older-version negotiation or response acceptance rules. Preserve raw Batch Error Continuation values and individual result statuses without assigning rollback/execution effects.
-- **Rationale**: `KMIPKIT-DISC-022` records the conflict between §9.16 same-major compatibility and the accepted 2.1-only 1.x boundary. `KMIPKIT-DISC-001` records inconsistent Continue/Undo descriptions in §11.5. `KMIPKIT-DISC-039` records the §6.1.41 Query Asynchronous Requests source discrepancy affecting response mapping. `KMIPKIT-0009-asynchronous-operations` must review the exact normative source text, document and test its response-mapping decision, and avoid assuming a resolution in KMIPKIT-0006. This feature can represent the fields without resolving these policies.
-- **Alternatives considered**: Implement compatibility or rollback behavior by guessing (would silently resolve a source conflict and alter product scope); omit the fields (would make the message model incomplete).
+- **Decision**: Preserve raw Protocol Version major/minor values in this model without negotiation or runtime acceptance rules. ADR-0002 selects KMIP 2.1 only for 1.0; KMIPKIT-0007 enforces requests and responses at exactly 2.1 and tests acceptance of 2.1 plus rejection of all other major/minor pairs. Preserve raw Batch Error Continuation values and individual result statuses without assigning rollback/execution effects.
+- **Rationale**: `KMIPKIT-DISC-022` records the conflict between §9.16 same-major compatibility and the accepted 2.1-only 1.x boundary. ADR-0002 resolves the product's 1.0 scope, so the later client-execution spec has a concrete 2.1-only behavior to enforce; the catalog discrepancy remains visible and no same-major compatibility claim is made. `KMIPKIT-DISC-001` records inconsistent Continue/Undo descriptions in §11.5. `KMIPKIT-DISC-039` records the §6.1.41 Query Asynchronous Requests source discrepancy affecting response mapping. `KMIPKIT-0009-asynchronous-operations` must review the exact normative source text, document and test its response-mapping decision, and avoid assuming a resolution in KMIPKIT-0006. This feature can represent the fields without implementing runtime policy.
+- **Alternatives considered**: Implement older-version compatibility despite the accepted 1.0 boundary (would expand the release scope); omit the fields (would make the message model incomplete); or leave response acceptance without an owner or test (would leave the 1.0 contract ambiguous).
 
 ### Preserve opaque header and extension payloads
 
@@ -64,5 +64,5 @@
 
 - KMIPKIT-0005 design correction and ADR-0011 must be reviewed and accepted before codec implementation.
 - The roadmap keeps one active foundation implementer until shared interfaces are stable; therefore KMIPKIT-0006 implementation does not begin before the codec foundation is implemented and reviewed, even though this in-memory model has no direct byte-codec dependency.
-- Runtime version acceptance requires a separate resolution of `KMIPKIT-DISC-022`; continuation-option execution effects require a separate resolution of `KMIPKIT-DISC-001`.
+- Runtime version acceptance is specified by ADR-0002 as exactly KMIP 2.1 and assigned to KMIPKIT-0007 for enforcement and positive/negative tests; `KMIPKIT-DISC-022` remains the documented §9.16 scope exception. Continuation-option execution effects require a separate resolution of `KMIPKIT-DISC-001`.
 - `KMIPKIT-0009-asynchronous-operations` owns the Process operation (§6.1.39) and `KMIPKIT-DISC-039`/§6.1.41 Query Asynchronous Requests response mapping. It must review the exact normative source conflict and document and test the resulting decision; KMIPKIT-0006 makes no mapping assumption.
