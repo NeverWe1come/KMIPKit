@@ -52,16 +52,16 @@
 
 ### Red
 
-- [ ] T012 [P] Add failing tests for 57 client-to-server and 5 server-to-client operation records, exact section references, direction, scope state, required request/response payload links, and async Poll/Cancel response classification in `tools/normative_catalog/tests/test_validate.py`.
+- [x] T012 [P] Add failing tests for 57 client-to-server and 5 server-to-client operation records, exact section references, direction, scope state, required request/response payload links, and async Poll/Cancel response classification in `tools/normative_catalog/tests/test_validate.py`.
 - [ ] T013 [P] Add failing count, exact-value, and uniqueness tests for data types, objects, structures, every message field/nested member and credential form, attributes, every enumeration definition/value, every bitmask/defined bit value, options, results, and the 374 Table 487 single-value rows (354 non-reserved values and 20 reserved values) plus five range rows.
 
 ### Green
 
-- [ ] T014 Populate operation records from Specification §§6.1–6.2, including all 57 §6.1 operation names, payload-section references, and the five §6.2 server-initiated operations marked for 1.1.
+- [x] T014 Populate operation records from Specification §§6.1–6.2, including all 57 §6.1 operation names, payload-section references, and the five §6.2 server-initiated operations marked for 1.1.
 - [ ] T015 Populate all typed protocol elements and wire values from Specification §§1–5 and 10–12, including every enumeration value, bitmask bit, option, and result; distinguish reserved/unused/range/extension entries from usable named values.
 - [ ] T016 Populate common messages, every message field and nested structure member, credential forms, options, result values, extensions, and protocol asynchronous behavior from Specification §§7–14; record client/server direction per field where required.
 - [ ] T017 Link operation and protocol-element records to official Test Cases IDs only when the pinned HTML establishes the link; preserve the original case label and malformed link separately.
-- [ ] T018 Make all operation, uniqueness, and source-count Red tests pass; do not alter the pinned OASIS sources.
+- [x] T018 Make all operation, uniqueness, and source-count Red tests pass; do not alter the pinned OASIS sources.
 
 ### Refactor
 

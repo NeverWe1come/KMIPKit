@@ -80,7 +80,7 @@ ELEMENT_FIELDS = {
     "element_id", "kind", "name", "source_refs", "wire_value", "allocation",
     "direction", "scope_state", "scope_reason", "parent_element_ids",
     "requirement_ids", "profile_ids", "test_case_ids", "feature_spec",
-    "implementation_refs", "verification_refs",
+    "implementation_refs", "verification_refs", "payload_tables", "asynchronous_response",
 }
 ELEMENT_KINDS = {
     "operation", "message_field", "structure_member", "credential", "data_type",
@@ -648,6 +648,28 @@ def _check_semantics(
             _fail("protocol element wire_value must be a string")
         if element.get("allocation") is not None:
             _enum(element["allocation"], {"assigned", "reserved", "unused"}, "protocol element allocation")
+        if element["kind"] == "operation":
+            payload_tables = element.get("payload_tables")
+            if not isinstance(payload_tables, list):
+                _fail("operation payload_tables must be an array")
+            for payload in payload_tables:
+                if (
+                    not isinstance(payload, dict)
+                    or set(payload) != {"role", "table_number", "caption"}
+                    or payload.get("role") not in {"request", "response"}
+                    or not isinstance(payload.get("table_number"), int)
+                    or isinstance(payload.get("table_number"), bool)
+                    or payload["table_number"] < 1
+                    or not isinstance(payload.get("caption"), str)
+                    or not payload["caption"].strip()
+                ):
+                    _fail("operation contains a malformed payload table reference")
+            if element.get("asynchronous_response") is not None and not isinstance(
+                element["asynchronous_response"], str
+            ):
+                _fail("operation asynchronous_response must be a string or null")
+        elif "payload_tables" in element or "asynchronous_response" in element:
+            _fail("payload traceability fields apply only to operation elements")
 
     for requirement in catalog["requirements"]:
         _check_link_ids(requirement, "element_ids", set(elements), "requirement")
@@ -859,6 +881,25 @@ SERVER_OPERATION_SECTIONS = {
     "Discover Versions": "6.2.1", "Notify": "6.2.2", "Put": "6.2.3",
     "Query": "6.2.4", "Set Endpoint Role": "6.2.5",
 }
+CLIENT_OPERATION_PAYLOAD_TABLES = (
+    (164, 165), (167, 168), (170, 171), (173, 174), (176, 177), (179, 180), (183, 184),
+    (186, 187), (189, 190), (193, 194), (196, 197), (199, 200), (202, 203), (205, 206),
+    (208, 209), (211, 212), (214, 215), (217, 218), (220, 221), (223, 224), (226, 227),
+    (229, 230), (232, 233), (235, 236), (238, 239), (241, 242), (244, 245), (247, 248),
+    (250, 251), (253, 254), (256, 257), (259, 260), (262, 263), (265, 266), (268, 269),
+    (271, 272), (273, 274), (276, None), (278, 279), (282, 283), (285, 286), (288, 289),
+    (291, 292), (295, 296), (300, 301), (305, 306), (310, 311), (313, 314), (316, 317),
+    (319, 320), (322, 323), (325, 326), (328, 329), (331, 332), (334, 335), (337, 338),
+    (340, 341),
+)
+SERVER_OPERATION_PAYLOAD_TABLES = {
+    "Discover Versions": (343, None), "Notify": (None, None), "Put": (None, None),
+    "Query": (347, None), "Set Endpoint Role": (349, 350),
+}
+ASYNC_RESPONSE_BEHAVIORS = {
+    "Cancel": "cancellation_result_not_async",
+    "Poll": "pending_or_original_operation_payload",
+}
 
 
 def _check_operation_inventory(elements: list[dict[str, Any]]) -> None:
@@ -884,6 +925,24 @@ def _check_operation_inventory(elements: list[dict[str, Any]]) -> None:
             _fail(f"operation {operation.get('name')} has an incorrect scope disposition")
         if key[0] == "server_to_client" and not operation.get("scope_reason"):
             _fail(f"operation {operation.get('name')} requires a 1.1 scope rationale")
+        name = key[1]
+        if key[0] == "client_to_server":
+            ordered_names = list(CLIENT_OPERATION_SECTIONS)
+            table_pair = CLIENT_OPERATION_PAYLOAD_TABLES[ordered_names.index(name)]
+        else:
+            table_pair = SERVER_OPERATION_PAYLOAD_TABLES[name]
+        expected_tables: list[dict[str, Any]] = []
+        for role, table_number in (("request", table_pair[0]), ("response", table_pair[1])):
+            if table_number is None:
+                continue
+            caption = f"{name} {role.title()} Payload"
+            if name == "Query Asynchronous Requests" and role == "response":
+                caption = "PKCS#11 Response Payload"
+            expected_tables.append({"role": role, "table_number": table_number, "caption": caption})
+        if operation.get("payload_tables") != expected_tables:
+            _fail(f"operation {name} has incorrect payload table references")
+        if operation.get("asynchronous_response") != ASYNC_RESPONSE_BEHAVIORS.get(name):
+            _fail(f"operation {name} has incorrect asynchronous response classification")
 
 
 COMPLETE_ELEMENT_COUNTS = {

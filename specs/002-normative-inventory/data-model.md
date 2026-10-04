@@ -24,6 +24,7 @@ Dispositions are `requirement`, `profile_conditional`, `server_only`, `later_1_1
 | `name`, `source_refs` | Canonical KMIP name and one or more exact document/section references. |
 | `wire_value`, `allocation` | Optional string-preserving wire value; tag allocation is `assigned`, `reserved`, or `unused`. Values inside extension ranges are not falsely assigned as named OASIS tags. |
 | `direction`, `scope_state` | Direction classification and 1.0/1.1/profile/out-of-scope disposition, each with a reason where it is not directly stated by the source. |
+| `payload_tables`, `asynchronous_response` | Operation-only traceability. `payload_tables` retains each source table's role, number, and printed caption exactly; an empty array means no operation-specific payload table was found. `asynchronous_response` classifies the special Cancel and Poll response behavior; it does not replace the shared message and result model. |
 | `parent_element_ids`, `requirement_ids`, `profile_ids`, `test_case_ids` | Explicit references; every referenced ID must resolve. Shared fields and nested members carry their own direction and scope instead of inheriting an inaccurate parent classification. |
 | `feature_spec`, `implementation_refs`, `verification_refs` | Explicit coverage assignment. `null`/empty arrays mean unassigned and must appear in the generated report. |
 
@@ -78,4 +79,5 @@ Coverage links connect requirement or protocol-element IDs to feature specificat
 - Source paths are exact allowlisted repository-relative POSIX paths. Fixture presence is checked only against pinned Git tree metadata; catalog-supplied paths are never opened or filesystem-resolved. Reject absolute, traversal-based, symlink, and reparse-point paths.
 - Counts derive from catalog records and source table categories, not from report-only constants.
 - Every source count discrepancy, unassigned coverage row, missing fixture, and open source discrepancy appears in the generated report.
+- Operation table captions and numbers are copied as printed, including apparent source-label defects; missing operation-specific response tables are represented explicitly by the absence of a response entry rather than by an inferred table.
 - JSON is UTF-8, deterministically ordered, newline-terminated, and does not contain copied normative paragraphs.

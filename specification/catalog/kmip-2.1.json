@@ -66,7 +66,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 164,
+          "caption": "Activate Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 165,
+          "caption": "Activate Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
@@ -86,7 +99,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 167,
+          "caption": "Add Attribute Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 168,
+          "caption": "Add Attribute Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
@@ -106,7 +132,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 170,
+          "caption": "Adjust Attribute Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 171,
+          "caption": "Adjust Attribute Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
@@ -126,7 +165,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 173,
+          "caption": "Archive Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 174,
+          "caption": "Archive Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-CANCEL",
@@ -146,7 +198,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 176,
+          "caption": "Cancel Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 177,
+          "caption": "Cancel Response Payload"
+        }
+      ],
+      "asynchronous_response": "cancellation_result_not_async"
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
@@ -166,7 +231,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 179,
+          "caption": "Certify Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 180,
+          "caption": "Certify Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-CHECK",
@@ -186,7 +264,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 183,
+          "caption": "Check Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 184,
+          "caption": "Check Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-CREATE",
@@ -206,7 +297,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 186,
+          "caption": "Create Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 187,
+          "caption": "Create Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
@@ -226,7 +330,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 189,
+          "caption": "Create Key Pair Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 190,
+          "caption": "Create Key Pair Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
@@ -246,7 +363,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 193,
+          "caption": "Create Split Key Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 194,
+          "caption": "Create Split Key Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
@@ -266,7 +396,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 196,
+          "caption": "Decrypt Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 197,
+          "caption": "Decrypt Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
@@ -286,7 +429,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 199,
+          "caption": "Delegated Login Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 200,
+          "caption": "Delegated Login Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
@@ -306,7 +462,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 202,
+          "caption": "Delete Attribute Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 203,
+          "caption": "Delete Attribute Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
@@ -326,7 +495,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 205,
+          "caption": "Derive Key Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 206,
+          "caption": "Derive Key Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-DESTROY",
@@ -346,7 +528,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 208,
+          "caption": "Destroy Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 209,
+          "caption": "Destroy Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
@@ -366,7 +561,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 211,
+          "caption": "Discover Versions Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 212,
+          "caption": "Discover Versions Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
@@ -386,7 +594,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 214,
+          "caption": "Encrypt Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 215,
+          "caption": "Encrypt Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-EXPORT",
@@ -406,7 +627,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 217,
+          "caption": "Export Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 218,
+          "caption": "Export Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-GET",
@@ -426,7 +660,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 220,
+          "caption": "Get Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 221,
+          "caption": "Get Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
@@ -446,7 +693,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 226,
+          "caption": "Get Attribute List Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 227,
+          "caption": "Get Attribute List Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
@@ -466,7 +726,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 223,
+          "caption": "Get Attributes Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 224,
+          "caption": "Get Attributes Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
@@ -486,7 +759,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 229,
+          "caption": "Get Constraints Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 230,
+          "caption": "Get Constraints Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
@@ -506,7 +792,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 232,
+          "caption": "Get Usage Allocation Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 233,
+          "caption": "Get Usage Allocation Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-HASH",
@@ -526,7 +825,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 235,
+          "caption": "Hash Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 236,
+          "caption": "Hash Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-IMPORT",
@@ -546,7 +858,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 238,
+          "caption": "Import Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 239,
+          "caption": "Import Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-INTEROP",
@@ -566,7 +891,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 241,
+          "caption": "Interop Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 242,
+          "caption": "Interop Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
@@ -586,7 +924,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 244,
+          "caption": "Join Split Key Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 245,
+          "caption": "Join Split Key Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-LOCATE",
@@ -606,7 +957,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 247,
+          "caption": "Locate Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 248,
+          "caption": "Locate Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-LOG",
@@ -626,7 +990,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 250,
+          "caption": "Log Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 251,
+          "caption": "Log Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-LOGIN",
@@ -646,7 +1023,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 253,
+          "caption": "Login Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 254,
+          "caption": "Login Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-LOGOUT",
@@ -666,7 +1056,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 256,
+          "caption": "Logout Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 257,
+          "caption": "Logout Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-MAC",
@@ -686,7 +1089,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 259,
+          "caption": "MAC Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 260,
+          "caption": "MAC Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
@@ -706,7 +1122,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 262,
+          "caption": "MAC Verify Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 263,
+          "caption": "MAC Verify Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
@@ -726,7 +1155,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 265,
+          "caption": "Modify Attribute Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 266,
+          "caption": "Modify Attribute Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
@@ -746,7 +1188,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 268,
+          "caption": "Obtain Lease Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 269,
+          "caption": "Obtain Lease Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-PING",
@@ -766,7 +1221,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 271,
+          "caption": "Ping Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 272,
+          "caption": "Ping Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
@@ -786,7 +1254,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 273,
+          "caption": "PKCS#11 Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 274,
+          "caption": "PKCS#11 Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-POLL",
@@ -806,7 +1287,15 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 276,
+          "caption": "Poll Request Payload"
+        }
+      ],
+      "asynchronous_response": "pending_or_original_operation_payload"
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-PROCESS",
@@ -826,7 +1315,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 278,
+          "caption": "Process Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 279,
+          "caption": "Process Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-QUERY",
@@ -846,7 +1348,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 282,
+          "caption": "Query Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 283,
+          "caption": "Query Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
@@ -866,7 +1381,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 285,
+          "caption": "Query Asynchronous Requests Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 286,
+          "caption": "PKCS#11 Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
@@ -886,7 +1414,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 300,
+          "caption": "Re-certify Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 301,
+          "caption": "Re-certify Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
@@ -906,7 +1447,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 305,
+          "caption": "Re-key Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 306,
+          "caption": "Re-key Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
@@ -926,7 +1480,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 310,
+          "caption": "Re-key Key Pair Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 311,
+          "caption": "Re-key Key Pair Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-RE-PROVISION",
@@ -946,7 +1513,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 313,
+          "caption": "Re-Provision Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 314,
+          "caption": "Re-Provision Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-RECOVER",
@@ -966,7 +1546,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 288,
+          "caption": "Recover Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 289,
+          "caption": "Recover Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-REGISTER",
@@ -986,7 +1579,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 291,
+          "caption": "Register Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 292,
+          "caption": "Register Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-REVOKE",
@@ -1006,7 +1612,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 295,
+          "caption": "Revoke Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 296,
+          "caption": "Revoke Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
@@ -1026,7 +1645,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 316,
+          "caption": "RNG Retrieve Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 317,
+          "caption": "RNG Retrieve Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
@@ -1046,7 +1678,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 319,
+          "caption": "RNG Seed Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 320,
+          "caption": "RNG Seed Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
@@ -1066,7 +1711,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 322,
+          "caption": "Set Attribute Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 323,
+          "caption": "Set Attribute Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
@@ -1086,7 +1744,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 325,
+          "caption": "Set Constraints Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 326,
+          "caption": "Set Constraints Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
@@ -1106,7 +1777,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 328,
+          "caption": "Set Defaults Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 329,
+          "caption": "Set Defaults Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE",
@@ -1126,7 +1810,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 331,
+          "caption": "Set Endpoint Role Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 332,
+          "caption": "Set Endpoint Role Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-SIGN",
@@ -1146,7 +1843,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 334,
+          "caption": "Sign Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 335,
+          "caption": "Sign Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
@@ -1166,7 +1876,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 337,
+          "caption": "Signature Verify Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 338,
+          "caption": "Signature Verify Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
@@ -1186,7 +1909,20 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 340,
+          "caption": "Validate Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 341,
+          "caption": "Validate Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-S2C-DISCOVER-VERSIONS",
@@ -1207,7 +1943,15 @@
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
-      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1.",
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 343,
+          "caption": "Discover Versions Request Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-S2C-NOTIFY",
@@ -1228,7 +1972,9 @@
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
-      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1.",
+      "payload_tables": [],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-S2C-PUT",
@@ -1249,7 +1995,9 @@
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
-      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1.",
+      "payload_tables": [],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-S2C-QUERY",
@@ -1270,7 +2018,15 @@
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
-      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1.",
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 347,
+          "caption": "Query Request Payload"
+        }
+      ],
+      "asynchronous_response": null
     },
     {
       "element_id": "KMIPKIT-ELEM-OP-S2C-SET-ENDPOINT-ROLE",
@@ -1291,7 +2047,20 @@
       "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
-      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1."
+      "scope_reason": "Server-initiated operation support is scheduled for KMIPKit 1.1.",
+      "payload_tables": [
+        {
+          "role": "request",
+          "table_number": 349,
+          "caption": "Set Endpoint Role Request Payload"
+        },
+        {
+          "role": "response",
+          "table_number": 350,
+          "caption": "Set Endpoint Role Response Payload"
+        }
+      ],
+      "asynchronous_response": null
     }
   ],
   "tag_ranges": [],
