@@ -1101,6 +1101,44 @@ class CatalogValidationTests(unittest.TestCase):
             cases["KMIPKIT-TEST-CN01-2-42"]["element_ids"],
         )
 
+    def test_profile_json_template_value_is_gated_as_a_source_defect(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        discrepancy = next(
+            (row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-038"),
+            None,
+        )
+
+        self.assertIsNotNone(discrepancy)
+        assert discrepancy is not None
+        self.assertEqual(discrepancy["normative_status"], "source_defect")
+        self.assertEqual(discrepancy["state"], "open")
+        self.assertIsNone(discrepancy["decision_id"])
+        self.assertEqual(
+            {(row["source_id"], row["section"]) for row in discrepancy["source_refs"]},
+            {
+                ("KMIPKIT-SRC-profiles", "5.5.4.1"),
+                ("KMIPKIT-SRC-spec", "11.34"),
+            },
+        )
+        self.assertIn(
+            "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-RESERVED-00000006",
+            discrepancy["affected_element_ids"],
+        )
+        self.assertEqual(
+            set(discrepancy["affected_profile_ids"]),
+            {"KMIPKIT-PROFILE-JSON-CLIENT", "KMIPKIT-PROFILE-JSON-SERVER"},
+        )
+
+        json_sample = next(
+            row for row in catalog["test_cases"] if row["test_id"] == "KMIPKIT-TEST-PROF-5-5-4-1"
+        )
+        self.assertIn("KMIPKIT-ELEM-TAG-420057", json_sample["element_ids"])
+        self.assertNotIn(
+            "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-RESERVED-00000006",
+            json_sample["element_ids"],
+            "Template must not be treated as an assigned Object Type value",
+        )
+
     def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
         cases = (
             ("MAX_DEPTH", 1, '{"schema_version":{"nested":{"again":1}}}', "nesting depth"),
