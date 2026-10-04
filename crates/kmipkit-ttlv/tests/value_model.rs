@@ -1,7 +1,8 @@
-//! OASIS KMIP Specification v2.1: §10.1.1 (Tag), §10.1.2 (Item Type Value
-//! Representations), §11.23 (Item Type Enumeration), §11.56 (Tag Enumeration),
-//! and §§12.1–12.3 (Bit Masks). These tests cover the in-memory semantic model
-//! only, not TTLV wire encoding or schema validity.
+//! OASIS KMIP Specification v2.1: §10.1.1 (Tag), §10.1.2 (Type), §11.23 (Item
+//! Type Enumeration), §11.56 (Tag Enumeration), §12.1 (Cryptographic Usage
+//! Mask), §12.2 (Protection Storage Mask), and §12.3 (Storage Status Mask).
+//! These tests cover the in-memory semantic model only, not TTLV wire encoding
+//! or schema validity.
 //!
 //! Traceability: KMIPKIT-0004-FR-001–FR-008, KMIPKIT-0004-FR-010, and
 //! KMIPKIT-0004-NR-001–NR-007.
