@@ -66,6 +66,10 @@ class WorkflowContractTests(unittest.TestCase):
                 match = re.search(rf"(?ms)^  {job}:\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
                 self.assertIsNotNone(match, f"The {job} job must exist.")
                 self.assertRegex(match.group(1), r"(?m)^    if: github\.event_name == 'pull_request'$")
+
+        branch_match = re.search(r"(?ms)^  branch-coverage:\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
+        self.assertIsNotNone(branch_match, "The branch-coverage job must exist.")
+        self.assertRegex(branch_match.group(1), r"(?m)^    if: github\.event_name == 'schedule'$" )
         gate = re.search(r"(?ms)^  coverage-gate:\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
         self.assertIsNotNone(gate)
         self.assertRegex(gate.group(1), r"(?m)^    if: always\(\) && github\.event_name == 'pull_request'$")
