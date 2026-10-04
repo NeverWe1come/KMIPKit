@@ -990,6 +990,39 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(actual, expected)
 
+    def test_accepts_source_encodings_on_option_and_result_records(self) -> None:
+        document = minimal_catalog()
+        common = {
+            "direction": "both",
+            "scope_state": "client_1_0",
+            "parent_element_ids": [],
+            "requirement_ids": [],
+            "profile_ids": [],
+            "test_case_ids": [],
+            "feature_spec": None,
+            "implementation_refs": [],
+            "verification_refs": [],
+        }
+        document["elements"] = [
+            {
+                **common,
+                "element_id": "KMIPKIT-ELEM-OPTION-TEST",
+                "kind": "option",
+                "name": "Test Option",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "9.2"}],
+                "source_encoding": "Enumeration",
+            },
+            {
+                **common,
+                "element_id": "KMIPKIT-ELEM-RESULT-TEST",
+                "kind": "result",
+                "name": "Test Result",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "9.17"}],
+                "source_encoding": "Text String",
+            },
+        ]
+        self.assertEqual(validate(document)["record_count"], 6)
+
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
         self.assertEqual(result["source_count"], 4)
