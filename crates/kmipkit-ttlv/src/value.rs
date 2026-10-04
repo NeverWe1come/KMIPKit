@@ -77,7 +77,7 @@ enum ValueRepr {
 impl Zeroize for ValueRepr {
     fn zeroize(&mut self) {
         match self {
-            Self::Structure(value) => value.zeroize(),
+            Self::Structure(value) => value.zeroize_payloads(),
             Self::Integer(value) => value.zeroize(),
             Self::LongInteger(value) | Self::DateTime(value) | Self::DateTimeExtended(value) => {
                 value.zeroize();
@@ -227,10 +227,8 @@ impl Value {
             ValueRepr::DateTimeExtended(value) => ValueView::DateTimeExtended(value),
         }
     }
-}
 
-impl Zeroize for Value {
-    fn zeroize(&mut self) {
+    pub(crate) fn zeroize_payloads(&mut self) {
         self.inner.boxed.as_mut().zeroize();
     }
 }

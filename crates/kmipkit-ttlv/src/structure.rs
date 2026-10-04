@@ -1,7 +1,6 @@
 //! Ordered generic KMIP Structure values.
 
 use crate::{Item, ModelError, ValueView};
-use zeroize::Zeroize;
 
 // This is a local KMIPKit model policy, not a protocol nesting constraint.
 const MAX_STRUCTURE_DEPTH: usize = 64;
@@ -59,10 +58,12 @@ impl Default for Structure {
     }
 }
 
-impl Zeroize for Structure {
-    fn zeroize(&mut self) {
+impl Structure {
+    pub(crate) fn zeroize_payloads(&mut self) {
         // Preserve the live tree shape while clearing each boxed payload.
-        self.children.iter_mut().zeroize();
+        for child in &mut self.children {
+            child.zeroize_payloads();
+        }
     }
 }
 

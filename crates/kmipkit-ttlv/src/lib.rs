@@ -1,13 +1,14 @@
 //! In-memory, typed representations of generic KMIP TTLV item values.
 //!
-//! This crate checks 24-bit raw tag representation, tag allocation, and the
-//! relationship between a value representation and its Item Type. It retains
-//! Structure child order and exposes payloads through borrowed callbacks. It
-//! does not encode or decode TTLV, validate TTLV framing or padding, enforce
-//! Structure depth limits yet, validate schema-specific field order or
-//! cardinality, or establish extension or operation semantics. A value in
-//! this model is not thereby declared wire-valid or protocol-valid. Owned
-//! payloads are not yet zeroized when dropped.
+//! This crate checks 24-bit raw tag representation, tag allocation, the
+//! relationship between a value representation and its Item Type, and the
+//! local maximum Structure depth of 64. It retains Structure child order and
+//! exposes payloads through borrowed callbacks. It does not encode or decode
+//! TTLV, validate TTLV framing or padding, validate schema-specific field
+//! order or cardinality, or establish extension or operation semantics. A
+//! value in this model is not thereby declared wire-valid or protocol-valid.
+//! Owned payloads are held in private zeroizing allocations and are cleared
+//! when dropped.
 //!
 //! # Example
 //!
