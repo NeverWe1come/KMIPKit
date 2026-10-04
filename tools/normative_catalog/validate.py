@@ -71,6 +71,9 @@ CLAUSE_DISPOSITIONS = {
     "informative_context",
     "source_discrepancy",
 }
+CLAUSE_ROLES = {"client", "server", "both", "not_applicable", "unclear"}
+CLAUSE_DIRECTIONS = {"client_to_server", "server_to_client", "both", "not_applicable", "unclear"}
+CLAUSE_SCOPES = {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope"}
 TOP_LEVEL_ID_FIELDS = {
     "source_clauses": ("clause_id", r"KMIPKIT-CLAUSE-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}"),
     "elements": ("element_id", r"KMIPKIT-ELEM-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
@@ -599,7 +602,8 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
             _fail("source clause entries must be objects")
         required = {
             "clause_id", "source_id", "section", "locator", "source_keywords",
-            "disposition", "requirement_ids", "exclusion_rationale",
+            "disposition", "requirement_ids", "exclusion_rationale", "role", "direction",
+            "scope_state", "condition",
         }
         if set(clause) != required:
             _fail("source clause has missing or unknown fields")
@@ -622,6 +626,13 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
         if not isinstance(keywords, list) or not keywords or any(keyword not in KEYWORD_STRENGTH for keyword in keywords):
             _fail("source clause has an invalid source keyword")
         _enum(clause["disposition"], CLAUSE_DISPOSITIONS, "source clause disposition")
+        _enum(clause["role"], CLAUSE_ROLES, "source clause role")
+        _enum(clause["direction"], CLAUSE_DIRECTIONS, "source clause direction")
+        _enum(clause["scope_state"], CLAUSE_SCOPES, "source clause scope")
+        if clause["condition"] is not None and (
+            not isinstance(clause["condition"], str) or not clause["condition"].strip()
+        ):
+            _fail("source clause condition must be null or non-empty text")
         if not isinstance(clause["requirement_ids"], list):
             _fail("source clause requirement_ids must be an array")
         rationale = clause["exclusion_rationale"]

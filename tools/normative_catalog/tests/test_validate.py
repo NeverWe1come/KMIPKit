@@ -679,6 +679,10 @@ def deviation_catalog(decision: dict[str, object]) -> dict[str, object]:
             "disposition": "requirement",
             "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
             "exclusion_rationale": None,
+            "role": "client",
+            "direction": "client_to_server",
+            "scope_state": "client_1_0",
+            "condition": None,
         }
     ]
     document["requirements"] = [
@@ -1749,6 +1753,10 @@ class CatalogValidationTests(unittest.TestCase):
                 "disposition": "maybe",
                 "requirement_ids": [],
                 "exclusion_rationale": None,
+                "role": "not_applicable",
+                "direction": "not_applicable",
+                "scope_state": "out_of_scope",
+                "condition": None,
             }
         ]
         with self.assertRaises(CatalogValidationError):
@@ -1766,6 +1774,10 @@ class CatalogValidationTests(unittest.TestCase):
                 "disposition": "informative_context",
                 "requirement_ids": [],
                 "exclusion_rationale": "The containing source row has separately classified obligations.",
+                "role": "not_applicable",
+                "direction": "not_applicable",
+                "scope_state": "out_of_scope",
+                "condition": None,
             }
         ]
 
@@ -1974,6 +1986,10 @@ class CatalogValidationTests(unittest.TestCase):
                 "disposition": "requirement",
                 "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
                 "exclusion_rationale": None,
+                "role": "client",
+                "direction": "client_to_server",
+                "scope_state": "client_1_0",
+                "condition": None,
             }
         ]
         document["requirements"] = [
