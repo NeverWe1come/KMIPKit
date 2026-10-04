@@ -6,7 +6,7 @@
 
 **Implementation gate**: Do not start implementation tasks until the feature specification is approved, ADR-0010 is accepted, and the KMIPKIT-0003 implementation PR is merged into the active release branch. Reconfirm all three on the dedicated worktree before T001.
 
-**Organization**: Tasks are grouped by user story. Red, Green, and Refactor evidence must be separate development commits with DCO sign-off as required by `AGENTS.md`.
+**Organization**: Tasks are grouped by user story. Red, Green, and Refactor evidence must be separate development commits. Every commit must include the DCO sign-off required by `CONTRIBUTING.md` and `GOVERNANCE.md`.
 
 ## Phase 1: Setup
 
