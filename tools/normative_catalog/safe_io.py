@@ -30,6 +30,14 @@ def _reparse(metadata: os.stat_result) -> bool:
     return stat.S_ISLNK(metadata.st_mode) or bool(getattr(metadata, "st_file_attributes", 0) & reparse_attribute)
 
 
+def _read_flags(*, binary: bool = False) -> int:
+    """Open without following links or waiting on special files."""
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+    if binary:
+        flags |= getattr(os, "O_BINARY", 0)
+    return flags
+
+
 def _parts(relative_path: str | Path) -> tuple[str, ...]:
     raw = str(relative_path)
     parsed = PurePosixPath(raw)
@@ -281,13 +289,7 @@ def safe_read_bytes(root: Path, relative_path: str | Path, *, max_bytes: int) ->
             components = _parts(relative_path)
             descriptor = _open_confined_file(root, components)
         else:
-            flags = (
-                os.O_RDONLY
-                | getattr(os, "O_BINARY", 0)
-                | getattr(os, "O_NOFOLLOW", 0)
-                | getattr(os, "O_NONBLOCK", 0)
-            )
-            descriptor = os.open(path, flags)
+            descriptor = os.open(path, _read_flags(binary=True))
     except OSError as error:
         raise PathSecurityError("repository file could not be opened safely") from error
     try:
@@ -320,8 +322,7 @@ def _open_rooted_directory(root: Path, components: tuple[str, ...]) -> int:
 def _open_confined_file(root: Path, components: tuple[str, ...]) -> int:
     directory_fd = _open_rooted_directory(root, components[:-1])
     try:
-        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
-        return os.open(components[-1], flags, dir_fd=directory_fd)
+        return os.open(components[-1], _read_flags(), dir_fd=directory_fd)
     finally:
         os.close(directory_fd)
 
