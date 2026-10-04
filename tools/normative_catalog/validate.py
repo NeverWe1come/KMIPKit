@@ -641,6 +641,7 @@ def _check_semantics(
     repo_root: Path,
 ) -> None:
     requirements = {record["requirement_id"]: record for record in catalog["requirements"]}
+    source_clauses = {record["clause_id"]: record for record in catalog["source_clauses"]}
     elements = _records_by_id(catalog, "elements", "element_id")
     profiles = _records_by_id(catalog, "profiles", "profile_id")
     test_cases = _records_by_id(catalog, "test_cases", "test_id")
@@ -656,6 +657,11 @@ def _check_semantics(
             or requirement.get("normative_strength") != KEYWORD_STRENGTH.get(keyword)
         ):
             _fail("requirement keyword and normative strength disagree")
+        if any(
+            keyword not in source_clauses[clause_id]["source_keywords"]
+            for clause_id in requirement["source_clause_ids"]
+        ):
+            _fail("requirement keyword is not present in every linked source clause")
         _enum(
             requirement.get("scope_state"),
             {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope"},
