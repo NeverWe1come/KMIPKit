@@ -1626,6 +1626,11 @@ class CatalogValidationTests(unittest.TestCase):
             ("KMIPKIT-SRC-testcases", "2.90"),
             ("KMIPKIT-SRC-testcases", "2.97"),
         }
+        expected_sections.update(
+            (clause["source_id"], clause["section"])
+            for clause in document["source_clauses"]
+            if clause["disposition"] == "source_discrepancy"
+        )
 
         self.assertTrue(expected_sections.issubset(cited_sections))
         self.assertTrue(discrepancies)
