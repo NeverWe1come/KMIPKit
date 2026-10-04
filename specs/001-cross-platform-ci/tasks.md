@@ -79,7 +79,7 @@
 - [x] T017 [US3] Implement exact base-commit-to-checked-merge-commit Rust diff extraction, Git-quoted UTF-8 path decoding, and changed executable line aggregation across Linux, Windows, and macOS reports in `scripts/coverage_gate.py`.
 - [x] T018 [US3] Enforce 95% changed-code when changed executable lines exist, 95% TTLV/protocol, 85% transport/FFI/bindings, and 90% workspace line coverage in `scripts/coverage_gate.py`; return `not applicable` for zero changed executable lines and `unavailable` only when source preflight finds no production function bodies.
 - [x] T019 [US3] Add stable three-OS coverage jobs and uniquely named JSON report or no-code sentinel artifacts, plus a dependent Linux aggregation job, to `.github/workflows/ci.yml`; use the exact checked merge SHA and base SHA.
-- [x] T020 [US3] Add a separate nightly Linux branch-coverage job with `continue-on-error: true` to `.github/workflows/ci.yml`; publish branch data as informational and ensure job/tool failures cannot gate pull-request success.
+- [x] T020 [US3] Add a separate nightly-only Linux branch-coverage job with `continue-on-error: true` to `.github/workflows/ci.yml`; publish branch data as informational and ensure job/tool failures cannot gate pull-request success.
 - [x] T021 [US3] Update `docs/development/testing.md` with report-segment semantics, per-file summary validation, thresholds, unavailable/failure distinctions, source-tree inclusion, and reproduction commands.
 
 ## Phase 6: Green and Refactor evidence
@@ -98,6 +98,7 @@
 - [x] T028 Run QA review against FRs, SCs, contracts, documentation, and test evidence; resolve findings. Final review found no gaps.
 - [x] T029 Run independent security review of fork permissions, action pins, WSL argument flow, and coverage path/schema handling; resolve findings. Final review found no blocking issues.
 - [x] T030 Verify the final branch is based on `release/1.0.0`, run all locally available checks, confirm no ignored generated/OASIS source was changed, and prepare draft PR #3 with scope, rationale, Red/Green/Refactor evidence, verification, risks, and limitations.
+- [x] T031 Add a workflow regression test requiring `branch-coverage` to run only for `schedule`, fix the missing job-level condition, and refactor shared job extraction. Evidence: RED `2104698`; GREEN `e2965b3`; REFACTOR `c8769d4`; `python -m unittest discover -s scripts/tests -p 'test_*.py' -v` passed 35 tests with 3 Windows symlink-permission skips.
 
 ## Dependencies
 

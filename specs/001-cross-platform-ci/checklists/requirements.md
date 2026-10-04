@@ -35,6 +35,3 @@
 - Coverage enforcement is in scope: enforce existing documented line-coverage thresholds when eligible production Rust source exists; report unavailable without claiming a pass when no source is eligible, and fail if collection is missing/incomplete once it is applicable. Every applicable report includes branch coverage as informational and non-gating until reliability is proven and a separate approved change promotes it.
 - Every applicable line-coverage threshold is a failing gate; only generated-source exclusions with documented reasons are permitted. Externally sourced GitHub Actions must be pinned to full commit SHAs with their upstream versions identified.
 - OASIS source integrity and dependency/advisory/license policies are separate infrastructure specifications; deterministic generation follows the approved catalog and generator; traceability and ABI/adapters checks are added when those surfaces exist. No incomplete quality items remain.
-
-
-
