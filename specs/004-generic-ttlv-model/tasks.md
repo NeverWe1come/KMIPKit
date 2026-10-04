@@ -14,7 +14,7 @@
 
 - [x] T001 Confirm approved spec, accepted ADR-0010, merged KMIPKIT-0003 implementation, active release base, and dedicated feature worktree; record gate evidence here and carry it into the draft PR description.
 - [x] T002 [P] Write and run focused generator tests for assigned/reserved exact entries, aggregate ranges, malformed/duplicate/out-of-range catalog data, stable numeric ordering, and `--check`/`--write` behavior in `tools/normative_catalog/tests/test_generate_ttlv_tags.py` (Red commit `e25f65c`; read-only assertion fix `11047cb`; reviewed).
-- [ ] T003 Implement `tools/normative_catalog/generate_ttlv_tags.py` using `load_validated_catalog` from `tools/normative_catalog/validate.py`, safe I/O helpers, private numeric tag/range metadata, deterministic `--write`, and read-only `--check` modes (Green commit).
+- [x] T003 Implement `tools/normative_catalog/generate_ttlv_tags.py` using `load_validated_catalog` from `tools/normative_catalog/validate.py`, safe I/O helpers, private numeric tag/range metadata, deterministic `--write`, and read-only `--check` modes (Green `6b7c9cd`; redaction fix `fe5be3f`; reviewed).
 - [ ] T004 Refactor the generator to reuse existing validation and atomic-write conventions, document its local input/output, and confirm idempotent deterministic output in `tools/normative_catalog/generate_ttlv_tags.py` (Refactor commit).
 
 ## Phase 2: Foundational — checked tags and generated allocation data
