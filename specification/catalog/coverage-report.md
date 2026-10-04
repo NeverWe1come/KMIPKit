@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 1569 |
+| Protocol elements | 1612 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -38,6 +38,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | data\_type | 11 |
 | enumeration | 64 |
 | enumeration\_value | 723 |
+| message\_field | 43 |
 | object\_structure | 12 |
 | object\_type | 9 |
 | operation | 62 |
@@ -984,6 +985,49 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-ENUMERATION-VALIDATION-TYPE | enumeration | both | client\_1\_0 | KMIPKIT-SRC-spec §11.64 |
 | KMIPKIT-ELEM-ENUMERATION-VALIDITY-INDICATOR | enumeration | both | client\_1\_0 | KMIPKIT-SRC-spec §11.61 |
 | KMIPKIT-ELEM-ENUMERATION-WRAPPING-METHOD | enumeration | both | client\_1\_0 | KMIPKIT-SRC-spec §11.62 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.1 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-HEADER | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.1 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-MESSAGE | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.1 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-AUTHENTICATION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.3 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.3 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.3 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.3 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-3-REQUEST-PAYLOAD | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.3 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §8.3 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.4 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-HEADER | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.4 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-MESSAGE | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.4 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-5-NONCE | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-HASHED-PASSWORD | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESPONSE-PAYLOAD | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-MESSAGE | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.1 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.2 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |

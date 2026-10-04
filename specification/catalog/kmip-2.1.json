@@ -21887,6 +21887,1017 @@
       "verification_refs": []
     },
     {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+      "kind": "message_field",
+      "name": "Batch Item",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.1"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-MESSAGE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure, MAY be repeated",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-HEADER",
+      "kind": "message_field",
+      "name": "Request Header",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.1"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-MESSAGE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-MESSAGE",
+      "kind": "message_field",
+      "name": "Request Message",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.1"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR",
+      "kind": "message_field",
+      "name": "Asynchronous Indicator",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR",
+      "kind": "message_field",
+      "name": "Attestation Capable Indicator",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE",
+      "kind": "message_field",
+      "name": "Attestation Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No, MAY be repeated"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-AUTHENTICATION",
+      "kind": "message_field",
+      "name": "Authentication",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
+      "kind": "message_field",
+      "name": "Batch Count",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION",
+      "kind": "message_field",
+      "name": "Batch Error Continuation Option",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No",
+      "source_comment": "If omitted, then Stop is assumed"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
+      "kind": "message_field",
+      "name": "Batch Order Option",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No",
+      "source_comment": "If omitted, then True is assumed"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE",
+      "kind": "message_field",
+      "name": "Client Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+      "kind": "message_field",
+      "name": "Maximum Response Size",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION",
+      "kind": "message_field",
+      "name": "Protocol Version",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER",
+      "kind": "message_field",
+      "name": "Request Header",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes",
+      "source_comment": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE",
+      "kind": "message_field",
+      "name": "Server Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
+      "kind": "message_field",
+      "name": "Time Stamp",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM",
+      "kind": "message_field",
+      "name": "Batch Item",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.3"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes",
+      "source_comment": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL",
+      "kind": "message_field",
+      "name": "Ephemeral",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.3"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No",
+      "source_comment": "Indicates that the Data output of the operation should not be returned to the client. Boolean."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
+      "kind": "message_field",
+      "name": "Message Extension",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.3"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No, MAY be repeated"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION",
+      "kind": "message_field",
+      "name": "Operation",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.3"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-REQUEST-PAYLOAD",
+      "kind": "message_field",
+      "name": "Request Payload",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.3"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes",
+      "source_comment": "Structure, contents depend on the Operation"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
+      "kind": "message_field",
+      "name": "Unique Batch Item ID",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.3"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No",
+      "source_comment": "REQUIRED if Batch Count > 1"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM",
+      "kind": "message_field",
+      "name": "Batch Item",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.4"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-MESSAGE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure, MAY be repeated",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-HEADER",
+      "kind": "message_field",
+      "name": "Response Header",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.4"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-MESSAGE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-MESSAGE",
+      "kind": "message_field",
+      "name": "Response Message",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.4"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE",
+      "kind": "message_field",
+      "name": "Attestation Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No, MAY be repeated",
+      "source_comment": "REQUIRED in Attestation Required error message if client set Attestation Capable Indicator to True in the request"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
+      "kind": "message_field",
+      "name": "Batch Count",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE",
+      "kind": "message_field",
+      "name": "Client Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-NONCE",
+      "kind": "message_field",
+      "name": "Nonce",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION",
+      "kind": "message_field",
+      "name": "Protocol Version",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER",
+      "kind": "message_field",
+      "name": "Response Header",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes",
+      "source_comment": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE",
+      "kind": "message_field",
+      "name": "Server Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-HASHED-PASSWORD",
+      "kind": "message_field",
+      "name": "Server Hashed Password",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes, if Hashed Password credential was used",
+      "source_comment": "Hash(Timestamp || S1 || Hash(S2)), where S1, S2 and the Hash algorithm are defined in the Hashed Password credential."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP",
+      "kind": "message_field",
+      "name": "Time Stamp",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.5"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE",
+      "kind": "message_field",
+      "name": "Asynchronous Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.6"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No",
+      "source_comment": "REQUIRED if Result Status is Pending"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM",
+      "kind": "message_field",
+      "name": "Batch Item",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.6"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes",
+      "source_comment": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
+      "kind": "message_field",
+      "name": "Message Extension",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.6"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION",
+      "kind": "message_field",
+      "name": "Operation",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.6"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes, if specified in Request Batch Item"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESPONSE-PAYLOAD",
+      "kind": "message_field",
+      "name": "Response Payload",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.6"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes, if not a failure",
+      "source_comment": "Structure, contents depend on the Operation"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-MESSAGE",
+      "kind": "message_field",
+      "name": "Result Message",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.6"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No",
+      "source_comment": "OPTIONAL if Result Status is not Pending or Success"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON",
+      "kind": "message_field",
+      "name": "Result Reason",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.6"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes, if Result Status is Failure",
+      "source_comment": "REQUIRED if Result Status is Failure, otherwise OPTIONAL"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS",
+      "kind": "message_field",
+      "name": "Result Status",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.6"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
+      "kind": "message_field",
+      "name": "Unique Batch Item ID",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.6"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_requiredness": "No",
+      "source_comment": "REQUIRED if present in Request Batch Item"
+    },
+    {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE",
       "kind": "object_structure",
       "name": "Certificate",

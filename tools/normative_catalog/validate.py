@@ -87,7 +87,7 @@ ELEMENT_FIELDS = {
     "direction", "scope_state", "scope_reason", "parent_element_ids",
     "requirement_ids", "profile_ids", "test_case_ids", "feature_spec",
     "implementation_refs", "verification_refs", "payload_tables", "asynchronous_response",
-    "source_encoding", "source_requiredness",
+    "source_encoding", "source_requiredness", "source_comment",
 }
 ELEMENT_KINDS = {
     "operation", "message_field", "structure_member", "credential", "data_type",
@@ -692,6 +692,10 @@ def _check_semantics(
                 _fail("structure member source_encoding must be a non-empty string")
             if "source_requiredness" in element and not isinstance(element["source_requiredness"], str):
                 _fail("structure member source_requiredness must be a string")
+        elif element["kind"] == "message_field":
+            for field in ("source_encoding", "source_requiredness", "source_comment"):
+                if field in element and not isinstance(element[field], str):
+                    _fail(f"message field {field} must be a string")
         elif element["kind"] in {"attribute", "operation_structure", "option", "result"}:
             if element["kind"] in {"operation_structure", "option", "result"} and (
                 not isinstance(element.get("source_encoding"), str) or not element["source_encoding"].strip()
@@ -705,8 +709,10 @@ def _check_semantics(
                 _fail("typed element source_requiredness must be a string")
             if "source_requiredness" in element and "source_encoding" not in element:
                 _fail("source_requiredness requires source_encoding")
-        elif "source_encoding" in element or "source_requiredness" in element:
+        elif "source_encoding" in element or "source_requiredness" in element or "source_comment" in element:
             _fail("source structure metadata applies only to typed roots and structure members")
+        if "source_comment" in element and element["kind"] != "message_field":
+            _fail("source_comment applies only to message fields")
         _source_refs(element.get("source_refs"), sources, "element source_refs")
         _enum(element.get("direction"), {"client_to_server", "server_to_client", "both", "not_applicable"}, "protocol element direction")
         _enum(
@@ -1094,6 +1100,7 @@ COMPLETE_ELEMENT_COUNTS = {
     "option": 3,
     "result": 4,
     "tag": 374,
+    "message_field": 43,
 }
 TAG_REGISTRY_SHA256 = "ad69b23437d238ae67bfd72e54ba37a8bbe9fd31358f1aadfd41c410369cf8fe"
 RESERVED_TAGS = {
