@@ -134,24 +134,24 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_preflight_rejects_unknown_top_level_key_before_object_decode(self) -> None:
         raw = b'{"unexpected":{"nested":[1,2,3]}}'
-        with patch("tools.normative_catalog.validate.json.loads", side_effect=AssertionError("decoded too early")) as decoder:
+        with patch("tools.normative_catalog.validate.json.loads", wraps=json.loads) as decoder:
             with self.assertRaisesRegex(CatalogValidationError, "unknown top-level"):
                 validate_catalog(raw, ROOT)
-        decoder.assert_not_called()
+        self.assertNotIn(raw.decode("utf-8"), [call.args[0] for call in decoder.call_args_list])
 
     def test_preflight_rejects_duplicate_keys_before_object_decode(self) -> None:
         raw = b'{"schema_version":1,"schema_version":1}'
-        with patch("tools.normative_catalog.validate.json.loads", side_effect=AssertionError("decoded too early")) as decoder:
+        with patch("tools.normative_catalog.validate.json.loads", wraps=json.loads) as decoder:
             with self.assertRaisesRegex(CatalogValidationError, "duplicate"):
                 validate_catalog(raw, ROOT)
-        decoder.assert_not_called()
+        self.assertNotIn(raw.decode("utf-8"), [call.args[0] for call in decoder.call_args_list])
 
     def test_preflight_rejects_oversized_string_before_object_decode(self) -> None:
-        raw = b'{"schema_version":1,"sources":[],' + b'"x":"' + b'a' * 65_537 + b'"}'
-        with patch("tools.normative_catalog.validate.json.loads", side_effect=AssertionError("decoded too early")) as decoder:
+        raw = b'{"schema_version":"' + b'a' * 65_537 + b'"}'
+        with patch("tools.normative_catalog.validate.json.loads", wraps=json.loads) as decoder:
             with self.assertRaisesRegex(CatalogValidationError, "string"):
                 validate_catalog(raw, ROOT)
-        decoder.assert_not_called()
+        self.assertNotIn(raw.decode("utf-8"), [call.args[0] for call in decoder.call_args_list])
 
     def test_rejects_invalid_utf8_and_unpaired_escaped_surrogate(self) -> None:
         for raw in (b"\xff", b'{"x":"\\ud800"}'):

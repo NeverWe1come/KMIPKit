@@ -105,6 +105,173 @@ def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return result
 
 
+def _string_utf8_length(value: str) -> int:
+    length = 0
+    index = 0
+    while index < len(value):
+        codepoint = ord(value[index])
+        if 0xD800 <= codepoint <= 0xDBFF:
+            if index + 1 >= len(value) or not 0xDC00 <= ord(value[index + 1]) <= 0xDFFF:
+                _fail("catalog contains an unpaired Unicode surrogate")
+            length += 4
+            index += 2
+        elif 0xDC00 <= codepoint <= 0xDFFF:
+            _fail("catalog contains an unpaired Unicode surrogate")
+        else:
+            length += len(value[index].encode("utf-8"))
+            index += 1
+        if length > MAX_STRING_BYTES:
+            _fail("catalog contains a string longer than 65,536 UTF-8 bytes")
+    return length
+
+
+class _JsonPreflight:
+    """Validate JSON grammar and allocation bounds without building a graph."""
+
+    def __init__(self, text: str) -> None:
+        self.text = text
+        self.position = 0
+        self.tokens = 0
+        self.members = 0
+
+    def _skip_space(self) -> None:
+        while self.position < len(self.text) and self.text[self.position] in " \t\r\n":
+            self.position += 1
+
+    def _count_token(self) -> None:
+        self.tokens += 1
+        if self.tokens > MAX_TOKENS:
+            _fail("catalog exceeds the global JSON token limit")
+
+    def _read_string(self) -> str:
+        start = self.position
+        self.position += 1
+        while self.position < len(self.text):
+            character = self.text[self.position]
+            if character == '"':
+                self.position += 1
+                encoded = self.text[start:self.position].encode("utf-8")
+                if len(encoded) > MAX_STRING_BYTES * 6 + 2:
+                    _fail("catalog contains a string longer than 65,536 UTF-8 bytes")
+                try:
+                    value = json.loads(encoded.decode("utf-8"))
+                except (json.JSONDecodeError, UnicodeDecodeError) as error:
+                    raise CatalogValidationError("catalog contains an invalid JSON string") from error
+                _string_utf8_length(value)
+                return value
+            if ord(character) < 0x20:
+                _fail("catalog contains an unescaped JSON control character")
+            if character == "\\":
+                self.position += 1
+                if self.position >= len(self.text):
+                    _fail("catalog contains a truncated JSON escape")
+                escape = self.text[self.position]
+                if escape == "u":
+                    digits = self.text[self.position + 1:self.position + 5]
+                    if len(digits) != 4 or re.fullmatch(r"[0-9a-fA-F]{4}", digits) is None:
+                        _fail("catalog contains an invalid Unicode escape")
+                    self.position += 5
+                    continue
+                if escape not in '"\\/bfnrt':
+                    _fail("catalog contains an invalid JSON escape")
+            self.position += 1
+        _fail("catalog contains an unterminated JSON string")
+
+    def _value(self, depth: int, *, top_collection: str | None = None, root: bool = False) -> None:
+        self._skip_space()
+        if self.position >= len(self.text):
+            _fail("catalog contains truncated JSON")
+        self._count_token()
+        character = self.text[self.position]
+        if character == "{":
+            next_depth = depth + 1
+            if next_depth > MAX_DEPTH:
+                _fail("catalog exceeds the maximum nesting depth of 32")
+            self.position += 1
+            self._skip_space()
+            keys: set[str] = set()
+            if self.position < len(self.text) and self.text[self.position] == "}":
+                self.position += 1
+                if root:
+                    _fail("catalog root must contain required top-level fields")
+                return
+            while True:
+                self._skip_space()
+                if self.position >= len(self.text) or self.text[self.position] != '"':
+                    _fail("catalog object keys must be strings")
+                self._count_token()
+                key = self._read_string()
+                if key in keys:
+                    _fail(f"duplicate JSON object key: {key}")
+                keys.add(key)
+                self.members += 1
+                if self.members > MAX_MEMBERS:
+                    _fail("catalog exceeds the global JSON object-member limit")
+                if root and key not in TOP_LEVEL_FIELDS:
+                    _fail("catalog has unknown top-level fields")
+                self._skip_space()
+                if self.position >= len(self.text) or self.text[self.position] != ":":
+                    _fail("catalog object member is missing a colon")
+                self.position += 1
+                self._value(next_depth, top_collection=key if root and key != "schema_version" else None)
+                self._skip_space()
+                if self.position >= len(self.text):
+                    _fail("catalog object is truncated")
+                delimiter = self.text[self.position]
+                self.position += 1
+                if delimiter == "}":
+                    break
+                if delimiter != ",":
+                    _fail("catalog object has an invalid delimiter")
+            return
+        if character == "[":
+            next_depth = depth + 1
+            if next_depth > MAX_DEPTH:
+                _fail("catalog exceeds the maximum nesting depth of 32")
+            self.position += 1
+            self._skip_space()
+            if self.position < len(self.text) and self.text[self.position] == "]":
+                self.position += 1
+                return
+            records = 0
+            while True:
+                self._value(next_depth)
+                if top_collection is not None:
+                    records += 1
+                    if records > MAX_RECORDS:
+                        _fail(f"{top_collection} exceeds the 100,000 record limit")
+                self._skip_space()
+                if self.position >= len(self.text):
+                    _fail("catalog array is truncated")
+                delimiter = self.text[self.position]
+                self.position += 1
+                if delimiter == "]":
+                    break
+                if delimiter != ",":
+                    _fail("catalog array has an invalid delimiter")
+            return
+        if character == '"':
+            self._read_string()
+            return
+        literal = next((word for word in ("true", "false", "null") if self.text.startswith(word, self.position)), None)
+        if literal is not None:
+            self.position += len(literal)
+            return
+        number = re.match(r"-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?", self.text[self.position:])
+        if number is None or len(number.group(0)) > 128:
+            _fail("catalog contains an invalid or overlong JSON value")
+        self.position += len(number.group(0))
+
+    def validate(self) -> None:
+        self._skip_space()
+        if not self.text.startswith("{", self.position):
+            _fail("catalog root must be an object")
+        self._value(0, root=True)
+        self._skip_space()
+        if self.position != len(self.text):
+            _fail("catalog contains trailing JSON data")
+
+
 def _preflight(raw: bytes) -> str:
     if len(raw) > MAX_BYTES:
         _fail("catalog exceeds the 16 MiB input limit")
@@ -112,50 +279,13 @@ def _preflight(raw: bytes) -> str:
         text = raw.decode("utf-8", errors="strict")
     except UnicodeDecodeError as error:
         raise CatalogValidationError("catalog is not valid UTF-8") from error
-
-    depth = 0
-    in_string = False
-    escaped = False
-    tokens = 0
-    for character in text:
-        if in_string:
-            if escaped:
-                escaped = False
-            elif character == "\\":
-                escaped = True
-            elif character == '"':
-                in_string = False
-            continue
-        if character == '"':
-            in_string = True
-            tokens += 1
-        elif character in "[{":
-            depth += 1
-            tokens += 1
-            if depth > MAX_DEPTH:
-                _fail("catalog exceeds the maximum nesting depth of 32")
-        elif character in "]}":
-            depth -= 1
-            tokens += 1
-            if depth < 0:
-                _fail("catalog has invalid JSON structure")
-        elif character in ":,":
-            tokens += 1
-        elif not character.isspace():
-            tokens += 1
-        if tokens > MAX_TOKENS:
-            _fail("catalog exceeds the global JSON token limit")
-    if in_string or depth != 0:
-        _fail("catalog has invalid JSON structure")
+    _JsonPreflight(text).validate()
     return text
 
 
 def _reject_surrogates(value: Any) -> None:
     if isinstance(value, str):
-        if any(0xD800 <= ord(character) <= 0xDFFF for character in value):
-            _fail("catalog contains an unpaired Unicode surrogate")
-        if len(value.encode("utf-8")) > MAX_STRING_BYTES:
-            _fail("catalog contains a string longer than 65,536 UTF-8 bytes")
+        _string_utf8_length(value)
     elif isinstance(value, list):
         for item in value:
             _reject_surrogates(item)
