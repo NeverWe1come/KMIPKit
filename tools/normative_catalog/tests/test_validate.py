@@ -473,6 +473,43 @@ def _pinned_credential_forms() -> tuple[dict[str, tuple[str, str]], set[tuple[st
     return roots, members
 
 
+def _pinned_object_structures() -> tuple[
+    dict[tuple[str, str], tuple[str, str]],
+    set[tuple[str, str, str, str, str]],
+]:
+    """Return object-structure roots and literal members from Specification §§2–3.12."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    roots: dict[tuple[str, str], tuple[str, str]] = {}
+    members: set[tuple[str, str, str, str, str]] = set()
+    for table in parser.tables:
+        heading = table.get("heading")
+        rows = table.get("rows")
+        if not isinstance(heading, str) or not isinstance(rows, list):
+            continue
+        match = re.match(r"^(2\.[1-9]|3\.(?:[1-9]|1[0-2]))\s+", heading)
+        if not match or not rows or rows[0] != ["Object", "Encoding", "REQUIRED"]:
+            continue
+        section = match.group(1)
+        if len(rows) < 2 or len(rows[1]) != 3:
+            raise AssertionError(f"pinned object-structure table is incomplete: {heading}")
+        root_name, root_encoding, root_requiredness = rows[1]
+        if root_encoding != "Structure":
+            raise AssertionError(f"pinned object-structure root is not Structure: {heading}")
+        root_key = (section, root_name)
+        if root_key in roots:
+            raise AssertionError(f"duplicate pinned object-structure root: {heading}")
+        roots[root_key] = (root_encoding, root_requiredness)
+        for row in rows[2:]:
+            if len(row) == 3:
+                members.add((section, root_name, row[0], row[1], row[2]))
+    return roots, members
+
+
 def minimal_catalog() -> dict[str, object]:
     """Return the smallest catalog with exact pinned source metadata."""
     source_rows = [
@@ -862,6 +899,70 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(record["direction"], "both")
                 self.assertEqual(record["scope_state"], "client_1_0")
                 self.assertTrue(record["source_refs"])
+
+    def test_all_object_structure_roots_and_members_match_pinned_tables(self) -> None:
+        source_roots, source_members = _pinned_object_structures()
+        self.assertEqual(len(source_roots), 23)
+        self.assertEqual(len(source_members), 70)
+        expected_roots = {
+            (f"2.{number}", name)
+            for number, name in enumerate(
+                (
+                    "Certificate", "Certificate Request", "Opaque Object", "PGP Key", "Private Key",
+                    "Public Key", "Secret Data", "Split Key", "Symmetric Key",
+                ),
+                start=1,
+            )
+        }
+        expected_roots.update(
+            {
+                ("3.1", "Key Block"),
+                ("3.2", "Key Value"),
+                ("3.3", "Key Wrapping Data"),
+                ("3.3", "Encryption Key Information"),
+                ("3.3", "MAC/Signature Key Information"),
+                *((f"3.{number}", "Key Material") for number in range(4, 13)),
+            }
+        )
+        self.assertEqual(set(source_roots), expected_roots)
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        elements = catalog["elements"]
+        structures = [row for row in elements if row.get("kind") == "object_structure"]
+        structures_by_key = {
+            (row["source_refs"][0]["section"], row["name"]): row
+            for row in structures
+        }
+        self.assertEqual(
+            {
+                key: (row.get("source_encoding"), row.get("source_requiredness"))
+                for key, row in structures_by_key.items()
+            },
+            source_roots,
+        )
+        self.assertEqual(set(structures_by_key), expected_roots)
+
+        structure_names_by_id = {
+            row["element_id"]: (row["source_refs"][0]["section"], row["name"])
+            for row in structures
+        }
+        members = [
+            row for row in elements
+            if row.get("kind") == "structure_member"
+            and row["source_refs"][0]["section"].startswith(("2.", "3."))
+        ]
+        actual_members = {
+            (
+                row["source_refs"][0]["section"],
+                *structure_names_by_id[row["parent_element_ids"][0]],
+                row["name"],
+                row["source_encoding"],
+                row["source_requiredness"],
+            )
+            for row in members
+        }
+        self.assertEqual(actual_members, source_members)
+        self.assertEqual(len(members), len(source_members))
 
     def test_tag_inventory_reconciles_all_reserved_values_and_ranges(self) -> None:
         elements = [
