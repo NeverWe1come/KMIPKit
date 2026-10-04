@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import subprocess
 import sys
 import unittest
+from html.parser import HTMLParser
 from pathlib import Path
 from unittest.mock import patch
 
@@ -17,9 +19,83 @@ from tools.normative_catalog.validate import (
     _check_tag_registry,
     validate_catalog,
 )
+import tools.normative_catalog.validate as catalog_validate
 
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+class _CaptionedTableParser(HTMLParser):
+    """Read table rows and captions from a pinned legacy OASIS HTML source."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.tables: list[dict[str, object]] = []
+        self._table: dict[str, object] | None = None
+        self._row: list[str] | None = None
+        self._cell: list[str] | None = None
+        self._caption: list[str] | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attributes = dict(attrs)
+        if tag == "table":
+            self._table = {"rows": []}
+            self.tables.append(self._table)
+        elif tag == "tr" and self._table is not None:
+            self._row = []
+            self._table["rows"].append(self._row)
+        elif tag in {"td", "th"} and self._row is not None:
+            self._cell = []
+        elif tag == "p" and attributes.get("class") == "MsoCaption":
+            self._caption = []
+
+    def handle_data(self, data: str) -> None:
+        if self._cell is not None:
+            self._cell.append(data)
+        if self._caption is not None:
+            self._caption.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in {"td", "th"} and self._cell is not None:
+            assert self._row is not None
+            self._row.append(" ".join("".join(self._cell).split()))
+            self._cell = None
+        elif tag == "tr":
+            self._row = None
+        elif tag == "table":
+            self._table = None
+        elif tag == "p" and self._caption is not None:
+            if self.tables:
+                self.tables[-1]["caption"] = " ".join("".join(self._caption).split())
+            self._caption = None
+
+
+def _pinned_tag_rows() -> tuple[list[tuple[str, str, str]], list[tuple[str, str]]]:
+    """Return singleton and range rows from the checksum-pinned Table 487."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    table = next(item for item in parser.tables if item.get("caption") == "Table 487: Tag Enumeration")
+    rows = table["rows"]
+    assert isinstance(rows, list)
+    singletons: list[tuple[str, str, str]] = []
+    ranges: list[tuple[str, str]] = []
+    for row in rows[2:]:
+        if len(row) != 2:
+            continue
+        name, value = row
+        if re.fullmatch(r"(?:0x)?[0-9A-Fa-f]{6}", value):
+            allocation = "reserved" if name in {"(Reserved)", "Reserved"} else "assigned"
+            singletons.append((name, value, allocation))
+        else:
+            allocation = {"(Unused)": "unused", "(Reserved)": "reserved", "Extensions": "extension"}.get(name)
+            if allocation is None:
+                raise AssertionError("unclassified tag range in pinned Table 487")
+            ranges.append((allocation, value))
+    return singletons, ranges
 
 
 def minimal_catalog() -> dict[str, object]:
@@ -451,6 +527,30 @@ class CatalogValidationTests(unittest.TestCase):
         elements[17]["name"] = "(Reserved)"
         with self.assertRaisesRegex(CatalogValidationError, "reserved tag"):
             _check_tag_registry(elements, ranges)
+
+    def test_tag_registry_matches_every_pinned_source_value(self) -> None:
+        source_singletons, source_ranges = _pinned_tag_rows()
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        tags = [row for row in catalog["elements"] if row.get("kind") == "tag"]
+        actual_singletons = {(row["name"], row["wire_value"], row["allocation"]) for row in tags}
+        self.assertEqual(actual_singletons, set(source_singletons))
+        self.assertEqual(
+            [(row["allocation"], row["value_range"]) for row in sorted(catalog["tag_ranges"], key=lambda item: item["source_order"])],
+            source_ranges,
+        )
+
+        expected_digest = hashlib.sha256(
+            json.dumps(sorted(source_singletons, key=lambda row: row[1]), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        self.assertEqual(catalog_validate.TAG_REGISTRY_SHA256, expected_digest)
+        catalog_validate._check_tag_registry_fingerprint(tags)
+
+        tampered = [dict(row) for row in tags]
+        assigned = next(row for row in tampered if row["allocation"] == "assigned")
+        assigned["wire_value"] = "FF1234"
+        assigned["element_id"] = "KMIPKIT-ELEM-TAG-FF1234"
+        with self.assertRaisesRegex(CatalogValidationError, "tag registry source fingerprint"):
+            catalog_validate._check_tag_registry_fingerprint(tampered)
 
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
