@@ -122,7 +122,7 @@ Independent QA rechecked the acceptance evidence and found no additional catalog
 
 Fresh verification on 2026-10-04:
 
-- `python -B -m unittest discover -s tools/normative_catalog/tests -v`: 126 passed, 3 skipped (Windows directory-symlink privilege unavailable).
+- `python -B -m unittest discover -s tools/normative_catalog/tests -v`: 129 passed, 5 skipped (Windows directory-symlink privilege unavailable).
 - `python -B -m unittest discover -s scripts/tests -v`: 36 passed, 3 skipped (same Windows symlink limitation).
 - `pwsh -NoProfile -File scripts/tests/Test-Wsl.ps1`: all 8 passed.
 - `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`, and `cargo test --workspace --all-features --locked`: passed with Windows stable and WSL Rust 1.94.0.
@@ -132,4 +132,16 @@ Fresh verification on 2026-10-04:
 - `python -B tools/normative_catalog/report.py --check` and `git diff --check`: passed.
 - Coverage preflight scanned all 7 Rust source files and found no production function bodies, so line-percentage gates are not applicable to this catalog-only feature. `cargo llvm-cov` is not installed in this environment; no coverage percentage is claimed.
 
-The independent QA review and these command results complete T039. Security review (T040) and draft PR creation (T041) remain pending at this evidence snapshot.
+The independent QA review and these command results complete T039. Security review (T040) is complete; draft PR creation (T041) remains pending at this evidence snapshot.
+
+## Security review and follow-up
+
+A Codex Security diff scan (`a9259b9e-aafd-4b03-98bd-739fea2c3c4d`) covered `ce34179cd8bf96812af53b5ec88daeae330fce35..fdd430858781cc06f3a10b4f69bb20cd3eaeda6e`. It completed with zero reportable findings. It validated and suppressed two low-severity local availability candidates: blocking on a POSIX FIFO and unbounded capture of Git tree metadata. The normal CI path gates validation with the exact-base immutable-source check. Both cases were nevertheless hardened; the scan report and retained threat model are available in the Codex Security scan artifacts.
+
+The follow-up used distinct Red, Green, and Refactor commits:
+
+- Red `baf39a3`: three focused tests failed for the expected reasons: FIFO open exceeded the 2-second timeout; oversized Git output reached malformed-record parsing instead of a size-limit rejection; equivalent numeric sections rendered in input-dependent order.
+- Green `fcc5e55`: POSIX reads use nonblocking flags before checking file type; Git tree output is capped at 16 MiB and 100,000 entries; numeric section sorting now has a stable text tie-breaker. All three focused regression tests passed.
+- Refactor `2a0c558`: consolidated link-safe, nonblocking read flags in one helper; the three focused tests passed again.
+
+The full Windows catalog suite then passed 129 tests with 5 platform-specific skips. The three POSIX regression tests also passed in WSL. The full WSL suite could not resolve this Windows worktree's `.git` pointer, so native Linux CI remains the full-suite Linux confirmation. T040 is complete; T041 remains pending until the draft PR exists.

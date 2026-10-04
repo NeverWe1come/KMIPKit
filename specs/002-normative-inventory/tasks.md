@@ -127,7 +127,7 @@
 - [x] T037 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, `cargo test --workspace --all-features`, `cargo llvm-cov --workspace --all-features`, the complete Python unit suite, source checksum verification, workflow checks, and `git diff --check`; verify no network calls or OASIS edits are present, and verify the CI diff guard rejects any source/manifest change against the exact PR base SHA.
 - [x] T038 Update `specification/catalog/README.md` and `docs/compliance/conformance.md` to explain the catalog/report, stable IDs, scope states, evidence gaps, and discrepancy lifecycle.
 - [x] T039 Run an independent QA review against every acceptance criterion and requirement; record check outputs and residual limitations in the draft PR.
-- [ ] T040 Run an independent security review of file parsing, path handling, deterministic generation, dependencies, and untrusted catalog references; resolve actionable findings.
+- [x] T040 Run an independent security review of file parsing, path handling, deterministic generation, dependencies, and untrusted catalog references; resolve actionable findings.
 - [ ] T041 Prepare and push a draft PR from `feature/KMIPKIT-0002-normative-inventory`; include Red, Green, Refactor evidence, source counts, checksum results, coverage report, risks, and the explicit no-profile-claim limitation.
 
 ## Requirement-to-Task Traceability
