@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 1381 |
+| Protocol elements | 1427 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -41,7 +41,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | object\_structure | 12 |
 | object\_type | 9 |
 | operation | 62 |
-| structure\_member | 9 |
+| structure\_member | 55 |
 | tag | 374 |
 
 ### Requirements by strength and scope
@@ -1064,6 +1064,52 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-OP-S2C-PUT | operation | server\_to\_client | client\_1\_1 | KMIPKIT-SRC-spec §6.2.3 |
 | KMIPKIT-ELEM-OP-S2C-QUERY | operation | server\_to\_client | client\_1\_1 | KMIPKIT-SRC-spec §6.2.4 |
 | KMIPKIT-ELEM-OP-S2C-SET-ENDPOINT-ROLE | operation | server\_to\_client | client\_1\_1 | KMIPKIT-SRC-spec §6.2.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-QLENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.14 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-RECOMMENDED-CURVE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.14 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-COUNTER-LENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-CRYPTOGRAPHIC-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-DIGITAL-SIGNATURE-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-FIXED-FIELD-LENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-HASHING-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-INITIAL-COUNTER-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-INVOCATION-FIELD-LENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-IV-LENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-KEY-ROLE-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-MASK-GENERATOR | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-MASK-GENERATOR-HASHING-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-P-SOURCE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-PADDING-METHOD | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-RANDOM-IV | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-SALT-LENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-TAG-LENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-TRAILER-FIELD | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-2-ALTERNATIVE-NAME-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-2-ALTERNATIVE-NAME-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-21-DIGEST-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.21 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-21-HASHING-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.21 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-21-KEY-FORMAT-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.21 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-27-KEY-VALUE-LOCATION-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.27 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-27-KEY-VALUE-LOCATION-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.27 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINK-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.31 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINKED-OBJECT-IDENTIFIER | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.31 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-32-NAME-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.32 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-32-NAME-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.32 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-DATA | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.4 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.4 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-MESSAGE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.47 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-REASON-CODE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.47 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.53 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-53-ROTATE-NAME-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.53 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.60 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.60 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.60 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-61-CERTIFICATE-SERIAL-NUMBER | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.61 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-61-ISSUER-DISTINGUISHED-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.61 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-62-ISSUER-ALTERNATIVE-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.62 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-62-ISSUER-DISTINGUISHED-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.62 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-63-SUBJECT-ALTERNATIVE-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.63 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-4-63-SUBJECT-DISTINGUISHED-NAME | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.63 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.1 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-5-2-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.2 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-5-3-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §5.3 |

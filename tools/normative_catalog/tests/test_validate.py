@@ -240,7 +240,7 @@ def _pinned_attribute_structures() -> tuple[dict[str, tuple[str, str]], set[tupl
     return structures, members
 
 
-def _pinned_attribute_value_structures() -> tuple[dict[str, tuple[str, str, str | None]], set[tuple[str, str, str, str]]]:
+def _pinned_attribute_value_structures() -> tuple[dict[str, tuple[str, str, str | None]], set[tuple[str, str, str, str | None]]]:
     """Return every §4 Structure-valued attribute root and its literal members."""
     source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
@@ -249,7 +249,7 @@ def _pinned_attribute_value_structures() -> tuple[dict[str, tuple[str, str, str 
     parser = _CaptionedTableParser()
     parser.feed(raw.decode("cp1252"))
     structures: dict[str, tuple[str, str, str | None]] = {}
-    members: set[tuple[str, str, str, str]] = set()
+    members: set[tuple[str, str, str, str | None]] = set()
     for table in parser.tables:
         heading = table.get("heading")
         rows = table.get("rows")
@@ -277,8 +277,8 @@ def _pinned_attribute_value_structures() -> tuple[dict[str, tuple[str, str, str 
         requiredness = root_row[required_index] if required_index is not None and len(root_row) > required_index else None
         structures[section] = (root_row[0], root_row[encoding_index], requiredness)
         for row in rows[structure_row_index + 1 :]:
-            if len(row) > max(encoding_index, required_index or 0):
-                raw_requiredness = row[required_index] if required_index is not None else ""
+            if len(row) > encoding_index:
+                raw_requiredness = row[required_index] if required_index is not None else None
                 members.add((section, row[0], row[encoding_index], raw_requiredness))
     return structures, members
 
@@ -837,7 +837,10 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         structures = [row for row in elements if row.get("kind") == "attribute_structure"]
-        members = [row for row in elements if row.get("kind") == "structure_member"]
+        members = [
+            row for row in elements
+            if row.get("kind") == "structure_member" and row["source_refs"][0]["section"].startswith("5.")
+        ]
         self.assertEqual(
             {(row["name"], row["source_refs"][0]["section"]) for row in structures},
             {(name, section) for section, (name, _) in source_structures.items()},
@@ -878,8 +881,10 @@ class CatalogValidationTests(unittest.TestCase):
         members = [row for row in elements if row.get("kind") == "structure_member"]
         actual_members = {
             (
-                row["source_refs"][0]["section"], row["name"],
-                row["source_encoding"], row["source_requiredness"],
+                row["source_refs"][0]["section"],
+                row["name"],
+                row["source_encoding"],
+                row.get("source_requiredness"),
             )
             for row in members
             if row["source_refs"][0]["section"].startswith("4.")

@@ -688,11 +688,21 @@ def _check_semantics(
         if not isinstance(element.get("name"), str) or not element["name"].strip():
             _fail("protocol element name is required")
         if element["kind"] == "structure_member":
-            for field in ("source_encoding", "source_requiredness"):
-                if not isinstance(element.get(field), str) or not element[field].strip():
-                    _fail(f"structure member {field} must be a non-empty string")
+            if not isinstance(element.get("source_encoding"), str) or not element["source_encoding"].strip():
+                _fail("structure member source_encoding must be a non-empty string")
+            if "source_requiredness" in element and not isinstance(element["source_requiredness"], str):
+                _fail("structure member source_requiredness must be a string")
+        elif element["kind"] == "attribute":
+            if "source_encoding" in element and (
+                not isinstance(element["source_encoding"], str) or not element["source_encoding"].strip()
+            ):
+                _fail("attribute source_encoding must be a non-empty string")
+            if "source_requiredness" in element and not isinstance(element["source_requiredness"], str):
+                _fail("attribute source_requiredness must be a string")
+            if "source_requiredness" in element and "source_encoding" not in element:
+                _fail("attribute source_requiredness requires source_encoding")
         elif "source_encoding" in element or "source_requiredness" in element:
-            _fail("source structure metadata applies only to structure members")
+            _fail("source structure metadata applies only to attributes and structure members")
         _source_refs(element.get("source_refs"), sources, "element source_refs")
         _enum(element.get("direction"), {"client_to_server", "server_to_client", "both", "not_applicable"}, "protocol element direction")
         _enum(
