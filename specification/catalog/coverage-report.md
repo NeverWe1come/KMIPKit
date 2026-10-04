@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 1612 |
+| Protocol elements | 1669 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -35,17 +35,18 @@ This report records inventory coverage and evidence state. It does not claim pro
 | attribute\_structure | 7 |
 | bitmask | 3 |
 | bitmask\_value | 44 |
+| credential | 7 |
 | data\_type | 11 |
 | enumeration | 64 |
 | enumeration\_value | 723 |
-| message\_field | 43 |
+| message\_field | 71 |
 | object\_structure | 12 |
 | object\_type | 9 |
 | operation | 62 |
 | operation\_structure | 41 |
 | option | 3 |
 | result | 4 |
-| structure\_member | 149 |
+| structure\_member | 171 |
 | tag | 374 |
 
 ### Requirements by strength and scope
@@ -187,6 +188,13 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-BITMASK-VALUE-STORAGE-STATUS-MASK-DESTROYED-STORAGE-00000004 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.3 |
 | KMIPKIT-ELEM-BITMASK-VALUE-STORAGE-STATUS-MASK-EXTENSIONS-XXXXXXX0 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.3 |
 | KMIPKIT-ELEM-BITMASK-VALUE-STORAGE-STATUS-MASK-ON-LINE-STORAGE-00000001 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.3 |
+| KMIPKIT-ELEM-CREDENTIAL-ATTESTATION | credential | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL | credential | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-CREDENTIAL-DEVICE | credential | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD | credential | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD | credential | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-CREDENTIAL-TICKET | credential | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-CREDENTIAL-USERNAME-AND-PASSWORD | credential | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-ELEM-DATA-TYPE-BIG-INTEGER | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
 | KMIPKIT-ELEM-DATA-TYPE-BOOLEAN | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
 | KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
@@ -1028,6 +1036,34 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
 | KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
 | KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §8.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-1-ASYNCHRONOUS-CORRELATION-VALUE | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §9.1 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.10 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.12 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.13 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.13 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-EXTENSION | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.13 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.13 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.14 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE-ID | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.14 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE-VALUE | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.14 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.15 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.16 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.16 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MINOR | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.16 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §9.17 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-18-RESULT-REASON | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §9.18 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS | message\_field | server\_to\_client | client\_1\_0 | KMIPKIT-SRC-spec §9.19 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.2 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.20 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.21 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.3 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.4 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.4 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.5 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.6 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.7 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.8 |
+| KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.9 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.1 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.2 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |
@@ -1308,6 +1344,28 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-OBJECT-GROUPS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.6 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-OBJECT-TYPES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.6 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-7-CONSTRAINT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §7.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-ATTESTATION-ASSERTION | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-ATTESTATION-MEASUREMENT | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-ATTESTATION-TYPE | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-NONCE | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-TYPE | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHED-PASSWORD | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHING-ALGORITHM | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-USERNAME | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-ONE-TIME-PASSWORD | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-PASSWORD | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-USERNAME | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-PASSWORD | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-USERNAME | structure\_member | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-ELEM-TAG-420001 | tag | both | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-TAG-420002 | tag | both | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-TAG-420003 | tag | both | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |

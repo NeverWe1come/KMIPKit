@@ -696,8 +696,8 @@ def _check_semantics(
             for field in ("source_encoding", "source_requiredness", "source_comment"):
                 if field in element and not isinstance(element[field], str):
                     _fail(f"message field {field} must be a string")
-        elif element["kind"] in {"attribute", "operation_structure", "option", "result"}:
-            if element["kind"] in {"operation_structure", "option", "result"} and (
+        elif element["kind"] in {"attribute", "operation_structure", "option", "result", "credential"}:
+            if element["kind"] in {"operation_structure", "option", "result", "credential"} and (
                 not isinstance(element.get("source_encoding"), str) or not element["source_encoding"].strip()
             ):
                 _fail("typed source root requires a non-empty source_encoding")
@@ -1099,8 +1099,9 @@ COMPLETE_ELEMENT_COUNTS = {
     "bitmask_value": 44,
     "option": 3,
     "result": 4,
+    "credential": 7,
     "tag": 374,
-    "message_field": 43,
+    "message_field": 71,
 }
 TAG_REGISTRY_SHA256 = "ad69b23437d238ae67bfd72e54ba37a8bbe9fd31358f1aadfd41c410369cf8fe"
 RESERVED_TAGS = {

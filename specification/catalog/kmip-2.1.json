@@ -2958,6 +2958,172 @@
       "allocation": "assigned"
     },
     {
+      "element_id": "KMIPKIT-ELEM-CREDENTIAL-ATTESTATION",
+      "kind": "credential",
+      "name": "Attestation",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL",
+      "kind": "credential",
+      "name": "Credential",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-CREDENTIAL-DEVICE",
+      "kind": "credential",
+      "name": "Device",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD",
+      "kind": "credential",
+      "name": "Hashed Password",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD",
+      "kind": "credential",
+      "name": "One Time Password",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-CREDENTIAL-TICKET",
+      "kind": "credential",
+      "name": "Ticket",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-CREDENTIAL-USERNAME-AND-PASSWORD",
+      "kind": "credential",
+      "name": "Username and Password",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
       "element_id": "KMIPKIT-ELEM-DATA-TYPE-BIG-INTEGER",
       "kind": "data_type",
       "name": "Big Integer",
@@ -22898,6 +23064,662 @@
       "source_comment": "REQUIRED if present in Request Batch Item"
     },
     {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-1-ASYNCHRONOUS-CORRELATION-VALUE",
+      "kind": "message_field",
+      "name": "Asynchronous Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.1"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE",
+      "kind": "message_field",
+      "name": "Server Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.10"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE",
+      "kind": "message_field",
+      "name": "Maximum Response Size",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.12"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR",
+      "kind": "message_field",
+      "name": "Criticality Indicator",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
+      "kind": "message_field",
+      "name": "Message Extension",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-EXTENSION",
+      "kind": "message_field",
+      "name": "Vendor Extension",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION",
+      "kind": "message_field",
+      "name": "Vendor Identification",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.13"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE",
+      "kind": "message_field",
+      "name": "Nonce",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.14"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-NONCE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE-ID",
+      "kind": "message_field",
+      "name": "Nonce ID",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.14"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE-VALUE",
+      "kind": "message_field",
+      "name": "Nonce Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.14"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION",
+      "kind": "message_field",
+      "name": "Operation",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.15"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION",
+      "kind": "message_field",
+      "name": "Protocol Version",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.16"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR",
+      "kind": "message_field",
+      "name": "Protocol Version Major",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.16"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MINOR",
+      "kind": "message_field",
+      "name": "Protocol Version Minor",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.16"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE",
+      "kind": "message_field",
+      "name": "Result Message",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.17"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-MESSAGE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-18-RESULT-REASON",
+      "kind": "message_field",
+      "name": "Result Reason",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.18"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS",
+      "kind": "message_field",
+      "name": "Result Status",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.19"
+        }
+      ],
+      "direction": "server_to_client",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR",
+      "kind": "message_field",
+      "name": "Asynchronous Indicator",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.2"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
+      "kind": "message_field",
+      "name": "Time Stamp",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.20"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Date-Time"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
+      "kind": "message_field",
+      "name": "Unique Batch Item ID",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.21"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR",
+      "kind": "message_field",
+      "name": "Attestation Capable Indicator",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.3"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION",
+      "kind": "message_field",
+      "name": "Authentication",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.4"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-AUTHENTICATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED",
+      "kind": "message_field",
+      "name": "Credential, MAY be repeated",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.4"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT",
+      "kind": "message_field",
+      "name": "Batch Count",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION",
+      "kind": "message_field",
+      "name": "Batch Error Continuation Option",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.6"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM",
+      "kind": "message_field",
+      "name": "Batch Item",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION",
+      "kind": "message_field",
+      "name": "Batch Order Option",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.8"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE",
+      "kind": "message_field",
+      "name": "Client Correlation Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String"
+    },
+    {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE",
       "kind": "object_structure",
       "name": "Certificate",
@@ -30015,6 +30837,534 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "No, May be repeated."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-ATTESTATION-ASSERTION",
+      "kind": "structure_member",
+      "name": "Attestation Assertion",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-ATTESTATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-ATTESTATION-MEASUREMENT",
+      "kind": "structure_member",
+      "name": "Attestation Measurement",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-ATTESTATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-ATTESTATION-TYPE",
+      "kind": "structure_member",
+      "name": "Attestation Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-ATTESTATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-NONCE",
+      "kind": "structure_member",
+      "name": "Nonce",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-ATTESTATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-TYPE",
+      "kind": "structure_member",
+      "name": "Credential Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE",
+      "kind": "structure_member",
+      "name": "Credential Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Varies based on Credential Type.",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
+      "kind": "structure_member",
+      "name": "Device Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+      "kind": "structure_member",
+      "name": "Device Serial Number",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+      "kind": "structure_member",
+      "name": "Machine Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+      "kind": "structure_member",
+      "name": "Media Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
+      "kind": "structure_member",
+      "name": "Network Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
+      "kind": "structure_member",
+      "name": "Password",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHED-PASSWORD",
+      "kind": "structure_member",
+      "name": "Hashed Password",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHING-ALGORITHM",
+      "kind": "structure_member",
+      "name": "Hashing Algorithm",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP",
+      "kind": "structure_member",
+      "name": "Timestamp",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Date Time Extended",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-USERNAME",
+      "kind": "structure_member",
+      "name": "Username",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-ONE-TIME-PASSWORD",
+      "kind": "structure_member",
+      "name": "One Time Password",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-PASSWORD",
+      "kind": "structure_member",
+      "name": "Password",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-USERNAME",
+      "kind": "structure_member",
+      "name": "Username",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET",
+      "kind": "structure_member",
+      "name": "Ticket",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-TICKET"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-PASSWORD",
+      "kind": "structure_member",
+      "name": "Password",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-USERNAME-AND-PASSWORD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-USERNAME",
+      "kind": "structure_member",
+      "name": "Username",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-USERNAME-AND-PASSWORD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String",
+      "source_requiredness": "Yes"
     },
     {
       "element_id": "KMIPKIT-ELEM-TAG-420001",
