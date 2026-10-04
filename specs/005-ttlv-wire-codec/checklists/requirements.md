@@ -20,6 +20,7 @@
 - [x] Normative references identify exact OASIS document clauses
 - [ ] Proposed ADR-0011 has an approved disposition for reserved-tag receipt under KMIPKIT-DISC-037
 - [x] Configurable depth semantics are bounded to 0–64, consistent with the 004 model contract
+- [x] Successful encoded output has a zeroizing owner; protocol wire encoding is distinguished from diagnostic/general-purpose serialization and persistence
 
 ## Feature Readiness
 
@@ -34,3 +35,4 @@
 - OASIS §10.1.2 does not explicitly define empty Big Integer behavior; this draft records a project validity rule rejecting it. Schema field-order requirement `KMIPKIT-REQ-SPEC-10.1.2-001` remains unassigned pending typed-spec ownership for every applicable client 1.0 Structure.
 - Full roadmap traceability remains gated until those Structures have approved typed-spec ownership plus implementation and executable order-verification references; this gap does not block implementation of the generic codec, and this PR does not claim the assignment is complete.
 - The normative traceability table separates OASIS requirements from KMIPKit API and security policy.
+- The security policy permits only temporary TTLV wire encoding for a requested KMIP exchange; successful bytes are held by a zeroizing, borrow-only owner.

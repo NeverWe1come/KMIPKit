@@ -7,6 +7,16 @@
 ```rust
 pub struct CodecLimits { /* private fields with checked constructor/builders */ }
 
+/// Secret-clearing owner of one encoded TTLV Item.
+/// Does not implement Clone, Copy, Debug, Display, or serialization traits.
+pub struct EncodedTtlv { /* private zeroizing storage */ }
+
+impl EncodedTtlv {
+    /// Borrow the encoded bytes for immediate protocol transport.
+    pub fn as_bytes(&self) -> &[u8];
+    pub fn len(&self) -> usize;
+}
+
 impl CodecLimits {
     pub const DEFAULT_MAX_MESSAGE_BYTES: usize = 16 * 1024 * 1024;
     pub const DEFAULT_MAX_STRUCTURE_DEPTH: usize = 64;
@@ -17,9 +27,9 @@ impl CodecLimits {
     pub fn defaults() -> Self;
 }
 
-pub fn encode(item: &Item) -> Result<Vec<u8>, EncodeError>;
+pub fn encode(item: &Item) -> Result<EncodedTtlv, EncodeError>;
 pub fn encode_with_limits(item: &Item, limits: &CodecLimits)
-    -> Result<Vec<u8>, EncodeError>;
+    -> Result<EncodedTtlv, EncodeError>;
 pub fn decode(bytes: &[u8]) -> Result<Item, DecodeError>;
 pub fn decode_with_limits(bytes: &[u8], limits: &CodecLimits)
     -> Result<Item, DecodeError>;
@@ -29,7 +39,7 @@ The signatures are a design proposal layered on the merged 004 API. The model cu
 
 ## Behavioral contract
 
-- `encode` emits exactly one canonical Item. It validates the complete tree, checks depth/count and predicted output size, then reserves the complete output capacity before copying payload bytes. It preserves Structure child order and has no fallible exit after payload copying begins; if that invariant cannot be maintained, partial output is zeroized on every error path.
+- `encode` emits exactly one canonical Item in an `EncodedTtlv` owner. It validates the complete tree, checks depth/count and predicted output size, then reserves the complete output capacity before copying payload bytes. It preserves Structure child order and has no fallible exit after payload copying begins; if that invariant cannot be maintained, partial output is zeroized on every error path. Successful output is zeroized when its owner is dropped.
 - `decode` accepts exactly one complete Item and rejects empty input or trailing bytes. It validates lengths and available bytes before payload allocation.
 - Both default entry points use 16 MiB, 64 Structure levels, and 100,000 Items.
 - `decode_with_limits` may use lower or higher message/count limits. Maximum Structure depth remains 64 unless the 004 model contract is deliberately changed.
@@ -39,6 +49,8 @@ The signatures are a design proposal layered on the merged 004 API. The model cu
 - Padding octets whose values are not constrained by OASIS are accepted at the required extent; the encoder writes zero for those padding octets. Big Integer leading sign-extension bytes are part of the represented Item Value and are not discarded.
 - A Reserved Tag received from the wire is rejected before construction under proposed ADR-0011; implementation remains gated on review/acceptance of that ADR.
 - No operation performs I/O, retries requests, validates a KMIP operation schema, or logs payloads.
+- Protocol TTLV encoding is the wire transformation required to carry a caller-requested KMIP exchange. The prohibition on serializing secrets applies to diagnostics, general-purpose serialization, and persistence. Encoded bytes are exposed only as an immutable borrow for protocol transport; callers must not log, format, persist, or make unnecessary copies of them.
+- Keep the `EncodedTtlv` owner alive until a synchronous protocol write using its borrowed bytes has completed, then drop it to clear KMIPKit-owned storage. The codec itself does no I/O and does not control copies made by a transport implementation.
 
 ## Errors
 
@@ -51,4 +63,5 @@ The signatures are a design proposal layered on the merged 004 API. The model cu
 - Declared Item Length is checked against allowed type lengths, parent end, total input, and caller limits before allocating/copying value bytes.
 - Structure parsing stops at its declared parent boundary and increments element/depth counters before accepting each child.
 - Allocation uses one complete fallible output reservation before any payload copy; allocation failure returns an error, never panic. Decoded payload allocations are also fallible and occur only after length/limit preflight.
+- `EncodedTtlv` owns the successful output in storage that zeroizes its initialized bytes and backing capacity on drop. It exposes no mutable borrow, cloning, plain-`Vec<u8>` extraction, or formatting/serialization trait that would silently create an uncontrolled copy. Any copy made by a caller or an external TLS/runtime library is outside KMIPKit's zeroization guarantee.
 - The codec crate continues to forbid unsafe code.

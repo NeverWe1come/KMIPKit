@@ -12,6 +12,12 @@ This document defines the wire facts and per-call safety state consumed by the c
 
 Limit values are per operation. The codec has no global mutable limit state. A limit value that cannot be represented on the target is rejected when options are constructed. Zero `max_structure_depth` permits leaf Items but no Structure Items.
 
+## Encoded TTLV Owner
+
+`EncodedTtlv` owns one successful encoder result, which may contain credentials or secret key material. It exposes the bytes through an immutable borrow for protocol transport and zeroizes its initialized bytes and backing capacity when dropped. It is not cloneable, formattable, or generally serializable and cannot be converted into an ordinary `Vec<u8>` through its public API. Copies made by callers or external TLS/runtime libraries are outside KMIPKit's zeroization guarantee.
+
+The repository rule against serializing secrets is applied to diagnostics, general-purpose serialization, and persistence. TTLV wire encoding remains permitted only as the representation needed to carry a caller-requested KMIP exchange; the owner must live through the protocol write and be dropped afterward. The encoded bytes must not be logged, formatted, persisted, or copied unnecessarily.
+
 ## TTLV Item
 
 An Item consists of an 8-byte header followed by an Item Value and any type-specific padding. Header fields are:
@@ -23,6 +29,8 @@ An Item consists of an 8-byte header followed by an Item Value and any type-spec
 | Length | 4 bytes | Unsigned 32-bit Item Value byte count, big-endian |
 
 The item’s full wire span is not always `8 + Length`: for some types padding follows the Item Value and is excluded from Length; Big Integer padding is part of Item Value; Structure Length covers every child’s full wire span.
+
+The KMIPKIT-0004 in-memory model retains Big Integer octets exactly and may hold non-empty octets whose length is not a multiple of eight. Encoding such a value adds the minimum sign-extension octets required for a wire-valid multiple of eight; decoding then preserves those encoded octets exactly. Therefore `decode(encode(item))` compares with a canonicalized expected model for unaligned Big Integer inputs, not necessarily the original in-memory octets.
 
 Every Item Value length must fit the unsigned 32-bit Length field, independently of `max_message_bytes`. A caller may configure a message limit above 4 GiB on a platform that supports it, but no root or child Item Value can exceed `u32::MAX` bytes.
 

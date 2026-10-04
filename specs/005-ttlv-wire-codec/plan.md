@@ -13,8 +13,8 @@ The 004 model implementation landed in `release/1.0.0` at `cf6c4c0d87c4de7dc159a
 ## Technical Context
 
 **Language/Version**: Rust Edition 2024, MSRV 1.94.
-**Primary Dependencies**: `kmipkit-ttlv` generic model; standard library only unless implementation evidence justifies another dependency.
-**Storage**: In-memory only; output uses an owned byte vector and decoded values own their payloads through the approved model.
+**Primary Dependencies**: `kmipkit-ttlv` generic model and its existing pinned `zeroize` 1.9.0 dependency; no new dependency is planned.
+**Storage**: In-memory only; encoded output uses a dedicated zeroizing owner and decoded values own their payloads through the approved model.
 **Testing**: Focused codec unit tests, exact OASIS-derived vectors, malformed-input negatives, property-based model round trips, coverage, workspace checks, and fuzz targets after the parser surface stabilizes.
 **Target Platform**: Rust workspace supported platforms.
 **Project Type**: Public Rust library crate/module in `crates/kmipkit-ttlv`.
@@ -61,13 +61,16 @@ Related repository decision record: `docs/adr/0011-reserved-tag-decoding-policy.
 
 ```text
 crates/kmipkit-ttlv/src/
-├── codec.rs                # public facade, shared codec options/errors
-├── encoder.rs              # bounded canonical writer
-└── decoder.rs              # checked slice parser and Structure decode
+├── lib.rs                  # declares the public codec module
+└── codec/
+    ├── mod.rs              # public facade, limits, errors, EncodedTtlv
+    ├── encoder.rs          # bounded canonical writer
+    └── decoder.rs          # checked slice parser and Structure decode
 crates/kmipkit-ttlv/tests/
 ├── codec_vectors.rs        # per-type, exact OASIS wire vectors
 ├── codec_negative.rs      # malformed, unsupported, and limit cases
-└── codec_roundtrip.rs     # generic model properties and canonicalization
+├── codec_roundtrip.rs     # generic model properties and canonicalization
+└── codec_limits.rs        # message, depth, count, and U32 boundary cases
 specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 ```
 
@@ -91,14 +94,14 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 ### Phase 2 — Encoder (strict TDD)
 
 - Write failing exact byte vectors for all eleven types and nested Structures, plus U32 maximum/one-over output-size planner boundaries without multi-gigabyte allocation.
-- Validate the complete tree, compute bounded lengths, and reserve the complete output before copying payload bytes; then emit canonical encoding with no fallible exits after payload copying begins.
+- Validate the complete tree, compute bounded lengths, and reserve the complete zeroizing output before copying payload bytes; then emit canonical encoding with no fallible exits after payload copying begins. Return the result in `EncodedTtlv`, which exposes an immutable byte borrow and zeroizes its owned bytes and capacity on drop.
 - Refactor the writer for one focused responsibility, document invariants, and verify checked arithmetic and error redaction.
 
 ### Phase 3 — Decoder (strict TDD)
 
 - Write failing tests for valid OASIS vectors and all malformed boundaries before implementation.
 - Parse one complete item with checked offsets, parent bounds, supported type lengths, UTF-8/Boolean checks, and resolved Tag policy.
-- Refactor bounded Structure traversal and fallible allocation; reject trailing bytes and never expose raw input.
+- Refactor bounded Structure traversal and fallible allocation; reject trailing bytes and never expose raw input. Property tests compare against a canonicalized expected model: empty Big Integer values are excluded, unaligned Big Integer octets are minimally sign-extended to an eight-byte multiple, and already aligned Big Integer octets remain exact.
 
 ### Phase 4 — Limits and cross-cutting validation
 

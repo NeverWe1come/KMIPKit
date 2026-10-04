@@ -13,8 +13,8 @@ fn encode_example() -> Result<(), Box<dyn std::error::Error>> {
 
     let tag = RawTag::new(0x0042_0173)?.try_checked()?;
     let item = Item::new(tag, Value::integer(42))?;
-    let bytes = encode(&item)?;
-    assert_eq!(bytes, [
+    let encoded = encode(&item)?;
+    assert_eq!(encoded.as_bytes(), [
         0x42, 0x01, 0x73, 0x02, 0x00, 0x00, 0x00, 0x04,
         0x00, 0x00, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x00,
     ]);
