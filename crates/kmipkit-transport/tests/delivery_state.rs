@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
 
 #[test]
-fn request_is_not_sent_until_write_begins() {
+fn response_bytes_before_write_do_not_advance_not_sent_state() {
     let state = RequestDeliveryState::not_sent();
 
     assert_eq!(state, RequestDeliveryState::NotSent);
