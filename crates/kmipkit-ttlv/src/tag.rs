@@ -12,7 +12,9 @@ impl RawTag {
     ///
     /// # Errors
     ///
-    /// Returns [`ModelError::RawTagOutOfRange`] when `raw` exceeds the 24-bit field.
+    /// Returns [`ModelError::RawTagOutOfRange`] when `raw` exceeds the 24-bit
+    /// field. The error contains only its category; it does not retain or
+    /// expose the supplied value.
     pub fn new(raw: u32) -> Result<Self, ModelError> {
         if raw > 0x00FF_FFFF {
             return Err(ModelError::RawTagOutOfRange);
@@ -29,14 +31,16 @@ impl RawTag {
 
     /// Checks this tag against the generated KMIP 2.1 allocation catalog.
     ///
-    /// Exact catalog records take precedence over aggregate ranges, following
-    /// the project policy recorded in ADR-0010. This checks allocation only;
-    /// it does not establish TTLV wire validity or extension semantics.
+    /// Exact catalog records take precedence over overlapping aggregate
+    /// ranges, following the `KMIPKit` project policy recorded in ADR-0010.
+    /// This checks allocation only; it does not establish TTLV wire validity,
+    /// Structure schema validity, or extension semantics.
     ///
     /// # Errors
     ///
     /// Returns [`ModelError::TagNotAllocated`] when the tag is reserved or
-    /// unallocated by the KMIP 2.1 catalog policy.
+    /// unallocated by the KMIP 2.1 catalog policy. The error contains only its
+    /// category; it does not retain or expose the rejected tag value.
     pub fn try_checked(&self) -> Result<Tag, ModelError> {
         match allocation_kind(self.0) {
             Some(TagAllocationKind::Assigned | TagAllocationKind::Extension) => Ok(Tag(self.0)),
@@ -49,8 +53,10 @@ impl RawTag {
 
 /// A tag whose KMIP 2.1 allocation has been checked.
 ///
-/// A checked tag is not a claim that its TTLV framing, extension semantics,
-/// Structure schema, or operation meaning is valid.
+/// Allocation follows `KMIPKit`'s project policy for exact records and
+/// aggregate ranges as recorded in ADR-0010. A checked tag is not a claim that
+/// its TTLV framing, Structure schema, extension semantics, or operation
+/// meaning is valid.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Tag(u32);
 

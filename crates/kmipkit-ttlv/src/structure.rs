@@ -2,6 +2,7 @@
 
 use crate::{Item, ModelError, ValueView};
 
+// This is a local KMIPKit model policy, not a protocol nesting constraint.
 const MAX_STRUCTURE_DEPTH: usize = 64;
 
 /// An ordered collection of child items.
@@ -30,7 +31,11 @@ impl Structure {
     ///
     /// # Errors
     ///
-    /// Returns an error if appending would exceed the local nesting-depth limit.
+    /// Returns [`ModelError::StructureDepthExceeded`] if appending would create
+    /// more than 64 nested Structures. This is a local `KMIPKit` model policy,
+    /// not a nesting constraint imposed by OASIS KMIP 2.1. The error contains
+    /// only its category; it does not retain the rejected item, tags, child
+    /// count, or payload.
     pub fn try_push(&mut self, item: Item) -> Result<(), ModelError> {
         if item_structure_depth(&item) >= MAX_STRUCTURE_DEPTH {
             return Err(ModelError::StructureDepthExceeded);
