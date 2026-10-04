@@ -1,4 +1,4 @@
-//! OASIS KMIP Specification v2.1, Chapter 11 introduction and §11.56 (Tag
+//! OASIS KMIP Specification v2.1, §10.1.1 (Tag), Chapter 11 introduction, and §11.56 (Tag
 //! Enumeration). Traceability: KMIPKIT-0004-FR-002, KMIPKIT-0004-FR-003,
 //! KMIPKIT-0004-NR-001, and KMIPKIT-0004-NR-005. Exact-over-range precedence
 //! is the accepted KMIPKit policy in ADR-0010, not an OASIS interpretation.
