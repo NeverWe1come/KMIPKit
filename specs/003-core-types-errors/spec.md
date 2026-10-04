@@ -78,14 +78,14 @@ An application developer needs useful failure categories without credentials, ke
 
 | Requirement ID | Normative level | OASIS source and clause | Normative requirement | Implementation behavior |
 |---|---|---|---|---|
-| KMIPKIT-0003-NR-001 | MAY; assigned values | OASIS KMIP Specification v2.1, §9.19 Result Status and §11.47 Result Status Enumeration | §9.19 describes the response status and says the listed values MAY be set; §11.47 defines their assignments. | Represent each assigned status faithfully and retain unknown values under FR-002. |
-| KMIPKIT-0003-NR-002 | SHALL; SHALL NOT | OASIS KMIP Specification v2.1, §9.18 Result Reason and §11.46 Result Reason Enumeration | Result Reason SHALL be present with Failure and set as specified; it SHALL NOT be present with Success. §11.46 defines assigned reasons. | Enforce the Failure/Success invariant and preserve present values, including unknown values under FR-002. |
-| KMIPKIT-0003-NR-003 | MAY | OASIS KMIP Specification v2.1, §9.17 Result Message | Result Message MAY be returned as a descriptive Text String. | Preserve its presence and text; do not automatically format or log it. |
+| KMIPKIT-0003-NR-001 | MAY (server response); assigned values | OASIS KMIP Specification v2.1, §9.19 Result Status and §11.47 Result Status Enumeration | §9.19 describes the server response status and says the server MAY set it to a listed value; §11.47 defines the assignments. | The client model exposes assigned status names and retains every received raw value under FR-002. |
+| KMIPKIT-0003-NR-002 | SHALL; SHALL NOT (server response invariant) | OASIS KMIP Specification v2.1, §9.18 Result Reason and §11.46 Result Reason Enumeration | A server response SHALL include Result Reason with Failure and SHALL NOT include it with Success; §11.46 defines assigned reasons. | The client model enforces the response invariant and preserves present values, including unknown values under FR-002. |
+| KMIPKIT-0003-NR-003 | MAY (server response field) | OASIS KMIP Specification v2.1, §9.17 Result Message | The server MAY return Result Message as a descriptive Text String in its response. | The client model preserves absence or presence and exact text; it does not automatically format or log the text. |
 
-The normative source is the immutable checked-in copy at specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html. Preservation of unknown values and the safe display/logging policy are project-level requirements, not additional OASIS claims. The no-automatic-retry rule remains a client-wide boundary and is not implemented by this value/error contract. IDs remain stable as code and tests are added.
+These clauses describe or constrain server response fields. The KMIPKIT-0003-NR rows trace those response values to the client's representation; lossless preservation of unknown values and the safe display/logging policy are project-level requirements, not OASIS client obligations. The normative source is the immutable checked-in copy at specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html. The no-automatic-retry rule remains a client-wide boundary and is not implemented by this value/error contract. IDs remain stable as code and tests are added.
 ### Key Entities
 
-- **Client failure**: A local validation, protocol-processing, or transport failure with a safe cause category and request delivery state where applicable.
+- **Client failure**: A local validation, protocol-processing, or transport failure with a safe cause category and exactly one request delivery state.
 - **KMIP operation result**: Server-reported Result Status, optional Result Reason, and optional Result Message.
 - **Request delivery state**: The strongest available evidence about whether transmission did not begin, may have reached the server, or at least one response byte was received.
 
