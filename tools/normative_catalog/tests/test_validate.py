@@ -149,6 +149,7 @@ def discrepancy_record(**overrides: object) -> dict[str, object]:
         "downstream_impact": "Batch error behavior remains gated.",
         "state": "open",
         "decision_id": None,
+        "erratum_source_refs": [],
     }
     record.update(overrides)
     return record
@@ -160,6 +161,7 @@ def decision_record(**overrides: object) -> dict[str, object]:
         "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
         "requirement_ids": [],
         "discrepancy_ids": [],
+        "policy_ids": [],
         "interpretation": "Use the reviewed client interpretation.",
         "approver": "Qualified reviewer",
         "approval_evidence": "https://example.invalid/approval",
@@ -622,7 +624,7 @@ class CatalogValidationTests(unittest.TestCase):
                 source_authority="primary_normative",
             )
         ]
-        with self.assertRaisesRegex(CatalogValidationError, "source authority"):
+        with self.assertRaisesRegex(CatalogValidationError, "authority does not match"):
             validate(document)
 
     def test_erratum_resolution_requires_pinned_erratum_source(self) -> None:
@@ -642,8 +644,22 @@ class CatalogValidationTests(unittest.TestCase):
                 "requirement_ids": [],
             }
         ]
-        with self.assertRaisesRegex(CatalogValidationError, "policy.*provenance"):
+        with self.assertRaisesRegex(CatalogValidationError, "project policy"):
             validate(document)
+
+    def test_policy_provenance_accepts_an_existing_exact_heading(self) -> None:
+        document = minimal_catalog()
+        document["policies"] = [
+            {
+                "policy_id": "KMIPKIT-POLICY-UNKNOWN-VALUES",
+                "summary": "Preserve unknown values.",
+                "provenance": "AGENTS.md",
+                "provenance_ref": {"path": "AGENTS.md", "heading": "9. Public API and compatibility"},
+                "affected_element_kinds": ["enumeration_value"],
+                "requirement_ids": [],
+            }
+        ]
+        self.assertEqual(validate(document)["source_count"], 4)
 
     def test_rejects_requirement_with_unresolved_source_references(self) -> None:
         document = minimal_catalog()

@@ -102,13 +102,14 @@ DISCREPANCY_FIELDS = {
     "discrepancy_id", "summary", "source_refs", "source_authority", "normative_status",
     "alternatives", "affected_requirement_ids", "affected_element_ids",
     "affected_profile_ids", "affected_policy_ids", "downstream_impact", "state", "decision_id",
+    "erratum_source_refs",
 }
 DECISION_FIELDS = {
     "decision_id", "source_refs", "requirement_ids", "discrepancy_ids",
-    "interpretation", "approver", "approval_evidence", "approved_at", "consequence", "status",
+    "policy_ids", "interpretation", "approver", "approval_evidence", "approved_at", "consequence", "status",
 }
 POLICY_FIELDS = {
-    "policy_id", "summary", "provenance", "affected_element_kinds", "requirement_ids",
+    "policy_id", "summary", "provenance", "provenance_ref", "affected_element_kinds", "requirement_ids",
 }
 
 
@@ -425,6 +426,49 @@ def _source_refs(value: Any, sources: set[str], field: str) -> None:
             _fail(f"{field} contains an invalid source section")
 
 
+def _check_policy_provenance(
+    policy: dict[str, Any],
+    decisions: dict[str, dict[str, Any]],
+    repo_root: Path,
+) -> None:
+    """Require a policy citation to resolve to an accepted project record."""
+    provenance = policy["provenance"]
+    reference = policy["provenance_ref"]
+    if provenance == "approved_product_decision":
+        if not isinstance(reference, dict) or set(reference) != {"decision_id"}:
+            _fail("project policy provenance must identify an approved decision")
+        decision = decisions.get(reference["decision_id"])
+        if (
+            decision is None
+            or decision.get("status") != "accepted"
+            or policy["policy_id"] not in decision.get("policy_ids", [])
+        ):
+            _fail("project policy provenance decision is unresolved or unlinked")
+        return
+
+    if not isinstance(reference, dict) or set(reference) != {"path", "heading"}:
+        _fail("project policy provenance requires a path and heading locator")
+    source_path = reference["path"]
+    heading = reference["heading"]
+    if not isinstance(source_path, str) or not isinstance(heading, str) or not heading.strip():
+        _fail("project policy provenance locator is malformed")
+    if provenance == "AGENTS.md" and source_path != "AGENTS.md":
+        _fail("project policy provenance path does not match AGENTS.md")
+    if provenance == "constitution" and source_path != ".specify/memory/constitution.md":
+        _fail("project policy provenance path does not match the constitution")
+    if provenance == "ADR" and re.fullmatch(r"docs/adr/[0-9]{4}-[a-z0-9-]+\.md", source_path) is None:
+        _fail("project policy provenance path is not an ADR")
+    try:
+        content = safe_read_bytes(repo_root, source_path, max_bytes=1_048_576).decode("utf-8", errors="strict")
+    except (OSError, UnicodeError, PathSecurityError) as error:
+        raise CatalogValidationError("project policy provenance source is unavailable") from error
+    heading_pattern = re.compile(r"(?m)^#{1,6}[ \t]+" + re.escape(heading) + r"[ \t]*#*[ \t]*$")
+    if heading_pattern.search(content) is None:
+        _fail("project policy provenance heading does not exist in its source")
+    if provenance == "ADR" and re.search(r"(?m)^Status:[ \t]*Accepted[ \t]*$", content) is None:
+        _fail("project policy ADR provenance is not accepted")
+
+
 def _git_tree(root: Path) -> dict[str, tuple[str, str]]:
     try:
         result = subprocess.run(
@@ -579,6 +623,7 @@ def _check_semantics(
     sources: set[str],
     clauses: set[str],
     tree: dict[str, tuple[str, str]],
+    repo_root: Path,
 ) -> None:
     requirements = {record["requirement_id"]: record for record in catalog["requirements"]}
     elements = _records_by_id(catalog, "elements", "element_id")
@@ -610,6 +655,8 @@ def _check_semantics(
             decision = decisions.get(decision_id)
             if decision is None or decision.get("status") != "accepted":
                 _fail("recommendation deviations require an accepted decision")
+            if requirement["requirement_id"] not in decision.get("requirement_ids", []):
+                _fail("decision does not name the deviated requirement")
     for clause in catalog["source_clauses"]:
         if any(item not in requirements for item in clause["requirement_ids"]):
             _fail("source clause has an unresolved requirement reference")
@@ -709,6 +756,17 @@ def _check_semantics(
             {"not_claimed", "candidate", "selected", "evidence_incomplete", "evidence_complete"},
             "profile claim state",
         )
+        if profile["claim_state"] == "evidence_complete":
+            evidence_links = (
+                profile["source_clause_ids"],
+                profile["requirement_ids"],
+                profile["element_ids"],
+                profile["test_case_ids"],
+            )
+            if any(not linked_ids for linked_ids in evidence_links):
+                _fail("profile evidence is incomplete without clauses, requirements, elements, and tests")
+            if not any(test_cases[test_id]["source_id"] == "KMIPKIT-SRC-testcases" for test_id in profile["test_case_ids"]):
+                _fail("profile evidence is incomplete without an official KMIP Test Case")
 
     for test_case in catalog["test_cases"]:
         if not isinstance(test_case, dict) or set(test_case) != TEST_CASE_FIELDS:
@@ -772,6 +830,7 @@ def _check_semantics(
         if any(kind not in ELEMENT_KINDS for kind in policy["affected_element_kinds"]):
             _fail("project policy has an unknown affected element kind")
         _check_link_ids(policy, "requirement_ids", set(requirements), "project policy")
+        _check_policy_provenance(policy, decisions, repo_root)
 
     for decision in catalog["decisions"]:
         if set(decision) != DECISION_FIELDS:
@@ -780,6 +839,7 @@ def _check_semantics(
         for field, valid_ids in (
             ("requirement_ids", set(requirements)),
             ("discrepancy_ids", {row["discrepancy_id"] for row in catalog["discrepancies"]}),
+            ("policy_ids", {row["policy_id"] for row in catalog["policies"]}),
         ):
             _check_link_ids(decision, field, valid_ids, "decision")
         for field in ("interpretation", "approver", "approval_evidence", "consequence"):
@@ -800,6 +860,17 @@ def _check_semantics(
         if not isinstance(discrepancy["downstream_impact"], str) or not discrepancy["downstream_impact"].strip():
             _fail("source discrepancy downstream impact is required")
         _source_refs(discrepancy["source_refs"], sources, "source discrepancy source_refs")
+        _source_refs(discrepancy["erratum_source_refs"], sources, "source discrepancy erratum_source_refs") if discrepancy["erratum_source_refs"] else None
+        source_authority_by_id = {
+            row["source_id"]: row["authority_class"] for row in catalog["sources"]
+        }
+        authority_rank = {"informative": 0, "test_evidence": 1, "profile_normative": 2, "primary_normative": 3}
+        expected_authority = max(
+            (source_authority_by_id[reference["source_id"]] for reference in discrepancy["source_refs"]),
+            key=authority_rank.__getitem__,
+        )
+        if discrepancy["source_authority"] != expected_authority:
+            _fail("source authority does not match the cited discrepancy sources")
         _enum(
             discrepancy["source_authority"],
             {"primary_normative", "profile_normative", "test_evidence", "informative"},
@@ -827,8 +898,23 @@ def _check_semantics(
             decision_id is None or decisions[decision_id]["status"] != "accepted"
         ):
             _fail("resolved discrepancy requires an accepted decision")
+        if discrepancy["state"] == "resolved_by_approved_decision" and discrepancy["discrepancy_id"] not in decisions[
+            decision_id
+        ].get("discrepancy_ids", []):
+            _fail("decision does not name the resolved discrepancy")
         if discrepancy["state"] == "resolved_by_erratum" and decision_id is not None:
             _fail("erratum-resolved discrepancy cannot select a project decision")
+        if discrepancy["state"] == "resolved_by_erratum":
+            erratum_ids = {reference["source_id"] for reference in discrepancy["erratum_source_refs"]}
+            erratum_sources = {
+                row["source_id"]
+                for row in catalog["sources"]
+                if re.search(r"errat(?:um|a)|corrigendum", row["title"], re.IGNORECASE)
+            }
+            if not erratum_ids or not erratum_ids.issubset(erratum_sources):
+                _fail("erratum resolution requires an erratum source in the pinned manifest")
+        elif discrepancy["erratum_source_refs"]:
+            _fail("erratum source references apply only to erratum-resolved discrepancies")
         for field, valid_ids in (
             ("affected_requirement_ids", set(requirements)),
             ("affected_element_ids", set(elements)),
@@ -1010,7 +1096,7 @@ def load_validated_catalog(raw: bytes, repo_root: Path, *, require_complete: boo
     sources = _check_source_records(catalog, repo_root, tree)
     clauses = _check_clauses(catalog, sources)
     _check_identifiers(catalog)
-    _check_semantics(catalog, sources, clauses, tree)
+    _check_semantics(catalog, sources, clauses, tree, repo_root)
     if require_complete:
         _check_complete_inventory(catalog)
 
