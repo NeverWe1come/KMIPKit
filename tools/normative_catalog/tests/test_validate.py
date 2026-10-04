@@ -827,6 +827,29 @@ class CatalogValidationTests(unittest.TestCase):
                 catalog_validate.KEYWORD_STRENGTH[requirement["source_keyword"]],
             )
 
+    def test_checked_in_catalog_orders_evidence_policies_and_relationships_deterministically(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        section_key = lambda value: tuple(int(part) for part in value.split("."))
+        expected_tests = sorted(
+            catalog["test_cases"],
+            key=lambda row: (row["source_id"], section_key(row["source_section"]), row["test_id"]),
+        )
+
+        self.assertEqual(catalog["test_cases"], expected_tests)
+        self.assertEqual(
+            [row["policy_id"] for row in catalog["policies"]],
+            sorted(row["policy_id"] for row in catalog["policies"]),
+        )
+        relationship_fields = (
+            "source_clause_ids", "element_ids", "profile_ids", "test_case_ids",
+            "dependency_profile_ids", "parent_element_ids", "requirement_ids",
+        )
+        for collection in ("requirements", "elements", "profiles", "test_cases"):
+            for record in catalog[collection]:
+                for field in relationship_fields:
+                    if field in record:
+                        self.assertEqual(record[field], sorted(record[field]), (collection, record.get("test_id"), field))
+
     def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
         cases = (
             ("MAX_DEPTH", 1, '{"schema_version":{"nested":{"again":1}}}', "nesting depth"),
