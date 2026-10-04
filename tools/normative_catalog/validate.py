@@ -55,6 +55,7 @@ KEYWORD_STRENGTH = {
     "MAY": "permission_or_optional",
     "OPTIONAL": "permission_or_optional",
 }
+JSON_NUMBER_PATTERN = re.compile(r"-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?")
 CLAUSE_DISPOSITIONS = {
     "requirement",
     "profile_conditional",
@@ -321,7 +322,7 @@ class _JsonPreflight:
         if literal is not None:
             self.position += len(literal)
             return
-        number = re.match(r"-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?", self.text[self.position:])
+        number = JSON_NUMBER_PATTERN.match(self.text, self.position)
         if number is None or len(number.group(0)) > 128:
             _fail("catalog contains an invalid or overlong JSON value")
         self.position += len(number.group(0))
