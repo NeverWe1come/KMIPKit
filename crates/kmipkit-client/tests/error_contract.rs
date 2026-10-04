@@ -24,7 +24,7 @@ fn local_error_constructors_require_delivery_evidence() {
 fn local_failure_categories_are_distinct() {
     let validation = ClientError::validation(
         ClientCauseCategory::InvalidInput,
-        Some(RequestDeliveryState::NotSent),
+        RequestDeliveryState::NotSent,
         synthetic_error("validation source"),
     );
     let protocol = ClientError::protocol(
@@ -33,7 +33,7 @@ fn local_failure_categories_are_distinct() {
             ProtocolCauseCategory::InvalidEncoding,
             synthetic_error("protocol source"),
         ),
-        Some(RequestDeliveryState::ResponseStarted),
+        RequestDeliveryState::ResponseStarted,
     );
     let transport = ClientError::transport(TransportError::new(
         RequestDeliveryState::PossiblySent,
@@ -54,7 +54,7 @@ fn local_failure_categories_are_distinct() {
 fn safe_cause_categories_and_delivery_evidence_remain_inspectable() {
     let validation = ClientError::validation(
         ClientCauseCategory::InvalidInput,
-        Some(RequestDeliveryState::NotSent),
+        RequestDeliveryState::NotSent,
         synthetic_error("unsafe validation text"),
     );
     let protocol = ClientError::protocol(
@@ -63,7 +63,7 @@ fn safe_cause_categories_and_delivery_evidence_remain_inspectable() {
             ProtocolCauseCategory::InvalidValue,
             synthetic_error("unsafe protocol text"),
         ),
-        Some(RequestDeliveryState::ResponseStarted),
+        RequestDeliveryState::ResponseStarted,
     );
     let transport = ClientError::transport(TransportError::new(
         RequestDeliveryState::PossiblySent,
@@ -123,11 +123,12 @@ fn safe_cause_categories_and_delivery_evidence_remain_inspectable() {
 fn other_validation_cause_has_safe_formatting_and_source() {
     let error = ClientError::validation(
         ClientCauseCategory::Other,
-        None,
+        RequestDeliveryState::NotSent,
         synthetic_error("sensitive validation source"),
     );
 
     assert_eq!(error.cause_category(), Some(ClientCauseCategory::Other));
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert!(error.to_string().contains("other validation cause"));
     assert!(!format!("{error:?}").contains("sensitive validation source"));
     assert!(error.source().is_some());
@@ -148,7 +149,7 @@ fn unsafe_local_sources_are_dropped_and_unreachable_from_every_source_chain() {
         let dropped = Arc::new(AtomicBool::new(false));
         let error = ClientError::validation(
             ClientCauseCategory::InvalidInput,
-            Some(RequestDeliveryState::NotSent),
+            RequestDeliveryState::NotSent,
             DropProbe {
                 dropped: Arc::clone(&dropped),
                 text: sentinel.to_owned(),
