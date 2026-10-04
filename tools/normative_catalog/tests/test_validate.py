@@ -7,6 +7,7 @@ import subprocess
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.normative_catalog.validate import CatalogValidationError, validate_catalog
 
@@ -130,6 +131,27 @@ class CatalogValidationTests(unittest.TestCase):
         raw = b'{"schema_version":1,"schema_version":1}'
         with self.assertRaises(CatalogValidationError):
             validate_catalog(raw, ROOT)
+
+    def test_preflight_rejects_unknown_top_level_key_before_object_decode(self) -> None:
+        raw = b'{"unexpected":{"nested":[1,2,3]}}'
+        with patch("tools.normative_catalog.validate.json.loads", side_effect=AssertionError("decoded too early")) as decoder:
+            with self.assertRaisesRegex(CatalogValidationError, "unknown top-level"):
+                validate_catalog(raw, ROOT)
+        decoder.assert_not_called()
+
+    def test_preflight_rejects_duplicate_keys_before_object_decode(self) -> None:
+        raw = b'{"schema_version":1,"schema_version":1}'
+        with patch("tools.normative_catalog.validate.json.loads", side_effect=AssertionError("decoded too early")) as decoder:
+            with self.assertRaisesRegex(CatalogValidationError, "duplicate"):
+                validate_catalog(raw, ROOT)
+        decoder.assert_not_called()
+
+    def test_preflight_rejects_oversized_string_before_object_decode(self) -> None:
+        raw = b'{"schema_version":1,"sources":[],' + b'"x":"' + b'a' * 65_537 + b'"}'
+        with patch("tools.normative_catalog.validate.json.loads", side_effect=AssertionError("decoded too early")) as decoder:
+            with self.assertRaisesRegex(CatalogValidationError, "string"):
+                validate_catalog(raw, ROOT)
+        decoder.assert_not_called()
 
     def test_rejects_invalid_utf8_and_unpaired_escaped_surrogate(self) -> None:
         for raw in (b"\xff", b'{"x":"\\ud800"}'):
