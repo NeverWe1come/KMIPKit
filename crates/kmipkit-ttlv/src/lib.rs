@@ -4,7 +4,6 @@
 mod error;
 mod tag;
 
-#[path = "generated/tag_allocations.rs"]
 mod generated;
 
 pub use error::ModelError;

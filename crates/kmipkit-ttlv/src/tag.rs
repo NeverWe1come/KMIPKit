@@ -9,6 +9,10 @@ pub struct RawTag(u32);
 
 impl RawTag {
     /// Creates a raw tag, rejecting values wider than the KMIP 24-bit tag field.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ModelError::RawTagOutOfRange`] when `raw` exceeds the 24-bit field.
     pub fn new(raw: u32) -> Result<Self, ModelError> {
         if raw > 0x00FF_FFFF {
             return Err(ModelError::RawTagOutOfRange);
@@ -28,6 +32,11 @@ impl RawTag {
     /// Exact catalog records take precedence over aggregate ranges, following
     /// the project policy recorded in ADR-0010. This checks allocation only;
     /// it does not establish TTLV wire validity or extension semantics.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ModelError::TagNotAllocated`] when the tag is reserved or
+    /// unallocated by the KMIP 2.1 catalog policy.
     pub fn try_checked(&self) -> Result<Tag, ModelError> {
         match allocation_kind(self.0) {
             Some(TagAllocationKind::Assigned | TagAllocationKind::Extension) => Ok(Tag(self.0)),
