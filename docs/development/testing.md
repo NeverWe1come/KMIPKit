@@ -39,6 +39,27 @@ A deterministic fake transport verifies exact sent bytes, response handling,
 connection invalidation, delivery state, timeouts, batch outcomes, pending
 operations, and redaction without network I/O.
 
+The shared error contract has focused external integration suites:
+
+- `crates/kmipkit-protocol/tests/result_contract.rs` checks all assigned
+  Result Status and Result Reason values generated from the normative catalog,
+  unknown-value retention, the §9.18 Success/Failure reason invariant, and
+  exact optional Result Message text. Error-format tests verify that server
+  text and arbitrary protocol causes remain redacted.
+- `crates/kmipkit-transport/tests/delivery_state.rs` checks the write-started,
+  zero-byte-read, and first-response-byte boundaries and verifies that an
+  arbitrary transport cause is dropped and unreachable from the public chain.
+- `crates/kmipkit-client/tests/error_contract.rs` checks local failure
+  categories, safe cause and delivery metadata, secret sentinels, source
+  destruction, and redaction of a complete server Result Message.
+- `crates/kmipkit/tests/error_api.rs` exercises the same result and delivery
+  contracts through the public facade.
+
+Regenerate assigned result-value lookup tables with
+`python -B tools/normative_catalog/generate_result_values.py --repo-root . --write`.
+CI runs the same generator in `--check` mode after validating the normative
+catalog. Generated Rust output must not be edited by hand.
+
 ### Transport tests
 
 An ephemeral PKI creates CA, server, and client material. Test valid mTLS,
