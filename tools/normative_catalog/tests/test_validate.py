@@ -1091,6 +1091,12 @@ class CatalogValidationTests(unittest.TestCase):
             element_id for element_id, row in elements.items() if row["kind"] != "operation"
         }
         cases = {row["test_id"]: row for row in catalog["test_cases"]}
+        actual_by_test_id = {
+            test_id: set(test_case["element_ids"]) & non_operation_ids
+            for test_id, test_case in cases.items()
+            if set(test_case["element_ids"]) & non_operation_ids
+        }
+        self.assertEqual(actual_by_test_id, OFFICIAL_NON_OPERATION_TEST_ELEMENTS)
 
         for test_id, expected in OFFICIAL_NON_OPERATION_TEST_ELEMENTS.items():
             with self.subTest(test_id=test_id):
@@ -1098,6 +1104,15 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(actual, expected)
                 for element_id in expected:
                     self.assertIn(test_id, elements[element_id]["test_case_ids"])
+
+        for element_id in non_operation_ids:
+            with self.subTest(element_id=element_id):
+                expected_test_ids = {
+                    test_id
+                    for test_id, element_ids in OFFICIAL_NON_OPERATION_TEST_ELEMENTS.items()
+                    if element_id in element_ids
+                }
+                self.assertEqual(set(elements[element_id]["test_case_ids"]), expected_test_ids)
 
         self.assertEqual(
             set(cases["KMIPKIT-TEST-CN01-2-42"]["element_ids"]),
