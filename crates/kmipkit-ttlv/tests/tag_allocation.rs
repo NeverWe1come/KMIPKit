@@ -5,8 +5,8 @@ fn raw_tag(raw: u32) -> RawTag {
 }
 
 fn checked_tag(raw: u32) -> Tag {
-    raw_tag(raw)
-        .try_checked()
+    let raw_tag = raw_tag(raw);
+    RawTag::try_checked(&raw_tag)
         .expect("the test value must be an allocated KMIP tag")
 }
 
@@ -31,7 +31,8 @@ fn exact_project_tags_take_precedence_over_the_aggregate_reserved_range() {
 #[test]
 fn individually_and_residually_reserved_tags_are_rejected() {
     for raw in [0x420000, 0x420009, 0x420173, 0x420177, 0x42FFFF] {
-        assert!(raw_tag(raw).try_checked().is_err());
+        let raw_tag = raw_tag(raw);
+        assert!(RawTag::try_checked(&raw_tag).is_err());
     }
 }
 
@@ -47,11 +48,11 @@ fn extension_range_endpoints_and_middle_value_are_accepted() {
 fn unused_values_are_rejected_while_remaining_raw_and_failed_checks_borrow() {
     for raw in [0x000000, 0x430000, 0x550000, 0xFFFFFF] {
         let tag = raw_tag(raw);
-        assert!(tag.try_checked().is_err());
+        assert!(RawTag::try_checked(&tag).is_err());
         assert_eq!(tag.raw(), raw);
     }
 
     let reserved = raw_tag(0x420009);
-    assert!(reserved.try_checked().is_err());
+    assert!(RawTag::try_checked(&reserved).is_err());
     assert_eq!(reserved.raw(), 0x420009);
 }
