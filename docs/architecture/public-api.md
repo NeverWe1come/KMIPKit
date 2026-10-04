@@ -102,10 +102,34 @@ caller or managed language runtime.
 
 ## Errors
 
-Stable categories are configuration, validation, codec, transport, TLS, HTTP,
-KMIP response, extension, unavailable feature, and internal panic. Errors
-preserve source chains, operation and batch context, delivery state, and KMIP
-result fields while redacting sensitive values.
+The shared Rust result/error contract is exposed by the `kmipkit` facade:
+
+- `ResultStatus` and `ResultReason` retain the raw 32-bit Enumeration value.
+  `known_name()` resolves assigned values from the checked-in normative catalog;
+  unknown values remain unchanged.
+- `KmipOperationResult` contains status, optional reason, and optional
+  `ResultMessage`. Construction requires a reason for `Operation Failed` and
+  forbids one for `Success`. Pending, undone, and unknown statuses gain no
+  additional reason rule in this feature.
+- Applications can explicitly inspect Result Message text through
+  `ResultMessage::as_str()` or `as_bytes()`. Its Debug output and the default
+  Display/Debug output of `KmipOperationResult` redact the message.
+- `ClientError` distinguishes validation, protocol, and transport failures
+  from a complete server result. A server result retains the complete
+  `KmipOperationResult` and has no local request-delivery state.
+- `RequestDeliveryState` reports `NotSent`, `PossiblySent`, or
+  `ResponseStarted`. The first response byte advances the state to
+  `ResponseStarted`; a zero-byte read does not. Delivery evidence alone does
+  not imply that retrying is safe.
+- Protocol, transport, and validation constructors consume and discard
+  arbitrary source errors before retaining safe cause categories. Public error
+  chains contain only those safe categories. This result/error feature adds no
+  automatic serialization and no logger or logging call.
+
+Later operation-specific errors may add configuration, codec, TLS, HTTP,
+extension, unavailable-feature, and operation/batch context. They must preserve
+the source-sanitization and redaction rules above when accepting untrusted
+sources or server text.
 
 Rust returns `Result`. Java exposes unchecked typed exceptions. Python exposes
 an equivalent exception hierarchy. C returns stable codes and exposes detailed
