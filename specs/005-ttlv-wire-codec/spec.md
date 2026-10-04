@@ -1,0 +1,141 @@
+# Feature Specification: KMIP TTLV Wire Codec
+
+**Feature Branch**: `feature/KMIPKIT-0005-ttlv-wire-codec`
+**Created**: 2026-10-04
+**Status**: Draft — scope and normative clauses documented; implementation is gated on the generic model landing from PR #14 and resolution of the open policy items below.
+**Input**: KMIPKit roadmap: implement the strict TTLV encoder and decoder with bounded resource use after the generic TTLV value model.
+
+## Clarification Record
+
+This specification uses the pinned local OASIS KMIP Specification v2.1 source. It does not fetch or modify upstream material.
+
+- **Normative padding interpretation**: §10.1.3 defines Item Length as the Item Value length. §10.1.5 explicitly excludes padding from Item Length for Integer, Enumeration, Text String, Byte String, and Interval; Structure Item Length includes all child encodings and their padding. §10.1.2 explicitly includes Big Integer sign-extension padding in Item Length. The decoder therefore computes these cases separately. OASIS does not assign a required byte value to the four-byte or trailing string/byte padding; the decoder accepts any padding octets of the required length, while the encoder emits zero octets for deterministic canonical output. This zero-fill is a KMIPKit canonicalization rule, not an OASIS requirement.
+- **Open reserved-tag policy**: `KMIPKIT-DISC-037` remains open in `specification/catalog/kmip-2.1.json`. It lists two alternatives for a received Reserved tag: reject it, or preserve it through a separate opaque representation. The 004 public generic tree accepts allocation-checked Tags and does not define an opaque Reserved-tag node. This specification does not silently select either alternative. The decoder's Reserved-tag acceptance behavior is an implementation blocker until a reviewed project decision resolves the discrepancy.
+- **Depth configuration boundary**: security defaults are 16 MiB per message, 64 Structure levels, and 100,000 elements. The existing 004 model caps constructed trees at 64 levels. The codec limit may be configured downward; allowing a caller to raise it above 64 would conflict with that model contract and is not assumed here. Reconcile this boundary before implementation if configurability is required to include raising the depth cap.
+- **Dependency**: the active release base does not contain the 004 model implementation. The implementation must wait until PR #14 (or its successor) is merged into `release/1.0.0`, then rebase and bind to the landed public model API.
+
+## User Scenarios & Testing
+
+### User Story 1 — Encode generic KMIP values as TTLV (Priority: P1)
+
+A KMIP client developer needs to turn a valid generic TTLV item into the standard binary representation so requests can be sent by a transport. Encoding must use the item's tag and type, the correct length rules, and the value representation for all eleven KMIP 2.1 Item Types. Structure children remain in the order already represented by the model.
+
+**Why this priority**: No client request can be transmitted as KMIP TTLV until a complete, deterministic encoder exists.
+
+**Independent Test**: Encode table-driven known vectors for each assigned Item Type and compare every output byte with a reviewed expected vector derived from OASIS v2.1.
+
+**Acceptance Scenarios**:
+
+1. **Given** any of the eleven assigned Item Types, **When** a generic item is encoded, **Then** the 3-byte Tag, 1-byte Item Type, and 4-byte Item Length precede the correctly represented value in network byte order.
+2. **Given** a Structure with nested, repeated, or caller-ordered children, **When** it is encoded, **Then** every child appears once and in the model's original order, and the Structure length includes the complete child encodings.
+3. **Given** a Big Integer whose byte count is not a multiple of eight, **When** it is encoded, **Then** the minimum leading sign-extension bytes are added and counted in the Item Length.
+4. **Given** an Integer, Enumeration, or Interval, **When** it is encoded, **Then** exactly four padding bytes follow the value and are excluded from Item Length.
+5. **Given** a Text String or Byte String, **When** it is encoded, **Then** the minimum number of following padding bytes aligns the complete item to an eight-byte boundary and those bytes are excluded from Item Length.
+
+### User Story 2 — Decode bounded TTLV input into generic values (Priority: P1)
+
+A KMIP client developer needs to parse a complete TTLV item returned by a server into a generic tree without losing supported tags, extension tags, unknown Enumeration values, Integer bit patterns, repeated children, or Structure order. The decoder must reject malformed data instead of constructing a partial public item.
+
+**Why this priority**: A client must safely interpret successful, failed, and asynchronous KMIP responses while preserving values not yet understood by higher layers.
+
+**Independent Test**: Decode reviewed OASIS vectors for all assigned Item Types, inspect the resulting generic values, and re-encode them to canonical TTLV bytes.
+
+**Acceptance Scenarios**:
+
+1. **Given** a valid single-item TTLV byte slice within configured limits, **When** it is decoded, **Then** one generic item is returned and no trailing bytes are silently ignored.
+2. **Given** nested Structures, repeated tags, extension tags accepted by the generic model, unknown Enumeration values, or unknown mask bits, **When** decoded, **Then** their tag/value bits and child order remain unchanged in the generic model.
+3. **Given** a truncated header or value, invalid fixed-width length, invalid UTF-8 Text String, invalid Boolean representation, inconsistent Structure boundary, unsupported Item Type code, or trailing bytes, **When** decoded, **Then** a payload-free decoding error is returned without a partial item.
+4. **Given** an encoded message contains a Reserved tag, **When** decoded, **Then** behavior is governed by the unresolved `KMIPKIT-DISC-037` decision; this scenario is intentionally not an implementation acceptance criterion until that policy is reviewed.
+
+### User Story 3 — Bound work and memory for untrusted TTLV (Priority: P1)
+
+A KMIP client developer needs per-call resource limits so malformed or hostile server responses cannot trigger excessive allocation or unbounded recursive work. Errors must identify the failure class and safe location metadata without disclosing input bytes or decoded payloads.
+
+**Why this priority**: The decoder processes network-controlled bytes and is part of the library's security boundary.
+
+**Independent Test**: Exercise each default limit at its boundary and one unit over, plus caller-lowered limits, and verify oversized declared lengths fail before allocating the declared body.
+
+**Acceptance Scenarios**:
+
+1. **Given** defaults are used, **When** an input exceeds 16 MiB, contains more than 64 nested Structure levels, or contains more than 100,000 items, **Then** decoding fails with a bounded resource-limit error.
+2. **Given** a caller supplies lower per-call limits, **When** input exceeds one of those limits, **Then** decoding fails at the first violating boundary and leaves no partial public tree.
+3. **Given** a header declares a length that overflows arithmetic, exceeds the remaining input, exceeds the configured message bound, or cannot fit a supported Item Type, **When** decoded, **Then** it is rejected before allocation based on that declared length.
+4. **Given** any codec error is formatted, **When** Debug, Display, or source-chain diagnostics are used, **Then** raw TTLV bytes and payload contents are absent.
+
+### Edge Cases
+
+- A tag uses the first or last byte of the 24-bit Tag range; raw tag bytes are decoded big-endian.
+- Item Length is zero where a value type permits it, and zero where a fixed-width or non-empty type forbids it.
+- Structure children exactly fill, underfill, or overrun their parent Item Length.
+- Text String padding is calculated from UTF-8 octet length, not character count; Text String value bytes must be valid UTF-8.
+- Big Integer padding count is zero when already aligned and otherwise is the minimum needed; padding is signed extension based on the first value octet.
+- A value's logical length and its padding have different Item Length treatment by Item Type; String/Byte String and fixed 4-byte values exclude their padding, Big Integer and Structure include their specified bytes.
+- Padding byte contents are not rejected solely for being nonzero because the cited OASIS clauses specify padding size/placement but not a byte value. The encoder emits zero octets for padding that is not part of the Big Integer value; the decoder may normalize accepted nonzero padding on re-encoding.
+- Boolean accepts only the exact eight-byte encodings for False and True.
+- Unsupported Item Type codes are rejected because the current generic model represents the eleven Item Types assigned by KMIP 2.1 only.
+- The maximum configured Structure depth cannot exceed the 004 model's 64-level construction cap unless that model contract is separately changed.
+- Reserved tag receipt remains open under `KMIPKIT-DISC-037` and must not be treated as decided by the extension-tag preservation requirement.
+
+## Requirements
+
+### Functional Requirements
+
+- **KMIPKIT-0005-FR-001**: The encoder MUST emit each Item as a 3-byte unsigned Tag, 1-byte Item Type, 4-byte unsigned Item Length, and Item Value, with numeric fields in big-endian order, as defined by OASIS KMIP Specification v2.1 §§10.1.1–10.1.4.
+- **KMIPKIT-0005-FR-002**: The encoder MUST support all eleven Item Types assigned by OASIS KMIP Specification v2.1 §11.23 and MUST apply the type-specific representations in §10.1.2: signed 32-bit Integer, signed 64-bit Long Integer, big-endian two’s-complement Big Integer, unsigned 32-bit Enumeration, the exact eight-byte Boolean values, UTF-8 Text String, Byte String, signed 64-bit Date Time and Date Time Extended, and unsigned 32-bit Interval. It MUST apply the permitted Item Lengths in §10.1.3 and padding rules in §10.1.5.
+- **KMIPKIT-0005-FR-003**: The encoder MUST preserve the generic model's Structure child order and repeated Tags. It MUST NOT reorder children or claim schema-level validity; callers constructing a specification-defined Structure remain responsible for supplying fields in that structure's §10.1.2-defined order until typed protocol models enforce it.
+- **KMIPKIT-0005-FR-004**: The decoder MUST decode one complete TTLV Item from the supplied byte slice and MUST reject trailing bytes rather than silently ignore or concatenate them.
+- **KMIPKIT-0005-FR-005**: The decoder MUST preserve values and ordering represented by the generic model, including accepted extension Tags, unknown Enumeration values, unknown Integer bits, repeated child Tags, and exact Big Integer Item Value octets. It MUST reject unsupported Item Type codes because the 004 model has no representation for them.
+- **KMIPKIT-0005-FR-006**: The decoder MUST validate header completeness, type-specific Item Length constraints, UTF-8 validity, Boolean encodings, Structure boundaries, padding counts, and checked length arithmetic before accepting a generic item. It MUST not interpret reserved padding byte contents as invalid where OASIS does not specify a required value.
+- **KMIPKIT-0005-FR-007**: Encoding and decoding MUST enforce default per-message byte, Structure-depth, and item-count limits of 16 MiB, 64 levels, and 100,000 items respectively. A caller MUST be able to configure per-call limits without global mutable state. Message and item-count limits may be raised or lowered subject to representable/API limits; depth may be lowered but MUST NOT exceed the 004 model's 64-level construction bound under this specification.
+- **KMIPKIT-0005-FR-008**: The decoder MUST check declared lengths and cumulative Structure lengths against available bytes and configured limits before reserving or allocating storage based on those lengths.
+- **KMIPKIT-0005-FR-009**: Codec errors MUST preserve useful source/location context while never formatting, logging, or exposing raw TTLV bodies or value payloads.
+- **KMIPKIT-0005-FR-010**: The decoder's behavior for a received Tag classified as Reserved under §11.56 MUST remain gated on resolution of `KMIPKIT-DISC-037`; other Tags rejected by the 004 allocation-checked Tag API MUST return an error and MUST NOT enter the public generic tree. This draft does not authorize a policy choice for receipt of Reserved Tags.
+- **KMIPKIT-0005-FR-011**: Every in-scope normative requirement MUST be linked to its exact OASIS source, stable catalog/project requirement ID, implementation location, and executable verification before feature completion. Open or out-of-scope inventory rows MUST be assigned to a follow-on specification with a recorded reason.
+
+### Normative Traceability
+
+| Requirement ID | OASIS source and clause | Normative statement or definition | Codec coverage and verification |
+|---|---|---|---|
+| KMIPKIT-0005-NR-001 | OASIS KMIP Specification v2.1, §10.1.1 | Tag is a three-byte unsigned integer transmitted big-endian. | Encode/decode vectors at 24-bit boundaries; implementation/test links are added by the implementation PR. |
+| KMIPKIT-0005-NR-002 | OASIS KMIP Specification v2.1, §§10.1.2 and 11.23 | Item Type byte selects the defined value representation; all fields of a specified Structure are encoded in their definition order. | Vectors cover all eleven types; generic codec preserves caller order. Schema-order enforcement is assigned to typed protocol models and is not claimed here. Catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` is assigned jointly with those typed model specifications. |
+| KMIPKIT-0005-NR-003 | OASIS KMIP Specification v2.1, §10.1.2 | Big Integer is a big-endian two's-complement byte sequence; if not a multiple of eight bytes it receives the minimum leading sign-extended padding, included in Item Length. | Vectors cover positive/negative sign extension and aligned values. Catalog IDs: `KMIPKIT-REQ-SPEC-10.1.2-002-001`, `KMIPKIT-REQ-SPEC-10.1.2-002-002`. |
+| KMIPKIT-0005-NR-004 | OASIS KMIP Specification v2.1, §10.1.3 | Item Length is a 32-bit big-endian value counting Item Value bytes; allowed lengths depend on Item Type. | Exact length vectors, fixed-width invalid-length negatives, overflow and boundary tests. |
+| KMIPKIT-0005-NR-005 | OASIS KMIP Specification v2.1, §10.1.5 | Structure length includes encoded sub-items and padding; Integer, Enumeration, Text String, Byte String, and Interval lengths exclude their following padding; string/byte padding is minimal and 4-byte values receive four following padding bytes. | Exact byte vectors and decoder boundary tests. Catalog IDs: `KMIPKIT-REQ-SPEC-10.1.5-001-001`, `KMIPKIT-REQ-SPEC-10.1.5-001-002`. |
+| KMIPKIT-0005-NR-006 | OASIS KMIP Specification v2.1, Chapter 11 introduction and §11.56 | Implementations SHALL NOT use Tags marked Reserved; §11.56 assigns the 0x42 and 0x54 prefixes to specification and extension Tags. | Encoder uses the checked Tag policy from 004 and MUST NOT emit a Reserved Tag. Inbound Reserved-tag disposition remains blocked by `KMIPKIT-DISC-037`; other allocation-rejected Tags are rejected by the checked Tag API. Catalog IDs `KMIPKIT-REQ-SPEC-11-001` and `KMIPKIT-REQ-SPEC-11.56-001`. |
+
+### Key Entities
+
+- **Codec Limits**: Per-call byte, nesting-depth, and item-count maxima used to bound encoding and decoding.
+- **Encoded Item**: The canonical byte sequence for one generic Item, including its fixed header and type-specific padding.
+- **Decoded Item**: One generic Item tree produced only after the entire input slice passes framing, type, length, value, padding-count, and resource checks.
+- **Codec Error**: A payload-free error class with safe offset/tag/type context where available.
+
+## Success Criteria
+
+### Measurable Outcomes
+
+- **KMIPKIT-0005-SC-001**: Golden vectors cover 100% of the eleven assigned KMIP 2.1 Item Types and compare exact Tag, Type, Length, Value, and padding bytes.
+- **KMIPKIT-0005-SC-002**: Every canonical golden vector decodes into the expected generic value and re-encodes to the same canonical TTLV bytes. Noncanonical padding octets may be normalized to the encoder’s zero-filled padding.
+- **KMIPKIT-0005-SC-003**: Every listed malformed-input category has a negative test that returns a structured error without panic, partial item, or payload disclosure.
+- **KMIPKIT-0005-SC-004**: Exact-boundary and one-over tests cover default and configured message-byte, Structure-depth, and item-count limits; declared oversized values are rejected before body-sized allocation.
+- **KMIPKIT-0005-SC-005**: Changed codec and protocol/model lines meet the repository's 95% line-coverage gate, and all in-scope normative requirements have implementation and executable-verification links before the implementation PR is ready.
+
+## Assumptions
+
+- The only 1.0 wire encoding is TTLV; JSON and XML remain out of scope.
+- The codec is a pure Rust library layer over the generic model from KMIPKIT-0004. It performs no socket, TLS, HTTP, or KMIP operation/schema work.
+- One call decodes or encodes exactly one complete Item. Stream framing and transport reads remain in the transport layer.
+- A decoded item is structurally valid TTLV under the codec's implemented Item Types, but this alone does not prove that its tag is valid in a particular operation or that a server accepts it.
+- The generic value model's allocation-checked Tag and 64-level cap are upstream API contracts once PR #14 or its successor is merged.
+- Canonical re-encoding is expected; byte-for-byte preservation is guaranteed only for fields the generic model represents, not for unsupported Item Types or discarded padding bytes.
+- Decoder handling of Reserved tags and any catalog classification conflict remains unresolved until `KMIPKIT-DISC-037` is decided.
+
+## Implementation Gates
+
+Do not start implementation until all of the following are true:
+
+1. The KMIPKIT-0004 generic TTLV model implementation (PR #14 or successor) is merged into `release/1.0.0`, and this feature is rebased on that release head.
+2. The generic model's tag-allocation ADR/spec gates are resolved and its public Tag, Item, Structure, and value APIs are confirmed from the merged code.
+3. `KMIPKIT-DISC-037` has a reviewed decision for inbound Reserved-tag handling, and the specification is updated to encode that choice.
+4. The depth-limit configurability boundary is reconciled with the approved generic model and `AGENTS.md` security invariant.
+5. This feature specification and its implementation plan are approved under repository governance.
