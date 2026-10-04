@@ -5,7 +5,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use kmipkit_protocol::{
     KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ResultMessage,
-    ResultReason, ResultStatus,
+    ResultReason, ResultStatus, ResultValidationError,
 };
 
 #[test]
@@ -82,7 +82,10 @@ fn result_message_preserves_presence_and_text() {
 fn failure_requires_a_reason() {
     let failure = known_status("Operation Failed");
 
-    assert!(KmipOperationResult::new(failure, None, None).is_err());
+    let error = KmipOperationResult::new(failure, None, None)
+        .expect_err("Failure without a reason is invalid");
+    assert_eq!(error, ResultValidationError::FailureRequiresReason);
+    assert_eq!(error.to_string(), "Failure requires a Result Reason");
 }
 
 #[test]
@@ -91,7 +94,10 @@ fn success_forbids_a_reason() {
     let success = known_status("Success");
     let reason = ResultReason::from_raw(0);
 
-    assert!(KmipOperationResult::new(success, Some(reason), None).is_err());
+    let error = KmipOperationResult::new(success, Some(reason), None)
+        .expect_err("Success with a reason is invalid");
+    assert_eq!(error, ResultValidationError::SuccessForbidsReason);
+    assert_eq!(error.to_string(), "Success forbids a Result Reason");
 }
 
 #[test]
@@ -132,6 +138,58 @@ fn operation_result_display_and_debug_redact_message() {
 }
 
 #[test]
+fn operation_result_display_reports_status_and_optional_reason_safely() {
+    let success = KmipOperationResult::new(known_status("Success"), None, None)
+        .expect("valid success result");
+    let failure = KmipOperationResult::new(
+        known_status("Operation Failed"),
+        Some(known_reason("Item Not Found")),
+        None,
+    )
+    .expect("valid failure result");
+
+    assert_eq!(success.to_string(), "KMIP operation result status 0");
+    assert_eq!(
+        failure.to_string(),
+        "KMIP operation result status 1 with reason 1"
+    );
+}
+
+#[test]
+fn protocol_error_categories_have_safe_names_and_accessors() {
+    let kinds = [
+        ProtocolErrorKind::InvalidValue,
+        ProtocolErrorKind::MalformedMessage,
+        ProtocolErrorKind::UnsupportedValue,
+    ];
+    let causes = [
+        ProtocolCauseCategory::InvalidValue,
+        ProtocolCauseCategory::InvalidEncoding,
+        ProtocolCauseCategory::Other,
+    ];
+
+    for kind in kinds {
+        for cause in causes {
+            let error = ProtocolError::new(
+                kind,
+                cause,
+                DropProbe {
+                    dropped: Arc::new(AtomicBool::new(false)),
+                    text: "discarded source sentinel",
+                },
+            );
+
+            assert_eq!(error.kind(), kind);
+            assert_eq!(error.cause_category(), cause);
+            assert!(!error.to_string().contains("discarded source sentinel"));
+            let source = error.source().expect("safe cause category is inspectable");
+            assert_eq!(source.to_string(), cause.to_string());
+            assert!(source.source().is_none());
+        }
+    }
+}
+
+#[test]
 fn protocol_error_drops_untrusted_source_and_redacts_its_chain() {
     let dropped = Arc::new(AtomicBool::new(false));
     let sentinel = "PRIVATE_KEY_SENTINEL";
@@ -161,6 +219,13 @@ fn known_status(name: &str) -> ResultStatus {
         .iter()
         .find_map(|(status, known_name)| (*known_name == name).then_some(*status))
         .unwrap_or_else(|| panic!("missing catalog status {name}"))
+}
+
+fn known_reason(name: &str) -> ResultReason {
+    ResultReason::known_values()
+        .iter()
+        .find_map(|(reason, known_name)| (*known_name == name).then_some(*reason))
+        .unwrap_or_else(|| panic!("missing catalog reason {name}"))
 }
 
 struct DropProbe<'a> {

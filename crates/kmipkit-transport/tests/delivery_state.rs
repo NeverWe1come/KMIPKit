@@ -11,6 +11,22 @@ fn request_is_not_sent_until_write_begins() {
 
     assert_eq!(state, RequestDeliveryState::NotSent);
     assert_eq!(state.write_started(), RequestDeliveryState::PossiblySent);
+    assert_eq!(
+        RequestDeliveryState::PossiblySent.write_started(),
+        RequestDeliveryState::PossiblySent
+    );
+    assert_eq!(
+        RequestDeliveryState::ResponseStarted.write_started(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert_eq!(
+        state.response_bytes_received(0),
+        RequestDeliveryState::NotSent
+    );
+    assert_eq!(
+        state.response_bytes_received(1),
+        RequestDeliveryState::NotSent
+    );
 }
 
 #[test]
@@ -71,6 +87,31 @@ fn transport_error_drops_untrusted_source_and_redacts_its_chain() {
         assert!(!format!("{current}").contains(sentinel));
         assert!(!format!("{current:?}").contains(sentinel));
         source = current.source();
+    }
+}
+
+#[test]
+fn every_transport_cause_category_has_safe_display() {
+    let categories = [
+        TransportCauseCategory::Io,
+        TransportCauseCategory::Tls,
+        TransportCauseCategory::Http,
+        TransportCauseCategory::Timeout,
+        TransportCauseCategory::Other,
+    ];
+
+    for category in categories {
+        let error = TransportError::new(
+            RequestDeliveryState::NotSent,
+            category,
+            std::io::Error::other("discarded transport source"),
+        );
+
+        assert!(error.to_string().contains(&category.to_string()));
+        assert_eq!(
+            error.source().map(ToString::to_string),
+            Some(category.to_string())
+        );
     }
 }
 
