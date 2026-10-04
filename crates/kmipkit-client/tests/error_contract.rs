@@ -11,6 +11,16 @@ use kmipkit_protocol::{
 use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
 
 #[test]
+fn local_error_constructors_require_delivery_evidence() {
+    let _: fn(
+        ClientCauseCategory,
+        RequestDeliveryState,
+        std::io::Error,
+    ) -> ClientError = ClientError::validation::<std::io::Error>;
+    let _: fn(ProtocolError, RequestDeliveryState) -> ClientError = ClientError::protocol;
+}
+
+#[test]
 fn local_failure_categories_are_distinct() {
     let validation = ClientError::validation(
         ClientCauseCategory::InvalidInput,
