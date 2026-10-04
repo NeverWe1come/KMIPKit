@@ -31,6 +31,10 @@ class _CaptionedTableParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.tables: list[dict[str, object]] = []
+        self.headings: list[str] = []
+        self._heading = ""
+        self._heading_tag: str | None = None
+        self._heading_buffer: list[str] | None = None
         self._table: dict[str, object] | None = None
         self._row: list[str] | None = None
         self._cell: list[str] | None = None
@@ -38,8 +42,11 @@ class _CaptionedTableParser(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attributes = dict(attrs)
-        if tag == "table":
-            self._table = {"rows": []}
+        if tag in {"h1", "h2", "h3", "h4"}:
+            self._heading_tag = tag
+            self._heading_buffer = []
+        elif tag == "table":
+            self._table = {"heading": self._heading, "rows": []}
             self.tables.append(self._table)
         elif tag == "tr" and self._table is not None:
             self._row = []
@@ -54,6 +61,8 @@ class _CaptionedTableParser(HTMLParser):
             self._cell.append(data)
         if self._caption is not None:
             self._caption.append(data)
+        if self._heading_buffer is not None:
+            self._heading_buffer.append(data)
 
     def handle_endtag(self, tag: str) -> None:
         if tag in {"td", "th"} and self._cell is not None:
@@ -68,6 +77,11 @@ class _CaptionedTableParser(HTMLParser):
             if self.tables:
                 self.tables[-1]["caption"] = " ".join("".join(self._caption).split())
             self._caption = None
+        elif tag == self._heading_tag and self._heading_buffer is not None:
+            self._heading = " ".join("".join(self._heading_buffer).split())
+            self.headings.append(self._heading)
+            self._heading_tag = None
+            self._heading_buffer = None
 
 
 def _pinned_tag_rows() -> tuple[list[tuple[str, str, str]], list[tuple[str, str]]]:
@@ -96,6 +110,45 @@ def _pinned_tag_rows() -> tuple[list[tuple[str, str, str]], list[tuple[str, str]
                 raise AssertionError("unclassified tag range in pinned Table 487")
             ranges.append((allocation, value))
     return singletons, ranges
+
+
+def _pinned_enumeration_groups() -> dict[str, tuple[str, list[tuple[str, str]]]]:
+    """Return every §11 enumeration heading and its literal Name/Value rows."""
+    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    raw = source_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
+        raise AssertionError("pinned KMIP Specification checksum changed")
+    parser = _CaptionedTableParser()
+    parser.feed(raw.decode("cp1252"))
+    groups: dict[str, tuple[str, list[tuple[str, str]]]] = {}
+    for table in parser.tables:
+        heading = table.get("heading")
+        if not isinstance(heading, str):
+            continue
+        match = re.match(r"^(11\.[0-9]+)\s+(.+?)\s+Enumeration$", heading)
+        if not match:
+            continue
+        section, name = match.groups()
+        rows = table.get("rows")
+        if not isinstance(rows, list):
+            continue
+        header_index = next(
+            (index for index, row in enumerate(rows) if [cell.casefold() for cell in row] == ["name", "value"]),
+            None,
+        )
+        if header_index is None:
+            continue
+        values = [tuple(row) for row in rows[header_index + 1 :] if len(row) == 2]
+        groups[section] = (name, values)
+
+    headings: dict[str, str] = {}
+    for heading in parser.headings:
+        match = re.match(r"^(11\.[0-9]+)\s+(.+?)\s+Enumeration$", heading)
+        if match:
+            headings[match.group(1)] = match.group(2)
+    for section, name in headings.items():
+        groups.setdefault(section, (name, []))
+    return groups
 
 
 def minimal_catalog() -> dict[str, object]:
@@ -551,6 +604,44 @@ class CatalogValidationTests(unittest.TestCase):
         assigned["element_id"] = "KMIPKIT-ELEM-TAG-FF1234"
         with self.assertRaisesRegex(CatalogValidationError, "tag registry source fingerprint"):
             catalog_validate._check_tag_registry_fingerprint(tampered)
+
+    def test_enumerations_and_values_reconcile_with_all_pinned_section_11_tables(self) -> None:
+        groups = _pinned_enumeration_groups()
+        self.assertEqual(set(groups), {f"11.{number}" for number in range(1, 65)})
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        elements = catalog["elements"]
+        definitions = [row for row in elements if row.get("kind") == "enumeration"]
+        values = [row for row in elements if row.get("kind") == "enumeration_value"]
+        expected_definitions = {(name, section) for section, (name, _) in groups.items()}
+        actual_definitions = {(row["name"], row["source_refs"][0]["section"]) for row in definitions}
+        self.assertEqual(actual_definitions, expected_definitions)
+
+        expected_values: set[tuple[str, str, str, str]] = set()
+        for section, (name, rows) in groups.items():
+            if section == "11.56":
+                continue  # Table 487 is represented by the dedicated tag and tag-range records.
+            definition_slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
+            parent_id = f"KMIPKIT-ELEM-ENUMERATION-{definition_slug}"
+            for value_name, wire_value in rows:
+                allocation = (
+                    "extension" if wire_value.startswith("8X")
+                    else "reserved" if value_name == "(Reserved)" or "-" in wire_value
+                    else "assigned"
+                )
+                expected_values.add((parent_id, value_name, wire_value, allocation))
+        actual_values = {
+            (row["parent_element_ids"][0], row["name"], row["wire_value"], row["allocation"])
+            for row in values
+            if len(row["parent_element_ids"]) == 1
+        }
+        self.assertEqual(actual_values, expected_values)
+        self.assertEqual(len(values), len(expected_values))
+
+        definitions_by_name = {row["name"]: row for row in definitions}
+        for kind in ("data_type", "object_type", "tag"):
+            for row in (item for item in elements if item.get("kind") == kind):
+                parent_name = {"data_type": "Item Type", "object_type": "Object Type", "tag": "Tag"}[kind]
+                self.assertIn(definitions_by_name[parent_name]["element_id"], row["parent_element_ids"])
 
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
