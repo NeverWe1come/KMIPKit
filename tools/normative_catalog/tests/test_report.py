@@ -244,10 +244,22 @@ class CoverageReportTests(unittest.TestCase):
                 "source_clause_ids": ["KMIPKIT-CLAUSE-PROF-5.1-001"],
                 "requirement_ids": ["KMIPKIT-REQ-PROF-5.1-001"],
                 "dependency_profile_ids": ["KMIPKIT-PROFILE-OTHER"],
-                "test_case_ids": ["KMIPKIT-TEST-PROF-5-1-1"],
+                "test_case_ids": ["KMIPKIT-TEST-PROF-5-1-1", "KMIPKIT-TEST-PROF-5-1-2"],
                 "transport_requirements": ["TLS 1.3"],
                 "encoding_requirements": ["TTLV"],
             }
+        ]
+        catalog["test_cases"] = [
+            {
+                "test_id": "KMIPKIT-TEST-PROF-5-1-1",
+                "official_case_id": "BL-M-1-21",
+                "mandatory_status": "mandatory",
+            },
+            {
+                "test_id": "KMIPKIT-TEST-PROF-5-1-2",
+                "official_case_id": "BL-O-1-21",
+                "mandatory_status": "optional",
+            },
         ]
 
         report = render_report(catalog)
@@ -262,8 +274,22 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("KMIPKIT-REQ-PROF-5.1-001", report)
         self.assertIn("KMIPKIT-PROFILE-OTHER", report)
         self.assertIn("KMIPKIT-TEST-PROF-5-1-1", report)
+        self.assertIn("BL-M-1-21", report)
+        self.assertIn("mandatory", report)
+        self.assertIn("BL-O-1-21", report)
+        self.assertIn("optional", report)
         self.assertIn("TLS 1.3", report)
         self.assertIn("TTLV", report)
+
+    def test_full_catalog_report_reconciles_tags_ranges_and_profile_cases(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        report = render_report(catalog)
+
+        self.assertIn("| assigned | 354 |", report)
+        self.assertIn("| reserved | 20 |", report)
+        self.assertEqual(report.count("KMIPKIT-RANGE-00"), 5)
+        self.assertIn("KMIPKIT-ELEM-TAG-420001", report)
+        self.assertIn("BL-M-1-21; mandatory", report)
 
     def test_escapes_markdown_html_newlines_and_control_characters(self) -> None:
         catalog = report_catalog()
