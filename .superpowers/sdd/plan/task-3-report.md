@@ -79,8 +79,9 @@ Result: exit status 0.
 
 - Added `tools/normative_catalog/generate_ttlv_tags.py`.
 - Added this report.
-- Did not edit tests, catalog inputs, upstream OASIS copies, or generated Rust
-  output.
+- In the initial T003 Green commit, did not edit tests, catalog inputs,
+  upstream OASIS copies, or generated Rust output. Round 1/5 adds one targeted
+  CLI regression test, documented below.
 - Reviewed the CLI paths: `--write` validates before using the atomic writer;
   `--check` has no write or directory-creation call and uses safe reads for
   missing, stale, and clean output cases.
@@ -89,3 +90,65 @@ Result: exit status 0.
   no public Tag declaration or runtime precedence rule is emitted.
 
 No unresolved conflicts or implementation concerns were found.
+
+## Round 1/5 review follow-up: fixed catalog-validation errors
+
+The reviewer identified that the CLI printed raw `CatalogValidationError`
+text, which can contain identifiers and operation names from catalog data.
+The CLI now emits fixed categories for catalog validation, repository path
+validation, repository I/O, and invalid allocation data. It does not format
+exception text in any of these error paths; exit codes remain unchanged.
+
+Added
+`TagAllocationGeneratorCliTests.test_catalog_validation_error_does_not_echo_catalog_values`.
+It duplicates a validly shaped record ID with a marker value that the validator
+includes in its raw exception, then asserts the CLI returns status 2 and emits
+only the fixed catalog-validation message.
+
+RED command:
+
+```text
+python -B -m unittest tools.normative_catalog.tests.test_generate_ttlv_tags.TagAllocationGeneratorCliTests.test_catalog_validation_error_does_not_echo_catalog_values -v
+```
+
+RED result before the CLI fix:
+
+```text
+Ran 1 test in 1.430s
+
+FAILED (failures=1)
+```
+
+The assertion showed stderr contained `duplicate stable record identifier:
+KMIPKIT-ELEM-UNTRUSTED-CLI-ERROR` instead of the fixed category.
+
+GREEN focused generator command:
+
+```text
+python -B -m unittest tools.normative_catalog.tests.test_generate_ttlv_tags -v
+```
+
+GREEN result:
+
+```text
+Ran 15 tests in 10.574s
+
+OK
+```
+
+GREEN malformed-catalog CLI regression command:
+
+```text
+python -B -m unittest tools.normative_catalog.tests.test_generate_ttlv_tags.TagAllocationGeneratorCliTests.test_catalog_validation_error_does_not_echo_catalog_values -v
+```
+
+Result:
+
+```text
+Ran 1 test in 1.417s
+
+OK
+```
+
+The reviewer’s output-parent check remains assigned to T005 and is not part of
+this follow-up.

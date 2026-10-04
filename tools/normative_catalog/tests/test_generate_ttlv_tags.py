@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import shutil
 import subprocess
@@ -296,6 +297,22 @@ class TagAllocationGeneratorCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2, result.stderr)
             self.assertIn("failed", result.stderr.lower())
             self.assertFalse(output.exists())
+
+    def test_catalog_validation_error_does_not_echo_catalog_values(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._repo_root(directory)
+            catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            marker = "KMIPKIT-ELEM-UNTRUSTED-CLI-ERROR"
+            catalog["elements"][0]["element_id"] = marker
+            catalog["elements"][1]["element_id"] = marker
+            catalog_path.write_text(json.dumps(catalog, ensure_ascii=False), encoding="utf-8")
+
+            result = _run_generator(root, "--check")
+
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(result.stderr, "TTLV tag generation failed: catalog validation failed\n")
+            self.assertNotIn(marker, result.stderr)
 
 
 if __name__ == "__main__":

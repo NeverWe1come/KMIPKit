@@ -164,8 +164,17 @@ def main(argv: list[str] | None = None) -> int:
             print(f"generated TTLV tag allocations: {root / OUTPUT_PATH}")
             return 0
         existing = safe_read_bytes(root, OUTPUT_PATH, max_bytes=MAX_BYTES)
-    except (OSError, PathSecurityError, CatalogValidationError, ValueError) as error:
-        print(f"TTLV tag generation failed: {error}", file=sys.stderr)
+    except CatalogValidationError:
+        print("TTLV tag generation failed: catalog validation failed", file=sys.stderr)
+        return 2
+    except PathSecurityError:
+        print("TTLV tag generation failed: repository path validation failed", file=sys.stderr)
+        return 2
+    except OSError:
+        print("TTLV tag generation failed: repository I/O failed", file=sys.stderr)
+        return 2
+    except ValueError:
+        print("TTLV tag generation failed: catalog allocation data is invalid", file=sys.stderr)
         return 2
 
     if existing != generated:
