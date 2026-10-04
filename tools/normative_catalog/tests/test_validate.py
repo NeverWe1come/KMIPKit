@@ -110,6 +110,110 @@ def test_case(*, fixture_path: str | None, fixture_availability: str) -> dict[st
     }
 
 
+def profile_record(**overrides: object) -> dict[str, object]:
+    record: dict[str, object] = {
+        "profile_id": "KMIPKIT-PROFILE-BASELINE",
+        "name": "Baseline profile",
+        "role": "client",
+        "source_refs": [{"source_id": "KMIPKIT-SRC-profiles", "section": "5.1"}],
+        "source_clause_ids": [],
+        "dependency_profile_ids": [],
+        "transport_requirements": ["ttlv_tls"],
+        "encoding_requirements": ["ttlv"],
+        "applicability": "client_1_0",
+        "claim_state": "not_claimed",
+        "requirement_ids": [],
+        "element_ids": [],
+        "test_case_ids": [],
+    }
+    record.update(overrides)
+    return record
+
+
+def discrepancy_record(**overrides: object) -> dict[str, object]:
+    record: dict[str, object] = {
+        "discrepancy_id": "KMIPKIT-DISC-001",
+        "summary": "Conflicting continuation behavior wording.",
+        "source_refs": [
+            {"source_id": "KMIPKIT-SRC-spec", "section": "11.5"},
+            {"source_id": "KMIPKIT-SRC-profiles", "section": "5.1"},
+        ],
+        "source_authority": "primary_normative",
+        "normative_status": "normative_conflict",
+        "alternatives": ["continue", "stop"],
+        "affected_requirement_ids": [],
+        "affected_element_ids": [],
+        "affected_profile_ids": [],
+        "affected_policy_ids": [],
+        "downstream_impact": "Batch error behavior remains gated.",
+        "state": "open",
+        "decision_id": None,
+    }
+    record.update(overrides)
+    return record
+
+
+def decision_record(**overrides: object) -> dict[str, object]:
+    record: dict[str, object] = {
+        "decision_id": "KMIPKIT-DEC-001",
+        "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+        "requirement_ids": [],
+        "discrepancy_ids": [],
+        "interpretation": "Use the reviewed client interpretation.",
+        "approver": "Qualified reviewer",
+        "approval_evidence": "https://example.invalid/approval",
+        "approved_at": "2026-10-04",
+        "consequence": "The affected requirement is implementable.",
+        "status": "accepted",
+    }
+    record.update(overrides)
+    return record
+
+
+def deviation_catalog(decision: dict[str, object]) -> dict[str, object]:
+    document = minimal_catalog()
+    document["source_clauses"] = [
+        {
+            "clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "source_id": "KMIPKIT-SRC-spec",
+            "section": "8.1",
+            "locator": {"ordinal": 1, "block_kind": "paragraph"},
+            "source_keywords": ["SHOULD"],
+            "normative_strength": "recommended",
+            "disposition": "requirement",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+            "exclusion_rationale": None,
+        }
+    ]
+    document["requirements"] = [
+        {
+            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+            "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+            "source_keyword": "SHOULD",
+            "normative_strength": "recommended",
+            "subject": "client",
+            "summary": "A recommended client behavior.",
+            "role": "client",
+            "direction": "client_to_server",
+            "condition": None,
+            "scope_state": "client_1_0",
+            "element_ids": [],
+            "profile_ids": [],
+            "test_case_ids": [],
+            "feature_spec": None,
+            "implementation_refs": [],
+            "verification_refs": [],
+            "negative_verification_required": False,
+            "decision_id": "KMIPKIT-DEC-001",
+            "status": "deviated",
+            "review_note": "Reviewed deviation.",
+        }
+    ]
+    document["decisions"] = [decision]
+    return document
+
+
 class CatalogValidationTests(unittest.TestCase):
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
@@ -335,6 +439,26 @@ class CatalogValidationTests(unittest.TestCase):
             }
         ]
         with self.assertRaises(CatalogValidationError):
+            validate(document)
+
+    def test_rejects_profile_with_unknown_claim_state(self) -> None:
+        document = minimal_catalog()
+        document["profiles"] = [profile_record(claim_state="certified")]
+        with self.assertRaisesRegex(CatalogValidationError, "profile"):
+            validate(document)
+
+    def test_open_discrepancy_cannot_select_a_decision(self) -> None:
+        document = minimal_catalog()
+        document["decisions"] = [decision_record()]
+        document["discrepancies"] = [discrepancy_record(decision_id="KMIPKIT-DEC-001")]
+        with self.assertRaisesRegex(CatalogValidationError, "open discrepancy"):
+            validate(document)
+
+    def test_recommendation_deviation_requires_accepted_decision_evidence(self) -> None:
+        document = deviation_catalog(
+            decision_record(status="proposed", approver="", approval_evidence="")
+        )
+        with self.assertRaisesRegex(CatalogValidationError, "accepted decision"):
             validate(document)
 
     def test_rejects_requirement_with_unresolved_source_references(self) -> None:
