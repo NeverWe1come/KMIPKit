@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import json
 import csv
+import json
+import re
 import unittest
 from pathlib import Path
 
@@ -157,7 +158,11 @@ class FeatureTraceabilityTests(unittest.TestCase):
         if path.suffix == ".rs":
             return f"fn {test_name}(" in source
         if path.suffix == ".py":
-            return f"def {test_name}(" in source
+            class_name, separator, function_name = test_name.rpartition(".")
+            if not separator:
+                return False
+            class_exists = re.search(rf"^class {re.escape(class_name)}(?:\(|:)", source, re.MULTILINE)
+            return class_exists is not None and f"def {function_name}(" in source
         return False
 
 
