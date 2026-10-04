@@ -1,5 +1,10 @@
 # Architecture overview
 
+This document describes the target KMIPKit 1.0 architecture. Components and
+responsibilities are planned unless explicitly marked **Implemented**; the
+message flow below is also a target design, not evidence that each step exists
+in the current code.
+
 ## System shape
 
 ```mermaid
@@ -49,9 +54,9 @@ docs/
 fuzz/
 ```
 
-The five runtime Rust crates are published with synchronized versions. The
-facade is the normal entry point; lower crates are stable public APIs for
-advanced integration.
+The planned 1.0 workspace has five runtime Rust crates with synchronized
+package versions. The facade is intended as the normal entry point; lower
+crates are intended to provide stable public APIs for advanced integration.
 
 ## Layer responsibilities
 
