@@ -288,7 +288,36 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("| assigned | 354 |", report)
         self.assertIn("| reserved | 20 |", report)
         self.assertEqual(report.count("KMIPKIT-RANGE-00"), 5)
-        self.assertIn("KMIPKIT-ELEM-TAG-420001", report)
+        tag_elements = [row for row in catalog["elements"] if row["kind"] == "tag"]
+        self.assertEqual(len(tag_elements), 374)
+        self.assertTrue(all(
+            row["feature_spec"] == "KMIPKIT-0004"
+            and row["implementation_refs"]
+            and row["verification_refs"]
+            for row in tag_elements
+        ))
+        unassigned_elements = report.split("## Unassigned protocol elements\n", 1)[1].split("\n## ", 1)[0]
+        self.assertTrue(all(row["element_id"] not in unassigned_elements for row in tag_elements))
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        reserved_tag_requirement = requirements["KMIPKIT-REQ-SPEC-11-001"]
+        self.assertEqual(reserved_tag_requirement["feature_spec"], "KMIPKIT-0004")
+        self.assertTrue(reserved_tag_requirement["implementation_refs"])
+        self.assertTrue(reserved_tag_requirement["verification_refs"])
+        excluded_wire_requirements = (
+            "KMIPKIT-REQ-SPEC-10.1.2-001",
+            "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+            "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+            "KMIPKIT-REQ-SPEC-10.1.5-001-001",
+            "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+            "KMIPKIT-REQ-SPEC-11.56-001",
+        )
+        unassigned_requirements = report.split("## Unassigned requirements\n", 1)[1].split("\n## ", 1)[0]
+        for requirement_id in excluded_wire_requirements:
+            requirement = requirements[requirement_id]
+            self.assertIsNone(requirement["feature_spec"])
+            self.assertEqual(requirement["implementation_refs"], [])
+            self.assertEqual(requirement["verification_refs"], [])
+            self.assertIn(requirement_id, unassigned_requirements)
         self.assertIn("BL-M-1-21; mandatory", report)
 
     def test_escapes_markdown_html_newlines_and_control_characters(self) -> None:
