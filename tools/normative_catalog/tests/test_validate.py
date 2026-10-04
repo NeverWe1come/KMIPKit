@@ -861,9 +861,6 @@ class CatalogValidationTests(unittest.TestCase):
         elements = catalog["elements"]
         data_types = {row["name"]: row for row in elements if row.get("kind") == "data_type"}
         object_types = {row["name"]: row for row in elements if row.get("kind") == "object_type"}
-        object_structures = {
-            row["element_id"]: row for row in elements if row.get("kind") == "object_structure"
-        }
 
         expected_data_types = {
             "Structure": "00000001", "Integer": "00000002", "Long Integer": "00000003",
@@ -881,38 +878,13 @@ class CatalogValidationTests(unittest.TestCase):
                 "Opaque Object": "00000008", "PGP Key": "00000009", "Certificate Request": "0000000A",
             },
         )
-        expected_structures = {
-            *((name, f"2.{number}") for number, name in enumerate(
-                (
-                    "Certificate", "Certificate Request", "Opaque Object", "PGP Key", "Private Key",
-                    "Public Key", "Secret Data", "Split Key", "Symmetric Key",
-                ),
-                start=1,
-            )),
-            ("Key Block", "3.1"),
-            ("Key Value", "3.2"),
-            ("Key Wrapping Data", "3.3"),
-            ("Encryption Key Information", "3.3"),
-            ("MAC/Signature Key Information", "3.3"),
-            *(("Key Material", f"3.{number}") for number in range(4, 13)),
-        }
-        self.assertEqual(
-            {
-                (row["name"], row["source_refs"][0]["section"])
-                for row in object_structures.values()
-            },
-            expected_structures,
-        )
-        for kind, records in (("data_type", data_types), ("object_type", object_types), ("object_structure", object_structures)):
-            expected_counts = {"data_type": 11, "object_type": 9, "object_structure": 23}
+        for kind, records in (("data_type", data_types), ("object_type", object_types)):
+            expected_counts = {"data_type": 11, "object_type": 9}
             self.assertEqual(len(records), expected_counts[kind])
             for record in records.values():
                 name = record["name"]
                 slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
-                prefix = {"data_type": "DATA-TYPE", "object_type": "OBJECT-TYPE", "object_structure": "OBJECT-STRUCTURE"}[kind]
-                if kind == "object_structure" and name == "Key Material":
-                    section = record["source_refs"][0]["section"].replace(".", "-")
-                    slug = f"{section}-{slug}"
+                prefix = {"data_type": "DATA-TYPE", "object_type": "OBJECT-TYPE"}[kind]
                 self.assertEqual(record["element_id"], f"KMIPKIT-ELEM-{prefix}-{slug}")
                 self.assertEqual(record["direction"], "both")
                 self.assertEqual(record["scope_state"], "client_1_0")
@@ -959,6 +931,13 @@ class CatalogValidationTests(unittest.TestCase):
             source_roots,
         )
         self.assertEqual(set(structures_by_key), expected_roots)
+        for (section, name), row in structures_by_key.items():
+            suffix = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
+            if name == "Key Material":
+                suffix = f"{section.replace('.', '-')}-{suffix}"
+            self.assertEqual(row["element_id"], f"KMIPKIT-ELEM-OBJECT-STRUCTURE-{suffix}")
+            self.assertEqual(row["direction"], "both")
+            self.assertEqual(row["scope_state"], "client_1_0")
 
         structure_names_by_id = {
             row["element_id"]: row["name"]
@@ -981,6 +960,9 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(actual_members, source_members)
         self.assertEqual(len(members), len(source_members))
+        for row in members:
+            self.assertEqual(row["direction"], "both")
+            self.assertEqual(row["scope_state"], "client_1_0")
 
     def test_tag_inventory_reconciles_all_reserved_values_and_ranges(self) -> None:
         elements = [
