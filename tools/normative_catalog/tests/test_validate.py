@@ -853,6 +853,40 @@ class CatalogValidationTests(unittest.TestCase):
         ]
         self.assertEqual(validate(document)["record_count"], 6)
 
+    def test_accepts_structure_member_source_encoding_and_requiredness(self) -> None:
+        document = minimal_catalog()
+        structure_id = "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-TEST"
+        common = {
+            "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "5.1"}],
+            "direction": "both",
+            "scope_state": "client_1_0",
+            "requirement_ids": [],
+            "profile_ids": [],
+            "test_case_ids": [],
+            "feature_spec": None,
+            "implementation_refs": [],
+            "verification_refs": [],
+        }
+        document["elements"] = [
+            {
+                **common,
+                "element_id": structure_id,
+                "kind": "attribute_structure",
+                "name": "Test Structure",
+                "parent_element_ids": [],
+            },
+            {
+                **common,
+                "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-TEST-FIELD",
+                "kind": "structure_member",
+                "name": "Test Field",
+                "source_encoding": "Text String",
+                "source_requiredness": "Yes",
+                "parent_element_ids": [structure_id],
+            },
+        ]
+        self.assertEqual(validate(document)["record_count"], 6)
+
     def test_complete_validation_rejects_omitted_operation_and_element_records(self) -> None:
         raw = json.dumps(minimal_catalog()).encode("utf-8")
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
