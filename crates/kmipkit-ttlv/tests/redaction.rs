@@ -1,7 +1,7 @@
 //! Requirement traceability: KMIPKIT-0004-FR-009, FR-010, FR-013, and SC-004.
 //! Authority: approved KMIPKIT-0004 specification and Rust value-model contract.
 
-use std::fmt::{Binary, Debug, Display, LowerHex, Octal, UpperHex};
+use std::fmt::{Binary, Debug, Display, LowerHex, Octal, UpperHex, Write as _};
 
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, Tag, Value, ValueView};
 
@@ -45,10 +45,10 @@ where
 }
 
 fn byte_sentinels(bytes: &[u8]) -> Vec<String> {
-    let lower_hex = bytes
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect::<String>();
+    let mut lower_hex = String::with_capacity(bytes.len().saturating_mul(2));
+    for byte in bytes {
+        write!(lower_hex, "{byte:02x}").expect("writing formatted bytes to a String cannot fail");
+    }
     let upper_hex = lower_hex.to_uppercase();
     let spaced_lower_hex = bytes
         .iter()

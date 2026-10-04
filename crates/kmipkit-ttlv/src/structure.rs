@@ -1,5 +1,7 @@
 //! Ordered generic KMIP Structure values.
 
+use std::fmt::{self, Debug};
+
 use crate::{Item, ModelError, ValueView};
 
 // This is a local KMIPKit model policy, not a protocol nesting constraint.
@@ -16,6 +18,24 @@ pub struct Structure {
 /// A borrowed view of an ordered Structure.
 pub struct StructureView<'a> {
     children: &'a [Item],
+}
+
+impl Debug for Structure {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Structure")
+            .field("child_count", &self.children.len())
+            .finish()
+    }
+}
+
+impl Debug for StructureView<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("StructureView")
+            .field("child_count", &self.children.len())
+            .finish()
+    }
 }
 
 impl Structure {

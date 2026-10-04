@@ -1,11 +1,23 @@
 //! Typed KMIP items pairing an allocation-checked tag with an opaque value.
 
+use std::fmt::{self, Debug};
+
 use crate::{ItemType, ModelError, Tag, Value, ValueView};
 
 /// A typed KMIP item with an allocation-checked tag.
 pub struct Item {
     tag: Tag,
     value: Value,
+}
+
+impl Debug for Item {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Item")
+            .field("tag", &self.tag)
+            .field("item_type", &self.item_type())
+            .finish_non_exhaustive()
+    }
 }
 
 impl Item {

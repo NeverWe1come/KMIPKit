@@ -1,5 +1,7 @@
 // Opaque, typed representations of KMIP TTLV Item Values.
 
+use std::fmt::{self, Debug};
+
 use crate::structure::{Structure, StructureView};
 use zeroize::Zeroize;
 
@@ -72,6 +74,48 @@ enum ValueRepr {
     DateTime(i64),
     Interval(u32),
     DateTimeExtended(i64),
+}
+
+impl Debug for Value {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug = formatter.debug_struct("Value");
+        debug.field("item_type", &self.item_type());
+
+        if let ValueRepr::Structure(structure) = self.inner.boxed.as_ref() {
+            debug.field("child_count", &structure.as_view().children().len());
+        }
+
+        debug.finish()
+    }
+}
+
+impl Debug for ValueView<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Structure(structure) => formatter
+                .debug_struct("ValueView")
+                .field("item_type", &ItemType::Structure)
+                .field("child_count", &structure.children().len())
+                .finish(),
+            Self::Integer(_) => debug_value_view(formatter, ItemType::Integer),
+            Self::LongInteger(_) => debug_value_view(formatter, ItemType::LongInteger),
+            Self::BigInteger(_) => debug_value_view(formatter, ItemType::BigInteger),
+            Self::Enumeration(_) => debug_value_view(formatter, ItemType::Enumeration),
+            Self::Boolean(_) => debug_value_view(formatter, ItemType::Boolean),
+            Self::TextString(_) => debug_value_view(formatter, ItemType::TextString),
+            Self::ByteString(_) => debug_value_view(formatter, ItemType::ByteString),
+            Self::DateTime(_) => debug_value_view(formatter, ItemType::DateTime),
+            Self::Interval(_) => debug_value_view(formatter, ItemType::Interval),
+            Self::DateTimeExtended(_) => debug_value_view(formatter, ItemType::DateTimeExtended),
+        }
+    }
+}
+
+fn debug_value_view(formatter: &mut fmt::Formatter<'_>, item_type: ItemType) -> fmt::Result {
+    formatter
+        .debug_struct("ValueView")
+        .field("item_type", &item_type)
+        .finish()
 }
 
 impl Zeroize for ValueRepr {
