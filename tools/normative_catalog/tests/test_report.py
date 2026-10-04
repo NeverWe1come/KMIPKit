@@ -168,7 +168,9 @@ class CoverageReportTests(unittest.TestCase):
                 text=True,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertTrue((root / "specification" / "catalog" / "coverage-report.md").is_file())
+            report = (root / "specification" / "catalog" / "coverage-report.md").read_text(encoding="utf-8")
+            self.assertIn("KMIPKIT-SRC-profiles", report)
+            self.assertIn("| Sources | 4 |", report)
 
     def test_check_detects_stale_report_and_write_replaces_it(self) -> None:
         catalog = report_catalog()
