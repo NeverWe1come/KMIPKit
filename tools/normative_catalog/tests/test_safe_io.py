@@ -4,12 +4,33 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+import os
 from pathlib import Path
 
-from tools.normative_catalog.safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
+from tools.normative_catalog.safe_io import (
+    PathSecurityError,
+    _windows_directory_guard,
+    atomic_write_bytes,
+    safe_read_bytes,
+)
 
 
 class SafeIoTests(unittest.TestCase):
+    def test_windows_directory_guard_prevents_parent_rename(self) -> None:
+        if os.name != "nt":
+            self.skipTest("Windows directory handles are only available on Windows")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            parent = root / "nested"
+            parent.mkdir()
+            guard = _windows_directory_guard(root, ("nested",))
+            guard.__enter__()
+            try:
+                with self.assertRaises(OSError):
+                    parent.rename(root / "moved")
+            finally:
+                guard.__exit__(None, None, None)
+
     def test_reads_small_files_and_rejects_files_over_limit(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
