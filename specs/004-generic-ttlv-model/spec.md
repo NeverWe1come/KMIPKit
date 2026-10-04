@@ -99,6 +99,7 @@ The OASIS clauses define the protocol representation; the generic in-memory mode
 | KMIPKIT-0004-NR-004 | OASIS KMIP Specification v2.1, §§12.1–12.3 Bit Masks | The specification defines KMIP bit masks as sets of bit values. | Keep generic Integer bit patterns unchanged; this model does not assign operation-specific meaning to mask bits. | FR-004 |
 | KMIPKIT-0004-NR-005 | OASIS KMIP Specification v2.1, Chapter 11 introduction and §11.56 Tag Enumeration | Implementations SHALL NOT use Tag Values marked Reserved (Chapter 11 introduction). §11.56 states that Tags SHALL begin with 42 or 54 hex in the first byte; 42 identifies specification tags and 54 identifies extensions. | The public in-memory model checks tag allocation only; this does not establish TTLV wire or protocol validity. A Raw Tag remains separate and cannot be inserted into a generic item until it passes the tag-allocation gate. | FR-002, FR-003 |
 | KMIPKIT-0004-NR-006 | OASIS KMIP Specification v2.1, §§10.1.2–10.1.5 | Type-specific lengths, value encoding, and padding rules define wire validity; §10.1.2 requires fields in Specification-defined Structures to be encoded in their described order. | This model preserves semantic values and Big Integer value octets but does not preserve framing or arbitrary original padding. It preserves caller order and does not validate schema-specific field order; protocol validation must establish known Structure order before transmission. Encoder/decoder conformance is a later feature. | FR-005, FR-006 |
+| KMIPKIT-0004-NR-007 | OASIS KMIP Specification v2.1, §10.1.2 Type | Integer is a 32-bit signed two's-complement value; Long Integer is a 64-bit signed two's-complement value; Date Time and Date Time Extended are 64-bit signed values; Interval is a 32-bit unsigned value. The clause defines their wire representations as big-endian. | Preserve each numeric value at its defined signedness and width without conversion or precision loss. This requirement traces value semantics only; byte encoding remains outside this feature. | FR-004, FR-007 |
 
 Normative source: the immutable local copy at specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html. Unknown-tag, unknown-enumeration, raw-bit preservation, value-redaction, and generic-tree behavior are KMIPKit requirements; they are not presented as additional OASIS requirements.
 
@@ -106,13 +107,24 @@ Normative source: the immutable local copy at specification/oasis/kmip-2.1/upstr
 
 | Requirement ID | Governing project authority | Application |
 |---|---|---|
-| KMIPKIT-0004-FR-002, FR-003, FR-004, FR-005, FR-006 | `AGENTS.md` §9 “Public API and compatibility”; this specification, bounded by OASIS sources in NR-001, NR-003–NR-006 | Keep raw and allocation-checked tags distinct; preserve unknown enum values, bit patterns, and exact payloads; preserve caller order without claiming schema-specific protocol validity. |
+| KMIPKIT-0004-FR-002, FR-003, FR-004, FR-005, FR-006, FR-007 | `AGENTS.md` §9 “Public API and compatibility”; this specification, bounded by OASIS sources in NR-001, NR-003–NR-007 | Keep raw and allocation-checked tags distinct; preserve unknown enum values, bit patterns, and exact payloads; preserve caller order without claiming schema-specific protocol validity. |
 | KMIPKIT-0004-FR-008 | `docs/architecture/public-api.md`, sections “Typed protocol” and “Generic TTLV” | Keep the generic public API structurally typed and prevent a known Item Type/value mismatch. |
 | KMIPKIT-0004-FR-009, FR-010 | `AGENTS.md` §8 “Security invariants” and §9 “Public API and compatibility” | Redact secrets and message contents from formatting, logs, serialization, and errors; retain explicit value access. |
 | KMIPKIT-0004-FR-012 | `AGENTS.md` §8 “Security invariants”; `docs/architecture/public-api.md`, “Secrets” | Use dedicated secret types, closure-scoped access, and zeroization of KMIPKit-owned memory. |
 | KMIPKIT-0004-FR-011 | `.specify/memory/constitution.md`, Principle I “Specification and traceability”; `AGENTS.md` §5 “OASIS requirements and conformance” | Keep normative and project-policy requirements traceable through implementation and executable verification. |
 
 For the proposed tag-allocation gate, KMIPKit uses the exact per-value allocation in the normative catalog when one exists: individually listed assigned tags are accepted and individually listed Reserved tags are rejected. The aggregate `420XXX – 42FFFF` row in §11.56 is proposed as the residual allocation for values without an individual entry, so it does not invalidate individually listed assigned values. The `540000 – 54FFFF` extension range is accepted; other unused or reserved allocations are rejected. This is a proposed KMIPKit interpretation for maintainer review, not an OASIS clarification. The separate open inventory discrepancy KMIPKIT-DISC-037 concerns decoder behavior when a reserved tag is received and remains outside this in-memory model feature.
+
+### Maintainer Decision: Overlapping Tag Allocation Notation
+
+The pinned OASIS KMIP Specification v2.1 OASIS Standard dated 14 December 2020 (`specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`) has two normative statements relevant to the gate: the Chapter 11 introduction says implementations SHALL NOT use tag values marked Reserved, while §11.56 lists individually assigned tags such as `0x420174`–`0x420176` and also labels `420XXX – 42FFFF` as Reserved. The aggregate range numerically overlaps those individual assignments. The document does not explicitly state which entry has precedence.
+
+The observable alternatives are:
+
+1. **Individual entries take precedence**: accept individually assigned tags, reject individually listed Reserved tags, and treat the remainder of the aggregate range as Reserved. This preserves the tags that §11.56 explicitly assigns for standard KMIP items.
+2. **The aggregate range takes precedence**: reject every tag in `420XXX – 42FFFF`, including values that §11.56 also lists individually as assigned. This would make those standard tag assignments unusable in the public generic model.
+
+This specification proposes the first interpretation as a project policy because it gives effect to the exact per-tag entries while retaining the residual Reserved range. It remains a proposal for maintainer review, not a normative OASIS resolution. The tag-allocation implementation MUST NOT begin until the maintainer confirms or changes this choice.
 
 ## Key Entities
 
