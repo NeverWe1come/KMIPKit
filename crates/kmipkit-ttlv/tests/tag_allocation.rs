@@ -1,4 +1,44 @@
+//! OASIS KMIP Specification v2.1, Chapter 11 introduction and §11.56 (Tag
+//! Enumeration). Traceability: KMIPKIT-0004-FR-002, KMIPKIT-0004-FR-003,
+//! KMIPKIT-0004-NR-001, and KMIPKIT-0004-NR-005. Exact-over-range precedence
+//! is the accepted KMIPKit policy in ADR-0010, not an OASIS interpretation.
+
+#[path = "../src/generated/tag_allocations.rs"]
+mod tag_allocations;
+
 use kmipkit_ttlv::{RawTag, Tag};
+use tag_allocations::{EXACT_TAG_ALLOCATIONS, TAG_ALLOCATION_RANGES, TagAllocationKind};
+
+fn catalog_kind(raw: u32) -> Option<TagAllocationKind> {
+    EXACT_TAG_ALLOCATIONS
+        .iter()
+        .find(|(tag, _)| *tag == raw)
+        .map(|(_, kind)| *kind)
+        .or_else(|| {
+            TAG_ALLOCATION_RANGES
+                .iter()
+                .find(|(start, end, _)| *start <= raw && raw <= *end)
+                .map(|(_, _, kind)| *kind)
+        })
+}
+
+fn assert_public_check_matches_catalog(raw: u32) {
+    let raw_tag = RawTag::new(raw).expect("catalog and range values fit the 24-bit field");
+
+    match catalog_kind(raw) {
+        Some(TagAllocationKind::Assigned | TagAllocationKind::Extension) => {
+            let checked = RawTag::try_checked(&raw_tag)
+                .unwrap_or_else(|_| panic!("catalog-accepted tag 0x{raw:06X} was rejected"));
+            assert_eq!(checked.raw(), raw);
+        }
+        Some(TagAllocationKind::Reserved | TagAllocationKind::Unused) | None => {
+            assert!(
+                RawTag::try_checked(&raw_tag).is_err(),
+                "catalog-rejected tag 0x{raw:06X} was accepted"
+            );
+        }
+    }
+}
 
 fn raw_tag(raw: u32) -> RawTag {
     RawTag::new(raw).expect("the test value must fit in 24 bits")
@@ -17,6 +57,67 @@ fn raw_tag_accepts_24_bit_boundaries_and_rejects_wider_values() {
     }
 
     assert!(RawTag::new(0x0100_0000).is_err());
+}
+
+#[test]
+fn every_exact_catalog_record_matches_public_allocation_check() {
+    let mut assigned = 0;
+    let mut reserved = 0;
+
+    for &(raw, kind) in EXACT_TAG_ALLOCATIONS {
+        match kind {
+            TagAllocationKind::Assigned => assigned += 1,
+            TagAllocationKind::Reserved => reserved += 1,
+            TagAllocationKind::Unused | TagAllocationKind::Extension => {
+                panic!("exact tag record 0x{raw:06X} has a range-only allocation kind")
+            }
+        }
+
+        assert_public_check_matches_catalog(raw);
+    }
+
+    assert_eq!(EXACT_TAG_ALLOCATIONS.len(), 374);
+    assert_eq!(assigned, 354);
+    assert_eq!(reserved, 20);
+}
+
+#[test]
+fn every_allocation_range_boundary_and_adjacent_value_matches_catalog() {
+    const MAX_RAW_TAG: u32 = 0x00FF_FFFF;
+
+    for &(start, end, _) in TAG_ALLOCATION_RANGES {
+        assert!(start <= end);
+
+        let mut candidates = vec![start, end];
+        if start < end {
+            candidates.extend([start + 1, end - 1, start + (end - start) / 2]);
+        }
+        if let Some(before) = start.checked_sub(1) {
+            candidates.push(before);
+        }
+        if end < MAX_RAW_TAG {
+            candidates.push(end + 1);
+        }
+
+        for raw in candidates {
+            assert_public_check_matches_catalog(raw);
+        }
+    }
+}
+
+#[test]
+fn every_extension_range_tag_is_accepted() {
+    let (start, end, kind) = TAG_ALLOCATION_RANGES
+        .iter()
+        .find(|(_, _, kind)| *kind == TagAllocationKind::Extension)
+        .copied()
+        .expect("the generated catalog must include the Extensions range");
+
+    assert_eq!(kind, TagAllocationKind::Extension);
+    assert_eq!((start, end), (0x0054_0000, 0x0054_FFFF));
+    for raw in start..=end {
+        assert_public_check_matches_catalog(raw);
+    }
 }
 
 #[test]

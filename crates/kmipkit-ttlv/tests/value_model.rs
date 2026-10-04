@@ -5,7 +5,8 @@
 //! or schema validity.
 //!
 //! Traceability: KMIPKIT-0004-FR-001–FR-008, KMIPKIT-0004-FR-010, and
-//! KMIPKIT-0004-NR-001–NR-007.
+//! KMIPKIT-0004-FR-014, and KMIPKIT-0004-NR-001–NR-007. Structure depth is
+//! capped at 64 by KMIPKit policy, not by an OASIS protocol constraint.
 
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 use std::fmt::{Debug, Display};
@@ -15,6 +16,23 @@ fn checked_tag(raw: u32) -> Tag {
         .expect("the test tag must fit in 24 bits")
         .try_checked()
         .expect("the test tag must be allocated by KMIP 2.1")
+}
+
+fn structure_at_depth(depth: usize) -> Structure {
+    assert!((1..=64).contains(&depth));
+
+    let mut structure = Structure::new();
+    for _ in 1..depth {
+        let child = Item::new(checked_tag(0x0042_0173), Value::structure(structure))
+            .expect("a checked tag and nested Structure must construct an item");
+        let mut parent = Structure::new();
+        parent
+            .try_push(child)
+            .expect("nesting within the 64-level limit must succeed");
+        structure = parent;
+    }
+
+    structure
 }
 
 fn assert_derived_item_type(value: Value, expected: ItemType) {
@@ -262,6 +280,61 @@ fn structure_preserves_caller_order_repeated_tags_and_child_values() {
         );
         assert!(children[2].with_value(
             |child| matches!(child, ValueView::ByteString(bytes) if bytes == [0xC3, 0x28].as_slice())
+        ));
+    });
+}
+
+#[test]
+fn structure_constructs_every_depth_through_sixty_four() {
+    for depth in 1..=64 {
+        let item = Item::new(
+            checked_tag(0x0042_0174),
+            Value::structure(structure_at_depth(depth)),
+        )
+        .expect("a checked tag and Structure value must construct an item");
+
+        assert_eq!(item.item_type(), ItemType::Structure);
+    }
+}
+
+#[test]
+fn structure_rejects_depth_sixty_five_without_mutating_existing_parent() {
+    const PARENT_TAG: u32 = 0x0042_0175;
+    const SENTINEL_TAG: u32 = 0x0042_0173;
+    const SENTINEL_VALUE: i32 = -12_345;
+
+    let mut parent = Structure::new();
+    parent
+        .try_push(
+            Item::new(checked_tag(SENTINEL_TAG), Value::integer(SENTINEL_VALUE))
+                .expect("the sentinel item must construct"),
+        )
+        .expect("the sentinel child must append");
+
+    let too_deep_child = Item::new(
+        checked_tag(0x0042_0174),
+        Value::structure(structure_at_depth(64)),
+    )
+    .expect("a checked tag and depth-64 Structure must construct an item");
+    let insertion = parent.try_push(too_deep_child);
+    assert!(
+        insertion.is_err(),
+        "inserting a depth-64 child would create a depth-65 Structure"
+    );
+
+    let parent = Item::new(checked_tag(PARENT_TAG), Value::structure(parent))
+        .expect("the unchanged parent must remain constructible");
+    assert_eq!(parent.tag().raw(), PARENT_TAG);
+    parent.with_value(|view| {
+        let ValueView::Structure(structure) = view else {
+            panic!("the parent value must remain a Structure");
+        };
+        let children = structure.children();
+
+        assert_eq!(children.len(), 1);
+        assert_eq!(children[0].tag().raw(), SENTINEL_TAG);
+        assert!(children[0].with_value(
+            |value| matches!(value, ValueView::Integer(actual) if *actual == SENTINEL_VALUE)
         ));
     });
 }
