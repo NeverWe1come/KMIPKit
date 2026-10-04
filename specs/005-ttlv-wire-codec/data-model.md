@@ -12,6 +12,12 @@ This document defines the wire facts and per-call safety state consumed by the c
 
 Limit values are per operation. The codec has no global mutable limit state. A limit value that cannot be represented on the target is rejected when options are constructed. Zero `max_structure_depth` permits leaf Items but no Structure Items.
 
+## Encoded TTLV Owner
+
+`EncodedTtlv` owns one successful encoder result, which may contain credentials or secret key material. It exposes the bytes through an immutable borrow for protocol transport and zeroizes its initialized bytes and backing capacity when dropped. It is not cloneable, formattable, or generally serializable and cannot be converted into an ordinary `Vec<u8>` through its public API. Copies made by callers or external TLS/runtime libraries are outside KMIPKit's zeroization guarantee.
+
+The repository rule against serializing secrets is applied to diagnostics, general-purpose serialization, and persistence. TTLV wire encoding remains permitted only as the representation needed to carry a caller-requested KMIP exchange; the owner must live through the protocol write and be dropped afterward. The encoded bytes must not be logged, formatted, persisted, or copied unnecessarily.
+
 ## TTLV Item
 
 An Item consists of an 8-byte header followed by an Item Value and any type-specific padding. Header fields are:

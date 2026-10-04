@@ -39,6 +39,16 @@ An independent source audit verified the pinned copy against its SHA-256 digest 
 
 **Alternative**: Trust declared lengths and allocate a complete child/value buffer up front. Rejected because network-supplied lengths are untrusted and may request excessive memory.
 
+### Encoded output ownership and secret handling
+
+**Selected**: Return a dedicated `EncodedTtlv` owner backed by the already pinned `zeroize` 1.9.0 dependency. Callers can borrow immutable bytes for a protocol write; dropping the owner clears the initialized bytes and backing capacity. Do not expose cloning, formatting, general-purpose serialization, mutation, or extraction into an ordinary `Vec<u8>`. Caller-created copies and copies inside external TLS/runtime libraries remain outside KMIPKit's zeroization guarantee.
+
+**Policy boundary**: The repository prohibition on serializing credentials, key material, and raw KMIP bodies applies to diagnostics, general-purpose serialization, and persistence. TTLV wire encoding is permitted only as the protocol representation required for a caller-requested KMIP exchange. The encoded bytes remain payload-free from error and logging paths and must not be persisted or copied unnecessarily.
+
+**Alternative**: Return `Vec<u8>` and zeroize only partial buffers after errors. Rejected because a successful buffer can contain credentials or key material and ordinary Vec ownership does not clear it on drop.
+
+**Alternative**: Stream bytes to an arbitrary caller-provided writer. Rejected for this feature because it weakens the preflight/failure-atomicity contract, can leave partial secret bytes in caller-controlled sinks, and makes cleanup depend on each sink. The transport can borrow the complete `EncodedTtlv` after successful encoding.
+
 ### Limit semantics
 
 Defaults are 16 MiB per message, Structure depth 64, and 100,000 total Items. Count the root Item toward the item limit. Count a root Structure as depth 1; a non-Structure root has Structure depth 0. Per-call message and item limits can be raised or lowered; depth can be configured from 0 through the model's hard ceiling of 64. A depth above 64 would require changing the KMIPKIT-0004 model contract and is a gate, not an implicit extension.

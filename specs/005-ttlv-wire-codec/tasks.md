@@ -18,11 +18,11 @@
 
 **Independent test**: `cargo test -p kmipkit-ttlv --test codec_vectors` compares all eleven type families and nested Structure encodings byte for byte.
 
-**Requirements**: `KMIPKIT-0005-FR-001`–`FR-003`, `FR-012`; `KMIPKIT-0005-NR-001`–`NR-005`; `KMIPKIT-0005-SC-001`.
+**Requirements**: `KMIPKIT-0005-FR-001`–`FR-003`, `FR-012`–`FR-013`; `KMIPKIT-0005-NR-001`–`NR-005`; `KMIPKIT-0005-SC-001`.
 
-- [ ] T002 [US1] Write and run failing exact OASIS-derived encoder vectors for all eleven Item Types, big-endian boundaries, child order, repeated tags, lengths, empty Big Integer rejection, Big Integer sign extension, and each padding family in `crates/kmipkit-ttlv/tests/codec_vectors.rs` (Red commit).
-- [ ] T003 [US1] Implement full-tree validation, checked output-size calculation including the U32 Item Length ceiling, a single complete fallible output reservation, and bounded canonical encoding for all eleven Item Types in `crates/kmipkit-ttlv/src/encoder.rs` (Green commit).
-- [ ] T004 [US1] Refactor the encoder into documented per-type length/value/padding helpers; preserve child order; ensure no fallible exit remains after copying payload bytes (or zeroize any partial output on error); and keep encode errors payload-free in `crates/kmipkit-ttlv/src/encoder.rs` and `crates/kmipkit-ttlv/src/codec.rs` (Refactor commit).
+- [ ] T002 [US1] Write and run failing exact OASIS-derived encoder vectors for all eleven Item Types, big-endian boundaries, child order, repeated tags, lengths, empty Big Integer rejection, Big Integer sign extension, and each padding family in `crates/kmipkit-ttlv/tests/codec_vectors.rs`; add an owner-drop zeroization spy test in the codec unit tests and compile-fail checks for the borrow-only/non-cloneable/non-formatting/non-serializable public surface in the existing public API test harness (Red commit).
+- [ ] T003 [US1] Implement full-tree validation, checked output-size calculation including the U32 Item Length ceiling, a single complete fallible output reservation, a zeroizing `EncodedTtlv` owner, and bounded canonical encoding for all eleven Item Types in `crates/kmipkit-ttlv/src/encoder.rs` and `crates/kmipkit-ttlv/src/codec.rs` (Green commit).
+- [ ] T004 [US1] Refactor the encoder into documented per-type length/value/padding helpers; preserve child order; ensure no fallible exit remains after copying payload bytes (or zeroize any partial output on error); verify successful output zeroizes on owner drop and cannot be cloned, formatted, serialized, mutated, or extracted as an ordinary Vec; and keep encode errors payload-free in `crates/kmipkit-ttlv/src/encoder.rs` and `crates/kmipkit-ttlv/src/codec.rs` (Refactor commit).
 
 ## Phase 3: User Story 2 — Decode a complete generic TTLV item (Priority: P1)
 
@@ -43,7 +43,7 @@
 
 **Independent test**: `cargo test -p kmipkit-ttlv --test codec_limits` exercises exact defaults, caller configuration, and one-over boundaries.
 
-**Requirements**: `KMIPKIT-0005-FR-007`–`FR-009`; `KMIPKIT-0005-SC-004`.
+**Requirements**: `KMIPKIT-0005-FR-007`–`FR-009`, `FR-013`; `KMIPKIT-0005-SC-004`.
 
 - [ ] T009 [US3] Write and run failing tests for 16 MiB, 64 Structure levels, 100,000 Items, lowered depth limits, raised/lowered message and item-count limits, encoder U32 maximum/one-over size-calculation boundaries using synthetic sizes, decoder U32 Item Length rejection via synthetic headers without giant allocations, arithmetic overflow, and pre-allocation rejection in `crates/kmipkit-ttlv/tests/codec_limits.rs` (Red commit).
 - [ ] T010 [US3] Implement immutable `CodecLimits`, checked constructors, per-call counters, preflight checks, and fallible reservations in `crates/kmipkit-ttlv/src/codec.rs`, `crates/kmipkit-ttlv/src/decoder.rs`, and `crates/kmipkit-ttlv/src/encoder.rs` (Green commit).

@@ -13,8 +13,8 @@ The 004 model implementation landed in `release/1.0.0` at `cf6c4c0d87c4de7dc159a
 ## Technical Context
 
 **Language/Version**: Rust Edition 2024, MSRV 1.94.
-**Primary Dependencies**: `kmipkit-ttlv` generic model; standard library only unless implementation evidence justifies another dependency.
-**Storage**: In-memory only; output uses an owned byte vector and decoded values own their payloads through the approved model.
+**Primary Dependencies**: `kmipkit-ttlv` generic model and its existing pinned `zeroize` 1.9.0 dependency; no new dependency is planned.
+**Storage**: In-memory only; encoded output uses a dedicated zeroizing owner and decoded values own their payloads through the approved model.
 **Testing**: Focused codec unit tests, exact OASIS-derived vectors, malformed-input negatives, property-based model round trips, coverage, workspace checks, and fuzz targets after the parser surface stabilizes.
 **Target Platform**: Rust workspace supported platforms.
 **Project Type**: Public Rust library crate/module in `crates/kmipkit-ttlv`.
@@ -91,7 +91,7 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 ### Phase 2 — Encoder (strict TDD)
 
 - Write failing exact byte vectors for all eleven types and nested Structures, plus U32 maximum/one-over output-size planner boundaries without multi-gigabyte allocation.
-- Validate the complete tree, compute bounded lengths, and reserve the complete output before copying payload bytes; then emit canonical encoding with no fallible exits after payload copying begins.
+- Validate the complete tree, compute bounded lengths, and reserve the complete zeroizing output before copying payload bytes; then emit canonical encoding with no fallible exits after payload copying begins. Return the result in `EncodedTtlv`, which exposes an immutable byte borrow and zeroizes its owned bytes and capacity on drop.
 - Refactor the writer for one focused responsibility, document invariants, and verify checked arithmetic and error redaction.
 
 ### Phase 3 — Decoder (strict TDD)

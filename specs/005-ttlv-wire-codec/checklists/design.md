@@ -19,6 +19,9 @@
 - [x] Input and declared lengths are checked before allocation based on them.
 - [x] Default message/depth/element limits and counting semantics are explicit.
 - [x] Errors contain no raw body or value payload.
+- [x] Successful encoder output uses a borrow-only owner that zeroizes its initialized bytes and backing capacity on drop.
+- [x] The protocol-wire encoding exception is distinguished from diagnostic/general-purpose serialization and persistence.
+- [x] Encoded output cannot be cloned, formatted, generally serialized, mutated, or extracted as an ordinary byte vector through the public API.
 - [x] Unsupported Type behavior, exact-one-item behavior, and trailing data are explicit.
 - [x] Padding octet acceptance follows the source; canonical encoder fill is labeled as project policy.
 - [ ] Proposed ADR-0011 has been reviewed/accepted, resolving `KMIPKIT-DISC-037`.
