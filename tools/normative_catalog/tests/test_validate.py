@@ -89,6 +89,24 @@ def validate(document: dict[str, object]) -> dict[str, object]:
     return validate_catalog(json.dumps(document).encode("utf-8"), ROOT)
 
 
+def test_case(*, fixture_path: str | None, fixture_availability: str) -> dict[str, object]:
+    return {
+        "test_id": "KMIPKIT-TEST-SPEC-001",
+        "official_case_id": "KMIP-TC-001",
+        "source_id": "KMIPKIT-SRC-testcases",
+        "source_section": "1",
+        "evidence_category": "conformance",
+        "mandatory_status": "unknown",
+        "profile_ids": [],
+        "requirement_ids": [],
+        "element_ids": [],
+        "raw_href": "../fixtures/TC-001.xml",
+        "fixture_path": fixture_path,
+        "fixture_availability": fixture_availability,
+        "mapping_confidence": "unmapped",
+    }
+
+
 class CatalogValidationTests(unittest.TestCase):
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
@@ -174,6 +192,31 @@ class CatalogValidationTests(unittest.TestCase):
                 "profile_ids": ["KMIPKIT-PROFILE-MISSING"],
                 "test_case_ids": [],
             }
+        ]
+        with self.assertRaises(CatalogValidationError):
+            validate(document)
+
+    def test_rejects_unsafe_fixture_paths_without_opening_them(self) -> None:
+        for unsafe_path in (
+            "C:/secret.xml",
+            "/secret.xml",
+            "../outside.xml",
+            "specification/oasis/kmip-2.1/../../outside.xml",
+            "specification/oasis/kmip-2.1/fixtures\\secret.xml",
+            "\\\\server\\share\\fixture.xml",
+        ):
+            document = minimal_catalog()
+            document["test_cases"] = [test_case(fixture_path=unsafe_path, fixture_availability="available")]
+            with self.subTest(path=unsafe_path), self.assertRaises(CatalogValidationError):
+                validate(document)
+
+    def test_rejects_fixture_claimed_available_when_git_tree_has_no_file(self) -> None:
+        document = minimal_catalog()
+        document["test_cases"] = [
+            test_case(
+                fixture_path="specification/oasis/kmip-2.1/fixtures/TC-001.xml",
+                fixture_availability="available",
+            )
         ]
         with self.assertRaises(CatalogValidationError):
             validate(document)
