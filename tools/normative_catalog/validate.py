@@ -12,6 +12,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+if __package__:
+    from .safe_io import PathSecurityError, confined_path, safe_read_bytes
+else:
+    from safe_io import PathSecurityError, confined_path, safe_read_bytes
+
 
 MAX_BYTES = 16 * 1024 * 1024
 MAX_DEPTH = 32
@@ -73,7 +78,8 @@ TOP_LEVEL_ID_FIELDS = {
 ELEMENT_FIELDS = {
     "element_id", "kind", "name", "source_refs", "wire_value", "allocation",
     "direction", "scope_state", "scope_reason", "parent_element_ids",
-    "requirement_ids", "profile_ids", "test_case_ids",
+    "requirement_ids", "profile_ids", "test_case_ids", "feature_spec",
+    "implementation_refs", "verification_refs",
 }
 ELEMENT_KINDS = {
     "operation", "message_field", "structure_member", "credential", "data_type",
@@ -100,7 +106,7 @@ def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
         if key in result:
-            _fail(f"duplicate JSON object key: {key}")
+            _fail("catalog contains duplicate JSON object keys")
         result[key] = value
     return result
 
@@ -146,13 +152,16 @@ class _JsonPreflight:
     def _read_string(self) -> str:
         start = self.position
         self.position += 1
+        raw_bytes = 1
+        decoded_bytes = 0
         while self.position < len(self.text):
             character = self.text[self.position]
             if character == '"':
                 self.position += 1
-                encoded = self.text[start:self.position].encode("utf-8")
-                if len(encoded) > MAX_STRING_BYTES * 6 + 2:
+                raw_bytes += 1
+                if raw_bytes > MAX_STRING_BYTES * 6 + 2:
                     _fail("catalog contains a string longer than 65,536 UTF-8 bytes")
+                encoded = self.text[start:self.position].encode("utf-8")
                 try:
                     value = json.loads(encoded.decode("utf-8"))
                 except (json.JSONDecodeError, UnicodeDecodeError) as error:
@@ -162,18 +171,51 @@ class _JsonPreflight:
             if ord(character) < 0x20:
                 _fail("catalog contains an unescaped JSON control character")
             if character == "\\":
+                raw_bytes += 1
                 self.position += 1
                 if self.position >= len(self.text):
                     _fail("catalog contains a truncated JSON escape")
                 escape = self.text[self.position]
+                raw_bytes += 1
                 if escape == "u":
                     digits = self.text[self.position + 1:self.position + 5]
                     if len(digits) != 4 or re.fullmatch(r"[0-9a-fA-F]{4}", digits) is None:
                         _fail("catalog contains an invalid Unicode escape")
-                    self.position += 5
+                    raw_bytes += 4
+                    codepoint = int(digits, 16)
+                    if 0xD800 <= codepoint <= 0xDBFF:
+                        low_start = self.position + 5
+                        if self.text[low_start:low_start + 2] != "\\u":
+                            _fail("catalog contains an unpaired Unicode surrogate")
+                        low_digits = self.text[low_start + 2:low_start + 6]
+                        if len(low_digits) != 4 or re.fullmatch(r"[0-9a-fA-F]{4}", low_digits) is None:
+                            _fail("catalog contains an invalid Unicode escape")
+                        low_surrogate = int(low_digits, 16)
+                        if not 0xDC00 <= low_surrogate <= 0xDFFF:
+                            _fail("catalog contains an unpaired Unicode surrogate")
+                        raw_bytes += 6
+                        decoded_bytes += 4
+                        self.position += 11
+                    elif 0xDC00 <= codepoint <= 0xDFFF:
+                        _fail("catalog contains an unpaired Unicode surrogate")
+                    else:
+                        decoded_bytes += len(chr(codepoint).encode("utf-8"))
+                        self.position += 5
+                    if raw_bytes > MAX_STRING_BYTES * 6 + 2 or decoded_bytes > MAX_STRING_BYTES:
+                        _fail("catalog contains a string longer than 65,536 UTF-8 bytes")
                     continue
                 if escape not in '"\\/bfnrt':
                     _fail("catalog contains an invalid JSON escape")
+                decoded_bytes += 1
+                self.position += 1
+                if raw_bytes > MAX_STRING_BYTES * 6 + 2 or decoded_bytes > MAX_STRING_BYTES:
+                    _fail("catalog contains a string longer than 65,536 UTF-8 bytes")
+                continue
+            byte_length = len(character.encode("utf-8"))
+            raw_bytes += byte_length
+            decoded_bytes += byte_length
+            if raw_bytes > MAX_STRING_BYTES * 6 + 2 or decoded_bytes > MAX_STRING_BYTES:
+                _fail("catalog contains a string longer than 65,536 UTF-8 bytes")
             self.position += 1
         _fail("catalog contains an unterminated JSON string")
 
@@ -202,7 +244,7 @@ class _JsonPreflight:
                 self._count_token()
                 key = self._read_string()
                 if key in keys:
-                    _fail(f"duplicate JSON object key: {key}")
+                    _fail("catalog contains duplicate JSON object keys")
                 keys.add(key)
                 self.members += 1
                 if self.members > MAX_MEMBERS:
@@ -296,13 +338,10 @@ def _reject_surrogates(value: Any) -> None:
 
 
 def _source_manifest(root: Path) -> dict[str, dict[str, str]]:
-    source_root = root / "specification" / "oasis" / "kmip-2.1"
-    inventory_path = source_root / "SOURCES.md"
-    checksums_path = source_root / "CHECKSUMS.sha256"
     try:
-        inventory = inventory_path.read_text(encoding="utf-8")
-        checksums = checksums_path.read_text(encoding="ascii")
-    except (OSError, UnicodeError) as error:
+        inventory = safe_read_bytes(root, "specification/oasis/kmip-2.1/SOURCES.md", max_bytes=1_048_576).decode("utf-8")
+        checksums = safe_read_bytes(root, "specification/oasis/kmip-2.1/CHECKSUMS.sha256", max_bytes=1_048_576).decode("ascii")
+    except (OSError, UnicodeError, PathSecurityError) as error:
         raise CatalogValidationError("pinned OASIS source manifest is unavailable") from error
 
     digest_by_path: dict[str, str] = {}
@@ -395,10 +434,10 @@ def _reject_reparse_points(root: Path, tree: dict[str, tuple[str, str]]) -> None
     for relative, (mode, object_type) in tree.items():
         if mode == "120000" or object_type != "blob":
             _fail("the pinned OASIS tree contains a symlink or non-file entry")
-        path = root / Path(relative)
         try:
+            path = confined_path(root, relative)
             metadata = path.lstat()
-        except OSError as error:
+        except (OSError, PathSecurityError) as error:
             raise CatalogValidationError("a pinned OASIS tree entry is unavailable") from error
         if stat.S_ISLNK(metadata.st_mode) or getattr(metadata, "st_file_attributes", 0) & reparse_attribute:
             _fail("the pinned OASIS tree contains a symlink or reparse point")
@@ -530,6 +569,8 @@ def _check_semantics(
     for element in catalog["elements"]:
         if set(element) - ELEMENT_FIELDS:
             _fail("protocol element has unknown fields")
+        if not {"feature_spec", "implementation_refs", "verification_refs"}.issubset(element):
+            _fail("protocol element is missing coverage assignment fields")
         if element.get("kind") not in ELEMENT_KINDS:
             _fail("protocol element has an invalid kind")
         if not isinstance(element.get("name"), str) or not element["name"].strip():
@@ -545,6 +586,15 @@ def _check_semantics(
         _check_link_ids(element, "requirement_ids", set(requirements), "protocol element")
         _check_link_ids(element, "profile_ids", set(profiles), "protocol element")
         _check_link_ids(element, "test_case_ids", set(test_cases), "protocol element")
+        if element["feature_spec"] is not None and (
+            not isinstance(element["feature_spec"], str) or not element["feature_spec"].strip()
+        ):
+            _fail("protocol element feature_spec must be a non-empty string or null")
+        for field in ("implementation_refs", "verification_refs"):
+            if not isinstance(element[field], list) or any(
+                not isinstance(reference, str) or not reference.strip() for reference in element[field]
+            ):
+                _fail(f"protocol element {field} must be an array of non-empty strings")
         if "wire_value" in element and element["wire_value"] is not None and not isinstance(element["wire_value"], str):
             _fail("protocol element wire_value must be a string")
         if "allocation" in element and element["allocation"] not in {None, "assigned", "reserved", "unused"}:
@@ -637,7 +687,53 @@ def _validate_catalog_header(catalog: Any) -> dict[str, Any]:
     return catalog
 
 
-def load_validated_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
+COMPLETE_ELEMENT_COUNTS = {
+    "data_type": 11,
+    "object_type": 9,
+    "object_structure": 12,
+    "attribute": 63,
+    "attribute_structure": 7,
+    "operation_structure": 41,
+    "enumeration": 64,
+    "bitmask": 3,
+    "tag": 374,
+}
+
+
+def _check_complete_inventory(catalog: dict[str, Any]) -> None:
+    elements = catalog["elements"]
+    operations = [row for row in elements if row.get("kind") == "operation"]
+    client_operations = [row for row in operations if row.get("direction") == "client_to_server"]
+    server_operations = [row for row in operations if row.get("direction") == "server_to_client"]
+    if len(client_operations) != 57 or len(server_operations) != 5 or len(operations) != 62:
+        _fail("complete inventory requires 57 client and 5 server operation records")
+    if any(row.get("scope_state") != "client_1_0" for row in client_operations):
+        _fail("complete inventory has an incorrectly scoped client operation")
+    if any(row.get("scope_state") != "client_1_1" for row in server_operations):
+        _fail("complete inventory has an incorrectly scoped server operation")
+
+    for kind, expected in COMPLETE_ELEMENT_COUNTS.items():
+        actual = sum(row.get("kind") == kind for row in elements)
+        if actual != expected:
+            _fail(f"complete inventory requires {expected} {kind} records; found {actual}")
+    tag_rows = [row for row in elements if row.get("kind") == "tag"]
+    if sum(row.get("allocation") == "assigned" for row in tag_rows) != 354:
+        _fail("complete inventory requires 354 assigned single-value tags")
+    if sum(row.get("allocation") == "reserved" for row in tag_rows) != 20:
+        _fail("complete inventory requires 20 reserved single-value tags")
+    if len(catalog["tag_ranges"]) != 5:
+        _fail("complete inventory requires five separate tag-range records")
+
+    required_collections = ("source_clauses", "requirements", "profiles", "test_cases", "policies")
+    if any(not catalog[name] for name in required_collections):
+        _fail("complete inventory is missing clauses, requirements, profiles, test cases, or policies")
+    source_test_count = sum(row.get("source_id") == "KMIPKIT-SRC-testcases" for row in catalog["test_cases"])
+    profile_fixture_count = sum(row.get("source_id") == "KMIPKIT-SRC-profiles" for row in catalog["test_cases"])
+    if source_test_count != 110 or profile_fixture_count != 93:
+        _fail("complete inventory requires 110 Test Cases and 93 profile fixture references")
+
+
+def load_validated_catalog(raw: bytes, repo_root: Path, *, require_complete: bool = False) -> dict[str, Any]:
     """Validate raw UTF-8 JSON bytes and return the validated catalog records."""
     text = _preflight(raw)
     try:
@@ -655,12 +751,14 @@ def load_validated_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
     clauses = _check_clauses(catalog, sources)
     _check_identifiers(catalog)
     _check_semantics(catalog, sources, clauses, tree)
+    if require_complete:
+        _check_complete_inventory(catalog)
 
     for source in catalog["sources"]:
-        path = repo_root / source["local_path"]
         try:
-            digest = hashlib.sha256(path.read_bytes()).hexdigest()
-        except OSError as error:
+            raw = safe_read_bytes(repo_root, source["local_path"], max_bytes=MAX_BYTES)
+            digest = hashlib.sha256(raw).hexdigest()
+        except (OSError, PathSecurityError) as error:
             raise CatalogValidationError("pinned OASIS source file is unavailable") from error
         if digest != source["sha256"]:
             _fail(f"pinned source checksum mismatch for {source['source_id']}")
@@ -668,9 +766,9 @@ def load_validated_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
     return catalog
 
 
-def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
+def validate_catalog(raw: bytes, repo_root: Path, *, require_complete: bool = False) -> dict[str, Any]:
     """Validate raw UTF-8 JSON bytes and return deterministic aggregate counts."""
-    catalog = load_validated_catalog(raw, repo_root)
+    catalog = load_validated_catalog(raw, repo_root, require_complete=require_complete)
     return {
         "source_count": len(catalog["sources"]),
         "clause_count": len(catalog["source_clauses"]),
@@ -681,12 +779,18 @@ def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument(
+        "--structural-only",
+        action="store_true",
+        help="validate structure without requiring the complete KMIP 2.1 inventory",
+    )
     arguments = parser.parse_args(argv)
     root = arguments.repo_root.resolve(strict=True)
     catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
     try:
-        result = validate_catalog(catalog_path.read_bytes(), root)
-    except (OSError, CatalogValidationError) as error:
+        raw = safe_read_bytes(root, "specification/catalog/kmip-2.1.json", max_bytes=MAX_BYTES)
+        result = validate_catalog(raw, root, require_complete=not arguments.structural_only)
+    except (OSError, CatalogValidationError, PathSecurityError) as error:
         print(f"catalog validation failed: {error}", file=sys.stderr)
         return 1
     print(

@@ -8,6 +8,11 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
+if __package__:
+    from .safe_io import PathSecurityError, atomic_write_bytes, confined_path, safe_read_bytes
+else:
+    from safe_io import PathSecurityError, atomic_write_bytes, confined_path, safe_read_bytes
+
 
 REPORT_PATH = Path("specification/catalog/coverage-report.md")
 SECTION_ORDER = (
@@ -15,8 +20,11 @@ SECTION_ORDER = (
     "Count reconciliation",
     "Source clause dispositions",
     "Unassigned requirements",
+    "Unassigned protocol elements",
     "Profile states",
+    "Profiles by applicability and claim state",
     "Test fixture availability",
+    "Test evidence by fixture availability",
     "Open discrepancies",
     "Project policies",
 )
@@ -134,6 +142,7 @@ def render_report(catalog: dict[str, Any]) -> str:
     lines.extend(_table(("Dimension", "Value", "Count"), [
         *(("Strength", key, value) for key, value in _count_by(requirements, "normative_strength")),
         *(("Scope", key, value) for key, value in _count_by(requirements, "scope_state")),
+        *(("Direction", key, value) for key, value in _count_by(requirements, "direction")),
     ]))
     lines.append("")
 
@@ -153,12 +162,33 @@ def render_report(catalog: dict[str, Any]) -> str:
     ))
     lines.append("")
 
+    unassigned_elements = [
+        row for row in elements
+        if not row.get("feature_spec") or not row.get("implementation_refs") or not row.get("verification_refs")
+    ]
+    unassigned_elements.sort(key=lambda row: row.get("element_id", ""))
+    lines.extend(["## Unassigned protocol elements", ""])
+    lines.extend(_table(
+        ("Element", "Kind", "Direction", "Scope", "Source"),
+        [(
+            row.get("element_id"), row.get("kind"), row.get("direction"), row.get("scope_state"),
+            _source_reference(row),
+        ) for row in unassigned_elements],
+    ))
+    lines.append("")
+
     profiles = sorted(catalog.get("profiles", []), key=lambda row: row.get("profile_id", ""))
     lines.extend(["## Profile states", ""])
     lines.extend(_table(
         ("Profile", "Name", "Applicability", "Claim state", "Source"),
         [(row.get("profile_id"), row.get("name"), row.get("applicability"), row.get("claim_state"), _source_reference(row)) for row in profiles],
     ))
+    lines.append("")
+    lines.extend(["### Profiles by applicability and claim state", ""])
+    lines.extend(_table(("Dimension", "Value", "Count"), [
+        *(("Applicability", key, value) for key, value in _count_by(profiles, "applicability")),
+        *(("Claim state", key, value) for key, value in _count_by(profiles, "claim_state")),
+    ]))
     lines.append("")
 
     test_cases = sorted(catalog.get("test_cases", []), key=lambda row: (row.get("source_id", ""), row.get("official_case_id", ""), row.get("test_id", "")))
@@ -167,6 +197,9 @@ def render_report(catalog: dict[str, Any]) -> str:
         ("Test", "Official ID", "Fixture status", "Local fixture"),
         [(row.get("test_id"), row.get("official_case_id"), row.get("fixture_availability"), row.get("fixture_path") or "—") for row in test_cases],
     ))
+    lines.append("")
+    lines.extend(["### Test evidence by fixture availability", ""])
+    lines.extend(_table(("Fixture state", "Count"), _count_by(test_cases, "fixture_availability")))
     lines.append("")
 
     discrepancies = sorted(catalog.get("discrepancies", []), key=lambda row: row.get("discrepancy_id", ""))
@@ -188,17 +221,24 @@ def render_report(catalog: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def write_report(catalog: dict[str, Any], path: Path, *, check: bool) -> bool:
+def write_report(catalog: dict[str, Any], path: Path, *, check: bool, repo_root: Path | None = None) -> bool:
     """Check byte equality or write the deterministic UTF-8/LF report."""
     expected = render_report(catalog).encode("utf-8")
+    root = (repo_root or path.parent).resolve(strict=True)
     try:
-        current = path.read_bytes()
-    except FileNotFoundError:
-        current = None
+        relative = path.relative_to(root).as_posix()
+    except ValueError as error:
+        raise PathSecurityError("coverage report path is outside the repository") from error
+    target = confined_path(root, relative, allow_missing_leaf=True)
+    try:
+        current = safe_read_bytes(root, relative, max_bytes=16 * 1024 * 1024) if target.exists() else None
+    except PathSecurityError:
+        raise
+    except OSError as error:
+        raise PathSecurityError("coverage report could not be read safely") from error
     if check:
         return current == expected
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(expected)
+    atomic_write_bytes(root, relative, expected)
     return True
 
 
@@ -208,6 +248,11 @@ def main(argv: list[str] | None = None) -> int:
     mode.add_argument("--write", action="store_true", help="write the generated report")
     mode.add_argument("--check", action="store_true", help="fail if the checked-in report is stale")
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument(
+        "--structural-only",
+        action="store_true",
+        help="render an incomplete catalog for authoring and fixture checks",
+    )
     arguments = parser.parse_args(argv)
     try:
         repository = arguments.repo_root.resolve(strict=True)
@@ -218,9 +263,10 @@ def main(argv: list[str] | None = None) -> int:
 
         catalog_path = repository / "specification" / "catalog" / "kmip-2.1.json"
         report_path = repository / REPORT_PATH
-        catalog = load_validated_catalog(catalog_path.read_bytes(), repository)
-        valid = write_report(catalog, report_path, check=arguments.check)
-    except (OSError, ValueError) as error:
+        raw = safe_read_bytes(repository, "specification/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
+        catalog = load_validated_catalog(raw, repository, require_complete=not arguments.structural_only)
+        valid = write_report(catalog, report_path, check=arguments.check, repo_root=repository)
+    except (OSError, ValueError, PathSecurityError) as error:
         print(f"coverage report failed: {error}", file=sys.stderr)
         return 1
     if not valid:

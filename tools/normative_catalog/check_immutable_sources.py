@@ -40,7 +40,7 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
     if resolved != base_sha:
         raise ImmutableSourceError("base SHA does not resolve to that exact commit")
 
-    tracked_diff = _git(
+    working_tree_diff = _git(
         root,
         "diff",
         "--no-renames",
@@ -51,8 +51,20 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
         "--",
         "specification/oasis/",
     )
+    index_diff = _git(
+        root,
+        "diff",
+        "--cached",
+        "--no-renames",
+        "--raw",
+        "--full-index",
+        "--no-ext-diff",
+        base_sha,
+        "--",
+        "specification/oasis/",
+    )
     untracked = _git(root, "ls-files", "--others", "-z", "--", "specification/oasis/")
-    if tracked_diff or untracked:
+    if working_tree_diff or index_diff or untracked:
         raise ImmutableSourceError("specification/oasis differs from the exact base commit")
     return {"base_sha": base_sha, "changed_path_count": 0}
 

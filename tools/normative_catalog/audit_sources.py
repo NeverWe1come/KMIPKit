@@ -3,12 +3,19 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
+import subprocess
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
+
+if __package__:
+    from .safe_io import safe_read_bytes
+else:
+    from safe_io import safe_read_bytes
 
 
 MAX_DOCUMENT_BYTES = 8 * 1024 * 1024
@@ -212,8 +219,36 @@ def audit_git_sources(repo_root: Path, base_sha: str) -> list[dict[str, Any]]:
     total = 0
     records: list[dict[str, Any]] = []
     for source_id in ("KMIPKIT-SRC-spec", "KMIPKIT-SRC-profiles"):
-        path = repo_root / manifest[source_id]["local_path"]
-        raw = path.read_bytes()
+        relative_path = manifest[source_id]["local_path"]
+        try:
+            process = subprocess.Popen(
+                ["git", "cat-file", "blob", f"{base_sha}:{relative_path}"],
+                cwd=repo_root,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+            )
+        except OSError as error:
+            raise SourceAuditError("pinned Git source blob could not be opened") from error
+        if process.stdout is None:
+            process.kill()
+            process.wait()
+            raise SourceAuditError("pinned Git source blob did not provide a readable stream")
+        try:
+            raw = process.stdout.read(MAX_DOCUMENT_BYTES + 1)
+            if len(raw) > MAX_DOCUMENT_BYTES:
+                process.kill()
+                process.wait()
+                raise SourceAuditError("pinned HTML document exceeds the 8 MiB input limit")
+            remainder, _ = process.communicate()
+            raw += remainder
+        except OSError as error:
+            process.kill()
+            process.wait()
+            raise SourceAuditError("pinned Git source blob could not be read") from error
+        if process.returncode != 0:
+            raise SourceAuditError("pinned Git source blob is unavailable")
+        if hashlib.sha256(raw).hexdigest() != manifest[source_id]["sha256"]:
+            raise SourceAuditError("pinned Git source blob checksum does not match the manifest")
         total += len(raw)
         if total > MAX_TOTAL_BYTES:
             raise SourceAuditError("total pinned HTML input exceeds the 16 MiB limit")
@@ -228,10 +263,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true", help="compare candidates with the checked-in clause ledger")
     arguments = parser.parse_args(argv)
     try:
-        records = audit_git_sources(arguments.repo_root, arguments.base_sha)
+        repository = arguments.repo_root.resolve(strict=True)
+        records = audit_git_sources(repository, arguments.base_sha)
         if arguments.check:
-            catalog_path = arguments.repo_root / "specification" / "catalog" / "kmip-2.1.json"
-            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            raw_catalog = safe_read_bytes(
+                repository,
+                "specification/catalog/kmip-2.1.json",
+                max_bytes=16 * 1024 * 1024,
+            )
+            catalog = json.loads(raw_catalog.decode("utf-8"))
             ledger = catalog["source_clauses"]
             candidates = {record["clause_id"]: record for record in records}
             ledger_ids = {record["clause_id"] for record in ledger}

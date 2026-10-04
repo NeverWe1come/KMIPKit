@@ -59,4 +59,4 @@ CI compares every path under `specification/oasis/`—including source metadata 
 
 ## Report generation
 
-The Markdown report is generated from the catalog and source-candidate audit. Repeated generation over identical inputs and generation after permutations of input collections yield byte-identical output. It includes totals by element kind, operation direction, requirement level, scope state, profile applicability/claim state, test-fixture availability, discrepancies, policies, source-ledger dispositions, and unassigned coverage.
+The Markdown report is generated from the catalog and source-candidate audit. Repeated generation over identical inputs and generation after permutations of input collections yield byte-identical output. It includes totals by element kind, operation direction, requirement level, scope and direction, profile applicability/claim state, test-fixture availability, discrepancies, policies, source-ledger dispositions, unassigned requirements, and unassigned protocol elements.

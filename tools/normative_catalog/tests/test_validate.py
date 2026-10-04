@@ -137,6 +137,13 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaises(CatalogValidationError):
             validate_catalog(raw, ROOT)
 
+    def test_duplicate_key_errors_do_not_echo_untrusted_control_text(self) -> None:
+        raw = b'{"schema_version":{"attacker\\u001b\\n":1,"attacker\\u001b\\n":2}}'
+        with self.assertRaisesRegex(CatalogValidationError, "duplicate JSON object keys") as raised:
+            validate_catalog(raw, ROOT)
+        self.assertNotIn("attacker", str(raised.exception))
+        self.assertNotIn("\x1b", str(raised.exception))
+
     def test_preflight_rejects_unknown_top_level_key_before_object_decode(self) -> None:
         raw = b'{"unexpected":{"nested":[1,2,3]}}'
         with patch("tools.normative_catalog.validate.json.loads", wraps=json.loads) as decoder:
@@ -187,6 +194,9 @@ class CatalogValidationTests(unittest.TestCase):
                 "requirement_ids": [],
                 "profile_ids": [],
                 "test_case_ids": [],
+                "feature_spec": None,
+                "implementation_refs": [],
+                "verification_refs": [],
             }
         ]
         with self.assertRaises(CatalogValidationError):
@@ -206,6 +216,9 @@ class CatalogValidationTests(unittest.TestCase):
                 "requirement_ids": [],
                 "profile_ids": [],
                 "test_case_ids": [],
+                "feature_spec": None,
+                "implementation_refs": [],
+                "verification_refs": [],
                 "unexpected": "value",
             }
         ]
@@ -226,6 +239,9 @@ class CatalogValidationTests(unittest.TestCase):
                 "requirement_ids": [],
                 "profile_ids": ["KMIPKIT-PROFILE-MISSING"],
                 "test_case_ids": [],
+                "feature_spec": None,
+                "implementation_refs": [],
+                "verification_refs": [],
             }
         ]
         with self.assertRaises(CatalogValidationError):
@@ -259,7 +275,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_command_line_validator_reports_catalog_counts(self) -> None:
         script = ROOT / "tools" / "normative_catalog" / "validate.py"
         result = subprocess.run(
-            [sys.executable, str(script), "--repo-root", str(ROOT)],
+            [sys.executable, str(script), "--repo-root", str(ROOT), "--structural-only"],
             cwd=ROOT,
             capture_output=True,
             check=False,

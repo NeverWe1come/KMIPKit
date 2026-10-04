@@ -38,8 +38,12 @@ class SafeIoTests(unittest.TestCase):
 
     def test_rejects_parent_traversal(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaises(PathSecurityError):
-                safe_read_bytes(Path(directory), "../outside.json", max_bytes=10)
+            root = Path(directory)
+            (root / "nested").mkdir()
+            (root / "nested" / "file.json").write_bytes(b"{}")
+            for unsafe_path in ("../outside.json", "nested/../nested/file.json", "nested//file.json", "nested/./file.json"):
+                with self.subTest(path=unsafe_path), self.assertRaises(PathSecurityError):
+                    safe_read_bytes(root, unsafe_path, max_bytes=10)
 
     def test_atomic_writer_refuses_symlink_output_and_preserves_target(self) -> None:
         with tempfile.TemporaryDirectory() as directory, tempfile.TemporaryDirectory() as outside:

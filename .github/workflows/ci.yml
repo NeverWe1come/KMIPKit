@@ -70,9 +70,35 @@ jobs:
           if (-not $python) { $python = Get-Command -Name 'python' -ErrorAction Stop }
           & $python.Source -m unittest discover -s scripts/tests -p 'test_*.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python.Source -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run PowerShell contracts
         run: pwsh -File scripts/tests/Test-Wsl.ps1
+
+  normative-inventory:
+    if: github.event_name == 'pull_request'
+    name: Normative inventory / immutable sources and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request merge commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check pinned OASIS tree against exact PR base
+        run: python3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha '${{ github.event.pull_request.base.sha }}'
+
+      - name: Compare source candidates with reviewed clause ledger
+        run: python3 -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha '${{ github.event.pull_request.base.sha }}' --check
+
+      - name: Validate complete normative catalog
+        run: python3 -B tools/normative_catalog/validate.py --repo-root .
+
+      - name: Verify generated coverage report
+        run: python3 -B tools/normative_catalog/report.py --repo-root . --check
 
   coverage:
     if: github.event_name == 'pull_request'
