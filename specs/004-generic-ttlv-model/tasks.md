@@ -45,7 +45,7 @@
 
 - [x] T013 [US2] Write and run exhaustive catalog-backed tests for every exact assigned/Reserved tag, the overlapping exact-entry/range cases, all range boundaries, unknown Enumeration values, Integer bit patterns, duplicate child tags, caller order, and Structure depth 64/65 in `crates/kmipkit-ttlv/tests/tag_allocation.rs` and `crates/kmipkit-ttlv/tests/value_model.rs` (Red `744f0ff`; citation fix `a32e171`; lint follow-up `3cc6d06`; Rust 1.94 format and all-target/all-feature Clippy passed; final focused tests: tag allocation 8/8 and value model 16/16; independent reviews approved).
 - [x] T014 [US2] Implement any preservation gaps exposed by T013, including the 64-level Structure construction bound and failure-without-mutation behavior, in `crates/kmipkit-ttlv/src/structure.rs`, `crates/kmipkit-ttlv/src/value.rs`, and `crates/kmipkit-ttlv/src/error.rs` (Green `6d5d2ce`; Rust 1.94 format, all-feature crate tests (24 integration tests and 1 doctest), all-target/all-feature Clippy passed; independent review approved).
-- [ ] T015 [US2] Refactor allocation and nesting errors to remain value-free; document that the nesting limit is KMIPKit policy and not an OASIS protocol constraint in `crates/kmipkit-ttlv/src/structure.rs` and `crates/kmipkit-ttlv/src/tag.rs` (Refactor commit).
+- [x] T015 [US2] Refactor allocation and nesting errors to remain value-free; document that the nesting limit is KMIPKit policy and not an OASIS protocol constraint in `crates/kmipkit-ttlv/src/structure.rs` and `crates/kmipkit-ttlv/src/tag.rs` (Refactor `a201aca`; Rust 1.94 format, all-target/all-feature Clippy, all-feature tests, and rustdoc passed; independent review approved).
 
 ## Phase 5: User Story 3 — Protect payloads and redact diagnostics (Priority: P1)
 
