@@ -1,5 +1,5 @@
 # ADR-0010: Tag allocation precedence for generic TTLV
-Status: Proposed
+Status: Accepted
 Date: 2026-10-04
 
 ## Context
@@ -19,7 +19,7 @@ received Reserved tag, which remains tracked separately as KMIPKIT-DISC-037.
 
 ## Decision
 
-Proposed policy for maintainer review:
+Accepted KMIPKit project policy:
 
 1. An exact individual catalog record takes precedence over any overlapping
    aggregate range record.
@@ -34,9 +34,10 @@ Proposed policy for maintainer review:
    represent any unsigned 24-bit value but cannot enter the checked generic
    tree unless this gate accepts it.
 
-This is a KMIPKit project policy, not an OASIS interpretation or clarification.
-Implementation is gated on maintainer acceptance of this ADR and approval of
-the KMIPKIT-0004 specification.
+This accepted policy is a KMIPKit project decision, not an OASIS
+interpretation or clarification. It was accepted with the KMIPKIT-0004 design
+PR merged into `release/1.0.0` (merge commit
+`3638c6c7929992e8ced59a3903a0a6640f847069`).
 
 ## Consequences
 

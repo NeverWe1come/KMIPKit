@@ -1,11 +1,11 @@
 # Research: KMIP Generic TTLV Value Model
 
-**Status**: Design research for review. It does not accept ADR-0010 or approve the feature specification.
+**Status**: Accepted design research supporting KMIPKIT-0004. ADR-0010 and the feature specification were accepted through merged PR #10 (`3638c6c7929992e8ced59a3903a0a6640f847069`).
 
 ## Repository findings
 
 - `crates/kmipkit-ttlv` is the intended model crate and its root already has `#![forbid(unsafe_code)]`.
-- The crate currently has no zeroization dependency or model implementation. The KMIPKIT-0003 implementation merge is a prerequisite for the shared foundation and error contract.
+- The crate currently has no zeroization dependency or model implementation. The KMIPKIT-0003 implementation merge was a prerequisite for the shared foundation and error contract; it is now satisfied by PR #13 at `b52df30648312f8c7703f511afe80a412cda66cd`.
 - `specification/catalog/kmip-2.1.json` stores individual tags as `elements` with `kind: "tag"` (374 records: 354 assigned, 20 Reserved), plus five `tag_ranges` entries. Existing `tools/normative_catalog/` scripts validate/report the catalog but do not generate the Rust tag allocation table.
 - ADR-0004 calls for deterministic committed generated output from checked-in normative inputs and prohibits scraping OASIS pages.
 - `docs/architecture/public-api.md` currently describes generic TTLV wire validation. This feature supplies only an in-memory model; its implementation must clarify the staged boundary, and a later codec feature must establish actual wire validity and decoder limits.
@@ -14,7 +14,7 @@
 
 ### Tag allocation source and precedence
 
-**Decision**: Generate a Rust allocation table from the reviewed catalog's exact tag records and range records. In the lookup, exact individual entries take precedence over aggregate ranges; the `0x540000–0x54FFFF` §11.56 Extensions range is accepted by the allocation gate; every other unused or Reserved value is rejected. The proposed precedence is project policy in ADR-0010, not an OASIS clarification.
+**Decision**: Generate a Rust allocation table from the reviewed catalog's exact tag records and range records. In the lookup, exact individual entries take precedence over aggregate ranges; the `0x540000–0x54FFFF` §11.56 Extensions range is accepted by the allocation gate; every other unused or Reserved value is rejected. This accepted precedence is project policy in ADR-0010, not an OASIS clarification.
 
 **Rationale**: The source/catalog contains individually assigned `0x420174`–`0x420176` values overlapping the aggregate `420XXX–42FFFF` Reserved notation. Applying exact records first makes individually assigned values usable while preserving the residual Reserved range.
 
@@ -25,7 +25,7 @@
 - Hand-maintain a Rust table: duplicates the checked-in catalog and risks drift.
 - Scrape OASIS during builds: violates ADR-0004 and is not reproducible.
 
-**Gate**: Do not implement this behavior until ADR-0010 is accepted and the spec is approved. Decoder behavior for received Reserved tags remains KMIPKIT-DISC-037 and is outside this feature.
+Decoder behavior for received Reserved tags remains KMIPKIT-DISC-037 and is outside this feature.
 
 ### Deterministic generation
 

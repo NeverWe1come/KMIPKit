@@ -4,7 +4,7 @@
 
 **Prerequisites**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/rust-value-model.md`, `quickstart.md`.
 
-**Implementation gate**: Do not start implementation tasks until the feature specification is approved, ADR-0010 is accepted, and the KMIPKIT-0003 implementation PR is merged into the active release branch. Reconfirm all three on the dedicated worktree before T001.
+**Implementation gate**: The feature specification and ADR-0010 were accepted in PR #10 (`3638c6c7929992e8ced59a3903a0a6640f847069`); the KMIPKIT-0003 implementation was merged in PR #13 (`b52df30648312f8c7703f511afe80a412cda66cd`). T001 records the active release base and dedicated worktree evidence.
 
 **Organization**: Tasks are grouped by user story. Red, Green, and Refactor evidence must be separate development commits. Every commit must include the DCO sign-off required by `CONTRIBUTING.md` and `GOVERNANCE.md`.
 
@@ -12,7 +12,7 @@
 
 **Purpose**: Reconfirm approved inputs and develop the deterministic catalog generator test-first.
 
-- [ ] T001 Confirm approved spec, accepted ADR-0010, merged KMIPKIT-0003 implementation, active release base, and dedicated feature worktree; record gate evidence in the draft PR description and `specs/004-generic-ttlv-model/tasks.md`, and stop if any gate is unmet.
+- [x] T001 Confirm approved spec, accepted ADR-0010, merged KMIPKIT-0003 implementation, active release base, and dedicated feature worktree; record gate evidence here and carry it into the draft PR description.
 - [ ] T002 [P] Write and run focused generator tests for assigned/reserved exact entries, aggregate ranges, malformed/duplicate/out-of-range catalog data, stable numeric ordering, and `--check`/`--write` behavior in `tools/normative_catalog/tests/test_generate_ttlv_tags.py` (Red commit; capture failures before generator implementation).
 - [ ] T003 Implement `tools/normative_catalog/generate_ttlv_tags.py` using `load_validated_catalog` from `tools/normative_catalog/validate.py`, safe I/O helpers, private numeric tag/range metadata, deterministic `--write`, and read-only `--check` modes (Green commit).
 - [ ] T004 Refactor the generator to reuse existing validation and atomic-write conventions, document its local input/output, and confirm idempotent deterministic output in `tools/normative_catalog/generate_ttlv_tags.py` (Refactor commit).
@@ -63,7 +63,15 @@
 - [ ] T020 [P] Update generic TTLV architecture text to distinguish the in-memory model from wire framing, lengths, padding, decoder limits, and schema validation in `docs/architecture/public-api.md`.
 - [ ] T021 Run generator checks, Rust tests, formatting, Clippy, workspace tests, `cargo llvm-cov --workspace --all-features` (or repository automation when available), and applicable dependency/license/security checks for `tools/normative_catalog/`, `crates/kmipkit-ttlv/`, and `.github/workflows/ci.yml`; verify at least 95% coverage for changed code and the `kmipkit-ttlv`/protocol-model crates, at least 90% workspace-wide, and at least 85% for transport/FFI only if affected; record actual commands/results and Red/Green/Refactor commit IDs in the draft PR description.
 - [ ] T022 Reconcile every `KMIPKIT-0004-FR-*` and `KMIPKIT-0004-NR-*` row in `specs/004-generic-ttlv-model/spec.md` with implementation and test paths. In `specification/catalog/kmip-2.1.json`, update `feature_spec`, `implementation_refs`, and `verification_refs` only on the `requirements[]` records whose `source_clause_ids` map to NR-001 through NR-007, plus the matching `elements[]` records with `kind: "tag"`; confirm generated tag output remains current.
-- [ ] T023 Prepare a draft PR from `feature/KMIPKIT-0004-generic-ttlv-model` to the active `release/1.0.0` branch with scope, rationale, verification evidence, limitations, and dependency/security notes; request independent QA and security review before human review.
+- [ ] T023 Prepare a draft PR from `feature/KMIPKIT-0004-generic-ttlv-model-implementation` to the active `release/1.0.0` branch with scope, rationale, verification evidence, limitations, and dependency/security notes; request independent QA and security review before human review.
+
+### T001 gate evidence
+
+- Approved specification and accepted ADR-0010: PR #10 merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`.
+- KMIPKIT-0003 implementation dependency: PR #13 merged into `release/1.0.0` at `b52df30648312f8c7703f511afe80a412cda66cd`.
+- Active release base at implementation branch creation: `b52df30648312f8c7703f511afe80a412cda66cd` (`origin/release/1.0.0`).
+- Dedicated worktree: `C:\Users\ramp1953\.codex\worktrees\kmipkit-0004-ttlv-spec\KMIPKit`; branch: `feature/KMIPKIT-0004-generic-ttlv-model-implementation`.
+- The final draft PR description will repeat these gate SHAs and add the task verification evidence.
 
 ## Dependencies and execution order
 

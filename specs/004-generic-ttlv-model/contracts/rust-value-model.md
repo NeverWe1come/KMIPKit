@@ -1,6 +1,6 @@
 # Rust Value Model Contract
 
-**Status**: Proposed public contract. Exact signatures are finalized only in the implementation PR after the specification and ADR-0010 are approved.
+**Status**: Approved target public contract. Implementation may finalize exact signatures only where needed to satisfy this contract and the approved specification.
 
 ## Construction and inspection
 
@@ -25,7 +25,7 @@
 | Big Integer | Exact Item Value octets are retained, including sign-extension octets; empty in-memory octets do not imply wire validity. |
 | Structure | Child order, duplicate tags, and nesting through 64 Structure levels are retained. A deeper insertion fails without modifying the prior tree. |
 | Diagnostics | `Debug`, optional `Display`, and model errors never disclose payload values. `Value`, `ValueView`, `StructureView`, `Item`, and `Structure` do not implement `serde::Serialize`. |
-| Zeroization | The proposed `zeroize` 1.9.0 safe Drop path clears current KMIPKit-owned payload storage, including full String/Vec backing capacity and nested values. Secret payloads do not reside inline in the growable Structure child vector. Caller copies, previous allocations, temporary stack/register values, and managed-runtime copies are excluded. |
+| Zeroization | The planned `zeroize` 1.9.0 safe Drop path clears current KMIPKit-owned payload storage, including full String/Vec backing capacity and nested values. Secret payloads do not reside inline in the growable Structure child vector. Caller copies, previous allocations, temporary stack/register values, and managed-runtime copies are excluded. |
 | Validity | The contract covers an in-memory model and tag allocation only, not TTLV wire validity or KMIP operation semantics. |
 
 ## Compatibility and dependency direction

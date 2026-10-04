@@ -48,7 +48,7 @@
 
 ## Tag allocation states
 
-The generated lookup consumes exact individual catalog records and aggregate ranges. Under the proposed, not-yet-accepted ADR-0010 policy, an exact individual record wins over a matching aggregate range; assigned entries and the §11.56 Extensions range are accepted, while Reserved and unused values are rejected. Until ADR-0010 and the spec are approved, this is a design proposal only.
+The generated lookup consumes exact individual catalog records and aggregate ranges. Under the accepted ADR-0010 policy, an exact individual record wins over a matching aggregate range; assigned entries and the §11.56 Extensions range are accepted, while Reserved and unused values are rejected. This is a KMIPKit project policy, not an OASIS interpretation.
 
 ```text
 u32 input
