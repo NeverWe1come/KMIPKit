@@ -131,6 +131,10 @@ class CoverageReportTests(unittest.TestCase):
                 "summary": "Batch continuation wording conflict",
                 "state": "open",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "11.5"}],
+                "affected_requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "affected_element_ids": [],
+                "affected_profile_ids": [],
+                "affected_policy_ids": [],
             }
         ]
         report = render_report(catalog)
@@ -140,6 +144,7 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("unavailable", report)
         self.assertIn("KMIPKIT-DISC-001", report)
         self.assertIn("open", report)
+        self.assertIn("blocked for affected records", report)
 
     def test_lists_unassigned_protocol_capabilities_with_direction_and_scope(self) -> None:
         catalog = report_catalog()
