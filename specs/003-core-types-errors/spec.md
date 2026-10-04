@@ -85,7 +85,7 @@ An application developer needs useful failure categories without credentials, ke
 The normative source is the immutable checked-in copy at specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html. Preservation of unknown values and the safe display/logging policy are project-level requirements, not additional OASIS claims. The no-automatic-retry rule remains a client-wide boundary and is not implemented by this value/error contract. IDs remain stable as code and tests are added.
 ### Key Entities
 
-- **Client failure**: A local validation, protocol-processing, or transport failure with a safe cause category and request delivery state where applicable.
+- **Client failure**: A local validation, protocol-processing, or transport failure with a safe cause category and exactly one request delivery state.
 - **KMIP operation result**: Server-reported Result Status, optional Result Reason, and optional Result Message.
 - **Request delivery state**: The strongest available evidence about whether transmission did not begin, may have reached the server, or at least one response byte was received.
 

@@ -117,6 +117,9 @@ The shared Rust result/error contract is exposed by the `kmipkit` facade:
 - `ClientError` distinguishes validation, protocol, and transport failures
   from a complete server result. A server result retains the complete
   `KmipOperationResult` and has no local request-delivery state.
+- Every local `ClientError` requires exactly one `RequestDeliveryState`;
+  validation before transmission is `NotSent`. Constructors cannot omit this
+  evidence.
 - `RequestDeliveryState` reports `NotSent`, `PossiblySent`, or
   `ResponseStarted`. The first response byte advances the state to
   `ResponseStarted`; a zero-byte read does not. Delivery evidence alone does
