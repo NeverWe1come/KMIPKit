@@ -9,6 +9,7 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = REPOSITORY_ROOT / ".github" / "workflows" / "ci.yml"
+TESTING_GUIDE = REPOSITORY_ROOT / "docs" / "development" / "testing.md"
 
 
 class WorkflowContractTests(unittest.TestCase):
@@ -76,6 +77,13 @@ class WorkflowContractTests(unittest.TestCase):
         gate = self.require_job(contents, "coverage-gate")
         self.assertRegex(gate, r"(?m)^    if: always\(\) && github\.event_name == 'pull_request'$")
         self.assertIn("if: always() && needs.coverage.result != 'success'", gate)
+
+    def test_branch_coverage_documentation_matches_schedule_only_workflow(self) -> None:
+        guide = TESTING_GUIDE.read_text(encoding="utf-8")
+        paragraph = re.search(r"(?ms)^CI attempts branch coverage separately.*?(?=\n\n|\Z)", guide)
+        self.assertIsNotNone(paragraph, "The branch-coverage documentation must exist.")
+        self.assertIn("only on a daily schedule", paragraph.group(0))
+        self.assertIn("does not run on pull requests", paragraph.group(0))
 
 
 if __name__ == "__main__":
