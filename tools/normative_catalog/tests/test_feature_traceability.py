@@ -134,6 +134,17 @@ class FeatureTraceabilityTests(unittest.TestCase):
             with self.subTest(sc005_test_ref=test_ref):
                 self.assertTrue(self._is_executable_test_ref(test_ref), test_ref)
 
+    def test_executable_test_refs_reject_absolute_and_traversal_paths(self) -> None:
+        test_name = "FeatureTraceabilityTests.test_executable_test_refs_reject_absolute_and_traversal_paths"
+        test_file = Path(__file__).resolve()
+        references = (
+            f"{test_file}::{test_name}",
+            f"tools/normative_catalog/tests/../tests/test_feature_traceability.py::{test_name}",
+        )
+        for reference in references:
+            with self.subTest(reference=reference):
+                self.assertFalse(self._is_executable_test_ref(reference))
+
     @staticmethod
     def _is_executable_test_ref(test_ref: str) -> bool:
         test_path, separator, test_name = test_ref.partition("::")
