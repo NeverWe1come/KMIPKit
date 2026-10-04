@@ -1066,6 +1066,7 @@ COMPLETE_ELEMENT_COUNTS = {
     "bitmask": 3,
     "tag": 374,
 }
+TAG_REGISTRY_SHA256 = "ad69b23437d238ae67bfd72e54ba37a8bbe9fd31358f1aadfd41c410369cf8fe"
 RESERVED_TAGS = {
     "420009": "(Reserved)", "420014": "(Reserved)", "420015": "(Reserved)",
     "420016": "(Reserved)", "420017": "(Reserved)", "42001A": "(Reserved)",
@@ -1136,6 +1137,17 @@ def _check_tag_registry(
             _fail("tag registry range does not match its exact source row")
 
 
+def _check_tag_registry_fingerprint(tags: list[dict[str, Any]]) -> None:
+    """Bind all singleton names, values, and allocations to pinned Table 487."""
+    rows = sorted(
+        ((tag.get("name"), tag.get("wire_value"), tag.get("allocation")) for tag in tags),
+        key=lambda row: str(row[1]),
+    )
+    encoded = json.dumps(rows, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    if hashlib.sha256(encoded).hexdigest() != TAG_REGISTRY_SHA256:
+        _fail("tag registry source fingerprint mismatch")
+
+
 def _check_complete_inventory(catalog: dict[str, Any]) -> None:
     elements = catalog["elements"]
     _check_operation_inventory(elements)
@@ -1145,6 +1157,7 @@ def _check_complete_inventory(catalog: dict[str, Any]) -> None:
         if actual != expected:
             _fail(f"complete inventory requires {expected} {kind} records; found {actual}")
     _check_tag_registry(elements, catalog["tag_ranges"])
+    _check_tag_registry_fingerprint([row for row in elements if row.get("kind") == "tag"])
 
     required_collections = ("source_clauses", "requirements", "profiles", "test_cases", "policies")
     if any(not catalog[name] for name in required_collections):
