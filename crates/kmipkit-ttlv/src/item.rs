@@ -1,6 +1,7 @@
 //! Typed KMIP items pairing an allocation-checked tag with an opaque value.
 
 use crate::{ItemType, ModelError, Tag, Value, ValueView};
+use zeroize::Zeroize;
 
 /// A typed KMIP item with an allocation-checked tag.
 pub struct Item {
@@ -41,5 +42,11 @@ impl Item {
     /// cannot return a reference borrowed from the item.
     pub fn with_value<R>(&self, callback: impl for<'a> FnOnce(ValueView<'a>) -> R) -> R {
         callback(self.value.as_view())
+    }
+}
+
+impl Zeroize for Item {
+    fn zeroize(&mut self) {
+        self.value.zeroize();
     }
 }

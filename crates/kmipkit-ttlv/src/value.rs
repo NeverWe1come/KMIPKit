@@ -1,6 +1,7 @@
 // Opaque, typed representations of KMIP TTLV Item Values.
 
 use crate::structure::{Structure, StructureView};
+use zeroize::Zeroize;
 
 /// The KMIP Item Type represented by a [`Value`].
 #[non_exhaustive]
@@ -34,10 +35,29 @@ pub enum ItemType {
 ///
 /// The value representation is boxed so payload addresses remain stable when
 /// its containing item is moved as part of an ordered Structure. Payloads are
-/// observable only through [`crate::Item::with_value`]. This initial model does
-/// not yet zeroize owned payloads when they are dropped.
+/// observable only through [`crate::Item::with_value`]. Dropping the value
+/// zeroizes its currently owned payload storage.
 pub struct Value {
-    inner: Box<ValueRepr>,
+    inner: Secret<ValueRepr>,
+}
+
+struct Secret<T: Zeroize> {
+    // Keep payload bytes outside the growable Structure child vector.
+    boxed: Box<T>,
+}
+
+impl<T: Zeroize> Secret<T> {
+    fn new(value: T) -> Self {
+        Self {
+            boxed: Box::new(value),
+        }
+    }
+}
+
+impl<T: Zeroize> Drop for Secret<T> {
+    fn drop(&mut self) {
+        self.boxed.as_mut().zeroize();
+    }
 }
 
 enum ValueRepr {
@@ -52,6 +72,22 @@ enum ValueRepr {
     DateTime(i64),
     Interval(u32),
     DateTimeExtended(i64),
+}
+
+impl Zeroize for ValueRepr {
+    fn zeroize(&mut self) {
+        match self {
+            Self::Structure(value) => value.zeroize(),
+            Self::Integer(value) => value.zeroize(),
+            Self::LongInteger(value) | Self::DateTime(value) | Self::DateTimeExtended(value) => {
+                value.zeroize();
+            }
+            Self::BigInteger(value) | Self::ByteString(value) => value.zeroize(),
+            Self::Enumeration(value) | Self::Interval(value) => value.zeroize(),
+            Self::Boolean(value) => value.zeroize(),
+            Self::TextString(value) => value.zeroize(),
+        }
+    }
 }
 
 /// A read-only, borrowed view of an Item Value.
@@ -156,12 +192,12 @@ impl Value {
 
     fn new(value: ValueRepr) -> Self {
         Self {
-            inner: Box::new(value),
+            inner: Secret::new(value),
         }
     }
 
     pub(crate) fn item_type(&self) -> ItemType {
-        match self.inner.as_ref() {
+        match self.inner.boxed.as_ref() {
             ValueRepr::Structure(_) => ItemType::Structure,
             ValueRepr::Integer(_) => ItemType::Integer,
             ValueRepr::LongInteger(_) => ItemType::LongInteger,
@@ -177,7 +213,7 @@ impl Value {
     }
 
     pub(crate) fn as_view(&self) -> ValueView<'_> {
-        match self.inner.as_ref() {
+        match self.inner.boxed.as_ref() {
             ValueRepr::Structure(value) => ValueView::Structure(value.as_view()),
             ValueRepr::Integer(value) => ValueView::Integer(value),
             ValueRepr::LongInteger(value) => ValueView::LongInteger(value),
@@ -190,5 +226,11 @@ impl Value {
             ValueRepr::Interval(value) => ValueView::Interval(value),
             ValueRepr::DateTimeExtended(value) => ValueView::DateTimeExtended(value),
         }
+    }
+}
+
+impl Zeroize for Value {
+    fn zeroize(&mut self) {
+        self.inner.boxed.as_mut().zeroize();
     }
 }
