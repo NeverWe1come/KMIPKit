@@ -34,10 +34,10 @@
 
 ### Green
 
-- [ ] T007 Define the checked-in record contract in `specification/catalog/README.md` and this feature contract; include `source_clauses`, `tag_ranges`, and `policies` in `specification/catalog/kmip-2.1.json`.
+- [x] T007 Define the checked-in record contract in `specification/catalog/README.md` and this feature contract; include `source_clauses`, `tag_ranges`, and `policies` in `specification/catalog/kmip-2.1.json`.
 - [ ] T008 Implement `tools/normative_catalog/check_immutable_sources.py` first, requiring the exact PR base commit SHA and failing closed; run it before `audit_sources.py`. Compare the full pinned Git tree and manifest, then implement a non-fetching auditor that reads only allowlisted Git blobs, enforces HTML limits, and emits documented candidate locators. Wire this order into `.github/workflows/ci.yml` with `contents: read`, no secrets, and the PR event base SHA after rebasing on the CI foundation.
 - [ ] T009 Implement strict offline parsing and semantic validation in `tools/normative_catalog/validate.py`, including a bounded preflight scan before object construction, duplicate-key detection, source/fixture Git-tree metadata lookup without following catalog paths, anchored IDs, relationships, source counts, and requirement-level rules; use Python standard library only.
-- [ ] T010 Implement `tools/normative_catalog/report.py` with separate table-text and link-label encoders, allowlisted constant link destinations, deterministic sort keys, fixed sections, and `--check`/`--write`; add a minimal valid catalog fixture and make the Red tests pass.
+- [x] T010 Implement `tools/normative_catalog/report.py` with separate table-text and link-label encoders, allowlisted constant link destinations, deterministic sort keys, fixed sections, and `--check`/`--write`; add a minimal valid catalog fixture and make the Red tests pass.
 
 ### Refactor
 

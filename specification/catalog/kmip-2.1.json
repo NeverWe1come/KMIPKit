@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "source_id": "KMIPKIT-SRC-profiles",
+      "title": "Key Management Interoperability Protocol Profiles Version 2.1",
+      "version": "2.1",
+      "stage": "OASIS Standard",
+      "publication_date": "14 December 2020",
+      "local_path": "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
+      "canonical_url": "https://docs.oasis-open.org/kmip/kmip-profiles/v2.1/os/kmip-profiles-v2.1-os.html",
+      "sha256": "f11144aa793335f38dbd1864ec4709ca83ac80f588bbb790ba37f6c53be207a9",
+      "authority_class": "profile_normative"
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "title": "Key Management Interoperability Protocol Specification Version 2.1",
+      "version": "2.1",
+      "stage": "OASIS Standard",
+      "publication_date": "14 December 2020",
+      "local_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "canonical_url": "https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html",
+      "sha256": "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf",
+      "authority_class": "primary_normative"
+    },
+    {
+      "source_id": "KMIPKIT-SRC-testcases",
+      "title": "Key Management Interoperability Protocol Test Cases Version 2.1",
+      "version": "2.1",
+      "stage": "Committee Note 01",
+      "publication_date": "16 November 2020",
+      "local_path": "specification/oasis/kmip-2.1/upstream/kmip-testcases-v2.1-cn01.html",
+      "canonical_url": "https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.html",
+      "sha256": "305e0638af25aa8163a2b4a67a1a617a0207af67b3b3032fa499966b22d42b88",
+      "authority_class": "test_evidence"
+    },
+    {
+      "source_id": "KMIPKIT-SRC-usage-guide",
+      "title": "Key Management Interoperability Protocol Usage Guide Version 2.1",
+      "version": "2.1",
+      "stage": "Committee Note 01",
+      "publication_date": "16 November 2020",
+      "local_path": "specification/oasis/kmip-2.1/upstream/kmip-ug-v2.1-cn01.html",
+      "canonical_url": "https://docs.oasis-open.org/kmip/kmip-ug/v2.1/cn01/kmip-ug-v2.1-cn01.html",
+      "sha256": "f6997ac3ac34d588b2b43ace49835dceaa6af2086f9472a79c27bce43f5cbe38",
+      "authority_class": "informative"
+    }
+  ],
+  "source_clauses": [],
+  "elements": [],
+  "tag_ranges": [],
+  "requirements": [],
+  "policies": [],
+  "profiles": [],
+  "test_cases": [],
+  "discrepancies": [],
+  "decisions": []
+}
