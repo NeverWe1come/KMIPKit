@@ -35,6 +35,7 @@ class _CaptionedTableParser(HTMLParser):
         self._heading = ""
         self._heading_tag: str | None = None
         self._heading_buffer: list[str] | None = None
+        self._sup_depth = 0
         self._table: dict[str, object] | None = None
         self._row: list[str] | None = None
         self._cell: list[str] | None = None
@@ -55,8 +56,12 @@ class _CaptionedTableParser(HTMLParser):
             self._cell = []
         elif tag == "p" and attributes.get("class") == "MsoCaption":
             self._caption = []
+        elif tag == "sup":
+            self._sup_depth += 1
 
     def handle_data(self, data: str) -> None:
+        if self._sup_depth:
+            data = data.translate(str.maketrans("0123456789+-=()", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾"))
         if self._cell is not None:
             self._cell.append(data)
         if self._caption is not None:
@@ -77,6 +82,8 @@ class _CaptionedTableParser(HTMLParser):
             if self.tables:
                 self.tables[-1]["caption"] = " ".join("".join(self._caption).split())
             self._caption = None
+        elif tag == "sup" and self._sup_depth:
+            self._sup_depth -= 1
         elif tag == self._heading_tag and self._heading_buffer is not None:
             self._heading = " ".join("".join(self._heading_buffer).split())
             self.headings.append(self._heading)
@@ -492,6 +499,11 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
             _check_operation_inventory(elements)
 
+        poll = next(row for row in elements if row["name"] == "Poll")
+        poll["payload_tables"].append({"role": "response", "table_number": 277, "caption": "Poll Response Payload"})
+        with self.assertRaisesRegex(CatalogValidationError, "operation"):
+            _check_operation_inventory(elements)
+
     def test_item_types_managed_object_types_and_object_structures_reconcile(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
@@ -535,11 +547,6 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(record["direction"], "both")
                 self.assertEqual(record["scope_state"], "client_1_0")
                 self.assertTrue(record["source_refs"])
-
-        poll = next(row for row in elements if row["name"] == "Poll")
-        poll["payload_tables"].append({"role": "response", "table_number": 277, "caption": "Poll Response Payload"})
-        with self.assertRaisesRegex(CatalogValidationError, "operation"):
-            _check_operation_inventory(elements)
 
     def test_tag_inventory_reconciles_all_reserved_values_and_ranges(self) -> None:
         elements = [
@@ -646,6 +653,40 @@ class CatalogValidationTests(unittest.TestCase):
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
         self.assertEqual(result["source_count"], 4)
+
+    def test_accepts_an_enumeration_extension_marker(self) -> None:
+        document = minimal_catalog()
+        definition_id = "KMIPKIT-ELEM-ENUMERATION-TEST"
+        common = {
+            "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "11.1"}],
+            "direction": "both",
+            "scope_state": "client_1_0",
+            "requirement_ids": [],
+            "profile_ids": [],
+            "test_case_ids": [],
+            "feature_spec": None,
+            "implementation_refs": [],
+            "verification_refs": [],
+        }
+        document["elements"] = [
+            {
+                **common,
+                "element_id": definition_id,
+                "kind": "enumeration",
+                "name": "Test Enumeration",
+                "parent_element_ids": [],
+            },
+            {
+                **common,
+                "element_id": "KMIPKIT-ELEM-ENUM-VALUE-TEST-EXTENSIONS-8XXXXXXX",
+                "kind": "enumeration_value",
+                "name": "Extensions",
+                "wire_value": "8XXXXXXX",
+                "allocation": "extension",
+                "parent_element_ids": [definition_id],
+            },
+        ]
+        self.assertEqual(validate(document)["record_count"], 6)
 
     def test_complete_validation_rejects_omitted_operation_and_element_records(self) -> None:
         raw = json.dumps(minimal_catalog()).encode("utf-8")
