@@ -70,6 +70,14 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("mandatory", report)
         self.assertTrue(report.endswith("\n"))
 
+    def test_reports_source_clause_review_counts_per_section(self) -> None:
+        report = render_report(report_catalog())
+
+        self.assertIn("## Source clause review by section", report)
+        self.assertIn("KMIPKIT-SRC-spec", report)
+        self.assertIn("8.1", report)
+        self.assertIn("requirement: 1", report)
+
     def test_output_is_independent_of_record_order_and_contains_no_timestamp(self) -> None:
         first = report_catalog()
         second = report_catalog()
