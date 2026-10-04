@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import defaultdict
 import sys
 import unicodedata
 from pathlib import Path
@@ -19,6 +20,7 @@ SECTION_ORDER = (
     "Source documents",
     "Count reconciliation",
     "Source clause dispositions",
+    "Source clause review by section",
     "Unassigned requirements",
     "Requirements needing negative verification",
     "Unassigned protocol elements",
@@ -97,6 +99,29 @@ def _count_by(records: list[dict[str, Any]], field: str) -> list[tuple[str, int]
     return sorted(counts.items())
 
 
+def _clause_section_rows(clauses: list[dict[str, Any]]) -> list[tuple[str, str, int, str]]:
+    grouped: dict[tuple[str, str], dict[str, int]] = defaultdict(dict)
+    for clause in clauses:
+        key = (str(clause.get("source_id", "unspecified")), str(clause.get("section", "unspecified")))
+        disposition = str(clause.get("disposition", "unspecified"))
+        counts = grouped[key]
+        counts[disposition] = counts.get(disposition, 0) + 1
+
+    def section_key(value: str) -> tuple[int, ...] | tuple[str]:
+        parts = value.split(".")
+        if all(part.isdigit() for part in parts):
+            return tuple(int(part) for part in parts)
+        return (value,)
+
+    rows = []
+    for (source_id, section), counts in sorted(
+        grouped.items(), key=lambda item: (item[0][0], section_key(item[0][1]))
+    ):
+        disposition_text = ", ".join(f"{name}: {count}" for name, count in sorted(counts.items()))
+        rows.append((source_id, section, sum(counts.values()), disposition_text))
+    return rows
+
+
 def _source_reference(record: dict[str, Any]) -> str:
     references = record.get("source_refs") or []
     return ", ".join(f"{item.get('source_id', '?')} §{item.get('section', '?')}" for item in references)
@@ -149,6 +174,17 @@ def render_report(catalog: dict[str, Any]) -> str:
 
     lines.extend(["## Source clause dispositions", ""])
     lines.extend(_table(("Disposition", "Count"), _count_by(catalog.get("source_clauses", []), "disposition")))
+    lines.append("")
+    lines.extend([
+        "## Source clause review by section",
+        "",
+        "Every row summarizes audited candidate locators by their pinned source section. The immutable-source audit separately requires exact candidate and clause-ledger locator equality.",
+        "",
+    ])
+    lines.extend(_table(
+        ("Source", "Section", "Candidates", "Dispositions"),
+        _clause_section_rows(catalog.get("source_clauses", [])),
+    ))
     lines.append("")
 
     unassigned = [
