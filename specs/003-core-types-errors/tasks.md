@@ -39,7 +39,7 @@
 
 **Independent Test**: Run delivery-state tests through fake transport boundaries and verify each state without network access.
 
-- [ ] T006 [US2] Add external delivery tests in crates/kmipkit-transport/tests/delivery_state.rs proving a zero-byte read remains PossiblySent and receipt of the first response byte advances to ResponseStarted, as well as NotSent/write-started boundaries. Add TransportError cause sanitization/source-chain tests with a drop probe that proves the original source is destroyed; commit as Red before production changes.
+- [x] T006 [US2] Add external delivery tests in crates/kmipkit-transport/tests/delivery_state.rs proving a zero-byte read remains PossiblySent and receipt of the first response byte advances to ResponseStarted, as well as NotSent/write-started boundaries. Add TransportError cause sanitization/source-chain tests with a drop probe that proves the original source is destroyed; commit as Red before production changes. Red evidence: `cargo test -p kmipkit-transport --test delivery_state` failed on unresolved public imports before the transport contract existed.
 - [ ] T007 [US2] Implement RequestDeliveryState and a safe TransportError in crates/kmipkit-transport/src/error.rs; consume and drop arbitrary source errors during construction, expose the state at the crate boundary, and make T006 pass by committing the minimal behavior as Green.
 
 ## Phase 5: User Story 3 - Diagnose Failures without Disclosing Secrets (Priority: P1)
