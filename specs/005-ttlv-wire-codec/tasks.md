@@ -75,7 +75,7 @@ First unblock the feature at T001. Then implement encoder, decoder, and limits i
 
 ## Traceability map
 
-Catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` for schema-specific field order remains unassigned until all applicable client 1.0 Structures have approved typed-spec ownership and implementation/verification refs. This is a global 1.0 traceability gate, not a blocker for generic codec implementation; the codec only preserves order and cannot complete that normative requirement by itself.
+Catalog requirement `KMIPKIT-REQ-SPEC-10.1.2-001` for schema-specific field order remains unassigned until every applicable client 1.0 Structure has approved typed-spec ownership, implementation, and executable order-verification references. This is a global 1.0 traceability gate, not a blocker for generic codec implementation; the codec only preserves order and cannot complete that normative requirement by itself.
 
 | Requirement | Planned task(s) | Executable verification artifact |
 |---|---|---|
