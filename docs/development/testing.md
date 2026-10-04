@@ -94,6 +94,10 @@ uncovered lines. It requires at least 95 percent changed executable-line
 coverage. The 95 percent package gate
 applies to `kmipkit-ttlv` and `kmipkit-protocol`; 85 percent applies to
 `kmipkit-transport` and `kmipkit-ffi`; the workspace gate is 90 percent.
+An LLVM report that repeats a workspace source path across export mappings
+fails closed until those mappings can be reconciled independently; function
+regions from distinct `CoverageMapping` objects are never combined to explain
+one another's summaries.
 
 The normalizer accepts the reviewed LLVM JSON export schema versions 3.0.x and
 3.1.x. Other major or minor versions fail closed until their consumed file,
