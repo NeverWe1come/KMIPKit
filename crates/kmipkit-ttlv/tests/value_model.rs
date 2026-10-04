@@ -1,9 +1,10 @@
-//! OASIS KMIP Specification v2.1, §10.1.2 and §11.23 define the Item Type
-//! representations and enumeration. These tests cover the in-memory semantic
-//! model only, not TTLV wire encoding or schema validity.
+//! OASIS KMIP Specification v2.1: §10.1.1 (Tag), §10.1.2 (Item Type Value
+//! Representations), §11.23 (Item Type Enumeration), §11.56 (Tag Enumeration),
+//! and §§12.1–12.3 (Bit Masks). These tests cover the in-memory semantic model
+//! only, not TTLV wire encoding or schema validity.
 //!
-//! Traceability: KMIPKIT-0004-FR-001 and FR-004–FR-008; KMIPKIT-0004-NR-002
-//! through NR-007.
+//! Traceability: KMIPKIT-0004-FR-001–FR-008, KMIPKIT-0004-FR-010, and
+//! KMIPKIT-0004-NR-001–NR-007.
 
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 use std::fmt::{Debug, Display};
@@ -23,10 +24,19 @@ fn assert_derived_item_type(value: Value, expected: ItemType) {
 }
 
 fn assert_error_does_not_reveal_raw_tag(error: &(impl Debug + Display), raw: u32) {
-    let rejected_tag = format!("0x{raw:08X}");
+    let debug = format!("{error:?}");
+    let display = error.to_string();
+    let representations = [
+        format!("0x{raw:08X}"),
+        format!("0x{raw:08x}"),
+        format!("{raw:#x}"),
+        raw.to_string(),
+    ];
 
-    assert!(!format!("{error:?}").contains(&rejected_tag));
-    assert!(!error.to_string().contains(&rejected_tag));
+    for rejected_tag in representations {
+        assert!(!debug.contains(&rejected_tag));
+        assert!(!display.contains(&rejected_tag));
+    }
 }
 
 #[test]
