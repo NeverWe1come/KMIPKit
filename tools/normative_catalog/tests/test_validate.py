@@ -813,6 +813,18 @@ def operation_element(name: str, section: str, direction: str) -> dict[str, obje
 
 
 class CatalogValidationTests(unittest.TestCase):
+    def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
+        cases = (
+            ("MAX_DEPTH", 1, '{"schema_version":{"nested":{"again":1}}}', "nesting depth"),
+            ("MAX_RECORDS", 1, '{"schema_version":1,"sources":[1,2]}', "record limit"),
+            ("MAX_TOKENS", 1, '{"schema_version":1}', "token limit"),
+            ("MAX_MEMBERS", 0, '{"schema_version":1}', "member limit"),
+        )
+        for constant, limit, raw, expected_error in cases:
+            with self.subTest(limit=constant), patch.object(catalog_validate, constant, limit):
+                with self.assertRaisesRegex(CatalogValidationError, expected_error):
+                    _JsonPreflight(raw).validate()
+
     def test_json_number_preflight_matches_without_copying_remaining_input(self) -> None:
         class NoSlice(str):
             def __getitem__(self, key: object) -> str:
