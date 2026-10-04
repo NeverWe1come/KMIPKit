@@ -1818,6 +1818,8 @@ class CatalogValidationTests(unittest.TestCase):
         second["normative_strength"] = "permission_or_optional"
         second["scope_state"] = "out_of_scope"
         second["condition"] = "When XML or JSON encoding is used."
+        second["status"] = "unassigned"
+        second["decision_id"] = None
         clause["source_keywords"] = ["SHOULD", "MAY"]
         clause["requirement_ids"] = [first["requirement_id"], second["requirement_id"]]
         clause["scope_state"] = "mixed"

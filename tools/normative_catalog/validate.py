@@ -73,7 +73,7 @@ CLAUSE_DISPOSITIONS = {
 }
 CLAUSE_ROLES = {"client", "server", "both", "not_applicable", "unclear"}
 CLAUSE_DIRECTIONS = {"client_to_server", "server_to_client", "both", "not_applicable", "unclear"}
-CLAUSE_SCOPES = {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope"}
+CLAUSE_SCOPES = {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope", "mixed"}
 TOP_LEVEL_ID_FIELDS = {
     "source_clauses": ("clause_id", r"KMIPKIT-CLAUSE-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}"),
     "elements": ("element_id", r"KMIPKIT-ELEM-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
