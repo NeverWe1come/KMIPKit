@@ -20,6 +20,11 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(self.contents, "The CI workflow must exist before its contract can pass.")
         return self.contents
 
+    def require_job(self, contents: str, job: str) -> str:
+        match = re.search(rf"(?ms)^  {re.escape(job)}:\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
+        self.assertIsNotNone(match, f"The {job} job must exist.")
+        return match.group(1)
+
     def test_pull_request_targets_only_supported_integration_branches(self) -> None:
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?m)^\s*pull_request\s*:")
@@ -63,17 +68,14 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("cron: '17 3 * * *'", contents)
         for job in ("core", "script-contracts", "coverage"):
             with self.subTest(job=job):
-                match = re.search(rf"(?ms)^  {job}:\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
-                self.assertIsNotNone(match, f"The {job} job must exist.")
-                self.assertRegex(match.group(1), r"(?m)^    if: github\.event_name == 'pull_request'$")
+                body = self.require_job(contents, job)
+                self.assertRegex(body, r"(?m)^    if: github\.event_name == 'pull_request'$")
 
-        branch_match = re.search(r"(?ms)^  branch-coverage:\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
-        self.assertIsNotNone(branch_match, "The branch-coverage job must exist.")
-        self.assertRegex(branch_match.group(1), r"(?m)^    if: github\.event_name == 'schedule'$" )
-        gate = re.search(r"(?ms)^  coverage-gate:\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
-        self.assertIsNotNone(gate)
-        self.assertRegex(gate.group(1), r"(?m)^    if: always\(\) && github\.event_name == 'pull_request'$")
-        self.assertIn("if: always() && needs.coverage.result != 'success'", gate.group(1))
+        branch_coverage = self.require_job(contents, "branch-coverage")
+        self.assertRegex(branch_coverage, r"(?m)^    if: github\.event_name == 'schedule'$")
+        gate = self.require_job(contents, "coverage-gate")
+        self.assertRegex(gate, r"(?m)^    if: always\(\) && github\.event_name == 'pull_request'$")
+        self.assertIn("if: always() && needs.coverage.result != 'success'", gate)
 
 
 if __name__ == "__main__":
