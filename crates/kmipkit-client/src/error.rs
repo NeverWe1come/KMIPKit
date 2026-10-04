@@ -7,6 +7,7 @@ use kmipkit_protocol::{KmipOperationResult, ProtocolCauseCategory, ProtocolError
 use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
 
 /// The safe layer that produced a client-visible outcome.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ClientErrorCategory {
     /// Local application input failed validation.
@@ -20,6 +21,7 @@ pub enum ClientErrorCategory {
 }
 
 /// A safe cause category retained by a local client error.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ClientCauseCategory {
     /// A local application value failed validation.
@@ -46,6 +48,7 @@ impl fmt::Display for ClientCauseCategory {
 impl Error for ClientCauseCategory {}
 
 /// A client outcome containing safe local failure metadata or a server result.
+#[non_exhaustive]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ClientError {
     /// A local validation failure; arbitrary source text is discarded.
