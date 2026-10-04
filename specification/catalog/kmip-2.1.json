@@ -49,6 +49,1632 @@
   "source_clauses": [],
   "elements": [
     {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE",
+      "kind": "attribute",
+      "name": "Activation Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420001"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME",
+      "kind": "attribute",
+      "name": "Alternative Name",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.2"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200BF"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
+      "kind": "attribute",
+      "name": "Always Sensitive",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.3"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420121"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+      "kind": "attribute",
+      "name": "Application Specific Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.4"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420004"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ARCHIVE-DATE",
+      "kind": "attribute",
+      "name": "Archive Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.5"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420005"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
+      "kind": "attribute",
+      "name": "Certificate Attributes",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-LENGTH",
+      "kind": "attribute",
+      "name": "Certificate Length",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.8"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200AD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
+      "kind": "attribute",
+      "name": "Certificate Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.7"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42001D"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-COMMENT",
+      "kind": "attribute",
+      "name": "Comment",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.9"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200FD"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-DATE",
+      "kind": "attribute",
+      "name": "Compromise Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.10"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420020"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
+      "kind": "attribute",
+      "name": "Compromise Occurrence Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.11"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420021"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CONTACT-INFORMATION",
+      "kind": "attribute",
+      "name": "Contact Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.12"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420022"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
+      "kind": "attribute",
+      "name": "Cryptographic Algorithm",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.13"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420028"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
+      "kind": "attribute",
+      "name": "Cryptographic Domain Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.14"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420029"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH",
+      "kind": "attribute",
+      "name": "Cryptographic Length",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.15"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42002A"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
+      "kind": "attribute",
+      "name": "Cryptographic Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.16"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42002B"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
+      "kind": "attribute",
+      "name": "Cryptographic Usage Mask",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.17"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42002C"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
+      "kind": "attribute",
+      "name": "Deactivation Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.18"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42002F"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION",
+      "kind": "attribute",
+      "name": "Description",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.19"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200FC"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DESTROY-DATE",
+      "kind": "attribute",
+      "name": "Destroy Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.20"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420033"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
+      "kind": "attribute",
+      "name": "Digest",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.21"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420034"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
+      "kind": "attribute",
+      "name": "Digital Signature Algorithm",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.22"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200AE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
+      "kind": "attribute",
+      "name": "Extractable",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.23"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420122"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-FRESH",
+      "kind": "attribute",
+      "name": "Fresh",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.24"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200A8"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE",
+      "kind": "attribute",
+      "name": "Initial Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.25"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420039"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
+      "kind": "attribute",
+      "name": "Key Format Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.26"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420042"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
+      "kind": "attribute",
+      "name": "Key Value Location",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.27"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200B8"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
+      "kind": "attribute",
+      "name": "Key Value Present",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.28"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200BB"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
+      "kind": "attribute",
+      "name": "Last Change Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.29"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420048"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
+      "kind": "attribute",
+      "name": "Lease Time",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.30"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420049"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LINK",
+      "kind": "attribute",
+      "name": "Link",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.31"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42004A"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-NAME",
+      "kind": "attribute",
+      "name": "Name",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.32"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420053"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
+      "kind": "attribute",
+      "name": "Never Extractable",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.33"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420123"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
+      "kind": "attribute",
+      "name": "NIST Key Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.34"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42013A"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP",
+      "kind": "attribute",
+      "name": "Object Group",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.35"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420056"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE",
+      "kind": "attribute",
+      "name": "Object Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.36"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420057"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE",
+      "kind": "attribute",
+      "name": "Opaque Data Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.37"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420059"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
+      "kind": "attribute",
+      "name": "Original Creation Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.38"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200BC"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME",
+      "kind": "attribute",
+      "name": "PKCS#12 Friendly Name",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.39"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200FB"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROCESS-START-DATE",
+      "kind": "attribute",
+      "name": "Process Start Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.40"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420067"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECT-STOP-DATE",
+      "kind": "attribute",
+      "name": "Protect Stop Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.41"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420068"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-LEVEL",
+      "kind": "attribute",
+      "name": "Protection Level",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.42"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420145"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
+      "kind": "attribute",
+      "name": "Protection Period",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.43"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420146"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK",
+      "kind": "attribute",
+      "name": "Protection Storage Mask",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.44"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42015E"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-QUANTUM-SAFE",
+      "kind": "attribute",
+      "name": "Quantum Safe",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.45"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420147"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+      "kind": "attribute",
+      "name": "Random Number Generator",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.46"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200DE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
+      "kind": "attribute",
+      "name": "Revocation Reason",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.47"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420081"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
+      "kind": "attribute",
+      "name": "Rotate Automatic",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.48"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42016B"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-DATE",
+      "kind": "attribute",
+      "name": "Rotate Date",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.49"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42016D"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-GENERATION",
+      "kind": "attribute",
+      "name": "Rotate Generation",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.50"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42016E"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
+      "kind": "attribute",
+      "name": "Rotate Interval",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.51"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42016A"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-LATEST",
+      "kind": "attribute",
+      "name": "Rotate Latest",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.52"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420172"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-NAME",
+      "kind": "attribute",
+      "name": "Rotate Name",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.53"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42016F"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-OFFSET",
+      "kind": "attribute",
+      "name": "Rotate Offset",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.54"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42016C"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE",
+      "kind": "attribute",
+      "name": "Sensitive",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.55"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420120"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER",
+      "kind": "attribute",
+      "name": "Short Unique Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.56"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420136"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STATE",
+      "kind": "attribute",
+      "name": "State",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.57"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-42008D"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+      "kind": "attribute",
+      "name": "Unique Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.58"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420094"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
+      "kind": "attribute",
+      "name": "Usage Limits",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.59"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-420095"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
+      "kind": "attribute",
+      "name": "Vendor Attribute",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.60"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
+      "kind": "attribute",
+      "name": "X.509 Certificate Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.61"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200B5"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
+      "kind": "attribute",
+      "name": "X.509 Certificate Issuer",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.62"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200B6"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
+      "kind": "attribute",
+      "name": "X.509 Certificate Subject",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.63"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-TAG-4200B7"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": []
+    },
+    {
       "element_id": "KMIPKIT-ELEM-BITMASK-CRYPTOGRAPHIC-USAGE-MASK",
       "kind": "bitmask",
       "name": "Cryptographic Usage Mask",

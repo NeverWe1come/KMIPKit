@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 1302 |
+| Protocol elements | 1365 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -31,6 +31,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 
 | Kind | Count |
 | --- | --- |
+| attribute | 63 |
 | bitmask | 3 |
 | bitmask\_value | 44 |
 | data\_type | 11 |
@@ -63,6 +64,69 @@ This report records inventory coverage and evidence state. It does not claim pro
 
 | Element | Kind | Direction | Scope | Source |
 | --- | --- | --- | --- | --- |
+| KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.1, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.2, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.3, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.4, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ARCHIVE-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.5, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.6 |
+| KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-LENGTH | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.8, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.7, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-COMMENT | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.9, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.10, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.11, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-CONTACT-INFORMATION | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.12, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.13, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.14, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.15, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.17, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.18, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.19, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-DESTROY-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.20, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-DIGEST | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.21, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.22, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.23, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-FRESH | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.24, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.25, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.26, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.27, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.28, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.29, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.30, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-LINK | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.31, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-NAME | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.32, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.33, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.34, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.35, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.36, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.37, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.38, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.39, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-PROCESS-START-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.40, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-PROTECT-STOP-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.41, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-LEVEL | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.42, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.43, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.44, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-QUANTUM-SAFE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.45, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.46, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.47, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.48, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ROTATE-DATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.49, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ROTATE-GENERATION | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.50, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ROTATE-INTERVAL | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.51, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ROTATE-LATEST | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.52, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ROTATE-NAME | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.53, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-ROTATE-OFFSET | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.54, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.55, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.56, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-STATE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.57, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.58, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.59, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.60 |
+| KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.61, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.62, KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT | attribute | both | client\_1\_0 | KMIPKIT-SRC-spec §4.63, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-BITMASK-CRYPTOGRAPHIC-USAGE-MASK | bitmask | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
 | KMIPKIT-ELEM-BITMASK-PROTECTION-STORAGE-MASK | bitmask | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
 | KMIPKIT-ELEM-BITMASK-STORAGE-STATUS-MASK | bitmask | both | client\_1\_0 | KMIPKIT-SRC-spec §12.3 |
