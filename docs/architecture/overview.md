@@ -57,11 +57,8 @@ advanced integration.
 
 ### `kmipkit-ttlv`
 
-- Validated TTLV tags and types.
-- Generic ordered tree preserving unknown values.
-- Canonical encoder.
-- Strict decoder and resource limits.
-- Incremental framing primitives for transports.
+- Implemented: in-memory typed value model, catalog-checked tags, ordered generic tree, and bounded Structure depth.
+- Planned: canonical encoder, strict decoder and resource limits, and incremental framing primitives for transports.
 - No KMIP operation semantics and no I/O.
 
 ### `kmipkit-protocol`

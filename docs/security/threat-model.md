@@ -2,13 +2,15 @@
 
 Status: design baseline
 Scope: planned KMIPKit 1.0 architecture
-Last reviewed: 2026-10-03
+Last reviewed: 2026-10-04
 
-This document models risks that the implementation and its tests must address.
-The repository currently contains design material rather than a runtime
-implementation, so the scenarios below are hypotheses and security
-requirements, not confirmed vulnerabilities or verified controls. The model
-must be revised as each executable boundary is introduced.
+This document models risks for the planned KMIPKit 1.0 architecture and records
+which controls have executable evidence. The repository now includes the
+`kmipkit-ttlv` in-memory value model. Protocol operations, the TTLV wire codec,
+transports, FFI, and language bindings remain design scope unless their source
+and tests establish otherwise. Scenarios below remain hypotheses and security
+requirements unless a control is explicitly tied to executable evidence. The
+model must be revised as each executable boundary is introduced.
 
 The architecture review for this baseline was performed sequentially because
 independent agent delegation was not enabled for this task. An independent
@@ -54,9 +56,10 @@ flowchart LR
 
 ### Components and evidence
 
-| Component | Responsibility | Security relevance | Design evidence |
+| Component | Responsibility | Security relevance | Evidence |
 |---|---|---|---|
-| TTLV codec | Frame, encode, and decode untrusted messages | Memory and CPU bounds, canonical output, unknown value preservation | `docs/architecture/overview.md:58-65`; `docs/architecture/transport-security.md:67-78` |
+| Generic TTLV value model (implemented) | Construct and inspect typed in-memory values; preserve ordered Structures; check tag allocation and depth | Payload redaction and zeroization, bounded nesting, tag allocation; this model does not establish wire validity | `crates/kmipkit-ttlv/src/lib.rs:1-11`; `docs/architecture/public-api.md:34-49` |
+| TTLV wire codec (planned) | Frame, encode, and decode untrusted messages | Memory and CPU bounds, canonical output, unknown value preservation | `docs/architecture/overview.md:58-65`; `docs/architecture/transport-security.md:67-78` |
 | Protocol and client | Validate requests and correlate responses | Prevent semantic confusion, wrong-result delivery, and implicit retry | `docs/architecture/overview.md:67-90` |
 | Raw TLS and HTTPS transports | Authenticate peers and carry messages | Server identity, client identity, confidentiality, framing, delivery state | `docs/architecture/transport-security.md:3-65` |
 | C ABI | Expose native functionality to foreign runtimes | Pointer validity, ownership, panic containment, stable layouts | `docs/architecture/ffi-and-bindings.md:3-33` |
