@@ -239,12 +239,39 @@ SERVER_OPERATIONS = {
     "Discover Versions": "6.2.1", "Notify": "6.2.2", "Put": "6.2.3",
     "Query": "6.2.4", "Set Endpoint Role": "6.2.5",
 }
+CLIENT_OPERATION_PAYLOAD_TABLES = (
+    (164, 165), (167, 168), (170, 171), (173, 174), (176, 177), (179, 180), (183, 184),
+    (186, 187), (189, 190), (193, 194), (196, 197), (199, 200), (202, 203), (205, 206),
+    (208, 209), (211, 212), (214, 215), (217, 218), (220, 221), (223, 224), (226, 227),
+    (229, 230), (232, 233), (235, 236), (238, 239), (241, 242), (244, 245), (247, 248),
+    (250, 251), (253, 254), (256, 257), (259, 260), (262, 263), (265, 266), (268, 269),
+    (271, 272), (273, 274), (276, None), (278, 279), (282, 283), (285, 286), (288, 289),
+    (291, 292), (295, 296), (300, 301), (305, 306), (310, 311), (313, 314), (316, 317),
+    (319, 320), (322, 323), (325, 326), (328, 329), (331, 332), (334, 335), (337, 338),
+    (340, 341),
+)
+SERVER_OPERATION_PAYLOAD_TABLES = {
+    "Discover Versions": (343, None), "Notify": (None, None), "Put": (None, None),
+    "Query": (347, None), "Set Endpoint Role": (349, 350),
+}
 
 
 def operation_element(name: str, section: str, direction: str) -> dict[str, object]:
     slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
     direction_code = "C2S" if direction == "client_to_server" else "S2C"
     scope = "client_1_0" if direction == "client_to_server" else "client_1_1"
+    if direction == "client_to_server":
+        operation_names = list(CLIENT_OPERATIONS)
+        request_table, response_table = CLIENT_OPERATION_PAYLOAD_TABLES[operation_names.index(name)]
+    else:
+        request_table, response_table = SERVER_OPERATION_PAYLOAD_TABLES[name]
+    payload_tables: list[dict[str, object]] = []
+    for role, table_number in (("request", request_table), ("response", response_table)):
+        if table_number is not None:
+            caption = f"{name} {role.title()} Payload"
+            if name == "Query Asynchronous Requests" and role == "response":
+                caption = "PKCS#11 Response Payload"
+            payload_tables.append({"role": role, "table_number": table_number, "caption": caption})
     record: dict[str, object] = {
         "element_id": f"KMIPKIT-ELEM-OP-{direction_code}-{slug}",
         "kind": "operation",
@@ -252,6 +279,11 @@ def operation_element(name: str, section: str, direction: str) -> dict[str, obje
         "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": section}],
         "direction": direction,
         "scope_state": scope,
+        "payload_tables": payload_tables,
+        "asynchronous_response": {
+            "Cancel": "cancellation_result_not_async",
+            "Poll": "pending_or_original_operation_payload",
+        }.get(name),
         "parent_element_ids": [],
         "requirement_ids": [],
         "profile_ids": [],
@@ -292,6 +324,23 @@ class CatalogValidationTests(unittest.TestCase):
             *(operation_element(name, section, "server_to_client") for name, section in SERVER_OPERATIONS.items()),
         ]
         elements[0]["source_refs"] = [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.2"}]
+        with self.assertRaisesRegex(CatalogValidationError, "operation"):
+            _check_operation_inventory(elements)
+
+    def test_operation_inventory_requires_exact_payload_tables_and_async_responses(self) -> None:
+        elements = [
+            *(operation_element(name, section, "client_to_server") for name, section in CLIENT_OPERATIONS.items()),
+            *(operation_element(name, section, "server_to_client") for name, section in SERVER_OPERATIONS.items()),
+        ]
+        _check_operation_inventory(elements)
+
+        query_async = next(row for row in elements if row["name"] == "Query Asynchronous Requests")
+        query_async["payload_tables"][-1]["caption"] = "Query Asynchronous Requests Response Payload"
+        with self.assertRaisesRegex(CatalogValidationError, "operation"):
+            _check_operation_inventory(elements)
+
+        poll = next(row for row in elements if row["name"] == "Poll")
+        poll["payload_tables"].append({"role": "response", "table_number": 277, "caption": "Poll Response Payload"})
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
             _check_operation_inventory(elements)
 
