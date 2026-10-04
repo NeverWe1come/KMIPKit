@@ -17,7 +17,7 @@
 | FR-006 | T004, T013, T015 |
 | FR-007 | T004, T012, T013, T014 |
 | FR-008 | T008, T009, T011 |
-| FR-009 | T005, T016, T017, T018, T019, T021, T025 |
+| FR-009 | T005, T016, T017, T018, T019, T021, T025, T034, T035, T036, T037, T038, T039 |
 | FR-010 | T008, T011, T019, T020 |
 | FR-011 | T005, T020, T021 |
 | FR-012 | T009, T011 |
@@ -25,7 +25,7 @@
 | SC-002 | T010, T011 |
 | SC-003 | T013, T014, T015 |
 | SC-004 | T013, T014 |
-| SC-005 | T005, T016, T017, T018, T019, T021, T025 |
+| SC-005 | T005, T016, T017, T018, T019, T021, T025, T034, T035, T036, T037, T038, T039 |
 | SC-006 | T008, T009, T011 |
 | SC-007 | T020, T021, T025 |
 | SC-008 | T008, T009, T011 |
@@ -101,6 +101,12 @@
 - [x] T031 Add a workflow regression test requiring `branch-coverage` to run only for `schedule`, fix the missing job-level condition, and refactor shared job extraction. Evidence: RED `2104698`; GREEN `e2965b3`; REFACTOR `c8769d4`; `python -m unittest discover -s scripts/tests -p 'test_*.py' -v` passed 35 tests with 3 Windows symlink-permission skips.
 - [x] T032 Align the testing guide with the nightly-only branch-coverage trigger and add a regression contract for the documented schedule-only behavior. Evidence: RED `19e57b7`; GREEN `ae64bba`; REFACTOR `df71ff4`; `python -m unittest discover -s scripts/tests -p 'test_*.py' -v` passed 36 tests with 3 Windows symlink-permission skips.
 - [x] T033 Re-run final verification in WSL Ubuntu 26.04 at `b1a4dac`: Python script suite passed 36 tests with no skips; `cargo fmt --all --check`, workspace Clippy, workspace tests, and rustdoc passed. Rust crates currently contain zero unit tests; coverage preflight reports unavailable because no production function bodies exist.
+- [x] T034 [US3] Add regressions for LLVM export schema 3.1, per-function line summaries, function region start-line mapping, summary-only uncovered residuals, platform residual aggregation, and shared physical lines. RED evidence: commit `62752f5`; `python -m unittest discover -s scripts/tests -p 'test_coverage_gate.py' -v` ran 38 tests and exposed 9 failures against the prior parser (8 errors, 1 assertion failure; 3 Windows symlink skips).
+- [x] T035 [US3] Reconcile LLVM function summaries and physical file segments, validate region start-line mappings, and conservatively count unexplained uncovered residuals in package, workspace, and changed-code coverage. GREEN evidence: commit `b914cb4`; `python -m unittest discover -s scripts/tests -p 'test_coverage_gate.py'` passed 38 tests with 3 Windows symlink skips.
+- [x] T036 [US3] Update the approved coverage specification, data model, research record, and testing guide to state reviewed schema support and conservative summary reconciliation; verify the documentation and full script suite. Evidence: `python -m unittest discover -s scripts/tests -p 'test_*.py'` passed 45 tests with 3 Windows symlink skips; normative catalog tests passed 130 tests with 6 platform skips; catalog validation/report checks and `git diff --check` passed.
+- [x] T037 [US3] Add a multi-export regression where one `CoverageMapping` reports an uncovered shared line and another reports it covered; require the parser to preserve or reject the repeated workspace source path rather than reconciling across mappings. RED evidence: commit `863bab2`; the focused test failed because the parser returned without raising.
+- [x] T038 [US3] Reject repeated workspace source paths across distinct LLVM export mappings and duplicate file records within one mapping. GREEN evidence: commit `24a3567`; the focused regression passed and the coverage-gate suite passed 39 tests with 3 Windows symlink skips.
+- [x] T039 [US3] Document the repeated-path fail-closed rule and the LLVM export-object boundary in the specification, data model, research record, and testing guide; rerun all script/catalog checks and obtain a scoped review. Evidence: full script suite passed 47 tests with 3 Windows symlink skips; normative catalog suite passed 130 tests with 6 platform skips; catalog validation, report check, source audit, and `git diff --check` passed; scoped review found no remaining findings.
 
 ## Dependencies
 

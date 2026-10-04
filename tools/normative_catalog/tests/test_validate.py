@@ -2123,6 +2123,20 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaises(CatalogValidationError):
             validate(document)
 
+    def test_result_response_source_clauses_have_server_to_client_direction(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        expected_clause_ids = {
+            "KMIPKIT-CLAUSE-SPEC-9.17-001",
+            "KMIPKIT-CLAUSE-SPEC-9.18-001",
+            "KMIPKIT-CLAUSE-SPEC-9.19-001",
+        }
+
+        self.assertTrue(expected_clause_ids.issubset(clauses))
+        for clause_id in expected_clause_ids:
+            with self.subTest(clause_id=clause_id):
+                self.assertEqual(clauses[clause_id]["direction"], "server_to_client")
+
     def test_rejects_source_checksum_mismatch(self) -> None:
         document = minimal_catalog()
         document["sources"][1]["sha256"] = "0" * 64

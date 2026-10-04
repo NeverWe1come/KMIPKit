@@ -38,6 +38,12 @@ level gaps where no official Test Cases ID is explicitly source-linked.
 Inventory presence does not imply implementation, profile support,
 certification, or conformance; all current profile claims remain `not_claimed`.
 
+Tag reporting lists all five source-ordered ranges and named-tag counts by
+OASIS allocation. Unassigned protocol elements expose their names, wire values,
+and allocation states. Profile rows include clause, requirement, element,
+dependency, test, transport, and encoding links; linked tests retain their
+official case ID and mandatory/optional status when the source records it.
+
 This inventory is evidence for future protocol specifications. It does not
 replace the OASIS work products, amend their wording, resolve open source
 discrepancies, or serve as the separate public API manifest used for repetitive

@@ -19,6 +19,7 @@ REPORT_PATH = Path("specification/catalog/coverage-report.md")
 SECTION_ORDER = (
     "Source documents",
     "Count reconciliation",
+    "Tag allocation and ranges",
     "Source clause dispositions",
     "Source clause review by section",
     "Unassigned requirements",
@@ -172,6 +173,21 @@ def render_report(catalog: dict[str, Any]) -> str:
     ]))
     lines.append("")
 
+    tags = [row for row in elements if row.get("kind") == "tag"]
+    tag_ranges = sorted(catalog.get("tag_ranges", []), key=lambda row: row.get("source_order", 0))
+    lines.extend(["## Tag allocation and ranges", ""])
+    lines.extend(["### Named tags by OASIS allocation", ""])
+    lines.extend(_table(("Allocation", "Count"), _count_by(tags, "allocation")))
+    lines.extend(["", "### Tag ranges", ""])
+    lines.extend(_table(
+        ("Range", "Value range", "Allocation", "Source"),
+        [
+            (row.get("range_id"), row.get("value_range"), row.get("allocation"), _source_reference(row))
+            for row in tag_ranges
+        ],
+    ))
+    lines.append("")
+
     lines.extend(["## Source clause dispositions", ""])
     lines.extend(_table(("Disposition", "Count"), _count_by(catalog.get("source_clauses", []), "disposition")))
     lines.append("")
@@ -235,19 +251,48 @@ def render_report(catalog: dict[str, Any]) -> str:
     unassigned_elements.sort(key=lambda row: row.get("element_id", ""))
     lines.extend(["## Unassigned protocol elements", ""])
     lines.extend(_table(
-        ("Element", "Kind", "Direction", "Scope", "Source"),
+        ("Element", "Name", "Kind", "Direction", "Scope", "Wire value", "Allocation", "Source"),
         [(
-            row.get("element_id"), row.get("kind"), row.get("direction"), row.get("scope_state"),
-            _source_reference(row),
+            row.get("element_id"), row.get("name"), row.get("kind"), row.get("direction"),
+            row.get("scope_state"), row.get("wire_value"), row.get("allocation"), _source_reference(row),
         ) for row in unassigned_elements],
     ))
     lines.append("")
 
     profiles = sorted(catalog.get("profiles", []), key=lambda row: row.get("profile_id", ""))
+    tests_by_id = {
+        row.get("test_id"): row
+        for row in catalog.get("test_cases", [])
+        if row.get("test_id")
+    }
+
+    def profile_tests(profile: dict[str, Any]) -> str:
+        labels = []
+        for test_id in sorted(profile.get("test_case_ids") or []):
+            test_case = tests_by_id.get(test_id, {})
+            details = [test_case.get("official_case_id"), test_case.get("mandatory_status")]
+            details = [str(value) for value in details if value]
+            labels.append(f"{test_id} ({'; '.join(details)})" if details else str(test_id))
+        return ", ".join(labels)
+
+    def profile_values(profile: dict[str, Any], field: str) -> str:
+        return ", ".join(sorted(str(value) for value in profile.get(field) or []))
+
     lines.extend(["## Profile states", ""])
     lines.extend(_table(
-        ("Profile", "Name", "Applicability", "Claim state", "Source"),
-        [(row.get("profile_id"), row.get("name"), row.get("applicability"), row.get("claim_state"), _source_reference(row)) for row in profiles],
+        (
+            "Profile", "Name", "Role", "Applicability", "Claim state", "Source",
+            "Source clauses", "Requirements", "Elements", "Dependencies",
+            "Mandatory / optional tests", "Transport", "Encoding",
+        ),
+        [(
+            row.get("profile_id"), row.get("name"), row.get("role"), row.get("applicability"),
+            row.get("claim_state"), _source_reference(row),
+            profile_values(row, "source_clause_ids"), profile_values(row, "requirement_ids"),
+            profile_values(row, "element_ids"), profile_values(row, "dependency_profile_ids"),
+            profile_tests(row), profile_values(row, "transport_requirements"),
+            profile_values(row, "encoding_requirements"),
+        ) for row in profiles],
     ))
     lines.append("")
     lines.extend(["### Profiles by applicability and claim state", ""])

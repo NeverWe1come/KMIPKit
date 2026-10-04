@@ -94,13 +94,35 @@ Use `cargo llvm-cov`. CI collects LLVM JSON coverage on Linux, Windows, and
 macOS for the checked-out pull-request merge commit. The changed-code gate
 compares that exact tree with the pull-request base and derives executable Rust
 line counts from LLVM file segments across the three reports. It validates the
-parsed line and covered-line totals against each file's LLVM summary while
-checking function code-region schemas and file references. This preserves
-nested-region counts and prevents missing function records from shrinking the
-denominator. It requires at
-least 95 percent changed executable-line coverage. The 95 percent package gate
+parsed line and covered-line totals as lower bounds against each file's LLVM
+summary while checking function code-region schemas, file references, and
+each code region's start line against the file segment map. The parser checks
+region start lines because a region may span structural source lines that have
+no executable code. LLVM sums line summaries by source-level function group,
+while file segments merge coverage by physical source location; shared lines
+can make the summary larger than the unique segment line map. Thresholds use
+the physical line map and first reconcile per-function region coverage at
+shared physical lines. Any remaining summary-reported uncovered-line residual
+counts as uncovered. Residuals from each platform are summed because
+platform-specific code may omit different source lines. For changed files, the
+same residual is included in changed-code coverage so an omitted uncovered
+line cannot become `not applicable`. Region data explains covered and
+uncovered duplicate groups at a mapped physical line; unexplained summary
+reserves are conservative because LLVM does not report their physical
+locations. Missing region start lines fail closed. This preserves
+nested-region counts and prevents missing function records from hiding
+uncovered lines. It requires at least 95 percent changed executable-line
+coverage. The 95 percent package gate
 applies to `kmipkit-ttlv` and `kmipkit-protocol`; 85 percent applies to
 `kmipkit-transport` and `kmipkit-ffi`; the workspace gate is 90 percent.
+An LLVM report that repeats a workspace source path across export mappings
+fails closed until those mappings can be reconciled independently; function
+regions from distinct `CoverageMapping` objects are never combined to explain
+one another's summaries.
+
+The normalizer accepts the reviewed LLVM JSON export schema versions 3.0.x and
+3.1.x. Other major or minor versions fail closed until their consumed file,
+segment, region, and summary fields have been checked and covered by a fixture.
 
 The changed-code metric is `not applicable` when a pull request changes no
 executable Rust lines; the package and workspace gates still apply. Coverage
