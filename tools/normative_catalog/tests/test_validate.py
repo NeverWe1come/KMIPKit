@@ -390,13 +390,15 @@ class CatalogValidationTests(unittest.TestCase):
             "Certificate": "2.1", "Certificate Request": "2.2", "Opaque Object": "2.3",
             "PGP Key": "2.4", "Private Key": "2.5", "Public Key": "2.6",
             "Secret Data": "2.7", "Split Key": "2.8", "Symmetric Key": "2.9",
+            "Key Block": "3.1", "Key Value": "3.2", "Key Wrapping Data": "3.3",
         }
         self.assertEqual(
             {name: row["source_refs"][0]["section"] for name, row in object_structures.items()},
             expected_structures,
         )
         for kind, records in (("data_type", data_types), ("object_type", object_types), ("object_structure", object_structures)):
-            self.assertEqual(len(records), len(expected_data_types) if kind == "data_type" else 9)
+            expected_counts = {"data_type": 11, "object_type": 9, "object_structure": 12}
+            self.assertEqual(len(records), expected_counts[kind])
             for name, record in records.items():
                 slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
                 prefix = {"data_type": "DATA-TYPE", "object_type": "OBJECT-TYPE", "object_structure": "OBJECT-STRUCTURE"}[kind]
