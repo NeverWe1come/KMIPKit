@@ -39,7 +39,7 @@ Each of the five range rows in Specification §11.56 is a separate record with s
 
 | Field | Rule |
 |---|---|
-| `requirement_id` | Stable identifier such as `KMIPKIT-REQ-SPEC-8.3-001`; never recycled. |
+| `requirement_id` | Stable identifier such as `KMIPKIT-REQ-SPEC-8.3-001`; when a single source block contains multiple separable obligations, append a stable three-digit subrecord suffix such as `KMIPKIT-REQ-SPEC-8.3-001-002`. IDs are never recycled. |
 | `source_clause_ids`, `source_refs` | One or more exact ledger IDs and document sections; table/paragraph anchors distinguish clauses. |
 | `source_keyword`, `normative_strength` | Preserve the exact keyword (`MUST`, `MUST NOT`, `REQUIRED`, `SHALL`, `SHALL NOT`, `SHOULD`, `SHOULD NOT`, `RECOMMENDED`, `MAY`, or `OPTIONAL`) and store its canonical strength (`mandatory`, `prohibited`, `recommended`, `discouraged`, or `permission_or_optional`) using the mapping above. |
 | `subject`, `summary` | Exact subject plus a concise, non-copyrighted paraphrase of the obligation or permission. |
