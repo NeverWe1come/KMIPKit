@@ -1830,6 +1830,29 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertGreater(validate(document)["record_count"], 0)
 
+    def test_source_clause_scope_must_match_linked_requirement_scopes(self) -> None:
+        document = deviation_catalog(decision_record())
+        clause = document["source_clauses"][0]
+        first = document["requirements"][0]
+        second = dict(first)
+        second["requirement_id"] = "KMIPKIT-REQ-SPEC-8.1-001-002"
+        second["source_keyword"] = "MAY"
+        second["normative_strength"] = "permission_or_optional"
+        second["scope_state"] = "out_of_scope"
+        second["condition"] = "When XML or JSON encoding is used."
+        second["status"] = "unassigned"
+        second["decision_id"] = None
+        clause["source_keywords"] = ["SHOULD", "MAY"]
+        clause["requirement_ids"] = [first["requirement_id"], second["requirement_id"]]
+        clause["scope_state"] = "client_1_0"
+        first["status"] = "unassigned"
+        first["decision_id"] = None
+        document["requirements"].append(second)
+        document["decisions"] = []
+
+        with self.assertRaisesRegex(CatalogValidationError, "source clause scope"):
+            validate(document)
+
     def test_requirement_keyword_must_appear_in_a_linked_source_clause(self) -> None:
         document = deviation_catalog(decision_record())
         requirement = document["requirements"][0]
