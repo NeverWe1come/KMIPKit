@@ -1632,6 +1632,29 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertTrue(all(row["state"] == "open" for row in discrepancies))
         self.assertTrue(all(row["decision_id"] is None for row in discrepancies))
 
+    def test_checked_in_catalog_separates_unknown_vendor_and_extension_policies(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        document = json.loads(catalog_path.read_bytes())
+        policies = {row["policy_id"]: row for row in document["policies"]}
+        expected_ids = {
+            "KMIPKIT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION",
+            "KMIPKIT-POLICY-VENDOR-VALUE-PRESERVATION",
+            "KMIPKIT-POLICY-EXTENSION-PRESERVATION",
+        }
+
+        self.assertTrue(expected_ids.issubset(policies))
+        for policy_id in expected_ids:
+            policy = policies[policy_id]
+            self.assertEqual(policy["provenance"], "AGENTS.md")
+            self.assertEqual(policy["provenance_ref"], {
+                "path": "AGENTS.md",
+                "heading": "9. Public API and compatibility",
+            })
+        summaries = " ".join(policies[policy_id]["summary"].casefold() for policy_id in expected_ids)
+        self.assertIn("unknown", summaries)
+        self.assertIn("vendor", summaries)
+        self.assertIn("extension", summaries)
+
     def test_rejects_unknown_top_level_fields(self) -> None:
         document = minimal_catalog()
         document["unexpected"] = []
