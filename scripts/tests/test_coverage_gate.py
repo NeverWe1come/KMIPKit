@@ -173,6 +173,27 @@ class CoverageGateTests(unittest.TestCase):
             with self.assertRaisesRegex(GATE.CoverageDataError, "multiple coverage mappings"):
                 GATE.parse_llvm_export(json.dumps(document), root)
 
+    def test_distinct_sources_across_export_mappings_are_preserved(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first_filename = "crates/kmipkit-ttlv/src/lib.rs"
+            second_filename = "crates/kmipkit-protocol/src/lib.rs"
+            first_source = root / first_filename
+            second_source = root / second_filename
+            first_source.parent.mkdir(parents=True)
+            second_source.parent.mkdir(parents=True)
+            first_source.write_text("pub fn first() {}\n", encoding="utf-8")
+            second_source.write_text("pub fn second() {}\n", encoding="utf-8")
+
+            first = json.loads(llvm_document([[1, 1, 1, 18, 2, 0, 0, 0]], filename=first_filename))
+            second = json.loads(llvm_document([[1, 1, 1, 19, 3, 0, 0, 0]], filename=second_filename))
+            first["data"].extend(second["data"])
+
+            report = GATE.parse_llvm_export(json.dumps(first), root)
+
+        self.assertEqual({first_filename: {1: 2}, second_filename: {1: 3}}, report)
+
     def test_function_region_line_missing_from_file_segments_fails_closed(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
