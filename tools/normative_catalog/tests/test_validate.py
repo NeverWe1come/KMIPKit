@@ -1808,6 +1808,26 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertGreater(validate(document)["record_count"], 0)
 
+    def test_source_clause_can_summarize_separable_mixed_scope_requirements(self) -> None:
+        document = deviation_catalog(decision_record())
+        clause = document["source_clauses"][0]
+        first = document["requirements"][0]
+        second = dict(first)
+        second["requirement_id"] = "KMIPKIT-REQ-SPEC-8.1-001-002"
+        second["source_keyword"] = "MAY"
+        second["normative_strength"] = "permission_or_optional"
+        second["scope_state"] = "out_of_scope"
+        second["condition"] = "When XML or JSON encoding is used."
+        clause["source_keywords"] = ["SHOULD", "MAY"]
+        clause["requirement_ids"] = [first["requirement_id"], second["requirement_id"]]
+        clause["scope_state"] = "mixed"
+        first["status"] = "unassigned"
+        first["decision_id"] = None
+        document["requirements"].append(second)
+        document["decisions"] = []
+
+        self.assertGreater(validate(document)["record_count"], 0)
+
     def test_requirement_keyword_must_appear_in_a_linked_source_clause(self) -> None:
         document = deviation_catalog(decision_record())
         requirement = document["requirements"][0]
