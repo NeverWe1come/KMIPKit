@@ -100,6 +100,7 @@
 - [x] T030 Verify the final branch is based on `release/1.0.0`, run all locally available checks, confirm no ignored generated/OASIS source was changed, and prepare draft PR #3 with scope, rationale, Red/Green/Refactor evidence, verification, risks, and limitations.
 - [x] T031 Add a workflow regression test requiring `branch-coverage` to run only for `schedule`, fix the missing job-level condition, and refactor shared job extraction. Evidence: RED `2104698`; GREEN `e2965b3`; REFACTOR `c8769d4`; `python -m unittest discover -s scripts/tests -p 'test_*.py' -v` passed 35 tests with 3 Windows symlink-permission skips.
 - [x] T032 Align the testing guide with the nightly-only branch-coverage trigger and add a regression contract for the documented schedule-only behavior. Evidence: RED `19e57b7`; GREEN `ae64bba`; REFACTOR `df71ff4`; `python -m unittest discover -s scripts/tests -p 'test_*.py' -v` passed 36 tests with 3 Windows symlink-permission skips.
+- [x] T033 Re-run final verification in WSL Ubuntu 26.04 at `b1a4dac`: Python script suite passed 36 tests with no skips; `cargo fmt --all --check`, workspace Clippy, workspace tests, and rustdoc passed. Rust crates currently contain zero unit tests; coverage preflight reports unavailable because no production function bodies exist.
 
 ## Dependencies
 
