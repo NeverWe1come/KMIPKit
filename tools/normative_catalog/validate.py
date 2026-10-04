@@ -902,6 +902,28 @@ ASYNC_RESPONSE_BEHAVIORS = {
 }
 
 
+def _expected_operation_payload_tables(
+    name: str,
+    direction: str,
+) -> list[dict[str, Any]]:
+    """Build the exact payload-table references verified against pinned captions."""
+    if direction == "client_to_server":
+        operation_names = tuple(CLIENT_OPERATION_SECTIONS)
+        table_pair = CLIENT_OPERATION_PAYLOAD_TABLES[operation_names.index(name)]
+    else:
+        table_pair = SERVER_OPERATION_PAYLOAD_TABLES[name]
+
+    records: list[dict[str, Any]] = []
+    for role, table_number in (("request", table_pair[0]), ("response", table_pair[1])):
+        if table_number is None:
+            continue
+        caption = f"{name} {role.title()} Payload"
+        if name == "Query Asynchronous Requests" and role == "response":
+            caption = "PKCS#11 Response Payload"
+        records.append({"role": role, "table_number": table_number, "caption": caption})
+    return records
+
+
 def _check_operation_inventory(elements: list[dict[str, Any]]) -> None:
     expected = {
         **{("client_to_server", name): section for name, section in CLIENT_OPERATION_SECTIONS.items()},
@@ -926,19 +948,7 @@ def _check_operation_inventory(elements: list[dict[str, Any]]) -> None:
         if key[0] == "server_to_client" and not operation.get("scope_reason"):
             _fail(f"operation {operation.get('name')} requires a 1.1 scope rationale")
         name = key[1]
-        if key[0] == "client_to_server":
-            ordered_names = list(CLIENT_OPERATION_SECTIONS)
-            table_pair = CLIENT_OPERATION_PAYLOAD_TABLES[ordered_names.index(name)]
-        else:
-            table_pair = SERVER_OPERATION_PAYLOAD_TABLES[name]
-        expected_tables: list[dict[str, Any]] = []
-        for role, table_number in (("request", table_pair[0]), ("response", table_pair[1])):
-            if table_number is None:
-                continue
-            caption = f"{name} {role.title()} Payload"
-            if name == "Query Asynchronous Requests" and role == "response":
-                caption = "PKCS#11 Response Payload"
-            expected_tables.append({"role": role, "table_number": table_number, "caption": caption})
+        expected_tables = _expected_operation_payload_tables(name, key[0])
         if operation.get("payload_tables") != expected_tables:
             _fail(f"operation {name} has incorrect payload table references")
         if operation.get("asynchronous_response") != ASYNC_RESPONSE_BEHAVIORS.get(name):
