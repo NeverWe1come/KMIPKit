@@ -1,8 +1,11 @@
 //! OASIS KMIP Specification v2.1, §10.1.1 (Tag), Chapter 11 introduction, and §11.56 (Tag
 //! Enumeration). Traceability: KMIPKIT-0004-FR-002, KMIPKIT-0004-FR-003,
 //! KMIPKIT-0004-NR-001, and KMIPKIT-0004-NR-005. Exact-over-range precedence
-//! is the accepted KMIPKit policy in ADR-0010, not an OASIS interpretation.
+//! is the accepted `KMIPKit` policy in ADR-0010, not an OASIS interpretation.
 
+// Generated catalog literals use grouped hexadecimal digits; keep the lint
+// allowance scoped to this imported test module and do not edit generated data.
+#[allow(clippy::mistyped_literal_suffixes)]
 #[path = "../src/generated/tag_allocations.rs"]
 mod tag_allocations;
 
