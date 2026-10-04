@@ -22,10 +22,10 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
 | Normative requirements | 567 |
-| Profiles | 0 |
-| Test cases | 0 |
-| Open discrepancies | 0 |
-| Project policies | 0 |
+| Profiles | 35 |
+| Test cases | 203 |
+| Open discrepancies | 37 |
+| Project policies | 3 |
 
 ### Elements by kind
 
@@ -70,13 +70,461 @@ This report records inventory coverage and evidence state. It does not claim pro
 
 | Disposition | Count |
 | --- | --- |
-| informative\_context | 114 |
+| informative\_context | 118 |
 | later\_1\_1 | 38 |
 | non\_applicable | 345 |
 | profile\_conditional | 184 |
 | requirement | 264 |
 | server\_only | 436 |
-| source\_discrepancy | 30 |
+| source\_discrepancy | 26 |
+
+## Source clause review by section
+
+Every row summarizes audited candidate locators by their pinned source section. The immutable-source audit separately requires exact candidate and clause-ledger locator equality.
+
+| Source | Section | Candidates | Dispositions |
+| --- | --- | --- | --- |
+| KMIPKIT-SRC-profiles | 0 | 12 | informative\_context: 4, non\_applicable: 8 |
+| KMIPKIT-SRC-profiles | 1 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 1.1 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 1.2 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 1.3 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 2 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 2.1 | 9 | non\_applicable: 9 |
+| KMIPKIT-SRC-profiles | 2.2 | 5 | non\_applicable: 5 |
+| KMIPKIT-SRC-profiles | 3 | 6 | non\_applicable: 2, profile\_conditional: 4 |
+| KMIPKIT-SRC-profiles | 3.1 | 1 | profile\_conditional: 1 |
+| KMIPKIT-SRC-profiles | 3.1.1 | 5 | profile\_conditional: 3, server\_only: 2 |
+| KMIPKIT-SRC-profiles | 3.1.2 | 5 | non\_applicable: 2, profile\_conditional: 2, server\_only: 1 |
+| KMIPKIT-SRC-profiles | 3.1.3 | 3 | server\_only: 3 |
+| KMIPKIT-SRC-profiles | 3.1.4 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-profiles | 3.2 | 1 | profile\_conditional: 1 |
+| KMIPKIT-SRC-profiles | 3.2.1 | 1 | profile\_conditional: 1 |
+| KMIPKIT-SRC-profiles | 3.2.2 | 1 | profile\_conditional: 1 |
+| KMIPKIT-SRC-profiles | 3.2.3 | 1 | profile\_conditional: 1 |
+| KMIPKIT-SRC-profiles | 3.2.4 | 2 | requirement: 1, server\_only: 1 |
+| KMIPKIT-SRC-profiles | 4 | 4 | informative\_context: 4 |
+| KMIPKIT-SRC-profiles | 4.1 | 3 | informative\_context: 1, profile\_conditional: 2 |
+| KMIPKIT-SRC-profiles | 4.1.1 | 14 | server\_only: 14 |
+| KMIPKIT-SRC-profiles | 4.1.2 | 10 | informative\_context: 4, profile\_conditional: 5, server\_only: 1 |
+| KMIPKIT-SRC-profiles | 5.1.1 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.1.2 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-profiles | 5.3.1 | 11 | later\_1\_1: 1, non\_applicable: 2, requirement: 8 |
+| KMIPKIT-SRC-profiles | 5.3.2 | 10 | server\_only: 10 |
+| KMIPKIT-SRC-profiles | 5.3.3.1 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-profiles | 5.4 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.4.1.1 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.4.1.2 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.4.1.3 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.4.1.4 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.4.1.6 | 3 | non\_applicable: 3 |
+| KMIPKIT-SRC-profiles | 5.4.1.6.1 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.4.1.6.2 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.4.1.6.4 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.4.1.6.7 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.4.1.6.11 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.4.2 | 4 | non\_applicable: 2, source\_discrepancy: 2 |
+| KMIPKIT-SRC-profiles | 5.4.3 | 4 | non\_applicable: 2, source\_discrepancy: 2 |
+| KMIPKIT-SRC-profiles | 5.4.4.1 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.1.1 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.5.1.2 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.1.3 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.5.1.4 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.5.1.6 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.1 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.2 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.4 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.5 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.6 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.7 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.8 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.9 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.10 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.11 | 3 | non\_applicable: 3 |
+| KMIPKIT-SRC-profiles | 5.5.1.6.13 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.5.2 | 4 | non\_applicable: 4 |
+| KMIPKIT-SRC-profiles | 5.5.3 | 4 | non\_applicable: 4 |
+| KMIPKIT-SRC-profiles | 5.5.4.1 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-profiles | 5.6.1 | 3 | profile\_conditional: 3 |
+| KMIPKIT-SRC-profiles | 5.6.2 | 7 | server\_only: 7 |
+| KMIPKIT-SRC-profiles | 5.6.4.1 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.7.1 | 3 | profile\_conditional: 3 |
+| KMIPKIT-SRC-profiles | 5.7.2 | 3 | profile\_conditional: 3 |
+| KMIPKIT-SRC-profiles | 5.7.3 | 3 | profile\_conditional: 3 |
+| KMIPKIT-SRC-profiles | 5.7.4 | 7 | server\_only: 7 |
+| KMIPKIT-SRC-profiles | 5.8.1 | 3 | profile\_conditional: 3 |
+| KMIPKIT-SRC-profiles | 5.8.2 | 6 | server\_only: 6 |
+| KMIPKIT-SRC-profiles | 5.8.4.1 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.9.1 | 4 | profile\_conditional: 4 |
+| KMIPKIT-SRC-profiles | 5.9.2 | 4 | profile\_conditional: 4 |
+| KMIPKIT-SRC-profiles | 5.9.3 | 4 | profile\_conditional: 4 |
+| KMIPKIT-SRC-profiles | 5.9.4 | 4 | server\_only: 4 |
+| KMIPKIT-SRC-profiles | 5.9.5 | 4 | server\_only: 4 |
+| KMIPKIT-SRC-profiles | 5.9.6 | 4 | server\_only: 4 |
+| KMIPKIT-SRC-profiles | 5.9.10.1 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.9.10.2 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.9.10.3 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.9.10.4 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.10.1 | 3 | profile\_conditional: 3 |
+| KMIPKIT-SRC-profiles | 5.10.2 | 7 | server\_only: 7 |
+| KMIPKIT-SRC-profiles | 5.10.4.1 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.11.1 | 4 | profile\_conditional: 4 |
+| KMIPKIT-SRC-profiles | 5.11.2 | 11 | server\_only: 11 |
+| KMIPKIT-SRC-profiles | 5.11.3.1 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.11.3.2 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-profiles | 5.12.1 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.12.2 | 7 | informative\_context: 1, profile\_conditional: 5, server\_only: 1 |
+| KMIPKIT-SRC-profiles | 5.12.3 | 3 | profile\_conditional: 2, server\_only: 1 |
+| KMIPKIT-SRC-profiles | 5.12.4 | 9 | profile\_conditional: 9 |
+| KMIPKIT-SRC-profiles | 5.12.5 | 12 | server\_only: 12 |
+| KMIPKIT-SRC-profiles | 5.12.6.1 | 1 | profile\_conditional: 1 |
+| KMIPKIT-SRC-profiles | 5.12.6.2 | 4 | informative\_context: 1, profile\_conditional: 3 |
+| KMIPKIT-SRC-profiles | 5.12.6.3 | 4 | profile\_conditional: 4 |
+| KMIPKIT-SRC-profiles | 5.13.1 | 3 | profile\_conditional: 2, source\_discrepancy: 1 |
+| KMIPKIT-SRC-profiles | 5.13.2 | 7 | server\_only: 7 |
+| KMIPKIT-SRC-profiles | 5.15 | 4 | profile\_conditional: 4 |
+| KMIPKIT-SRC-profiles | 5.16 | 10 | server\_only: 10 |
+| KMIPKIT-SRC-profiles | 5.17 | 1 | profile\_conditional: 1 |
+| KMIPKIT-SRC-profiles | 5.17.1 | 2 | profile\_conditional: 2 |
+| KMIPKIT-SRC-profiles | 5.17.2 | 2 | informative\_context: 1, profile\_conditional: 1 |
+| KMIPKIT-SRC-profiles | 5.18.1 | 5 | non\_applicable: 3, profile\_conditional: 2 |
+| KMIPKIT-SRC-profiles | 5.18.2.1 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-profiles | 5.18.3 | 5 | profile\_conditional: 4, source\_discrepancy: 1 |
+| KMIPKIT-SRC-profiles | 5.18.4 | 5 | server\_only: 4, source\_discrepancy: 1 |
+| KMIPKIT-SRC-profiles | 6 | 1 | profile\_conditional: 1 |
+| KMIPKIT-SRC-profiles | 6.1 | 4 | profile\_conditional: 4 |
+| KMIPKIT-SRC-profiles | 6.2 | 4 | server\_only: 4 |
+| KMIPKIT-SRC-profiles | 6.3 | 4 | server\_only: 4 |
+| KMIPKIT-SRC-profiles | 6.4 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.5 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.6 | 5 | non\_applicable: 5 |
+| KMIPKIT-SRC-profiles | 6.7 | 6 | non\_applicable: 6 |
+| KMIPKIT-SRC-profiles | 6.8 | 5 | non\_applicable: 5 |
+| KMIPKIT-SRC-profiles | 6.9 | 6 | non\_applicable: 5, source\_discrepancy: 1 |
+| KMIPKIT-SRC-profiles | 6.10 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.11 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.12 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.13 | 5 | profile\_conditional: 4, source\_discrepancy: 1 |
+| KMIPKIT-SRC-profiles | 6.14 | 5 | profile\_conditional: 4, source\_discrepancy: 1 |
+| KMIPKIT-SRC-profiles | 6.15 | 7 | server\_only: 7 |
+| KMIPKIT-SRC-profiles | 6.16 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.17 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.18 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.19 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.20 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.21 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.22 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.23 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.24 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.25 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.26 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.27 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.28 | 7 | profile\_conditional: 7 |
+| KMIPKIT-SRC-profiles | 6.29 | 7 | server\_only: 7 |
+| KMIPKIT-SRC-profiles | 6.30 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.31 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.32 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.33 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-profiles | 6.34 | 5 | profile\_conditional: 5 |
+| KMIPKIT-SRC-profiles | 6.35 | 5 | server\_only: 5 |
+| KMIPKIT-SRC-spec | 0 | 8 | informative\_context: 6, non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 1.1 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 1.2 | 3 | informative\_context: 3 |
+| KMIPKIT-SRC-spec | 1.3 | 7 | informative\_context: 7 |
+| KMIPKIT-SRC-spec | 2.1 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 2.2 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 2.3 | 3 | requirement: 3 |
+| KMIPKIT-SRC-spec | 2.4 | 3 | requirement: 3 |
+| KMIPKIT-SRC-spec | 2.5 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 2.6 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 2.7 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 2.8 | 3 | requirement: 3 |
+| KMIPKIT-SRC-spec | 2.9 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 3.1 | 6 | requirement: 6 |
+| KMIPKIT-SRC-spec | 3.2 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 3.3 | 9 | requirement: 9 |
+| KMIPKIT-SRC-spec | 3.4 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 3.5 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 3.6 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 3.7 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 3.8 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 3.9 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 3.10 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 3.11 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 3.12 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 4 | 8 | informative\_context: 2, requirement: 1, server\_only: 5 |
+| KMIPKIT-SRC-spec | 4.1 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 4.2 | 3 | informative\_context: 1, requirement: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.3 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.4 | 3 | informative\_context: 1, requirement: 2 |
+| KMIPKIT-SRC-spec | 4.5 | 2 | informative\_context: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.6 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.7 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.8 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.9 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.10 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.11 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 4.12 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.13 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.14 | 5 | informative\_context: 4, requirement: 1 |
+| KMIPKIT-SRC-spec | 4.15 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.16 | 5 | informative\_context: 1, requirement: 4 |
+| KMIPKIT-SRC-spec | 4.17 | 2 | requirement: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.18 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 4.19 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.20 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.21 | 3 | requirement: 1, server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.22 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.23 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.24 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.25 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.26 | 3 | requirement: 1, server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.27 | 3 | informative\_context: 1, requirement: 2 |
+| KMIPKIT-SRC-spec | 4.28 | 3 | informative\_context: 1, requirement: 2 |
+| KMIPKIT-SRC-spec | 4.29 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.30 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 4.31 | 4 | informative\_context: 2, requirement: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.32 | 3 | informative\_context: 1, requirement: 2 |
+| KMIPKIT-SRC-spec | 4.33 | 3 | server\_only: 3 |
+| KMIPKIT-SRC-spec | 4.34 | 2 | informative\_context: 1, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 4.35 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 4.36 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.37 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.38 | 4 | informative\_context: 1, requirement: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.39 | 3 | informative\_context: 1, server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.40 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 4.41 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 4.42 | 2 | informative\_context: 2 |
+| KMIPKIT-SRC-spec | 4.43 | 2 | informative\_context: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.44 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.45 | 2 | informative\_context: 2 |
+| KMIPKIT-SRC-spec | 4.46 | 6 | informative\_context: 1, requirement: 1, server\_only: 4 |
+| KMIPKIT-SRC-spec | 4.47 | 3 | informative\_context: 1, requirement: 2 |
+| KMIPKIT-SRC-spec | 4.48 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.49 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.50 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.51 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.52 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.53 | 2 | informative\_context: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.54 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 4.55 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.56 | 3 | server\_only: 3 |
+| KMIPKIT-SRC-spec | 4.57 | 12 | requirement: 6, server\_only: 5, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 4.58 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.59 | 4 | informative\_context: 1, requirement: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 4.60 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 4.61 | 3 | requirement: 1, server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.62 | 4 | requirement: 2, server\_only: 2 |
+| KMIPKIT-SRC-spec | 4.63 | 6 | requirement: 3, server\_only: 3 |
+| KMIPKIT-SRC-spec | 5.1 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 5.2 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 5.3 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 5.4 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 5.5 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 5.6 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 5.7 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 6.1 | 10 | informative\_context: 4, requirement: 4, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.1 | 3 | non\_applicable: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.1.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.2 | 3 | non\_applicable: 2, requirement: 1 |
+| KMIPKIT-SRC-spec | 6.1.2.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.3 | 3 | non\_applicable: 2, requirement: 1 |
+| KMIPKIT-SRC-spec | 6.1.3.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.4 | 3 | non\_applicable: 2, requirement: 1 |
+| KMIPKIT-SRC-spec | 6.1.4.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.5 | 5 | non\_applicable: 3, requirement: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.6 | 8 | non\_applicable: 2, requirement: 4, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.6.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.7 | 8 | non\_applicable: 2, requirement: 5, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.7.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.8 | 3 | non\_applicable: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.8.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.9 | 7 | non\_applicable: 2, requirement: 3, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.9.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.10 | 5 | non\_applicable: 2, requirement: 1, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.10.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.11 | 7 | non\_applicable: 2, requirement: 5 |
+| KMIPKIT-SRC-spec | 6.1.11.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.12 | 4 | informative\_context: 1, non\_applicable: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.12.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.13 | 3 | non\_applicable: 2, requirement: 1 |
+| KMIPKIT-SRC-spec | 6.1.13.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.14 | 8 | non\_applicable: 2, requirement: 4, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.14.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.15 | 3 | non\_applicable: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.15.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.16 | 6 | non\_applicable: 2, requirement: 2, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.16.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.17 | 7 | non\_applicable: 2, requirement: 4, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.17.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.18 | 4 | non\_applicable: 2, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.18.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.19 | 7 | non\_applicable: 2, requirement: 2, server\_only: 2, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 6.1.19.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.20 | 5 | non\_applicable: 2, requirement: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.20.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.21 | 4 | non\_applicable: 2, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.21.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.22 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.1.22.1 | 2 | non\_applicable: 1, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 6.1.23 | 4 | non\_applicable: 2, requirement: 2 |
+| KMIPKIT-SRC-spec | 6.1.23.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.24 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.1.24.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.25 | 7 | non\_applicable: 2, requirement: 3, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.25.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.26 | 3 | non\_applicable: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.26.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.27 | 6 | non\_applicable: 2, requirement: 3, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.27.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.28 | 16 | non\_applicable: 2, requirement: 9, server\_only: 5 |
+| KMIPKIT-SRC-spec | 6.1.28.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.29 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.1.29.1 | 2 | non\_applicable: 1, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 6.1.30 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.1.30.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.31 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.1.31.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.32 | 5 | non\_applicable: 2, requirement: 3 |
+| KMIPKIT-SRC-spec | 6.1.32.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.33 | 6 | non\_applicable: 2, requirement: 3, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.33.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.34 | 3 | non\_applicable: 2, requirement: 1 |
+| KMIPKIT-SRC-spec | 6.1.34.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.35 | 5 | non\_applicable: 2, requirement: 3 |
+| KMIPKIT-SRC-spec | 6.1.35.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.36 | 3 | non\_applicable: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.37 | 4 | non\_applicable: 2, source\_discrepancy: 2 |
+| KMIPKIT-SRC-spec | 6.1.37.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.38 | 5 | non\_applicable: 1, requirement: 1, server\_only: 3 |
+| KMIPKIT-SRC-spec | 6.1.38.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.39 | 3 | non\_applicable: 2, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.39.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.40 | 29 | non\_applicable: 2, requirement: 2, server\_only: 25 |
+| KMIPKIT-SRC-spec | 6.1.40.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.41 | 4 | non\_applicable: 2, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.41.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.42 | 3 | non\_applicable: 2, requirement: 1 |
+| KMIPKIT-SRC-spec | 6.1.42.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.43 | 11 | non\_applicable: 3, requirement: 6, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.43.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.44 | 4 | non\_applicable: 2, requirement: 2 |
+| KMIPKIT-SRC-spec | 6.1.44.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.45 | 9 | non\_applicable: 2, requirement: 5, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.45.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.46 | 6 | non\_applicable: 2, requirement: 2, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.46.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.47 | 6 | non\_applicable: 2, requirement: 2, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1.47.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.48 | 11 | non\_applicable: 2, requirement: 3, server\_only: 6 |
+| KMIPKIT-SRC-spec | 6.1.48.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.49 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.1.49.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.50 | 3 | non\_applicable: 2, requirement: 1 |
+| KMIPKIT-SRC-spec | 6.1.50.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.51 | 3 | non\_applicable: 2, requirement: 1 |
+| KMIPKIT-SRC-spec | 6.1.51.1 | 2 | non\_applicable: 1, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 6.1.52 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.1.52.1 | 2 | non\_applicable: 1, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 6.1.53 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.1.53.1 | 2 | non\_applicable: 1, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 6.1.54 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.1.54.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.55 | 6 | non\_applicable: 2, requirement: 3, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.55.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.56 | 9 | non\_applicable: 2, requirement: 4, server\_only: 3 |
+| KMIPKIT-SRC-spec | 6.1.56.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.1.57 | 7 | non\_applicable: 2, requirement: 5 |
+| KMIPKIT-SRC-spec | 6.1.57.1 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 6.2.1 | 6 | later\_1\_1: 4, non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.2.1.1 | 2 | later\_1\_1: 1, non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 6.2.2 | 3 | later\_1\_1: 2, non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 6.2.2.1 | 2 | later\_1\_1: 1, non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 6.2.3 | 6 | later\_1\_1: 5, non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 6.2.3.1 | 2 | later\_1\_1: 1, non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 6.2.4 | 23 | later\_1\_1: 21, non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.2.4.1 | 2 | later\_1\_1: 1, non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 6.2.5 | 2 | non\_applicable: 2 |
+| KMIPKIT-SRC-spec | 6.2.5.1 | 2 | later\_1\_1: 1, non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.1 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.2 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.3 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.4 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.5 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.6 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.7 | 2 | non\_applicable: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 7.8 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 7.11 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 7.12 | 6 | informative\_context: 1, non\_applicable: 1, requirement: 3, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 7.13 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.18 | 7 | non\_applicable: 1, requirement: 5, server\_only: 1 |
+| KMIPKIT-SRC-spec | 7.21 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 7.22 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.23 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 7.24 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 7.25 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 7.26 | 2 | non\_applicable: 1, profile\_conditional: 1 |
+| KMIPKIT-SRC-spec | 7.27 | 2 | non\_applicable: 1, profile\_conditional: 1 |
+| KMIPKIT-SRC-spec | 7.28 | 2 | non\_applicable: 1, profile\_conditional: 1 |
+| KMIPKIT-SRC-spec | 7.29 | 2 | non\_applicable: 1, profile\_conditional: 1 |
+| KMIPKIT-SRC-spec | 7.30 | 2 | non\_applicable: 1, profile\_conditional: 1 |
+| KMIPKIT-SRC-spec | 7.31 | 2 | non\_applicable: 1, profile\_conditional: 1 |
+| KMIPKIT-SRC-spec | 7.32 | 2 | non\_applicable: 1, profile\_conditional: 1 |
+| KMIPKIT-SRC-spec | 7.33 | 4 | informative\_context: 1, non\_applicable: 1, requirement: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 7.34 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.35 | 2 | non\_applicable: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 7.36 | 5 | non\_applicable: 2, requirement: 3 |
+| KMIPKIT-SRC-spec | 7.37 | 4 | non\_applicable: 1, server\_only: 3 |
+| KMIPKIT-SRC-spec | 7.39 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.40 | 2 | informative\_context: 1, non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 7.41 | 4 | non\_applicable: 1, server\_only: 3 |
+| KMIPKIT-SRC-spec | 8 | 3 | requirement: 3 |
+| KMIPKIT-SRC-spec | 8.1 | 2 | non\_applicable: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 8.2 | 2 | non\_applicable: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 8.3 | 4 | informative\_context: 1, non\_applicable: 1, requirement: 2 |
+| KMIPKIT-SRC-spec | 8.4 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 8.5 | 2 | non\_applicable: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 8.6 | 5 | non\_applicable: 1, server\_only: 4 |
+| KMIPKIT-SRC-spec | 9.1 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.2 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.3 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.4 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 9.5 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.6 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.7 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.8 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.9 | 2 | requirement: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 9.10 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-spec | 9.11 | 12 | informative\_context: 1, non\_applicable: 7, profile\_conditional: 1, requirement: 3 |
+| KMIPKIT-SRC-spec | 9.12 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.13 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.14 | 1 | non\_applicable: 1 |
+| KMIPKIT-SRC-spec | 9.16 | 1 | source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 9.17 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-spec | 9.18 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-spec | 9.19 | 2 | requirement: 1, server\_only: 1 |
+| KMIPKIT-SRC-spec | 9.20 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 9.21 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 10.1.2 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 10.1.5 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 10.2 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 10.3 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-spec | 10.4 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 11 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 11.3 | 4 | informative\_context: 1, server\_only: 3 |
+| KMIPKIT-SRC-spec | 11.5 | 2 | server\_only: 2 |
+| KMIPKIT-SRC-spec | 11.20 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 11.28 | 1 | source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 11.45 | 2 | informative\_context: 2 |
+| KMIPKIT-SRC-spec | 11.46 | 7 | informative\_context: 5, server\_only: 1, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 11.49 | 1 | informative\_context: 1 |
+| KMIPKIT-SRC-spec | 11.56 | 2 | informative\_context: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 11.58 | 1 | source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 12 | 1 | requirement: 1 |
+| KMIPKIT-SRC-spec | 12.1 | 3 | informative\_context: 2, source\_discrepancy: 1 |
+| KMIPKIT-SRC-spec | 14.1 | 2 | profile\_conditional: 1, requirement: 1 |
+| KMIPKIT-SRC-spec | 14.2 | 4 | informative\_context: 2, server\_only: 2 |
 
 ## Unassigned requirements
 
@@ -649,6 +1097,58 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-REQ-SPEC-9.8-001-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.8 |
 | KMIPKIT-REQ-SPEC-9.8-001-003 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §9.8 |
 | KMIPKIT-REQ-SPEC-9.9-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §9.9 |
+
+## Requirements needing negative verification
+
+| Requirement | Strength | Negative verification | Status | Source |
+| --- | --- | --- | --- | --- |
+| KMIPKIT-REQ-PROF-3.1.1-005 | prohibited | required | unassigned | KMIPKIT-SRC-profiles §3.1.1 |
+| KMIPKIT-REQ-PROF-3.1.2-005 | prohibited | required | unassigned | KMIPKIT-SRC-profiles §3.1.2 |
+| KMIPKIT-REQ-PROF-5.12.3-003 | prohibited | required | unassigned | KMIPKIT-SRC-profiles §5.12.3 |
+| KMIPKIT-REQ-SPEC-11-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §11 |
+| KMIPKIT-REQ-SPEC-3.3-003 | prohibited | required | unassigned | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-REQ-SPEC-4-001-004 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4 |
+| KMIPKIT-REQ-SPEC-4-001-005 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4 |
+| KMIPKIT-REQ-SPEC-4.1-001-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.1 |
+| KMIPKIT-REQ-SPEC-4.1-001-003 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.1 |
+| KMIPKIT-REQ-SPEC-4.17-001-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.17 |
+| KMIPKIT-REQ-SPEC-4.18-001-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.18 |
+| KMIPKIT-REQ-SPEC-4.18-001-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.18 |
+| KMIPKIT-REQ-SPEC-4.28-001-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.28 |
+| KMIPKIT-REQ-SPEC-4.28-001-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.28 |
+| KMIPKIT-REQ-SPEC-4.30-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.30 |
+| KMIPKIT-REQ-SPEC-4.38-003 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.38 |
+| KMIPKIT-REQ-SPEC-4.40-001-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.40 |
+| KMIPKIT-REQ-SPEC-4.40-001-004 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.40 |
+| KMIPKIT-REQ-SPEC-4.40-001-005 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.40 |
+| KMIPKIT-REQ-SPEC-4.41-001-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.41 |
+| KMIPKIT-REQ-SPEC-4.41-001-003 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.41 |
+| KMIPKIT-REQ-SPEC-4.41-001-004 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.41 |
+| KMIPKIT-REQ-SPEC-4.57-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.57 |
+| KMIPKIT-REQ-SPEC-4.57-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.57 |
+| KMIPKIT-REQ-SPEC-4.57-003-003 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.57 |
+| KMIPKIT-REQ-SPEC-4.57-004-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.57 |
+| KMIPKIT-REQ-SPEC-4.57-005-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.57 |
+| KMIPKIT-REQ-SPEC-4.57-006 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.57 |
+| KMIPKIT-REQ-SPEC-4.57-007 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.57 |
+| KMIPKIT-REQ-SPEC-4.59-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.59 |
+| KMIPKIT-REQ-SPEC-4.59-003-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.59 |
+| KMIPKIT-REQ-SPEC-4.59-003-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §4.59 |
+| KMIPKIT-REQ-SPEC-6.1.14-006-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.14 |
+| KMIPKIT-REQ-SPEC-6.1.2-001-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.2 |
+| KMIPKIT-REQ-SPEC-6.1.2-001-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.2 |
+| KMIPKIT-REQ-SPEC-6.1.20-001-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.20 |
+| KMIPKIT-REQ-SPEC-6.1.23-001-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.23 |
+| KMIPKIT-REQ-SPEC-6.1.23-002-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.23 |
+| KMIPKIT-REQ-SPEC-6.1.28-009-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.28 |
+| KMIPKIT-REQ-SPEC-6.1.28-009-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.28 |
+| KMIPKIT-REQ-SPEC-6.1.3-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.3 |
+| KMIPKIT-REQ-SPEC-6.1.35-001-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.35 |
+| KMIPKIT-REQ-SPEC-6.1.38-001-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.38 |
+| KMIPKIT-REQ-SPEC-6.1.44-003-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.44 |
+| KMIPKIT-REQ-SPEC-6.1.50-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.50 |
+| KMIPKIT-REQ-SPEC-6.1.51-001 | prohibited | required | unassigned | KMIPKIT-SRC-spec §6.1.51 |
+| KMIPKIT-REQ-SPEC-7.18-002 | prohibited | required | unassigned | KMIPKIT-SRC-spec §7.18 |
 
 ## Unassigned protocol elements
 
@@ -2409,34 +2909,312 @@ This report records inventory coverage and evidence state. It does not claim pro
 
 | Profile | Name | Applicability | Claim state | Source |
 | --- | --- | --- | --- | --- |
-| — | — | — | — | — |
+| KMIPKIT-PROFILE-AES-XTS-CLIENT | AES XTS Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.13.1, KMIPKIT-SRC-profiles §5.13.3, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.30 |
+| KMIPKIT-PROFILE-AES-XTS-SERVER | AES XTS Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.13.2, KMIPKIT-SRC-profiles §5.13.3, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.31 |
+| KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT | Asymmetric Key Lifecycle Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.8.1, KMIPKIT-SRC-profiles §5.8.3, KMIPKIT-SRC-profiles §5.8.4, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.16 |
+| KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-SERVER | Asymmetric Key Lifecycle Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.8.2, KMIPKIT-SRC-profiles §5.8.3, KMIPKIT-SRC-profiles §5.8.4, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.17 |
+| KMIPKIT-PROFILE-BASELINE-CLIENT | Baseline Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.1.3, KMIPKIT-SRC-profiles §5.6.3, KMIPKIT-SRC-profiles §6.1 |
+| KMIPKIT-PROFILE-BASELINE-SERVER | Baseline Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.1.3, KMIPKIT-SRC-profiles §5.6.3, KMIPKIT-SRC-profiles §6.2 |
+| KMIPKIT-PROFILE-COMPLETE-SERVER | Complete Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.2, KMIPKIT-SRC-profiles §5.3.2, KMIPKIT-SRC-profiles §5.4.3, KMIPKIT-SRC-profiles §5.5.3, KMIPKIT-SRC-profiles §5.6.2, KMIPKIT-SRC-profiles §5.7.4, KMIPKIT-SRC-profiles §5.8.2, KMIPKIT-SRC-profiles §5.9.4, KMIPKIT-SRC-profiles §5.9.5, KMIPKIT-SRC-profiles §5.9.6, KMIPKIT-SRC-profiles §5.10.2, KMIPKIT-SRC-profiles §5.11.2, KMIPKIT-SRC-profiles §5.12.5, KMIPKIT-SRC-profiles §5.13.2, KMIPKIT-SRC-profiles §5.16, KMIPKIT-SRC-profiles §5.18.4, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.3, KMIPKIT-SRC-profiles §6.5, KMIPKIT-SRC-profiles §6.7, KMIPKIT-SRC-profiles §6.9, KMIPKIT-SRC-profiles §6.11, KMIPKIT-SRC-profiles §6.15, KMIPKIT-SRC-profiles §6.17, KMIPKIT-SRC-profiles §6.21, KMIPKIT-SRC-profiles §6.22, KMIPKIT-SRC-profiles §6.23, KMIPKIT-SRC-profiles §6.25, KMIPKIT-SRC-profiles §6.27, KMIPKIT-SRC-profiles §6.29, KMIPKIT-SRC-profiles §6.31, KMIPKIT-SRC-profiles §6.33, KMIPKIT-SRC-profiles §6.35 |
+| KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT | Advanced Cryptographic Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.9.2, KMIPKIT-SRC-profiles §5.9.8, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.19 |
+| KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-SERVER | Advanced Cryptographic Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.9.5, KMIPKIT-SRC-profiles §5.9.8, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.22 |
+| KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT | Basic Cryptographic Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.9.1, KMIPKIT-SRC-profiles §5.9.7, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.18 |
+| KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-SERVER | Basic Cryptographic Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.9.4, KMIPKIT-SRC-profiles §5.9.7, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.21 |
+| KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT | RNG Cryptographic Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.9.3, KMIPKIT-SRC-profiles §5.9.9, KMIPKIT-SRC-profiles §5.9.10, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.20 |
+| KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-SERVER | RNG Cryptographic Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.9.6, KMIPKIT-SRC-profiles §5.9.9, KMIPKIT-SRC-profiles §5.9.10, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.23 |
+| KMIPKIT-PROFILE-HTTPS-CLIENT | HTTPS Client | conditional | not\_claimed | KMIPKIT-SRC-profiles §3.2, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.3.1, KMIPKIT-SRC-profiles §5.3.3, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.4 |
+| KMIPKIT-PROFILE-HTTPS-SERVER | HTTPS Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.2, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.3.2, KMIPKIT-SRC-profiles §5.3.3, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.5 |
+| KMIPKIT-PROFILE-JSON-CLIENT | JSON Client | out\_of\_scope | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.5.2, KMIPKIT-SRC-profiles §5.5.4, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.8 |
+| KMIPKIT-PROFILE-JSON-SERVER | JSON Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.5.3, KMIPKIT-SRC-profiles §5.5.4, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.9 |
+| KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT | Opaque Managed Object Store Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.10.1, KMIPKIT-SRC-profiles §5.10.3, KMIPKIT-SRC-profiles §5.10.4, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.24 |
+| KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-SERVER | Opaque Managed Object Store Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.10.2, KMIPKIT-SRC-profiles §5.10.3, KMIPKIT-SRC-profiles §5.10.4, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.25 |
+| KMIPKIT-PROFILE-PKCS11-CLIENT | PKCS#11 Client | out\_of\_scope | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.18.3, KMIPKIT-SRC-profiles §5.18.5, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.34 |
+| KMIPKIT-PROFILE-PKCS11-SERVER | PKCS#11 Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.18.4, KMIPKIT-SRC-profiles §5.18.5, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.35 |
+| KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT | Quantum Safe Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.15, KMIPKIT-SRC-profiles §5.17, KMIPKIT-SRC-profiles §5.17.1, KMIPKIT-SRC-profiles §5.17.2, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.32 |
+| KMIPKIT-PROFILE-QUANTUM-SAFE-SERVER | Quantum Safe Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.16, KMIPKIT-SRC-profiles §5.17.1, KMIPKIT-SRC-profiles §5.17.2, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.33 |
+| KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT | Storage Array with Self-Encrypting Drives Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.11.1, KMIPKIT-SRC-profiles §5.11.3, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.26 |
+| KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-SERVER | Storage Array with Self-Encrypting Drives Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.11.2, KMIPKIT-SRC-profiles §5.11.3, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.27 |
+| KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT | Advanced Symmetric Key Foundry Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.7.3, KMIPKIT-SRC-profiles §5.7.7, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.14 |
+| KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT | Basic Symmetric Key Foundry Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.7.1, KMIPKIT-SRC-profiles §5.7.5, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.12 |
+| KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT | Intermediate Symmetric Key Foundry Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.7.2, KMIPKIT-SRC-profiles §5.7.6, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.13 |
+| KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-SERVER | Symmetric Key Foundry Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.7.4, KMIPKIT-SRC-profiles §5.7.5, KMIPKIT-SRC-profiles §5.7.6, KMIPKIT-SRC-profiles §5.7.7, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.15 |
+| KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT | Symmetric Key Lifecycle Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.6.1, KMIPKIT-SRC-profiles §5.6.3, KMIPKIT-SRC-profiles §5.6.4, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.10 |
+| KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-SERVER | Symmetric Key Lifecycle Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.6.2, KMIPKIT-SRC-profiles §5.6.3, KMIPKIT-SRC-profiles §5.6.4, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.11 |
+| KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT | Tape Library Client | client\_1\_0 | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.12.2, KMIPKIT-SRC-profiles §5.12.3, KMIPKIT-SRC-profiles §5.12.4, KMIPKIT-SRC-profiles §5.12.6, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.28 |
+| KMIPKIT-PROFILE-TAPE-LIBRARY-SERVER | Tape Library Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.12.5, KMIPKIT-SRC-profiles §5.12.6, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.29 |
+| KMIPKIT-PROFILE-XML-CLIENT | XML Client | out\_of\_scope | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.1, KMIPKIT-SRC-profiles §5.4.2, KMIPKIT-SRC-profiles §5.4.4, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.6 |
+| KMIPKIT-PROFILE-XML-SERVER | XML Server | server\_only | not\_claimed | KMIPKIT-SRC-profiles §3.1, KMIPKIT-SRC-profiles §5.1.2, KMIPKIT-SRC-profiles §5.4.3, KMIPKIT-SRC-profiles §5.4.4, KMIPKIT-SRC-profiles §6.2, KMIPKIT-SRC-profiles §6.7 |
 
 ### Profiles by applicability and claim state
 
 | Dimension | Value | Count |
 | --- | --- | --- |
-| — | — | — |
+| Applicability | client\_1\_0 | 14 |
+| Applicability | conditional | 1 |
+| Applicability | out\_of\_scope | 3 |
+| Applicability | server\_only | 17 |
+| Claim state | not\_claimed | 35 |
 
 ## Test fixture availability
 
 | Test | Official ID | Fixture status | Local fixture |
 | --- | --- | --- | --- |
-| — | — | — | — |
+| KMIPKIT-TEST-PROF-5-8-3-1 | AKLC-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-8-3-2 | AKLC-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-8-3-3 | AKLC-M-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-8-4-1 | AKLC-O-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-13-3-1 | AX-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-13-3-2 | AX-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-1 | BL-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-10 | BL-M-10-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-11 | BL-M-11-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-12 | BL-M-12-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-13 | BL-M-13-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-2 | BL-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-3 | BL-M-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-4 | BL-M-4-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-5 | BL-M-5-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-6 | BL-M-6-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-7 | BL-M-7-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-8 | BL-M-8-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-1-3-9 | BL-M-9-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-1 | CS-AC-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-2 | CS-AC-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-3 | CS-AC-M-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-4 | CS-AC-M-4-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-5 | CS-AC-M-5-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-6 | CS-AC-M-6-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-7 | CS-AC-M-7-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-8 | CS-AC-M-8-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-9 | CS-AC-M-OAEP-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-18 | CS-AC-M-OAEP-10-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-10 | CS-AC-M-OAEP-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-11 | CS-AC-M-OAEP-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-12 | CS-AC-M-OAEP-4-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-13 | CS-AC-M-OAEP-5-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-14 | CS-AC-M-OAEP-6-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-15 | CS-AC-M-OAEP-7-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-16 | CS-AC-M-OAEP-8-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-8-17 | CS-AC-M-OAEP-9-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-1 | CS-BC-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-10 | CS-BC-M-10-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-11 | CS-BC-M-11-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-12 | CS-BC-M-12-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-13 | CS-BC-M-13-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-14 | CS-BC-M-14-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-2 | CS-BC-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-3 | CS-BC-M-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-4 | CS-BC-M-4-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-5 | CS-BC-M-5-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-6 | CS-BC-M-6-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-7 | CS-BC-M-7-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-8 | CS-BC-M-8-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-9 | CS-BC-M-9-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-18 | CS-BC-M-CHACHA20-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-19 | CS-BC-M-CHACHA20-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-20 | CS-BC-M-CHACHA20-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-21 | CS-BC-M-CHACHA20POLY1305-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-15 | CS-BC-M-GCM-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-16 | CS-BC-M-GCM-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-7-17 | CS-BC-M-GCM-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-9-1 | CS-RNG-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-10-1 | CS-RNG-O-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-10-2 | CS-RNG-O-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-10-3 | CS-RNG-O-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-9-10-4 | CS-RNG-O-4-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-3-3-1 | MSGENC-HTTPS-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-5-4-1 | MSGENC-JSON-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-4-4-1 | MSGENC-XML-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-10-3-1 | OMOS-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-10-4-1 | OMOS-O-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-18-5-1 | PKCS11-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-17-1 | QS-M-1-12 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-17-2 | QS-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-11-3-1 | SASED-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-11-3-2 | SASED-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-11-3-3 | SASED-M-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-5-1 | SKFF-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-7-2 | SKFF-M-10-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-7-3 | SKFF-M-11-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-7-4 | SKFF-M-12-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-5-2 | SKFF-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-5-3 | SKFF-M-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-5-4 | SKFF-M-4-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-6-1 | SKFF-M-5-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-6-2 | SKFF-M-6-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-6-3 | SKFF-M-7-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-6-4 | SKFF-M-8-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-7-7-1 | SKFF-M-9-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-6-3-1 | SKLC-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-6-3-2 | SKLC-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-6-3-3 | SKLC-M-3-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-6-4-1 | SKLC-O-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-12-6-1 | TL-M-1-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-12-6-2 | TL-M-2-21 | unavailable | — |
+| KMIPKIT-TEST-PROF-5-12-6-3 | TL-M-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-1 | TC-ASYNC-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-10 | TC-ASYNC-10-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-2 | TC-ASYNC-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-3 | TC-ASYNC-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-4 | TC-ASYNC-4-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-5 | TC-ASYNC-5-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-6 | TC-ASYNC-6-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-7 | TC-ASYNC-7-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-8 | TC-ASYNC-8-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-9 | TC-ASYNC-9-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-11 | TC-CERTATTR-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-12 | TC-CREATE-SD-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-13 | TC-CS-CORVAL-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-14 | TC-DERIVEKEY-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-15 | TC-DERIVEKEY-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-16 | TC-DERIVEKEY-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-17 | TC-DERIVEKEY-4-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-18 | TC-DERIVEKEY-5-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-19 | TC-DERIVEKEY-6-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-20 | TC-DIGESTS-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-21 | TC-DLOGIN-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-30 | TC-DLOGIN-10-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-31 | TC-DLOGIN-11-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-32 | TC-DLOGIN-12-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-33 | TC-DLOGIN-13-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-22 | TC-DLOGIN-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-23 | TC-DLOGIN-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-24 | TC-DLOGIN-4-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-25 | TC-DLOGIN-5-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-26 | TC-DLOGIN-6-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-27 | TC-DLOGIN-7-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-28 | TC-DLOGIN-8-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-29 | TC-DLOGIN-9-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-34 | TC-ECC-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-35 | TC-ECC-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-36 | TC-ECC-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-37 | TC-ECDSA-SIGN-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-38 | TC-ECDSA-SIGN-DIGESTEDDATA | unavailable | — |
+| KMIPKIT-TEST-CN01-2-39 | TC-EXTRACTABLE-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-40 | TC-I18N-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-41 | TC-I18N-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-42 | TC-I18N-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-43 | TC-IMPEXP-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-44 | TC-IMPEXP-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-45 | TC-IMPEXP-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-46 | TC-IMPEXP-4-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-47 | TC-IMPEXP-5-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-48 | TC-LOGIN-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-49 | TC-LOGIN-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-50 | TC-LOGIN-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-51 | TC-MD-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-52 | TC-MD-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-57 | TC-MD-21-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-58 | TC-MD-22-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-59 | TC-MD-23-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-60 | TC-MD-24-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-53 | TC-MD-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-54 | TC-MD-4-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-55 | TC-MD-5-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-56 | TC-MD-6-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-61 | TC-MDO-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-62 | TC-MDO-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-63 | TC-MDO-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-64 | TC-OFFSET-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-65 | TC-OFFSET-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-66 | TC-PGP-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-67 | TC-PING-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-68 | TC-PKCS12-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-69 | TC-PKCS12-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-70 | TC-REENCRYPT-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-71 | TC-REENCRYPT-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-72 | TC-REENCRYPT-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-73 | TC-REENCRYPT-4-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-74 | TC-REENCRYPT-5-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-75 | TC-REENCRYPT-6-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-76 | TC-REKEY-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-85 | TC-REKEY-10-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-86 | TC-REKEY-11-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-87 | TC-REKEY-12-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-77 | TC-REKEY-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-78 | TC-REKEY-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-79 | TC-REKEY-4-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-80 | TC-REKEY-5-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-81 | TC-REKEY-6-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-82 | TC-REKEY-7-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-83 | TC-REKEY-8-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-84 | TC-REKEY-9-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-88 | TC-RNG-ATTR-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-89 | TC-RNG-ATTR-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-90 | TC-RSA-SIGN-DIGESTEDDATA | unavailable | — |
+| KMIPKIT-TEST-CN01-2-91 | TC-SENSITIVE-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-92 | TC-SETTATTR-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-93 | TC-SETTATTR-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-94 | TC-SETTATTR-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-95 | TC-SJ-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-96 | TC-SJ-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-97 | TC-SJ-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-98 | TC-SJ-4-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-99 | TC-STREAM-ENC-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-100 | TC-STREAM-ENC-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-101 | TC-STREAM-ENCDEC-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-102 | TC-STREAM-HASH-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-103 | TC-STREAM-HASH-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-104 | TC-STREAM-HASH-3-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-105 | TC-STREAM-MAC-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-106 | TC-STREAM-SIGN-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-107 | TC-STREAM-SIGNVFY-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-108 | TC-WRAP-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-109 | TC-WRAP-2-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-110 | TC-WRAP-3-21 | unavailable | — |
 
 ### Test evidence by fixture availability
 
 | Fixture state | Count |
 | --- | --- |
-| — | — |
+| unavailable | 203 |
 
 ## Open discrepancies
 
-| Discrepancy | State | Summary | Source |
-| --- | --- | --- | --- |
-| — | — | — | — |
+| Discrepancy | State | Implementation gate | Affected records | Summary | Source |
+| --- | --- | --- | --- | --- | --- |
+| KMIPKIT-DISC-001 | open | blocked for affected records | 6 elements | Batch Error Continuation wording | KMIPKIT-SRC-spec §11.5 |
+| KMIPKIT-DISC-002 | open | blocked for affected records | 8 requirements, 3 profiles | HTTPS encoding declarations conflict with a binary TTLV HTTP body requirement | KMIPKIT-SRC-profiles §5.3.1, KMIPKIT-SRC-profiles §5.3.2 |
+| KMIPKIT-DISC-003 | open | blocked for affected records | 4 requirements, 35 profiles | Baseline conformance points to a second mandatory test suite | KMIPKIT-SRC-profiles §5.1.3, KMIPKIT-SRC-profiles §5.6.3, KMIPKIT-SRC-profiles §6.1, KMIPKIT-SRC-profiles §6.2 |
+| KMIPKIT-DISC-004 | open | blocked for affected records | 1 profiles | Complete Server clause includes its own conformance clause | KMIPKIT-SRC-profiles §6.3 |
+| KMIPKIT-DISC-005 | open | blocked for affected records | 2 profiles | XML Client MAY clause points to the JSON Client section | KMIPKIT-SRC-profiles §5.4.2, KMIPKIT-SRC-profiles §5.5.2 |
+| KMIPKIT-DISC-006 | open | blocked for affected records | 3 profiles | XML Server MAY clause points to the JSON Server section | KMIPKIT-SRC-profiles §5.4.3, KMIPKIT-SRC-profiles §5.5.3 |
+| KMIPKIT-DISC-007 | open | blocked for affected records | 5 requirements, 2 profiles | AES XTS Client MAY clause points to Opaque Managed Object Client | KMIPKIT-SRC-profiles §5.10.1, KMIPKIT-SRC-profiles §5.13.1 |
+| KMIPKIT-DISC-008 | open | blocked for affected records | 4 requirements, 2 profiles | PKCS#11 Client MAY clause points to JSON Client | KMIPKIT-SRC-profiles §5.5.2, KMIPKIT-SRC-profiles §5.18.3 |
+| KMIPKIT-DISC-009 | open | blocked for affected records | 3 profiles | PKCS#11 Server MAY clause points to JSON Server | KMIPKIT-SRC-profiles §5.5.3, KMIPKIT-SRC-profiles §5.18.4 |
+| KMIPKIT-DISC-010 | open | blocked for affected records | 3 profiles | JSON Server conformance names JSON Client conditions | KMIPKIT-SRC-profiles §5.5.2, KMIPKIT-SRC-profiles §5.5.3, KMIPKIT-SRC-profiles §6.9 |
+| KMIPKIT-DISC-011 | open | blocked for affected records | 10 requirements, 2 profiles | Intermediate Foundry conformance references Basic Client conditions | KMIPKIT-SRC-profiles §5.7.1, KMIPKIT-SRC-profiles §5.7.2, KMIPKIT-SRC-profiles §6.13 |
+| KMIPKIT-DISC-012 | open | blocked for affected records | 10 requirements, 2 profiles | Advanced Foundry conformance references Basic Client conditions | KMIPKIT-SRC-profiles §5.7.1, KMIPKIT-SRC-profiles §5.7.3, KMIPKIT-SRC-profiles §6.14 |
+| KMIPKIT-DISC-013 | open | blocked for affected records | 13 requirements, 1 elements | Protect Stop Date and Process Stop Date references disagree | KMIPKIT-SRC-spec §4.57 |
+| KMIPKIT-DISC-014 | open | blocked for affected records | 2 requirements, 1 elements | MAY NOT has no defined normative strength | KMIPKIT-SRC-spec §4.34 |
+| KMIPKIT-DISC-015 | open | blocked for affected records | 2 requirements, 1 elements | Lowercase shall appears in Get PKCS#12 output guidance | KMIPKIT-SRC-spec §6.1.19 |
+| KMIPKIT-DISC-016 | open | blocked for affected records | 1 elements | Get Constraints error introduction is misspelled | KMIPKIT-SRC-spec §6.1.22, KMIPKIT-SRC-spec §6.1.22.1 |
+| KMIPKIT-DISC-017 | open | blocked for affected records | 1 elements | Log error introduction names Query | KMIPKIT-SRC-spec §6.1.29, KMIPKIT-SRC-spec §6.1.29.1 |
+| KMIPKIT-DISC-018 | open | blocked for affected records | 1 elements | PKCS#11 Correlation Value uses mixed-case Must | KMIPKIT-SRC-spec §6.1.37 |
+| KMIPKIT-DISC-019 | open | blocked for affected records | 1 requirements, 1 elements | Set Attribute error introduction says Add Attribute | KMIPKIT-SRC-spec §6.1.51, KMIPKIT-SRC-spec §6.1.51.1 |
+| KMIPKIT-DISC-020 | open | blocked for affected records | 2 elements | Set Constraints and Set Defaults error introductions end at Set | KMIPKIT-SRC-spec §6.1.52, KMIPKIT-SRC-spec §6.1.52.1, KMIPKIT-SRC-spec §6.1.53, KMIPKIT-SRC-spec §6.1.53.1 |
+| KMIPKIT-DISC-021 | open | blocked for affected records | 4 requirements, 6 elements | HKDF text uses lowercase optional and may | KMIPKIT-SRC-spec §7.12 |
+| KMIPKIT-DISC-022 | open | blocked for affected records | 3 elements | Same-major backward compatibility conflicts with the KMIPKit 2.1-only 1.x boundary | KMIPKIT-SRC-spec §9.16 |
+| KMIPKIT-DISC-023 | open | blocked for affected records | 16 elements | One replacement-link invariant does not identify its actor | KMIPKIT-SRC-spec §11.28 |
+| KMIPKIT-DISC-024 | open | blocked for affected records | 80 elements | REQUIRED appears in a result-reason description | KMIPKIT-SRC-spec §11.46 |
+| KMIPKIT-DISC-025 | open | blocked for affected records | 19 elements | Lowercase may appears in a mixed client-rule block | KMIPKIT-SRC-spec §11.58 |
+| KMIPKIT-DISC-026 | open | blocked for affected records | 26 elements | X.509 Key Usage MAY has unclear KMIP actor and applicability | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-DISC-027 | open | review before dependent implementation | none linked | Cryptographic profile case labels and target links disagree | KMIPKIT-SRC-profiles §5.9.7.13, KMIPKIT-SRC-profiles §5.9.7.14 |
+| KMIPKIT-DISC-028 | open | blocked for affected records | 2 requirements, 2 profiles | Quantum Safe case heading labels QS-M-1-21 as QS-M-1-12 | KMIPKIT-SRC-profiles §5.17.1 |
+| KMIPKIT-DISC-029 | open | review before dependent implementation | none linked | ECDSA test heading omits the fixture version suffix | KMIPKIT-SRC-testcases §2.38 |
+| KMIPKIT-DISC-030 | open | review before dependent implementation | none linked | Login fixture href omits the dot before xml | KMIPKIT-SRC-testcases §2.48 |
+| KMIPKIT-DISC-031 | open | review before dependent implementation | none linked | MAC digest test fixture target differs from its heading | KMIPKIT-SRC-testcases §2.60 |
+| KMIPKIT-DISC-032 | open | review before dependent implementation | none linked | PKCS#12 test labels differ in hyphenation from target basenames | KMIPKIT-SRC-testcases §2.68, KMIPKIT-SRC-testcases §2.69 |
+| KMIPKIT-DISC-033 | open | review before dependent implementation | none linked | RSA digest fixture href omits the dot before xml | KMIPKIT-SRC-testcases §2.90 |
+| KMIPKIT-DISC-034 | open | review before dependent implementation | none linked | Set Attribute test labels and fixture basenames use different abbreviations | KMIPKIT-SRC-testcases §2.92, KMIPKIT-SRC-testcases §2.93, KMIPKIT-SRC-testcases §2.94 |
+| KMIPKIT-DISC-035 | open | review before dependent implementation | none linked | Signed JSON test section 2.97 links to the previous case | KMIPKIT-SRC-testcases §2.96, KMIPKIT-SRC-testcases §2.97 |
+| KMIPKIT-DISC-036 | open | review before dependent implementation | none linked | All 203 referenced XML fixtures are absent from the pinned source tree | KMIPKIT-SRC-profiles §5.1.3.1, KMIPKIT-SRC-testcases §2.1 |
+| KMIPKIT-DISC-037 | open | blocked for affected records | 1 requirements, 436 elements, 1 policies | Reserved-tag receipt and lossless preservation behavior is not specified | KMIPKIT-SRC-spec §11.56 |
 
 ## Project policies
 
 | Policy | Provenance | Summary |
 | --- | --- | --- |
-| — | — | — |
+| KMIPKIT-POLICY-EXTENSION-PRESERVATION | AGENTS.md | Preserve unknown KMIP extension data losslessly and expose it without interpreting it as a standardized value. |
+| KMIPKIT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION | AGENTS.md | Preserve unknown or future tags, enumeration values, and bitmask bits without assigning them standardized KMIP semantics. |
+| KMIPKIT-POLICY-VENDOR-VALUE-PRESERVATION | AGENTS.md | Preserve vendor-defined values distinctly from OASIS-assigned, reserved, unused, and unknown-to-KMIPKit values. |

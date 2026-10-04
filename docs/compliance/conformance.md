@@ -17,14 +17,19 @@ the term certified without an applicable formal result.
 
 ## Requirement records
 
-Each normative requirement record contains:
+The checked-in [`KMIP 2.1 inventory`](../../specification/catalog/README.md)
+is the canonical source map for later implementation specifications. Its
+generated [coverage report](../../specification/catalog/coverage-report.md)
+summarizes the reviewed source ledger and leaves unassigned implementation and
+verification links visible. Each normative requirement record contains:
 
 - Stable requirement ID.
 - Source document, stage, date, and section.
 - Exact subject and a short non-copyrighted paraphrase.
 - Normative level: MUST, SHALL, MUST NOT, SHALL NOT, SHOULD, MAY, or OPTIONAL.
 - Client/server/direction applicability.
-- 1.0 scope state: applicable, later, or not applicable.
+- Scope state: `client_1_0`, `client_1_1`, `server_only`,
+  `profile_conditional`, `out_of_scope`, `mixed`, or `unclear`.
 - Implementation location.
 - Positive and negative test IDs.
 - Profiles using the requirement.
@@ -52,6 +57,21 @@ For each KMIP 2.1 client profile, record:
 - Clause and test status.
 - Deviations and server prerequisites.
 - Date, KMIPKit version, and evidence for any public claim.
+
+Inventory records keep profile applicability, selected target, fixture
+availability, evidence completion, and public claim state separate. A profile
+record is not a conformance claim; current inventory claims remain
+`not_claimed` until all applicable clauses and official tests have evidence.
+
+## Source discrepancies and evidence gaps
+
+The inventory records unresolved source conflicts without choosing an
+interpretation. It links each discrepancy to affected requirements, elements,
+profiles, or policies when the source supports that relationship. An
+implementation specification that touches an affected record must remain
+gated until the discrepancy is resolved by reviewed evidence. Missing official
+fixtures and malformed source labels stay visible as evidence limitations;
+they do not change the source text or establish a protocol interpretation.
 
 ## Test evidence
 
