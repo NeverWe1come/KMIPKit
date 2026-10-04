@@ -45,8 +45,8 @@ Each of the five range rows in Specification §11.56 is a separate record with s
 | `subject`, `summary` | Exact subject plus a concise, non-copyrighted paraphrase of the obligation or permission. |
 | `role`, `direction`, `condition` | Client/server/both and message direction, plus profile or protocol condition when applicable. |
 | `scope_state` | `client_1_0`, `client_1_1`, `profile_conditional`, `server_only`, or `out_of_scope`, with rationale. |
-| `element_ids`, `profile_ids`, `test_case_ids` | Related records; absent test evidence has an explicit gap record rather than an invented ID. |
-| `feature_spec`, `implementation_refs`, `verification_refs` | Coverage assignments; empty arrays mean unassigned and must appear in the generated report. |
+| `element_ids`, `profile_ids`, `test_case_ids` | Related records; `test_case_ids` must match the reciprocal requirement links in each test case. When no official case is source-linked, `review_note` records the evidence gap instead of inventing an ID. |
+| `feature_spec`, `implementation_refs`, `verification_refs` | Coverage assignments; empty arrays mean unassigned and must appear in the generated report. Official source-linked Test Cases IDs are separate from implementation verification references. |
 | `decision_id`, `status`, `review_note` | Accepted deviation/interpretation when applicable and explicit lifecycle state. A deviation from SHOULD, SHOULD NOT, or RECOMMENDED requires an accepted decision. |
 
 ## Profile
@@ -56,6 +56,8 @@ Each profile has `profile_id`, `name`, `role`, `source_refs`, `source_clause_ids
 ## TestCase
 
 Each case records its exact official ID, source document and section, evidence category, mandatory/optional status if explicitly stated, linked profiles/requirements/elements, raw source `href`, local fixture path if present, fixture availability, and mapping confidence. Raw `href` is never opened or followed. Fixture presence is determined from the pinned Git tree listing; validators never open catalog-provided fixture paths. Reject drive-qualified, absolute, UNC, `..`, backslash, symlink, and Windows reparse-point entries. Missing fixtures are `unavailable`; a title-only match is not promoted to an operation link without explicit evidence.
+
+Test-case-to-requirement links are reciprocal. A requirement with no official test-case link must contain a non-empty `review_note` explaining why evidence is unavailable or why the pinned sources do not establish a requirement-specific case. The generated report lists those requirement-level gaps separately from implementation verification references.
 
 ## SourceDiscrepancy
 

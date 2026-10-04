@@ -826,6 +826,8 @@ def _check_semantics(
         _check_link_ids(requirement, "element_ids", set(elements), "requirement")
         _check_link_ids(requirement, "profile_ids", set(profiles), "requirement")
         _check_link_ids(requirement, "test_case_ids", set(test_cases), "requirement")
+        if requirement["review_note"] is not None and not isinstance(requirement["review_note"], str):
+            _fail("requirement review_note must be a string or null")
         decision_id = requirement.get("decision_id")
         if decision_id is not None and not isinstance(decision_id, str):
             _fail("requirement decision_id must be a string or null")
@@ -915,6 +917,18 @@ def _check_semantics(
             _fail("fixture path resolves to a symlink or non-file entry")
         if test_case["fixture_availability"] != "available":
             _fail("fixture path and availability status disagree")
+
+    expected_test_cases_by_requirement = {requirement_id: set() for requirement_id in requirements}
+    for test_case in catalog["test_cases"]:
+        for requirement_id in test_case["requirement_ids"]:
+            expected_test_cases_by_requirement[requirement_id].add(test_case["test_id"])
+    for requirement in catalog["requirements"]:
+        if set(requirement["test_case_ids"]) != expected_test_cases_by_requirement[requirement["requirement_id"]]:
+            _fail("requirement/test-case links must be reciprocal")
+        if not requirement["test_case_ids"] and not (
+            isinstance(requirement["review_note"], str) and requirement["review_note"].strip()
+        ):
+            _fail("requirement without official test-case links must record an evidence gap in review_note")
 
     for tag_range in catalog["tag_ranges"]:
         _enum(tag_range.get("allocation"), {"unused", "reserved", "extension"}, "tag range allocation")
