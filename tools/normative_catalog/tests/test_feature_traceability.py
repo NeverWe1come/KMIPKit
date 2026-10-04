@@ -21,27 +21,31 @@ RESULT_ELEMENT_IDS = {
 }
 
 
+def _result_element_ids(elements: list[dict[str, object]]) -> set[str]:
+    result_enumerations = {
+        "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON",
+        "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
+    }
+    return RESULT_ELEMENT_IDS | {
+        element["element_id"]
+        for element in elements
+        if element.get("kind") == "enumeration_value"
+        and result_enumerations.intersection(element.get("parent_element_ids", []))
+        and element.get("allocation") in {"assigned", "extension"}
+    }
+
+
+def _requirements_by_id() -> dict[str, dict[str, str]]:
+    path = ROOT / "specification/compliance/requirements/KMIPKIT-0003.csv"
+    with path.open(encoding="utf-8", newline="") as stream:
+        return {row["requirement_id"]: row for row in csv.DictReader(stream)}
+
+
 class FeatureTraceabilityTests(unittest.TestCase):
     def test_result_contract_elements_link_to_their_spec_code_and_tests(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         elements = catalog["elements"]
-        result_enumerations = {
-            element["element_id"]
-            for element in elements
-            if element["element_id"]
-            in {
-                "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON",
-                "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
-            }
-        }
-        result_element_ids = set(RESULT_ELEMENT_IDS)
-        result_element_ids.update(
-            element["element_id"]
-            for element in elements
-            if element.get("kind") == "enumeration_value"
-            and result_enumerations.intersection(element.get("parent_element_ids", []))
-            and element.get("allocation") in {"assigned", "extension"}
-        )
+        result_element_ids = _result_element_ids(elements)
 
         by_id = {element["element_id"]: element for element in elements}
         self.assertTrue(result_element_ids.issubset(by_id))
@@ -99,27 +103,14 @@ class FeatureTraceabilityTests(unittest.TestCase):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(clauses_by_id[clause_id]["direction"], "server_to_client")
 
-        result_enumerations = {
-            "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON",
-            "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
-        }
-        result_element_ids = RESULT_ELEMENT_IDS | {
-            element["element_id"]
-            for element in catalog["elements"]
-            if element.get("kind") == "enumeration_value"
-            and result_enumerations.intersection(element.get("parent_element_ids", []))
-            and element.get("allocation") in {"assigned", "extension"}
-        }
+        result_element_ids = _result_element_ids(catalog["elements"])
         elements_by_id = {element["element_id"]: element for element in catalog["elements"]}
         for element_id in sorted(result_element_ids):
             with self.subTest(element_id=element_id):
                 self.assertEqual(elements_by_id[element_id]["direction"], "server_to_client")
 
     def test_sc005_references_executable_traceability_tests(self) -> None:
-        with (ROOT / "specification/compliance/requirements/KMIPKIT-0003.csv").open(
-            encoding="utf-8", newline=""
-        ) as stream:
-            rows = {row["requirement_id"]: row for row in csv.DictReader(stream)}
+        rows = _requirements_by_id()
 
         self.assertEqual(
             rows["KMIPKIT-0003-SC-005"]["test_ids"].split("; "),
@@ -130,10 +121,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
         )
 
     def test_normative_csv_rows_have_executable_test_refs(self) -> None:
-        with (ROOT / "specification/compliance/requirements/KMIPKIT-0003.csv").open(
-            encoding="utf-8", newline=""
-        ) as stream:
-            rows = {row["requirement_id"]: row for row in csv.DictReader(stream)}
+        rows = _requirements_by_id()
 
         for requirement_id in ("KMIPKIT-0003-NR-001", "KMIPKIT-0003-NR-002", "KMIPKIT-0003-NR-003"):
             with self.subTest(requirement_id=requirement_id):
