@@ -1620,11 +1620,16 @@ class CatalogValidationTests(unittest.TestCase):
             ("KMIPKIT-SRC-profiles", "6.3"),
             ("KMIPKIT-SRC-profiles", "6.9"),
             ("KMIPKIT-SRC-testcases", "2.48"),
+            ("KMIPKIT-SRC-testcases", "2.38"),
             ("KMIPKIT-SRC-testcases", "2.60"),
             ("KMIPKIT-SRC-testcases", "2.68"),
             ("KMIPKIT-SRC-testcases", "2.69"),
             ("KMIPKIT-SRC-testcases", "2.90"),
+            ("KMIPKIT-SRC-testcases", "2.92"),
+            ("KMIPKIT-SRC-testcases", "2.93"),
+            ("KMIPKIT-SRC-testcases", "2.94"),
             ("KMIPKIT-SRC-testcases", "2.97"),
+            ("KMIPKIT-SRC-profiles", "5.17.1"),
         }
         expected_sections.update(
             (clause["source_id"], clause["section"])
