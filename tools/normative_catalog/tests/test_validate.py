@@ -914,6 +914,190 @@ class CatalogValidationTests(unittest.TestCase):
             actual = set(test_case["element_ids"]) & operation_ids
             self.assertEqual(actual, expected_by_source_section.get(key, set()), key)
 
+    def test_official_cases_link_only_html_explicitly_named_protocol_elements(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        expected_by_test_id = {
+            "KMIPKIT-TEST-CN01-2-11": {
+                "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-63-SUBJECT-DISTINGUISHED-NAME",
+                "KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE",
+            },
+            "KMIPKIT-TEST-CN01-2-12": {"KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"},
+            "KMIPKIT-TEST-CN01-2-13": {"KMIPKIT-ELEM-TAG-420105", "KMIPKIT-ELEM-TAG-420106"},
+            "KMIPKIT-TEST-CN01-2-14": {"KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-256-00000006"},
+            "KMIPKIT-TEST-CN01-2-15": {"KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA256-00000009"},
+            "KMIPKIT-TEST-CN01-2-16": {"KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001"},
+            "KMIPKIT-TEST-CN01-2-17": {"KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001"},
+            "KMIPKIT-TEST-CN01-2-18": {
+                "KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001",
+                "KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-256-00000006",
+            },
+            "KMIPKIT-TEST-CN01-2-34": {
+                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-ECPRIVATEKEY-00000006",
+                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
+                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
+                "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY",
+            },
+            "KMIPKIT-TEST-CN01-2-35": {
+                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-8-00000004",
+                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
+                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
+                "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY",
+            },
+            "KMIPKIT-TEST-CN01-2-36": {
+                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
+                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
+                "KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY",
+            },
+            "KMIPKIT-TEST-CN01-2-37": {
+                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDSA-00000006",
+                "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY",
+                "KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY",
+            },
+            "KMIPKIT-TEST-CN01-2-38": {
+                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDSA-00000006",
+                "KMIPKIT-ELEM-TAG-420107",
+            },
+            "KMIPKIT-TEST-CN01-2-39": {
+                "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
+                "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
+            },
+            "KMIPKIT-TEST-CN01-2-40": {"KMIPKIT-ELEM-ATTRIBUTE-NAME"},
+            "KMIPKIT-TEST-CN01-2-41": {"KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME"},
+            "KMIPKIT-TEST-CN01-2-42": {"KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE"},
+            "KMIPKIT-TEST-CN01-2-61": {"KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"},
+            "KMIPKIT-TEST-CN01-2-62": {"KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"},
+            "KMIPKIT-TEST-CN01-2-63": {
+                "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL",
+            },
+            "KMIPKIT-TEST-CN01-2-64": {"KMIPKIT-ELEM-TAG-420058"},
+            "KMIPKIT-TEST-CN01-2-65": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-66": {"KMIPKIT-ELEM-ATTRIBUTE-LINK"},
+            "KMIPKIT-TEST-CN01-2-68": {"KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-12-00000016"},
+            "KMIPKIT-TEST-CN01-2-69": {"KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-12-00000016"},
+            "KMIPKIT-TEST-CN01-2-88": {"KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR"},
+            "KMIPKIT-TEST-CN01-2-89": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-91": {
+                "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE",
+                "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
+            },
+            "KMIPKIT-TEST-CN01-2-95": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-96": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-97": {"KMIPKIT-ELEM-OBJECT-TYPE-SPLIT-KEY"},
+            "KMIPKIT-TEST-CN01-2-98": {
+                "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
+                "KMIPKIT-ELEM-ENUM-VALUE-SPLIT-KEY-METHOD-XOR-00000001",
+            },
+            "KMIPKIT-TEST-CN01-2-99": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-100": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-101": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-108": {
+                "KMIPKIT-ELEM-ENUMERATION-KEY-WRAP-TYPE",
+                "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-AS-REGISTERED-00000002",
+            },
+            "KMIPKIT-TEST-CN01-2-109": {
+                "KMIPKIT-ELEM-ENUMERATION-KEY-WRAP-TYPE",
+                "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-NOT-WRAPPED-00000001",
+            },
+            "KMIPKIT-TEST-PROF-5-3-3-1": {
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+            },
+            "KMIPKIT-TEST-PROF-5-4-4-1": {
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+            },
+            "KMIPKIT-TEST-PROF-5-5-4-1": {
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+                "KMIPKIT-ELEM-TAG-42000D",
+                "KMIPKIT-ELEM-TAG-42000F",
+                "KMIPKIT-ELEM-TAG-420050",
+                "KMIPKIT-ELEM-TAG-420057",
+                "KMIPKIT-ELEM-TAG-420069",
+                "KMIPKIT-ELEM-TAG-42006A",
+                "KMIPKIT-ELEM-TAG-42006B",
+                "KMIPKIT-ELEM-TAG-420074",
+                "KMIPKIT-ELEM-TAG-420077",
+                "KMIPKIT-ELEM-TAG-420078",
+                "KMIPKIT-ELEM-TAG-420079",
+                "KMIPKIT-ELEM-TAG-42007A",
+                "KMIPKIT-ELEM-TAG-42007B",
+                "KMIPKIT-ELEM-TAG-42007C",
+                "KMIPKIT-ELEM-TAG-42007D",
+                "KMIPKIT-ELEM-TAG-42007E",
+                "KMIPKIT-ELEM-TAG-42007F",
+                "KMIPKIT-ELEM-TAG-420092",
+                "KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OPERATIONS-00000001",
+                "KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OBJECTS-00000002",
+                "KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-OPERATION-FAILED-00000001",
+                "KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-SUCCESS-00000000",
+                "KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESPONSE-TOO-LARGE-00000002",
+                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-CERTIFICATE-00000001",
+                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-SYMMETRIC-KEY-00000002",
+                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-SECRET-DATA-00000007",
+                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-PUBLIC-KEY-00000003",
+                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-PRIVATE-KEY-00000004",
+                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-OPAQUE-OBJECT-00000008",
+                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-SPLIT-KEY-00000005",
+                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-PGP-KEY-00000009",
+            },
+            "KMIPKIT-TEST-PROF-5-11-3-1": {
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION",
+            },
+            "KMIPKIT-TEST-PROF-5-11-3-2": {"KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"},
+            "KMIPKIT-TEST-PROF-5-12-6-1": {
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE",
+            },
+            "KMIPKIT-TEST-PROF-5-12-6-2": {
+                "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
+                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-AES-00000003",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE",
+                "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+            },
+            "KMIPKIT-TEST-PROF-5-12-6-3": {
+                "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+                "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+                "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+            },
+            "KMIPKIT-TEST-PROF-5-17-2": {"KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD"},
+        }
+        elements = {row["element_id"]: row for row in catalog["elements"]}
+        cases = {row["test_id"]: row for row in catalog["test_cases"]}
+
+        for test_id, expected in expected_by_test_id.items():
+            with self.subTest(test_id=test_id):
+                actual = set(cases[test_id]["element_ids"])
+                self.assertEqual(actual, expected)
+                for element_id in expected:
+                    self.assertIn(test_id, elements[element_id]["test_case_ids"])
+
+        self.assertEqual(
+            set(cases["KMIPKIT-TEST-CN01-2-42"]["element_ids"]),
+            {"KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE"},
+            "the source does not equate its customer-specific attribute with Vendor Attribute",
+        )
+        self.assertNotIn(
+            "KMIPKIT-ELEM-ATTRIBUTE-VENDOR",
+            cases["KMIPKIT-TEST-CN01-2-42"]["element_ids"],
+        )
+
     def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
         cases = (
             ("MAX_DEPTH", 1, '{"schema_version":{"nested":{"again":1}}}', "nesting depth"),
