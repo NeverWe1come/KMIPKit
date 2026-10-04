@@ -22,7 +22,7 @@ fn raw_tag_accepts_24_bit_boundaries_and_rejects_wider_values() {
 
 #[test]
 fn exact_project_tags_take_precedence_over_the_aggregate_reserved_range() {
-    for raw in [0x420174, 0x420175, 0x420176] {
+    for raw in [0x420173, 0x420174, 0x420175, 0x420176] {
         let tag = checked_tag(raw);
         assert_eq!(tag.raw(), raw);
     }
@@ -30,7 +30,7 @@ fn exact_project_tags_take_precedence_over_the_aggregate_reserved_range() {
 
 #[test]
 fn individually_and_residually_reserved_tags_are_rejected() {
-    for raw in [0x420000, 0x420009, 0x420173, 0x420177, 0x42FFFF] {
+    for raw in [0x420000, 0x420009, 0x420177, 0x42FFFF] {
         let raw_tag = raw_tag(raw);
         assert!(RawTag::try_checked(&raw_tag).is_err());
     }
