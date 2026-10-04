@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 import unittest
+import subprocess
+import sys
+from pathlib import Path
 
 from tools.normative_catalog.audit_sources import SourceAuditError, audit_document
+
+ROOT = Path(__file__).resolve().parents[3]
 
 
 class SourceAuditTests(unittest.TestCase):
@@ -74,6 +79,21 @@ class SourceAuditTests(unittest.TestCase):
         deeply_nested = b"<div>" * 65 + b"MUST" + b"</div>" * 65
         with self.assertRaises(SourceAuditError):
             audit_document(deeply_nested, "KMIPKIT-SRC-spec")
+
+    def test_script_entrypoint_audits_the_local_pinned_sources(self) -> None:
+        base_sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        script = ROOT / "tools" / "normative_catalog" / "audit_sources.py"
+        result = subprocess.run(
+            [sys.executable, str(script), "--base-sha", base_sha, "--repo-root", str(ROOT)],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("normative source candidates", result.stdout)
 
 
 if __name__ == "__main__":
