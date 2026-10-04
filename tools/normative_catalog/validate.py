@@ -332,16 +332,7 @@ def _check_semantics(catalog: dict[str, Any], sources: set[str], clauses: set[st
             _fail("project policy summary is required")
 
 
-def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
-    """Validate raw UTF-8 JSON bytes and return deterministic aggregate counts."""
-    text = _preflight(raw)
-    try:
-        catalog = json.loads(text, object_pairs_hook=_reject_duplicate_pairs)
-    except CatalogValidationError:
-        raise
-    except (json.JSONDecodeError, RecursionError) as error:
-        raise CatalogValidationError("catalog is not valid bounded JSON") from error
-    _reject_surrogates(catalog)
+def _validate_catalog_header(catalog: Any) -> dict[str, Any]:
     if not isinstance(catalog, dict):
         _fail("catalog root must be an object")
     unknown = set(catalog) - TOP_LEVEL_FIELDS
@@ -357,6 +348,20 @@ def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
             _fail(f"{field} must be an array")
         if len(catalog[field]) > MAX_RECORDS:
             _fail(f"{field} exceeds the 100,000 record limit")
+    return catalog
+
+
+def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
+    """Validate raw UTF-8 JSON bytes and return deterministic aggregate counts."""
+    text = _preflight(raw)
+    try:
+        catalog = json.loads(text, object_pairs_hook=_reject_duplicate_pairs)
+    except CatalogValidationError:
+        raise
+    except (json.JSONDecodeError, RecursionError) as error:
+        raise CatalogValidationError("catalog is not valid bounded JSON") from error
+    _reject_surrogates(catalog)
+    catalog = _validate_catalog_header(catalog)
 
     sources = _check_source_records(catalog, repo_root)
     clauses = _check_clauses(catalog, sources)
