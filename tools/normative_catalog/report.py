@@ -312,7 +312,11 @@ def write_report(catalog: dict[str, Any], path: Path, *, check: bool, repo_root:
     expected = render_report(catalog).encode("utf-8")
     root = (repo_root or path.parent).resolve(strict=True)
     try:
-        relative = path.relative_to(root).as_posix()
+        relative = (
+            path.name
+            if repo_root is None
+            else path.relative_to(root).as_posix()
+        )
     except ValueError as error:
         raise PathSecurityError("coverage report path is outside the repository") from error
     target = confined_path(root, relative, allow_missing_leaf=True)
