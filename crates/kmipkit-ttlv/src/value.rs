@@ -1,4 +1,4 @@
-//! Opaque, typed representations of KMIP TTLV Item Values.
+// Opaque, typed representations of KMIP TTLV Item Values.
 
 use crate::structure::{Structure, StructureView};
 
