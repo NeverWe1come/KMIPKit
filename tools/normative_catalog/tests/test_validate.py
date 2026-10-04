@@ -115,6 +115,11 @@ class CatalogValidationTests(unittest.TestCase):
         result = validate(minimal_catalog())
         self.assertEqual(result["source_count"], 4)
 
+    def test_complete_validation_rejects_omitted_operation_and_element_records(self) -> None:
+        raw = json.dumps(minimal_catalog()).encode("utf-8")
+        with self.assertRaisesRegex(CatalogValidationError, "operation"):
+            validate_catalog(raw, ROOT, require_complete=True)
+
     def test_rejects_unknown_top_level_fields(self) -> None:
         document = minimal_catalog()
         document["unexpected"] = []
