@@ -24,7 +24,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Normative requirements | 567 |
 | Profiles | 35 |
 | Test cases | 203 |
-| Open discrepancies | 39 |
+| Open discrepancies | 40 |
 | Project policies | 3 |
 
 ### Elements by kind
@@ -3212,6 +3212,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-DISC-037 | open | blocked for affected records | 1 requirements, 436 elements, 1 policies | Reserved-tag receipt and lossless preservation behavior is not specified | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-DISC-038 | open | blocked for affected records | 3 elements, 2 profiles | JSON profile example uses Template for a reserved Object Type value | KMIPKIT-SRC-profiles §5.5.4.1, KMIPKIT-SRC-spec §11.34 |
 | KMIPKIT-DISC-039 | open | blocked for affected records | 1 elements | Query Asynchronous Requests response table is labeled as a PKCS#11 response | KMIPKIT-SRC-spec §6.1.41 |
+| KMIPKIT-DISC-040 | open | blocked for affected records | 1 elements | Table 315 RNG Retrieve Errors caption is stranded in Re-Provision error handling | KMIPKIT-SRC-spec §6.1.48.1 |
 
 ## Project policies
 

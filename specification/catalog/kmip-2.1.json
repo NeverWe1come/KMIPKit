@@ -99005,6 +99005,32 @@
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-040",
+      "summary": "Table 315 RNG Retrieve Errors caption is stranded in Re-Provision error handling",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.48.1"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "source_defect",
+      "alternatives": [
+        "Table 315 is a stray or erroneous caption in Re-Provision error handling; the RNG Retrieve Errors table is Table 318 under §6.1.49.",
+        "Table 315 is an intentionally misplaced RNG Retrieve error table, with its contents or intended role omitted from the source location."
+      ],
+      "affected_requirement_ids": [],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Re-Provision error-table interpretation remains gated; preserve the Table 315 caption and do not treat it as an additional payload table or as an RNG Retrieve response table without authoritative resolution.",
+      "state": "open",
+      "decision_id": null,
+      "erratum_source_refs": []
     }
   ],
   "decisions": []
