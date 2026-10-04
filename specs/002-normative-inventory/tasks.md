@@ -138,7 +138,7 @@ FR-007, FR-012, FR-019, and SC-002; they do not change protocol scope.
 
 - [x] T042 **Red**: Add report tests for tag allocation counts, exact tag ranges, wire-value/allocation columns, full profile relationships, and source directions for the three response-result clauses; record the expected failures in the Red commit.
 - [x] T043 **Green**: Correct the three response-result clause directions from the pinned response text and extend the deterministic report with tag/range and profile traceability details; pass the focused tests.
-- [ ] T044 **Refactor**: Regenerate the report, update inventory/conformance documentation, run catalog, immutable-source, report, and full Python checks, obtain independent QA/security review, and prepare a terminal-created draft PR.
+- [x] T044 **Refactor**: Regenerate the report, update inventory/conformance documentation, run catalog, immutable-source, report, and full Python checks, obtain independent QA/security review, and prepare a terminal-created draft PR. Draft: https://github.com/NeverWe1come/KMIPKit/pull/9
 
 ## Requirement-to-Task Traceability
 
