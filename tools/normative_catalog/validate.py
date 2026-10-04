@@ -692,11 +692,11 @@ def _check_semantics(
                 _fail("structure member source_encoding must be a non-empty string")
             if "source_requiredness" in element and not isinstance(element["source_requiredness"], str):
                 _fail("structure member source_requiredness must be a string")
-        elif element["kind"] in {"attribute", "operation_structure"}:
-            if element["kind"] == "operation_structure" and (
+        elif element["kind"] in {"attribute", "operation_structure", "option", "result"}:
+            if element["kind"] in {"operation_structure", "option", "result"} and (
                 not isinstance(element.get("source_encoding"), str) or not element["source_encoding"].strip()
             ):
-                _fail("operation structure source_encoding must be a non-empty string")
+                _fail("typed source root requires a non-empty source_encoding")
             if "source_encoding" in element and (
                 not isinstance(element["source_encoding"], str) or not element["source_encoding"].strip()
             ):
@@ -1091,6 +1091,8 @@ COMPLETE_ELEMENT_COUNTS = {
     "enumeration_value": 723,
     "bitmask": 3,
     "bitmask_value": 44,
+    "option": 3,
+    "result": 4,
     "tag": 374,
 }
 TAG_REGISTRY_SHA256 = "ad69b23437d238ae67bfd72e54ba37a8bbe9fd31358f1aadfd41c410369cf8fe"

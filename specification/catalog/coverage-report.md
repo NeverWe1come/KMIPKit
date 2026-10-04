@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 1562 |
+| Protocol elements | 1569 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -42,6 +42,8 @@ This report records inventory coverage and evidence state. It does not claim pro
 | object\_type | 9 |
 | operation | 62 |
 | operation\_structure | 41 |
+| option | 3 |
+| result | 4 |
 | structure\_member | 149 |
 | tag | 374 |
 
@@ -1106,6 +1108,13 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.7 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.8 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA | operation\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §7.9 |
+| KMIPKIT-ELEM-OPTION-ASYNCHRONOUS-INDICATOR | option | both | client\_1\_0 | KMIPKIT-SRC-spec §9.2, KMIPKIT-SRC-spec §11.3 |
+| KMIPKIT-ELEM-OPTION-BATCH-ERROR-CONTINUATION-OPTION | option | both | client\_1\_0 | KMIPKIT-SRC-spec §9.6, KMIPKIT-SRC-spec §11.5 |
+| KMIPKIT-ELEM-OPTION-BATCH-ORDER-OPTION | option | both | client\_1\_0 | KMIPKIT-SRC-spec §9.8 |
+| KMIPKIT-ELEM-RESULT-CANCELLATION-RESULT | result | both | client\_1\_0 | KMIPKIT-SRC-spec §11.7 |
+| KMIPKIT-ELEM-RESULT-RESULT-MESSAGE | result | both | client\_1\_0 | KMIPKIT-SRC-spec §9.17 |
+| KMIPKIT-ELEM-RESULT-RESULT-REASON | result | both | client\_1\_0 | KMIPKIT-SRC-spec §9.18, KMIPKIT-SRC-spec §11.46 |
+| KMIPKIT-ELEM-RESULT-RESULT-STATUS | result | both | client\_1\_0 | KMIPKIT-SRC-spec §9.19, KMIPKIT-SRC-spec §11.47 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-QLENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-RECOMMENDED-CURVE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |

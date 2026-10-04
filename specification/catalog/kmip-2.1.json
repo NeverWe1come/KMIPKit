@@ -25269,6 +25269,169 @@
       "source_encoding": "Byte String, Enumeration or Integer"
     },
     {
+      "element_id": "KMIPKIT-ELEM-OPTION-ASYNCHRONOUS-INDICATOR",
+      "kind": "option",
+      "name": "Asynchronous Indicator",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.2"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPTION-BATCH-ERROR-CONTINUATION-OPTION",
+      "kind": "option",
+      "name": "Batch Error Continuation Option",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.6"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OPTION-BATCH-ORDER-OPTION",
+      "kind": "option",
+      "name": "Batch Order Option",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Boolean"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-RESULT-CANCELLATION-RESULT",
+      "kind": "result",
+      "name": "Cancellation Result",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-RESULT-RESULT-MESSAGE",
+      "kind": "result",
+      "name": "Result Message",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.17"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text String"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-RESULT-RESULT-REASON",
+      "kind": "result",
+      "name": "Result Reason",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.18"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.46"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-RESULT-RESULT-STATUS",
+      "kind": "result",
+      "name": "Result Status",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.19"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.47"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration"
+    },
+    {
       "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-QLENGTH",
       "kind": "structure_member",
       "name": "Qlength",
