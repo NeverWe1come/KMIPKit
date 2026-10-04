@@ -637,8 +637,8 @@ def _validate_catalog_header(catalog: Any) -> dict[str, Any]:
     return catalog
 
 
-def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
-    """Validate raw UTF-8 JSON bytes and return deterministic aggregate counts."""
+def load_validated_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
+    """Validate raw UTF-8 JSON bytes and return the validated catalog records."""
     text = _preflight(raw)
     try:
         catalog = json.loads(text, object_pairs_hook=_reject_duplicate_pairs)
@@ -665,9 +665,15 @@ def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
         if digest != source["sha256"]:
             _fail(f"pinned source checksum mismatch for {source['source_id']}")
 
+    return catalog
+
+
+def validate_catalog(raw: bytes, repo_root: Path) -> dict[str, Any]:
+    """Validate raw UTF-8 JSON bytes and return deterministic aggregate counts."""
+    catalog = load_validated_catalog(raw, repo_root)
     return {
-        "source_count": len(sources),
-        "clause_count": len(clauses),
+        "source_count": len(catalog["sources"]),
+        "clause_count": len(catalog["source_clauses"]),
         "record_count": sum(len(catalog[key]) for key in TOP_LEVEL_FIELDS - {"schema_version"}),
     }
 

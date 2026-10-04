@@ -214,11 +214,11 @@ def main(argv: list[str] | None = None) -> int:
         code_root = Path(__file__).resolve().parents[2]
         if str(code_root) not in sys.path:
             sys.path.insert(0, str(code_root))
-        from tools.normative_catalog.validate import validate_catalog
+        from tools.normative_catalog.validate import load_validated_catalog
 
         catalog_path = repository / "specification" / "catalog" / "kmip-2.1.json"
         report_path = repository / REPORT_PATH
-        catalog = validate_catalog(catalog_path.read_bytes(), repository)
+        catalog = load_validated_catalog(catalog_path.read_bytes(), repository)
         valid = write_report(catalog, report_path, check=arguments.check)
     except (OSError, ValueError) as error:
         print(f"coverage report failed: {error}", file=sys.stderr)
