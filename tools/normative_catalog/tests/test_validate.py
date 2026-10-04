@@ -1756,6 +1756,23 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaises(CatalogValidationError):
             validate(document)
 
+    def test_source_clause_can_preserve_keywords_with_different_strengths(self) -> None:
+        document = minimal_catalog()
+        document["source_clauses"] = [
+            {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-2.8-001",
+                "source_id": "KMIPKIT-SRC-spec",
+                "section": "2.8",
+                "locator": {"ordinal": 1, "block_kind": "table_row"},
+                "source_keywords": ["MAY", "SHALL"],
+                "disposition": "informative_context",
+                "requirement_ids": [],
+                "exclusion_rationale": "The containing source row has separately classified obligations.",
+            }
+        ]
+
+        self.assertEqual(validate(document)["record_count"], 5)
+
     def test_rejects_tag_range_using_singleton_tag_allocation(self) -> None:
         document = minimal_catalog()
         document["tag_ranges"] = [
