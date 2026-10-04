@@ -1069,6 +1069,7 @@ COMPLETE_ELEMENT_COUNTS = {
     "enumeration": 64,
     "enumeration_value": 723,
     "bitmask": 3,
+    "bitmask_value": 44,
     "tag": 374,
 }
 TAG_REGISTRY_SHA256 = "ad69b23437d238ae67bfd72e54ba37a8bbe9fd31358f1aadfd41c410369cf8fe"

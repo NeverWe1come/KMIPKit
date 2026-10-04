@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 1255 |
+| Protocol elements | 1302 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -31,6 +31,8 @@ This report records inventory coverage and evidence state. It does not claim pro
 
 | Kind | Count |
 | --- | --- |
+| bitmask | 3 |
+| bitmask\_value | 44 |
 | data\_type | 11 |
 | enumeration | 64 |
 | enumeration\_value | 723 |
@@ -61,6 +63,53 @@ This report records inventory coverage and evidence state. It does not claim pro
 
 | Element | Kind | Direction | Scope | Source |
 | --- | --- | --- | --- | --- |
+| KMIPKIT-ELEM-BITMASK-CRYPTOGRAPHIC-USAGE-MASK | bitmask | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-PROTECTION-STORAGE-MASK | bitmask | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-STORAGE-STATUS-MASK | bitmask | both | client\_1\_0 | KMIPKIT-SRC-spec §12.3 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-AUTHENTICATE-00100000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-CERTIFICATE-SIGN-00001000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-CRL-SIGN-00002000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-DECRYPT-00000008 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-DERIVE-KEY-00000200 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-ENCRYPT-00000004 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-EXTENSIONS-XXX00000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-FPE-DECRYPT-00800000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-FPE-ENCRYPT-00400000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-KEY-AGREEMENT-00000800 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-MAC-GENERATE-00000080 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-MAC-VERIFY-00000100 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-RESERVED-00000040 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-RESERVED-00000400 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-RESERVED-00004000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-RESERVED-00008000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-RESERVED-00010000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-RESERVED-00020000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-RESERVED-00040000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-RESERVED-00080000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-SIGN-00000001 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-UNRESTRICTED-00200000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-UNWRAP-KEY-00000020 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-VERIFY-00000002 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-WRAP-KEY-00000010 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.1 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-CONTAINER-00000080 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-EXTENSIONS-XXXXXXX0 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-HARDWARE-00000002 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-HYPERVISOR-00000020 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-OFF-PREMISES-00000200 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-OFF-SYSTEM-00000010 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-ON-PREMISES-00000100 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-ON-PROCESSOR-00000004 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-ON-SYSTEM-00000008 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-OPERATING-SYSTEM-00000040 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-OUTSOURCED-00000800 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-SAME-JURISDICTION-00002000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-SELF-MANAGED-00000400 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-SOFTWARE-00000001 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-PROTECTION-STORAGE-MASK-VALIDATED-00001000 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.2 |
+| KMIPKIT-ELEM-BITMASK-VALUE-STORAGE-STATUS-MASK-ARCHIVAL-STORAGE-00000002 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.3 |
+| KMIPKIT-ELEM-BITMASK-VALUE-STORAGE-STATUS-MASK-DESTROYED-STORAGE-00000004 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.3 |
+| KMIPKIT-ELEM-BITMASK-VALUE-STORAGE-STATUS-MASK-EXTENSIONS-XXXXXXX0 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.3 |
+| KMIPKIT-ELEM-BITMASK-VALUE-STORAGE-STATUS-MASK-ON-LINE-STORAGE-00000001 | bitmask\_value | both | client\_1\_0 | KMIPKIT-SRC-spec §12.3 |
 | KMIPKIT-ELEM-DATA-TYPE-BIG-INTEGER | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
 | KMIPKIT-ELEM-DATA-TYPE-BOOLEAN | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
 | KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING | data\_type | both | client\_1\_0 | KMIPKIT-SRC-spec §1.5, KMIPKIT-SRC-spec §11.23 |
