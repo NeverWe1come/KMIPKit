@@ -55,15 +55,15 @@ pub enum ClientError {
     Validation {
         /// The safe cause category.
         cause: ClientCauseCategory,
-        /// Request delivery evidence when this error concerns a request.
-        delivery_state: Option<RequestDeliveryState>,
+        /// The strongest available request delivery evidence.
+        delivery_state: RequestDeliveryState,
     },
     /// A protocol-processing failure with sanitized protocol cause.
     Protocol {
         /// The sanitized protocol cause.
         error: ProtocolError,
-        /// Request delivery evidence when this error concerns a request.
-        delivery_state: Option<RequestDeliveryState>,
+        /// The strongest available request delivery evidence.
+        delivery_state: RequestDeliveryState,
     },
     /// A transport failure with sanitized cause and delivery evidence.
     Transport(TransportError),
@@ -75,7 +75,7 @@ impl ClientError {
     /// Creates a validation failure and immediately discards its source.
     pub fn validation<E>(
         cause: ClientCauseCategory,
-        delivery_state: Option<RequestDeliveryState>,
+        delivery_state: RequestDeliveryState,
         source: E,
     ) -> Self
     where
@@ -92,7 +92,7 @@ impl ClientError {
     #[must_use]
     pub const fn protocol(
         error: ProtocolError,
-        delivery_state: Option<RequestDeliveryState>,
+        delivery_state: RequestDeliveryState,
     ) -> Self {
         Self::Protocol {
             error,
@@ -141,7 +141,7 @@ impl ClientError {
     pub const fn delivery_state(&self) -> Option<RequestDeliveryState> {
         match self {
             Self::Validation { delivery_state, .. } | Self::Protocol { delivery_state, .. } => {
-                *delivery_state
+                Some(*delivery_state)
             }
             Self::Transport(error) => Some(error.delivery_state()),
             Self::ServerResult(_) => None,
