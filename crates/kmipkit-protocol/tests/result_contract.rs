@@ -9,6 +9,7 @@ use kmipkit_protocol::{
 };
 
 #[test]
+// OASIS KMIP Specification v2.1 §§9.19 and 11.47; KMIPKIT-0003-NR-001.
 fn known_status_values_match_catalog() {
     let values = ResultStatus::known_values();
     assert_ne!(values, []);
@@ -23,6 +24,7 @@ fn known_status_values_match_catalog() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §§9.18 and 11.46; KMIPKIT-0003-NR-002.
 fn known_reason_values_match_catalog() {
     let values = ResultReason::known_values();
     assert_ne!(values, []);
@@ -37,6 +39,7 @@ fn known_reason_values_match_catalog() {
 }
 
 #[test]
+// KMIPKIT-0003-NR-001: retain values outside the assigned OASIS enumeration.
 fn unknown_status_preserves_raw_value() {
     let status = ResultStatus::from_raw(u32::MAX);
 
@@ -45,6 +48,7 @@ fn unknown_status_preserves_raw_value() {
 }
 
 #[test]
+// KMIPKIT-0003-NR-002: retain values outside the assigned OASIS enumeration.
 fn unknown_reason_preserves_raw_value() {
     let reason = ResultReason::from_raw(u32::MAX);
 
@@ -53,6 +57,7 @@ fn unknown_reason_preserves_raw_value() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §9.17; KMIPKIT-0003-NR-003.
 fn result_message_preserves_presence_and_text() {
     let success = known_status("Success");
     let absent = KmipOperationResult::new(success, None, None).expect("valid success result");
@@ -73,6 +78,7 @@ fn result_message_preserves_presence_and_text() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §9.18; KMIPKIT-0003-NR-002.
 fn failure_requires_a_reason() {
     let failure = known_status("Operation Failed");
 
@@ -80,6 +86,7 @@ fn failure_requires_a_reason() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §9.18; KMIPKIT-0003-NR-002.
 fn success_forbids_a_reason() {
     let success = known_status("Success");
     let reason = ResultReason::from_raw(0);
@@ -88,6 +95,7 @@ fn success_forbids_a_reason() {
 }
 
 #[test]
+// KMIPKIT-0003-NR-002; pending, undone, and unknown values do not gain inferred rules.
 fn other_statuses_do_not_gain_reason_presence_rules() {
     let pending = known_status("Operation Pending");
     let undone = known_status("Operation Undone");

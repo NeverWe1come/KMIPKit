@@ -4,6 +4,7 @@ use std::error::Error;
 use std::fmt;
 
 /// A safe protocol failure category that contains no caller-provided text.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ProtocolErrorKind {
     /// A represented KMIP value violates a local invariant.
@@ -25,6 +26,7 @@ impl fmt::Display for ProtocolErrorKind {
 }
 
 /// A safe cause category retained after an arbitrary source is discarded.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ProtocolCauseCategory {
     /// A decoded or supplied value failed validation.

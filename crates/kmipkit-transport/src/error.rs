@@ -4,6 +4,7 @@ use std::error::Error;
 use std::fmt;
 
 /// The strongest evidence available about request transmission and response reception.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RequestDeliveryState {
     /// No request byte was sent.
@@ -41,6 +42,7 @@ impl RequestDeliveryState {
 }
 
 /// A safe transport cause category that contains no caller-provided text.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TransportCauseCategory {
     /// An operating-system or stream I/O failure.

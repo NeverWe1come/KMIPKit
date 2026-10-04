@@ -190,6 +190,7 @@ impl fmt::Display for KmipOperationResult {
 }
 
 /// A rejected status/reason combination in a represented operation result.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ResultValidationError {
     /// A Failure status was represented without a Result Reason.
