@@ -1162,6 +1162,33 @@ class CatalogValidationTests(unittest.TestCase):
             "Template must not be treated as an assigned Object Type value",
         )
 
+    def test_async_query_response_caption_conflict_is_an_open_discrepancy(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        discrepancy = next(
+            (row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-039"),
+            None,
+        )
+
+        self.assertIsNotNone(discrepancy)
+        assert discrepancy is not None
+        self.assertEqual(discrepancy["normative_status"], "source_defect")
+        self.assertEqual(discrepancy["state"], "open")
+        self.assertIsNone(discrepancy["decision_id"])
+        self.assertEqual(
+            discrepancy["source_refs"],
+            [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.41"}],
+        )
+        self.assertEqual(
+            discrepancy["affected_element_ids"],
+            ["KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"],
+        )
+        operation = next(
+            row for row in catalog["elements"]
+            if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"
+        )
+        response_tables = [row for row in operation["payload_tables"] if row["role"] == "response"]
+        self.assertEqual(response_tables, [{"role": "response", "table_number": 286, "caption": "PKCS#11 Response Payload"}])
+
     def test_json_preflight_enforces_depth_record_token_and_global_member_limits(self) -> None:
         cases = (
             ("MAX_DEPTH", 1, '{"schema_version":{"nested":{"again":1}}}', "nesting depth"),
