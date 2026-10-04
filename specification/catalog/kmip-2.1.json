@@ -23835,6 +23835,222 @@
       "source_encoding": "Text String"
     },
     {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL",
+      "kind": "object_structure",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.10"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-11-KEY-MATERIAL",
+      "kind": "object_structure",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.11"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-12-KEY-MATERIAL",
+      "kind": "object_structure",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.12"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-4-KEY-MATERIAL",
+      "kind": "object_structure",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.4"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL",
+      "kind": "object_structure",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-6-KEY-MATERIAL",
+      "kind": "object_structure",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL",
+      "kind": "object_structure",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL",
+      "kind": "object_structure",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL",
+      "kind": "object_structure",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE",
       "kind": "object_structure",
       "name": "Certificate",
@@ -23854,7 +24070,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST",
@@ -23876,7 +24094,33 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-ENCRYPTION-KEY-INFORMATION",
+      "kind": "object_structure",
+      "name": "Encryption Key Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK",
@@ -23903,7 +24147,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE",
@@ -23925,7 +24171,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA",
@@ -23947,7 +24195,33 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-MAC-SIGNATURE-KEY-INFORMATION",
+      "kind": "object_structure",
+      "name": "MAC/Signature Key Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT",
@@ -23969,7 +24243,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY",
@@ -23991,7 +24267,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY",
@@ -24013,7 +24291,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY",
@@ -24035,7 +24315,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA",
@@ -24057,7 +24339,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY",
@@ -24079,7 +24363,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY",
@@ -24101,7 +24387,9 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": ""
     },
     {
       "element_id": "KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE",
@@ -27378,6 +27666,1686 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Enumeration"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE",
+      "kind": "structure_member",
+      "name": "Certificate Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE",
+      "kind": "structure_member",
+      "name": "Certificate Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE",
+      "kind": "structure_member",
+      "name": "Certificate Request Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-VALUE",
+      "kind": "structure_member",
+      "name": "Certificate Request Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE",
+      "kind": "structure_member",
+      "name": "Opaque Data Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE",
+      "kind": "structure_member",
+      "name": "Opaque Data Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-4-PGP-KEY-KEY-BLOCK",
+      "kind": "structure_member",
+      "name": "Key Block",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.4"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Object Data Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-4-PGP-KEY-PGP-KEY-VERSION",
+      "kind": "structure_member",
+      "name": "PGP Key Version",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.4"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-5-PRIVATE-KEY-KEY-BLOCK",
+      "kind": "structure_member",
+      "name": "Key Block",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Object Data Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-6-PUBLIC-KEY-KEY-BLOCK",
+      "kind": "structure_member",
+      "name": "Key Block",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Object Data Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-KEY-BLOCK",
+      "kind": "structure_member",
+      "name": "Key Block",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Object Data Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-SECRET-DATA-TYPE",
+      "kind": "structure_member",
+      "name": "Secret Data Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-KEY-BLOCK",
+      "kind": "structure_member",
+      "name": "Key Block",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Object Data Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-KEY-PART-IDENTIFIER",
+      "kind": "structure_member",
+      "name": "Key Part Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-PRIME-FIELD-SIZE",
+      "kind": "structure_member",
+      "name": "Prime Field Size",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No, REQUIRED only if Split Key Method is Polynomial Sharing Prime Field."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-SPLIT-KEY-METHOD",
+      "kind": "structure_member",
+      "name": "Split Key Method",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-SPLIT-KEY-PARTS",
+      "kind": "structure_member",
+      "name": "Split Key Parts",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-SPLIT-KEY-THRESHOLD",
+      "kind": "structure_member",
+      "name": "Split Key Threshold",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-9-SYMMETRIC-KEY-KEY-BLOCK",
+      "kind": "structure_member",
+      "name": "Key Block",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM",
+      "kind": "structure_member",
+      "name": "Cryptographic Algorithm",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes. MAY be omitted only if this information is available from the Key Value. Does not apply to Secret Data or Opaque If present, the Cryptographic Length SHALL also be present."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH",
+      "kind": "structure_member",
+      "name": "Cryptographic Length",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Integer",
+      "source_requiredness": "Yes. MAY be omitted only if this information is available from the Key Value. Does not apply to Secret Data (or Opaque. If present, the Cryptographic Algorithm SHALL also be present."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-COMPRESSION-TYPE",
+      "kind": "structure_member",
+      "name": "Key Compression Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-FORMAT-TYPE",
+      "kind": "structure_member",
+      "name": "Key Format Type",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE",
+      "kind": "structure_member",
+      "name": "Key Value",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String: for wrapped Key Value; Structure: for plaintext Key Value",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-WRAPPING-DATA",
+      "kind": "structure_member",
+      "name": "Key Wrapping Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.1"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Object Data Structure",
+      "source_requiredness": "No. SHALL only be present if the key is wrapped."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-G",
+      "kind": "structure_member",
+      "name": "G",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.10"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-J",
+      "kind": "structure_member",
+      "name": "J",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.10"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-P",
+      "kind": "structure_member",
+      "name": "P",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.10"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-Q",
+      "kind": "structure_member",
+      "name": "Q",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.10"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-Y",
+      "kind": "structure_member",
+      "name": "Y",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.10"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-11-KEY-MATERIAL-D",
+      "kind": "structure_member",
+      "name": "D",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.11"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-11-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-11-KEY-MATERIAL-RECOMMENDED-CURVE",
+      "kind": "structure_member",
+      "name": "Recommended Curve",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.11"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-11-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-12-KEY-MATERIAL-Q-STRING",
+      "kind": "structure_member",
+      "name": "Q String",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.12"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-12-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-12-KEY-MATERIAL-RECOMMENDED-CURVE",
+      "kind": "structure_member",
+      "name": "Recommended Curve",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.12"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-12-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES",
+      "kind": "structure_member",
+      "name": "Attributes",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL",
+      "kind": "structure_member",
+      "name": "Key Material",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.2"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String: for Raw, Opaque, PKCS1, PKCS8, ECPrivateKey, or Extension Key Format types; Structure: for Transparent, or Extension Key Format Types",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS",
+      "kind": "structure_member",
+      "name": "Cryptographic Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-ENCRYPTION-KEY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-UNIQUE-IDENTIFIER",
+      "kind": "structure_member",
+      "name": "Unique Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-ENCRYPTION-KEY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text string",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION",
+      "kind": "structure_member",
+      "name": "Encoding Option",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "No. Specifies the encoding of the Key Value Byte String. If not present, the wrapped Key Value structure SHALL be TTLV encoded."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCRYPTION-KEY-INFORMATION",
+      "kind": "structure_member",
+      "name": "Encryption Key Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure, see below",
+      "source_requiredness": "No. Corresponds to the key that was used to encrypt the Key Value."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-IV-COUNTER-NONCE",
+      "kind": "structure_member",
+      "name": "IV/Counter/Nonce",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE",
+      "kind": "structure_member",
+      "name": "MAC/Signature",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE-KEY-INFORMATION",
+      "kind": "structure_member",
+      "name": "MAC/Signature Key Information",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure, see below",
+      "source_requiredness": "No. Corresponds to the symmetric key used to MAC the Key Value or the private key used to sign the Key Value"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-WRAPPING-METHOD",
+      "kind": "structure_member",
+      "name": "Wrapping Method",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Enumeration",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS",
+      "kind": "structure_member",
+      "name": "Cryptographic Parameters",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-MAC-SIGNATURE-KEY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Structure",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-UNIQUE-IDENTIFIER",
+      "kind": "structure_member",
+      "name": "Unique Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.3"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-MAC-SIGNATURE-KEY-INFORMATION"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Text string",
+      "source_requiredness": "Yes. It SHALL be either the Unique Identifier of the Symmetric Key used to MAC, or of the Private Key (or its corresponding Public Key) used to sign."
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-4-KEY-MATERIAL-KEY",
+      "kind": "structure_member",
+      "name": "Key",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.4"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-4-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Byte String",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-G",
+      "kind": "structure_member",
+      "name": "G",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-P",
+      "kind": "structure_member",
+      "name": "P",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-Q",
+      "kind": "structure_member",
+      "name": "Q",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-X",
+      "kind": "structure_member",
+      "name": "X",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.5"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-G",
+      "kind": "structure_member",
+      "name": "G",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-6-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-P",
+      "kind": "structure_member",
+      "name": "P",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-6-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-Q",
+      "kind": "structure_member",
+      "name": "Q",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-6-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-Y",
+      "kind": "structure_member",
+      "name": "Y",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.6"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-6-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-CRT-COEFFICIENT",
+      "kind": "structure_member",
+      "name": "CRT Coefficient",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-MODULUS",
+      "kind": "structure_member",
+      "name": "Modulus",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-P",
+      "kind": "structure_member",
+      "name": "P",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIME-EXPONENT-P",
+      "kind": "structure_member",
+      "name": "Prime Exponent P",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIME-EXPONENT-Q",
+      "kind": "structure_member",
+      "name": "Prime Exponent Q",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIVATE-EXPONENT",
+      "kind": "structure_member",
+      "name": "Private Exponent",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PUBLIC-EXPONENT",
+      "kind": "structure_member",
+      "name": "Public Exponent",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-Q",
+      "kind": "structure_member",
+      "name": "Q",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.7"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-8-KEY-MATERIAL-MODULUS",
+      "kind": "structure_member",
+      "name": "Modulus",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-8-KEY-MATERIAL-PUBLIC-EXPONENT",
+      "kind": "structure_member",
+      "name": "Public Exponent",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.8"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-G",
+      "kind": "structure_member",
+      "name": "G",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-J",
+      "kind": "structure_member",
+      "name": "J",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-P",
+      "kind": "structure_member",
+      "name": "P",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-Q",
+      "kind": "structure_member",
+      "name": "Q",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "No"
+    },
+    {
+      "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-X",
+      "kind": "structure_member",
+      "name": "X",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "3.9"
+        }
+      ],
+      "direction": "both",
+      "scope_state": "client_1_0",
+      "parent_element_ids": [
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL"
+      ],
+      "requirement_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "source_encoding": "Big Integer",
+      "source_requiredness": "Yes"
     },
     {
       "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-QLENGTH",

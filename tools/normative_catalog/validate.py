@@ -696,14 +696,16 @@ def _check_semantics(
             for field in ("source_encoding", "source_requiredness", "source_comment"):
                 if field in element and not isinstance(element[field], str):
                     _fail(f"message field {field} must be a string")
-        elif element["kind"] in {"attribute", "operation_structure", "option", "result", "credential"}:
+        elif element["kind"] in {
+            "object_structure", "attribute", "operation_structure", "option", "result", "credential",
+        }:
             if "source_name" in element and (
                 element["kind"] != "attribute"
                 or not isinstance(element["source_name"], str)
                 or not element["source_name"].strip()
             ):
                 _fail("source_name applies only to attributes and must be non-empty")
-            if element["kind"] in {"operation_structure", "option", "result", "credential"} and (
+            if element["kind"] in {"object_structure", "operation_structure", "option", "result", "credential"} and (
                 not isinstance(element.get("source_encoding"), str) or not element["source_encoding"].strip()
             ):
                 _fail("typed source root requires a non-empty source_encoding")
@@ -1097,7 +1099,7 @@ def _check_operation_inventory(elements: list[dict[str, Any]]) -> None:
 COMPLETE_ELEMENT_COUNTS = {
     "data_type": 11,
     "object_type": 9,
-    "object_structure": 12,
+    "object_structure": 23,
     "attribute": 63,
     "attribute_structure": 7,
     "operation_structure": 41,
@@ -1110,6 +1112,7 @@ COMPLETE_ELEMENT_COUNTS = {
     "credential": 7,
     "tag": 374,
     "message_field": 71,
+    "structure_member": 241,
 }
 TAG_REGISTRY_SHA256 = "ad69b23437d238ae67bfd72e54ba37a8bbe9fd31358f1aadfd41c410369cf8fe"
 RESERVED_TAGS = {

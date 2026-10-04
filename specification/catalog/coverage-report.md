@@ -17,7 +17,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | Sources | 4 |
 | Source clauses | 0 |
-| Protocol elements | 1669 |
+| Protocol elements | 1750 |
 | Client-to-server operations | 57 |
 | Server-to-client operations | 5 |
 | Tag ranges | 5 |
@@ -40,13 +40,13 @@ This report records inventory coverage and evidence state. It does not claim pro
 | enumeration | 64 |
 | enumeration\_value | 723 |
 | message\_field | 71 |
-| object\_structure | 12 |
+| object\_structure | 23 |
 | object\_type | 9 |
 | operation | 62 |
 | operation\_structure | 41 |
 | option | 3 |
 | result | 4 |
-| structure\_member | 171 |
+| structure\_member | 241 |
 | tag | 374 |
 
 ### Requirements by strength and scope
@@ -1064,11 +1064,22 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.7 |
 | KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION | message\_field | client\_to\_server | client\_1\_0 | KMIPKIT-SRC-spec §9.8 |
 | KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE | message\_field | both | client\_1\_0 | KMIPKIT-SRC-spec §9.9 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.10 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-3-11-KEY-MATERIAL | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.11 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-3-12-KEY-MATERIAL | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.12 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-3-4-KEY-MATERIAL | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.4 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-3-5-KEY-MATERIAL | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.5 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-3-6-KEY-MATERIAL | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.6 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.7 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.8 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-3-9-KEY-MATERIAL | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.9 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.1 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.2 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-ENCRYPTION-KEY-INFORMATION | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.2 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-OBJECT-STRUCTURE-MAC-SIGNATURE-KEY-INFORMATION | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.3 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.4 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY | object\_structure | both | client\_1\_0 | KMIPKIT-SRC-spec §2.5 |
@@ -1195,6 +1206,76 @@ This report records inventory coverage and evidence state. It does not claim pro
 | KMIPKIT-ELEM-RESULT-RESULT-MESSAGE | result | both | client\_1\_0 | KMIPKIT-SRC-spec §9.17 |
 | KMIPKIT-ELEM-RESULT-RESULT-REASON | result | both | client\_1\_0 | KMIPKIT-SRC-spec §9.18, KMIPKIT-SRC-spec §11.46 |
 | KMIPKIT-ELEM-RESULT-RESULT-STATUS | result | both | client\_1\_0 | KMIPKIT-SRC-spec §9.19, KMIPKIT-SRC-spec §11.47 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-4-PGP-KEY-KEY-BLOCK | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.4 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-4-PGP-KEY-PGP-KEY-VERSION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.4 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-5-PRIVATE-KEY-KEY-BLOCK | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-6-PUBLIC-KEY-KEY-BLOCK | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.6 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-KEY-BLOCK | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-SECRET-DATA-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-KEY-BLOCK | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.8 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-KEY-PART-IDENTIFIER | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.8 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-PRIME-FIELD-SIZE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.8 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-SPLIT-KEY-METHOD | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.8 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-SPLIT-KEY-PARTS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.8 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-SPLIT-KEY-THRESHOLD | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.8 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-2-9-SYMMETRIC-KEY-KEY-BLOCK | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §2.9 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-COMPRESSION-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-FORMAT-TYPE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-WRAPPING-DATA | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.1 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-G | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.10 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-J | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.10 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-P | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.10 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-Q | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.10 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-10-KEY-MATERIAL-Y | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.10 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-11-KEY-MATERIAL-D | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-11-KEY-MATERIAL-RECOMMENDED-CURVE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.11 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-12-KEY-MATERIAL-Q-STRING | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.12 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-12-KEY-MATERIAL-RECOMMENDED-CURVE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.12 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.2 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-UNIQUE-IDENTIFIER | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCRYPTION-KEY-INFORMATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-IV-COUNTER-NONCE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE-KEY-INFORMATION | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-WRAPPING-METHOD | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-UNIQUE-IDENTIFIER | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.3 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-4-KEY-MATERIAL-KEY | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.4 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-G | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-P | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-Q | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-5-KEY-MATERIAL-X | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.5 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-G | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.6 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-P | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.6 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-Q | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.6 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-6-KEY-MATERIAL-Y | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.6 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-CRT-COEFFICIENT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-MODULUS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-P | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIME-EXPONENT-P | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIME-EXPONENT-Q | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIVATE-EXPONENT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PUBLIC-EXPONENT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-Q | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.7 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-8-KEY-MATERIAL-MODULUS | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.8 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-8-KEY-MATERIAL-PUBLIC-EXPONENT | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.8 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-G | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.9 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-J | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.9 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-P | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.9 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-Q | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.9 |
+| KMIPKIT-ELEM-STRUCTURE-MEMBER-3-9-KEY-MATERIAL-X | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §3.9 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-QLENGTH | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-4-14-RECOMMENDED-CURVE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE | structure\_member | both | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
