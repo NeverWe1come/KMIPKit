@@ -113,9 +113,31 @@ class CoverageReportTests(unittest.TestCase):
         ]
         report = render_report(catalog)
         self.assertIn("evidence\\_incomplete", report)
+        self.assertIn("Profiles by applicability and claim state", report)
+        self.assertIn("Test evidence by fixture availability", report)
         self.assertIn("unavailable", report)
         self.assertIn("KMIPKIT-DISC-001", report)
         self.assertIn("open", report)
+
+    def test_lists_unassigned_protocol_capabilities_with_direction_and_scope(self) -> None:
+        catalog = report_catalog()
+        catalog["elements"] = [
+            {
+                "element_id": "KMIPKIT-ELEM-OP-GET",
+                "kind": "operation",
+                "name": "Get",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.7"}],
+                "direction": "client_to_server",
+                "scope_state": "client_1_0",
+                "feature_spec": None,
+                "implementation_refs": [],
+                "verification_refs": [],
+            }
+        ]
+        report = render_report(catalog)
+        self.assertIn("## Unassigned protocol elements", report)
+        self.assertIn("KMIPKIT-ELEM-OP-GET", report)
+        self.assertIn(r"client\_to\_server", report)
 
     def test_escapes_markdown_html_newlines_and_control_characters(self) -> None:
         catalog = report_catalog()
@@ -161,7 +183,7 @@ class CoverageReportTests(unittest.TestCase):
                 subprocess.run(arguments, cwd=root, check=True, capture_output=True)
             script = Path(__file__).resolve().parents[1] / "report.py"
             result = subprocess.run(
-                [sys.executable, str(script), "--write", "--repo-root", str(root)],
+                [sys.executable, str(script), "--write", "--repo-root", str(root), "--structural-only"],
                 cwd=root,
                 capture_output=True,
                 check=False,
