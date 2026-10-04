@@ -63,6 +63,28 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(contents, r"(?ms)^  branch-coverage:.*?continue-on-error:\s*true")
         self.assertIn("--branch --json --summary-only", contents)
 
+    def test_linux_jobs_route_to_pi_only_for_same_repository_pull_requests(self) -> None:
+        contents = self.require_workflow()
+        pi_labels = "fromJSON('[\"self-hosted\",\"linux\",\"ARM64\"]')"
+
+        for job in ("core", "script-contracts", "coverage"):
+            with self.subTest(job=job):
+                body = self.require_job(contents, job)
+                self.assertIn("matrix.os == 'ubuntu-latest'", body)
+                self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", body)
+                self.assertIn(pi_labels, body)
+                self.assertIn("|| matrix.os", body)
+
+        for job in ("normative-inventory", "coverage-gate"):
+            with self.subTest(job=job):
+                body = self.require_job(contents, job)
+                self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", body)
+                self.assertIn(pi_labels, body)
+                self.assertIn("|| 'ubuntu-latest'", body)
+
+        branch_coverage = self.require_job(contents, "branch-coverage")
+        self.assertRegex(branch_coverage, r"(?m)^    runs-on: \[self-hosted, linux, ARM64\]$")
+
     def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?ms)^on:\s*\n(?:(?!^jobs:).)*?^\s+schedule:")
