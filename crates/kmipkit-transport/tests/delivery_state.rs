@@ -17,22 +17,34 @@ fn request_is_not_sent_until_write_begins() {
 fn zero_byte_response_read_remains_possibly_sent() {
     let state = RequestDeliveryState::PossiblySent;
 
-    assert_eq!(state.response_bytes_received(0), RequestDeliveryState::PossiblySent);
+    assert_eq!(
+        state.response_bytes_received(0),
+        RequestDeliveryState::PossiblySent
+    );
 }
 
 #[test]
 fn first_response_byte_advances_delivery_to_response_started() {
     let state = RequestDeliveryState::PossiblySent;
 
-    assert_eq!(state.response_bytes_received(1), RequestDeliveryState::ResponseStarted);
+    assert_eq!(
+        state.response_bytes_received(1),
+        RequestDeliveryState::ResponseStarted
+    );
 }
 
 #[test]
 fn response_started_never_regresses_after_a_zero_byte_read() {
     let state = RequestDeliveryState::ResponseStarted;
 
-    assert_eq!(state.response_bytes_received(0), RequestDeliveryState::ResponseStarted);
-    assert_eq!(state.response_bytes_received(8), RequestDeliveryState::ResponseStarted);
+    assert_eq!(
+        state.response_bytes_received(0),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert_eq!(
+        state.response_bytes_received(8),
+        RequestDeliveryState::ResponseStarted
+    );
 }
 
 #[test]
