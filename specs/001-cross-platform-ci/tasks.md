@@ -112,7 +112,7 @@
 
 - [x] T040 Add a workflow contract requiring same-repository Linux PR jobs and scheduled branch coverage to use the self-hosted ARM64 runner, while fork PRs and Windows/macOS jobs remain hosted. RED evidence: commit `c820eaa`; `python -m unittest scripts.tests.test_workflow -v` failed the new routing contract for all five pull-request jobs and the scheduled job.
 - [x] T041 [US1] Route trusted Linux workflow jobs to the self-hosted ARM64 runner, preserve GitHub-hosted fallback for fork PRs and Windows/macOS, and update the approved requirements and testing guide. GREEN evidence: focused workflow contracts passed 8 tests; full Python script suite passed 48 tests with 3 Windows symlink-permission skips; `pwsh -File scripts/tests/Test-Wsl.ps1` passed; `git diff --check` passed.
-- [ ] T042 Run workflow contract and repository validation checks, record GREEN/REFACTOR results, update task evidence, and prepare the draft PR against `release/1.0.0`.
+- [x] T042 Run workflow contract and repository validation checks, record GREEN/REFACTOR results, update task evidence, and prepare the draft PR against `release/1.0.0`. REFACTOR contract tests passed (8); full Python suite passed (48, 3 Windows symlink-permission skips); WSL contracts passed (8); `git diff --check` passed. Draft PR: #17.
 
 ## Dependencies
 
