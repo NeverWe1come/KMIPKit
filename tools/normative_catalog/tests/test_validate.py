@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -220,6 +222,18 @@ class CatalogValidationTests(unittest.TestCase):
         ]
         with self.assertRaises(CatalogValidationError):
             validate(document)
+
+    def test_command_line_validator_reports_catalog_counts(self) -> None:
+        script = ROOT / "tools" / "normative_catalog" / "validate.py"
+        result = subprocess.run(
+            [sys.executable, str(script), "--repo-root", str(ROOT)],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("sources=4", result.stdout)
 
     def test_requires_every_top_level_record_collection(self) -> None:
         document = minimal_catalog()
