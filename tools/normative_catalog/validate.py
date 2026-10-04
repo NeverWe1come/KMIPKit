@@ -587,6 +587,25 @@ def _check_link_ids(record: dict[str, Any], field: str, known_ids: set[str], col
         _fail(f"{collection} contains an unresolved {field} reference")
 
 
+def _check_requirement_test_evidence(
+    requirements: list[dict[str, Any]], test_cases: list[dict[str, Any]]
+) -> None:
+    """Require reciprocal official test links or a documented evidence gap."""
+    expected_by_requirement = {row["requirement_id"]: set() for row in requirements}
+    for test_case in test_cases:
+        for requirement_id in test_case["requirement_ids"]:
+            expected_by_requirement[requirement_id].add(test_case["test_id"])
+
+    for requirement in requirements:
+        requirement_id = requirement["requirement_id"]
+        if set(requirement["test_case_ids"]) != expected_by_requirement[requirement_id]:
+            _fail("requirement/test-case links must be reciprocal")
+        if not requirement["test_case_ids"] and not (
+            isinstance(requirement["review_note"], str) and requirement["review_note"].strip()
+        ):
+            _fail("requirement without official test-case links must record an evidence gap in review_note")
+
+
 def _string_values(record: dict[str, Any], field: str, collection: str, *, non_empty: bool = False) -> list[str]:
     values = record.get(field)
     if (
@@ -918,17 +937,7 @@ def _check_semantics(
         if test_case["fixture_availability"] != "available":
             _fail("fixture path and availability status disagree")
 
-    expected_test_cases_by_requirement = {requirement_id: set() for requirement_id in requirements}
-    for test_case in catalog["test_cases"]:
-        for requirement_id in test_case["requirement_ids"]:
-            expected_test_cases_by_requirement[requirement_id].add(test_case["test_id"])
-    for requirement in catalog["requirements"]:
-        if set(requirement["test_case_ids"]) != expected_test_cases_by_requirement[requirement["requirement_id"]]:
-            _fail("requirement/test-case links must be reciprocal")
-        if not requirement["test_case_ids"] and not (
-            isinstance(requirement["review_note"], str) and requirement["review_note"].strip()
-        ):
-            _fail("requirement without official test-case links must record an evidence gap in review_note")
+    _check_requirement_test_evidence(catalog["requirements"], catalog["test_cases"])
 
     for tag_range in catalog["tag_ranges"]:
         _enum(tag_range.get("allocation"), {"unused", "reserved", "extension"}, "tag range allocation")
