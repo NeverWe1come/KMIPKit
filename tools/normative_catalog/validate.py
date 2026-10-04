@@ -711,7 +711,11 @@ def _check_semantics(
         if "wire_value" in element and element["wire_value"] is not None and not isinstance(element["wire_value"], str):
             _fail("protocol element wire_value must be a string")
         if element.get("allocation") is not None:
-            _enum(element["allocation"], {"assigned", "reserved", "unused"}, "protocol element allocation")
+            _enum(
+                element["allocation"],
+                {"assigned", "reserved", "unused", "extension"},
+                "protocol element allocation",
+            )
         if element["kind"] == "operation":
             payload_tables = element.get("payload_tables")
             if not isinstance(payload_tables, list):
@@ -1063,6 +1067,7 @@ COMPLETE_ELEMENT_COUNTS = {
     "attribute_structure": 7,
     "operation_structure": 41,
     "enumeration": 64,
+    "enumeration_value": 723,
     "bitmask": 3,
     "tag": 374,
 }
