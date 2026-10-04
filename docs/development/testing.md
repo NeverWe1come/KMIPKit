@@ -93,11 +93,12 @@ nested directory; for example, a file named `parser_tests.rs` can still be
 selected as a production module with `#[path]`. Generated source may be excluded
 only with a documented reason.
 
-CI attempts branch coverage separately with nightly Rust on pull requests and
-on a daily schedule. That job is informational and cannot gate pull-request
-success; promote branch coverage to a required check only in a separately
-reviewed change after its reliability has been demonstrated. Reproduce the
-local source, workflow-contract, and coverage parser checks with:
+CI attempts branch coverage separately with nightly Rust only on a daily
+schedule; it does not run on pull requests. That job is informational and
+cannot gate pull-request success; promote branch coverage to a required check
+only in a separately reviewed change after its reliability has been
+demonstrated. Reproduce the local source, workflow-contract, and coverage
+parser checks with:
 
 ```powershell
 pwsh -File .\scripts\tests\Test-Wsl.ps1
