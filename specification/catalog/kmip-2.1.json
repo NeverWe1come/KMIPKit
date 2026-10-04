@@ -27723,7 +27723,7 @@
       "requirement_ids": [],
       "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
       "role": "both",
-      "direction": "client_to_server",
+      "direction": "server_to_client",
       "scope_state": "server_only",
       "condition": null
     },
@@ -27743,7 +27743,7 @@
       "requirement_ids": [],
       "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
       "role": "both",
-      "direction": "client_to_server",
+      "direction": "server_to_client",
       "scope_state": "server_only",
       "condition": null
     },
@@ -27762,7 +27762,7 @@
       "requirement_ids": [],
       "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
       "role": "both",
-      "direction": "client_to_server",
+      "direction": "server_to_client",
       "scope_state": "server_only",
       "condition": null
     },
@@ -44887,7 +44887,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -44919,7 +44919,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -44951,7 +44951,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -44983,7 +44983,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45015,7 +45015,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45047,7 +45047,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45079,7 +45079,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45111,7 +45111,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45143,7 +45143,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45175,7 +45175,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45207,7 +45207,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45239,7 +45239,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45271,7 +45271,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45303,7 +45303,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45335,7 +45335,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45367,7 +45367,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45398,7 +45398,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45430,7 +45430,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45462,7 +45462,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45494,7 +45494,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45526,7 +45526,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45558,7 +45558,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45590,7 +45590,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45622,7 +45622,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45654,7 +45654,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45686,7 +45686,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45718,7 +45718,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45750,7 +45750,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45782,7 +45782,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45814,7 +45814,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45846,7 +45846,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45878,7 +45878,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45910,7 +45910,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45942,7 +45942,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -45974,7 +45974,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46006,7 +46006,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46038,7 +46038,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46070,7 +46070,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46102,7 +46102,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46134,7 +46134,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46166,7 +46166,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46198,7 +46198,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46230,7 +46230,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46262,7 +46262,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46294,7 +46294,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46326,7 +46326,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46358,7 +46358,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46390,7 +46390,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46422,7 +46422,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46454,7 +46454,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46486,7 +46486,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46518,7 +46518,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46550,7 +46550,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46582,7 +46582,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46614,7 +46614,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46646,7 +46646,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46678,7 +46678,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46854,7 +46854,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46888,7 +46888,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46920,7 +46920,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46952,7 +46952,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -46984,7 +46984,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47016,7 +47016,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47048,7 +47048,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47080,7 +47080,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47112,7 +47112,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47144,7 +47144,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47176,7 +47176,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47208,7 +47208,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47240,7 +47240,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47272,7 +47272,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47304,7 +47304,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
@@ -47336,7 +47336,7 @@
           "section": "11.47"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS"
@@ -47366,7 +47366,7 @@
           "section": "11.47"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS"
@@ -47399,7 +47399,7 @@
           "section": "11.47"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS"
@@ -47430,7 +47430,7 @@
           "section": "11.47"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS"
@@ -47461,7 +47461,7 @@
           "section": "11.47"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS"
@@ -50511,7 +50511,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
       "requirement_ids": [],
@@ -50538,7 +50538,7 @@
           "section": "11.47"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
       "requirement_ids": [],
@@ -57084,7 +57084,7 @@
           "section": "9.17"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
       "requirement_ids": [],
@@ -57114,7 +57114,7 @@
           "section": "11.46"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
       "requirement_ids": [],
@@ -57146,7 +57146,7 @@
           "section": "11.47"
         }
       ],
-      "direction": "both",
+      "direction": "server_to_client",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
       "requirement_ids": [],
