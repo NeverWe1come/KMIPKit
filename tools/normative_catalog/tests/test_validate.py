@@ -152,9 +152,10 @@ class CatalogValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(CatalogValidationError, "string"):
                 validate_catalog(raw, ROOT)
         self.assertNotIn(raw.decode("utf-8"), [call.args[0] for call in decoder.call_args_list])
+        self.assertFalse(any(len(call.args[0]) > 65_536 for call in decoder.call_args_list))
 
     def test_rejects_invalid_utf8_and_unpaired_escaped_surrogate(self) -> None:
-        for raw in (b"\xff", b'{"x":"\\ud800"}'):
+        for raw in (b"\xff", b'{"schema_version":"\\ud800"}'):
             with self.subTest(raw=raw), self.assertRaises(CatalogValidationError):
                 validate_catalog(raw, ROOT)
 
