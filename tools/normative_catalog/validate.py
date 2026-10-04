@@ -55,6 +55,12 @@ KEYWORD_STRENGTH = {
     "MAY": "permission_or_optional",
     "OPTIONAL": "permission_or_optional",
 }
+SOURCE_AUTHORITY_RANK = {
+    "informative": 0,
+    "test_evidence": 1,
+    "profile_normative": 2,
+    "primary_normative": 3,
+}
 JSON_NUMBER_PATTERN = re.compile(r"-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?")
 CLAUSE_DISPOSITIONS = {
     "requirement",
@@ -424,6 +430,17 @@ def _source_refs(value: Any, sources: set[str], field: str) -> None:
             _fail(f"{field} refers to an unknown source")
         if not isinstance(reference["section"], str) or not re.fullmatch(r"[0-9]+(?:\.[0-9]+)*", reference["section"]):
             _fail(f"{field} contains an invalid source section")
+
+
+def _strongest_source_authority(
+    references: list[dict[str, Any]],
+    authority_by_source: dict[str, str],
+) -> str:
+    """Return the highest authority class among a record's citations."""
+    return max(
+        (authority_by_source[reference["source_id"]] for reference in references),
+        key=SOURCE_AUTHORITY_RANK.__getitem__,
+    )
 
 
 def _check_policy_provenance(
@@ -852,6 +869,9 @@ def _check_semantics(
         if not isinstance(decision["status"], str) or decision["status"] != "accepted":
             _fail("decision records must contain accepted decisions only")
 
+    authority_by_source = {
+        row["source_id"]: row["authority_class"] for row in catalog["sources"]
+    }
     for discrepancy in catalog["discrepancies"]:
         if set(discrepancy) != DISCREPANCY_FIELDS:
             _fail("source discrepancy has missing or unknown fields")
@@ -860,15 +880,9 @@ def _check_semantics(
         if not isinstance(discrepancy["downstream_impact"], str) or not discrepancy["downstream_impact"].strip():
             _fail("source discrepancy downstream impact is required")
         _source_refs(discrepancy["source_refs"], sources, "source discrepancy source_refs")
-        _source_refs(discrepancy["erratum_source_refs"], sources, "source discrepancy erratum_source_refs") if discrepancy["erratum_source_refs"] else None
-        source_authority_by_id = {
-            row["source_id"]: row["authority_class"] for row in catalog["sources"]
-        }
-        authority_rank = {"informative": 0, "test_evidence": 1, "profile_normative": 2, "primary_normative": 3}
-        expected_authority = max(
-            (source_authority_by_id[reference["source_id"]] for reference in discrepancy["source_refs"]),
-            key=authority_rank.__getitem__,
-        )
+        if discrepancy["erratum_source_refs"]:
+            _source_refs(discrepancy["erratum_source_refs"], sources, "source discrepancy erratum_source_refs")
+        expected_authority = _strongest_source_authority(discrepancy["source_refs"], authority_by_source)
         if discrepancy["source_authority"] != expected_authority:
             _fail("source authority does not match the cited discrepancy sources")
         _enum(
