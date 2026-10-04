@@ -1853,6 +1853,20 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "source clause scope"):
             validate(document)
 
+    def test_source_discrepancy_can_preserve_unresolved_scope(self) -> None:
+        document = deviation_catalog(decision_record())
+        clause = document["source_clauses"][0]
+        clause["disposition"] = "source_discrepancy"
+        clause["requirement_ids"] = []
+        clause["exclusion_rationale"] = "The source does not identify the constrained actor or scope."
+        clause["role"] = "unclear"
+        clause["direction"] = "unclear"
+        clause["scope_state"] = "unclear"
+        document["requirements"] = []
+        document["decisions"] = []
+
+        self.assertGreater(validate(document)["record_count"], 0)
+
     def test_requirement_keyword_must_appear_in_a_linked_source_clause(self) -> None:
         document = deviation_catalog(decision_record())
         requirement = document["requirements"][0]
