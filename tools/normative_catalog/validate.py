@@ -599,7 +599,7 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
             _fail("source clause entries must be objects")
         required = {
             "clause_id", "source_id", "section", "locator", "source_keywords",
-            "normative_strength", "disposition", "requirement_ids", "exclusion_rationale",
+            "disposition", "requirement_ids", "exclusion_rationale",
         }
         if set(clause) != required:
             _fail("source clause has missing or unknown fields")
@@ -621,9 +621,6 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
         keywords = clause["source_keywords"]
         if not isinstance(keywords, list) or not keywords or any(keyword not in KEYWORD_STRENGTH for keyword in keywords):
             _fail("source clause has an invalid source keyword")
-        strengths = {KEYWORD_STRENGTH[keyword] for keyword in keywords}
-        if len(strengths) != 1 or clause["normative_strength"] not in strengths:
-            _fail("source clause keyword and normative strength disagree")
         _enum(clause["disposition"], CLAUSE_DISPOSITIONS, "source clause disposition")
         if not isinstance(clause["requirement_ids"], list):
             _fail("source clause requirement_ids must be an array")

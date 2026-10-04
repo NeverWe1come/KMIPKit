@@ -25,7 +25,6 @@ def report_catalog() -> dict[str, object]:
             "section": "8.1",
             "locator": {"ordinal": 1, "block_kind": "paragraph"},
             "source_keywords": ["MUST"],
-            "normative_strength": "mandatory",
             "disposition": "requirement",
             "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
             "exclusion_rationale": None,

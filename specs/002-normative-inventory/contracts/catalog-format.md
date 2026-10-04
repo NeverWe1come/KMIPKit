@@ -6,6 +6,8 @@ The normative inventory is a versioned JSON document. Its record fields and rela
 
 The document contains `schema_version`, `sources`, `source_clauses`, `elements`, `tag_ranges`, `requirements`, `policies`, `profiles`, `test_cases`, `discrepancies`, and `decisions`. Unknown fields are rejected. Report sections have a fixed order; collections use these deterministic sort keys:
 
+A source clause stores its detected keyword set and review disposition without an aggregate strength. Each linked requirement carries its own exact source keyword and canonical normative strength, so a source block containing distinct obligations does not collapse them into one value.
+
 - `sources`: `source_id` (ASCII ordinal order).
 - `source_clauses`: `source_id`, numeric section tuple, structural locator index, `clause_id`.
 - `elements`, `requirements`, `profiles`, `discrepancies`, `decisions`, `policies`: stable ID (ASCII ordinal order).
