@@ -474,9 +474,17 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
     function_region_lines: dict[str, set[int]] = {}
     function_region_ranges: dict[str, list[tuple[str, int, int, int]]] = {}
     source_lines_by_path: dict[str, list[str]] = {}
+    source_data_items: dict[str, int] = {}
+    file_records_seen: set[tuple[int, str]] = set()
     regions_seen = 0
 
-    for data_item in parsed["data"]:
+    def register_source_mapping(source: str, data_item_index: int) -> None:
+        previous_data_item = source_data_items.get(source)
+        if previous_data_item is not None and previous_data_item != data_item_index:
+            raise CoverageDataError(f"LLVM report has multiple coverage mappings for source file: {source}.")
+        source_data_items[source] = data_item_index
+
+    for data_item_index, data_item in enumerate(parsed["data"]):
         for file_record in data_item["files"]:
             if not isinstance(file_record, dict):
                 raise CoverageDataError("LLVM report file record is not an object.")
@@ -490,6 +498,11 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
                 except (OSError, ValueError) as error:
                     raise CoverageDataError(f"LLVM report path is outside the workspace: {file_record['filename']}") from error
                 continue
+            register_source_mapping(source, data_item_index)
+            file_record_key = (data_item_index, source)
+            if file_record_key in file_records_seen:
+                raise CoverageDataError(f"LLVM coverage mapping repeats source file: {source}.")
+            file_records_seen.add(file_record_key)
             file_lines = _parse_file_segments(file_record, root / source)
             line_summary = file_record["summary"]["lines"]
             summary_uncovered_counts[source] = max(
@@ -526,6 +539,7 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
                 source = _canonical_source_path(filenames[file_id], root)
                 if source is None or kind != 0:
                     continue
+                register_source_mapping(source, data_item_index)
                 regions_seen += 1
                 if source not in source_lines_by_path:
                     try:
