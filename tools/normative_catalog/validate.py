@@ -92,6 +92,23 @@ TEST_CASE_FIELDS = {
     "mandatory_status", "profile_ids", "requirement_ids", "element_ids", "raw_href",
     "fixture_path", "fixture_availability", "mapping_confidence",
 }
+PROFILE_FIELDS = {
+    "profile_id", "name", "role", "source_refs", "source_clause_ids",
+    "dependency_profile_ids", "transport_requirements", "encoding_requirements",
+    "applicability", "claim_state", "requirement_ids", "element_ids", "test_case_ids",
+}
+DISCREPANCY_FIELDS = {
+    "discrepancy_id", "summary", "source_refs", "source_authority", "normative_status",
+    "alternatives", "affected_requirement_ids", "affected_element_ids",
+    "affected_profile_ids", "affected_policy_ids", "downstream_impact", "state", "decision_id",
+}
+DECISION_FIELDS = {
+    "decision_id", "source_refs", "requirement_ids", "discrepancy_ids",
+    "interpretation", "approver", "approval_evidence", "approved_at", "consequence", "status",
+}
+POLICY_FIELDS = {
+    "policy_id", "summary", "provenance", "affected_element_kinds", "requirement_ids",
+}
 
 
 class CatalogValidationError(ValueError):
@@ -100,6 +117,11 @@ class CatalogValidationError(ValueError):
 
 def _fail(message: str) -> None:
     raise CatalogValidationError(message)
+
+
+def _enum(value: Any, choices: set[str], field: str) -> None:
+    if not isinstance(value, str) or value not in choices:
+        _fail(f"{field} has an invalid value")
 
 
 def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -465,8 +487,22 @@ def _check_link_ids(record: dict[str, Any], field: str, known_ids: set[str], col
     values = record.get(field)
     if not isinstance(values, list) or any(not isinstance(value, str) for value in values):
         _fail(f"{collection} {field} must be an array of identifiers")
+    if len(values) != len(set(values)):
+        _fail(f"{collection} {field} contains duplicate identifiers")
     if any(value not in known_ids for value in values):
         _fail(f"{collection} contains an unresolved {field} reference")
+
+
+def _string_values(record: dict[str, Any], field: str, collection: str, *, non_empty: bool = False) -> list[str]:
+    values = record.get(field)
+    if (
+        not isinstance(values, list)
+        or any(not isinstance(value, str) or not value.strip() for value in values)
+        or (non_empty and not values)
+        or len(values) != len(set(values))
+    ):
+        _fail(f"{collection} {field} must contain unique non-empty strings")
+    return values
 
 
 def _check_source_records(catalog: dict[str, Any], root: Path, tree: dict[str, tuple[str, str]]) -> set[str]:
@@ -525,8 +561,7 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
         strengths = {KEYWORD_STRENGTH[keyword] for keyword in keywords}
         if len(strengths) != 1 or clause["normative_strength"] not in strengths:
             _fail("source clause keyword and normative strength disagree")
-        if clause["disposition"] not in CLAUSE_DISPOSITIONS:
-            _fail("source clause has an invalid review disposition")
+        _enum(clause["disposition"], CLAUSE_DISPOSITIONS, "source clause disposition")
         if not isinstance(clause["requirement_ids"], list):
             _fail("source clause requirement_ids must be an array")
         rationale = clause["exclusion_rationale"]
@@ -554,14 +589,26 @@ def _check_semantics(
         if not requirement.get("source_clause_ids") or any(item not in clauses for item in requirement["source_clause_ids"]):
             _fail("requirement has missing or unresolved source clause references")
         keyword = requirement.get("source_keyword")
-        if keyword not in KEYWORD_STRENGTH or requirement.get("normative_strength") != KEYWORD_STRENGTH.get(keyword):
+        if (
+            not isinstance(keyword, str)
+            or keyword not in KEYWORD_STRENGTH
+            or requirement.get("normative_strength") != KEYWORD_STRENGTH.get(keyword)
+        ):
             _fail("requirement keyword and normative strength disagree")
-        if requirement.get("scope_state") not in {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope"}:
-            _fail("requirement has an invalid scope state")
+        _enum(
+            requirement.get("scope_state"),
+            {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope"},
+            "requirement scope state",
+        )
         if keyword in {"MUST NOT", "SHALL NOT"} and requirement.get("negative_verification_required") is not True:
             _fail("prohibited requirements require negative verification")
-        if keyword in {"SHOULD", "SHOULD NOT", "RECOMMENDED"} and requirement.get("status") == "deviated" and not requirement.get("decision_id"):
-            _fail("recommendation deviations require an accepted decision")
+        if keyword in {"SHOULD", "SHOULD NOT", "RECOMMENDED"} and requirement.get("status") == "deviated":
+            decision_id = requirement.get("decision_id")
+            if not isinstance(decision_id, str):
+                _fail("recommendation deviations require an accepted decision")
+            decision = decisions.get(decision_id)
+            if decision is None or decision.get("status") != "accepted":
+                _fail("recommendation deviations require an accepted decision")
     for clause in catalog["source_clauses"]:
         if any(item not in requirements for item in clause["requirement_ids"]):
             _fail("source clause has an unresolved requirement reference")
@@ -571,15 +618,16 @@ def _check_semantics(
             _fail("protocol element has unknown fields")
         if not {"feature_spec", "implementation_refs", "verification_refs"}.issubset(element):
             _fail("protocol element is missing coverage assignment fields")
-        if element.get("kind") not in ELEMENT_KINDS:
-            _fail("protocol element has an invalid kind")
+        _enum(element.get("kind"), ELEMENT_KINDS, "protocol element kind")
         if not isinstance(element.get("name"), str) or not element["name"].strip():
             _fail("protocol element name is required")
         _source_refs(element.get("source_refs"), sources, "element source_refs")
-        if element.get("direction") not in {"client_to_server", "server_to_client", "both", "not_applicable"}:
-            _fail("protocol element has an invalid direction")
-        if element.get("scope_state") not in {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope"}:
-            _fail("protocol element has an invalid scope state")
+        _enum(element.get("direction"), {"client_to_server", "server_to_client", "both", "not_applicable"}, "protocol element direction")
+        _enum(
+            element.get("scope_state"),
+            {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope"},
+            "protocol element scope state",
+        )
         if element.get("scope_state") != "client_1_0" and not isinstance(element.get("scope_reason"), str):
             _fail("non-default protocol element scope requires a rationale")
         _check_link_ids(element, "parent_element_ids", set(elements), "protocol element")
@@ -597,32 +645,59 @@ def _check_semantics(
                 _fail(f"protocol element {field} must be an array of non-empty strings")
         if "wire_value" in element and element["wire_value"] is not None and not isinstance(element["wire_value"], str):
             _fail("protocol element wire_value must be a string")
-        if "allocation" in element and element["allocation"] not in {None, "assigned", "reserved", "unused"}:
-            _fail("protocol element has an invalid tag allocation")
+        if element.get("allocation") is not None:
+            _enum(element["allocation"], {"assigned", "reserved", "unused"}, "protocol element allocation")
 
     for requirement in catalog["requirements"]:
         _check_link_ids(requirement, "element_ids", set(elements), "requirement")
         _check_link_ids(requirement, "profile_ids", set(profiles), "requirement")
         _check_link_ids(requirement, "test_case_ids", set(test_cases), "requirement")
         decision_id = requirement.get("decision_id")
+        if decision_id is not None and not isinstance(decision_id, str):
+            _fail("requirement decision_id must be a string or null")
         if decision_id is not None and decision_id not in decisions:
             _fail("requirement refers to an unresolved decision")
+
+    for profile in catalog["profiles"]:
+        if set(profile) != PROFILE_FIELDS:
+            _fail("profile has missing or unknown fields")
+        if not isinstance(profile["name"], str) or not profile["name"].strip():
+            _fail("profile name is required")
+        _enum(profile["role"], {"client", "server", "both"}, "profile role")
+        _source_refs(profile["source_refs"], sources, "profile source_refs")
+        for field in ("source_clause_ids", "transport_requirements", "encoding_requirements"):
+            _string_values(profile, field, "profile")
+        if any(clause_id not in clauses for clause_id in profile["source_clause_ids"]):
+            _fail("profile has unresolved source clause references")
+        for field, valid_ids in (
+            ("dependency_profile_ids", set(profiles)),
+            ("requirement_ids", set(requirements)),
+            ("element_ids", set(elements)),
+            ("test_case_ids", set(test_cases)),
+        ):
+            _check_link_ids(profile, field, valid_ids, "profile")
+        _enum(
+            profile["applicability"],
+            {"client_1_0", "client_1_1", "server_only", "conditional", "out_of_scope"},
+            "profile applicability",
+        )
+        _enum(
+            profile["claim_state"],
+            {"not_claimed", "candidate", "selected", "evidence_incomplete", "evidence_complete"},
+            "profile claim state",
+        )
 
     for test_case in catalog["test_cases"]:
         if not isinstance(test_case, dict) or set(test_case) != TEST_CASE_FIELDS:
             _fail("test case has missing or unknown fields")
         if not isinstance(test_case["official_case_id"], str) or not test_case["official_case_id"].strip():
             _fail("test case must retain its official case ID")
-        if test_case["source_id"] not in {"KMIPKIT-SRC-testcases", "KMIPKIT-SRC-profiles"}:
-            _fail("test case points to a source that cannot define test evidence")
+        _enum(test_case["source_id"], {"KMIPKIT-SRC-testcases", "KMIPKIT-SRC-profiles"}, "test case source")
         if not re.fullmatch(r"[0-9]+(?:\.[0-9]+)*", test_case["source_section"]):
             _fail("test case has an invalid source section")
-        if test_case["mandatory_status"] not in {"mandatory", "optional", "unspecified"}:
-            _fail("test case has an invalid mandatory/optional status")
-        if test_case["fixture_availability"] not in {"available", "unavailable"}:
-            _fail("test case has an invalid fixture availability")
-        if test_case["mapping_confidence"] not in {"explicit", "strong", "weak", "unmapped"}:
-            _fail("test case has an invalid mapping confidence")
+        _enum(test_case["mandatory_status"], {"mandatory", "optional", "unspecified"}, "test case mandatory status")
+        _enum(test_case["fixture_availability"], {"available", "unavailable"}, "test case fixture availability")
+        _enum(test_case["mapping_confidence"], {"explicit", "strong", "weak", "unmapped"}, "test case mapping confidence")
         for field, valid_ids, name in (
             ("profile_ids", set(profiles), "test case"),
             ("requirement_ids", set(requirements), "test case"),
@@ -657,15 +732,87 @@ def _check_semantics(
             _fail("fixture path and availability status disagree")
 
     for tag_range in catalog["tag_ranges"]:
-        if tag_range.get("allocation") not in {"unused", "reserved", "extension"}:
-            _fail("tag range must have a range allocation")
+        _enum(tag_range.get("allocation"), {"unused", "reserved", "extension"}, "tag range allocation")
         _source_refs(tag_range.get("source_refs"), sources, "tag range source_refs")
 
     for policy in catalog["policies"]:
-        if policy.get("provenance") not in {"AGENTS.md", "constitution", "ADR", "approved_product_decision"}:
-            _fail("project policy has invalid provenance")
+        if set(policy) != POLICY_FIELDS:
+            _fail("project policy has missing or unknown fields")
+        _enum(
+            policy.get("provenance"),
+            {"AGENTS.md", "constitution", "ADR", "approved_product_decision"},
+            "project policy provenance",
+        )
         if not isinstance(policy.get("summary"), str) or not policy["summary"].strip():
             _fail("project policy summary is required")
+        _string_values(policy, "affected_element_kinds", "project policy", non_empty=True)
+        if any(kind not in ELEMENT_KINDS for kind in policy["affected_element_kinds"]):
+            _fail("project policy has an unknown affected element kind")
+        _check_link_ids(policy, "requirement_ids", set(requirements), "project policy")
+
+    for decision in catalog["decisions"]:
+        if set(decision) != DECISION_FIELDS:
+            _fail("decision has missing or unknown fields")
+        _source_refs(decision["source_refs"], sources, "decision source_refs")
+        for field, valid_ids in (
+            ("requirement_ids", set(requirements)),
+            ("discrepancy_ids", {row["discrepancy_id"] for row in catalog["discrepancies"]}),
+        ):
+            _check_link_ids(decision, field, valid_ids, "decision")
+        for field in ("interpretation", "approver", "approval_evidence", "consequence"):
+            if not isinstance(decision[field], str) or not decision[field].strip():
+                _fail("decision requires interpretation, approver evidence, and consequence")
+        if not isinstance(decision["approved_at"], str) or re.fullmatch(
+            r"[0-9]{4}-[0-9]{2}-[0-9]{2}", decision["approved_at"]
+        ) is None:
+            _fail("decision approved_at must be an ISO date")
+        if not isinstance(decision["status"], str) or decision["status"] != "accepted":
+            _fail("decision records must contain accepted decisions only")
+
+    for discrepancy in catalog["discrepancies"]:
+        if set(discrepancy) != DISCREPANCY_FIELDS:
+            _fail("source discrepancy has missing or unknown fields")
+        if not isinstance(discrepancy["summary"], str) or not discrepancy["summary"].strip():
+            _fail("source discrepancy summary is required")
+        if not isinstance(discrepancy["downstream_impact"], str) or not discrepancy["downstream_impact"].strip():
+            _fail("source discrepancy downstream impact is required")
+        _source_refs(discrepancy["source_refs"], sources, "source discrepancy source_refs")
+        _enum(
+            discrepancy["source_authority"],
+            {"primary_normative", "profile_normative", "test_evidence", "informative"},
+            "source discrepancy authority",
+        )
+        _enum(
+            discrepancy["normative_status"],
+            {"normative", "informative", "conditional", "normative_conflict", "source_defect", "evidence_gap"},
+            "source discrepancy normative status",
+        )
+        _string_values(discrepancy, "alternatives", "source discrepancy", non_empty=True)
+        decision_id = discrepancy["decision_id"]
+        if decision_id is not None and not isinstance(decision_id, str):
+            _fail("source discrepancy decision_id must be a string or null")
+        if decision_id is not None and decision_id not in decisions:
+            _fail("source discrepancy refers to an unresolved decision")
+        _enum(
+            discrepancy["state"],
+            {"open", "resolved_by_erratum", "resolved_by_approved_decision"},
+            "source discrepancy state",
+        )
+        if discrepancy["state"] == "open" and decision_id is not None:
+            _fail("open discrepancy cannot select a decision")
+        if discrepancy["state"] == "resolved_by_approved_decision" and (
+            decision_id is None or decisions[decision_id]["status"] != "accepted"
+        ):
+            _fail("resolved discrepancy requires an accepted decision")
+        if discrepancy["state"] == "resolved_by_erratum" and decision_id is not None:
+            _fail("erratum-resolved discrepancy cannot select a project decision")
+        for field, valid_ids in (
+            ("affected_requirement_ids", set(requirements)),
+            ("affected_element_ids", set(elements)),
+            ("affected_profile_ids", set(profiles)),
+            ("affected_policy_ids", {row["policy_id"] for row in catalog["policies"]}),
+        ):
+            _check_link_ids(discrepancy, field, valid_ids, "source discrepancy")
 
 
 def _validate_catalog_header(catalog: Any) -> dict[str, Any]:

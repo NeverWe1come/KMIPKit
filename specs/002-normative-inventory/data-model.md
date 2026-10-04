@@ -47,7 +47,7 @@ Each of the five range rows in Specification §11.56 is a separate record with s
 
 ## Profile
 
-Each profile has a stable ID, exact source references, client/server role, required baseline/profile dependencies, transport and encoding requirements, clauses, and test IDs. Record `applicability` independently from `claim_state`. `claim_state` is one of `not_claimed`, `candidate`, `selected`, `evidence_incomplete`, or `evidence_complete`; only a separate reviewed release process may publish a claim.
+Each profile has `profile_id`, `name`, `role`, `source_refs`, `source_clause_ids`, `dependency_profile_ids`, `transport_requirements`, `encoding_requirements`, `applicability`, `claim_state`, `requirement_ids`, `element_ids`, and `test_case_ids`. Role is `client`, `server`, or `both`. `applicability` is independently one of `client_1_0`, `client_1_1`, `server_only`, `conditional`, or `out_of_scope`. `claim_state` is one of `not_claimed`, `candidate`, `selected`, `evidence_incomplete`, or `evidence_complete`; only a separate reviewed release process may publish a claim. All IDs resolve to the corresponding catalog records.
 
 ## TestCase
 
@@ -55,15 +55,15 @@ Each case records its exact official ID, source document and section, evidence c
 
 ## SourceDiscrepancy
 
-Each discrepancy has a stable ID, exact source references for every side, source authority and normative status, neutral summaries, plausible alternatives, affected requirement/element/profile/policy IDs, downstream impact, and state (`open`, `resolved_by_erratum`, or `resolved_by_approved_decision`). Open records have no selected interpretation.
+Each discrepancy has `discrepancy_id`, `summary`, `source_refs`, `source_authority`, `normative_status`, `alternatives`, `affected_requirement_ids`, `affected_element_ids`, `affected_profile_ids`, `affected_policy_ids`, `downstream_impact`, `state`, and `decision_id`. States are `open`, `resolved_by_erratum`, or `resolved_by_approved_decision`. Open records have no selected interpretation or decision; the latter state links to an accepted decision.
 
 ## Decision
 
-A decision record has a stable ID, affected source/requirement/discrepancy IDs, an approved interpretation or deviation, approver evidence, date, and consequence. Unapproved candidates are not decision records and cannot authorize a SHOULD, SHOULD NOT, or RECOMMENDED deviation or source interpretation.
+A decision record has `decision_id`, `source_refs`, `requirement_ids`, `discrepancy_ids`, `interpretation`, `approver`, `approval_evidence`, `approved_at`, `consequence`, and `status`. Only an accepted decision with approver, evidence, and ISO date is a decision record. Unapproved candidates cannot authorize a SHOULD, SHOULD NOT, or RECOMMENDED deviation or source interpretation.
 
 ## ProjectPolicy
 
-A project-policy record has a stable policy ID, rule summary, provenance (`AGENTS.md`, constitution, ADR, or approved product decision), affected element classes, and separate OASIS requirement links where the policy implements or constrains one. Project policy without an OASIS citation is not emitted as an OASIS requirement. Unknown tags, enum values, bitmask bits, vendor values, and extensions remain distinct from assigned/reserved/unused registry states. The interaction between preserving a received reserved tag and the OASIS prohibition on using it is an open policy/source discrepancy until formally resolved.
+A project-policy record has `policy_id`, `summary`, `provenance` (`AGENTS.md`, constitution, ADR, or approved product decision), `affected_element_kinds`, and separate `requirement_ids` where the policy implements or constrains an OASIS requirement. Project policy without an OASIS citation is not emitted as an OASIS requirement. Unknown tags, enum values, bitmask bits, vendor values, and extensions remain distinct from assigned/reserved/unused registry states. The interaction between preserving a received reserved tag and the OASIS prohibition on using it is an open policy/source discrepancy until formally resolved.
 
 ## Coverage assignment
 

@@ -83,7 +83,7 @@ class CoverageReportTests(unittest.TestCase):
             {
                 "profile_id": "KMIPKIT-PROFILE-BASELINE",
                 "name": "Baseline",
-                "applicability": "candidate",
+                "applicability": "client_1_0",
                 "claim_state": "evidence_incomplete",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-profiles", "section": "5.1"}],
                 "test_case_ids": [],
