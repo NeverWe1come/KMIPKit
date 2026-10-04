@@ -968,6 +968,28 @@ class CatalogValidationTests(unittest.TestCase):
             section = member["source_refs"][0]["section"]
             self.assertEqual(member["parent_element_ids"], [structure_ids[section]])
 
+    def test_options_and_result_values_have_explicit_inventory_records(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        elements = catalog["elements"]
+        expected = {
+            ("option", "Asynchronous Indicator", ("9.2", "11.3")),
+            ("option", "Batch Error Continuation Option", ("9.6", "11.5")),
+            ("option", "Batch Order Option", ("9.8",)),
+            ("result", "Cancellation Result", ("11.7",)),
+            ("result", "Result Message", ("9.17",)),
+            ("result", "Result Reason", ("9.18", "11.46")),
+            ("result", "Result Status", ("9.19", "11.47")),
+        }
+        actual = {
+            (
+                row["kind"], row["name"],
+                tuple(reference["section"] for reference in row["source_refs"]),
+            )
+            for row in elements
+            if row.get("kind") in {"option", "result"}
+        }
+        self.assertEqual(actual, expected)
+
     def test_accepts_exact_pinned_source_manifest_and_empty_record_collections(self) -> None:
         result = validate(minimal_catalog())
         self.assertEqual(result["source_count"], 4)
