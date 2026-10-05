@@ -811,6 +811,91 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
         self.assertRegex(contents, r"(?i)Get-FileHash|SHA256")
         self.assertRegex(contents, r"(?i)(?:Cargo\.lock|fuzz/Cargo\.lock).{0,200}(?:compare|unchanged|hash)")
 
+    def test_runner_requests_structured_diagnostics_and_formats_failures_safely(self) -> None:
+        contents = self.require_runner()
+        for required in ("'--format', 'json'", "'--color', 'never'", "-CargoDenyDiagnostics", "Format-CargoDenyFailure"):
+            with self.subTest(required=required):
+                self.assertIn(required, contents)
+
+
+class CargoDenyDiagnosticTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        if POLICY is None:
+            raise AssertionError(f"dependency policy module is unavailable: {POLICY_LOAD_ERROR}")
+
+    def test_failure_report_retains_allowlisted_finding_fields_and_redacts_secrets(self) -> None:
+        formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
+        self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
+        raw_output = "\n".join(
+            (
+                '{"type":"diagnostic","fields":{"severity":"error","code":"license-not-allowed",'
+                '"message":"license sentinel-message-secret","labels":[{"span":"GPL-3.0-only"}],'
+                '"graphs":[{"Krate":{"name":"bad-license","version":"2.3.4","kind":null},'
+                '"repeat":false,"parents":[]}]}}',
+                '{"type":"diagnostic","fields":{"severity":"error","code":"vulnerability",'
+                '"message":"advisory sentinel-message-token","advisory":{"id":"RUSTSEC-2026-0001"},'
+                '"graphs":[{"Krate":{"name":"unsafe-crate","version":"1.2.3","kind":null},'
+                '"repeat":false,"parents":[]}]}}',
+            )
+        )
+        secret_source = (
+            "registry+https://sentinel-user:sentinel-password@packages.example.invalid/index"
+            "?token=sentinel-token&safe=sentinel-query-value"
+        )
+        metadata = {
+            "root": {"packages": [{"name": "bad-license", "version": "2.3.4", "source": secret_source}]},
+            "fuzz": {"packages": [{"name": "unsafe-crate", "version": "1.2.3", "source": None}]},
+        }
+
+        report = formatter(raw_output, metadata)
+
+        for expected in (
+            "bad-license@2.3.4",
+            "rule=license-not-allowed",
+            "license=GPL-3.0-only",
+            "unsafe-crate@1.2.3",
+            "rule=vulnerability",
+            "advisory=RUSTSEC-2026-0001",
+            "source=registry+https://packages.example.invalid/<redacted>",
+        ):
+            with self.subTest(expected=expected):
+                self.assertIn(expected, report)
+        for secret in (
+            "sentinel-user",
+            "sentinel-password",
+            "sentinel-token",
+            "sentinel-query-value",
+            "sentinel-message-secret",
+            "sentinel-message-token",
+        ):
+            with self.subTest(secret=secret):
+                self.assertNotIn(secret, report)
+
+    def test_malformed_or_unrecognized_diagnostics_never_echo_raw_output(self) -> None:
+        formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
+        self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
+        raw_output = '{"unexpected":"sentinel-secret-material"}'
+
+        report = formatter(raw_output, {"root": {"packages": []}, "fuzz": {"packages": []}})
+
+        self.assertIn("diagnostics unavailable", report)
+        self.assertNotIn("sentinel-secret-material", report)
+
+    def test_untrusted_json_field_shapes_fail_safely(self) -> None:
+        formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
+        self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
+        raw_output = (
+            '{"type":"diagnostic","fields":{"severity":[],"code":{},"message":"sentinel-secret",'
+            '"graphs":[{"Krate":{"name":"safe-crate","version":"1.0.0"}}]}}'
+        )
+
+        report = formatter(raw_output, {"root": {"packages": []}, "fuzz": {"packages": []}})
+
+        self.assertIn("safe-crate@1.0.0", report)
+        self.assertIn("rule=policy-check", report)
+        self.assertNotIn("sentinel-secret", report)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
