@@ -1292,4 +1292,301 @@ mod tests {
             "initialized bytes must be zeroized before deallocation"
         );
     }
+
+    const GENERATED_ROUNDTRIP_CASES: usize = 88;
+    const GENERATED_MAX_STRUCTURE_DEPTH: usize = 4;
+    const GENERATED_MAX_CHILDREN: usize = 4;
+    const GENERATED_MAX_PAYLOAD_BYTES: usize = 12;
+
+    struct DeterministicRng {
+        state: u64,
+    }
+
+    impl DeterministicRng {
+        const fn new(seed: u64) -> Self {
+            Self { state: seed }
+        }
+
+        fn next_u64(&mut self) -> u64 {
+            let mut value = self.state;
+            value ^= value << 13;
+            value ^= value >> 7;
+            value ^= value << 17;
+            self.state = value;
+            value
+        }
+
+        fn bounded(&mut self, exclusive_upper_bound: usize) -> usize {
+            assert!(
+                exclusive_upper_bound > 0,
+                "generator bounds must be nonzero"
+            );
+            let bound =
+                u64::try_from(exclusive_upper_bound).expect("small generator bound fits u64");
+            usize::try_from(self.next_u64() % bound).expect("bounded generator result fits usize")
+        }
+
+        fn next_i32(&mut self) -> i32 {
+            let bytes = self.next_u64().to_be_bytes();
+            i32::from_be_bytes([bytes[4], bytes[5], bytes[6], bytes[7]])
+        }
+
+        fn next_i64(&mut self) -> i64 {
+            i64::from_be_bytes(self.next_u64().to_be_bytes())
+        }
+
+        fn next_u32(&mut self) -> u32 {
+            let bytes = self.next_u64().to_be_bytes();
+            u32::from_be_bytes([bytes[4], bytes[5], bytes[6], bytes[7]])
+        }
+
+        fn next_byte(&mut self) -> u8 {
+            self.next_u64().to_be_bytes()[7]
+        }
+    }
+
+    fn generated_bytes(rng: &mut DeterministicRng, length: usize) -> Vec<u8> {
+        (0..length).map(|_| rng.next_byte()).collect()
+    }
+
+    fn generated_item(
+        rng: &mut DeterministicRng,
+        structure_depth: usize,
+        type_index: usize,
+    ) -> Item {
+        let value = match type_index {
+            0 => {
+                let mut structure = Structure::new();
+                let child_count = 2 + rng.bounded(GENERATED_MAX_CHILDREN - 1);
+                let first_leaf_type = rng.bounded(10);
+                for child_index in 0..child_count {
+                    let child_type = if child_index == 0
+                        && structure_depth + 1 < GENERATED_MAX_STRUCTURE_DEPTH
+                    {
+                        0
+                    } else {
+                        1 + ((first_leaf_type + child_index) % 10)
+                    };
+                    structure
+                        .try_push(generated_item(rng, structure_depth + 1, child_type))
+                        .expect("bounded generated Structure fits the model depth");
+                }
+                Value::structure(structure)
+            }
+            1 => Value::integer(rng.next_i32()),
+            2 => Value::long_integer(rng.next_i64()),
+            3 => {
+                // OASIS KMIP Specification v2.1 §10.1.2, KMIPKIT-0005-NR-003;
+                // KMIPKIT-0005-FR-002 excludes empty project test values.
+                let length = 1 + rng.bounded(GENERATED_MAX_PAYLOAD_BYTES);
+                Value::big_integer(generated_bytes(rng, length))
+            }
+            4 => Value::enumeration(rng.next_u32()),
+            5 => Value::boolean(rng.bounded(2) == 1),
+            6 => {
+                const TEXT_ALPHABET: [char; 5] = ['a', 'Z', 'é', 'Ω', '中'];
+                let max_bytes = rng.bounded(GENERATED_MAX_PAYLOAD_BYTES + 1);
+                let mut text = String::new();
+                while text.len() < max_bytes {
+                    let character = TEXT_ALPHABET[rng.bounded(TEXT_ALPHABET.len())];
+                    if text.len() + character.len_utf8() > max_bytes {
+                        break;
+                    }
+                    text.push(character);
+                }
+                Value::text_string(text)
+            }
+            7 => {
+                let length = rng.bounded(GENERATED_MAX_PAYLOAD_BYTES + 1);
+                Value::byte_string(generated_bytes(rng, length))
+            }
+            8 => Value::date_time(rng.next_i64()),
+            9 => Value::interval(rng.next_u32()),
+            10 => Value::date_time_extended(rng.next_i64()),
+            _ => panic!("generated Item Type index is outside the eleven supported types"),
+        };
+        item(value)
+    }
+
+    fn canonicalized_item(item: &Item) -> Item {
+        let value = item.with_value(|view| match view {
+            kmipkit_ttlv::ValueView::Structure(structure_view) => {
+                let mut structure = Structure::new();
+                for child in structure_view.children() {
+                    structure
+                        .try_push(canonicalized_item(child))
+                        .expect("bounded expected Structure fits the model depth");
+                }
+                Value::structure(structure)
+            }
+            kmipkit_ttlv::ValueView::Integer(value) => Value::integer(*value),
+            kmipkit_ttlv::ValueView::LongInteger(value) => Value::long_integer(*value),
+            kmipkit_ttlv::ValueView::BigInteger(value) => {
+                Value::big_integer(canonical_big_integer_octets(value))
+            }
+            kmipkit_ttlv::ValueView::Enumeration(value) => Value::enumeration(*value),
+            kmipkit_ttlv::ValueView::Boolean(value) => Value::boolean(*value),
+            kmipkit_ttlv::ValueView::TextString(value) => Value::text_string(value.to_owned()),
+            kmipkit_ttlv::ValueView::ByteString(value) => Value::byte_string(value.to_vec()),
+            kmipkit_ttlv::ValueView::DateTime(value) => Value::date_time(*value),
+            kmipkit_ttlv::ValueView::Interval(value) => Value::interval(*value),
+            kmipkit_ttlv::ValueView::DateTimeExtended(value) => Value::date_time_extended(*value),
+            _ => panic!("generic model exposed an unsupported generated value"),
+        });
+        item_with_tag(item.tag(), value)
+    }
+
+    fn canonical_big_integer_octets(value: &[u8]) -> Vec<u8> {
+        assert!(
+            !value.is_empty(),
+            "generated Big Integer values are nonempty"
+        );
+        let padding_length = (8 - (value.len() % 8)) % 8;
+        if padding_length == 0 {
+            return value.to_vec();
+        }
+
+        let sign_extension = if value[0] & 0x80 == 0 { 0x00 } else { 0xff };
+        let mut canonical = Vec::with_capacity(value.len() + padding_length);
+        canonical.resize(padding_length, sign_extension);
+        canonical.extend_from_slice(value);
+        canonical
+    }
+
+    fn assert_items_equal(actual: &Item, expected: &Item) {
+        assert!(
+            actual.tag() == expected.tag(),
+            "decoder changed an Item Tag"
+        );
+        assert!(
+            actual.item_type() == expected.item_type(),
+            "decoder changed an Item Type"
+        );
+        actual.with_value(|actual_view| {
+            expected.with_value(|expected_view| match (actual_view, expected_view) {
+                (
+                    kmipkit_ttlv::ValueView::Structure(actual),
+                    kmipkit_ttlv::ValueView::Structure(expected),
+                ) => {
+                    let actual_children = actual.children();
+                    let expected_children = expected.children();
+                    assert_eq!(
+                        actual_children.len(),
+                        expected_children.len(),
+                        "decoder changed the Structure child count"
+                    );
+                    for (index, (actual_child, expected_child)) in
+                        actual_children.iter().zip(expected_children).enumerate()
+                    {
+                        assert!(
+                            actual_child.tag() == expected_child.tag(),
+                            "decoder changed the Tag at child index {index}"
+                        );
+                        assert_items_equal(actual_child, expected_child);
+                    }
+                }
+                (
+                    kmipkit_ttlv::ValueView::Integer(actual),
+                    kmipkit_ttlv::ValueView::Integer(expected),
+                ) => assert!(actual == expected, "Integer value changed"),
+                (
+                    kmipkit_ttlv::ValueView::LongInteger(actual),
+                    kmipkit_ttlv::ValueView::LongInteger(expected),
+                ) => assert!(actual == expected, "Long Integer value changed"),
+                (
+                    kmipkit_ttlv::ValueView::BigInteger(actual),
+                    kmipkit_ttlv::ValueView::BigInteger(expected),
+                ) => assert!(actual == expected, "Big Integer octets changed"),
+                (
+                    kmipkit_ttlv::ValueView::Enumeration(actual),
+                    kmipkit_ttlv::ValueView::Enumeration(expected),
+                ) => assert!(actual == expected, "Enumeration value changed"),
+                (
+                    kmipkit_ttlv::ValueView::Boolean(actual),
+                    kmipkit_ttlv::ValueView::Boolean(expected),
+                ) => assert!(actual == expected, "Boolean value changed"),
+                (
+                    kmipkit_ttlv::ValueView::TextString(actual),
+                    kmipkit_ttlv::ValueView::TextString(expected),
+                ) => assert!(actual == expected, "Text String value changed"),
+                (
+                    kmipkit_ttlv::ValueView::ByteString(actual),
+                    kmipkit_ttlv::ValueView::ByteString(expected),
+                ) => assert!(actual == expected, "Byte String octets changed"),
+                (
+                    kmipkit_ttlv::ValueView::DateTime(actual),
+                    kmipkit_ttlv::ValueView::DateTime(expected),
+                ) => assert!(actual == expected, "Date Time value changed"),
+                (
+                    kmipkit_ttlv::ValueView::Interval(actual),
+                    kmipkit_ttlv::ValueView::Interval(expected),
+                ) => assert!(actual == expected, "Interval value changed"),
+                (
+                    kmipkit_ttlv::ValueView::DateTimeExtended(actual),
+                    kmipkit_ttlv::ValueView::DateTimeExtended(expected),
+                ) => assert!(actual == expected, "Date Time Extended value changed"),
+                _ => panic!("decoder changed a generated Item Type"),
+            });
+        });
+    }
+
+    #[test]
+    fn deterministic_generated_models_round_trip_through_private_writer_and_public_decoder() {
+        // OASIS KMIP Specification v2.1 §§10.1.1–10.1.5 and §11.23;
+        // KMIPKIT-0005-NR-001, KMIPKIT-0005-NR-002, KMIPKIT-0005-NR-003,
+        // KMIPKIT-0005-NR-004, and KMIPKIT-0005-NR-005.
+        // Stable records: KMIPKIT-REQ-SPEC-10.1.2-002-001,
+        // KMIPKIT-REQ-SPEC-10.1.2-002-002, KMIPKIT-REQ-SPEC-10.1.5-001-001,
+        // and KMIPKIT-REQ-SPEC-10.1.5-001-002.
+        // Structure order is KMIPKit's generic-model policy under
+        // KMIPKIT-0005-FR-003; this does not assert schema-defined order.
+        // Eight fixed-seed roots cover each of the eleven represented types.
+        // The local xorshift generator and all tree/payload limits are fixed.
+        let mut rng = DeterministicRng::new(0x6d69_706b_6974_0005);
+
+        for sample in 0..GENERATED_ROUNDTRIP_CASES {
+            let root_type = sample % 11;
+            let source = generated_item(&mut rng, 0, root_type);
+            let expected = canonicalized_item(&source);
+            let encoded = encode_item(&source).expect("bounded generated model is encodable");
+            let decoded = kmipkit_ttlv::codec::decode(&encoded)
+                .expect("private writer output is accepted by the public decoder");
+
+            assert_items_equal(&decoded, &expected);
+        }
+    }
+
+    #[test]
+    fn big_integer_round_trips_sign_extension_and_aligned_octets_exactly() {
+        // OASIS KMIP Specification v2.1 §§10.1.2 and 10.1.3;
+        // KMIPKIT-0005-NR-003 and KMIPKIT-0005-NR-004;
+        // KMIPKIT-REQ-SPEC-10.1.2-002-001 and KMIPKIT-REQ-SPEC-10.1.2-002-002
+        // require minimum leading two's-complement sign extension to an eight-byte
+        // Item Value. Aligned octets remain exact. Empty-value rejection is KMIPKit's
+        // project rule under KMIPKIT-0005-FR-002, not an OASIS minimum-length rule.
+        let cases = [
+            (
+                vec![0x7f, 0x00],
+                vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0x00],
+            ),
+            (
+                vec![0x80, 0x01],
+                vec![0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x80, 0x01],
+            ),
+            (
+                vec![0x80, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06],
+                vec![0x80, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06],
+            ),
+        ];
+
+        for (input_octets, expected_octets) in cases {
+            let source = item(Value::big_integer(input_octets));
+            let expected = item(Value::big_integer(expected_octets));
+            let encoded = encode_item(&source).expect("nonempty Big Integer is encodable");
+            let decoded = kmipkit_ttlv::codec::decode(&encoded)
+                .expect("Big Integer writer output is accepted by the public decoder");
+
+            assert_items_equal(&decoded, &expected);
+        }
+    }
 }
