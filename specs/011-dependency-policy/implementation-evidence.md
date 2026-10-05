@@ -460,3 +460,29 @@ provided in its environment and skips privilege-dependent Windows symlink
 cases. The dedicated policy runner supplies the verified binary and passed
 all 17 cargo-deny fixtures. T017 remains open for required Linux/macOS and
 aggregate CI results and the remaining repository gates.
+
+## Pull request workflow trigger investigation: 2026-10-06
+
+PR #37 is open as a draft against `release/1.0.0`, and GitHub reports its
+merge state as clean. The active `CI` workflow includes `release/**` in its
+`pull_request` base-branch filter, Actions is enabled for the repository, and
+the commits in this branch contain no recognized CI-skip annotation. The
+GitHub Actions API reports no run for a `pull_request` event and no check runs
+for the PR head. The only run for head `7f4db22` is run `37381749747`, a `push`
+event created before PR #37 existed; it failed with zero jobs because the
+workflow has no `push` trigger. PRs #35 and #36 targeting this same release
+branch had successful pull-request runs.
+
+GitHub's documented default `pull_request` activity types include `opened`,
+`synchronize`, and `reopened`; GitHub also documents merge conflicts and skip
+annotations as conditions that suppress these runs. The observed PR state,
+workflow filter, and commit messages do not match those exclusions. No
+repository-side trigger mismatch has been identified. The available API does
+not expose the delivery record for the missing webhook event, so its cause
+remains unverified and cannot safely be attributed to a repository setting.
+After this evidence update is pushed, inspect the resulting `synchronize`
+event once. T017 stays open unless the required Linux, Windows, macOS, and
+aggregate checks complete successfully.
+
+References: [GitHub Actions pull_request event](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)
+and [workflow trigger troubleshooting](https://docs.github.com/en/actions/how-tos/troubleshoot-workflows#triggering-event-conditions).
