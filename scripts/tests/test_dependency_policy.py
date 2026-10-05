@@ -409,6 +409,55 @@ class DependencyExceptionTests(unittest.TestCase):
         }
         policy.validate_exception_config(register, config)
 
+    def test_exception_config_mismatch_reports_rule_and_exception_id_without_secrets(self) -> None:
+        policy = self.require_policy()
+        source = "git+https://github.com/example/dependency?rev=" + "b" * 40 + "#" + "b" * 40
+        entries_and_configs = (
+            (
+                "advisory",
+                exact_exception("advisory", advisory_id="RUSTSEC-2025-0001"),
+                {"advisories": {"ignore": []}},
+            ),
+            (
+                "license",
+                exact_exception(
+                    "license",
+                    license_evidence={
+                        "reviewed_by": "Security reviewer",
+                        "reference": "review-42",
+                        "disposition": "clarify",
+                        "expression": "MIT",
+                        "license_files": [{"path": "LICENSE", "hash": "0xbd0eed23"}],
+                    },
+                ),
+                {"licenses": {"clarify": []}},
+            ),
+            (
+                "source",
+                exact_exception("source", package_name="source-crate", source=source),
+                {"sources": {"allow-git": ["https://token:secret-value@example.invalid/repo"]}},
+            ),
+            (
+                "duplicate",
+                exact_exception("duplicate", package_name="duplicate-crate"),
+                {"bans": {"skip": []}},
+            ),
+        )
+
+        for index, (rule, entry, config) in enumerate(entries_and_configs, start=1):
+            entry["id"] = f"KMIPKIT-0011-EX-{index:03d}"
+            with self.subTest(rule=rule):
+                with self.assertRaises(self.policy_error()) as raised:
+                    policy.validate_exception_config(
+                        {"schema_version": 1, "exceptions": [entry]},
+                        config,
+                        today=date(2026, 1, 15),
+                    )
+                diagnostic = str(raised.exception)
+                self.assertIn(rule, diagnostic.lower())
+                self.assertIn(entry["id"], diagnostic)
+                self.assertNotIn("secret-value", diagnostic)
+
     def test_exact_advisory_license_source_and_duplicate_exceptions_cover_only_their_findings(self) -> None:
         cases = (
             (

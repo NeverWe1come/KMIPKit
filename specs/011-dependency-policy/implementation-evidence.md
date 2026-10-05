@@ -94,3 +94,14 @@ The runner confirmed both lockfiles remained unchanged:
 |---|---|
 | `Cargo.lock` | `08cbbb0bbfb0db6e567eec2db83d2b63788cc6ffada8531be0d50033a8ff0231` |
 | `fuzz/Cargo.lock` | `ea34d89d36fa78841f0b1c63064726f09a353f62e68725cc7cdc99d32c6c7778` |
+
+## Red evidence: T011 diagnostic identifiers
+
+Added `DependencyExceptionTests.test_exception_config_mismatch_reports_rule_and_exception_id_without_secrets` before changing validator behavior. It covers missing advisory, license clarification, Git source, and duplicate waiver surfaces, asserting the rule name, stable exception ID, and absence of a secret-bearing URL value from diagnostics.
+
+```text
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyExceptionTests.test_exception_config_mismatch_reports_rule_and_exception_id_without_secrets
+Ran 1 test ... FAILED (failures=4)
+```
+
+All four subtests failed behaviorally because the corresponding diagnostics omitted the exception ID; the test had zero errors. The source mismatch diagnostic did not echo the configured credential sentinel.
