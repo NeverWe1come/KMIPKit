@@ -81,3 +81,28 @@ audit trail.
   public safe `Structure::view()` can expose this validation capability
   without cloning payloads or adding unsafe code. The TTLV crate forbids
   unsafe code.
+
+## In-scope normative clarification: Vendor Identification
+
+During implementation, a QA review identified that the validator accepted an
+empty Vendor Identification because the approved FR-021 stated the allowed
+character set but not an explicit minimum length. The pinned OASIS KMIP 2.1
+§9.13 says Vendor Identification SHALL uniquely identify the vendor. An empty
+string cannot satisfy that requirement. The feature remains limited to
+structural validation: it rejects an empty string, but does not assert global
+uniqueness or recognize vendors.
+
+FR-021, SC-002, `data-model.md`, and `research.md` now make that in-scope
+condition explicit. Independent read-only review on 2026-10-05 concluded that
+the condition is a defensible inference from §9.13, remains within the existing
+Message Extension validation scope, and requires no new normative identifier.
+The review distinguished this semantic inference from an explicit Table 418
+minimum-length field.
+
+The maintainer's direct instruction to proceed autonomously and avoid further
+approval requests delegates authorization for this clarification. This record
+does not claim that the maintainer personally reviewed the amended wording or
+that the independent reviewer performed a human security audit. The amended
+specification reviewed on 2026-10-05 has Git blob
+`fd49c1023c9ed74d6a97b26d761b904b7b9819be` and SHA-256
+`64E01508340BDD722EE5B7922CCCC257F69386BB1DC26DB3FD4F40655A651099`.

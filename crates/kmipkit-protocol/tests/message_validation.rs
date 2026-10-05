@@ -4,7 +4,7 @@
 //! Traceability: KMIPKIT-0006-FR-004, FR-008, FR-010, FR-011, FR-014, FR-020,
 //! FR-021; SC-002, SC-003, SC-004, SC-006.
 
-use kmipkit_protocol::{MessageValidationErrorKind, RequestMessage, ResponseMessage};
+use kmipkit_protocol::{MessageValidationErrorKind, RequestMessage, ResponseMessage, ResultStatus};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 use quickcheck::{Arbitrary, Gen, QuickCheck};
 
@@ -273,6 +273,7 @@ fn malformed_request_message_extension_is_rejected() {
         item(CRITICALITY_INDICATOR, Value::boolean(false)),
     ]);
     let invalid_vendor_characters = message_extension("bad vendor", false);
+    let empty_vendor_identification = message_extension("", false);
     let wrong_vendor_type = structure([
         item(VENDOR_IDENTIFICATION, Value::enumeration(1)),
         item(CRITICALITY_INDICATOR, Value::boolean(false)),
@@ -283,6 +284,7 @@ fn malformed_request_message_extension_is_rejected() {
         missing_vendor_extension,
         wrong_order,
         invalid_vendor_characters,
+        empty_vendor_identification,
         wrong_vendor_type,
     ] {
         let tree = request_with_extensions([extension]);
@@ -508,7 +510,7 @@ fn one_response_batch_can_mix_completed_and_pending_results() {
             .expect("completed and Pending items may coexist in a response batch");
     let statuses: Vec<_> = response
         .batch_items()
-        .filter_map(|batch_item| batch_item.result_status().map(|status| status.raw()))
+        .filter_map(|batch_item| batch_item.result_status().map(ResultStatus::raw))
         .collect();
 
     assert_eq!(statuses, [0, 2]);

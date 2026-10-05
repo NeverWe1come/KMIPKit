@@ -61,6 +61,13 @@
 
 ## Verification notes
 
+### Vendor Identification must be non-empty
+
+- **Decision**: Reject an empty Vendor Identification in a Message Extension. OASIS KMIP 2.1 §9.13 requires the Text String to uniquely identify the vendor; an empty string cannot satisfy that requirement. The implementation does not assert that a non-empty value is globally unique; that remains registry/vendor policy.
+- **Rationale**: FR-021 already validates the identifier's characters and Table 418 structure. This clarification closes the only shape that passes the allowed-character check but cannot identify any vendor.
+- **Source**: Pinned OASIS KMIP Specification v2.1 source, `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`, §9.13 and Table 418. The normative copy was not modified.
+- **Alternative considered**: Accept empty strings because the table has no explicit minimum length. Rejected because §9.13's unique-identification MUST makes a zero-length value nonconforming.
+
 - Derive table-driven model and conversion tests from the pinned Specification field tables. Do not describe them as official OASIS Test Cases: the catalog has no linked official case IDs for these message requirements and records all fixture artifacts unavailable.
 - Record each normative `KMIPKIT-REQ-*` and applicable source clause in `specification/compliance/requirements/KMIPKIT-0006.csv`, including implementation/test paths and explicit deferrals.
 - Test response ID retention and message-field order here. Test matching a response to an outstanding request in `KMIPKIT-0007-client-execution`; test Poll/Cancel use of Asynchronous Correlation Value in `KMIPKIT-0009-asynchronous-operations`.
