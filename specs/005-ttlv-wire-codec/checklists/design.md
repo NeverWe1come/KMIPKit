@@ -17,11 +17,13 @@
 ## Parser and security design
 
 - [x] Input and declared lengths are checked before allocation based on them.
+- [ ] Resolve `KMIPKIT-0005-OD-001`: approve the decoder allocation-failure guarantee and align plan/contract before T006/T010 Green work.
 - [x] Default message/depth/element limits and counting semantics are explicit.
 - [x] Errors contain no raw body or value payload.
 - [x] Proposed private encoder output uses an internal borrow-only owner that zeroizes the initialized encoded byte range before deallocation/owner drop; spare or otherwise uninitialized `Vec` capacity is outside the guarantee unless it is explicitly initialized and its cleanup is verified; no encoded owner is public.
 - [x] The draft identifies the secret-bearing protocol-wire encoding as a conditional proposal and preserves the current prohibition until approval.
 - [x] No public encoder or encoded-byte owner is proposed; private encoded output cannot be cloned, formatted, generally serialized, mutated, or extracted as an ordinary byte vector.
+- [ ] FR-009 has a test-only observer at the shared payload-copy boundary proving rejected preflight performs zero payload-copy operations; FR-012 has compile-time negative trait assertions for the private owner.
 - [x] Unsupported Type behavior, exact-one-item behavior, and trailing data are explicit.
 - [x] Padding octet acceptance follows the source; canonical encoder fill is labeled as project policy.
 - [ ] Proposed ADR-0011 has been reviewed/accepted, resolving `KMIPKIT-DISC-037`.
@@ -33,7 +35,7 @@
 
 - [x] Public generic TTLV values and bounded decoding stay in `kmipkit-ttlv`; KMIPKIT-0005's byte-producing writer is private to `kmipkit-client` and has no production callsite. The future client feature adds the execute-owned permit and closed typed-request path.
 - [x] Public `CodecLimits` is proposed as immutable per-call options with read-only value getters, no setters/builders, and no global mutable state; the private client writer receives the same borrowed instance per operation.
-- [x] No new external dependency or unsafe code is required by the design.
+- [ ] No production runtime dependency or unsafe code is proposed; pinned `static_assertions` and `serde` are proposed as client-only test dependencies and require the normal dependency/license review.
 - [x] Implementation branch is updated from the merged 004 release and the proposed contract is checked against its actual public APIs.
 
 ## Implementation evidence

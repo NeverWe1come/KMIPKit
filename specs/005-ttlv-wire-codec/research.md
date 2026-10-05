@@ -35,7 +35,7 @@ An independent source audit verified the pinned copy against its SHA-256 digest 
 
 ### Allocation strategy
 
-**Selected**: Validate the complete input byte bound before parsing, validate every header length and checked addition before allocating payload storage, then copy values into the generic model with fallible reserve operations. Enforce per-call item/depth limits during traversal.
+**Proposed, pending KMIPKIT-0005-OD-001**: Validate the complete input byte bound before parsing, validate every header length and checked addition before allocating payload storage, and use fallible reservation for decoder-owned scratch and byte buffers before copying peer payloads. The accepted 004 model still uses `Box::new` and `Vec::push` during value/tree construction, so this codec cannot promise recovery from every allocator failure without a reviewed model-construction change. Before decoder Green work, approve either this bounded-preflight/fallible-buffer guarantee with possible process abort inside existing constructors, or require a separate reviewed and merged model-construction change. KMIPKIT-0005 does not implement model constructors. Enforce per-call item/depth limits under either option.
 
 **Alternative**: Trust declared lengths and allocate a complete child/value buffer up front. Rejected because network-supplied lengths are untrusted and may request excessive memory.
 

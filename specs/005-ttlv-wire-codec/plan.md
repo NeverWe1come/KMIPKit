@@ -87,8 +87,9 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 - PR #14 is merged; verify the actual public model API and accepted ADR-0010 on the updated release base.
 - Record `KMIPKIT-REQ-SPEC-10.1.2-001` as follow-on typed-protocol scope: the generic codec preserves supplied child order but cannot validate operation schemas. Keep the 1.0 traceability gate open until every applicable client 1.0 Structure has approved typed-spec ownership, implementation, and executable order-verification references.
 - Obtain review/acceptance of proposed ADR-0011 resolving `KMIPKIT-DISC-037`; update the catalog decision reference before coding.
+- Resolve `KMIPKIT-0005-OD-001` before decoder Green work: the accepted 004 model uses infallible `Box::new`/`Vec::push`, so the approved plan must explicitly choose between bounded preflight plus fallible decoder-owned buffers (with possible process abort inside current model constructors) and a separate reviewed and merged model-construction change. KMIPKIT-0005 does not implement model constructors; T006/T010 Green work must not begin while this choice is open.
 - Require three human approvals before KMIPKIT-0005 tasks rely on FR-013: accept proposed ADR-0012, approve this feature, and approve the enforceable boundary design. These approvals do not implement a client request path or satisfy the transport gate. The first client feature/spec defines the caller-facing API, permit type/private constructor, execute-only mint/writer callsite, exact-one audit, and integration test for typed input, permit enforcement, owner lifetime through partial writes and transport success/error return, post-return drop/zeroization, §8 failure-delivery-state reporting, and no automatic retry. KMIPKIT-0005 creates no production writer callsite; the first client feature PR must include the sole production callsite and its owner-through-transport integration test together. CI must pass that test against the candidate callsite before merge, enablement, or release; until then, the release branch must have neither the callsite nor a secret-bearing send. If review rejects the boundary or it cannot be enforced, do not approve or implement a secret-bearing request path.
-- Do not add or use client production dependencies on `kmipkit-ttlv` or `zeroize` before T001 passes. T002 may add these as direct dev-dependencies only for the Red test harness; T003 promotes them to normal dependencies only after the implementation gates are satisfied.
+- Do not add or use client production dependencies on `kmipkit-ttlv` or `zeroize` before T001 passes. T002 may add these as direct dev-dependencies only for the Red test harness and pinned `static_assertions`/`serde` dev-dependencies for owner trait checks; T003 promotes only `kmipkit-ttlv` and `zeroize` to normal dependencies after the implementation gates are satisfied.
 
 ### Phase 1 — Contracts and data invariants
 
@@ -99,7 +100,7 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 
 ### Phase 2 — Encoder (strict TDD)
 
-- Write failing exact byte vectors for all eleven types and nested Structures, plus synthetic U32 maximum/one-over output-size planner boundaries without multi-gigabyte allocation.
+- T002 writes failing exact byte vectors for all eleven types and nested Structures, private encoder byte/depth/count preflight boundaries, a test-observed no-copy failure case, and synthetic U32 maximum/one-over output-size planner boundaries; all use bounded fixtures rather than giant trees or allocations.
 - After the three approvals, implement and unit-test the private writer and zeroizing owner, with default/configured per-call byte/depth/count and U32 preflight, bounded length planning, complete output reservation, canonical encoding, and no fallible exits after payload copying begins. Do not add a production callsite, `Client::execute`, or permit in KMIPKIT-0005. The first client feature/spec owns the callsite and permit. Its candidate PR must include the sole production callsite and its owner-through-transport integration test together; CI must pass that test against the candidate callsite before merge, enablement, or release. Until then, the release branch must have neither the callsite nor a secret-bearing send.
 - Refactor the writer for one focused responsibility, document invariants, and verify checked arithmetic and error redaction.
 
@@ -107,11 +108,11 @@ specification/catalog/kmip-2.1.json # requirement-to-spec/code/test references
 
 - Write failing tests for valid OASIS vectors and all malformed boundaries before implementation.
 - Parse one complete item with checked offsets, parent bounds, supported type lengths, UTF-8/Boolean checks, and resolved Tag policy.
-- Refactor bounded Structure traversal and fallible allocation; reject trailing bytes and never expose raw input. Property tests compare against a canonicalized expected model: empty Big Integer values are excluded, unaligned Big Integer octets are minimally sign-extended to an eight-byte multiple, and already aligned Big Integer octets remain exact.
+- Refactor bounded Structure traversal and allocation behavior as approved under `KMIPKIT-0005-OD-001`; reject trailing bytes and never expose raw input. Property tests compare against a canonicalized expected model: empty Big Integer values are excluded, unaligned Big Integer octets are minimally sign-extended to an eight-byte multiple, and already aligned Big Integer octets remain exact.
 
 ### Phase 4 — Limits and cross-cutting validation
 
-- Add getter-value tests for default and constructed limits, then exact-boundary and one-over tests for decoder and private encoder byte, depth, and element limits at defaults and configured values; verify the private writer sees the same per-operation borrowed instance. Test the private encoder's U32 ceiling with synthetic size-planner inputs and no giant allocation.
+- T002 establishes private encoder Red cases before T003. After T010, add getter-value tests for default and constructed limits, exact-boundary and one-over decoder tests, and adapter tests verifying the private writer sees the same per-operation borrowed `CodecLimits` instance. Keep synthetic encoder boundary tests in the T002/T003/T011 sequence; do not create them after their implementation.
 - Add bounded property tests, normative catalog traceability, documentation, security review, platform CI, and coverage records.
 - Run repository-required fmt, Clippy, workspace test, and coverage automation after the tests exist and the implementation is complete.
 
