@@ -1067,8 +1067,28 @@ mod tests {
         assert_eq!(byte_string_value(&integer), None);
         let enumeration = item(OPERATION, Value::enumeration(9));
         assert_eq!(enumeration_value(&enumeration), Some(9));
+        assert_eq!(integer_value(&enumeration), None);
         let bytes = item(OPERATION, Value::byte_string(vec![1, 2]));
         assert_eq!(byte_string_value(&bytes), Some(vec![1, 2]));
+    }
+
+    #[test]
+    fn private_field_helpers_return_categories_without_exposing_values() {
+        let Err(missing) = required_child(&[], OPERATION, 6) else {
+            panic!("required operation is missing");
+        };
+        assert_eq!(
+            missing.kind(),
+            MessageValidationErrorKind::MissingRequiredField
+        );
+        assert_eq!(missing.structure_index(), Some(6));
+        assert_eq!(missing.field_index(), None);
+
+        let not_a_structure = item(OPERATION, Value::integer(1));
+        assert_kind(
+            with_structure(&not_a_structure, 4, Some(2), |_| Ok(())),
+            MessageValidationErrorKind::WrongItemType,
+        );
     }
 
     #[test]
