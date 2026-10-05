@@ -1229,6 +1229,36 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         self.assertEqual(["KMIPKIT-0011-EX-001", "KMIPKIT-0011-EX-002"], matched)
         self.assertEqual({"1.0.0", "2.0.0"}, {item["version"] for item in findings})
 
+    def test_baseline_parser_accepts_unpaired_license_help_summary_counts(self) -> None:
+        parser = getattr(POLICY, "parse_cargo_deny_findings", None)
+        self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
+        raw = "\n".join(
+            (
+                json.dumps(
+                    {
+                        "type": "diagnostic",
+                        "fields": {"code": "license-not-encountered", "severity": "warning"},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "summary",
+                        "fields": {
+                            check: {
+                                "errors": 0,
+                                "warnings": int(check == "licenses"),
+                                "notes": 0,
+                                "helps": 40 if check == "licenses" else 0,
+                            }
+                            for check in ("advisories", "bans", "licenses", "sources")
+                        },
+                    }
+                ),
+            )
+        )
+
+        self.assertEqual([], parser(raw, {"root": {"packages": []}}, "root", 0))
+
     def test_baseline_parser_rejects_unknown_errors_and_incomplete_json(self) -> None:
         parser = getattr(POLICY, "parse_cargo_deny_findings", None)
         self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
@@ -1236,26 +1266,6 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
             parser('{"type":"diagnostic","fields":{"code":"mystery","severity":"error"}}', {}, "root", 1)
         with self.assertRaises(POLICY.PolicyError):
             parser("not-json", {}, "root", 0)
-
-        summary = {
-            "type": "summary",
-            "fields": {
-                check: {
-                    "errors": 0,
-                    "warnings": 0,
-                    "notes": 0,
-                    "helps": int(check == "licenses"),
-                }
-                for check in ("advisories", "bans", "licenses", "sources")
-            },
-        }
-        with self.assertRaises(POLICY.PolicyError):
-            parser(
-                json.dumps(summary),
-                {"root": {"packages": []}},
-                "root",
-                0,
-            )
 
     def test_cli_formats_piped_json_without_persisting_or_echoing_raw_diagnostics(self) -> None:
         raw_output = (
