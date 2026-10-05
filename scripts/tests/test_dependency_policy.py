@@ -1258,6 +1258,15 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         )
 
         self.assertEqual([], parser(raw, {"root": {"packages": []}}, "root", 0))
+        malformed_summary = json.loads(raw.splitlines()[-1])
+        malformed_summary["fields"]["licenses"]["helps"] = "40"
+        with self.assertRaises(POLICY.PolicyError):
+            parser(
+                "\n".join((raw.splitlines()[0], json.dumps(malformed_summary))),
+                {"root": {"packages": []}},
+                "root",
+                0,
+            )
 
     def test_baseline_parser_rejects_unknown_errors_and_incomplete_json(self) -> None:
         parser = getattr(POLICY, "parse_cargo_deny_findings", None)

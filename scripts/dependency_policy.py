@@ -257,7 +257,7 @@ def parse_cargo_deny_findings(
         raise PolicyError("cargo-deny baseline output is missing its completion summary")
 
     observed_counts = {
-        check: {"errors": 0, "warnings": 0, "notes": 0, "helps": 0}
+        check: {"errors": 0, "warnings": 0, "notes": 0}
         for check in ("advisories", "bans", "licenses", "sources")
     }
     findings: set[tuple[str, str, str, str | None, str | None]] = set()

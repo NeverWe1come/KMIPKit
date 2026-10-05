@@ -66,7 +66,6 @@ EXPECTED_REQUIREMENT_TESTS = {
     "SC-002": ";".join(
         (
             "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_uses_affected_crate_not_graph_parents",
-            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_accepts_unpaired_license_help_summary_counts",
             "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_rejects_unknown_errors_and_incomplete_json",
             "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_duplicate_baseline_finding_covers_each_top_level_version_exactly",
             "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_exact_yanked_exception_covers_only_its_package_version",
