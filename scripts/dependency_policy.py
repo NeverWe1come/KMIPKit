@@ -919,6 +919,9 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
     bans = config.get("bans", {})
     if not isinstance(bans, dict) or not isinstance(bans.get("skip", []), list):
         raise PolicyError("cargo-deny duplicate exception configuration is malformed")
+    skip_trees = bans.get("skip-tree", [])
+    if not isinstance(skip_trees, list) or skip_trees:
+        raise PolicyError("cargo-deny duplicate exception configuration cannot contain skip-tree entries")
     configured_duplicates: set[tuple[str, str]] = set()
     for item in bans.get("skip", []):
         if (

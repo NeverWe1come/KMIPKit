@@ -174,7 +174,9 @@ unexcepted finding.
 - **FR-007**: Every exception MUST name the affected rule and exact package,
   version, source, or advisory; include a rationale, mitigation, review date,
   owner, and expiry; and be checked for expiry and matching scope. Blanket
-  ignores and undocumented exceptions MUST fail validation.
+  ignores and undocumented exceptions MUST fail validation. The cargo-deny
+  `bans.skip-tree` setting MUST be absent or empty because it can suppress
+  duplicate findings outside one exact registered package/version exception.
 - **FR-008**: The policy tool MUST be pinned to an exact reviewed version and
   installed without an unpinned third-party GitHub Action. Tool upgrades MUST
   update the recorded version and independent tool review together.

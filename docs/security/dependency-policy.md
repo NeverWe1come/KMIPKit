@@ -94,8 +94,11 @@ waived. Remove the exception from both files when the finding is resolved.
 
 Exceptions cannot waive wildcard version requirements, paths outside the
 canonical workspace-member union, symlink escapes, or the architecture bans
-below. A source exception, if later accepted, must use an immutable Git
-revision. Blanket ignores are not supported.
+below. The broad cargo-deny `bans.skip-tree` setting is rejected because it
+can suppress duplicate findings across a dependency subtree that is not
+represented by one exact package/version exception. A source exception, if
+later accepted, must use an immutable Git revision. Blanket ignores are not
+supported.
 
 ## Finite architecture bans
 

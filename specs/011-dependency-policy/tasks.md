@@ -57,7 +57,7 @@ The root and fuzz graphs are separate policy inputs. Metadata validation covers 
 | FR-004 | T001, T003, T008, T009, T013, T015, T017 |
 | FR-005 | T003, T007, T008, T017 |
 | FR-006 | T002, T003, T006, T010, T017 |
-| FR-007 | T010, T011, T012, T018 |
+| FR-007 | T010, T011, T012, T018, T027 |
 | FR-008 | T001, T006, T008, T014, T017 |
 | FR-009 | T004, T009, T017 |
 | FR-010 | T013, T015, T017 |
@@ -68,7 +68,7 @@ The root and fuzz graphs are separate policy inputs. Metadata validation covers 
 | SC-002 | T003, T005, T010, T017 |
 | SC-003 | T005, T006, T017 |
 | SC-004 | T013, T015, T017 |
-| SC-005 | T010, T011, T018 |
+| SC-005 | T010, T011, T018, T027 |
 | SC-006 | T012, T014, T017 |
 | SC-007 | T004, T009, T017 |
 | SC-008 | T003, T005, T006, T017 |
@@ -88,3 +88,4 @@ machine-readable compliance traceability artifact from this planning map.
 - [x] T024 CRITICAL Correct the FR-012 traceability entry to link the executable diagnostic redaction contract, per Constitution I and FR-012 (contradicts).
 - [x] T025 Add pinned cargo-deny fixtures for missing and invalid license metadata and assert the exact `unlicensed` error code and package/version, per FR-003 and SC-002 (missing).
 - [x] T026 Extend the FR-013/SC-008 executable invariant test to preserve both project lockfiles and resolved package versions, per FR-013 and SC-008 (partial).
+- [x] T027 [US2] Reject non-empty or malformed cargo-deny `bans.skip-tree` configuration, which can bypass exact duplicate-exception matching; add a negative test, update FR-007 traceability, and document the prohibition per SC-005 (security review finding).
