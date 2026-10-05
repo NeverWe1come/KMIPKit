@@ -21,7 +21,7 @@
 
 **Purpose**: Add only the view API that permits protocol validation without transferring payload ownership.
 
-- [ ] T004 [RED COMMIT] Add failing API tests for scoped Structure views, child-order preservation, and inability to mutate or take payload ownership in `crates/kmipkit-ttlv/tests/structure_view.rs` (FR-017; SC-006).
+- [x] T004 [RED COMMIT] Added public API tests for borrowed Structure views, original child order, and original Item access in `crates/kmipkit-ttlv/tests/structure_view.rs`, plus compile-fail cases for owner lifetime, mutable children, and moving an Item in `crates/kmipkit-ttlv/tests/ui/`. RED evidence: `cargo test -p kmipkit-ttlv --test structure_view` failed as expected at both call sites because `Structure::view()` is not implemented yet (FR-017; SC-006). The implementation remains for T005 GREEN.
 - [ ] T005 [GREEN COMMIT] Add the smallest safe `Structure::view()` implementation and public documentation in `crates/kmipkit-ttlv/src/structure.rs` and `crates/kmipkit-ttlv/src/lib.rs` (FR-017; SC-006).
 - [ ] T006 [REFACTOR COMMIT] Refine view API documentation and tests; retain `#![forbid(unsafe_code)}` and existing zeroization behavior (FR-017; SC-006).
 
