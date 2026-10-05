@@ -274,6 +274,17 @@ class MessageModelTraceabilityTests(unittest.TestCase):
         self.assertEqual(global_field_order["status"], "unassigned")
         self.assertIsNone(global_field_order["feature_spec"])
 
+        coverage_row = by_id["KMIPKIT-0006-SC-007"]
+        self.assertEqual(coverage_row["status"], "verified")
+        self.assertEqual(
+            coverage_row["test_ids"].split("; "),
+            [
+                "cargo llvm-cov --workspace --all-features --summary-only",
+                "cargo llvm-cov -p kmipkit-ttlv --all-features --summary-only",
+                "cargo llvm-cov -p kmipkit-protocol --all-features --summary-only",
+            ],
+        )
+
         source_requirements = {
             record["requirement_id"]
             for record in catalog["requirements"]
@@ -322,6 +333,8 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                 self.assertTrue(row["source_section"])
                 self.assertTrue(row["implementation_location"])
                 if row["status"] != "verified":
+                    continue
+                if row["requirement_id"] == "KMIPKIT-0006-SC-007":
                     continue
                 references = row["test_ids"].split("; ")
                 self.assertTrue(references)
