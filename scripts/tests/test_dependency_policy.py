@@ -818,6 +818,16 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, contents)
 
+    def test_runner_executes_negative_fixtures_with_the_verified_pinned_binary(self) -> None:
+        contents = self.require_runner()
+        self.assertIn("$env:CARGO_DENY = $denyExecutable", contents)
+        self.assertIn("scripts.tests.test_cargo_deny_fixtures", contents)
+        self.assertIn("cargo-deny negative fixtures", contents)
+        self.assertLess(
+            contents.index("Installed cargo-deny version did not match"),
+            contents.index("scripts.tests.test_cargo_deny_fixtures"),
+        )
+
 
 class CargoDenyDiagnosticTests(unittest.TestCase):
     @classmethod
