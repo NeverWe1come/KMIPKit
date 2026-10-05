@@ -36,7 +36,7 @@ crates/
   kmipkit-ttlv/          Public generic tree and bounded decoder
   kmipkit-protocol/      KMIP models, validation, catalog output
   kmipkit-transport/     Raw TLS and HTTPS transport implementations
-  kmipkit-client/        Synchronous orchestration, lifecycle, private writer proposal
+  kmipkit-client/        Synchronous orchestration, lifecycle, private uncalled writer
   kmipkit/               Supported Rust facade and high-level API
   kmipkit-ffi/           C ABI; the only crate allowed to contain unsafe
   kmipkit-test-support/  Fakes, fixtures, and test PKI; not published
@@ -114,7 +114,7 @@ provide stable public APIs for advanced integration.
 1. A high level builder creates a typed request.
 2. Protocol validation applies invariant rules and any explicitly selected
    profile.
-3. The request converts to generic TTLV; under the Proposed ADR-0012 boundary, a future private child writer requires an internal permit minted only by `Client::execute`, and execute receives only a closed typed request variant. KMIPKIT-0005 has no production callsite; the first client feature/spec owns the execute API, permit, sole writer callsite/mint site, and exact-one audit. No public `encode(&Item)` API, raw-body input, or caller-implementable conversion route is proposed. The current prohibition remains in force until all three human approvals are met and the first client integration test passes; the candidate first-client feature PR must contain both the sole production callsite and its owner-through-transport integration test. CI must run and pass that test against the candidate callsite before merge, enablement, or release; until then, the release branch must contain no production callsite or secret-bearing send.
+3. The request converts to generic TTLV; under accepted ADR-0012, a future private child writer requires an internal permit minted only by `Client::execute`, and execute receives only a closed typed request variant. KMIPKIT-0005 has no production callsite; the first client feature/spec owns the execute API, permit, sole writer callsite/mint site, and exact-one audit. No public `encode(&Item)` API, raw-body input, or caller-implementable conversion route is authorized. The first-client feature PR must contain both the sole production callsite and its owner-through-transport integration test. CI must run and pass that test against the candidate callsite before merge, enablement, or release; until then, the release branch must contain no production callsite or secret-bearing send.
 4. The selected transport sends one complete bounded message.
 5. The decoder validates TTLV before typed conversion.
 6. The client validates version, correlation, batch count, and operation

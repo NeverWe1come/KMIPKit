@@ -102304,9 +102304,9 @@
       "affected_policy_ids": [
         "KMIPKIT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION"
       ],
-      "downstream_impact": "Decoder behavior for reserved and unused tag allocations; this does not change their OASIS registry classification.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "Decoder behavior follows accepted ADR-0011: reject received Reserved Tags before generic Item construction without changing the OASIS registry classification.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-001",
       "erratum_source_refs": []
     },
     {
@@ -102397,5 +102397,26 @@
       "erratum_source_refs": []
     }
   ],
-  "decisions": []
+  "decisions": [
+    {
+      "decision_id": "KMIPKIT-DEC-001",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-037"
+      ],
+      "policy_ids": [],
+      "interpretation": "KMIPKit policy decision: accept ADR-0011 for KMIPKit 1.0 and reject a received TTLV Tag classified as Reserved by ADR-0010 before constructing the public generic Item tree. Unknown Tags in the accepted 0x54 extension range remain eligible for decoding. OASIS KMIP Specification v2.1 §11.56 identifies the standard and extension Tag ranges but does not prescribe this receiver policy.",
+      "approver": "KMIPKit maintainer under delegated authorization",
+      "approval_evidence": "Direct maintainer instruction on 2026-10-05 authorized autonomous execution of the KMIPKIT-0005 plan without further approval or manual intervention. The selected project policy and delegated approval are documented in docs/adr/0011-reserved-tag-decoding-policy.md and specs/005-ttlv-wire-codec/approval-record.md.",
+      "approved_at": "2026-10-05",
+      "consequence": "Reserved Tags received from the wire fail decoding before generic Item construction; the OASIS registry classification and ADR-0010 precedence rule remain unchanged.",
+      "status": "accepted"
+    }
+  ]
 }

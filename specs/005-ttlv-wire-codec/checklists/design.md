@@ -50,3 +50,6 @@
 ## Notes
 
 - The unchecked ADR acceptance and implementation evidence items are implementation gates. The schema-order assignment and its implementation/verification evidence remain a separate 1.0 traceability gate; this design does not claim 100% traceability while that coverage is open.
+## T001 reconciliation note — 2026-10-05
+
+T001 records accepted decision KMIPKIT-DEC-001 for KMIPKIT-DISC-037 with the OASIS KMIP Specification v2.1 §11.56 reference and generates the report before T006. KMIPKIT-0005-OD-001 is resolved as bounded preflight plus fallible decoder-owned scratch/payload reservations; existing Box::new and Vec::push model constructors may still abort on OOM and remain unchanged. The schema-order requirement remains a global follow-on gap until every applicable client Structure has typed-spec ownership, implementation, and executable order verification. Independent dependency and security/design review dispositions are recorded in the approval record and dependency review; final implementation review remains T017. Reviewer-owned checkboxes are unchanged and must be reconciled by the reviewer.
