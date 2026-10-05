@@ -644,4 +644,53 @@ After Refactor, all 12 parser/traceability tests and the 142-test Python
 suite passed again. The pinned-tool security reviewer independently confirmed
 the real license-only exit-4 output. CI run `37386838599` still covers the
 pre-T032 head `a19b2e2`; the corrected T032 head needs its own workflow run.
-T017 and T018 remain open for that CI run and the security/QA reviews.
+At this point in the convergence sequence, T017 and T018 remained open pending the corrected-head CI run and independent reviews.
+
+## Final verification and independent reviews
+
+Run `37387765790` completed successfully on implementation head
+`dff30f84547260f98c69f69d86ae3398baf95d4e`
+([GitHub Actions](https://github.com/NeverWe1come/KMIPKit/actions/runs/37387765790)).
+The run passed the pull-request dependency-policy scan, immutable normative
+inventory checks, script-contract tests on Windows/macOS/Ubuntu, core checks
+with Rust 1.94 and stable on all three platforms, platform coverage collection,
+and the aggregate three-platform coverage threshold gate. Scheduled-release
+and nightly informational jobs were correctly skipped for a pull-request event.
+
+Local repository checks on the feature worktree also passed:
+
+```text
+cargo fmt --all --check
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --all-features
+cargo doc --workspace --all-features --no-deps
+cargo llvm-cov --workspace --all-features
+```
+
+The local workspace line coverage was 97.13% (95.98% regions). WSL Ubuntu ran
+the script suite with 142 passing tests and 20 environment-dependent skips.
+The Windows and independent QA environments also passed their full script
+suites; platform-specific skips are recorded by each environment. Focused
+cargo-deny fixture, traceability, workflow-contract, lockfile-preservation,
+redaction, and end-to-end runner checks passed with pinned cargo-deny 0.20.2.
+The end-to-end runner refreshed RustSec for root and fuzz and preserved both
+lockfile hashes.
+
+Independent security review against `dff30f8` found no remaining blocker and
+completed all 14 security checklist items. Independent QA review found no
+additional blocking or high-severity implementation findings for T028-T032,
+FR/SC traceability, or documentation; its three earlier P2 findings are
+closed. Reviewer-owned findings and evidence are recorded in
+[`checklists/security.md`](checklists/security.md) and
+[`checklists/policy-review.md`](checklists/policy-review.md).
+
+The branch was fetched against the active `release/1.0.0` immediately before
+finalizing the review package; the release tip remains an ancestor and the
+feature branch required no update. The detailed draft description was
+refreshed on PR #37 using the terminal, with the TDD commits, current-head CI,
+review results, security effects, risks, and limitations. This documentation-
+only review/evidence commit triggers another PR check run so the current final
+head is validated as well. The qualified human security review and access to a
+second independent KMIP implementation remain separate 1.0.0 release gates.
+Repository evidence still does not establish isolation of the self-hosted
+ARM64 runner or an independent comparison of the cargo-deny binary checksum.
