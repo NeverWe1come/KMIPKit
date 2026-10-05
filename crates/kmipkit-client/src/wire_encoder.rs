@@ -1027,6 +1027,14 @@ mod tests {
     }
 
     #[test]
+    fn allocation_error_exposes_its_reservation_source() {
+        let error = EncodeError::AllocationFailed;
+        let source = std::error::Error::source(&error);
+
+        assert!(source.is_some());
+    }
+
+    #[test]
     fn preflight_rejection_performs_zero_payload_copies() {
         // Project-only security/error behavior under KMIPKIT-0005-FR-009. The
         // observer sits at the production payload-copy boundary. The item is

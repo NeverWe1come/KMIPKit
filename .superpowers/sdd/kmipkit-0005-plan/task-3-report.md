@@ -25,3 +25,7 @@ The encoder validates and measures the tree before output allocation, checks ari
 - `git diff --check` passed.
 
 T003 Green is ready for independent review. The separate T004 refactor remains unstarted.
+
+## Independent review follow-up — Red
+
+Added `allocation_error_exposes_its_reservation_source` before changing the production error. The focused Red command was `cargo test -p kmipkit-client allocation_error_exposes_its_reservation_source`; it failed at the intended missing behavior because `EncodeError` did not implement `std::error::Error` (`E0277`, `EncodeError: StdError is not satisfied` at the `Error::source` assertion). No production implementation change is included in this Red step.
