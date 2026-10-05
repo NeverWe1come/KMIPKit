@@ -5,6 +5,13 @@
 //! enter the checked generic model. [`crate::codec::decode`] applies
 //! [`crate::codec::CodecLimits::defaults`]; [`crate::codec::decode_with_limits`]
 //! applies immutable per-call limits.
+//!
+//! Resource accounting is per decode call: total input size is checked before
+//! traversal, each Item consumes an element slot before its header is parsed,
+//! and Structure depth is checked once its Item Type is known. Checked spans
+//! and available parent bounds are validated before a value slice is decoded.
+//! Variable-length payloads are copied only after a fallible reservation; the
+//! existing model constructors remain infallible allocation boundaries.
 
 use std::fmt::{self, Display, Formatter};
 

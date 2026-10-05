@@ -120,6 +120,9 @@ impl Error for EncodeError {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct EncodingPlan {
+    // One complete item tree is measured before limits are checked or output is
+    // reserved. `structure_depth` counts nested Structures; `elements` counts
+    // every Item including the root.
     encoded_bytes: u64,
     structure_depth: u64,
     elements: u64,
@@ -339,6 +342,9 @@ fn check_plan_inner(
         .max_structure_depth()
         .min(u128::from(MODEL_MAX_STRUCTURE_DEPTH));
 
+    // This is the single preflight gate for all three resource dimensions.
+    // It runs after checked planning and before the output reservation or any
+    // payload copy in `encode_item_inner`.
     if u128::from(plan.encoded_bytes) > limits.max_message_bytes()
         || u128::from(plan.structure_depth) > max_depth
         || u128::from(plan.elements) > limits.max_elements()
@@ -395,7 +401,7 @@ impl Drop for EncodedOwner {
 fn encode_item(item: &Item) -> Result<EncodedOwner, EncodeError> {
     let limits = CodecLimits::defaults();
     #[cfg(test)]
-    let observer = tests::PayloadCopyObserver::default();
+    let observer = tests::EncodingObserver::default();
 
     encode_item_with_limits(
         item,
@@ -408,7 +414,7 @@ fn encode_item(item: &Item) -> Result<EncodedOwner, EncodeError> {
 fn encode_item_with_limits(
     item: &Item,
     limits: &CodecLimits,
-    #[cfg(test)] observer: &tests::PayloadCopyObserver,
+    #[cfg(test)] observer: &tests::EncodingObserver,
 ) -> Result<EncodedOwner, EncodeError> {
     encode_item_inner(
         item,
@@ -424,7 +430,7 @@ fn encode_item_with_limits(
 fn encode_item_with_identity_observer(
     item: &Item,
     limits: &CodecLimits,
-    copy_observer: &tests::PayloadCopyObserver,
+    copy_observer: &tests::EncodingObserver,
     limits_observer: &tests::LimitsIdentityObserver<'_>,
 ) -> Result<EncodedOwner, EncodeError> {
     encode_item_inner(item, limits, copy_observer, Some(limits_observer))
@@ -433,9 +439,11 @@ fn encode_item_with_identity_observer(
 fn encode_item_inner(
     item: &Item,
     limits: &CodecLimits,
-    #[cfg(test)] copy_observer: &tests::PayloadCopyObserver,
+    #[cfg(test)] copy_observer: &tests::EncodingObserver,
     #[cfg(test)] limits_observer: Option<&tests::LimitsIdentityObserver<'_>>,
 ) -> Result<EncodedOwner, EncodeError> {
+    // Keep the failure-atomic sequence explicit: measure the full tree, apply
+    // all resource limits and U32 Item Length checks, reserve once, then write.
     let plan = EncodingPlan::for_item(item)?;
     check_writer_plan(
         &plan,
@@ -445,7 +453,11 @@ fn encode_item_inner(
     )?;
     let capacity = usize::try_from(plan.encoded_bytes).map_err(|_| EncodeError::SizeOverflow)?;
 
-    let output = reserve_output_buffer(capacity)?;
+    let output = reserve_output_buffer(
+        capacity,
+        #[cfg(test)]
+        Some(copy_observer),
+    )?;
 
     // Own and zeroize the reserved allocation before writing starts. If an
     // invariant is ever violated during writing, Drop still clears the bytes.
@@ -474,8 +486,15 @@ fn check_writer_plan(
     check_plan(plan, limits)
 }
 
-fn reserve_output_buffer(capacity: usize) -> Result<Vec<u8>, EncodeError> {
+fn reserve_output_buffer(
+    capacity: usize,
+    #[cfg(test)] observer: Option<&tests::EncodingObserver>,
+) -> Result<Vec<u8>, EncodeError> {
     let mut output = Vec::new();
+    #[cfg(test)]
+    if let Some(observer) = observer {
+        observer.record_output_reservation();
+    }
     output
         .try_reserve_exact(capacity)
         .map_err(EncodeError::AllocationFailed)?;
@@ -485,7 +504,7 @@ fn reserve_output_buffer(capacity: usize) -> Result<Vec<u8>, EncodeError> {
 struct Writer<'a> {
     bytes: &'a mut Vec<u8>,
     #[cfg(test)]
-    observer: &'a tests::PayloadCopyObserver,
+    observer: &'a tests::EncodingObserver,
 }
 
 impl Writer<'_> {
@@ -667,11 +686,7 @@ const fn type_code(item_type: ItemType) -> u8 {
 }
 
 #[cfg(test)]
-fn shared_payload_copy(
-    output: &mut Vec<u8>,
-    payload: &[u8],
-    observer: &tests::PayloadCopyObserver,
-) {
+fn shared_payload_copy(output: &mut Vec<u8>, payload: &[u8], observer: &tests::EncodingObserver) {
     if !payload.is_empty() {
         observer.record_copy();
     }
@@ -783,18 +798,40 @@ mod tests {
         }
     }
 
-    #[derive(Default)]
-    pub(super) struct PayloadCopyObserver {
-        calls: Cell<usize>,
+    fn assert_plan_boundary(
+        limits: &impl BorrowedLimitsView,
+        exact: SyntheticPlan,
+        one_over: SyntheticPlan,
+    ) {
+        assert_eq!(check_plan(&exact.as_plan(), limits), Ok(()));
+        assert_eq!(
+            check_plan(&one_over.as_plan(), limits),
+            Err(EncodeError::LimitExceeded)
+        );
     }
 
-    impl PayloadCopyObserver {
+    #[derive(Default)]
+    pub(super) struct EncodingObserver {
+        calls: Cell<usize>,
+        output_reservation_calls: Cell<usize>,
+    }
+
+    impl EncodingObserver {
         pub(super) fn calls(&self) -> usize {
             self.calls.get()
         }
 
         pub(super) fn record_copy(&self) {
             self.calls.set(self.calls.get() + 1);
+        }
+
+        fn output_reservation_calls(&self) -> usize {
+            self.output_reservation_calls.get()
+        }
+
+        pub(super) fn record_output_reservation(&self) {
+            self.output_reservation_calls
+                .set(self.output_reservation_calls.get() + 1);
         }
     }
 
@@ -1306,6 +1343,47 @@ mod tests {
     }
 
     #[test]
+    fn codec_limits_adapter_enforces_default_and_configured_exact_boundaries() {
+        // Resource limits are project policy under KMIPKIT-0005-FR-007. These
+        // bounded plans verify the real borrowed adapter without constructing
+        // 16 MiB output, 65 nested Structures, or 100,001 Items.
+        let defaults = CodecLimits::defaults();
+        assert_plan_boundary(
+            &defaults,
+            SyntheticPlan::new(DEFAULT_MAX_MESSAGE_BYTES, 1, 1),
+            SyntheticPlan::new(DEFAULT_MAX_MESSAGE_BYTES + 1, 1, 1),
+        );
+        assert_plan_boundary(
+            &defaults,
+            SyntheticPlan::new(8, MODEL_MAX_STRUCTURE_DEPTH, 1),
+            SyntheticPlan::new(8, MODEL_MAX_STRUCTURE_DEPTH + 1, 1),
+        );
+        assert_plan_boundary(
+            &defaults,
+            SyntheticPlan::new(8, 1, DEFAULT_MAX_ELEMENTS),
+            SyntheticPlan::new(8, 1, DEFAULT_MAX_ELEMENTS + 1),
+        );
+
+        let configured = CodecLimits::new(64, 12, 24)
+            .expect("the configured depth does not exceed the model maximum");
+        assert_plan_boundary(
+            &configured,
+            SyntheticPlan::new(64, 1, 1),
+            SyntheticPlan::new(65, 1, 1),
+        );
+        assert_plan_boundary(
+            &configured,
+            SyntheticPlan::new(8, 12, 1),
+            SyntheticPlan::new(8, 13, 1),
+        );
+        assert_plan_boundary(
+            &configured,
+            SyntheticPlan::new(8, 1, 24),
+            SyntheticPlan::new(8, 1, 25),
+        );
+    }
+
+    #[test]
     fn borrowed_per_call_limits_do_not_share_mutable_state() {
         // Project-only per-call behavior under KMIPKIT-0005-FR-007. Both views
         // remain immutable and the plan is reused without global state.
@@ -1325,7 +1403,7 @@ mod tests {
         // KMIPKit's private per-operation configuration boundary: FR-007.
         let limits = CodecLimits::new(16, 0, 1).expect("limits fit the model boundary");
         let observer = LimitsIdentityObserver::new(&limits);
-        let copy_observer = PayloadCopyObserver::default();
+        let copy_observer = EncodingObserver::default();
         let input = item(Value::byte_string(vec![0x5a]));
 
         for _ in 0..2 {
@@ -1338,6 +1416,7 @@ mod tests {
         assert_eq!(observer.calls(), 2);
         assert!(observer.always_same_instance());
         assert_eq!(copy_observer.calls(), 2);
+        assert_eq!(copy_observer.output_reservation_calls(), 2);
     }
 
     #[test]
@@ -1359,7 +1438,7 @@ mod tests {
 
     #[test]
     fn allocation_error_exposes_its_reservation_source() {
-        let result = reserve_output_buffer(usize::MAX);
+        let result = reserve_output_buffer(usize::MAX, None);
         let Err(error) = result else {
             panic!("impossible output capacity was accepted");
         };
@@ -1377,12 +1456,13 @@ mod tests {
         // observer sits at the production payload-copy boundary. The item is
         // rejected by preflight before the output buffer or any payload copy.
         let limits = CodecLimits::new(4, 64, 100_000).expect("depth is within the model");
-        let copy_observer = PayloadCopyObserver::default();
+        let copy_observer = EncodingObserver::default();
         let payload = vec![0xa5, 0x5a, 0xa5];
         let input = item(Value::byte_string(payload));
         let result = encode_item_with_limits(&input, &limits, &copy_observer);
 
         assert_eq!(result.err(), Some(EncodeError::LimitExceeded));
+        assert_eq!(copy_observer.output_reservation_calls(), 0);
         assert_eq!(copy_observer.calls(), 0);
     }
 
@@ -1392,7 +1472,7 @@ mod tests {
         let limits = CodecLimits::new(4, 64, 100_000).expect("depth is within the model");
         let payload = vec![0xde, 0xad, 0xbe, 0xef];
         let input = item(Value::byte_string(payload));
-        let copy_observer = PayloadCopyObserver::default();
+        let copy_observer = EncodingObserver::default();
         let result = encode_item_with_limits(&input, &limits, &copy_observer);
         let Err(error) = result else {
             panic!("oversized input was accepted");

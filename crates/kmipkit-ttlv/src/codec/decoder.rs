@@ -1,4 +1,10 @@
 //! Checked, bounded parsing of a single TTLV item.
+//!
+//! Per-call accounting checks total input size before traversal. Each Item is
+//! charged before its header is parsed; Structure depth is checked after its
+//! Item Type is known. Checked spans and available parent bounds are validated
+//! before a value slice is borrowed, and variable-length payloads are reserved
+//! fallibly before their bytes are copied.
 
 use std::str;
 
@@ -137,6 +143,9 @@ fn decode_item(
     parent_structure_depth: usize,
     state: &mut DecodeState<'_>,
 ) -> Result<(Item, usize), DecodeError> {
+    // Preserve the established error order: charge this Item first, derive its
+    // Structure depth after parsing its Type, then validate its complete span
+    // and parent boundary before exposing any value bytes to the decoder.
     state.consume_element(start)?;
 
     let header = parse_item_header(bytes, start, parent_end, parent_structure_depth)?;
@@ -151,6 +160,7 @@ fn decode_item(
     if span.exceeds_message_limit {
         return Err(DecodeError::new(DecodeErrorKind::MessageTooLarge, start));
     }
+    // This slice is within both the checked item span and available parent.
     let value_bytes = bytes
         .get(span.value_start..span.value_end)
         .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedValue, span.value_start))?;
@@ -505,6 +515,8 @@ fn copy_payload(
     limits: &CodecLimits,
     #[cfg(test)] observer: Option<&super::limits_tests::DecodeObserver>,
 ) -> Result<Vec<u8>, DecodeError> {
+    // The caller passes only a validated value slice. Reserve from its bounded
+    // length, then copy; never reserve directly from an unchecked wire length.
     if bytes.len() > limits.max_message_bytes() {
         return Err(DecodeError::new(DecodeErrorKind::MessageTooLarge, offset));
     }
