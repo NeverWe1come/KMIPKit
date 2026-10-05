@@ -209,6 +209,40 @@ class CargoDenyNegativeFixtureTests(unittest.TestCase):
         self.assertEqual(generated.returncode, 0, generated.stderr)
         return fixture
 
+    def create_wildcard_fixture(self) -> Path:
+        fixture_policy = self.fixture_deny_config().replace(
+            'wildcards = "deny"', 'wildcards = "allow"'
+        )
+        fixture = self.create_fixture(
+            [("fixture-wildcard", "1.0.0", "MIT", False)], config=fixture_policy
+        )
+        manifest = fixture / "Cargo.toml"
+        contents = manifest.read_text(encoding="utf-8")
+        dependency_requirement = 'version = "1.0.0", path = '
+        self.assertIn(dependency_requirement, contents)
+        manifest.write_text(
+            contents.replace(dependency_requirement, 'version = "*", path = '),
+            encoding="utf-8",
+        )
+
+        config_path = fixture / ".cargo" / "deny.toml"
+        generated = subprocess.run(
+            [
+                "cargo",
+                "generate-lockfile",
+                "--offline",
+                "--manifest-path",
+                str(manifest),
+            ],
+            cwd=fixture,
+            env=self.env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(generated.returncode, 0, generated.stderr)
+        return fixture
+
     def create_unapproved_git_fixture(self) -> tuple[Path, Path]:
         """Create a local pinned Git source and synthetic metadata, with no fetch."""
         source = self.root / "git-source"
@@ -631,6 +665,19 @@ allow-git = []
             "bans",
             "duplicate",
             {("duplicate-fixture", "1.0.0"), ("duplicate-fixture", "2.0.0")},
+        )
+
+    def test_wildcard_dependency_requirement_reports_exact_rule(self) -> None:
+        fixture = self.create_wildcard_fixture()
+        manifest = (fixture / "Cargo.toml").read_text(encoding="utf-8")
+        lockfile = (fixture / "Cargo.lock").read_text(encoding="utf-8")
+        self.assertIn('version = "*"', manifest)
+        self.assertRegex(lockfile, r'name = "fixture-wildcard"\nversion = "1\.0\.0"')
+        self.assert_finding(
+            fixture,
+            "bans",
+            "wildcard",
+            {("fixture-root", "0.1.0")},
         )
 
     def test_unapproved_local_git_source_reports_package_and_version(self) -> None:
