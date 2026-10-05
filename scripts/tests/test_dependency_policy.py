@@ -211,9 +211,11 @@ class DependencyPolicyApiTests(unittest.TestCase):
         ttlv_manifest = tomllib.loads(
             (REPOSITORY_ROOT / "crates" / "kmipkit-ttlv" / "Cargo.toml").read_text(encoding="utf-8")
         )
-        expected_version = ttlv_manifest["package"].get(
-            "version", workspace_manifest["workspace"]["package"]["version"]
-        )
+        expected_version = ttlv_manifest["package"].get("version")
+        if isinstance(expected_version, dict) and expected_version.get("workspace") is True:
+            expected_version = workspace_manifest["workspace"]["package"]["version"]
+        if expected_version is None:
+            expected_version = workspace_manifest["workspace"]["package"]["version"]
         fuzz_package = fuzz_manifest["package"]
         edge = fuzz_manifest["dependencies"]["kmipkit-ttlv"]
 
@@ -223,15 +225,26 @@ class DependencyPolicyApiTests(unittest.TestCase):
 
     def test_fuzz_candidate_scan_no_longer_reports_metadata_policy_findings(self) -> None:
         deny_config = REPOSITORY_ROOT / ".cargo" / "deny.toml"
-        deny = shutil.which("cargo-deny")
-        if not deny_config.is_file() or deny is None:
+        cargo = shutil.which("cargo")
+        if not deny_config.is_file() or cargo is None:
             self.skipTest("the candidate scan runs after Green adds the reviewed config and pinned tool")
 
         lockfile = REPOSITORY_ROOT / "fuzz" / "Cargo.lock"
         before = lockfile.read_bytes()
         completed = subprocess.run(
-            [deny, "check", "--workspace", "--all-features", "--locked"],
-            cwd=REPOSITORY_ROOT / "fuzz",
+            [
+                cargo,
+                "deny",
+                "--manifest-path",
+                str(REPOSITORY_ROOT / "fuzz" / "Cargo.toml"),
+                "--config",
+                str(deny_config),
+                "--workspace",
+                "--all-features",
+                "--locked",
+                "check",
+            ],
+            cwd=REPOSITORY_ROOT,
             capture_output=True,
             text=True,
             check=False,
