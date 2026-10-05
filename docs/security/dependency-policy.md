@@ -61,9 +61,9 @@ specific risk and recorded durable approval evidence. Each entry must identify:
 For a license clarification, the record must include human-reviewed evidence
 for that package and its license disposition. A missing automated license
 field is not itself evidence that the package is acceptable. Source records
-must not contain credentials or secret URL parameters. The validator redacts
-sensitive source details from errors and rejects secret-bearing exception
-data.
+must not contain credentials or secret URL parameters. The validator rejects
+source URLs with credentials or secret-bearing query parameters, and its
+diagnostics do not expose those secret values.
 
 Keep the register record and the exact cargo-deny configuration entry in sync
 in the same change. Run the policy command and include its output in the
