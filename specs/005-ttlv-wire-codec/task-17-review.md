@@ -70,7 +70,7 @@ tests requiring symlink privilege, POSIX symlinks, or POSIX fixtures.
 - Coverage metadata normalization: Red `90543e5`, Green `8dfcb3a`, Refactor
   `620c8b8`.
 
-This report records final independent review and local evidence for preparation
-of a terminal-created **draft** pull request to `release/1.0.0`. It does not
+The terminal-created **draft** pull request to `release/1.0.0` is
+[KMIPKit PR #30](https://github.com/NeverWe1come/KMIPKit/pull/30). It does not
 claim that pending platform CI or the separate qualified human review has
 passed.
