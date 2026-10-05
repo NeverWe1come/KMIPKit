@@ -20,7 +20,8 @@
 - [x] Normative references identify exact OASIS document clauses
 - [ ] Proposed ADR-0011 has an approved disposition for reserved-tag receipt under KMIPKIT-DISC-037
 - [x] Configurable depth semantics are bounded to 0–64, consistent with the 004 model contract
-- [x] Successful encoded output has a zeroizing owner; protocol wire encoding is distinguished from diagnostic/general-purpose serialization and persistence
+- [x] The draft limits secret-bearing wire encoding to a conditional proposal and states that the current policy remains in force until all three human approvals and the first-client integration gate are satisfied
+- [ ] The three approvals for FR-013 are explicit and distinct: human acceptance of ADR-0012, approval of this feature specification, and approval of the enforceable boundary design. These do not implement or authorize a production request path.
 
 ## Feature Readiness
 
@@ -35,4 +36,5 @@
 - OASIS §10.1.2 does not explicitly define empty Big Integer behavior; this draft records a project validity rule rejecting it. Schema field-order requirement `KMIPKIT-REQ-SPEC-10.1.2-001` remains unassigned pending typed-spec ownership for every applicable client 1.0 Structure.
 - Full roadmap traceability remains gated until those Structures have approved typed-spec ownership plus implementation and executable order-verification references; this gap does not block implementation of the generic codec, and this PR does not claim the assignment is complete.
 - The normative traceability table separates OASIS requirements from KMIPKit API and security policy.
-- The security policy permits only temporary TTLV wire encoding for a requested KMIP exchange; successful bytes are held by a zeroizing, borrow-only owner.
+- The draft proposes only temporary outbound TTLV for an explicitly caller-requested typed operation, held in a private zeroizing owner through the transport write, with initialized encoded bytes zeroized before owner deallocation/drop; spare or otherwise uninitialized `Vec` capacity is outside the guarantee unless explicitly initialized and cleanup is verified. Public generic values and bounded decoding stay in `kmipkit-ttlv`. KMIPKIT-0005 may implement/test the private writer but adds no permit, `Client::execute`, or production writer callsite. The first client feature/spec defines the caller-facing request/limit API, execute-owned permit, only production callsite/mint site, exact-one audit, and integration test. `AGENTS.md` §8 remains in force unless all three approvals are obtained and the first client integration test passes; the candidate first-client feature PR must contain both the sole production callsite and its owner-through-transport integration test. CI must run and pass that test against the candidate callsite before merge, enablement, or release; until then, the release branch must contain no production callsite or secret-bearing send.
+- FR-013 is a KMIPKit policy requirement, not an OASIS clause. Its policy/owner verification belongs in the task traceability map. No public `encode(&Item)` API or general-purpose encoder is proposed. Private codec tests cover default/configured encoder bytes/depth/count and U32 preflight. If review rejects the permit/closed-request boundary or it cannot be enforced, do not approve or implement a secret-bearing request path.

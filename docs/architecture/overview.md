@@ -33,10 +33,10 @@ idioms, resources, exceptions, and types; they do not reimplement KMIP.
 
 ```text
 crates/
-  kmipkit-ttlv/          Generic tree, encoder, and decoder
+  kmipkit-ttlv/          Public generic tree and bounded decoder
   kmipkit-protocol/      KMIP models, validation, catalog output
   kmipkit-transport/     Raw TLS and HTTPS transport implementations
-  kmipkit-client/        Synchronous orchestration and connection lifecycle
+  kmipkit-client/        Synchronous orchestration, lifecycle, private writer proposal
   kmipkit/               Supported Rust facade and high-level API
   kmipkit-ffi/           C ABI; the only crate allowed to contain unsafe
   kmipkit-test-support/  Fakes, fixtures, and test PKI; not published
@@ -65,8 +65,8 @@ provide stable public APIs for advanced integration.
 ### `kmipkit-ttlv`
 
 - Implemented: in-memory typed value model, catalog-checked tags, ordered generic tree, and bounded Structure depth.
-- Planned: canonical encoder, strict decoder and resource limits, and incremental framing primitives for transports.
-- No KMIP operation semantics and no I/O.
+- Planned: strict bounded decoder and incremental framing primitives for transports.
+- No public byte-producing encoder, KMIP operation semantics, or I/O.
 
 ### `kmipkit-protocol`
 
@@ -89,6 +89,7 @@ provide stable public APIs for advanced integration.
 
 - Client lifecycle and one reusable serialized connection.
 - Request header construction and response correlation.
+- Proposed future private outbound writer and execute-owned permit/callsite, defined by the first client feature/spec. KMIPKIT-0005 may implement/test the private writer but adds no permit or production callsite; the candidate first-client feature PR must contain both the sole production callsite and its owner-through-transport integration test. CI must run and pass that test against the candidate callsite before merge, enablement, or release; until then, the release branch must contain no production callsite or secret-bearing send. Execute must accept only closed typed requests, not generic Items/raw bodies/caller-implemented conversion traits; no general-purpose or public encoder.
 - Batch execution and per-item outcomes.
 - Pending operation handles and explicit polling/cancellation.
 - No automatic retry, failover, or capability discovery.
@@ -113,7 +114,7 @@ provide stable public APIs for advanced integration.
 1. A high level builder creates a typed request.
 2. Protocol validation applies invariant rules and any explicitly selected
    profile.
-3. The request converts to generic TTLV and encodes canonically.
+3. The request converts to generic TTLV; under the Proposed ADR-0012 boundary, a future private child writer requires an internal permit minted only by `Client::execute`, and execute receives only a closed typed request variant. KMIPKIT-0005 has no production callsite; the first client feature/spec owns the execute API, permit, sole writer callsite/mint site, and exact-one audit. No public `encode(&Item)` API, raw-body input, or caller-implementable conversion route is proposed. The current prohibition remains in force until all three human approvals are met and the first client integration test passes; the candidate first-client feature PR must contain both the sole production callsite and its owner-through-transport integration test. CI must run and pass that test against the candidate callsite before merge, enablement, or release; until then, the release branch must contain no production callsite or secret-bearing send.
 4. The selected transport sends one complete bounded message.
 5. The decoder validates TTLV before typed conversion.
 6. The client validates version, correlation, batch count, and operation

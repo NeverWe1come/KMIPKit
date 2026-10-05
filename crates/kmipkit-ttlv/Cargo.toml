@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "TTLV types, encoding, and decoding for KMIPKit"
+description = "Generic TTLV value types and bounded decoding for KMIPKit"
 
 [dependencies]
 zeroize.workspace = true
