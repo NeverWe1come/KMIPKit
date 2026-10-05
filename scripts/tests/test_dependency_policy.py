@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -340,6 +341,74 @@ class DependencyPolicyApiTests(unittest.TestCase):
         self.assertNotRegex(output, r"(?i)(?:unlicensed|wildcard).{0,100}kmipkit-ttlv-fuzz")
         self.assertNotRegex(output, r"(?i)wildcard.{0,100}kmipkit-ttlv")
         self.assertEqual(before, lockfile.read_bytes(), "the candidate scan must preserve fuzz/Cargo.lock")
+
+    def test_policy_scans_preserve_both_lockfiles_and_resolved_package_versions(self) -> None:
+        executable = os.environ.get("CARGO_DENY")
+        if not executable:
+            self.skipTest("the pinned policy runner sets CARGO_DENY after refreshing the advisory database")
+
+        deny = Path(executable)
+        self.assertTrue(deny.is_file(), "CARGO_DENY must identify the pinned cargo-deny executable")
+        version = subprocess.run(
+            [str(deny), "--version"], capture_output=True, text=True, check=False, timeout=30
+        )
+        self.assertEqual(0, version.returncode, version.stderr)
+        self.assertRegex(version.stdout, r"^cargo-deny\s+0\.20\.2(?:\s|$)")
+
+        workspaces = (
+            ("root", REPOSITORY_ROOT / "Cargo.toml", REPOSITORY_ROOT / "Cargo.lock"),
+            ("fuzz", REPOSITORY_ROOT / "fuzz" / "Cargo.toml", REPOSITORY_ROOT / "fuzz" / "Cargo.lock"),
+        )
+
+        def snapshot(lockfile: Path) -> tuple[bytes, frozenset[str]]:
+            contents = lockfile.read_bytes()
+            parsed = tomllib.loads(contents.decode("utf-8"))
+            package_versions = frozenset(
+                f"{package['name']}@{package['version']}" for package in parsed.get("package", [])
+            )
+            self.assertTrue(package_versions, f"{lockfile} must contain resolved packages")
+            return contents, package_versions
+
+        before = {name: snapshot(lockfile) for name, _, lockfile in workspaces}
+        environment = os.environ.copy()
+        environment["CARGO_NET_OFFLINE"] = "true"
+
+        for name, manifest, _ in workspaces:
+            with self.subTest(workspace=name):
+                completed = subprocess.run(
+                    [
+                        str(deny),
+                        "--manifest-path",
+                        str(manifest),
+                        "--config",
+                        str(REPOSITORY_ROOT / ".cargo" / "deny.toml"),
+                        "--workspace",
+                        "--all-features",
+                        "--format",
+                        "json",
+                        "--color",
+                        "never",
+                        "--offline",
+                        "--locked",
+                        "check",
+                    ],
+                    cwd=REPOSITORY_ROOT,
+                    env=environment,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    check=False,
+                    timeout=300,
+                )
+                self.assertEqual(
+                    0,
+                    completed.returncode,
+                    f"{name} cargo-deny scan failed:\n{completed.stdout}\n{completed.stderr}",
+                )
+
+        after = {name: snapshot(lockfile) for name, _, lockfile in workspaces}
+        self.assertEqual(before, after, "policy scans must preserve both lockfile bytes and resolved package versions")
 
 
 class DependencyExceptionTests(unittest.TestCase):
@@ -829,11 +898,20 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
     def test_runner_executes_negative_fixtures_with_the_verified_pinned_binary(self) -> None:
         contents = self.require_runner()
         self.assertIn("$env:CARGO_DENY = $denyExecutable", contents)
+        self.assertIn(
+            "scripts.tests.test_dependency_policy.DependencyPolicyApiTests.test_policy_scans_preserve_both_lockfiles_and_resolved_package_versions",
+            contents,
+        )
+        self.assertIn("root and fuzz lockfile/resolved-version invariance", contents)
         self.assertIn("scripts.tests.test_cargo_deny_fixtures", contents)
         self.assertIn("cargo-deny negative fixtures", contents)
         self.assertLess(
             contents.index("Installed cargo-deny version did not match"),
             contents.index("scripts.tests.test_cargo_deny_fixtures"),
+        )
+        self.assertLess(
+            contents.index("$env:CARGO_DENY = $denyExecutable"),
+            contents.index("test_policy_scans_preserve_both_lockfiles_and_resolved_package_versions"),
         )
 
 

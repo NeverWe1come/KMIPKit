@@ -252,6 +252,11 @@ try {
     # Run offline negative fixtures with the exact binary verified above.
     $env:CARGO_DENY = $denyExecutable
     [void](Invoke-CapturedCommand -Executable $pythonExecutable -Arguments @(
+        '-X', 'utf8', '-m', 'unittest',
+        'scripts.tests.test_dependency_policy.DependencyPolicyApiTests.test_policy_scans_preserve_both_lockfiles_and_resolved_package_versions',
+        '-v'
+    ) -Operation 'root and fuzz lockfile/resolved-version invariance')
+    [void](Invoke-CapturedCommand -Executable $pythonExecutable -Arguments @(
         '-X', 'utf8', '-m', 'unittest', 'scripts.tests.test_cargo_deny_fixtures', '-v'
     ) -Operation 'cargo-deny negative fixtures')
 
