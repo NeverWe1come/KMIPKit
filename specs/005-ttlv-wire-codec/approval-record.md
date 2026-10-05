@@ -86,6 +86,10 @@ it contains active `release/1.0.0` head
 `849b46f772fd7cbcea2f42393cdbcf58e92cac94` as an ancestor. The working tree
 was verified against those refs on 2026-10-05. Task progress is included below.
 
+## Execution update — 2026-10-05
+
+After the maintainer reported that intervening PRs were merged, a terminal GitHub API check confirmed PRs #14–#29 were closed as merged. This feature branch integrated `origin/release/1.0.0` at `d46e13dfdd83ac05e4b58d24af5b928e355e092d` in merge commit `bd27ebc`. The catalog merge preserves `KMIPKIT-DEC-001` / `KMIPKIT-DISC-037` and the merged credential corrections and open `KMIPKIT-DISC-041` / `KMIPKIT-DISC-042`; the generated coverage report was regenerated from the validated catalog. The catalog regression test now accepts discrepancies resolved by an accepted decision while requiring unresolved rows to remain open. Validation, report verification, source audit, immutable-source check, generators, and all catalog tests pass. T003 is complete after a clean scoped review; this update does not expand its approved scope. The artifact digests below reflect the merged release and completed T003 task state.
+
 | Artifact | SHA-256 |
 | --- | --- |
 | `spec.md` | `01C75CE5DD645FDBC1ED227698ACBE3F54657BE4ABB13C4CFD63285DE5B87832` |
@@ -95,15 +99,15 @@ was verified against those refs on 2026-10-05. Task progress is included below.
 | `contracts/rust-ttlv-codec.md` | `728BABDA1F12996AC47A617999E0FDF7FF0F884B87A73AE51C3D3509942F5CEA` |
 | `quickstart.md` | `8AB455C58E907DA26931217CCC6DFA4EA0F45E34A5775FA8F74926E9883F85F1` |
 | `dependency-review.md` | `60FE528D34DCB30F8F83BC6176B91E8522B4A6FA9CA1A5875B32697E9F0206B4` |
-| `tasks.md` | `C967FCFD9089ABDB515BABFFF1F9224F0D34A41E62F101F0527523D6047AEBF0` |
+| `tasks.md` | `BB03893FA35BEFCBBDE349389DF46764D66B8DC37AEFD05C39CF923F182BB292` |
 | `docs/adr/0011-reserved-tag-decoding-policy.md` | `3A5C0589554B2080835EC7F10F1D537B297CFF9B60F21E89F03869DE428A1D2A` |
 | `docs/adr/0012-caller-requested-wire-encoding-policy.md` | `130C4CAD7AFC9985BC816286F8652729B392425C5E510DCAB9285223E827F333` |
 | `docs/adr/README.md` | `EA965F505F893CAA505E6A783ECE6BF5488AE61B77D3E4A37192B2E8B34F4ECC` |
 | `docs/architecture/overview.md` | `EB435926FB747C950B1D3418C436D91D70E5690D08B4F499183C9A0636337C55` |
 | `docs/architecture/public-api.md` | `5F10D0CD4DA8C7EA012969795BED3AFDA62DD9DF88A7EAB251EC7B4561A26139` |
 | `docs/adr/0010-tag-allocation-precedence.md` | `2A85D69BCE2D7CF3439E3FF4CE900BD1C6CF100DEDA37FDDB13292C5601E7473` |
-| `specification/catalog/kmip-2.1.json` | `4ED1EB2EFE11A38D5EEF47A2F2CD6710A20EB4EFDB17502F70958644579CCF46` |
-| `specification/catalog/coverage-report.md` | `504BD9AADA0F98F0E0ED2BCBCE5941E3352AF461EFCC3BA1554E36E3EF98FC66` |
+| `specification/catalog/kmip-2.1.json` | `06D10D118F4D877033BD0D83EEC7C9345C350823149714236BAB2F6094694F53` |
+| `specification/catalog/coverage-report.md` | `9C36100B581D9E94DEB3E842A5521639EB49649229A0013100462DAB6ECFA578` |
 
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client

@@ -24,7 +24,7 @@ The encoder validates and measures the tree before output allocation, checks ari
 - `cargo check -p kmipkit-client --all-features` passed.
 - `git diff --check` passed.
 
-T003 Green is ready for independent review. The separate T004 refactor remains unstarted.
+T003 Green passed independent review after the allocation-source follow-up below. The separate T004 refactor remains unstarted.
 
 ## Independent review follow-up — Red
 
@@ -35,3 +35,7 @@ Added `allocation_error_exposes_its_reservation_source` before changing the prod
 The allocation error now retains `std::collections::TryReserveError` as its `Error::source()`. Its `Display` and `Debug` include only the safe error category, not the source text. The production reservation helper is exercised with impossible `usize::MAX` capacity, which returns capacity overflow without a large allocation. The focused source-preservation test passed.
 
 Green verification passed: `cargo fmt --all --check`; `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`; `cargo test -p kmipkit-client` (32 unit tests, 6 integration tests, 0 doc tests); and `git diff --check`. The Green implementation commit is `b38640aa00007bb673c32173c17572721f2b877c`.
+
+## Independent review disposition
+
+The reviewer confirmed the allocation-source finding is addressed and reported no new issues. The reviewer verified that `Display` and `Debug` omit the retained source details and that the regression test forces capacity overflow before allocation. The reviewer did not run tests; the coordinator independently ran `cargo test -p kmipkit-client` after Green: 32 unit tests and 6 integration tests passed. T003 is complete. T004 remains unstarted.
