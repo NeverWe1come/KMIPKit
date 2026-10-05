@@ -140,20 +140,30 @@ FR-007, FR-012, FR-019, and SC-002; they do not change protocol scope.
 - [x] T043 **Green**: Correct the three response-result clause directions from the pinned response text and extend the deterministic report with tag/range and profile traceability details; pass the focused tests.
 - [x] T044 **Refactor**: Regenerate the report, update inventory/conformance documentation, run catalog, immutable-source, report, and full Python checks, obtain independent QA/security review, and prepare a terminal-created draft PR. Draft: https://github.com/NeverWe1come/KMIPKit/pull/9
 
+## Credential catalog correction follow-up
+
+These tasks preserve the open §9.4 keyword-classification and §9.11 Device
+minimum-field questions while correcting requirement scope and element links.
+
+- [x] T045 **Red**: Add focused catalog regressions for mixed §9.4 role/scope, lowercase `must` disposition, server-only assignment, Credential identification/authentication applicability, Authentication/Credential links, all six Device field links, the four uniqueness links, both open discrepancy records, and a summary that does not narrow the Device minimum field set. The initial focused command failed all 3 tests as expected against baseline: clause role `client` instead of `both`, Credential scope `profile_conditional` instead of `client_1_0`, and no Device field links (DCO commit `fc3a704`). The follow-up regression failed because the summary still said “device identifier field” (DCO commit `02c6626`).
+- [x] T046 **Green**: Correct the catalog and reciprocal element links; add open DISC-041 and DISC-042 without decisions; keep the Device minimum-field summary neutral and note DISC-042; regenerate the coverage report. The initial focused command passed all 3 tests (DCO commit `e8f5c55`); the follow-up Device tests passed (DCO commit `c5b7533`). `python -B tools/normative_catalog/validate.py` reported 4 sources, 1,411 clauses, and 4,020 records valid; report generation and `--check` passed.
+- [x] T047 **Refactor**: Record the pinned-source review in `specification/catalog/review-evidence.md`, confirm deterministic report generation (two writes produced SHA-256 `41C4CC63A0D82E9A5A86F2D0E203A6A65AE3F286AE111D6EF4EBDCB5FFE973D8`), update this task traceability, and run the complete catalog suite (162 tests, 7 platform-specific skips), source audit `--check` (1,411 candidates), immutable-source check, catalog validation (4 sources, 1,411 clauses, 4,020 records), report `--check`, and `git diff --check` against base `849b46f772fd7cbcea2f42393cdbcf58e92cac94`. Independent parent QA passed with no blockers.
+
 ## Requirement-to-Task Traceability
 
 | Requirement | Tasks |
 |---|---|
 | FR-001, FR-020 | T001, T008, T037, T039, T041 |
 | FR-002, FR-006 | T012, T014, T016, T018, T019 |
-| FR-003, FR-019 | T013, T015, T016, T019, T033, T042, T043, T044 |
+| FR-003 | T013, T015, T016, T019, T033, T042, T043, T044, T045, T046, T047 |
+| FR-019 | T013, T015, T016, T019, T033, T042, T043, T044 |
 | FR-004, FR-021 | T003, T006, T007, T008, T020, T022, T027 |
 | FR-005 | T020, T021, T022, T026 |
 | FR-007, FR-008 | T023, T029, T031, T034, T035, T042, T043, T044 |
 | FR-009 | T017, T024, T025, T034 |
 | FR-010 | T030, T032, T034, T035 |
 | FR-011 | T003, T033 |
-| FR-012 | T005, T028, T033, T042, T043, T044 |
+| FR-012 | T005, T028, T033, T042, T043, T044, T045, T046, T047 |
 | FR-013, FR-018 | T002, T006, T007, T008, T009, T010, T011, T019, T036, T037 |
 | FR-014 | T038 |
 | FR-015, FR-016 | T002, T004, T007, T009, T040 |
@@ -166,14 +176,14 @@ FR-007, FR-012, FR-019, and SC-002; they do not change protocol scope.
 | Success Criterion | Tasks |
 |---|---|
 | SC-001 | T012, T014, T018 |
-| SC-002 | T013, T015, T016, T033, T042, T043, T044 |
-| SC-003 | T006, T020, T022, T027 |
+| SC-002 | T013, T015, T016, T033, T042, T043, T044, T045, T046, T047 |
+| SC-003 | T006, T020, T022, T027, T045, T046, T047 |
 | SC-004 | T017, T024, T029, T031, T032, T042, T043, T044 |
-| SC-005 | T005, T025, T028, T033, T042, T043, T044 |
+| SC-005 | T005, T025, T028, T033, T042, T043, T044, T045, T046, T047 |
 | SC-006 | T005, T010, T036 |
 | SC-007 | T004, T005, T009, T010 |
-| SC-008 | T004, T008, T037 |
-| SC-009 | T001, T020, T022, T023, T027, T038 |
+| SC-008 | T004, T008, T037, T047 |
+| SC-009 | T001, T020, T022, T023, T027, T038, T046, T047 |
 
 ## Dependencies and Execution Order
 
