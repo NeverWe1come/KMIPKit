@@ -102,4 +102,4 @@ machine-readable compliance traceability artifact from this planning map.
 
 ## Phase 8: cargo-deny exit status convergence
 
-- [ ] T032 [US2] Parse cargo-deny's check-failure exit bitset for all four policy sections and require exact agreement with structured error counts; add pinned-tool-derived license-only exit-4 and combined bans/licenses exit-6 regressions per FR-006 (security review finding).
+- [x] T032 [US2] Parse cargo-deny's check-failure exit bitset for all four policy sections and require exact agreement with structured error counts; add pinned-tool-derived license-only exit-4 and combined bans/licenses exit-6 regressions per FR-006 (security review finding).

@@ -608,3 +608,40 @@ targeted pre-fix head `d2f4c29` and is not evidence for this correction.
 T017 remains open for CI on the corrected head; T018 remains open until the
 security reviewer rechecks the fix and completes the reviewer-owned checklist
 and independent QA review.
+
+## Phase 8: cargo-deny exit bitset convergence
+
+The security reviewer confirmed from cargo-deny 0.20.2 source and a real
+waiver-free license fixture that failing check sections are represented as a
+bitset: a license-only `rejected` finding exits 4, while simultaneous bans
+and license errors exit 6. Red commit `e7ef646` added exit-4, exit-6, and
+mismatch regressions; the focused test failed because the parser only allowed
+0, 1, or 2. Green commit `65c8d08` maps advisories/bans/licenses/sources to
+bits 1/2/4/8 and requires the exit mask to equal the checks with structured
+errors. It rejects out-of-range 16 and inconsistent masks. Refactor commit
+`6c0eeaf` isolates the bitmask derivation and exercises the sources bit (8).
+The rule is confirmed in the pinned upstream
+[`stats.rs`](https://raw.githubusercontent.com/EmbarkStudios/cargo-deny/0.20.2/src/cargo-deny/stats.rs#L69-L81).
+T032 is complete.
+
+Verification after Green:
+
+```text
+python -m unittest discover -s scripts/tests
+Ran 142 tests ... OK (skipped=25)
+
+$env:CARGO_DENY = (Get-Command cargo-deny).Source
+python -m unittest scripts.tests.test_cargo_deny_fixtures
+Ran 18 tests ... OK
+
+pwsh -NoProfile -File scripts/Test-DependencyPolicy.ps1
+Verified cargo-deny 0.20.2
+RustSec root and fuzz: ef6173cbc5c50ec8166f9a5b28f07834144373ee
+Dependency policy checks passed; Cargo.lock and fuzz/Cargo.lock SHA256 hashes are unchanged.
+```
+
+After Refactor, all 12 parser/traceability tests and the 142-test Python
+suite passed again. The pinned-tool security reviewer independently confirmed
+the real license-only exit-4 output. CI run `37386838599` still covers the
+pre-T032 head `a19b2e2`; the corrected T032 head needs its own workflow run.
+T017 and T018 remain open for that CI run and the security/QA reviews.
