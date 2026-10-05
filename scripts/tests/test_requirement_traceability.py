@@ -15,6 +15,12 @@ SPECIFICATION = REPOSITORY_ROOT / "specs" / "011-dependency-policy" / "spec.md"
 TRACEABILITY = REPOSITORY_ROOT / "specification" / "compliance" / "requirements" / "KMIPKIT-0011.csv"
 CSV_COLUMNS = ("requirement_id", "configuration_path", "implementation_path", "test_reference")
 CONFIGURATION_SUFFIXES = {".json", ".toml", ".yaml", ".yml"}
+EXPECTED_REQUIREMENT_TESTS = {
+    "FR-004": "scripts/tests/test_dependency_policy.py::DependencyPolicyRunnerContractTests.test_runner_refreshes_rustsec_per_workspace_and_reports_sha_and_timestamp",
+    "FR-011": "scripts/tests/test_workflow.py::WorkflowContractTests.test_dependency_policy_local_command_and_review_process_are_documented",
+    "SC-004": "scripts/tests/test_workflow.py::WorkflowContractTests.test_scheduled_policy_reports_scanned_commit_and_each_rustsec_revision",
+    "SC-006": "scripts/tests/test_workflow.py::WorkflowContractTests.test_dependency_policy_local_command_and_review_process_are_documented",
+}
 
 
 class RequirementTraceabilityTests(unittest.TestCase):
@@ -89,6 +95,15 @@ class RequirementTraceabilityTests(unittest.TestCase):
                 "CSV schema must be requirement_id,configuration_path,implementation_path,test_reference.",
             )
             rows = list(reader)
+
+        rows_by_id = {row["requirement_id"]: row for row in rows}
+        for requirement_id, expected_reference in EXPECTED_REQUIREMENT_TESTS.items():
+            with self.subTest(requirement_test=requirement_id):
+                self.assertEqual(
+                    rows_by_id[requirement_id]["test_reference"],
+                    expected_reference,
+                    f"{requirement_id} must link to a test that exercises its acceptance criteria.",
+                )
 
         observed_counts = Counter(row["requirement_id"] for row in rows)
         self.assertEqual(

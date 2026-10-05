@@ -188,6 +188,8 @@ class WorkflowContractTests(unittest.TestCase):
     def test_scheduled_policy_reports_scanned_commit_and_each_rustsec_revision(self) -> None:
         contents = self.require_workflow()
         job = self.scheduled_policy_job(contents)
+        self.assertRegex(job, r"(?im)^\s*run:\s*echo\s+[\"']Active release ref:")
+        self.assertIn("$ACTIVE_RELEASE_REF", job)
         runner = self.require_policy_runner()
         output = job + "\n" + runner
         for required in ("scanned commit", "RustSec", "root", "fuzz", "SHA", "timestamp"):
@@ -199,6 +201,14 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("default branch", guide)
         self.assertRegex(guide, r"(?s)schedul.{0,180}(?:integrat|default branch)")
         self.assertRegex(guide, r"(?s)(?:integrat|merged).{0,180}(?:default branch|scheduled)")
+
+    def test_dependency_policy_local_command_and_review_process_are_documented(self) -> None:
+        testing_guide = TESTING_GUIDE.read_text(encoding="utf-8")
+        policy_guide = (REPOSITORY_ROOT / "docs" / "security" / "dependency-policy.md").read_text(encoding="utf-8")
+        self.assertIn("pwsh -File .\\scripts\\Test-DependencyPolicy.ps1", testing_guide)
+        self.assertIn("0.20.2", testing_guide)
+        self.assertIn("root and fuzz", testing_guide)
+        self.assertRegex(policy_guide.lower(), r"tool upgrades?.{0,160}(?:review|version|engineering)")
 
 
 if __name__ == "__main__":
