@@ -56,7 +56,7 @@ The root and fuzz graphs are separate policy inputs. Metadata validation covers 
 | FR-003 | T001, T003, T006, T007, T010, T017, T028, T030, T031 |
 | FR-004 | T001, T003, T008, T009, T013, T015, T017, T028, T029 |
 | FR-005 | T003, T007, T008, T017 |
-| FR-006 | T002, T003, T006, T010, T017, T028 |
+| FR-006 | T002, T003, T006, T010, T017, T028, T032 |
 | FR-007 | T010, T011, T012, T018, T027, T028, T030 |
 | FR-008 | T001, T006, T008, T014, T017 |
 | FR-009 | T004, T009, T017 |
@@ -99,3 +99,7 @@ machine-readable compliance traceability artifact from this planning map.
 ## Phase 7: Security review convergence
 
 - [x] T031 [US2] Accept cargo-deny 0.20.2's nonzero summary `helps` counters when they have no individual diagnostic records, while continuing to validate their shape and exact-match errors, warnings, and notes; add a realistic license-warning fixture, update traceability and implementation evidence, and rerun the full root/fuzz dependency-policy command per FR-003 (security review finding).
+
+## Phase 8: cargo-deny exit status convergence
+
+- [ ] T032 [US2] Parse cargo-deny's check-failure exit bitset for all four policy sections and require exact agreement with structured error counts; add pinned-tool-derived license-only exit-4 and combined bans/licenses exit-6 regressions per FR-006 (security review finding).

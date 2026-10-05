@@ -43,6 +43,7 @@ EXPECTED_REQUIREMENT_TESTS = {
     "FR-006": ";".join(
         (
             "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_architecture_ban_exceptions_cannot_waive_the_three_adr_0005_crates",
+            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_accepts_combined_cargo_deny_check_exit_bits",
             "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_rejects_unknown_errors_and_incomplete_json",
             "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_duplicate_baseline_finding_covers_each_top_level_version_exactly",
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_each_architecture_ban_reports_banned_package_and_version",

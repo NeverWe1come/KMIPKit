@@ -1268,6 +1268,62 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
                 0,
             )
 
+    def test_baseline_parser_accepts_combined_cargo_deny_check_exit_bits(self) -> None:
+        parser = getattr(POLICY, "parse_cargo_deny_findings", None)
+        self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
+        records = [
+            {
+                "type": "diagnostic",
+                "fields": {
+                    "code": "banned",
+                    "severity": "error",
+                    "graphs": [{"Krate": {"name": "banned-crate", "version": "1.0.0"}}],
+                },
+            },
+            {
+                "type": "diagnostic",
+                "fields": {
+                    "code": "rejected",
+                    "severity": "error",
+                    "graphs": [{"Krate": {"name": "license-crate", "version": "2.0.0"}}],
+                },
+            },
+            {
+                "type": "summary",
+                "fields": {
+                    check: {
+                        "errors": int(check in {"bans", "licenses"}),
+                        "warnings": 0,
+                        "notes": 0,
+                        "helps": 0,
+                    }
+                    for check in ("advisories", "bans", "licenses", "sources")
+                },
+            },
+        ]
+        raw = "\n".join(json.dumps(record) for record in records)
+        metadata = {
+            "root": {
+                "packages": [
+                    {"name": "banned-crate", "version": "1.0.0", "source": None},
+                    {"name": "license-crate", "version": "2.0.0", "source": None},
+                ]
+            }
+        }
+
+        findings = parser(raw, metadata, "root", 6)
+
+        self.assertEqual({"ban", "license"}, {item["kind"] for item in findings})
+        license_summary = json.loads(json.dumps(records[-1]))
+        license_summary["fields"]["bans"]["errors"] = 0
+        license_only_raw = "\n".join(
+            (json.dumps(records[1]), json.dumps(license_summary))
+        )
+        license_only = parser(license_only_raw, metadata, "root", 4)
+        self.assertEqual(["license"], [item["kind"] for item in license_only])
+        with self.assertRaises(POLICY.PolicyError):
+            parser(raw, metadata, "root", 2)
+
     def test_baseline_parser_rejects_unknown_errors_and_incomplete_json(self) -> None:
         parser = getattr(POLICY, "parse_cargo_deny_findings", None)
         self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
