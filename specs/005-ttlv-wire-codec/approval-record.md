@@ -181,6 +181,14 @@ T013's executable quickstart and public doctest are in DCO-signed commit `0131fc
 | --- | --- |
 | `tasks.md` | `8A550F3CBA332C337B4FA1CCC0E14EB86EB959093EDD85BC28DA7A56384BC58E` |
 
+## Execution update — T014
+
+T014's attributed fixture corpus and executable test are in DCO-signed commit `64e17379c7bba621a44c7c5e649c1a9f2cd510d5`; the bounded standalone fuzz package and target are in `5cf185a418df98493654e4bf3cd9318dc18c6265`; the evidence report is `0e38886a5a1d6853e5ed5bb8a3b0b7340ecc1347`. Independent static reviews of fixtures and fuzz wiring both passed. I independently reproduced formatting, 102 `kmipkit-ttlv` tests/doctests, Clippy with warnings denied, locked fuzz-package metadata, and diff checks. The implementer ran stable WSL compile/Clippy and 1,000 bounded libFuzzer iterations using 22 temporary binary seeds; no crash or corpus artifact remains. T015 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `317F9ABB2AC51F83B934671EC12FC422653CE0CDD6CBBC1915C072484FC3513D` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository
