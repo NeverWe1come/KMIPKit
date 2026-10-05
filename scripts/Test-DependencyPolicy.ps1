@@ -21,6 +21,7 @@ $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("KMIPKit-DependencyPoli
 $cargoHome = Join-Path $tempRoot 'cargo-home'
 $metadataRoot = Join-Path $tempRoot 'metadata'
 $originalCargoHome = $env:CARGO_HOME
+$originalCargoDeny = $env:CARGO_DENY
 
 function Format-CargoDenyFailure {
     param(
@@ -248,6 +249,12 @@ try {
         Write-Output "RustSec $($workspace.Name): remote $rustSecRemote; commit $($rustSecEvidence.Commit); timestamp $($rustSecEvidence.Timestamp)"
     }
 
+    # Run offline negative fixtures with the exact binary verified above.
+    $env:CARGO_DENY = $denyExecutable
+    [void](Invoke-CapturedCommand -Executable $pythonExecutable -Arguments @(
+        '-X', 'utf8', '-m', 'unittest', 'scripts.tests.test_cargo_deny_fixtures', '-v'
+    ) -Operation 'cargo-deny negative fixtures')
+
     Assert-LockfilesUnchanged -Before $lockHashesBefore
     Write-Output 'Dependency policy checks passed; Cargo.lock and fuzz/Cargo.lock SHA256 hashes are unchanged.'
 }
@@ -261,6 +268,12 @@ finally {
     }
     else {
         $env:CARGO_HOME = $originalCargoHome
+    }
+    if ($null -eq $originalCargoDeny) {
+        Remove-Item Env:CARGO_DENY -ErrorAction SilentlyContinue
+    }
+    else {
+        $env:CARGO_DENY = $originalCargoDeny
     }
     if (Test-Path -LiteralPath $tempRoot -PathType Container) {
         Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
