@@ -1,0 +1,3 @@
+# Case: the accepted KMIPKit decoder policy rejects a received Reserved Tag.
+# Attribution: KMIPKit requirement KMIPKIT-0005-FR-010 and accepted ADR-0011 reject received Reserved Tags; OASIS Key Management Interoperability Protocol Specification Version 2.1, Chapter 11 and Section 11.56, provide the reserved-tag rule and allocation context (KMIPKIT-0005-NR-006).
+42 00 09 05 00 00 00 04 00 00 00 09 00 00 00 00
