@@ -157,6 +157,14 @@ T010 Green is implemented in DCO-signed commit `302b8c60a75e22b9d590f1253c949d53
 | --- | --- |
 | `tasks.md` | `0C801349167EF570567FB861C6D229003957E355644672AB07A1B1F0D27E8EEE` |
 
+## Execution update — T011
+
+T011 Refactor is implemented in DCO-signed commit `1e904459b1addda85c7b702400fab58cf038dce8`; the verification report and independent static review are in `task-11-report.md` and `task-11-review.md` (PASS, no findings). The refactor documents the decoder's current accounting/error order and encoder's preflight/reserve/write sequence, without moving decoder checks or changing error kinds/offsets. Bounded tests use the real `CodecLimits` adapter and observe the production reservation/copy boundaries under `cfg(test)`. I independently reran formatting, Clippy and all-feature checks for both crates, all 100 TTLV tests and 42 client tests, warning-free rustdoc for both crates, and `git diff --check`; all passed. T012 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `4E128B2E7ECB05FFDF08C7158FFCEE10396E5581AB31E92A9F72661274588705` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository
