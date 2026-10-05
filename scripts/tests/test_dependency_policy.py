@@ -301,7 +301,13 @@ class DependencyExceptionTests(unittest.TestCase):
             exact_exception(
                 "license",
                 package_name="license-crate",
-                license_evidence={"reviewed_by": "Security reviewer", "reference": "review-42", "disposition": "MIT"},
+                license_evidence={
+                    "reviewed_by": "Security reviewer",
+                    "reference": "review-42",
+                    "disposition": "clarify",
+                    "expression": "MIT",
+                    "license_files": [{"path": "LICENSE", "hash": "0xbd0eed23"}],
+                },
             ),
             exact_exception("source", package_name="source-crate", source=source),
             exact_exception("duplicate", package_name="duplicate-crate"),
@@ -311,7 +317,15 @@ class DependencyExceptionTests(unittest.TestCase):
         register = {"schema_version": 1, "exceptions": entries}
         config = {
             "advisories": {"ignore": ["RUSTSEC-2025-0001"]},
-            "licenses": {"exceptions": [{"crate": "license-crate@1.2.3", "allow": ["MIT"]}]},
+            "licenses": {
+                "clarify": [
+                    {
+                        "crate": "license-crate@1.2.3",
+                        "expression": "MIT",
+                        "license-files": [{"path": "LICENSE", "hash": "0xbd0eed23"}],
+                    }
+                ]
+            },
             "sources": {
                 "allow-registry": [],
                 "allow-git": [source.removeprefix("git+").split("?", 1)[0]],
@@ -333,7 +347,9 @@ class DependencyExceptionTests(unittest.TestCase):
                     "license_evidence": {
                         "reviewed_by": "Security reviewer",
                         "reference": "https://github.com/NeverWe1come/KMIPKit/pull/35",
-                        "disposition": "Apache-2.0 approved for this package",
+                        "disposition": "clarify",
+                        "expression": "Apache-2.0",
+                        "license_files": [{"path": "LICENSE", "hash": "0xbd0eed23"}],
                     },
                 },
             ),
