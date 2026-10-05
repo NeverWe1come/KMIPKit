@@ -37,10 +37,12 @@ added.
   deallocation. Both observers are safe Rust; the owner stub intentionally
   omits zeroization so the assertion fails. Negative trait assertions ensure
   the private owner shape does not expose the prohibited traits.
-- OASIS-derived comments cite the exact document/section and applicable stable
-  requirement IDs. Cases without a directly applicable catalog ID are labeled
-  project-only under their FR. No test claims `KMIPKIT-REQ-SPEC-10.1.2-001`
-  schema-order coverage.
+- Normative exact vectors cite the exact OASIS document/sections and stable
+  feature requirement IDs (`KMIPKIT-0005-NR-001` through `NR-006` as
+  applicable), plus direct catalog IDs where available. Genuinely
+  project-only behavior, such as empty Big Integer rejection, cites only its
+  FR. Generic child-order preservation cites FR-003 and does not claim
+  schema-defined field-order coverage.
 
 ## Verification evidence
 
@@ -102,9 +104,10 @@ text_and_byte_string_padding_is_minimal_at_eight_byte_boundaries
 
 There were no compile errors, unresolved symbols, unexpected panics, or
 production encoder symbols. The 28 failures are assertion failures against the
-intentionally incomplete stubs. Three acceptance-only synthetic cases pass
-against the permissive planner stub; over-limit and writer/owner cases fail as
-intended.
+intentionally incomplete stubs. Two raised-limit cases pass because the
+permissive `check_plan` stub returns `Ok` for every plan. The third passing test,
+`preflight_error_does_not_format_payload_bytes`, passes because the stub error
+has no payload field. Over-limit and writer/owner cases fail as intended.
 
 ## Self-review
 
@@ -122,3 +125,34 @@ intended.
 This report is included in the DCO-signed Red commit for T002.
 
 T003 and Green implementation are not started by this task.
+
+## Review correction round
+
+- Updated normative exact-vector comments to cite the approved feature NR IDs
+  with exact OASIS sections, adding direct catalog IDs where applicable.
+  Project-only empty Big Integer rejection cites only FR-002. Generic child
+  order remains FR-003, with schema-defined field-order coverage explicitly
+  unclaimed. U32 planning cites §10.1.3 / NR-004.
+- Corrected the pass explanation: the two raised-limit cases pass because the
+  permissive `check_plan` stub accepts all plans; the payload-formatting test
+  passes because the fieldless stub error cannot contain payload.
+- Updated `dependency-review.md` to record that T002 added only the reviewed
+  development-dependency edges and no normal client dependency. Refreshed the
+  approval-record digest to `60FE528D34DCB30F8F83BC6176B91E8522B4A6FA9CA1A5875B32697E9F0206B4`.
+  The approval-record table check found 16 entries and 0 mismatches.
+
+Commands and results after the review corrections:
+
+```text
+cargo fmt --all --check — passed
+git diff --check — passed
+cargo test -p kmipkit-client — exit 1 as expected for Red
+running 31 tests
+test result: FAILED. 3 passed; 28 failed; 0 ignored; 0 measured; 0 filtered out
+error: test failed, to rerun pass `-p kmipkit-client --lib`
+```
+
+The three passing tests are `configured_raised_byte_limit_allows_a_plan_above_default`,
+`configured_raised_element_limit_allows_a_plan_above_default`, and
+`preflight_error_does_not_format_payload_bytes`. Compilation succeeded; all
+28 failures remain behavioral assertions, with no unresolved symbols.
