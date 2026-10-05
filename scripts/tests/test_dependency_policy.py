@@ -312,7 +312,10 @@ class DependencyExceptionTests(unittest.TestCase):
         config = {
             "advisories": {"ignore": ["RUSTSEC-2025-0001"]},
             "licenses": {"exceptions": [{"crate": "license-crate@1.2.3", "allow": ["MIT"]}]},
-            "sources": {"allow-registry": [], "allow-git": [source]},
+            "sources": {
+                "allow-registry": [],
+                "allow-git": [source.removeprefix("git+").split("?", 1)[0]],
+            },
             "bans": {"skip": [{"crate": "duplicate-crate@1.2.3", "reason": "KMIPKIT-0011-EX-004"}]},
         }
         policy.validate_exception_config(register, config)
