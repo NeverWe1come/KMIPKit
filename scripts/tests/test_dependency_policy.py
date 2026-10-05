@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import shutil
 import subprocess
 import sys
@@ -829,7 +830,7 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
         raw_output = "\n".join(
             (
-                '{"type":"diagnostic","fields":{"severity":"error","code":"license-not-allowed",'
+                '{"type":"diagnostic","fields":{"severity":"error","code":"rejected",'
                 '"message":"license sentinel-message-secret","labels":[{"span":"GPL-3.0-only"}],'
                 '"graphs":[{"Krate":{"name":"bad-license","version":"2.3.4","kind":null},'
                 '"repeat":false,"parents":[]}]}}',
@@ -852,7 +853,7 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
 
         for expected in (
             "bad-license@2.3.4",
-            "rule=license-not-allowed",
+            "rule=license-rejected",
             "license=GPL-3.0-only",
             "unsafe-crate@1.2.3",
             "rule=vulnerability",
@@ -882,11 +883,25 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         self.assertIn("diagnostics unavailable", report)
         self.assertNotIn("sentinel-secret-material", report)
 
+    def test_failure_report_omits_untrusted_license_ref_labels(self) -> None:
+        formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
+        self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
+        raw_output = (
+            '{"type":"diagnostic","fields":{"severity":"error","code":"rejected",'
+            '"labels":[{"span":"LicenseRef-SENTINELSECRET00000000"}],'
+            '"graphs":[{"Krate":{"name":"bad-license","version":"2.3.4"}}]}}'
+        )
+
+        report = formatter(raw_output, {"root": {"packages": []}, "fuzz": {"packages": []}})
+
+        self.assertNotIn("LicenseRef-SENTINELSECRET00000000", report)
+
     def test_untrusted_json_field_shapes_fail_safely(self) -> None:
         formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
         self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
         raw_output = (
-            '{"type":"diagnostic","fields":{"severity":[],"code":{},"message":"sentinel-secret",'
+            '{"type":"diagnostic","fields":{"severity":[],"code":"sentinel-secret-code",'
+            '"message":"sentinel-secret",'
             '"graphs":[{"Krate":{"name":"safe-crate","version":"1.0.0"}}]}}'
         )
 
@@ -895,6 +910,42 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         self.assertIn("safe-crate@1.0.0", report)
         self.assertIn("rule=policy-check", report)
         self.assertNotIn("sentinel-secret", report)
+
+    def test_cli_formats_piped_json_without_persisting_or_echoing_raw_diagnostics(self) -> None:
+        raw_output = (
+            '{"type":"diagnostic","fields":{"severity":"error","code":"rejected",'
+            '"message":"sentinel-raw-message","labels":[{"span":"GPL-3.0-only"}],'
+            '"graphs":[{"Krate":{"name":"cli-crate","version":"3.2.1"}}]}}'
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            temp_root = Path(temporary)
+            root_metadata = temp_root / "root.json"
+            fuzz_metadata = temp_root / "fuzz.json"
+            root_metadata.write_text(
+                json.dumps({"packages": [{"name": "cli-crate", "version": "3.2.1", "source": None}]}),
+                encoding="utf-8",
+            )
+            fuzz_metadata.write_text(json.dumps({"packages": []}), encoding="utf-8")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(POLICY_PATH),
+                    "--format-cargo-deny-diagnostics",
+                    "--root-metadata",
+                    str(root_metadata),
+                    "--fuzz-metadata",
+                    str(fuzz_metadata),
+                ],
+                input=raw_output,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("cli-crate@3.2.1", result.stdout)
+        self.assertIn("rule=license-rejected", result.stdout)
+        self.assertNotIn("sentinel-raw-message", result.stdout)
 
 
 if __name__ == "__main__":
