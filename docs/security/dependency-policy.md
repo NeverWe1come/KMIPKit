@@ -36,6 +36,14 @@ fail. Cached advisory data alone is not a successful fresh scan. The check
 does not update manifests or lockfiles; it uses locked operations and compares
 lockfile hashes so an accidental change fails.
 
+On a cargo-deny failure, the runner requests its JSON diagnostic format and
+prints only validated package coordinates, rule codes, known advisory
+identifiers, and a source reference with URL paths and credentials redacted.
+It omits license label text entirely and never forwards cargo-deny's raw
+message, stdout, or stderr. If a structured field is missing or malformed,
+the report uses a generic safe placeholder while preserving the failed check
+and exit code.
+
 Tool upgrades require a reviewed change that updates the exact runner pin,
 the documented local version, and this independent tool review together.
 Re-run the policy against both workspaces and verify the new release,

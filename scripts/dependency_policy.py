@@ -25,6 +25,38 @@ VERSION_PATTERN = re.compile(
     r"(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?"
 )
 HEX_REVISION_PATTERN = re.compile(r"[0-9a-fA-F]{40}")
+ADVISORY_ID_PATTERN = re.compile(r"(?:RUSTSEC-[0-9]{4}-[0-9]{4}|CVE-[0-9]{4}-[0-9]{4,7}|GHSA-[23456789cfghjmpqrvwx]{4}-[23456789cfghjmpqrvwx]{4}-[23456789cfghjmpqrvwx]{4})")
+DIAGNOSTIC_CODE_PATTERN = re.compile(r"[a-z][a-z0-9_-]{0,63}")
+LICENSE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "accepted",
+        "rejected",
+        "unlicensed",
+        "skipped-private-workspace-crate",
+        "license-not-encountered",
+        "license-exception-not-encountered",
+        "missing-clarification-file",
+        "parse-error",
+        "empty-license-field",
+        "no-license-field",
+        "gather-failure",
+    }
+)
+CARGO_DENY_POLICY_CODES = frozenset(
+    {
+        "vulnerability",
+        "notice",
+        "unmaintained",
+        "unsound",
+        "yanked",
+        "banned",
+        "not-allowed",
+        "duplicate",
+        "wildcard",
+        "git-source-underspecified",
+        "source-not-allowed",
+    }
+)
 SECRET_QUERY_PATTERN = re.compile(
     r"(?:token|secret|pass(?:word|wd)?|credential|authorization|signature|(?:api|access|private|client)[_-]?key)",
     re.I,
@@ -33,6 +65,160 @@ SECRET_QUERY_PATTERN = re.compile(
 
 class PolicyError(ValueError):
     """A dependency policy input is malformed, unsafe, or inconsistent."""
+
+
+def _redact_diagnostic_source(source: Any) -> str:
+    """Return a safe source reference that never includes URL paths or credentials."""
+    if source is None:
+        return "path:local"
+    if not isinstance(source, str) or len(source) > 4096:
+        return "source:unavailable"
+    prefix, separator, url = source.partition("+")
+    if not separator or prefix not in {"registry", "git"}:
+        return "source:unavailable"
+    try:
+        parsed = urlsplit(url)
+        hostname = parsed.hostname
+        port = parsed.port
+    except ValueError:
+        return "source:unavailable"
+    if parsed.scheme != "https" or not hostname or not re.fullmatch(r"[A-Za-z0-9.-]{1,253}", hostname):
+        return "source:unavailable"
+    host = hostname.lower()
+    if port is not None:
+        if not 1 <= port <= 65535:
+            return "source:unavailable"
+        host += f":{port}"
+    return f"{prefix}+https://{host}/<redacted>"
+
+
+def _diagnostic_packages(fields: dict[str, Any]) -> list[tuple[str, str]]:
+    """Read package coordinates only from cargo-deny's structured inclusion graphs."""
+    found: set[tuple[str, str]] = set()
+    visited = 0
+
+    def visit(value: Any, depth: int = 0) -> None:
+        nonlocal visited
+        visited += 1
+        if depth > 64 or visited > 100_000:
+            return
+        if isinstance(value, dict):
+            crate = value.get("Krate")
+            if isinstance(crate, dict):
+                name = crate.get("name")
+                version = crate.get("version")
+                if (
+                    isinstance(name, str)
+                    and PACKAGE_PATTERN.fullmatch(name)
+                    and isinstance(version, str)
+                    and VERSION_PATTERN.fullmatch(version)
+                ):
+                    found.add((name, version))
+            for child in value.values():
+                visit(child, depth + 1)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child, depth + 1)
+
+    visit(fields.get("graphs"))
+    return sorted(found)
+
+
+def _diagnostic_sources(metadata_by_workspace: Any) -> dict[tuple[str, str], str]:
+    sources: dict[tuple[str, str], set[str]] = {}
+    if not isinstance(metadata_by_workspace, dict):
+        return {}
+    for workspace in ("root", "fuzz"):
+        metadata = metadata_by_workspace.get(workspace)
+        packages = metadata.get("packages") if isinstance(metadata, dict) else None
+        if not isinstance(packages, list):
+            continue
+        for package in packages:
+            if not isinstance(package, dict):
+                continue
+            name = package.get("name")
+            version = package.get("version")
+            if (
+                isinstance(name, str)
+                and PACKAGE_PATTERN.fullmatch(name)
+                and isinstance(version, str)
+                and VERSION_PATTERN.fullmatch(version)
+            ):
+                sources.setdefault((name, version), set()).add(
+                    _redact_diagnostic_source(package.get("source"))
+                )
+    return {
+        key: next(iter(values)) if len(values) == 1 else "source:ambiguous"
+        for key, values in sources.items()
+    }
+
+
+def format_cargo_deny_diagnostics(raw_output: str, metadata_by_workspace: Any) -> str:
+    """Format cargo-deny JSON diagnostics using only validated, redacted fields."""
+    if not isinstance(raw_output, str) or len(raw_output) > 16 * 1024 * 1024:
+        return "cargo-deny diagnostics unavailable (output was malformed or exceeded the report limit)."
+    sources = _diagnostic_sources(metadata_by_workspace)
+    reports: list[str] = []
+    recognized = False
+    for line in raw_output.splitlines():
+        if not line.strip():
+            continue
+        try:
+            item = json.loads(line)
+        except (json.JSONDecodeError, RecursionError, TypeError):
+            continue
+        if not isinstance(item, dict) or item.get("type") != "diagnostic":
+            continue
+        fields = item.get("fields")
+        if not isinstance(fields, dict):
+            continue
+        recognized = True
+        raw_code = fields.get("code")
+        if (
+            isinstance(raw_code, str)
+            and DIAGNOSTIC_CODE_PATTERN.fullmatch(raw_code)
+            and raw_code in LICENSE_DIAGNOSTIC_CODES | CARGO_DENY_POLICY_CODES
+        ):
+            rule = (
+                f"license-{raw_code}"
+                if raw_code in LICENSE_DIAGNOSTIC_CODES and not raw_code.startswith("license-")
+                else raw_code
+            )
+        else:
+            rule = "policy-check"
+        severity_value = fields.get("severity")
+        severity = (
+            severity_value
+            if isinstance(severity_value, str)
+            and severity_value in {"error", "warning", "note", "help", "bug"}
+            else "finding"
+        )
+        packages = _diagnostic_packages(fields)
+        if not packages:
+            packages = [("package-unavailable", "version-unavailable")]
+        evidence = ""
+        if rule in {"vulnerability", "unmaintained", "unsound"}:
+            advisory = fields.get("advisory")
+            candidates = []
+            if isinstance(advisory, dict):
+                candidates.extend((advisory.get("id"), advisory.get("aliases")))
+            for candidate in candidates:
+                values = candidate if isinstance(candidate, list) else [candidate]
+                valid_ids = [
+                    value for value in values
+                    if isinstance(value, str) and ADVISORY_ID_PATTERN.fullmatch(value)
+                ]
+                if valid_ids:
+                    evidence = f" advisory={','.join(sorted(set(valid_ids)))}"
+                    break
+        for name, version in packages:
+            source = sources.get((name, version), "source:unavailable")
+            reports.append(
+                f"{severity} {name}@{version} source={source} rule={rule}{evidence}"
+            )
+    if not recognized:
+        return "cargo-deny diagnostics unavailable (no recognized structured findings)."
+    return "\n".join(reports)
 
 
 def parse_rustc_host(verbose_output: str) -> str:
@@ -805,7 +991,23 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="JSON array of advisory, license, and duplicate findings for exact exception matching",
     )
+    parser.add_argument(
+        "--format-cargo-deny-diagnostics",
+        action="store_true",
+        help="read cargo-deny JSON from stdin and print a safely redacted failure report",
+    )
     arguments = parser.parse_args(argv)
+    if arguments.format_cargo_deny_diagnostics:
+        try:
+            metadata = {
+                "root": _read_json(arguments.root_metadata, "root Cargo metadata"),
+                "fuzz": _read_json(arguments.fuzz_metadata, "fuzz Cargo metadata"),
+            }
+            raw_output = sys.stdin.read(16 * 1024 * 1024 + 1)
+            print(format_cargo_deny_diagnostics(raw_output, metadata))
+        except (OSError, UnicodeError, PolicyError):
+            print("cargo-deny diagnostics unavailable (metadata could not be safely read).")
+        return 0
     try:
         try:
             root = arguments.checkout_root.resolve(strict=True)

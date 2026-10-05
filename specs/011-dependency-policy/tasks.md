@@ -77,3 +77,8 @@ T002 is the common start gate; T016 applies a behavior-preserving refactor to
 implemented requirements; T019 converges any remaining FR/SC gap; and T020
 packages the complete evidence for review. T015 generates the final
 machine-readable compliance traceability artifact from this planning map.
+## Phase 4: Convergence
+
+- [x] T021 [US1] Preserve package, version, rule, license/advisory, and safely redacted source details when cargo-deny fails, without emitting credentials or secret material; add failure-output sentinel tests per FR-012.
+- [ ] T022 [US1] Add executable negative cargo-deny fixtures for vulnerable, unsound, unmaintained, yanked, disallowed-license, unknown-registry, unapproved-Git-source, external/symlink-escaping path, architecture-ban, normal/dev duplicate-version, and expired-exception cases; assert each fails with a rule-specific finding and preserve project lockfiles per SC-002/SC-003 (partial).
+- [x] T023 [US3] Update the dependency-policy entry and Phase 1 status in docs/roadmap.md to reflect verified implementation and review/integration state in the same PR, without declaring the phase integrated before human integration per plan: Phase A status.

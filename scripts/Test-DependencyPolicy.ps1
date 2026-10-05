@@ -22,12 +22,64 @@ $cargoHome = Join-Path $tempRoot 'cargo-home'
 $metadataRoot = Join-Path $tempRoot 'metadata'
 $originalCargoHome = $env:CARGO_HOME
 
+function Format-CargoDenyFailure {
+    param(
+        [Parameter(Mandatory = $true)][string]$RawOutput,
+        [Parameter(Mandatory = $true)][string]$PythonExecutable,
+        [Parameter(Mandatory = $true)][string]$RootMetadata,
+        [Parameter(Mandatory = $true)][string]$FuzzMetadata
+    )
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $PythonExecutable
+    $startInfo.WorkingDirectory = $repositoryRoot
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardInput = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.StandardInputEncoding = [System.Text.UTF8Encoding]::new($false)
+    [void]$startInfo.ArgumentList.Add('-X')
+    [void]$startInfo.ArgumentList.Add('utf8')
+    [void]$startInfo.ArgumentList.Add((Join-Path $repositoryRoot 'scripts/dependency_policy.py'))
+    [void]$startInfo.ArgumentList.Add('--format-cargo-deny-diagnostics')
+    [void]$startInfo.ArgumentList.Add('--root-metadata')
+    [void]$startInfo.ArgumentList.Add($RootMetadata)
+    [void]$startInfo.ArgumentList.Add('--fuzz-metadata')
+    [void]$startInfo.ArgumentList.Add($FuzzMetadata)
+
+    $formatter = [System.Diagnostics.Process]::new()
+    $formatter.StartInfo = $startInfo
+    try {
+        if (-not $formatter.Start()) {
+            return 'cargo-deny diagnostics unavailable (safe formatter could not be started).'
+        }
+        $stdoutTask = $formatter.StandardOutput.ReadToEndAsync()
+        $stderrTask = $formatter.StandardError.ReadToEndAsync()
+        $formatter.StandardInput.Write($RawOutput)
+        $formatter.StandardInput.Close()
+        $formatter.WaitForExit()
+        $report = $stdoutTask.GetAwaiter().GetResult().Trim()
+        [void]$stderrTask.GetAwaiter().GetResult()
+        if ($formatter.ExitCode -ne 0 -or -not $report) {
+            return 'cargo-deny diagnostics unavailable (safe formatter failed).'
+        }
+        return $report
+    }
+    catch {
+        return 'cargo-deny diagnostics unavailable (safe formatter failed).'
+    }
+    finally {
+        $formatter.Dispose()
+    }
+}
+
 function Invoke-CapturedCommand {
     param(
         [Parameter(Mandatory = $true)][string]$Executable,
         [Parameter(Mandatory = $true)][string[]]$Arguments,
         [Parameter(Mandatory = $true)][string]$Operation,
-        [string]$StdoutPath
+        [string]$StdoutPath,
+        [switch]$CargoDenyDiagnostics
     )
 
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
@@ -50,11 +102,16 @@ function Invoke-CapturedCommand {
         $stderrTask = $process.StandardError.ReadToEndAsync()
         $process.WaitForExit()
         $stdout = $stdoutTask.GetAwaiter().GetResult()
-        [void]$stderrTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
         if ($StdoutPath) {
             [System.IO.File]::WriteAllText($StdoutPath, $stdout, [System.Text.UTF8Encoding]::new($false))
         }
         if ($process.ExitCode -ne 0) {
+            if ($CargoDenyDiagnostics) {
+                $safeReport = Format-CargoDenyFailure -RawOutput ($stdout + "`n" + $stderr) `
+                    -PythonExecutable $pythonExecutable -RootMetadata $rootMetadata -FuzzMetadata $fuzzMetadata
+                throw "$Operation failed with exit code $($process.ExitCode).`n$safeReport"
+            }
             throw "$Operation failed with exit code $($process.ExitCode)."
         }
         return $stdout
@@ -185,8 +242,8 @@ try {
         [void](Invoke-CapturedCommand -Executable $denyExecutable -Arguments @(
             '--manifest-path', $workspace.Manifest,
             '--config', (Join-Path $repositoryRoot '.cargo/deny.toml'),
-            '--workspace', '--all-features', '--locked', 'check'
-        ) -Operation "$($workspace.Name) cargo-deny workspace check")
+            '--workspace', '--all-features', '--locked', '--format', 'json', '--color', 'never', 'check'
+        ) -Operation "$($workspace.Name) cargo-deny workspace check" -CargoDenyDiagnostics)
         $rustSecEvidence = Get-RustSecEvidence -Workspace $workspace.Name
         Write-Output "RustSec $($workspace.Name): remote $rustSecRemote; commit $($rustSecEvidence.Commit); timestamp $($rustSecEvidence.Timestamp)"
     }

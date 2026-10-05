@@ -127,6 +127,22 @@ git diff --check
 passed
 ```
 
+### Independent security review: multiline evidence injection
+
+The reviewer identified that a newline in an SPDX label could pass the
+license-field filter and create a second log line. The dedicated Red test
+failed on its one-line-output assertion with no test errors. The formatter
+was first narrowed to ordinary spaces between SPDX tokens. A later scoped
+review found that arbitrary `LicenseRef-*` values could still carry sensitive
+text; the final formatter omits all license label spans, which also removes
+the original line-injection path.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_diagnostic_redaction -v
+Red: 1 test FAILED (failures=1, errors=0)
+Green: 1 test OK
+```
+
 The API-suite skip is the Windows directory-symlink escape test, unavailable because this account lacks the required symlink privilege (`WinError 1314`). A supplemental in-memory check exercised config-only advisory, license clarification, Git source, and duplicate waivers with an empty register; all four diagnostics named the relevant rule, stated that no registered exception ID exists, and did not expose the secret-bearing URL sentinel.
 
 ## Red evidence: T011 duplicate configured waivers
@@ -250,4 +266,68 @@ A final scoped pass asked the FR-011/SC-006 contract to protect explicit removal
 ```text
 python -X utf8 -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_dependency_policy_local_command_and_review_process_are_documented scripts.tests.test_requirement_traceability -v
 Ran 2 tests ... OK
+```
+
+## Red evidence: T021 cargo-deny failure report
+
+Added focused tests for failure findings, credential/token/message sentinels,
+malformed JSON, untrusted field shapes, the piped formatter CLI, and the
+PowerShell runner's structured-output contract. Before implementation, the
+two formatter tests failed because `format_cargo_deny_diagnostics` did not
+exist; there were no test errors.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_dependency_policy.CargoDenyDiagnosticTests -v
+Ran 2 tests ... FAILED (failures=2, errors=0)
+```
+
+## Green evidence: T021 cargo-deny failure report
+
+The runner now requests cargo-deny's JSON format and never forwards raw
+stdout, stderr, messages, URL paths, credentials, or secret query values. A
+Python formatter extracts validated package coordinates and rule codes,
+known advisory IDs, and a source host reference with the path redacted. It
+omits license label text entirely. Missing or malformed diagnostics become a
+generic safe report while the original cargo-deny exit code remains visible.
+The actual 0.20.2 `rejected` license diagnostic was exercised in a temporary
+fixture; the initial formatter produced package, version, source, and rule
+fields while exposing the license label. The final formatter preserves the
+rule and package context without printing the label. The fixture used offline
+mode only for local diagnostic-shape validation; the repository runner
+remains online.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_dependency_policy.CargoDenyDiagnosticTests scripts.tests.test_dependency_policy.DependencyPolicyRunnerContractTests -v
+Ran 13 tests ... OK
+
+pwsh -NoProfile -Command '$tokens=$null; $errors=$null; [System.Management.Automation.Language.Parser]::ParseFile("scripts/Test-DependencyPolicy.ps1",[ref]$tokens,[ref]$errors) > $null; if ($errors) { $errors | Out-String; exit 1 }'
+passed
+
+cargo-deny 0.20.2 temporary GPL fixture
+exit code 4; safely formatted `diag-fixture@0.1.0`, `license-rejected`, `GPL-3.0-only`, and `path:local`
+
+python -X utf8 -m unittest discover -s scripts/tests -p "test_*.py" -v
+Ran 105 tests ... OK (skipped=4)
+
+git diff --check
+passed
+```
+
+### Independent review follow-up: untrusted LicenseRef spans
+
+An independent review showed that cargo-deny's license label spans can contain
+untrusted `LicenseRef-*` text that matches generic SPDX syntax and could carry
+credential-shaped values. A focused test was committed first and reproduced
+the leak in the report. The formatter now omits all license spans; rule,
+package, version, and redacted source context remain available.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_dependency_policy.CargoDenyDiagnosticTests.test_failure_report_omits_untrusted_license_ref_labels -v
+RED: Ran 1 test ... FAILED (failures=1, errors=0); report contained the sentinel
+
+python -X utf8 -m unittest scripts.tests.test_dependency_policy.CargoDenyDiagnosticTests scripts.tests.test_dependency_policy.DependencyPolicyRunnerContractTests -v
+GREEN: Ran 14 tests ... OK
+
+python -X utf8 -m unittest discover -s scripts/tests -p "test_*.py" -v
+Ran 109 tests ... OK (skipped=7)
 ```
