@@ -5,6 +5,8 @@
 **Feature**: [spec.md](../spec.md)
 **Reviewed spec blob**: `85a63666337fac0883918acce711b6be1c1e4835`
 
+**Revision note**: CHK020 wording is clarified in this PR. Its existing checked status and reviewed blob refer to the prior wording only. KMIPKIT-0006 T001 remains open and requires an independent reviewer to evaluate the checklist against the exact updated specification revision before implementation.
+
 **Review ownership**: Reviewer-owned. `[x]` means the requirement wording was reviewed and found adequate; it does not indicate implementation completion.
 
 ## Requirement Completeness
@@ -34,7 +36,7 @@
 - [x] CHK017 [Spec §FR-011] Are repeated request Message Extensions distinguished from the optional singleton response field, with a duplicate-response negative test?
 - [x] CHK018 [Spec §Follow-on ownership] Do each deferred client behavior and its verification have a specific downstream feature owner and test?
 - [x] CHK019 [Spec §FR-008, FR-022] Does Server Correlation Value remain response metadata for client-to-server 1.0 traffic, with 1.1 request use deferred?
-- [x] CHK020 [Spec §FR-019] Do message parsing/conversion preserve raw option Enumeration values, while `KMIPKIT-0007-client-execution` accepts assigned and OASIS extension values and rejects unassigned outbound values outside Tables 432/435?
+- [x] CHK020 [Spec §FR-019] Do message parsing/conversion preserve raw option Enumeration values, while `KMIPKIT-0007-client-execution` validates Asynchronous Indicator values against its assigned and extension allocations, accepts assigned Batch Error Continuation values, rejects values outside its assigned and extension allocations, and defers extension-range Batch Error Continuation policy until `KMIPKIT-0007-OD-001` receives source/catalog-owner disposition?
 - [x] CHK021 [Spec §FR-011] Does the specification attribute registry behavior to the extension architecture document and client-execution feature rather than to ADR-0007?
 
 - [x] CHK022 [Spec SC-002–SC-004; plan Property-test contract] Are generated test bounds, fixed seed, case count, raw-value domains, and byte-string samples stated as test-only constraints rather than protocol acceptance limits?
