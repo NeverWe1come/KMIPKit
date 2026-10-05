@@ -486,3 +486,43 @@ aggregate checks complete successfully.
 
 References: [GitHub Actions pull_request event](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)
 and [workflow trigger troubleshooting](https://docs.github.com/en/actions/how-tos/troubleshoot-workflows#triggering-event-conditions).
+
+## Review convergence: workflow parsing and exception suppression
+
+The initial trigger investigation above was superseded by run annotations from
+GitHub. Run `37381749747` reports an invalid workflow file at
+`.github/workflows/ci.yml:237`: the unquoted inline `run` scalar contained
+`: ` in `echo "Active release ref: $ACTIVE_RELEASE_REF"`. The next diagnostic
+push, commit `cbb4e13`, produced run `37383185830`; GitHub again identified a
+workflow-file failure and created no jobs. The adjacent scanned-commit command
+had the same YAML scalar issue. Both inline commands are now quoted as complete
+YAML scalars.
+
+The regression test was added first in Red commit `be35a27`. The focused test
+failed on workflow line 237, and the prior scheduled-report assertion also
+failed because it permitted the invalid scalar. Green commit `1aff744` quotes
+both commands. Refactor commit `28d1f40` centralizes inline-run scalar
+inspection and reports all unsafe scalars together. Verification passed:
+`python -m unittest scripts.tests.test_workflow -v` (16 tests), followed by
+`python -m unittest discover -s scripts/tests -p 'test_*.py'` (128 tests,
+22 environment-dependent skips). These commits are in the PR branch; full
+platform CI is still required to close T017.
+
+Independent security review found that `validate_exception_config` accepted
+`bans.skip-tree` without matching it to an exact exception record. Cargo-deny
+documents this setting as suppressing duplicate findings for a crate and its
+direct/transitive dependency tree. The checked-in configuration did not use
+it, but a future unregistered value could bypass exact duplicate-waiver
+matching. Red commit `0f66eb8` added a regression test and failed because no
+`PolicyError` was raised. Green commit `4d2eb05` rejects malformed or
+non-empty `bans.skip-tree`, updates FR-007, task T027, compliance traceability,
+and the security guide. Verification passed: the new focused test,
+`python -m unittest scripts.tests.test_dependency_policy -v` (51 tests, 2
+environment-dependent skips), and the full script suite (129 tests, 22
+environment-dependent skips). Cargo-deny's behavior is described in its
+[bans configuration documentation](https://embarkstudios.github.io/cargo-deny/checks/bans/cfg.html#the-skip-tree-field-optional).
+
+The security reviewer must re-review commit `4d2eb05` and complete the
+reviewer-owned checklist. T017 remains open until CI runs successfully on
+Linux, Windows, macOS, and the coverage aggregate; T020 remains open until
+the final release-base update and review package are complete.
