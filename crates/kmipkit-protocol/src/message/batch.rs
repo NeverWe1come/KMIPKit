@@ -54,7 +54,10 @@ impl<'a> RequestBatchItemView<'a> {
             .flatten()
     }
 
-    /// Lends the optional Unique Batch Item ID bytes to a callback.
+    /// Lends the optional per-item Unique Batch Item ID bytes to a callback.
+    ///
+    /// This value is distinct from the message-level Client Correlation Value.
+    /// Client execution owns request/response item matching.
     pub fn with_unique_batch_item_id<R>(
         self,
         callback: impl for<'b> FnOnce(&'b [u8]) -> R,
@@ -123,7 +126,10 @@ impl<'a> ResponseBatchItemView<'a> {
             .flatten()
     }
 
-    /// Lends the optional echoed Unique Batch Item ID bytes to a callback.
+    /// Lends the optional echoed per-item Unique Batch Item ID bytes to a callback.
+    ///
+    /// Client execution verifies an echoed ID against its associated request
+    /// item; this model does not use Client Correlation Value as an item key.
     pub fn with_unique_batch_item_id<R>(
         self,
         callback: impl for<'b> FnOnce(&'b [u8]) -> R,
