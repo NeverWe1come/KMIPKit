@@ -262,8 +262,8 @@ The official cargo-deny configuration reference says its default graph
 includes every resolved crate, including target-specific dependencies; a
 target filter drops edges that do not match the listed triples
 ([cargo-deny graph configuration](https://embarkstudios.github.io/cargo-deny/checks/cfg.html)).
-The exact report-only configurations and raw `cargo deny list --format tsv`
-outputs are preserved in
+The exact report-only configurations and normalized license matrices derived
+from `cargo deny list --format tsv` are preserved in
 [`candidate-root-all-targets.toml`](evidence/candidate-root-all-targets.toml),
 [`candidate-fuzz-all-targets.toml`](evidence/candidate-fuzz-all-targets.toml),
 [`license-inventory-all-targets-root.tsv`](evidence/license-inventory-all-targets-root.tsv),
@@ -289,11 +289,11 @@ The full Cargo SPDX expressions explain how the policy handles the IDs:
 | `libfuzzer-sys@0.4.12` | `(MIT OR Apache-2.0) AND NCSA` | The candidate fuzz allowlist covers both sides of the `AND`. |
 | `r-efi@6.0.0` | `MIT OR Apache-2.0 OR LGPL-2.1-or-later` | The unfiltered graph includes this UEFI-only edge. The check passes through the allowed MIT/Apache alternatives; the candidate does not globally allow LGPL. |
 
-Cargo's expression fields preserve these `AND`/`OR` relationships; the raw
-TSV inventory lists per-package identifiers for review and does not replace
-the complete expression. The earlier target-filtered files
+Cargo's expression fields preserve these `AND`/`OR` relationships; the TSV
+matrices list per-package identifiers for review, use `-` for an absent
+identifier, and do not replace the complete expression. The earlier target-filtered files
 `license-inventory-root.tsv` and `license-inventory-fuzz.tsv` remain as
-historical evidence; the all-target raw inventories are authoritative for
+historical evidence; the all-target normalized matrices are authoritative for
 this refresh. `equivalent`, `hashbrown`, and `indexmap` also occur in Cargo
 metadata's package catalog, but their optional dependency edges are inactive
 in the current workspace feature graph, so cargo-deny does not include them

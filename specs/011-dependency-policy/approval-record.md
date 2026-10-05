@@ -79,7 +79,7 @@ edge out of the candidate dependency scan.
 | T002 condition | Evidence | Result |
 |---|---|---|
 | Human-merged specification revision is on active release | PR #35 and merge ancestry above | Pass |
-| Exact license-ID inventory reviewed | All-target raw inventories, full expressions, and technical SPDX review above | Pass; no legal audit claim |
+| Exact license-ID inventory reviewed | All-target normalized inventories, full expressions, and technical SPDX review above | Pass; no legal audit claim |
 | No unaddressed ADR-0005 hard-ban finding | Both report-only scans | Pass |
 | Every baseline finding has an in-scope disposition | Both fuzz findings map to FR-013 Red/Green tasks | Pass |
 | Root and fuzz workspaces are covered | Separate locked metadata and cargo-deny invocations | Pass |
