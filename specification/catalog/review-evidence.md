@@ -121,7 +121,7 @@ discrepancy that affects its scope gated until resolution evidence exists.
 
 Independent QA rechecked the acceptance evidence and found no additional catalog blockers. Requirement evidence is reciprocal for 85 official case-to-requirement links across 15 requirements; the remaining 552 requirements carry explicit source-evidence gap notes and appear individually in the generated report. All 19 catalog-readiness criteria were checked against the source review, validation rules, generated report, and recorded reconciliation evidence. There are 41 open discrepancies and one resolved discrepancy (`KMIPKIT-DISC-037`) supported by accepted decision `KMIPKIT-DEC-001`; 35 profile claim states remain `not_claimed`, and all 203 cited XML fixtures are unavailable in the pinned source tree.
 
-Fresh verification on 2026-10-04:
+Historical verification executed on 2026-10-04 (preserved from the original catalog review):
 
 - `python -B -m unittest discover -s tools/normative_catalog/tests -v`: 130 passed, 6 skipped (Windows directory-symlink privilege unavailable).
 - `python -B -m unittest discover -s scripts/tests -v`: 36 passed, 3 skipped (same Windows symlink limitation).
@@ -132,6 +132,18 @@ Fresh verification on 2026-10-04:
 - `python -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha ce34179cd8bf96812af53b5ec88daeae330fce35`: pinned OASIS tree unchanged.
 - `python -B tools/normative_catalog/report.py --check` and `git diff --check`: passed.
 - Coverage preflight scanned all 7 Rust source files and found no production function bodies, so line-percentage gates are not applicable to this catalog-only feature. `cargo llvm-cov` is not installed in this environment; no coverage percentage is claimed.
+
+Current verification on 2026-10-05 against release base
+`35a445f500d0ac0b55fe39cd95bf25984ea65216`:
+
+- `python -B tools/normative_catalog/validate.py --repo-root .`: 4 sources,
+  1,411 clauses, and 4,021 records valid.
+- `python -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha 35a445f500d0ac0b55fe39cd95bf25984ea65216 --check`:
+  1,411 source candidates audited.
+- `python -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha 35a445f500d0ac0b55fe39cd95bf25984ea65216`:
+  pinned OASIS source tree unchanged.
+- `python -B tools/normative_catalog/report.py --repo-root . --check`:
+  generated coverage report verified.
 
 The independent QA review and these command results complete T039. Security review (T040) and draft PR creation (T041) were complete at the time; PR #4 has since merged into `release/1.0.0`, and its later report-correction follow-up PR #12 is also merged.
 
