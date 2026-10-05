@@ -7,7 +7,7 @@
 ## Request preparation
 
 1. Validate typed operation payloads, message cardinality, IDs, protocol version, and common option values.
-2. Obtain one request Time Stamp from the configured time source, when enabled. Applications without an RTC can supply their countdown-timer-backed Date-Time source.
+2. Preserve an optional caller-supplied request Time Stamp Date-Time exactly when present; omit it when absent. Do not synthesize one or use a countdown-timer source while OD-004 remains unresolved.
 3. Omit Server Correlation Value from client-initiated requests. Client Correlation Value, if present, is never a per-item match key.
 4. Omit peer-visible Maximum Response Size for Discover Versions, which is not classified as likely-large.
 5. Borrow the caller-provided `CodecLimits`; use that exact same reference for bounded encoding and response decoding, without cloning or reconstructing it.

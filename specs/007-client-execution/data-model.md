@@ -22,7 +22,7 @@
 
 - One or more closed `ClientRequest` enum values, each paired with an optional Unique Batch Item ID where KMIPKIT-0006 permits it.
 - Common options: Batch Order Option, Batch Error Continuation Option, Asynchronous Indicator, and caller correlation value only where supported by the approved 0006 model. The 0007 Discover Versions API does not expose peer-visible Maximum Response Size because this operation is not classified as likely-large.
-- Request Time Stamp: generated once per message by a configured time-source interface. An application without a real-time clock may supply its countdown timer's Date-Time source; a deterministic fixed source is used in tests.
+- Request Time Stamp: optional caller-supplied Date-Time, preserved exactly when present and omitted when absent. This feature has no generated time-source interface; countdown-derived outgoing values remain unresolved under OD-004.
 - Server Correlation Value: never present in client-initiated request types. Client Correlation Value remains distinct from every item ID and is not used for matching.
 - Duplicate request IDs are rejected before the permit is minted.
 - The peer-visible Maximum Response Size field is absent from Discover Versions requests; local response caps and `CodecLimits` always apply.
