@@ -1,5 +1,5 @@
 //! OASIS KMIP Specification v2.1: §§8.1–8.6, 9.2–9.8, 9.10, 9.16, and 9.20;
-//! Tables 394–399, 424–425, 432, and 435.
+//! Tables 394–399, 405–408, 424–425, 432, and 435.
 //!
 //! These cases validate in-memory message structure and raw-value preservation.
 //! They do not encode TTLV bytes, apply client execution policy, or claim
