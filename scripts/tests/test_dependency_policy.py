@@ -574,9 +574,13 @@ class DependencyExceptionTests(unittest.TestCase):
         malformed_source = "git+https://[invalid"
         entry = exact_exception("source", source=malformed_source)
         issue = finding("source", source=malformed_source)
-        with self.assertRaises(self.policy_error()) as context:
+        try:
             self.validate([entry], [issue])
-        self.assertNotIn(malformed_source, str(context.exception))
+        except Exception as error:
+            self.assertIsInstance(error, self.policy_error(), "malformed URLs must be normalized as PolicyError")
+            self.assertNotIn(malformed_source, str(error))
+        else:
+            self.fail("malformed source URLs must fail closed")
 
 
 class DependencyPolicyRunnerContractTests(unittest.TestCase):
