@@ -50,6 +50,10 @@ fn version() -> Value {
 }
 
 fn request(items: impl IntoIterator<Item = (Vec<u8>,)>) -> Structure {
+    request_optional_ids(items.into_iter().map(|(id,)| Some(id)))
+}
+
+fn request_optional_ids(items: impl IntoIterator<Item = Option<Vec<u8>>>) -> Structure {
     let items: Vec<_> = items.into_iter().collect();
     let count = i32::try_from(items.len()).expect("test batch count fits i32");
     let header = structure([
@@ -57,15 +61,13 @@ fn request(items: impl IntoIterator<Item = (Vec<u8>,)>) -> Structure {
         item(BATCH_COUNT, Value::integer(count)),
     ]);
     let mut message = vec![item(REQUEST_HEADER, Value::structure(header))];
-    message.extend(items.into_iter().map(|(id,)| {
-        item(
-            BATCH_ITEM,
-            Value::structure(structure([
-                item(OPERATION, Value::enumeration(1)),
-                item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(id)),
-                item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
-            ])),
-        )
+    message.extend(items.into_iter().map(|id| {
+        let mut fields = vec![item(OPERATION, Value::enumeration(1))];
+        if let Some(id) = id {
+            fields.push(item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(id)));
+        }
+        fields.push(item(REQUEST_PAYLOAD, Value::structure(Structure::new())));
+        item(BATCH_ITEM, Value::structure(structure(fields)))
     }));
     structure(message)
 }
@@ -112,6 +114,28 @@ fn response_batch_item_preserves_the_exact_echoed_id() {
             .with_unique_batch_item_id(<[u8]>::to_vec),
         Some(id.to_vec())
     );
+}
+
+#[test]
+fn a_single_item_request_may_omit_its_unique_id() {
+    let message = RequestMessage::try_from_ttlv(request_optional_ids([None]))
+        .expect("Table 396 makes the ID optional for a single item");
+
+    assert_eq!(
+        message
+            .batch_items()
+            .next()
+            .expect("the request has one item")
+            .with_unique_batch_item_id(<[u8]>::to_vec),
+        None
+    );
+}
+
+#[test]
+fn every_multi_item_request_requires_an_id() {
+    let message = request_optional_ids([Some(vec![0x01]), None]);
+
+    assert!(RequestMessage::try_from_ttlv(message).is_err());
 }
 
 #[derive(Clone, Debug)]

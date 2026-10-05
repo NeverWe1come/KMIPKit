@@ -1,5 +1,6 @@
 //! Payload-free message shape validation.
 
+use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
 
@@ -234,6 +235,7 @@ pub(super) fn validate_request_message(
 ) -> Result<ValidatedRequestMessage, MessageValidationError> {
     let mut header: Option<(usize, ValidatedRequestHeader)> = None;
     let mut batch_indices = Vec::new();
+    let mut request_ids = HashSet::<Vec<u8>>::new();
 
     for (index, child) in root.children().iter().enumerate() {
         match child.tag().raw() {
@@ -273,9 +275,18 @@ pub(super) fn validate_request_message(
                     ));
                 }
                 let batch_count = header.map_or(0, |(_, value)| value.batch_count);
-                with_structure(child, index, None, |view| {
+                let item_id = with_structure(child, index, None, |view| {
                     validate_request_batch_item(&view, index, batch_count)
                 })?;
+                if let Some(item_id) = item_id
+                    && !request_ids.insert(item_id)
+                {
+                    return Err(error(
+                        MessageValidationErrorKind::InvalidFieldValue,
+                        Some(index),
+                        None,
+                    ));
+                }
                 batch_indices.push(index);
             }
             _ => {}
@@ -523,25 +534,26 @@ fn validate_request_batch_item(
     view: &StructureView<'_>,
     top_index: usize,
     batch_count: i32,
-) -> Result<(), MessageValidationError> {
+) -> Result<Option<Vec<u8>>, MessageValidationError> {
     validate_fields(
         view.children(),
         REQUEST_BATCH_FIELDS,
         &[OPERATION, REQUEST_PAYLOAD],
         Some(top_index),
     )?;
-    let id_present = view
+    let id = view
         .children()
         .iter()
-        .any(|child| child.tag().raw() == UNIQUE_BATCH_ITEM_ID);
-    if batch_count > 1 && !id_present {
+        .find(|child| child.tag().raw() == UNIQUE_BATCH_ITEM_ID)
+        .and_then(byte_string_value);
+    if batch_count > 1 && id.is_none() {
         return Err(error(
             MessageValidationErrorKind::MissingRequiredField,
             Some(top_index),
             None,
         ));
     }
-    Ok(())
+    Ok(id)
 }
 
 fn validate_response_batch_item(
@@ -714,6 +726,13 @@ fn integer_value(item: &Item) -> Option<i32> {
 fn enumeration_value(item: &Item) -> Option<u32> {
     item.with_value(|value| match value {
         ValueView::Enumeration(raw) => Some(*raw),
+        _ => None,
+    })
+}
+
+fn byte_string_value(item: &Item) -> Option<Vec<u8>> {
+    item.with_value(|value| match value {
+        ValueView::ByteString(raw) => Some(raw.to_vec()),
         _ => None,
     })
 }
