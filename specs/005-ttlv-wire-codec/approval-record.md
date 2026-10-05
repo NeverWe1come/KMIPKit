@@ -149,6 +149,14 @@ T009 Red is implemented in DCO-signed commit `b3bd550a8360a2fbe69a5cbf82072d8c70
 | --- | --- |
 | `tasks.md` | `30498F68A7FC0AB988F33A2B88B46B57671DA4BC22660470A6E774CA8C815BFE` |
 
+## Execution update — T010
+
+T010 Green is implemented in DCO-signed commit `302b8c60a75e22b9d590f1253c949d5369627f36`; the verification report is in `task-10-report.md` and the independent static review is in `task-10-review.md` (PASS, no findings). I independently reproduced formatting, Clippy with warnings denied for both affected crates, all-feature checks for both crates, all 100 TTLV tests and 41 client tests, warning-free rustdoc for both crates, and `git diff --check`; all passed. The public API covers configured zero/lowered/raised limits, including inputs above the default byte and Item caps. The private writer uses the same borrowed `CodecLimits` instance and remains without a production callsite. T011 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `0C801349167EF570567FB861C6D229003957E355644672AB07A1B1F0D27E8EEE` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository
