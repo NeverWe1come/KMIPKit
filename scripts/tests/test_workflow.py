@@ -220,6 +220,8 @@ class WorkflowContractTests(unittest.TestCase):
             "expiry",
             "approval reference",
             "renewal is a new human decision",
+            "remove the dependency/finding and both exception entries",
+            "remove the exception from both files",
         ):
             with self.subTest(exception_review=required):
                 self.assertIn(required, normalized_policy_guide)

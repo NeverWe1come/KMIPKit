@@ -241,3 +241,13 @@ Ran 16 tests ... OK
 git diff --check
 passed
 ```
+
+
+### Documentation lifecycle review closure
+
+A final scoped pass asked the FR-011/SC-006 contract to protect explicit removal of a resolved exception, in addition to renewal. Added assertions for removing the dependency/finding and both policy entries, and for removing both files' exception records. The documentation already contains both instructions.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_workflow.WorkflowContractTests.test_dependency_policy_local_command_and_review_process_are_documented scripts.tests.test_requirement_traceability -v
+Ran 2 tests ... OK
+```
