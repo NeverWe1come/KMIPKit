@@ -105,3 +105,26 @@ Ran 1 test ... FAILED (failures=4)
 ```
 
 All four subtests failed behaviorally because the corresponding diagnostics omitted the exception ID; the test had zero errors. The source mismatch diagnostic did not echo the configured credential sentinel.
+
+## Green evidence: T011 diagnostic identifiers
+
+`validate_exception_config` now includes relevant registered exception IDs in advisory, license clarification, Git source, and duplicate waiver mismatch diagnostics. A config-only waiver with no matching register record receives a rule-specific diagnostic stating that no registered exception ID exists. Diagnostics derive identifiers from validated register entries and do not include configured values, URLs, credentials, or secrets. Bidirectional matching and exact waiver scope are unchanged.
+
+```text
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyExceptionTests.test_exception_config_mismatch_reports_rule_and_exception_id_without_secrets
+Ran 1 test ... OK
+
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyExceptionTests
+Ran 20 tests ... OK
+
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyPolicyApiTests
+Ran 11 tests ... OK (skipped=1)
+
+python -m py_compile scripts/dependency_policy.py
+passed
+
+git diff --check
+passed
+```
+
+The API-suite skip is the Windows directory-symlink escape test, unavailable because this account lacks the required symlink privilege (`WinError 1314`). A supplemental in-memory check exercised config-only advisory, license clarification, Git source, and duplicate waivers with an empty register; all four diagnostics named the relevant rule, stated that no registered exception ID exists, and did not expose the secret-bearing URL sentinel.

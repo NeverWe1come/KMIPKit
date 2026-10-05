@@ -612,6 +612,16 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
         if entry["kind"] == "duplicate"
     }
 
+    def mismatch_details(exception_ids: list[str], has_unregistered_waiver: bool) -> str:
+        details = []
+        if exception_ids:
+            details.append(f"registered exception ID(s): {', '.join(exception_ids)}")
+        if has_unregistered_waiver:
+            details.append("no registered exception ID exists for a configured waiver")
+        if not details:
+            details.append("no registered exception ID exists")
+        return "; ".join(details)
+
     advisories = config.get("advisories", {})
     if not isinstance(advisories, dict) or not isinstance(advisories.get("ignore", []), list):
         raise PolicyError("cargo-deny advisory exception configuration is malformed")
@@ -621,7 +631,18 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
         or len(set(configured_advisories)) != len(configured_advisories)
         or set(configured_advisories) != expected_advisories
     ):
-        raise PolicyError("cargo-deny advisory ignores do not match the exception register")
+        missing_ids = [
+            entry["id"]
+            for entry in entries
+            if entry["kind"] == "advisory" and entry["advisory_id"] not in configured_advisories
+        ]
+        has_unregistered_waiver = any(
+            isinstance(value, str) and value not in expected_advisories for value in configured_advisories
+        )
+        raise PolicyError(
+            "cargo-deny advisory ignores do not match the exception register; "
+            f"{mismatch_details(missing_ids, has_unregistered_waiver)}"
+        )
 
     licenses = config.get("licenses", {})
     if not isinstance(licenses, dict):
@@ -649,7 +670,18 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
             "license_files": _license_files(item["license-files"], "cargo-deny license clarification"),
         }
     if configured_clarifications != expected_clarifications:
-        raise PolicyError("cargo-deny license clarifications do not match reviewed evidence in the register")
+        missing_ids = [
+            entry["id"]
+            for entry in entries
+            if entry["kind"] == "license"
+            and configured_clarifications.get(f"{entry['package']}@{entry['version']}")
+            != expected_clarifications[f"{entry['package']}@{entry['version']}"]
+        ]
+        has_unregistered_waiver = any(crate not in expected_clarifications for crate in configured_clarifications)
+        raise PolicyError(
+            "cargo-deny license clarifications do not match reviewed evidence in the register; "
+            f"{mismatch_details(missing_ids, has_unregistered_waiver)}"
+        )
 
     sources = config.get("sources", {})
     if not isinstance(sources, dict) or not isinstance(sources.get("allow-git", []), list):
@@ -661,7 +693,16 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
     ):
         raise PolicyError("cargo-deny Git source exception configuration is malformed")
     if set(configured_git_sources) != expected_git_sources:
-        raise PolicyError("cargo-deny Git sources do not match the exception register")
+        missing_ids = [
+            entry["id"]
+            for entry in entries
+            if entry["kind"] == "source" and _git_config_source(entry["source"]) not in configured_git_sources
+        ]
+        has_unregistered_waiver = any(value not in expected_git_sources for value in configured_git_sources)
+        raise PolicyError(
+            "cargo-deny Git sources do not match the exception register; "
+            f"{mismatch_details(missing_ids, has_unregistered_waiver)}"
+        )
 
     bans = config.get("bans", {})
     if not isinstance(bans, dict) or not isinstance(bans.get("skip", []), list):
@@ -684,11 +725,29 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
             for entry in entries
             if entry["kind"] == "duplicate" and f"{entry['package']}@{entry['version']}" == crate
         ]
-        if len(ids) != 1 or ids[0] not in reason:
-            raise PolicyError("cargo-deny duplicate exception must cite its registered exception ID")
+        if not ids:
+            raise PolicyError(
+                "cargo-deny duplicate exception has no matching register record; "
+                "no registered exception ID exists for the configured waiver"
+            )
+        if len(ids) != 1:
+            raise PolicyError(
+                "cargo-deny duplicate exception has ambiguous registered exception IDs: "
+                + ", ".join(ids)
+            )
+        if ids[0] not in reason:
+            raise PolicyError(f"cargo-deny duplicate exception must cite registered exception ID {ids[0]}")
         configured_duplicates.add((crate, ids[0]))
     if len(configured_duplicates) != len(bans.get("skip", [])) or configured_duplicates != expected_duplicates:
-        raise PolicyError("cargo-deny duplicate exceptions do not match the exception register")
+        missing_ids = [
+            exception_id
+            for _, exception_id in sorted(expected_duplicates - configured_duplicates)
+        ]
+        related_ids = sorted(set(missing_ids) | {exception_id for _, exception_id in configured_duplicates})
+        raise PolicyError(
+            "cargo-deny duplicate exceptions do not match the exception register; "
+            f"{mismatch_details(related_ids, False)}"
+        )
 
 
 def _read_json(path: Path, label: str) -> Any:
