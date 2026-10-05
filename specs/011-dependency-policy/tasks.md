@@ -82,3 +82,9 @@ machine-readable compliance traceability artifact from this planning map.
 - [x] T021 [US1] Preserve package, version, rule, license/advisory, and safely redacted source details when cargo-deny fails, without emitting credentials or secret material; add failure-output sentinel tests per FR-012.
 - [x] T022 [US1] Add executable negative fixtures using pinned cargo-deny for vulnerable, unsound, unmaintained, yanked, disallowed-license, unknown-registry, unapproved-Git-source, architecture-ban, wildcard-version, and normal/dev duplicate findings; assert exact structured rule and package/version details and preserve root/fuzz project lockfiles per SC-002/SC-003. Keep external/symlink path and expired-exception rejection in dependency_policy validator tests with explicit policy errors.
 - [x] T023 [US3] Update the dependency-policy entry and Phase 1 status in docs/roadmap.md to reflect verified implementation and review/integration state in the same PR, without declaring the phase integrated before human integration per plan: Phase A status.
+
+## Phase 5: Convergence
+
+- [x] T024 CRITICAL Correct the FR-012 traceability entry to link the executable diagnostic redaction contract, per Constitution I and FR-012 (contradicts).
+- [x] T025 Add pinned cargo-deny fixtures for missing and invalid license metadata and assert the exact `unlicensed` error code and package/version, per FR-003 and SC-002 (missing).
+- [x] T026 Extend the FR-013/SC-008 executable invariant test to preserve both project lockfiles and resolved package versions, per FR-013 and SC-008 (partial).

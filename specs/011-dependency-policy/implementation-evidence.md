@@ -409,3 +409,54 @@ The Windows LLVM JSON report normalized successfully and measured TTLV/
 protocol at 97.46%, transport/FFI at 100%, and workspace at 97.31%. Linux,
 macOS, and the three-platform aggregate remain for PR CI; T017 remains open
 until those required checks and the remaining repository gates are recorded.
+
+## Convergence closure evidence: T024-T026
+
+T024 has a distinct Red/Green pair. Red commit `3da4e06` added an executable
+traceability expectation for FR-012 while the CSV still pointed to an
+exception-source test; the traceability suite failed on that mismatch. Green
+commit `1119bb5` maps the requirement to
+`CargoDenyDiagnosticTests.test_failure_report_retains_allowlisted_finding_fields_and_redacts_secrets`,
+which asserts the safe diagnostic fields and secret omission.
+
+T025 has a distinct Red/Green pair. Red commit `43ddeb5` added cargo-deny
+fixtures for absent and invalid SPDX license metadata and failed because
+private packages were configured to be ignored. Green commit `80c08b6`
+explicitly sets `licenses.private.ignore = false`; both fixtures then assert
+the exact `licenses` / `unlicensed` finding and package/version. The pinned
+cargo-deny fixture suite passed all 17 tests.
+
+T026 has a distinct Red/Green pair. Red commit `0759592` changed the FR-013
+and SC-008 traceability contract to require the new executable invariant;
+the suite failed because that method did not exist. Green commit `0b03f8a`
+implements it and wires it into `scripts/Test-DependencyPolicy.ps1` after the
+runner verifies the pinned cargo-deny binary and refreshes RustSec. It runs
+both root and fuzz graphs offline with `--locked`, snapshots each lockfile's
+bytes and complete `name@version` set, and requires both snapshots to remain
+identical. The same commit adds a runner contract test for this invocation.
+
+Independent QA re-review on 2026-10-06 closed all three P2 findings and
+recorded the results in `checklists/policy-review.md`; no additional
+actionable issue was found. Its focused command set `CARGO_DENY` to
+cargo-deny 0.20.2 and passed 21 tests.
+
+Fresh Windows verification on 2026-10-06:
+
+```text
+pwsh -NoProfile -File scripts/Test-DependencyPolicy.ps1
+Dependency policy checks passed; Cargo.lock and fuzz/Cargo.lock SHA256 hashes are unchanged.
+RustSec root and fuzz: ef6173cbc5c50ec8166f9a5b28f07834144373ee
+2026-10-03T10:14:03+02:00
+
+python -B -m unittest discover -s scripts/tests -p 'test_*.py' -v
+Ran 127 tests ... OK (skipped=22)
+
+pwsh -NoProfile -File scripts/tests/Test-Wsl.ps1
+All PowerShell WSL tests passed.
+```
+
+The discovery run skips cargo-deny fixtures when the exact binary is not
+provided in its environment and skips privilege-dependent Windows symlink
+cases. The dedicated policy runner supplies the verified binary and passed
+all 17 cargo-deny fixtures. T017 remains open for required Linux/macOS and
+aggregate CI results and the remaining repository gates.
