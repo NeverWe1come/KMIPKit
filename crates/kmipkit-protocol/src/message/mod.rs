@@ -3,7 +3,8 @@
 //! # In-memory inspection
 //!
 //! The message model validates structure while retaining the original generic
-//! TTLV tree. It does not encode bytes or contact a server.
+//! TTLV tree. It does not encode bytes or contact a server, automatically Poll,
+//! Cancel, wait, or retry a request.
 //!
 //! ```no_run
 //! use kmipkit_protocol::{ProtocolVersion, RequestMessage};
