@@ -1,6 +1,6 @@
 # Implementation Plan: KMIP 2.1 Message and Batch Model
 
-**Branch**: `feature/KMIPKIT-0006-message-batch-model` | **Date**: 2026-10-04 | **Spec**: [spec.md](spec.md)
+**Branch**: `feature/KMIPKIT-0006-message-model-implementation` | **Date**: 2026-10-04 | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `specs/006-message-batch-model/spec.md`
 
