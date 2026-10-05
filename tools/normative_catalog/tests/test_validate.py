@@ -2148,6 +2148,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = json.loads(catalog_path.read_bytes())
         requirements = {row["requirement_id"]: row for row in document["requirements"]}
         elements = {row["element_id"]: row for row in document["elements"]}
+        clauses = {row["clause_id"]: row for row in document["source_clauses"]}
 
         credential_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-001"]
         self.assertIn("identification", credential_requirement["summary"].casefold())
@@ -2156,6 +2157,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertNotIn("profile", credential_requirement["summary"].casefold().split("identification")[0])
         self.assertEqual(credential_requirement["scope_state"], "client_1_0")
         self.assertEqual(credential_requirement["element_ids"], ["KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"])
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-9.11-001"]["scope_state"], "client_1_0")
 
         expected_requirement_elements = {
             "KMIPKIT-REQ-SPEC-9.4-001-001": {"KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION"},

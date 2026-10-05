@@ -27395,7 +27395,7 @@
       "exclusion_rationale": null,
       "role": "client",
       "direction": "client_to_server",
-      "scope_state": "profile_conditional",
+      "scope_state": "client_1_0",
       "condition": "As indicated by the applicable profile."
     },
     {
@@ -27892,16 +27892,16 @@
         "SHALL",
         "MUST"
       ],
-      "disposition": "requirement",
+      "disposition": "source_discrepancy",
       "requirement_ids": [
         "KMIPKIT-REQ-SPEC-9.4-001-001",
         "KMIPKIT-REQ-SPEC-9.4-001-002",
         "KMIPKIT-REQ-SPEC-9.4-001-003"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "both",
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "mixed",
       "condition": null
     },
     {
@@ -31146,7 +31146,9 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.11-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -52419,7 +52421,10 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-AUTHENTICATION"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.4-001-001",
+        "KMIPKIT-REQ-SPEC-9.4-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -52442,7 +52447,11 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.4-001-002",
+        "KMIPKIT-REQ-SPEC-9.4-001-003",
+        "KMIPKIT-REQ-SPEC-9.4-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62587,7 +62596,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.11-004-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62611,7 +62622,10 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.11-004-001",
+        "KMIPKIT-REQ-SPEC-9.11-004-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62635,7 +62649,10 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.11-004-001",
+        "KMIPKIT-REQ-SPEC-9.11-004-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62659,7 +62676,10 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.11-004-001",
+        "KMIPKIT-REQ-SPEC-9.11-004-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62683,7 +62703,10 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.11-004-001",
+        "KMIPKIT-REQ-SPEC-9.11-004-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -62707,7 +62730,10 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-CREDENTIAL-DEVICE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.11-004-001",
+        "KMIPKIT-REQ-SPEC-9.11-004-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -91106,12 +91132,14 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Credential",
-      "summary": "A client may use Credential for identification and for authentication when the selected profile indicates that use.",
+      "summary": "A client may use Credential for identification; it may also use Credential for authentication when the selected profile indicates that use.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "As indicated by the applicable profile.",
-      "scope_state": "profile_conditional",
-      "element_ids": [],
+      "condition": "Authentication use is as indicated by the applicable profile.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -91141,7 +91169,14 @@
       "direction": "client_to_server",
       "condition": "When Credential Type is Device.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -91171,7 +91206,12 @@
       "direction": "client_to_server",
       "condition": "When Credential Type is Device.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -91201,7 +91241,9 @@
       "direction": "client_to_server",
       "condition": "When Credential Type is Device.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -91801,7 +91843,9 @@
       "direction": "client_to_server",
       "condition": "Depending on request type and server policy.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -91831,7 +91875,10 @@
       "direction": "client_to_server",
       "condition": "When Authentication is present.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -91856,12 +91903,14 @@
       "source_keyword": "MUST",
       "normative_strength": "mandatory",
       "subject": "Credential set",
-      "summary": "When multiple Credentials are supplied, ensure all are satisfied by the authentication process.",
-      "role": "client",
+      "summary": "The server must ensure all supplied Credential structures are satisfied by the authentication process.",
+      "role": "server",
       "direction": "client_to_server",
       "condition": "When multiple Credentials are supplied.",
-      "scope_state": "client_1_0",
-      "element_ids": [],
+      "scope_state": "server_only",
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -91870,7 +91919,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "The pinned KMIP Specification 2.1 section 9.4 uses lowercase “must” in the statement that multiple Credential structures must all be satisfied; section 1.2 defines uppercase key words by RFC 2119, so this classification remains unresolved in KMIPKIT-DISC-041. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.4-002",
@@ -91891,7 +91940,9 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -102392,6 +102443,71 @@
       "affected_profile_ids": [],
       "affected_policy_ids": [],
       "downstream_impact": "Re-Provision error-table interpretation remains gated; preserve the Table 315 caption and do not treat it as an additional payload table or as an RNG Retrieve response table without authoritative resolution.",
+      "state": "open",
+      "decision_id": null,
+      "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-041",
+      "summary": "The lowercase “must” in section 9.4 has unresolved RFC 2119 classification under the uppercase key-word definition in section 1.2.",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.2"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.4"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "normative_conflict",
+      "alternatives": [
+        "Treat lowercase must as a case-insensitive candidate for RFC 2119 MUST classification.",
+        "Treat only uppercase RFC 2119 key words as normative and do not classify lowercase must as RFC 2119 MUST."
+      ],
+      "affected_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.4-001-003"
+      ],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "The RFC 2119 classification for satisfying multiple Credential structures remains unresolved; keep the affected requirement and Credential element gated.",
+      "state": "open",
+      "decision_id": null,
+      "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-042",
+      "summary": "The section 9.11 requirement to provide at least one Device Credential field does not specify its field set.",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "source_defect",
+      "alternatives": [
+        "Interpret at least one field as any of all six Table 412 members, including Device Identifier and Password.",
+        "Interpret at least one field as at least one of the four identifier members named in the preceding uniqueness sentence: Device Serial Number, Network Identifier, Machine Identifier, or Media Identifier."
+      ],
+      "affected_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.11-004-001"
+      ],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "The minimum field set for a Device Credential remains unresolved; do not select or enforce either interpretation.",
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
