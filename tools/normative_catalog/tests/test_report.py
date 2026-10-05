@@ -18,11 +18,6 @@ from tools.normative_catalog.tests.test_validate import minimal_catalog
 ROOT = Path(__file__).resolve().parents[3]
 OUT_OF_SCOPE_TTLV_WIRE_REQUIREMENTS = (
     "KMIPKIT-REQ-SPEC-10.1.2-001",
-    "KMIPKIT-REQ-SPEC-10.1.2-002-001",
-    "KMIPKIT-REQ-SPEC-10.1.2-002-002",
-    "KMIPKIT-REQ-SPEC-10.1.5-001-001",
-    "KMIPKIT-REQ-SPEC-10.1.5-001-002",
-    "KMIPKIT-REQ-SPEC-11.56-001",
 )
 
 

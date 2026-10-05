@@ -920,11 +920,12 @@ mod tests {
 
     #[test]
     fn encodes_integer_golden_vector_with_signed_big_endian_value() {
-        // OASIS KMIP Specification v2.1 §§10.1.2, 10.1.3, and 10.1.5;
+        // OASIS KMIP Specification v2.1 §§10.1.2, 10.1.3, 10.1.5, and 11.56;
         // KMIPKIT-0005-NR-002, KMIPKIT-0005-NR-004, and KMIPKIT-0005-NR-005;
         // KMIPKIT-REQ-SPEC-10.1.5-001-002: Integer is signed big-endian and has
         // four following padding bytes. Zero padding octets are the FR-002
         // canonical output; OASIS does not prescribe their values.
+        // KMIPKIT-REQ-SPEC-11.56-001: the allocated test Tag starts with 0x42.
         let encoded =
             encode_item(&item(Value::integer(i32::MIN))).expect("Integer vector is encodable");
 
@@ -933,6 +934,23 @@ mod tests {
             [
                 0x42, 0x01, 0x73, 0x02, 0, 0, 0, 4, 0x80, 0, 0, 0, 0, 0, 0, 0,
             ]
+        );
+    }
+
+    #[test]
+    fn encodes_extension_tag_with_oasis_0x54_prefix() {
+        // OASIS KMIP Specification v2.1 §11.56;
+        // KMIPKIT-REQ-SPEC-11.56-001: extension Tags use the 0x54 first byte.
+        let extension_tag = RawTag::new(0x0054_1234)
+            .expect("the extension Tag fits the 24-bit field")
+            .try_checked()
+            .expect("the Tag is in the allocated extension range");
+        let encoded = encode_item(&item_with_tag(extension_tag, Value::integer(7)))
+            .expect("extension Tag item is encodable");
+
+        assert_eq!(
+            encoded.as_slice(),
+            [0x54, 0x12, 0x34, 0x02, 0, 0, 0, 4, 0, 0, 0, 7, 0, 0, 0, 0]
         );
     }
 
