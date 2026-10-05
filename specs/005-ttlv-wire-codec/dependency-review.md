@@ -26,18 +26,22 @@ these dependencies, versions, features, or manifest changes.
 
 | Package | Proposed scope and pin | Review status |
 | --- | --- | --- |
-| `kmipkit-ttlv` | Workspace dependency; current workspace version `0.1.0`; Cargo metadata reports no declared features, so proposed default selection resolves to no enabled crate features; initially proposed as a client dev-dependency, then a normal dependency in T003 | Research recorded; independent review pending |
-| `zeroize` | Workspace dependency `=1.9.0`, `default-features = false`, feature `alloc`; initially proposed as a client dev-dependency, then a normal dependency in T003 | Research recorded; independent review pending |
-| `static_assertions` | Test-only, proposed pin `=1.1.0`; cached package metadata declares only optional `nightly` and no default feature, so proposed default selection resolves to no enabled crate features (`nightly` disabled) | Research recorded; independent review pending |
-| `serde` | Test-only, proposed pin `=1.0.228`; the existing TTLV dev-dependency and `cargo tree --locked -e features` show the unqualified pin's default selection enables `std`; proposed client selection is also default/`std`, with optional `alloc`, `derive`, `rc`, and `unstable` disabled | Pin decision and independent review pending |
+| `kmipkit-ttlv` | Workspace dependency; current workspace version `0.1.0`; Cargo metadata reports no declared features, so proposed default selection resolves to no enabled crate features; initially proposed as a client dev-dependency, then a normal dependency in T003 | Independent agent recommends accept as proposed; maintainer disposition pending |
+| `zeroize` | Workspace dependency `=1.9.0`, `default-features = false`, feature `alloc`; initially proposed as a client dev-dependency, then a normal dependency in T003 | Independent agent recommends retain with condition; maintainer disposition pending |
+| `static_assertions` | Test-only, proposed pin `=1.1.0`; cached package metadata declares only optional `nightly` and no default feature, so proposed default selection resolves to no enabled crate features (`nightly` disabled) | Independent agent recommends accept as proposed; maintainer disposition pending |
+| `serde` | Test-only, proposed pin `=1.0.228`; the existing TTLV dev-dependency and `cargo tree --locked -e features` show the unqualified pin's default selection enables `std`; proposed client selection is also default/`std`, with optional `alloc`, `derive`, `rc`, and `unstable` disabled | Independent agent recommends retain pin with condition; maintainer disposition pending |
 
 The metadata basis is the current workspace `Cargo.toml`, `crates/kmipkit-ttlv/Cargo.toml`, `Cargo.lock`, Cargo workspace metadata/tree output, and locally cached package metadata for `serde` 1.0.228 and `static_assertions` 1.1.0. Reconfirm these selections before the future manifest edits; this evidence only resolves the proposed feature sets and does not complete package rationale or independent review.
 
 **Unresolved Serde pin decision (checked 2026-10-05):** the proposal pins
 `serde = "=1.0.228"`, while the current published version is 1.0.229
-(published 2026-07-18). Before any client manifest edit, the reviewer must
-record whether to retain 1.0.228 or revise the pin and recheck its exact
-features and dependency graph. This record does not silently update the
+(published 2026-07-18). The independent agent reviewer recommends retaining
+1.0.228 because the workspace already uses it and this test needs only the
+`Serialize` trait; advancing a patch has no clear benefit for this use and
+could change shared `serde_core` resolution. This is a reviewer recommendation,
+not maintainer disposition. Before any client manifest edit, the maintainer
+must record whether to retain 1.0.228 or revise the pin, then recheck exact
+features and the dependency graph. This record does not silently update the
 proposal or lockfile.
 
 The review for `specs/004-generic-ttlv-model/dependency-review.md` may be
@@ -67,7 +71,11 @@ the initial inventory before adding it to the client manifest.
 - Security database checks performed 2026-10-05: exact-version POST queries to the [OSV API](https://api.osv.dev/v1/query) for `static_assertions` 1.1.0 and `serde` 1.0.228 returned empty `vulns` arrays. Corresponding [RustSec `static_assertions` package](https://api.github.com/repos/RustSec/advisory-db/contents/crates/static_assertions?ref=main) and [Serde package](https://api.github.com/repos/RustSec/advisory-db/contents/crates/serde?ref=main) paths returned 404. For `zeroize`, the identified RustSec record is for the separate optional `zeroize_derive` package, [RUSTSEC-2021-0115](https://rustsec.org/advisories/RUSTSEC-2021-0115.html). Absence of a matching indexed record is not proof that a package is vulnerability-free, and no comprehensive workspace audit is claimed here.
 
 Do not treat the candidate rationale in `tasks.md` or the prior 004 review as
-independent review or approval. This record remains pending until the pin
-decision is resolved and every candidate has an independent reviewer and
-disposition. The reviewer-owned design checklist's dependency review item
-remains open until then.
+independent review or approval. The independent agent review on 2026-10-05
+recommended accepting `kmipkit-ttlv` and `static_assertions` as proposed,
+retaining `zeroize =1.9.0` subject to maintainer acceptance of its documented
+performance caveat before production promotion, and retaining `serde =1.0.228`
+for current lock/tree alignment. These recommendations are advisory, not
+maintainer approval. This record remains pending until the maintainer records
+the pin decision and candidate dispositions. The reviewer-owned design
+checklist's dependency review item remains open until then.
