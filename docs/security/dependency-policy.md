@@ -117,7 +117,9 @@ crates.io registry is allowed by default.
 ## License evidence limits
 
 The configured finite SPDX allowlist applies to license expressions reported
-by package metadata and the license files cargo-deny recognizes. cargo-deny
+by package metadata and the license files cargo-deny recognizes. The policy
+also explicitly sets `licenses.private.ignore = false`, so unpublished
+workspace packages receive the same license checks. cargo-deny
 does not read and legally analyze every source file in each third-party
 package, prove that metadata is complete or correct, or decide whether a
 license is acceptable for a particular use. A passing result is automated

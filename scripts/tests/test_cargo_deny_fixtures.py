@@ -652,7 +652,7 @@ allow-git = []
         self.assert_finding(fixture, "licenses", "rejected", {("fixture-gpl", "1.2.3")})
 
     def test_missing_license_metadata_reports_unlicensed_package_and_version(self) -> None:
-        fixture_policy = self.fixture_deny_config() + '\n[licenses.private]\nignore = true\n'
+        fixture_policy = self.fixture_deny_config() + '\n[licenses.private]\nignore = false\n'
         fixture = self.create_missing_license_fixture(config=fixture_policy)
         self.assert_finding(
             fixture, "licenses", "unlicensed", {("fixture-unlicensed", "1.0.0")}
