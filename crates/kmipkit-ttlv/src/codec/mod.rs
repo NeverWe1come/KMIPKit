@@ -8,6 +8,9 @@ use std::fmt::{self, Display, Formatter};
 
 mod decoder;
 
+#[cfg(test)]
+mod limits_tests;
+
 pub use decoder::decode;
 
 /// The safe category of a TTLV decoding failure.
