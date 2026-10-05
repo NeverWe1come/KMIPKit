@@ -124,6 +124,31 @@ class DependencyPolicyApiTests(unittest.TestCase):
         with self.assertRaises(self.policy_error()):
             policy.validate_host_triple("x86_64-pc-windows-msvc", {"aarch64-unknown-linux-gnu"})
 
+    def test_cli_normalizes_missing_checkout_root_without_echoing_path(self) -> None:
+        self.require_policy()
+        with tempfile.TemporaryDirectory() as directory:
+            missing_root = Path(directory) / "sentinel-private-checkout"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(POLICY_PATH),
+                    "--checkout-root",
+                    str(missing_root),
+                    "--root-metadata",
+                    str(Path(directory) / "root.json"),
+                    "--fuzz-metadata",
+                    str(Path(directory) / "fuzz.json"),
+                ],
+                cwd=REPOSITORY_ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        self.assertNotEqual(0, completed.returncode)
+        self.assertIn("dependency policy:", completed.stderr)
+        self.assertNotIn("Traceback", completed.stderr)
+        self.assertNotIn("sentinel-private-checkout", completed.stderr)
+
     def test_path_dependencies_may_resolve_to_the_canonical_union_of_workspace_members(self) -> None:
         policy = self.require_policy()
         with tempfile.TemporaryDirectory() as directory:
