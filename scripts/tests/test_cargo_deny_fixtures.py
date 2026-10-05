@@ -84,13 +84,18 @@ class CargoDenyNegativeFixtureTests(unittest.TestCase):
                 environment = kwargs.get("env") or os.environ
                 invocations.append((tuple(command), environment.get("CARGO_NET_OFFLINE")))
                 if environment.get("CARGO_NET_OFFLINE") != "true":
-                    raise OnlineCargoAttempt(f"Cargo invocation can access the network: {command!r}")
+                    raise OnlineCargoAttempt(
+                        f"Cargo invocation can access the network: {command!r}"
+                    )
                 if "--offline" not in command:
                     command = [command[0], "--offline", *command[1:]]
             return real_run(command, *args, **kwargs)
 
         try:
-            with patch("scripts.tests.test_cargo_deny_fixtures.subprocess.run", side_effect=guarded_run):
+            with patch(
+                "scripts.tests.test_cargo_deny_fixtures.subprocess.run",
+                side_effect=guarded_run,
+            ):
                 build_fixture()
         except OnlineCargoAttempt as error:
             self.fail(str(error))
@@ -98,7 +103,8 @@ class CargoDenyNegativeFixtureTests(unittest.TestCase):
         self.assertTrue(invocations, "fixture builder did not exercise Cargo")
         self.assertTrue(
             all(offline == "true" and "--offline" in command for command, offline in invocations),
-            f"every Cargo invocation must set CARGO_NET_OFFLINE=true and pass --offline: {invocations!r}",
+            "every Cargo invocation must set CARGO_NET_OFFLINE=true and pass --offline: "
+            f"{invocations!r}",
         )
 
     @staticmethod
@@ -203,8 +209,8 @@ class CargoDenyNegativeFixtureTests(unittest.TestCase):
         self.assertEqual(generated.returncode, 0, generated.stderr)
         return fixture
 
-    def create_unapproved_git_fixture(self, *, allow_git: bool) -> Path:
-        """Create a local-only pinned Git dependency and its isolated workspace."""
+    def create_unapproved_git_fixture(self) -> tuple[Path, Path]:
+        """Create a local pinned Git source and synthetic metadata, with no fetch."""
         source = self.root / "git-source"
         source.mkdir()
         (source / "src").mkdir()
@@ -240,45 +246,34 @@ class CargoDenyNegativeFixtureTests(unittest.TestCase):
         )
         self.assertEqual(revision.returncode, 0, revision.stderr)
 
-        fixture = self.root / "git-fixture"
-        fixture.mkdir()
-        (fixture / "src").mkdir()
-        (fixture / ".cargo").mkdir()
-        (fixture / "src" / "lib.rs").write_text("pub fn fixture_root() {}\n", encoding="utf-8")
-        (fixture / "Cargo.toml").write_text(
-            "\n".join(
-                (
-                    "[package]",
-                    'name = "fixture-root"',
-                    'version = "0.1.0"',
-                    'edition = "2024"',
-                    'license = "Apache-2.0"',
-                    "",
-                    "[dependencies]",
-                    f'git_fixture = {{ package = "unapproved-git", git = "{source.as_uri()}", '
-                    f'rev = "{revision.stdout.strip()}" }}',
-                    "",
-                )
-            ),
-            encoding="utf-8",
-        )
-        config = self.fixture_deny_config()
-        if allow_git:
-            config = config.replace('unknown-git = "deny"', 'unknown-git = "allow"')
-        (fixture / ".cargo" / "deny.toml").write_text(config, encoding="utf-8")
-
-        generation_env = self.env.copy()
-        generation_env.pop("CARGO_NET_OFFLINE", None)
+        fixture = self.create_fixture([("unapproved-git", "1.0.0", "MIT", False)])
         generated = subprocess.run(
-            ["cargo", "generate-lockfile", "--manifest-path", str(fixture / "Cargo.toml")],
+            [
+                "cargo",
+                "metadata",
+                "--offline",
+                "--format-version",
+                "1",
+                "--manifest-path",
+                str(fixture / "Cargo.toml"),
+            ],
             cwd=fixture,
-            env=generation_env,
+            env=self.env,
             capture_output=True,
             text=True,
             check=False,
         )
         self.assertEqual(generated.returncode, 0, generated.stderr)
-        return fixture
+        metadata = json.loads(generated.stdout)
+        self.replace_package_source(
+            metadata,
+            "unapproved-git",
+            "1.0.0",
+            f"git+{source.as_uri()}?rev={revision.stdout.strip()}",
+        )
+        metadata_path = self.root / "git-metadata.json"
+        metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+        return fixture, metadata_path
 
     @staticmethod
     def fixture_deny_config() -> str:
@@ -342,20 +337,30 @@ allow-git = []
             "cargo-deny changed the isolated fixture lockfile",
         )
         diagnostics = []
-        error_logs = []
-        for line in (result.stdout + "\n" + result.stderr).splitlines():
+        unexpected_json_lines = []
+        unexpected_log_levels = []
+        for line_number, line in enumerate(
+            (result.stdout + "\n" + result.stderr).splitlines(), start=1
+        ):
+            if not line.strip():
+                continue
             try:
                 item = json.loads(line)
             except json.JSONDecodeError:
+                unexpected_json_lines.append(line_number)
                 continue
-            if item.get("type") == "diagnostic" and isinstance(item.get("fields"), dict):
+            if not isinstance(item, dict):
+                unexpected_json_lines.append(line_number)
+            elif item.get("type") == "diagnostic" and isinstance(item.get("fields"), dict):
                 diagnostics.append(item["fields"])
-            elif (
-                item.get("type") == "log"
-                and isinstance(item.get("fields"), dict)
-                and item["fields"].get("level") == "ERROR"
-            ):
-                error_logs.append(item["fields"])
+            elif item.get("type") == "summary" and isinstance(item.get("fields"), dict):
+                continue
+            elif item.get("type") == "log" and isinstance(item.get("fields"), dict):
+                level = item["fields"].get("level")
+                if not isinstance(level, str) or level.upper() != "INFO":
+                    unexpected_log_levels.append(level if isinstance(level, str) else "invalid")
+            else:
+                unexpected_json_lines.append(line_number)
         matched = [item for item in diagnostics if item.get("code") == code]
         error_codes = {
             item.get("code") for item in diagnostics if item.get("severity") == "error"
@@ -375,11 +380,15 @@ allow-git = []
             f"expected exact structured finding code {code!r}; diagnostics={diagnostics!r}; "
             f"stdout={result.stdout!r}; stderr={result.stderr!r}",
         )
-        self.assertEqual(error_codes, {code}, f"unexpected error finding codes: {error_codes!r}")
         self.assertFalse(
-            error_logs,
-            f"cargo-deny emitted unrelated error logs alongside {code!r}: {error_logs!r}",
+            unexpected_json_lines,
+            f"non-JSON cargo-deny output on lines {unexpected_json_lines!r}",
         )
+        self.assertFalse(
+            unexpected_log_levels,
+            f"unexpected cargo-deny log levels: {unexpected_log_levels!r}",
+        )
+        self.assertEqual(error_codes, {code}, f"unexpected error finding codes: {error_codes!r}")
         graph_context = {("fixture-root", "0.1.0")}
         finding_names = {name for name, _ in packages}
         self.assertEqual(
@@ -403,6 +412,7 @@ allow-git = []
             [
                 "cargo",
                 "metadata",
+                "--offline",
                 "--format-version",
                 "1",
                 "--manifest-path",
@@ -416,9 +426,21 @@ allow-git = []
         )
         self.assertEqual(generated.returncode, 0, generated.stderr)
         metadata = json.loads(generated.stdout)
-        package_metadata = next(item for item in metadata["packages"] if item["name"] == package)
+        self.replace_package_source(metadata, package, version, f"registry+{registry_url}")
+        metadata_path = self.root / "cargo-metadata.json"
+        metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+        return fixture, metadata_path
+
+    @staticmethod
+    def replace_package_source(
+        metadata: dict, package: str, version: str, source: str
+    ) -> None:
+        package_metadata = next(
+            item
+            for item in metadata["packages"]
+            if item["name"] == package and item["version"] == version
+        )
         old_id = package_metadata["id"]
-        source = f"registry+{registry_url}"
         new_id = f"{source}#{package}@{version}"
         package_metadata["id"] = new_id
         package_metadata["source"] = source
@@ -431,9 +453,6 @@ allow-git = []
             for dependency in node["deps"]:
                 if dependency["pkg"] == old_id:
                     dependency["pkg"] = new_id
-        metadata_path = self.root / "cargo-metadata.json"
-        metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
-        return fixture, metadata_path
 
     def create_local_registry_fixture(
         self,
@@ -450,6 +469,7 @@ allow-git = []
             [
                 "cargo",
                 "metadata",
+                "--offline",
                 "--format-version",
                 "1",
                 "--manifest-path",
@@ -481,193 +501,39 @@ allow-git = []
         crate_archive = archive_buffer.getvalue()
         checksum = hashlib.sha256(crate_archive).hexdigest()
 
-        registry = self.root / "registry-index"
-        registry.mkdir()
-        download = self.root / "registry-crates" / package / version / "download"
-        download.parent.mkdir(parents=True)
-        download.write_bytes(crate_archive)
-        (registry / "config.json").write_text(
-            json.dumps({"dl": download.as_uri()}), encoding="utf-8"
-        )
         index_relative = self.registry_index_path(package)
-        index_entry_path = registry / index_relative
-        index_entry_path.parent.mkdir(parents=True, exist_ok=True)
+        crates_io_hash = "index.crates.io-1949cf8c6b5b557f"
+        crates_io_index = self.cargo_home / "registry" / "index" / crates_io_hash
+        crates_io_index.mkdir(parents=True)
+        (crates_io_index / "config.json").write_text(
+            json.dumps(
+                {"dl": "https://static.crates.io/crates/{crate}/{crate}-{version}.crate"}
+            ),
+            encoding="utf-8",
+        )
         index_entry = {
             "name": package,
             "vers": version,
             "deps": [],
             "cksum": checksum,
             "features": {},
-            "yanked": False,
+            "yanked": yanked,
         }
-        index_entry_path.write_text(json.dumps(index_entry) + "\n", encoding="utf-8")
-        self.git_command(registry, ("init", "-q"))
-        self.git_command(registry, ("config", "user.email", "fixture@example.invalid"))
-        self.git_command(registry, ("config", "user.name", "Fixture"))
-        self.git_command(registry, ("add", "."))
-        self.git_command(registry, ("commit", "-qm", "registry fixture"))
+        sparse_cache_entry = crates_io_index / ".cache" / index_relative
+        sparse_cache_entry.parent.mkdir(parents=True, exist_ok=True)
+        sparse_cache_entry.write_bytes(
+            b'\x03\x02\x00\x00\x00etag: "kmipkit-fixture"\x00'
+            + version.encode("utf-8")
+            + b"\x00"
+            + json.dumps(index_entry, separators=(",", ":")).encode("utf-8")
+            + b"\x00"
+        )
+        crates_io_cache = self.cargo_home / "registry" / "cache" / crates_io_hash
+        crates_io_cache.mkdir(parents=True, exist_ok=True)
+        (crates_io_cache / f"{package}-{version}.crate").write_bytes(crate_archive)
 
-        registry_url = registry.as_uri()
-        (fixture / ".cargo" / "config.toml").write_text(
-            f'[registries.fixture]\nindex = {json.dumps(registry_url)}\n', encoding="utf-8"
-        )
-        dependency_alias = f'{package.replace("-", "_")}_{version.replace(".", "_")}'
-        (fixture / "Cargo.toml").write_text(
-            "\n".join(
-                (
-                    "[package]",
-                    'name = "fixture-root"',
-                    'version = "0.1.0"',
-                    'edition = "2024"',
-                    'license = "Apache-2.0"',
-                    "",
-                    "[dependencies]",
-                    f'{dependency_alias} = {{ package = "{package}", version = "{version}", '
-                    'registry = "fixture" }',
-                    "",
-                )
-            ),
-            encoding="utf-8",
-        )
-        generation_env = self.env.copy()
-        generation_env.pop("CARGO_NET_OFFLINE", None)
-        generated_lockfile = subprocess.run(
-            ["cargo", "generate-lockfile", "--manifest-path", str(fixture / "Cargo.toml")],
-            cwd=fixture,
-            env=generation_env,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        self.assertEqual(generated_lockfile.returncode, 0, generated_lockfile.stderr)
-
-        if yanked:
-            cache_entries = list(
-                (self.cargo_home / "registry" / "index").glob(
-                    f"*/.cache/{index_relative.as_posix()}"
-                )
-            )
-            self.assertEqual(
-                len(cache_entries), 1, "expected one isolated local registry cache entry"
-            )
-            cache_entry = cache_entries[0]
-            cached_before = cache_entry.read_bytes()
-            cached_after = cached_before.replace(b'"yanked": false', b'"yanked": true')
-            self.assertNotEqual(
-                cached_after, cached_before, "Cargo cache lacked the expected package record"
-            )
-            cache_entry.write_bytes(cached_after)
-            index_entry["yanked"] = True
-            index_entry_path.write_text(json.dumps(index_entry) + "\n", encoding="utf-8")
-        index_hash = next(
-            path.parent.parent.parent.parent.name
-            for path in (self.cargo_home / "registry" / "index").glob(
-                f"*/.cache/{index_relative.as_posix()}"
-            )
-        )
-        crate_cache = self.cargo_home / "registry" / "cache" / index_hash
-        crate_cache.mkdir(parents=True, exist_ok=True)
-        (crate_cache / f"{package}-{version}.crate").write_bytes(crate_archive)
-
-        if advisory is not None:
-            crates_io_hash = "index.crates.io-1949cf8c6b5b557f"
-            crates_io_index = self.cargo_home / "registry" / "index" / crates_io_hash
-            crates_io_index.mkdir(parents=True)
-            (crates_io_index / "config.json").write_text(
-                json.dumps(
-                    {"dl": "https://static.crates.io/crates/{crate}/{crate}-{version}.crate"}
-                ),
-                encoding="utf-8",
-            )
-            cached_entry = {
-                "name": package,
-                "vers": version,
-                "deps": [],
-                "cksum": checksum,
-                "features": {},
-                "yanked": False,
-            }
-            sparse_cache_entry = crates_io_index / ".cache" / index_relative
-            sparse_cache_entry.parent.mkdir(parents=True, exist_ok=True)
-            sparse_cache_entry.write_bytes(
-                b'\x03\x02\x00\x00\x00etag: "kmipkit-fixture"\x00'
-                + version.encode("utf-8")
-                + b"\x00"
-                + json.dumps(cached_entry, separators=(",", ":")).encode("utf-8")
-                + b"\x00"
-            )
-            crates_io_cache = self.cargo_home / "registry" / "cache" / crates_io_hash
-            crates_io_cache.mkdir(parents=True, exist_ok=True)
-            (crates_io_cache / f"{package}-{version}.crate").write_bytes(crate_archive)
-            (fixture / ".cargo" / "config.toml").unlink()
-            dependency_alias = package.replace("-", "_")
-            (fixture / "Cargo.toml").write_text(
-                "\n".join(
-                    (
-                        "[package]",
-                        'name = "fixture-root"',
-                        'version = "0.1.0"',
-                        'edition = "2024"',
-                        'license = "Apache-2.0"',
-                        "",
-                        "[dependencies]",
-                        f'{dependency_alias} = {{ package = "{package}", version = "{version}" }}',
-                        "",
-                    )
-                ),
-                encoding="utf-8",
-            )
-            crates_io_lockfile = subprocess.run(
-                [
-                    "cargo",
-                    "generate-lockfile",
-                    "--offline",
-                    "--manifest-path",
-                    str(fixture / "Cargo.toml"),
-                ],
-                cwd=fixture,
-                env=self.env,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            self.assertEqual(crates_io_lockfile.returncode, 0, crates_io_lockfile.stderr)
-            regenerated_metadata = subprocess.run(
-                [
-                    "cargo",
-                    "metadata",
-                    "--offline",
-                    "--format-version",
-                    "1",
-                    "--manifest-path",
-                    str(fixture / "Cargo.toml"),
-                ],
-                cwd=fixture,
-                env=self.env,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            self.assertEqual(regenerated_metadata.returncode, 0, regenerated_metadata.stderr)
-            metadata = json.loads(regenerated_metadata.stdout)
-        else:
-            package_metadata = next(
-                item for item in metadata["packages"] if item["name"] == package
-            )
-            old_id = package_metadata["id"]
-            source = f"registry+{registry_url}"
-            new_id = f"{source}#{package}@{version}"
-            package_metadata["id"] = new_id
-            package_metadata["source"] = source
-            for node in metadata["resolve"]["nodes"]:
-                if node["id"] == old_id:
-                    node["id"] = new_id
-                node["dependencies"] = [
-                    new_id if item == old_id else item for item in node["dependencies"]
-                ]
-                for dependency in node["deps"]:
-                    if dependency["pkg"] == old_id:
-                        dependency["pkg"] = new_id
+        source = "registry+https://github.com/rust-lang/crates.io-index"
+        self.replace_package_source(metadata, package, version, source)
         metadata_path = self.root / "cargo-metadata.json"
         metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
 
@@ -768,14 +634,18 @@ allow-git = []
         )
 
     def test_unapproved_local_git_source_reports_package_and_version(self) -> None:
-        fixture = self.create_unapproved_git_fixture(allow_git=False)
+        fixture, metadata = self.create_unapproved_git_fixture()
         self.assert_finding(
-            fixture, "sources", "source-not-allowed", {("unapproved-git", "1.0.0")}
+            fixture,
+            "sources",
+            "source-not-allowed",
+            {("unapproved-git", "1.0.0")},
+            metadata_path=metadata,
         )
 
     def test_unapproved_git_fixture_builder_keeps_cargo_offline(self) -> None:
         self.assert_builder_never_requests_online_cargo(
-            lambda: self.create_unapproved_git_fixture(allow_git=False)
+            lambda: self.create_unapproved_git_fixture()
         )
 
     def test_local_registry_fixture_builder_keeps_cargo_offline(self) -> None:
