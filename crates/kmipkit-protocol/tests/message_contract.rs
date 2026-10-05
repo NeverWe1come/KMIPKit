@@ -5,8 +5,8 @@
 //! They do not encode TTLV bytes, apply client execution policy, or claim
 //! operation-schema validity.
 //!
-//! Traceability: KMIPKIT-0006-FR-001 through FR-007, FR-012, FR-018, FR-019,
-//! FR-022; SC-001 and SC-002.
+//! Traceability: KMIPKIT-0006-FR-001 through FR-007, FR-012, FR-018, FR-019;
+//! SC-001 and SC-002.
 
 use kmipkit_protocol::{RequestMessage, ResponseMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
@@ -15,6 +15,7 @@ const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0002;
 const BATCH_COUNT: u32 = 0x0042_000D;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
@@ -131,6 +132,12 @@ fn response_batch_item(status: u32, include_payload: bool) -> Structure {
     if status == 1 {
         fields.push(item(RESULT_REASON, Value::enumeration(0)));
     }
+    if status == 2 {
+        fields.push(item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(vec![0xA5]),
+        ));
+    }
     if include_payload {
         fields.push(item(RESPONSE_PAYLOAD, Value::structure(Structure::new())));
     }
@@ -189,6 +196,14 @@ fn valid_request_and_response_preserve_envelope_order_and_counts() {
     assert_eq!(request.header().protocol_version().minor(), 1);
     assert_eq!(request.header().batch_count(), 1);
     assert_eq!(response.header().batch_count(), 1);
+    assert_eq!(
+        response.with_ttlv(|tree| tree
+            .children()
+            .iter()
+            .map(|child| child.tag().raw())
+            .collect::<Vec<_>>()),
+        vec![RESPONSE_HEADER, BATCH_ITEM]
+    );
 }
 
 #[test]
@@ -275,11 +290,44 @@ fn request_batch_options_are_rejected_for_a_single_item() {
 }
 
 #[test]
+fn absent_batch_options_keep_effective_defaults_without_materializing_fields() {
+    let request = RequestMessage::try_from_ttlv(request_tree(
+        request_header(2, None, []),
+        [
+            request_batch_item(Some(&[0x01])),
+            request_batch_item(Some(&[0x02])),
+        ],
+    ))
+    .expect("two identified items form a valid multi-item request");
+
+    assert_eq!(request.header().batch_order_option(), None);
+    assert!(request.header().effective_batch_order_option());
+    assert_eq!(request.header().batch_error_continuation_option(), None);
+    assert_eq!(
+        request.header().effective_batch_error_continuation_option(),
+        0
+    );
+    let header_children = request.with_ttlv(|tree| {
+        tree.children()[0].with_value(|value| match value {
+            ValueView::Structure(header) => header
+                .children()
+                .iter()
+                .map(|child| child.tag().raw())
+                .collect::<Vec<_>>(),
+            _ => Vec::new(),
+        })
+    });
+    assert!(!header_children.contains(&BATCH_ORDER_OPTION));
+    assert!(!header_children.contains(&BATCH_ERROR_CONTINUATION_OPTION));
+}
+
+#[test]
 fn request_header_defaults_preserve_field_absence() {
     let request = RequestMessage::try_from_ttlv(valid_request(None))
         .expect("the request is valid when optional defaults are absent");
 
-    assert!(!request.header().attestation_capable_indicator());
+    assert_eq!(request.header().attestation_capable_indicator(), None);
+    assert!(!request.header().effective_attestation_capable_indicator());
     assert_eq!(request.header().time_stamp(), None);
     assert!(
         request.into_ttlv().view().children()[0].with_value(|value| match value {
@@ -290,6 +338,27 @@ fn request_header_defaults_preserve_field_absence() {
             _ => false,
         })
     );
+}
+
+#[test]
+fn explicit_attestation_capable_indicator_values_and_presence_are_preserved() {
+    for raw in [false, true] {
+        let request = RequestMessage::try_from_ttlv(request_tree(
+            request_header(
+                1,
+                None,
+                [item(ATTESTATION_CAPABLE_INDICATOR, Value::boolean(raw))],
+            ),
+            [request_batch_item(None)],
+        ))
+        .expect("Table 395 represents Attestation Capable Indicator as Boolean");
+
+        assert_eq!(request.header().attestation_capable_indicator(), Some(raw));
+        assert_eq!(
+            request.header().effective_attestation_capable_indicator(),
+            raw
+        );
+    }
 }
 
 #[test]
@@ -305,6 +374,21 @@ fn signed_batch_count_must_be_nonnegative_and_match_item_count() {
 
     assert!(RequestMessage::try_from_ttlv(negative).is_err());
     assert!(RequestMessage::try_from_ttlv(mismatch).is_err());
+
+    let response_negative = response_tree(
+        response_header(i32::MIN, Some(1)),
+        [response_batch_item(0, true)],
+    );
+    let response_mismatch = response_tree(
+        response_header(i32::MAX, Some(1)),
+        [response_batch_item(0, true)],
+    );
+    assert!(ResponseMessage::try_from_ttlv(response_negative).is_err());
+    assert!(ResponseMessage::try_from_ttlv(response_mismatch).is_err());
+    assert!(RequestMessage::try_from_ttlv(request_tree(request_header(0, None, []), [],)).is_err());
+    assert!(
+        ResponseMessage::try_from_ttlv(response_tree(response_header(0, Some(1)), [],)).is_err()
+    );
 }
 
 #[test]
@@ -337,14 +421,53 @@ fn request_known_fields_and_envelope_reject_reordering() {
 }
 
 #[test]
+fn response_known_fields_and_envelope_reject_reordering() {
+    let reversed_header = structure([
+        item(BATCH_COUNT, Value::integer(1)),
+        item(PROTOCOL_VERSION, protocol_version(2, 1)),
+        item(TIME_STAMP, Value::date_time(1)),
+    ]);
+    let reversed_item = structure([
+        item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+        item(RESULT_STATUS, Value::enumeration(0)),
+    ]);
+    let item_first = structure([
+        item(BATCH_ITEM, Value::structure(response_batch_item(0, true))),
+        item(
+            RESPONSE_HEADER,
+            Value::structure(response_header(1, Some(1))),
+        ),
+    ]);
+
+    assert!(
+        ResponseMessage::try_from_ttlv(response_tree(
+            reversed_header,
+            [response_batch_item(0, true)],
+        ))
+        .is_err()
+    );
+    assert!(
+        ResponseMessage::try_from_ttlv(
+            response_tree(response_header(1, Some(1)), [reversed_item],)
+        )
+        .is_err()
+    );
+    assert!(ResponseMessage::try_from_ttlv(item_first).is_err());
+}
+
+#[test]
 fn response_payload_is_required_for_non_failure_and_absent_for_failure() {
     let missing_success_payload = valid_response(Some(1), 0, false);
     let failure_with_payload = valid_response(Some(1), 1, true);
     let valid_failure = valid_response(Some(1), 1, false);
+    let missing_pending_payload = valid_response(Some(1), 2, false);
+    let valid_pending = valid_response(Some(1), 2, true);
 
     assert!(ResponseMessage::try_from_ttlv(missing_success_payload).is_err());
     assert!(ResponseMessage::try_from_ttlv(failure_with_payload).is_err());
     assert!(ResponseMessage::try_from_ttlv(valid_failure).is_ok());
+    assert!(ResponseMessage::try_from_ttlv(missing_pending_payload).is_err());
+    assert!(ResponseMessage::try_from_ttlv(valid_pending).is_ok());
 }
 
 #[test]
