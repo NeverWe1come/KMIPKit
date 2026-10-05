@@ -377,6 +377,20 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                 if "::" in reference:
                     self.assertTrue(self._is_executable_test_ref(reference), reference)
 
+    def test_message_extension_private_test_uses_excluded_test_path(self) -> None:
+        with MESSAGE_MODEL_REQUIREMENTS_PATH.open(encoding="utf-8", newline="") as stream:
+            rows = list(csv.DictReader(stream))
+        requirement = next(
+            row
+            for row in rows
+            if row["requirement_id"] == "KMIPKIT-0006-FR-021"
+        )
+        expected_reference = (
+            "crates/kmipkit-protocol/tests/support/message_validation_unit.rs::"
+            "message_extension_validation_checks_required_fields_order_and_values"
+        )
+        self.assertIn(expected_reference, requirement["test_ids"].split("; "))
+
     def test_message_model_field_catalog_links_code_and_tests(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         message_sections = {
