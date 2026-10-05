@@ -854,7 +854,6 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         for expected in (
             "bad-license@2.3.4",
             "rule=license-rejected",
-            "license=GPL-3.0-only",
             "unsafe-crate@1.2.3",
             "rule=vulnerability",
             "advisory=RUSTSEC-2026-0001",
@@ -872,6 +871,7 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         ):
             with self.subTest(secret=secret):
                 self.assertNotIn(secret, report)
+        self.assertNotIn("GPL-3.0-only", report)
 
     def test_malformed_or_unrecognized_diagnostics_never_echo_raw_output(self) -> None:
         formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
