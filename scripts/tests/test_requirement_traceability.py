@@ -24,6 +24,12 @@ EXPECTED_REQUIREMENT_TESTS = {
 
 
 class RequirementTraceabilityTests(unittest.TestCase):
+    def test_one_requirement_reference_can_cover_multiple_executable_tests(self) -> None:
+        self.assert_executable_test_reference(
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_vulnerability_reports_exact_vulnerability_code;"
+            "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_expired_exception_is_rejected"
+        )
+
     def repository_file(self, relative_path: str, *, description: str) -> Path:
         path = Path(relative_path)
         self.assertFalse(path.is_absolute(), f"{description} must use a repository-relative path: {relative_path!r}")
