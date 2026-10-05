@@ -495,8 +495,11 @@ class CoverageGateTests(unittest.TestCase):
 
     def test_report_paths_must_resolve_inside_the_checkout(self) -> None:
         self.require_gate()
+        document = llvm_document([[1, 1, 1, 2, 1, 0, 0, 0]], "../../outside.rs")
         with self.assertRaises(GATE.CoverageDataError):
-            GATE.parse_llvm_export(llvm_document([[1, 1, 1, 2, 1, 0, 0, 0]], "../../outside.rs"), REPOSITORY_ROOT)
+            GATE.parse_llvm_export(document, REPOSITORY_ROOT)
+        with self.assertRaises(GATE.CoverageDataError):
+            GATE.normalize_llvm_export(document, REPOSITORY_ROOT)
 
     def test_normalization_rewrites_absolute_platform_paths_to_repository_relative_paths(self) -> None:
         self.require_gate()
@@ -506,6 +509,26 @@ class CoverageGateTests(unittest.TestCase):
             REPOSITORY_ROOT,
         )
         report = GATE.parse_llvm_export(normalized, REPOSITORY_ROOT)
+        self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
+
+    def test_normalization_anonymizes_external_macro_filename_references(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn run() {}\n", encoding="utf-8")
+            external_source = (root.parent / "cargo-registry" / "assert_impl.rs").as_posix()
+            document = json.loads(llvm_document([[1, 1, 1, 16, 1, 0, 0, 0]]))
+            function = document["data"][0]["functions"][0]
+            function["filenames"].append(external_source)
+            function["regions"].append([1, 1, 1, 10, 1, 1, 1, 0])
+
+            normalized = GATE.normalize_llvm_export(json.dumps(document), root)
+            report = GATE.parse_llvm_export(normalized, root)
+
+        parsed = json.loads(normalized)
+        self.assertEqual("__external_source__", parsed["data"][0]["functions"][0]["filenames"][1])
         self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
 
     def test_rust_source_scanner_ignores_nested_comments_and_raw_strings(self) -> None:

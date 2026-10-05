@@ -23,8 +23,8 @@ one and links both directions.
 - [ADR-0008: SDD, TDD, branches, and agents](0008-development-workflow.md)
 - [ADR-0009: Conformance and pinned OASIS sources](0009-conformance-and-oasis-sources.md)
 - [ADR-0010: Tag allocation precedence for generic TTLV](0010-tag-allocation-precedence.md)
-- [ADR-0011: Reject received Reserved TTLV Tags](0011-reserved-tag-decoding-policy.md) (Proposed)
-- [ADR-0012: Conditional caller-requested TTLV wire encoding](0012-caller-requested-wire-encoding-policy.md) (Proposed)
+- [ADR-0011: Reject received Reserved TTLV Tags](0011-reserved-tag-decoding-policy.md) (Accepted)
+- [ADR-0012: Conditional caller-requested TTLV wire encoding](0012-caller-requested-wire-encoding-policy.md) (Accepted)
 
 ## Template
 

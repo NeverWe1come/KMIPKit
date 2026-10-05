@@ -1,0 +1,3 @@
+# Case: KMIPKit's one-complete-item API rejects an additional trailing octet.
+# Attribution: KMIPKit requirement KMIPKIT-0005-FR-004 requires exactly one complete item per decode call.
+42 00 2c 02 00 00 00 04 00 00 00 01 00 00 00 00 fe

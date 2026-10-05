@@ -80820,7 +80820,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "Generic TTLV child-order preservation does not establish ordering for every KMIP Structure. Keep this requirement unassigned until each applicable Structure has approved typed-spec ownership and executable order-verification references. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.1.2-002-001",
@@ -80844,13 +80844,19 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0005",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/wire_encoder.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_padding_is_minimal_and_sign_extended",
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_round_trips_sign_extension_and_aligned_octets_exactly"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification_refs link project executable tests and do not imply official test-case evidence."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.1.2-002-002",
@@ -80874,13 +80880,19 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0005",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/wire_encoder.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_padding_is_minimal_and_sign_extended",
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_round_trips_sign_extension_and_aligned_octets_exactly"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification_refs link project executable tests and do not imply official test-case evidence."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.1.5-001-001",
@@ -80904,13 +80916,21 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0005",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/wire_encoder.rs",
+        "crates/kmipkit-ttlv/src/codec/decoder.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::text_and_byte_string_padding_is_minimal_at_eight_byte_boundaries",
+        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::decodes_a_valid_utf8_text_string_with_minimal_padding",
+        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::decodes_a_valid_byte_string_with_minimal_padding",
+        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::rejects_short_padding_and_bytes_beyond_each_required_padding_extent"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification_refs link project executable tests and do not imply official test-case evidence."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.1.5-001-002",
@@ -80934,13 +80954,22 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0005",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/wire_encoder.rs",
+        "crates/kmipkit-ttlv/src/codec/decoder.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::fixed_width_four_byte_values_have_four_following_padding_bytes",
+        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::decodes_a_valid_integer_item_and_its_four_byte_padding",
+        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::decodes_a_valid_enumeration_item_and_its_four_byte_padding",
+        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::decodes_a_valid_interval_item_and_its_four_byte_padding",
+        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::rejects_short_padding_and_bytes_beyond_each_required_padding_extent"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification_refs link project executable tests and do not imply official test-case evidence."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.4-001-001",
@@ -81090,13 +81119,18 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0005",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/wire_encoder.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_integer_golden_vector_with_signed_big_endian_value",
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_extension_tag_with_oasis_0x54_prefix"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification_refs link project executable tests and do not imply official test-case evidence."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-12-001-001",
@@ -102355,9 +102389,9 @@
       "affected_policy_ids": [
         "KMIPKIT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION"
       ],
-      "downstream_impact": "Decoder behavior for reserved and unused tag allocations; this does not change their OASIS registry classification.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "Decoder behavior follows accepted ADR-0011: reject received Reserved Tags before generic Item construction without changing the OASIS registry classification.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-001",
       "erratum_source_refs": []
     },
     {
@@ -102513,5 +102547,26 @@
       "erratum_source_refs": []
     }
   ],
-  "decisions": []
+  "decisions": [
+    {
+      "decision_id": "KMIPKIT-DEC-001",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-037"
+      ],
+      "policy_ids": [],
+      "interpretation": "KMIPKit policy decision: accept ADR-0011 for KMIPKit 1.0 and reject a received TTLV Tag classified as Reserved by ADR-0010 before constructing the public generic Item tree. Unknown Tags in the accepted 0x54 extension range remain eligible for decoding. OASIS KMIP Specification v2.1 §11.56 identifies the standard and extension Tag ranges but does not prescribe this receiver policy.",
+      "approver": "KMIPKit maintainer under delegated authorization",
+      "approval_evidence": "Direct maintainer instruction on 2026-10-05 authorized autonomous execution of the KMIPKIT-0005 plan without further approval or manual intervention. The selected project policy and delegated approval are documented in docs/adr/0011-reserved-tag-decoding-policy.md and specs/005-ttlv-wire-codec/approval-record.md.",
+      "approved_at": "2026-10-05",
+      "consequence": "Reserved Tags received from the wire fail decoding before generic Item construction; the OASIS registry classification and ADR-0010 precedence rule remain unchanged.",
+      "status": "accepted"
+    }
+  ]
 }

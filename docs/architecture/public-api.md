@@ -47,17 +47,19 @@ KMIPKit's 64-level Structure limit.
 The model is not a TTLV wire message and does not establish wire or protocol
 validity. It does not store original framing, encoded lengths, or padding
 bytes, and it does not validate schema-specific field order, cardinality,
-required fields, or operation semantics. The planned public `kmipkit-ttlv`
+required fields, or operation semantics. The public `kmipkit-ttlv`
 codec surface provides the bounded decoder for framing, exact wire lengths,
 endianness, padding, and configured resource limits; it exposes no
-byte-producing encoder. KMIPKIT-0005 may implement and test a private writer,
-but adds no `Client::execute`, permit type/constructor, or production callsite.
+byte-producing encoder. KMIPKIT-0005 implements and tests a private writer, but
+adds no `Client::execute`, permit type/constructor, or production callsite.
 The first client feature/spec owns the execute API, its private permit type and
 constructor, the sole production mint/callsite, and an exact-one audit. That
-execute path must accept only a closed typed request input. The proposal is not
-in force until a human accepts ADR-0012, approves the feature specification,
-and approves the enforceable permit/request boundary. The first client feature
-PR must include the sole production callsite and its owner-through-transport
+execute path must accept only a closed typed request input. The delegated
+approval of ADR-0012, the feature specification, and the enforceable
+permit/request boundary is recorded in
+`specs/005-ttlv-wire-codec/approval-record.md`. KMIPKIT-0005 still adds no
+production callsite. The first client feature PR must include the sole
+production callsite and its owner-through-transport
 integration test together. CI must pass that test against the candidate
 callsite before merge, enablement, or release; until then, the release branch
 must have neither the callsite nor a secret-bearing send. Schema validation
@@ -141,8 +143,9 @@ and the [pinned 1.9.0 source](https://docs.rs/crate/zeroize/1.9.0/source/src/lib
 In that version, `Vec::zeroize` clears its initialized elements and sets the
 length to zero; it does not guarantee wiping spare or otherwise uninitialized
 allocation capacity. `String::zeroize` delegates to its initialized backing
-vector contents. For the proposed outbound owner, the guarantee is limited to
-zeroizing the initialized encoded byte range before deallocation/owner drop.
+vector contents. For the private outbound owner implemented by KMIPKIT-0005,
+the guarantee is limited to zeroizing the initialized encoded byte range
+before deallocation/owner drop.
 Spare capacity is outside the guarantee unless explicitly initialized and its
 cleanup is verified. This is not a guarantee that every process copy of a
 value has been erased. Caller-side copies, buffers left by reallocations before
@@ -152,7 +155,7 @@ runtime are outside this Rust model's guarantee.
 
 The current policy in `AGENTS.md` §8 prohibits serialization of credentials,
 private keys, secret key material, OTPs, tickets, and raw KMIP bodies. KMIPKIT-0005
-FR-013 and Proposed ADR-0012 propose a narrow exception for temporary outbound
+FR-013 and accepted ADR-0012 define a narrow policy for temporary outbound
 TTLV generated solely for a caller-requested typed operation. KMIPKIT-0005 may
 implement and test a private encoder, but it adds no permit or production
 callsite. The first client feature/spec owns the closed typed `Client::execute`
@@ -161,15 +164,15 @@ mint/callsite, plus the exact-one audit. Bytes must be held in a private
 zeroizing KMIPKit-owned buffer through the transport write; before owner
 deallocation/drop, zeroize the initialized encoded byte range. Spare or
 uninitialized `Vec` capacity is outside the guarantee unless explicitly
-initialized and its cleanup is verified. The proposal has no
-public `encode(&Item)` API. It is not in force unless a human accepts ADR-0012,
-approves the KMIPKIT-0005 feature specification, and approves the enforceable
-private boundary. The first client feature PR must include its sole production
+initialized and its cleanup is verified. The accepted policy has no
+public `encode(&Item)` API. The delegated approval of ADR-0012, the KMIPKIT-0005
+feature specification, and the enforceable private boundary is recorded in
+`specs/005-ttlv-wire-codec/approval-record.md`. The first client feature PR must include its sole production
 callsite and owner-through-transport integration test together. CI must pass
 the test against the candidate callsite before merge, enablement, or release.
 Until then, the release branch must have neither the callsite nor a secret-bearing send. If review rejects that
-boundary or it cannot be enforced, do not approve or implement a secret-bearing
-request path. The proposal does not authorize diagnostics, general-purpose
+boundary or it cannot be enforced, do not implement a production secret-bearing
+request path. The policy does not authorize diagnostics, general-purpose
 serialization, logging, formatting, error inclusion, persistence, or arbitrary
 inbound raw-byte retention or re-emission. ADR-0011 addresses received Reserved
 Tags and does not authorize wire encoding.

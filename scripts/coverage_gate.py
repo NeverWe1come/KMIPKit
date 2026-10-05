@@ -638,19 +638,37 @@ def normalize_llvm_export(document: str | bytes, workspace_root: str | Path) -> 
             for filename in function["filenames"]:
                 if not isinstance(filename, str):
                     raise CoverageDataError("LLVM filename table contains a non-string path.")
-                canonical = _canonical_source_path(filename, root)
-                if canonical is None:
-                    # Keep non-production paths relative to the workspace when they belong to it.
-                    path = Path(filename)
-                    if not path.is_absolute():
-                        path = root / path
-                    try:
-                        canonical = path.resolve(strict=False).relative_to(root).as_posix()
-                    except (OSError, ValueError) as error:
-                        raise CoverageDataError(f"LLVM report path is outside the workspace: {filename}") from error
-                normalized.append(canonical)
+                normalized.append(_normalize_llvm_function_filename(filename, root))
             function["filenames"] = normalized
     return json.dumps(parsed, sort_keys=True, separators=(",", ":"))
+
+
+def _normalize_llvm_function_filename(filename: str, root: Path) -> str:
+    """Normalize one function-table path while keeping file records fail-closed."""
+    try:
+        canonical = _canonical_source_path(filename, root)
+    except CoverageDataError:
+        path = Path(filename)
+        if not path.is_absolute():
+            path = root / path
+        try:
+            path.resolve(strict=False).relative_to(root)
+        except (OSError, ValueError):
+            # Macro expansion can add registry or standard-library paths to a
+            # function's filename table without adding coverage file records.
+            return "__external_source__"
+        raise
+    if canonical is not None:
+        return canonical
+
+    # Keep non-production paths relative to the workspace when they belong to it.
+    path = Path(filename)
+    if not path.is_absolute():
+        path = root / path
+    try:
+        return path.resolve(strict=False).relative_to(root).as_posix()
+    except (OSError, ValueError) as error:
+        raise CoverageDataError(f"LLVM report path is outside the workspace: {filename}") from error
 
 
 def _decode_git_diff_path(value: str) -> str:

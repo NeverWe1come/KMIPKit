@@ -2091,8 +2091,19 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertTrue(expected_sections.issubset(cited_sections))
         self.assertTrue(discrepancies)
-        self.assertTrue(all(row["state"] == "open" for row in discrepancies))
-        self.assertTrue(all(row["decision_id"] is None for row in discrepancies))
+        decisions = {
+            decision["decision_id"]: decision
+            for decision in document["decisions"]
+        }
+        for discrepancy in discrepancies:
+            if discrepancy["state"] == "open":
+                self.assertIsNone(discrepancy["decision_id"])
+                continue
+
+            self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
+            decision = decisions[discrepancy["decision_id"]]
+            self.assertEqual(decision["status"], "accepted")
+            self.assertIn(discrepancy["discrepancy_id"], decision["discrepancy_ids"])
 
     def test_checked_in_authentication_catalog_preserves_mixed_scope_and_lowercase_must(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"

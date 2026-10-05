@@ -49,6 +49,10 @@ impl RawTag {
             }
         }
     }
+
+    pub(crate) fn is_reserved(self) -> bool {
+        matches!(allocation_kind(self.0), Some(TagAllocationKind::Reserved))
+    }
 }
 
 /// A tag whose KMIP 2.1 allocation has been checked.

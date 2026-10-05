@@ -25,6 +25,7 @@ coverage/
 *.profdata
 fuzz/artifacts/
 fuzz/corpus-generated/
+fuzz/target/
 
 # Editors and operating systems
 .idea/

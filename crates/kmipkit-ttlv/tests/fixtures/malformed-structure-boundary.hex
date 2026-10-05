@@ -1,0 +1,3 @@
+# Case: the Structure boundary ends after a child header whose declared value is absent.
+# Attribution: OASIS Key Management Interoperability Protocol Specification Version 2.1, Sections 10.1.2, 10.1.3, and 10.1.5; KMIPKIT-0005-NR-002, NR-004, and NR-005.
+54 12 34 01 00 00 00 08 42 00 2c 02 00 00 00 04

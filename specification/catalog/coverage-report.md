@@ -24,7 +24,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Normative requirements | 567 |
 | Profiles | 35 |
 | Test cases | 203 |
-| Open discrepancies | 42 |
+| Open discrepancies | 41 |
 | Project policies | 3 |
 
 ### Elements by kind
@@ -737,14 +737,9 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-PROF-6.4-004 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §6.4 |
 | KMIPKIT-REQ-PROF-6.4-005 | mandatory | profile\_conditional | KMIPKIT-SRC-profiles §6.4 |
 | KMIPKIT-REQ-SPEC-10.1.2-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §10.1.2 |
-| KMIPKIT-REQ-SPEC-10.1.2-002-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §10.1.2 |
-| KMIPKIT-REQ-SPEC-10.1.2-002-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §10.1.2 |
-| KMIPKIT-REQ-SPEC-10.1.5-001-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §10.1.5 |
-| KMIPKIT-REQ-SPEC-10.1.5-001-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §10.1.5 |
 | KMIPKIT-REQ-SPEC-10.4-001-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §10.4 |
 | KMIPKIT-REQ-SPEC-10.4-001-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §10.4 |
 | KMIPKIT-REQ-SPEC-10.4-001-003 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §10.4 |
-| KMIPKIT-REQ-SPEC-11.56-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-REQ-SPEC-12-001-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §12 |
 | KMIPKIT-REQ-SPEC-12-001-002 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §12 |
 | KMIPKIT-REQ-SPEC-14.1-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §14.1 |
@@ -1292,16 +1287,16 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-PROF-6.4-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §6.4 |
 | KMIPKIT-REQ-PROF-6.4-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §6.4 |
 | KMIPKIT-REQ-PROF-6.4-005 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-profiles §6.4 |
-| KMIPKIT-REQ-SPEC-10.1.2-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §10.1.2 |
-| KMIPKIT-REQ-SPEC-10.1.2-002-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §10.1.2 |
-| KMIPKIT-REQ-SPEC-10.1.2-002-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §10.1.2 |
-| KMIPKIT-REQ-SPEC-10.1.5-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §10.1.5 |
-| KMIPKIT-REQ-SPEC-10.1.5-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §10.1.5 |
+| KMIPKIT-REQ-SPEC-10.1.2-001 | Generic TTLV child-order preservation does not establish ordering for every KMIP Structure. Keep this requirement unassigned until each applicable Structure has approved typed-spec ownership and executable order-verification references. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. | KMIPKIT-SRC-spec §10.1.2 |
+| KMIPKIT-REQ-SPEC-10.1.2-002-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification\_refs link project executable tests and do not imply official test-case evidence. | KMIPKIT-SRC-spec §10.1.2 |
+| KMIPKIT-REQ-SPEC-10.1.2-002-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification\_refs link project executable tests and do not imply official test-case evidence. | KMIPKIT-SRC-spec §10.1.2 |
+| KMIPKIT-REQ-SPEC-10.1.5-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification\_refs link project executable tests and do not imply official test-case evidence. | KMIPKIT-SRC-spec §10.1.5 |
+| KMIPKIT-REQ-SPEC-10.1.5-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification\_refs link project executable tests and do not imply official test-case evidence. | KMIPKIT-SRC-spec §10.1.5 |
 | KMIPKIT-REQ-SPEC-10.4-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §10.4 |
 | KMIPKIT-REQ-SPEC-10.4-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §10.4 |
 | KMIPKIT-REQ-SPEC-10.4-001-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §10.4 |
 | KMIPKIT-REQ-SPEC-11-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §11 |
-| KMIPKIT-REQ-SPEC-11.56-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-REQ-SPEC-11.56-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification\_refs link project executable tests and do not imply official test-case evidence. | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-REQ-SPEC-12-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §12 |
 | KMIPKIT-REQ-SPEC-12-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §12 |
 | KMIPKIT-REQ-SPEC-14.1-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §14.1 |
@@ -3329,7 +3324,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-DISC-034 | open | review before dependent implementation | none linked | Set Attribute test labels and fixture basenames use different abbreviations | KMIPKIT-SRC-testcases §2.92, KMIPKIT-SRC-testcases §2.93, KMIPKIT-SRC-testcases §2.94 |
 | KMIPKIT-DISC-035 | open | review before dependent implementation | none linked | Signed JSON test section 2.97 links to the previous case | KMIPKIT-SRC-testcases §2.96, KMIPKIT-SRC-testcases §2.97 |
 | KMIPKIT-DISC-036 | open | review before dependent implementation | none linked | All 203 referenced XML fixtures are absent from the pinned source tree | KMIPKIT-SRC-profiles §5.1.3.1, KMIPKIT-SRC-testcases §2.1 |
-| KMIPKIT-DISC-037 | open | blocked for affected records | 1 requirements, 436 elements, 1 policies | Reserved-tag receipt and lossless preservation behavior is not specified | KMIPKIT-SRC-spec §11.56 |
+| KMIPKIT-DISC-037 | resolved\_by\_approved\_decision | review before dependent implementation | 1 requirements, 436 elements, 1 policies | Reserved-tag receipt and lossless preservation behavior is not specified | KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-DISC-038 | open | blocked for affected records | 3 elements, 2 profiles | JSON profile example uses Template for a reserved Object Type value | KMIPKIT-SRC-profiles §5.5.4.1, KMIPKIT-SRC-spec §11.34 |
 | KMIPKIT-DISC-039 | open | blocked for affected records | 1 elements | Query Asynchronous Requests response table is labeled as a PKCS#11 response | KMIPKIT-SRC-spec §6.1.41 |
 | KMIPKIT-DISC-040 | open | blocked for affected records | 1 elements | Table 315 RNG Retrieve Errors caption is stranded in Re-Provision error handling | KMIPKIT-SRC-spec §6.1.48.1 |

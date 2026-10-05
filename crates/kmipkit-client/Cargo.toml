@@ -6,9 +6,16 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "KMIP client orchestration for KMIPKit"
+
 [dependencies]
 kmipkit-protocol.workspace = true
 kmipkit-transport.workspace = true
+kmipkit-ttlv.workspace = true
+zeroize.workspace = true
+
+[dev-dependencies]
+static_assertions = { version = "=1.1.0", default-features = false }
+serde = "=1.0.228"
 
 [lints]
 workspace = true

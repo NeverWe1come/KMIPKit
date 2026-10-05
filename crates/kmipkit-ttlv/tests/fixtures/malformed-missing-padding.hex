@@ -1,0 +1,3 @@
+# Case: Integer has only three of the four required following padding octets.
+# Attribution: OASIS Key Management Interoperability Protocol Specification Version 2.1, Section 10.1.5; KMIPKIT-0005-NR-005.
+42 00 2c 02 00 00 00 04 00 00 00 01 00 00 00
