@@ -331,3 +331,17 @@ GREEN: Ran 14 tests ... OK
 python -X utf8 -m unittest discover -s scripts/tests -p "test_*.py" -v
 Ran 109 tests ... OK (skipped=7)
 ```
+
+The independent scoped re-review of `f241f38..350768f` marked the
+LicenseRef finding **ADDRESSED** and found no regression in the fix. It
+confirmed that report assembly does not read or emit license label spans and
+that the PowerShell runner logs only the formatted report on cargo-deny
+failure.
+
+```text
+python -m unittest -v scripts.tests.test_dependency_policy.CargoDenyDiagnosticTests
+Ran 5 tests ... OK
+
+git diff --check f241f38..350768f
+passed
+```
