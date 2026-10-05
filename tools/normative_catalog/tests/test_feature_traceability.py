@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[3]
 MAX_TEST_SOURCE_BYTES = 1_048_576
 CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
 FEATURE_SPEC = "KMIPKIT-0003"
+MESSAGE_MODEL_FEATURE_SPEC = "KMIPKIT-0006"
+MESSAGE_MODEL_REQUIREMENTS_PATH = ROOT / "specification/compliance/requirements/KMIPKIT-0006.csv"
 RESULT_ELEMENT_IDS = {
     "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON",
     "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
@@ -227,6 +229,173 @@ class FeatureTraceabilityTests(unittest.TestCase):
             class_exists = re.search(rf"^class {re.escape(class_name)}(?:\(|:)", source, re.MULTILINE)
             return class_exists is not None and f"def {function_name}(" in source
         return False
+
+
+class MessageModelTraceabilityTests(unittest.TestCase):
+    @staticmethod
+    def _is_executable_test_ref(test_ref: str) -> bool:
+        return FeatureTraceabilityTests._is_executable_test_ref(test_ref)
+
+    def test_message_model_csv_maps_requirements_and_executable_evidence(self) -> None:
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        with MESSAGE_MODEL_REQUIREMENTS_PATH.open(encoding="utf-8", newline="") as stream:
+            rows = list(csv.DictReader(stream))
+
+        expected_header = [
+            "requirement_id",
+            "requirement_kind",
+            "source_document",
+            "source_section",
+            "normative_level",
+            "scope",
+            "statement",
+            "implementation_location",
+            "test_ids",
+            "status",
+        ]
+        self.assertEqual(list(rows[0]), expected_header)
+        by_id = {row["requirement_id"]: row for row in rows}
+        self.assertEqual(len(by_id), len(rows))
+
+        source_requirements = {
+            record["requirement_id"]
+            for record in catalog["requirements"]
+            if any(
+                reference["source_id"] == "KMIPKIT-SRC-spec"
+                and reference["section"].split(".")[0] in {"8", "9"}
+                for reference in record["source_refs"]
+            )
+        }
+        self.assertTrue(source_requirements.issubset(by_id))
+        self.assertEqual(
+            by_id["KMIPKIT-REQ-SPEC-8-003-002"]["status"],
+            "verified",
+        )
+        self.assertIn(
+            "one_response_batch_can_mix_completed_and_pending_results",
+            by_id["KMIPKIT-REQ-SPEC-8-003-002"]["test_ids"],
+        )
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-9.8-001-002",
+            "KMIPKIT-REQ-SPEC-9.8-001-003",
+        ):
+            self.assertEqual(by_id[requirement_id]["status"], "server_only")
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-9.12-001-002",
+            "KMIPKIT-REQ-SPEC-9.12-001-003",
+            "KMIPKIT-REQ-SPEC-9.13-001-004",
+            "KMIPKIT-REQ-SPEC-9.13-001-005",
+        ):
+            self.assertIn("owner=KMIPKIT-0007", by_id[requirement_id]["scope"])
+            self.assertEqual(by_id[requirement_id]["status"], "deferred")
+        self.assertIn("owner=KMIPKIT-0009", by_id["KMIPKIT-REQ-SPEC-9.19-002"]["scope"])
+        for discrepancy_id, owner in (
+            ("KMIPKIT-DISC-001", "KMIPKIT-0007"),
+            ("KMIPKIT-DISC-022", "KMIPKIT-0007"),
+            ("KMIPKIT-DISC-039", "KMIPKIT-0009"),
+            ("KMIPKIT-DISC-041", "KMIPKIT-0008"),
+            ("KMIPKIT-DISC-042", "KMIPKIT-0008"),
+        ):
+            self.assertIn(discrepancy_id, by_id)
+            self.assertIn(f"owner={owner}", by_id[discrepancy_id]["scope"])
+            self.assertEqual(by_id[discrepancy_id]["status"], "deferred")
+
+        for row in rows:
+            with self.subTest(requirement_id=row["requirement_id"]):
+                self.assertTrue(row["source_section"])
+                self.assertTrue(row["implementation_location"])
+                if row["status"] != "verified":
+                    continue
+                references = row["test_ids"].split("; ")
+                self.assertTrue(references)
+                for reference in references:
+                    self.assertTrue(self._is_executable_test_ref(reference), reference)
+
+        for requirement_id in source_requirements:
+            record = next(
+                item for item in catalog["requirements"] if item["requirement_id"] == requirement_id
+            )
+            row = by_id[requirement_id]
+            if row["status"] == "verified":
+                self.assertEqual(record["feature_spec"], MESSAGE_MODEL_FEATURE_SPEC)
+            elif row["status"] == "server_only":
+                self.assertEqual(record["scope_state"], "server_only")
+                self.assertIn(record["feature_spec"], {None, MESSAGE_MODEL_FEATURE_SPEC})
+            else:
+                self.assertEqual(record["feature_spec"], row["scope"].split("; owner=")[1])
+            for reference in record["verification_refs"]:
+                test_path = reference.split("::", 1)[0]
+                self.assertTrue((ROOT / test_path).is_file(), reference)
+                if "::" in reference:
+                    self.assertTrue(self._is_executable_test_ref(reference), reference)
+
+    def test_message_model_field_catalog_links_code_and_tests(self) -> None:
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        message_sections = {
+            *(f"8.{index}" for index in range(1, 7)),
+            "9.1",
+            "9.2",
+            "9.3",
+            "9.4",
+            "9.5",
+            "9.6",
+            "9.7",
+            "9.8",
+            "9.9",
+            "9.10",
+            "9.12",
+            "9.13",
+            "9.14",
+            "9.15",
+            "9.16",
+            "9.17",
+            "9.18",
+            "9.19",
+            "9.20",
+            "9.21",
+        }
+        elements = [
+            element
+            for element in catalog["elements"]
+            if element.get("kind") == "message_field"
+            and any(
+                reference["source_id"] == "KMIPKIT-SRC-spec"
+                and reference["section"] in message_sections
+                for reference in element.get("source_refs", [])
+            )
+            and element["element_id"] != "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"
+        ]
+        self.assertGreaterEqual(len(elements), 70)
+        for element in elements:
+            with self.subTest(element_id=element["element_id"]):
+                self.assertEqual(element["feature_spec"], MESSAGE_MODEL_FEATURE_SPEC)
+                self.assertTrue(element["implementation_refs"])
+                self.assertTrue(element["verification_refs"])
+                for reference in (*element["implementation_refs"], *element["verification_refs"]):
+                    path = reference.split("::", 1)[0]
+                    self.assertTrue((ROOT / path).is_file(), reference)
+
+    def test_message_model_boundary_has_no_io_or_scheduling_dependencies(self) -> None:
+        production_files = (
+            ROOT / "crates/kmipkit-protocol/src/message/mod.rs",
+            ROOT / "crates/kmipkit-protocol/src/message/header.rs",
+            ROOT / "crates/kmipkit-protocol/src/message/batch.rs",
+            ROOT / "crates/kmipkit-protocol/src/message/validation.rs",
+            ROOT / "crates/kmipkit-protocol/src/message/version.rs",
+        )
+        forbidden = (
+            "std::net",
+            "std::thread",
+            "tokio::",
+            "reqwest::",
+            "TcpStream",
+            "TcpListener",
+        )
+        for path in production_files:
+            source = path.read_text(encoding="utf-8")
+            for token in forbidden:
+                with self.subTest(path=path.name, token=token):
+                    self.assertNotIn(token, source)
 
 if __name__ == "__main__":
     unittest.main()
