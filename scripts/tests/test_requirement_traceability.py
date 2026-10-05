@@ -17,9 +17,57 @@ CSV_COLUMNS = ("requirement_id", "configuration_path", "implementation_path", "t
 CONFIGURATION_SUFFIXES = {".json", ".toml", ".yaml", ".yml"}
 EXPECTED_REQUIREMENT_TESTS = {
     "FR-004": "scripts/tests/test_dependency_policy.py::DependencyPolicyRunnerContractTests.test_runner_refreshes_rustsec_per_workspace_and_reports_sha_and_timestamp",
+    "FR-005": ";".join(
+        (
+            "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_optional_feature_only_external_path_dependency_is_rejected",
+            "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_symlink_that_escapes_the_checkout_is_rejected_after_canonicalization",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_unknown_registry_reports_package_and_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_unapproved_local_git_source_reports_package_and_version",
+        )
+    ),
+    "FR-006": ";".join(
+        (
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_architecture_ban_exceptions_cannot_waive_the_three_adr_0005_crates",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_each_architecture_ban_reports_banned_package_and_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_wildcard_dependency_requirement_reports_exact_rule",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_normal_and_dev_duplicate_versions_report_both_versions",
+        )
+    ),
     "FR-011": "scripts/tests/test_workflow.py::WorkflowContractTests.test_dependency_policy_local_command_and_review_process_are_documented",
     "SC-004": "scripts/tests/test_workflow.py::WorkflowContractTests.test_scheduled_policy_reports_scanned_commit_and_each_rustsec_revision",
     "SC-006": "scripts/tests/test_workflow.py::WorkflowContractTests.test_dependency_policy_local_command_and_review_process_are_documented",
+    "SC-002": ";".join(
+        (
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_vulnerability_reports_exact_vulnerability_code",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_unsoundness_reports_exact_unsound_code",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_unmaintained_reports_exact_unmaintained_code",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_yanked_registry_version_reports_exact_yanked_code",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_disallowed_license_reports_rejected_package_and_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_unknown_registry_reports_package_and_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_unapproved_local_git_source_reports_package_and_version",
+            "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_optional_feature_only_external_path_dependency_is_rejected",
+            "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_symlink_that_escapes_the_checkout_is_rejected_after_canonicalization",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_each_architecture_ban_reports_banned_package_and_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_wildcard_dependency_requirement_reports_exact_rule",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_normal_and_dev_duplicate_versions_report_both_versions",
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_expired_exception_is_rejected",
+        )
+    ),
+    "SC-003": ";".join(
+        (
+            "scripts/tests/test_dependency_policy.py::DependencyPolicyRunnerContractTests.test_runner_checks_the_python_metadata_validator_and_preserves_lockfiles",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_vulnerability_reports_exact_vulnerability_code",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_unsoundness_reports_exact_unsound_code",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_unmaintained_reports_exact_unmaintained_code",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_yanked_registry_version_reports_exact_yanked_code",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_disallowed_license_reports_rejected_package_and_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_unknown_registry_reports_package_and_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_unapproved_local_git_source_reports_package_and_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_each_architecture_ban_reports_banned_package_and_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_wildcard_dependency_requirement_reports_exact_rule",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_normal_and_dev_duplicate_versions_report_both_versions",
+        )
+    ),
 }
 
 
@@ -27,7 +75,7 @@ class RequirementTraceabilityTests(unittest.TestCase):
     def test_one_requirement_reference_can_cover_multiple_executable_tests(self) -> None:
         self.assert_executable_test_reference(
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_vulnerability_reports_exact_vulnerability_code;"
-            "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_expired_exception_is_rejected"
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_expired_exception_is_rejected"
         )
 
     def repository_file(self, relative_path: str, *, description: str) -> Path:
@@ -43,6 +91,13 @@ class RequirementTraceabilityTests(unittest.TestCase):
         return resolved
 
     def assert_executable_test_reference(self, reference: str) -> None:
+        """Validate one or more semicolon-separated unittest references."""
+        references = [item.strip() for item in reference.split(";")]
+        self.assertTrue(references and all(references), "Test references must not be empty.")
+        for single_reference in references:
+            self._assert_single_executable_test_reference(single_reference)
+
+    def _assert_single_executable_test_reference(self, reference: str) -> None:
         self.assertEqual(reference.count("::"), 1, f"Test reference must be path::TestClass.test_method: {reference!r}")
         relative_path, target = reference.split("::", maxsplit=1)
         self.assertTrue(
