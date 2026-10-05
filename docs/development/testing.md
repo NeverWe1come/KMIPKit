@@ -148,6 +148,42 @@ pwsh -File .\scripts\tests\Test-Wsl.ps1
 python -m unittest discover -s scripts/tests -p 'test_*.py' -v
 ```
 
+## Cargo dependency policy
+
+Run the complete dependency-policy check from the repository root in
+PowerShell with:
+
+```powershell
+pwsh -File .\scripts\Test-DependencyPolicy.ps1
+```
+
+The runner installs and verifies the exact `cargo-deny` **0.20.2** release,
+then checks the root and fuzz Cargo workspaces separately against their
+committed lockfiles. It includes all features, development dependencies, and
+all resolved target-specific edges; it does not filter Cargo metadata by the
+policy runner's host platform. The runner validates its observed `rustc -vV`
+host triple and fails if the triple is absent from the reviewed CI runner set.
+For each successful workspace check it attempts an online RustSec advisory
+database refresh and reports that invocation's database commit SHA and ISO
+timestamp. The refresh evidence is per workspace, and cached-only or failed
+refreshes do not count as a passing fresh scan. The command checks lockfile
+hashes and fails if policy execution changes either lockfile.
+
+An unexcepted license, advisory, source, ban, duplicate, wildcard, invalid
+path, tool, host, or database-evidence finding fails the run. Policy exceptions
+require an exact, reviewed, expiring record and a matching cargo-deny entry;
+see the [dependency-policy guide](../security/dependency-policy.md) for the
+record fields, evidence, renewal, and removal process. Automated license
+metadata checks are not a complete legal audit and do not validate license
+terms against every package source file.
+
+The daily scheduled dependency review scans the configured active release ref.
+GitHub starts scheduled workflow runs from the repository's default branch,
+so this workflow change becomes active for scheduled runs only after it is
+integrated into that default branch. The schedule then checks out the
+configured release ref and reports the scanned commit with root and fuzz
+RustSec evidence separately.
+
 ## CI levels
 
 ### Every PR
