@@ -2091,8 +2091,166 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertTrue(expected_sections.issubset(cited_sections))
         self.assertTrue(discrepancies)
-        self.assertTrue(all(row["state"] == "open" for row in discrepancies))
-        self.assertTrue(all(row["decision_id"] is None for row in discrepancies))
+        decisions = {
+            decision["decision_id"]: decision
+            for decision in document["decisions"]
+        }
+        for discrepancy in discrepancies:
+            if discrepancy["state"] == "open":
+                self.assertIsNone(discrepancy["decision_id"])
+                continue
+
+            self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
+            decision = decisions[discrepancy["decision_id"]]
+            self.assertEqual(decision["status"], "accepted")
+            self.assertIn(discrepancy["discrepancy_id"], decision["discrepancy_ids"])
+
+    def test_checked_in_authentication_catalog_preserves_mixed_scope_and_lowercase_must(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        document = json.loads(catalog_path.read_bytes())
+        clauses = {row["clause_id"]: row for row in document["source_clauses"]}
+        requirements = {row["requirement_id"]: row for row in document["requirements"]}
+        discrepancies = {row["discrepancy_id"]: row for row in document["discrepancies"]}
+
+        clause = clauses["KMIPKIT-CLAUSE-SPEC-9.4-001"]
+        self.assertEqual(clause["role"], "both")
+        self.assertEqual(clause["direction"], "client_to_server")
+        self.assertEqual(clause["scope_state"], "mixed")
+        self.assertEqual(clause["disposition"], "source_discrepancy")
+        self.assertEqual(
+            clause["requirement_ids"],
+            [
+                "KMIPKIT-REQ-SPEC-9.4-001-001",
+                "KMIPKIT-REQ-SPEC-9.4-001-002",
+                "KMIPKIT-REQ-SPEC-9.4-001-003",
+            ],
+        )
+
+        requirement = requirements["KMIPKIT-REQ-SPEC-9.4-001-003"]
+        self.assertEqual(requirement["role"], "server")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "server_only")
+        self.assertEqual(requirement["status"], "unassigned")
+        self.assertIsNone(requirement["feature_spec"])
+        self.assertEqual(requirement["implementation_refs"], [])
+        self.assertEqual(requirement["verification_refs"], [])
+        self.assertIn("server", requirement["summary"].casefold())
+        self.assertIn("satisfied", requirement["summary"].casefold())
+        self.assertIn("lowercase", requirement["review_note"].casefold())
+        self.assertIn("must", requirement["review_note"].casefold())
+        self.assertIn("unresolved", requirement["review_note"].casefold())
+
+        discrepancy = discrepancies["KMIPKIT-DISC-041"]
+        self.assertEqual(discrepancy["state"], "open")
+        self.assertIsNone(discrepancy["decision_id"])
+        self.assertEqual(
+            {(row["source_id"], row["section"]) for row in discrepancy["source_refs"]},
+            {("KMIPKIT-SRC-spec", "1.2"), ("KMIPKIT-SRC-spec", "9.4")},
+        )
+        self.assertEqual(discrepancy["affected_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.4-001-003"])
+        self.assertEqual(discrepancy["affected_element_ids"], ["KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"])
+        alternatives = " ".join(discrepancy["alternatives"]).casefold()
+        self.assertIn("case-insensitive", alternatives)
+        self.assertIn("uppercase", alternatives)
+        self.assertIn("rfc 2119", alternatives)
+
+    def test_checked_in_credential_catalog_links_authentication_and_credential_elements(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        document = json.loads(catalog_path.read_bytes())
+        requirements = {row["requirement_id"]: row for row in document["requirements"]}
+        elements = {row["element_id"]: row for row in document["elements"]}
+        clauses = {row["clause_id"]: row for row in document["source_clauses"]}
+
+        credential_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-001"]
+        self.assertIn("identification", credential_requirement["summary"].casefold())
+        self.assertIn("authentication", credential_requirement["summary"].casefold())
+        self.assertIn("profile", credential_requirement["condition"].casefold())
+        self.assertNotIn("profile", credential_requirement["summary"].casefold().split("identification")[0])
+        self.assertEqual(credential_requirement["scope_state"], "client_1_0")
+        self.assertEqual(credential_requirement["element_ids"], ["KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"])
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-9.11-001"]["scope_state"], "client_1_0")
+
+        expected_requirement_elements = {
+            "KMIPKIT-REQ-SPEC-9.4-001-001": {"KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION"},
+            "KMIPKIT-REQ-SPEC-9.4-001-002": {
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED",
+            },
+            "KMIPKIT-REQ-SPEC-9.4-001-003": {"KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"},
+            "KMIPKIT-REQ-SPEC-9.4-002": {"KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"},
+        }
+        for requirement_id, expected_element_ids in expected_requirement_elements.items():
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(set(requirements[requirement_id]["element_ids"]), expected_element_ids)
+                for element_id in expected_element_ids:
+                    self.assertIn(requirement_id, elements[element_id]["requirement_ids"])
+
+        self.assertIn(
+            "KMIPKIT-REQ-SPEC-9.11-001",
+            elements["KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"]["requirement_ids"],
+        )
+
+    def test_checked_in_device_credential_links_keep_field_set_ambiguity_open(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        document = json.loads(catalog_path.read_bytes())
+        requirements = {row["requirement_id"]: row for row in document["requirements"]}
+        elements = {row["element_id"]: row for row in document["elements"]}
+        discrepancies = {row["discrepancy_id"]: row for row in document["discrepancies"]}
+        all_device_fields = {
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
+        }
+
+        minimum_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-001"]
+        self.assertEqual(set(minimum_requirement["element_ids"]), all_device_fields)
+        discrepancy = discrepancies["KMIPKIT-DISC-042"]
+        self.assertEqual(discrepancy["state"], "open")
+        self.assertIsNone(discrepancy["decision_id"])
+        self.assertEqual(
+            {(row["source_id"], row["section"]) for row in discrepancy["source_refs"]},
+            {("KMIPKIT-SRC-spec", "9.11")},
+        )
+        self.assertEqual(discrepancy["affected_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.11-004-001"])
+        self.assertEqual(set(discrepancy["affected_element_ids"]), all_device_fields)
+        alternatives = " ".join(discrepancy["alternatives"]).casefold()
+        self.assertIn("all six", alternatives)
+        self.assertIn("four", alternatives)
+
+        unique_fields = {
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+        }
+        uniqueness_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-002"]
+        self.assertEqual(set(uniqueness_requirement["element_ids"]), unique_fields)
+
+        password_id = "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD"
+        shared_secret_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-003"]
+        self.assertEqual(shared_secret_requirement["element_ids"], [password_id])
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-9.11-004-001",
+            "KMIPKIT-REQ-SPEC-9.11-004-002",
+            "KMIPKIT-REQ-SPEC-9.11-004-003",
+        ):
+            for element_id in requirements[requirement_id]["element_ids"]:
+                self.assertIn(requirement_id, elements[element_id]["requirement_ids"])
+
+    def test_checked_in_device_minimum_field_summary_does_not_narrow_to_identifiers(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        document = json.loads(catalog_path.read_bytes())
+        requirements = {row["requirement_id"]: row for row in document["requirements"]}
+        minimum_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-001"]
+
+        self.assertEqual(
+            minimum_requirement["summary"],
+            "The client SHALL provide at least one field in a Device Credential.",
+        )
+        self.assertIn("KMIPKIT-DISC-042", minimum_requirement["review_note"])
 
     def test_checked_in_catalog_separates_unknown_vendor_and_extension_policies(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"

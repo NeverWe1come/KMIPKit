@@ -24,7 +24,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Normative requirements | 567 |
 | Profiles | 35 |
 | Test cases | 203 |
-| Open discrepancies | 39 |
+| Open discrepancies | 41 |
 | Project policies | 3 |
 
 ### Elements by kind
@@ -60,8 +60,8 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Strength | recommended | 21 |
 | Scope | client\_1\_0 | 369 |
 | Scope | out\_of\_scope | 1 |
-| Scope | profile\_conditional | 195 |
-| Scope | server\_only | 2 |
+| Scope | profile\_conditional | 194 |
+| Scope | server\_only | 3 |
 | Direction | both | 14 |
 | Direction | client\_to\_server | 378 |
 | Direction | server\_to\_client | 16 |
@@ -94,9 +94,9 @@ This report records inventory coverage and evidence state. It does not claim pro
 | later\_1\_1 | 38 |
 | non\_applicable | 345 |
 | profile\_conditional | 184 |
-| requirement | 264 |
+| requirement | 263 |
 | server\_only | 436 |
-| source\_discrepancy | 26 |
+| source\_discrepancy | 27 |
 
 ## Source clause review by section
 
@@ -509,7 +509,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-SRC-spec | 9.1 | 1 | requirement: 1 |
 | KMIPKIT-SRC-spec | 9.2 | 1 | requirement: 1 |
 | KMIPKIT-SRC-spec | 9.3 | 1 | requirement: 1 |
-| KMIPKIT-SRC-spec | 9.4 | 2 | requirement: 2 |
+| KMIPKIT-SRC-spec | 9.4 | 2 | requirement: 1, source\_discrepancy: 1 |
 | KMIPKIT-SRC-spec | 9.5 | 1 | requirement: 1 |
 | KMIPKIT-SRC-spec | 9.6 | 1 | requirement: 1 |
 | KMIPKIT-SRC-spec | 9.7 | 1 | requirement: 1 |
@@ -1079,7 +1079,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-8.3-003 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §8.3 |
 | KMIPKIT-REQ-SPEC-8.3-004 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §8.3 |
 | KMIPKIT-REQ-SPEC-9.1-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.1 |
-| KMIPKIT-REQ-SPEC-9.11-001 | permission\_or\_optional | profile\_conditional | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-REQ-SPEC-9.11-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-REQ-SPEC-9.11-004-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-REQ-SPEC-9.11-004-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-REQ-SPEC-9.11-004-003 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §9.11 |
@@ -1104,7 +1104,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-9.3-001-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.3 |
 | KMIPKIT-REQ-SPEC-9.4-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-REQ-SPEC-9.4-001-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.4 |
-| KMIPKIT-REQ-SPEC-9.4-001-003 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.4 |
+| KMIPKIT-REQ-SPEC-9.4-001-003 | mandatory | server\_only | KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-REQ-SPEC-9.4-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-REQ-SPEC-9.5-001-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.5 |
 | KMIPKIT-REQ-SPEC-9.5-001-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.5 |
@@ -1637,7 +1637,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-8.3-004 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §8.3 |
 | KMIPKIT-REQ-SPEC-9.1-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.1 |
 | KMIPKIT-REQ-SPEC-9.11-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.11 |
-| KMIPKIT-REQ-SPEC-9.11-004-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.11 |
+| KMIPKIT-REQ-SPEC-9.11-004-001 | The section 9.11 phrase “at least one field” has two plausible scopes: all six Table 412 fields or the four uniqueness fields named in the preceding sentence; see KMIPKIT-DISC-042. No interpretation is selected. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-REQ-SPEC-9.11-004-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-REQ-SPEC-9.11-004-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-REQ-SPEC-9.11-006 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.11 |
@@ -1661,7 +1661,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-9.3-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.3 |
 | KMIPKIT-REQ-SPEC-9.4-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-REQ-SPEC-9.4-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.4 |
-| KMIPKIT-REQ-SPEC-9.4-001-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.4 |
+| KMIPKIT-REQ-SPEC-9.4-001-003 | The pinned KMIP Specification 2.1 section 9.4 uses lowercase “must” in the statement that multiple Credential structures must all be satisfied; section 1.2 defines uppercase key words by RFC 2119, so this classification remains unresolved in KMIPKIT-DISC-041. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-REQ-SPEC-9.4-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-REQ-SPEC-9.5-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.5 |
 | KMIPKIT-REQ-SPEC-9.5-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.5 |
@@ -3333,6 +3333,8 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-DISC-038 | open | blocked for affected records | 3 elements, 2 profiles | JSON profile example uses Template for a reserved Object Type value | KMIPKIT-SRC-profiles §5.5.4.1, KMIPKIT-SRC-spec §11.34 |
 | KMIPKIT-DISC-039 | open | blocked for affected records | 1 elements | Query Asynchronous Requests response table is labeled as a PKCS#11 response | KMIPKIT-SRC-spec §6.1.41 |
 | KMIPKIT-DISC-040 | open | blocked for affected records | 1 elements | Table 315 RNG Retrieve Errors caption is stranded in Re-Provision error handling | KMIPKIT-SRC-spec §6.1.48.1 |
+| KMIPKIT-DISC-041 | open | blocked for affected records | 1 requirements, 1 elements | The lowercase “must” in section 9.4 has unresolved RFC 2119 classification under the uppercase key-word definition in section 1.2. | KMIPKIT-SRC-spec §1.2, KMIPKIT-SRC-spec §9.4 |
+| KMIPKIT-DISC-042 | open | blocked for affected records | 1 requirements, 6 elements | The section 9.11 requirement to provide at least one Device Credential field does not specify its field set. | KMIPKIT-SRC-spec §9.11 |
 
 ## Project policies
 

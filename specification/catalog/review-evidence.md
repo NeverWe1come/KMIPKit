@@ -147,3 +147,50 @@ The follow-up used distinct Red, Green, and Refactor commits:
 The full Windows catalog suite then passed 130 tests with 6 platform-specific skips. The three POSIX regression tests also passed in WSL. The full WSL suite could not resolve this Windows worktree's `.git` pointer, so native Linux CI remains the full-suite Linux confirmation. T040 and T041 are complete; PR #4 has since merged into `release/1.0.0`, and the follow-up report-correction PR #12 is also merged.
 
 The final Codex Security diff scan (a745d0fd-1e54-4d35-af9c-e919fa0f09d3) covered the exact PR range `ce34179cd8bf96812af53b5ec88daeae330fce35..957d277b403f27e323923fc52163796e5a45170f`. It completed with zero reportable findings. Three candidates were suppressed after validation: duplicate clause IDs are rejected by the following catalog validator; bare report URLs require a user click and have no automatic fetch path; and source immutability is gated against the exact PR base before catalog validation. The scan report and retained threat model are available in the Codex Security scan artifacts.
+
+## Credential catalog follow-up
+
+An independent review of the pinned Specification HTML at
+`specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html` checked the
+exact text and table entries in §§1.2, 9.4, and 9.11 (including Table 412).
+Section 1.2 defines the uppercase key words, including `MUST`, as described by
+RFC 2119. Section 9.4 prints “they must ALL be satisfied” with lowercase
+`must`. The inventory retains the detected keyword candidate and records the
+case-classification alternatives in open `KMIPKIT-DISC-041`; no interpretation
+is selected. Requirement `KMIPKIT-REQ-SPEC-9.4-001-003` describes the server's
+authentication process, remains `server_only` and `unassigned`, and has no
+client feature, implementation, or verification assignment.
+
+Section 9.11 says a Credential is used for client identification and that it
+MAY be used for authentication as indicated by KMIP Profiles. The catalog
+summary and condition now keep general identification separate from
+profile-dependent authentication. Requirement `KMIPKIT-REQ-SPEC-9.11-001`
+links to `KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL` with a reciprocal element link.
+The §9.4 Authentication and repeated Credential requirements likewise link to
+their corresponding existing message fields in both directions.
+
+The §9.11 Device paragraph names Device Serial Number, Network Identifier,
+Machine Identifier, and Media Identifier for uniqueness, permits server
+policies on individual-field uniqueness, permits a shared secret or password,
+and says the client SHALL provide at least one field. Table 412 contains six
+Device Credential fields: Device Serial Number, Password, Device Identifier,
+Network Identifier, Machine Identifier, and Media Identifier. Open
+`KMIPKIT-DISC-042` retains the alternatives that “at least one field” refers to
+any of the six Table 412 fields or to one of the four fields named for
+uniqueness. No minimum set is selected. Requirement
+`KMIPKIT-REQ-SPEC-9.11-004-001` now summarizes the source-neutral “at least one
+field” rule, its review note points to DISC-042, and it links to all six fields;
+`KMIPKIT-REQ-SPEC-9.11-004-002` links only to the four named uniqueness
+fields; and `KMIPKIT-REQ-SPEC-9.11-004-003` links to Device Password. No local
+uniqueness-enforcement requirement was added.
+
+Changed records are clauses `KMIPKIT-CLAUSE-SPEC-9.4-001` and
+`KMIPKIT-CLAUSE-SPEC-9.11-001`; requirements `KMIPKIT-REQ-SPEC-9.4-001-001`,
+`KMIPKIT-REQ-SPEC-9.4-001-002`, `KMIPKIT-REQ-SPEC-9.4-001-003`,
+`KMIPKIT-REQ-SPEC-9.4-002`, `KMIPKIT-REQ-SPEC-9.11-001`, and
+`KMIPKIT-REQ-SPEC-9.11-004-001` through `-003`; discrepancy records
+`KMIPKIT-DISC-041` and `KMIPKIT-DISC-042`; and the reciprocal element links
+listed above. The pinned OASIS source files and source manifest were not
+edited. The exact-base audit found 1,411 candidates and the immutable-source
+check confirmed the OASIS tree matches base
+`849b46f772fd7cbcea2f42393cdbcf58e92cac94`.
