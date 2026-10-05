@@ -35,8 +35,10 @@ EXPECTED_REQUIREMENT_TESTS = {
     ),
     "FR-011": "scripts/tests/test_workflow.py::WorkflowContractTests.test_dependency_policy_local_command_and_review_process_are_documented",
     "FR-012": "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_failure_report_retains_allowlisted_finding_fields_and_redacts_secrets",
+    "FR-013": "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_policy_scans_preserve_both_lockfiles_and_resolved_package_versions",
     "SC-004": "scripts/tests/test_workflow.py::WorkflowContractTests.test_scheduled_policy_reports_scanned_commit_and_each_rustsec_revision",
     "SC-006": "scripts/tests/test_workflow.py::WorkflowContractTests.test_dependency_policy_local_command_and_review_process_are_documented",
+    "SC-008": "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_policy_scans_preserve_both_lockfiles_and_resolved_package_versions",
     "SC-002": ";".join(
         (
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_vulnerability_reports_exact_vulnerability_code",
