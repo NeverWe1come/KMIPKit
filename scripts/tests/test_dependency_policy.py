@@ -322,7 +322,7 @@ class DependencyExceptionTests(unittest.TestCase):
                     {
                         "crate": "license-crate@1.2.3",
                         "expression": "MIT",
-                        "license-files": [{"path": "LICENSE", "hash": "0xbd0eed23"}],
+                        "license-files": [{"path": "LICENSE", "hash": 3171872035}],
                     }
                 ]
             },
@@ -435,6 +435,28 @@ class DependencyExceptionTests(unittest.TestCase):
         issue = finding("license", source="registry+https://github.com/rust-lang/crates.io-index")
         with self.assertRaises(self.policy_error()):
             self.validate([entry], [issue])
+
+    def test_license_clarification_requires_safe_file_paths_and_valid_hashes(self) -> None:
+        source = "registry+https://github.com/rust-lang/crates.io-index"
+        valid_evidence = {
+            "reviewed_by": "Security reviewer",
+            "reference": "review-42",
+            "disposition": "clarify",
+            "expression": "MIT",
+            "license_files": [{"path": "LICENSE", "hash": "0xbd0eed23"}],
+        }
+        invalid_evidence = (
+            {**valid_evidence, "license_files": []},
+            {**valid_evidence, "license_files": [{"path": "LICENSE"}]},
+            {**valid_evidence, "license_files": [{"path": "../LICENSE", "hash": "0xbd0eed23"}]},
+            {**valid_evidence, "license_files": [{"path": "LICENSE", "hash": "0xnot-a-hash"}]},
+            {**valid_evidence, "license_files": [{"path": "LICENSE", "hash": "0x10000000000000000"}]},
+        )
+        for evidence in invalid_evidence:
+            with self.subTest(evidence=evidence):
+                entry = exact_exception("license", source=source, license_evidence=evidence)
+                with self.assertRaises(self.policy_error()):
+                    self.validate([entry], [finding("license", source=source)])
 
     def test_review_date_cannot_be_future_dated(self) -> None:
         entry = exact_exception(
