@@ -1,4 +1,27 @@
 //! Validated, ordered KMIP Request and Response Messages.
+//!
+//! # In-memory inspection
+//!
+//! The message model validates structure while retaining the original generic
+//! TTLV tree. It does not encode bytes or contact a server.
+//!
+//! ```no_run
+//! use kmipkit_protocol::{ProtocolVersion, RequestMessage};
+//! use kmipkit_ttlv::Structure;
+//!
+//! fn inspect_request(tree: Structure) -> Result<(), Box<dyn std::error::Error>> {
+//!     let message = RequestMessage::try_from_ttlv(tree)?;
+//!     let version: ProtocolVersion = message.header().protocol_version();
+//!     assert_eq!(version.major(), 2);
+//!     assert_eq!(version.minor(), 1);
+//!     assert_eq!(
+//!         message.batch_items().len(),
+//!         usize::try_from(message.header().batch_count())?
+//!     );
+//!     let _tree_for_the_next_layer = message.into_ttlv();
+//!     Ok(())
+//! }
+//! ```
 
 mod batch;
 mod header;
@@ -93,12 +116,7 @@ impl RequestMessage {
         index: usize,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Option<R> {
-        self.tree.view().children().get(index).and_then(|child| {
-            child.with_value(|value| match value {
-                ValueView::Structure(view) => Some(callback(view)),
-                _ => None,
-            })
-        })
+        with_root_item_structure(&self.tree, index, callback)
     }
 }
 
@@ -192,12 +210,7 @@ impl ResponseMessage {
         index: usize,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Option<R> {
-        self.tree.view().children().get(index).and_then(|child| {
-            child.with_value(|value| match value {
-                ValueView::Structure(view) => Some(callback(view)),
-                _ => None,
-            })
-        })
+        with_root_item_structure(&self.tree, index, callback)
     }
 }
 
@@ -218,4 +231,17 @@ impl fmt::Display for ResponseMessage {
             self.batch_indices.len()
         )
     }
+}
+
+fn with_root_item_structure<R>(
+    tree: &Structure,
+    index: usize,
+    callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
+) -> Option<R> {
+    tree.view().children().get(index).and_then(|child| {
+        child.with_value(|value| match value {
+            ValueView::Structure(view) => Some(callback(view)),
+            _ => None,
+        })
+    })
 }
