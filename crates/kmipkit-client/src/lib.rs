@@ -3,4 +3,7 @@
 
 mod error;
 
+#[cfg(test)]
+mod wire_encoder;
+
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};
