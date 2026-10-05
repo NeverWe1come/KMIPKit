@@ -1,5 +1,8 @@
 //! Private outbound TTLV encoding for typed KMIP items.
 
+use std::error::Error;
+use std::fmt;
+
 use kmipkit_ttlv::{Item, ItemType, ValueView};
 #[cfg(test)]
 use zeroize::Zeroize;
@@ -37,14 +40,71 @@ impl BorrowedLimitsView for DefaultLimits {
 
 static DEFAULT_LIMITS: DefaultLimits = DefaultLimits;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum EncodeError {
     EmptyBigInteger,
     LimitExceeded,
     ItemLengthOverflow,
     SizeOverflow,
-    AllocationFailed,
+    AllocationFailed(std::collections::TryReserveError),
     UnsupportedValueType,
+}
+
+impl PartialEq for EncodeError {
+    fn eq(&self, other: &Self) -> bool {
+        matches!(
+            (self, other),
+            (Self::EmptyBigInteger, Self::EmptyBigInteger)
+                | (Self::LimitExceeded, Self::LimitExceeded)
+                | (Self::ItemLengthOverflow, Self::ItemLengthOverflow)
+                | (Self::SizeOverflow, Self::SizeOverflow)
+                | (Self::AllocationFailed(_), Self::AllocationFailed(_))
+                | (Self::UnsupportedValueType, Self::UnsupportedValueType)
+        )
+    }
+}
+
+impl Eq for EncodeError {}
+
+impl fmt::Debug for EncodeError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let variant = match self {
+            Self::EmptyBigInteger => "EmptyBigInteger",
+            Self::LimitExceeded => "LimitExceeded",
+            Self::ItemLengthOverflow => "ItemLengthOverflow",
+            Self::SizeOverflow => "SizeOverflow",
+            Self::AllocationFailed(_) => "AllocationFailed",
+            Self::UnsupportedValueType => "UnsupportedValueType",
+        };
+        formatter.write_str(variant)
+    }
+}
+
+impl fmt::Display for EncodeError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::EmptyBigInteger => formatter.write_str("cannot encode an empty Big Integer"),
+            Self::LimitExceeded => formatter.write_str("outbound TTLV limits exceeded"),
+            Self::ItemLengthOverflow => formatter.write_str("TTLV Item Length exceeds u32"),
+            Self::SizeOverflow => formatter.write_str("TTLV encoded size overflowed"),
+            Self::AllocationFailed(_) => {
+                formatter.write_str("unable to reserve TTLV output buffer")
+            }
+            Self::UnsupportedValueType => formatter.write_str("unsupported TTLV Item Type"),
+        }
+    }
+}
+
+impl Error for EncodeError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::AllocationFailed(source) => Some(source),
+            Self::EmptyBigInteger
+            | Self::LimitExceeded
+            | Self::ItemLengthOverflow
+            | Self::SizeOverflow
+            | Self::UnsupportedValueType => None,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -235,10 +295,7 @@ fn encode_item_with_limits(
     check_plan(&plan, limits)?;
     let capacity = usize::try_from(plan.encoded_bytes).map_err(|_| EncodeError::SizeOverflow)?;
 
-    let mut output = Vec::new();
-    output
-        .try_reserve_exact(capacity)
-        .map_err(|_| EncodeError::AllocationFailed)?;
+    let output = reserve_output_buffer(capacity)?;
 
     // Own and zeroize the reserved allocation before writing starts. If an
     // invariant is ever violated during writing, Drop still clears the bytes.
@@ -255,6 +312,14 @@ fn encode_item_with_limits(
     }
 
     Ok(owner)
+}
+
+fn reserve_output_buffer(capacity: usize) -> Result<Vec<u8>, EncodeError> {
+    let mut output = Vec::new();
+    output
+        .try_reserve_exact(capacity)
+        .map_err(EncodeError::AllocationFailed)?;
+    Ok(output)
 }
 
 struct Writer<'a> {
@@ -417,7 +482,7 @@ mod tests {
 
     use super::{
         BorrowedLimitsView, EncodeError, EncodedOwner, EncodingPlan, check_plan,
-        encode_item_with_limits, plan_item_length,
+        encode_item_with_limits, plan_item_length, reserve_output_buffer,
     };
 
     const TEST_TAG_RAW: u32 = 0x0042_0173;
@@ -1028,10 +1093,16 @@ mod tests {
 
     #[test]
     fn allocation_error_exposes_its_reservation_source() {
-        let error = EncodeError::AllocationFailed;
-        let source = std::error::Error::source(&error);
+        let result = reserve_output_buffer(usize::MAX);
+        let Err(error) = result else {
+            panic!("impossible output capacity was accepted");
+        };
+        let source = std::error::Error::source(&error)
+            .expect("allocation error retains its original reservation source");
 
-        assert!(source.is_some());
+        assert!(source.is::<std::collections::TryReserveError>());
+        assert!(!format!("{error}").contains(&source.to_string()));
+        assert!(!format!("{error:?}").contains(&source.to_string()));
     }
 
     #[test]

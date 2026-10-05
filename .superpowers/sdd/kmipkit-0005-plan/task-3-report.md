@@ -28,4 +28,10 @@ T003 Green is ready for independent review. The separate T004 refactor remains u
 
 ## Independent review follow-up — Red
 
-Added `allocation_error_exposes_its_reservation_source` before changing the production error. The focused Red command was `cargo test -p kmipkit-client allocation_error_exposes_its_reservation_source`; it failed at the intended missing behavior because `EncodeError` did not implement `std::error::Error` (`E0277`, `EncodeError: StdError is not satisfied` at the `Error::source` assertion). No production implementation change is included in this Red step.
+Added `allocation_error_exposes_its_reservation_source` before changing the production error. The Red commit is `3ff1016`. The focused Red command was `cargo test -p kmipkit-client allocation_error_exposes_its_reservation_source`; it failed at the intended missing behavior because `EncodeError` did not implement `std::error::Error` (`E0277`, `EncodeError: StdError is not satisfied` at the `Error::source` assertion). No production implementation change is included in this Red step.
+
+## Independent review follow-up — Green
+
+The allocation error now retains `std::collections::TryReserveError` as its `Error::source()`. Its `Display` and `Debug` include only the safe error category, not the source text. The production reservation helper is exercised with impossible `usize::MAX` capacity, which returns capacity overflow without a large allocation. The focused source-preservation test passed.
+
+Green verification passed: `cargo fmt --all --check`; `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`; `cargo test -p kmipkit-client` (32 unit tests, 6 integration tests, 0 doc tests); and `git diff --check`. The Green commit SHA is recorded in the following report-only commit.
