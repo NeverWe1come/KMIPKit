@@ -1,6 +1,6 @@
 # T008 Property-Test Dependency Review
 
-**Review date:** 2026-10-05  
+**Review date:** 2026-10-05
 **Scope:** Test-only deterministic property testing for KMIPKIT-0006. The workspace declares Rust 1.94, Edition 2024. The workspace `Cargo.lock` currently contains neither `proptest` nor `quickcheck`/`rand`; no property-test dependency is present in the checked-in crate manifests.
 
 ## Recommendation
