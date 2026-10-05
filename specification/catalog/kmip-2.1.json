@@ -91164,7 +91164,7 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "Device Credential",
-      "summary": "Provide at least one device identifier field in a Device Credential.",
+      "summary": "The client SHALL provide at least one field in a Device Credential.",
       "role": "client",
       "direction": "client_to_server",
       "condition": "When Credential Type is Device.",
@@ -91185,7 +91185,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "The section 9.11 phrase “at least one field” has two plausible scopes: all six Table 412 fields or the four uniqueness fields named in the preceding sentence; see KMIPKIT-DISC-042. No interpretation is selected. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-002",
