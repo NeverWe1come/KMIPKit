@@ -34,4 +34,4 @@ Added `allocation_error_exposes_its_reservation_source` before changing the prod
 
 The allocation error now retains `std::collections::TryReserveError` as its `Error::source()`. Its `Display` and `Debug` include only the safe error category, not the source text. The production reservation helper is exercised with impossible `usize::MAX` capacity, which returns capacity overflow without a large allocation. The focused source-preservation test passed.
 
-Green verification passed: `cargo fmt --all --check`; `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`; `cargo test -p kmipkit-client` (32 unit tests, 6 integration tests, 0 doc tests); and `git diff --check`. The Green commit SHA is recorded in the following report-only commit.
+Green verification passed: `cargo fmt --all --check`; `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`; `cargo test -p kmipkit-client` (32 unit tests, 6 integration tests, 0 doc tests); and `git diff --check`. The Green implementation commit is `b38640aa00007bb673c32173c17572721f2b877c`.
