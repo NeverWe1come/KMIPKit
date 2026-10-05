@@ -251,7 +251,12 @@ def _is_within(path: Path, root: Path) -> bool:
     return True
 
 
-def _metadata_path(value: Any, checkout_root: Path, label: str) -> tuple[Path, Path]:
+def _metadata_path(
+    value: Any,
+    lexical_checkout_root: Path,
+    canonical_checkout_root: Path,
+    label: str,
+) -> tuple[Path, Path]:
     """Return lexical and canonical metadata paths, rejecting escapes at both layers."""
     if not isinstance(value, str) or not value.strip():
         raise PolicyError(f"{label} path is missing or malformed")
@@ -259,14 +264,14 @@ def _metadata_path(value: Any, checkout_root: Path, label: str) -> tuple[Path, P
     if not raw_path.is_absolute():
         raise PolicyError(f"{label} path must be absolute")
     lexical_path = Path(os.path.abspath(os.fspath(raw_path)))
-    lexical_root = Path(os.path.abspath(os.fspath(checkout_root)))
+    lexical_root = Path(os.path.abspath(os.fspath(lexical_checkout_root)))
     if not _is_within(lexical_path, lexical_root):
         raise PolicyError(f"{label} path is outside the checkout")
     try:
         canonical_path = lexical_path.resolve(strict=True)
     except (OSError, RuntimeError):
         raise PolicyError(f"{label} path cannot be canonicalized") from None
-    if not _is_within(canonical_path, checkout_root):
+    if not _is_within(canonical_path, canonical_checkout_root):
         raise PolicyError(f"{label} path resolves outside the checkout")
     return lexical_path, canonical_path
 
@@ -287,6 +292,7 @@ def validate_workspace_metadata(
     """
     root_input = Path(checkout_root)
     try:
+        lexical_root = Path(os.path.abspath(os.fspath(root_input)))
         root = root_input.resolve(strict=True)
     except (OSError, RuntimeError, ValueError):
         raise PolicyError("checkout root cannot be canonicalized") from None
@@ -304,7 +310,10 @@ def validate_workspace_metadata(
         if not isinstance(metadata, dict):
             raise PolicyError(f"{workspace_name} Cargo metadata is malformed")
         _, actual_workspace_root = _metadata_path(
-            metadata.get("workspace_root"), root, f"{workspace_name} workspace root"
+            metadata.get("workspace_root"),
+            lexical_root,
+            root,
+            f"{workspace_name} workspace root",
         )
         if actual_workspace_root != expected_workspace_roots[workspace_name]:
             raise PolicyError(f"{workspace_name} metadata identifies the wrong workspace root")
@@ -333,7 +342,12 @@ def validate_workspace_metadata(
             member = package_by_id[member_id]
             if member.get("source") is not None:
                 raise PolicyError(f"{workspace_name} workspace member is not a local package")
-            _, manifest = _metadata_path(member.get("manifest_path"), root, f"{workspace_name} member manifest")
+            _, manifest = _metadata_path(
+                member.get("manifest_path"),
+                lexical_root,
+                root,
+                f"{workspace_name} member manifest",
+            )
             if not manifest.is_file() or manifest.name != "Cargo.toml":
                 raise PolicyError(f"{workspace_name} workspace member manifest is invalid")
             member_manifests.add(manifest)
@@ -351,7 +365,9 @@ def validate_workspace_metadata(
             if not isinstance(version, str) or not VERSION_PATTERN.fullmatch(version):
                 raise PolicyError(f"{workspace_name} package {name} version is malformed")
             label = f"{workspace_name} package {name}"
-            _, manifest = _metadata_path(package_item.get("manifest_path"), root, f"{label} manifest")
+            _, manifest = _metadata_path(
+                package_item.get("manifest_path"), lexical_root, root, f"{label} manifest"
+            )
             if not manifest.is_file() or manifest.name != "Cargo.toml":
                 raise PolicyError(f"{label} manifest is invalid")
             if manifest not in member_manifests:

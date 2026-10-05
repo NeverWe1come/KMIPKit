@@ -5,7 +5,6 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -170,7 +169,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
             except OSError as error:
                 self.skipTest(f"directory symlinks are unavailable: {error}")
             _, metadata = self.make_repository(alias)
-            policy.validate_workspace_metadata(root, metadata)
+            policy.validate_workspace_metadata(alias, metadata)
 
     def test_optional_feature_only_external_path_dependency_is_rejected(self) -> None:
         policy = self.require_policy()
