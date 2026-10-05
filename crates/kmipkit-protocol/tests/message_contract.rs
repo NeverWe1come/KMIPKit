@@ -1,12 +1,12 @@
 //! OASIS KMIP Specification v2.1: §§8.1–8.6, 9.2–9.8, 9.10, 9.16, and 9.20;
-//! Tables 394–399, 405–408, 424–425, 432, and 435.
+//! Tables 394–399, 405–408, 421, 424–425, 432, and 435.
 //!
 //! These cases validate in-memory message structure and raw-value preservation.
 //! They do not encode TTLV bytes, apply client execution policy, or claim
 //! operation-schema validity.
 //!
-//! Traceability: KMIPKIT-0006-FR-001 through FR-007, FR-012, FR-018, FR-019;
-//! SC-001 and SC-002.
+//! Traceability: KMIPKIT-0006-FR-001 through FR-007, FR-009, FR-012, FR-018,
+//! FR-019; SC-001 and SC-002.
 
 use kmipkit_protocol::{RequestMessage, ResponseMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
@@ -305,7 +305,7 @@ fn absent_batch_options_keep_effective_defaults_without_materializing_fields() {
     assert_eq!(request.header().batch_error_continuation_option(), None);
     assert_eq!(
         request.header().effective_batch_error_continuation_option(),
-        0
+        2
     );
     let header_children = request.with_ttlv(|tree| {
         tree.children()[0].with_value(|value| match value {
@@ -328,6 +328,8 @@ fn request_header_defaults_preserve_field_absence() {
 
     assert_eq!(request.header().attestation_capable_indicator(), None);
     assert!(!request.header().effective_attestation_capable_indicator());
+    assert_eq!(request.header().asynchronous_indicator(), None);
+    assert_eq!(request.header().effective_asynchronous_indicator(), 3);
     assert_eq!(request.header().time_stamp(), None);
     assert!(
         request.into_ttlv().view().children()[0].with_value(|value| match value {
@@ -338,6 +340,31 @@ fn request_header_defaults_preserve_field_absence() {
             _ => false,
         })
     );
+}
+
+#[test]
+fn protocol_version_structure_requires_ordered_integer_components() {
+    let reversed_version = Value::structure(structure([
+        item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+        item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+    ]));
+    let request_header = structure([
+        item(PROTOCOL_VERSION, reversed_version),
+        item(BATCH_COUNT, Value::integer(1)),
+    ]);
+    let request = request_tree(request_header, [request_batch_item(None)]);
+
+    let missing_minor_version =
+        Value::structure(structure([item(PROTOCOL_VERSION_MAJOR, Value::integer(2))]));
+    let response_header = structure([
+        item(PROTOCOL_VERSION, missing_minor_version),
+        item(TIME_STAMP, Value::date_time(1)),
+        item(BATCH_COUNT, Value::integer(1)),
+    ]);
+    let response = response_tree(response_header, [response_batch_item(0, true)]);
+
+    assert!(RequestMessage::try_from_ttlv(request).is_err());
+    assert!(ResponseMessage::try_from_ttlv(response).is_err());
 }
 
 #[test]
