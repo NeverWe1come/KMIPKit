@@ -156,7 +156,7 @@ A caller needs request bytes protected through the transport call, an enforced r
 - **KMIPKIT-0007-SC-004**: Production source audit finds exactly one permit mint and one private writer callsite, both in the execute path; no other production path can submit generic TTLV.
 - **KMIPKIT-0007-SC-005**: Fake transport tests prove delivery state for pre-send, partial-write, and response-started failures, no retry, request-owner lifetime through exchange return, zeroization after drop, and redaction in `Debug`, `Display`, and any exposed typed error-source chain.
 - **KMIPKIT-0007-SC-006**: Changed client/protocol/transport lines meet at least 95% line coverage and every in-scope normative or policy requirement has an implementation and executable-test link before implementation PR review.
-- **KMIPKIT-0007-SC-007**: A caller-supplied request Time Stamp is preserved exactly, an absent value remains absent, and no Time Stamp is synthesized; no Server Correlation Value is emitted.
+- **KMIPKIT-0007-SC-007**: A caller-supplied request Time Stamp is preserved exactly, an absent value remains absent, and no Time Stamp is synthesized; the supplied value is absent from supported diagnostics, errors, and any logging on the execution path; no Server Correlation Value is emitted.
 
 ## Design dispositions and open decisions
 
