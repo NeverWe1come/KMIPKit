@@ -86,6 +86,7 @@ impl RequestMessage {
     }
 
     /// Returns request batch items in source order.
+    #[must_use = "iterate over the request batch items to inspect them"]
     pub fn batch_items(&self) -> impl ExactSizeIterator<Item = RequestBatchItemView<'_>> + '_ {
         self.batch_indices
             .iter()
@@ -180,6 +181,7 @@ impl ResponseMessage {
     }
 
     /// Returns response batch items in source order.
+    #[must_use = "iterate over the response batch items to inspect them"]
     pub fn batch_items(&self) -> impl ExactSizeIterator<Item = ResponseBatchItemView<'_>> + '_ {
         self.batch_indices
             .iter()
