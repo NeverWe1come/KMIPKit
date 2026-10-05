@@ -1323,6 +1323,8 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         self.assertEqual(["license"], [item["kind"] for item in license_only])
         with self.assertRaises(POLICY.PolicyError):
             parser(raw, metadata, "root", 2)
+        with self.assertRaises(POLICY.PolicyError):
+            parser(raw, metadata, "root", 16)
 
     def test_baseline_parser_rejects_unknown_errors_and_incomplete_json(self) -> None:
         parser = getattr(POLICY, "parse_cargo_deny_findings", None)

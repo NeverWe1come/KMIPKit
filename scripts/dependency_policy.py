@@ -88,6 +88,12 @@ BASELINE_FINDING_SECTIONS = {
 CARGO_DENY_SUMMARY_SEVERITIES = ("errors", "warnings", "notes", "helps")
 # cargo-deny aggregates `helps` without emitting matching diagnostic records.
 CARGO_DENY_DIAGNOSTIC_SEVERITIES = ("errors", "warnings", "notes")
+CARGO_DENY_CHECK_EXIT_BITS = {
+    "advisories": 1,
+    "bans": 2,
+    "licenses": 4,
+    "sources": 8,
+}
 LOCAL_CARGO_DENY_EXCEPTION_FILES = (
     Path("deny.exceptions.toml"),
     Path(".deny.exceptions.toml"),
@@ -196,7 +202,7 @@ def parse_cargo_deny_findings(
         raise PolicyError("cargo-deny baseline output is malformed or exceeds the report limit")
     if workspace_name not in {"root", "fuzz"}:
         raise PolicyError("cargo-deny baseline workspace is unsupported")
-    if isinstance(exit_code, bool) or not isinstance(exit_code, int) or exit_code not in {0, 1, 2}:
+    if isinstance(exit_code, bool) or not isinstance(exit_code, int) or not 0 <= exit_code <= 15:
         raise PolicyError("cargo-deny baseline exit status is malformed")
     if not isinstance(metadata_by_workspace, dict):
         raise PolicyError("cargo metadata for cargo-deny findings is malformed")
@@ -315,9 +321,11 @@ def parse_cargo_deny_findings(
         }
         for kind, package_name, version, source, advisory_id in sorted(findings)
     ]
-    if exit_code and not result:
-        raise PolicyError("cargo-deny baseline failed without a complete registered-policy finding")
-    if not exit_code and any(counts["errors"] for counts in observed_counts.values()):
+    expected_exit_code = 0
+    for check, bit in CARGO_DENY_CHECK_EXIT_BITS.items():
+        if observed_counts[check]["errors"]:
+            expected_exit_code |= bit
+    if exit_code != expected_exit_code:
         raise PolicyError("cargo-deny baseline exit status contradicts error diagnostics")
     return result
 
