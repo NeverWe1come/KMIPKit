@@ -2229,6 +2229,18 @@ class CatalogValidationTests(unittest.TestCase):
             for element_id in requirements[requirement_id]["element_ids"]:
                 self.assertIn(requirement_id, elements[element_id]["requirement_ids"])
 
+    def test_checked_in_device_minimum_field_summary_does_not_narrow_to_identifiers(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        document = json.loads(catalog_path.read_bytes())
+        requirements = {row["requirement_id"]: row for row in document["requirements"]}
+        minimum_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-001"]
+
+        self.assertEqual(
+            minimum_requirement["summary"],
+            "The client SHALL provide at least one field in a Device Credential.",
+        )
+        self.assertIn("KMIPKIT-DISC-042", minimum_requirement["review_note"])
+
     def test_checked_in_catalog_separates_unknown_vendor_and_extension_policies(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
