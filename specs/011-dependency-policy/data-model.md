@@ -12,7 +12,7 @@ types, protocol fields, or serialized network data.
 | workspace | Root or fuzz Cargo workspace | Must match one of the two committed lockfiles |
 | manifest | Workspace root manifest path | Must resolve beneath the checkout |
 | lockfile | Resolved package/version/source graph | Must exist, be tracked, and remain unchanged during the scan |
-| targets | Rust target triples represented by core CI | Every supported matrix target is included in policy resolution |
+| targets | Rust target triples reported by core CI; cargo-deny graph has no target filter | Runtime host must match the reviewed CI runner set; policy resolution includes every resolved target-specific edge |
 | dependency kinds | Normal, build, development, and target-specific edges | No kind is omitted from policy review |
 | workspace members | Canonical member manifest paths from root and fuzz Cargo metadata | Path packages must match the member union and remain inside the canonical checkout root |
 

@@ -86,9 +86,12 @@ external limitation and will not be claimed as enforced.
    distinct invocations with the same checked-in policy so a secondary Cargo
    workspace cannot evade the policy.
 3. Set `graph.all-features = true`, `licenses.include-dev = true`, and
-   `bans.multiple-versions-include-dev = true`; configure every target triple
-   used by the current CI matrix. Do not let the policy depend on the host
-   target of the Linux policy runner.
+   `bans.multiple-versions-include-dev = true`. Do not set
+   `graph.targets`: cargo-deny then evaluates resolved dependency edges for
+   every target, including target-specific packages outside the current CI
+   matrix. Capture the CI runner host triples in T001 and verify the policy
+   runner's actual host triple at runtime; policy coverage does not depend on
+   the Linux runner's host.
 4. Require a finite SPDX allowlist. The repository's own `Apache-2.0` license
    is not evidence that every third-party license is acceptable. T001 records
    the exact current graph and reviewed license evidence; an unreviewed
@@ -112,11 +115,12 @@ external limitation and will not be claimed as enforced.
    optional-feature-only path edge. Do not treat cargo-deny's registry and Git
    source check as enforcement for local paths.
 7. Give each policy job an isolated temporary `CARGO_HOME`. Run the root and
-   fuzz cargo-deny checks online, without `--offline`, `--frozen`, or
-   `--disable-fetch`; cargo-deny refreshes the RustSec database before each
-   check. After each successful workspace invocation, verify the configured
-   RustSec Git remote and record that invocation's database commit SHA and
-   timestamp. On schedule, check out the configured active release branch
+   fuzz cargo-deny checks online; do not pass `--offline` or `--frozen`.
+   cargo-deny refreshes the RustSec database before each check. The runner
+   script captures `rustc -vV` and fails if its host triple is not in the
+   reviewed target set. After each successful workspace invocation, verify
+   the configured RustSec Git remote and record that invocation's database
+   commit SHA and timestamp. On schedule, check out the configured active release branch
    because GitHub schedule events execute the workflow from the default
    branch. The daily scheduled CI trigger already exists.
 8. Do not alter existing license/source policy in other tooling. OASIS source

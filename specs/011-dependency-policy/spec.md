@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0011-dependency-policy-spec`
 **Created**: 2026-10-05
-**Status**: Draft
+**Status**: Approved
 **Input**: Complete KMIPKit roadmap, Phase A infrastructure gap, and the existing every-PR dependency, advisory, source, and license policy requirement.
 
 ## Context and scope
