@@ -33,6 +33,7 @@
 - [ ] CHK018 Confirm C ABI, Java/Python, live transport, all other operation schemas, Poll/Cancel/Process, retries, and server-initiated behavior are explicit exclusions.
 - [ ] CHK019 Confirm no public raw-send or arbitrary-transport injection path is added and any API examples are executable/doctested.
 - [ ] CHK020 Confirm KMIPKIT-0006's timestamp wording/model preserves the OASIS §9.20 countdown-timer allowance without claiming wall-clock semantics, and keeps Server Correlation Value out of the typed client-initiated request API.
+- [ ] CHK021 Confirm this Draft records and defers ADR-0012's callsite/test ownership ambiguity to the first secret-bearing operation specification; this Discover Versions-only slice does not authorize secret-bearing requests.
 
 ## Notes
 
