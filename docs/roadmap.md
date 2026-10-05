@@ -29,9 +29,10 @@ Parallel feature development must wait until this phase is accepted.
 - Coverage, conformance, compatibility, and supply-chain CI gates.
 - `KMIPKIT-0011-dependency-policy-gates`: finite reviewed Cargo license/source
   policy, advisory checks for both root and fuzz workspaces, exact expiring
-  exceptions, and pull-request/scheduled CI. The feature specification is in
-  review; release signing, SBOM, provenance, and branch protection remain
-  separate.
+  exceptions, and pull-request/scheduled CI. The approved specification has an
+  implementation with CI, traceability, tests, and prior reviews verified in
+  its feature branch; review and integration into `release/1.0.0` are pending.
+  Release signing, SBOM, provenance, and branch protection remain separate.
 
 ## Phase 2: typed KMIP protocol
 
