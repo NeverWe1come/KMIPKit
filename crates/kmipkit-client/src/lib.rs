@@ -3,7 +3,8 @@
 
 mod error;
 
-#[cfg(test)]
+// T003 adds the private writer before the execute-owning feature wires its sole caller.
+#[allow(dead_code)]
 mod wire_encoder;
 
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};
