@@ -6,7 +6,7 @@
 
 The TTLV crate exposes a borrowed `Structure::view()` whose lifetime is tied to `&Structure`. `StructureView` exposes child order and `Item::with_value` keeps each value view within a closure. Typed header and batch views read scalar values while opaque credential, attestation, operation, and extension subtrees remain callback-scoped generic data. Default `Debug`, `Display`, and validation errors show only model/error categories and safe counts.
 
-Known fields MUST appear in the exact order shown in the tables below. Unknown but allocation-valid fields are retained at their original position; they do not excuse reordering known fields or make an otherwise invalid message valid. The generic TTLV allocation policy remains authoritative for whether a tag can be represented.
+Known fields MUST appear in the exact order shown in the tables below. Otherwise-unrecognized allocation-valid fields are retained at their original position at every Structure depth, including the message envelope; the known Request/Response Header and Batch Item sequence must still be complete and ordered. This is a KMIPKit lossless-parsing compatibility guarantee and does not claim that OASIS Tables 394 or 397 authorize extra envelope fields. Unrecognized fields do not excuse reordering known fields or make a missing required field valid. The generic TTLV allocation policy remains authoritative for whether a tag can be represented.
 
 ## Entities
 

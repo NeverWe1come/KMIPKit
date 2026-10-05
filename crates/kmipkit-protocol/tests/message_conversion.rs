@@ -1,5 +1,5 @@
 //! OASIS KMIP Specification v2.1: §§9.2, 9.6, 9.10, 10.1.2; Tables 395–399,
-//! 432, and 435. These derived property tests exercise in-memory conversion;
+//! 421, 432, and 435. These derived property tests exercise in-memory conversion;
 //! they are not official OASIS fixtures and do not assert wire validity.
 //!
 //! Traceability: KMIPKIT-0006-FR-013, FR-014, FR-017, FR-022; SC-003,
@@ -163,6 +163,10 @@ fn request_tree(case: &GeneratedCase) -> Structure {
         REQUEST_HEADER,
         Value::structure(structure(header_fields)),
     )];
+    message_fields.push(item(
+        case.extension_tag,
+        Value::byte_string(case.payload.clone()),
+    ));
     for index in 0..case.item_count {
         let mut batch_fields = vec![item(OPERATION, Value::enumeration(case.raw_enumeration))];
         if case.item_count > 1 {
@@ -193,6 +197,10 @@ fn response_tree(case: &GeneratedCase) -> Structure {
         item(BATCH_COUNT, Value::integer(case.item_count as i32)),
     ]);
     let mut message_fields = vec![item(RESPONSE_HEADER, Value::structure(header))];
+    message_fields.push(item(
+        case.extension_tag,
+        Value::enumeration(case.raw_enumeration),
+    ));
     for _ in 0..case.item_count {
         let batch_item = structure([
             item(OPERATION, Value::enumeration(case.raw_enumeration)),
