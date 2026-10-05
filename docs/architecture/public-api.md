@@ -28,6 +28,11 @@ specification. This example describes intent, not existing code.
 Each operation has a distinct request and response type. Applications can
 control headers, attributes, credentials, parameters, batch IDs, and
 extensions. `Client::execute(request)` returns the complete typed outcome.
+Its approved API must take a closed set of concrete typed KMIP requests: it
+cannot accept the public generic `Item` tree, raw KMIP body bytes, or a
+caller-implementable conversion trait as an alternate route to wire encoding.
+The exact variants, signature, and per-call limit configuration belong to the
+first client feature specification.
 
 ### Generic TTLV
 
@@ -42,11 +47,24 @@ KMIPKit's 64-level Structure limit.
 The model is not a TTLV wire message and does not establish wire or protocol
 validity. It does not store original framing, encoded lengths, or padding
 bytes, and it does not validate schema-specific field order, cardinality,
-required fields, or operation semantics. The planned TTLV codec will handle
-framing, exact wire lengths, endianness, padding, and configured decoder
-resource limits. Schema validation for known KMIP Structures and operation
-rules belongs in the protocol/client layer before transmission. Re-encoding a
-model makes no promise to reproduce the original input bytes. See the
+required fields, or operation semantics. The planned public `kmipkit-ttlv`
+codec surface provides the bounded decoder for framing, exact wire lengths,
+endianness, padding, and configured resource limits; it exposes no
+byte-producing encoder. KMIPKIT-0005 may implement and test a private writer,
+but adds no `Client::execute`, permit type/constructor, or production callsite.
+The first client feature/spec owns the execute API, its private permit type and
+constructor, the sole production mint/callsite, and an exact-one audit. That
+execute path must accept only a closed typed request input. The proposal is not
+in force until a human accepts ADR-0012, approves the feature specification,
+and approves the enforceable permit/request boundary. The first client feature
+PR must include the sole production callsite and its owner-through-transport
+integration test together. CI must pass that test against the candidate
+callsite before merge, enablement, or release; until then, the release branch
+must have neither the callsite nor a secret-bearing send. Schema validation
+for known KMIP Structures and operation rules belongs
+in the protocol/client layer before transmission. There is no public
+`encode(&Item)` API, and the decoder does not retain original bytes for
+re-emission. See the
 [generic value-model specification](../../specs/004-generic-ttlv-model/spec.md)
 for the model's exact scope and constraints.
 
@@ -120,14 +138,41 @@ zeroized recursively. The dependency is locked to `zeroize` 1.9.0 with only
 its `alloc` feature enabled; see the [dependency review](../../specs/004-generic-ttlv-model/dependency-review.md)
 and the [pinned 1.9.0 source](https://docs.rs/crate/zeroize/1.9.0/source/src/lib.rs).
 
-In that version, `Vec::zeroize` clears initialized elements, sets the length to
-zero, and zeroizes the entire current allocation capacity. `String::zeroize`
-delegates to its backing vector. This describes the current storage owned by
-KMIPKit when it is dropped; it is not a guarantee that every process copy of a
+In that version, `Vec::zeroize` clears its initialized elements and sets the
+length to zero; it does not guarantee wiping spare or otherwise uninitialized
+allocation capacity. `String::zeroize` delegates to its initialized backing
+vector contents. For the proposed outbound owner, the guarantee is limited to
+zeroizing the initialized encoded byte range before deallocation/owner drop.
+Spare capacity is outside the guarantee unless explicitly initialized and its
+cleanup is verified. This is not a guarantee that every process copy of a
 value has been erased. Caller-side copies, buffers left by reallocations before
 ownership transfer, copies deliberately made from borrowed views, temporary
 stack or register copies, and copies retained by Java, Python, or another
 runtime are outside this Rust model's guarantee.
+
+The current policy in `AGENTS.md` §8 prohibits serialization of credentials,
+private keys, secret key material, OTPs, tickets, and raw KMIP bodies. KMIPKIT-0005
+FR-013 and Proposed ADR-0012 propose a narrow exception for temporary outbound
+TTLV generated solely for a caller-requested typed operation. KMIPKIT-0005 may
+implement and test a private encoder, but it adds no permit or production
+callsite. The first client feature/spec owns the closed typed `Client::execute`
+API, its execute-owned permit type/private constructor and sole production
+mint/callsite, plus the exact-one audit. Bytes must be held in a private
+zeroizing KMIPKit-owned buffer through the transport write; before owner
+deallocation/drop, zeroize the initialized encoded byte range. Spare or
+uninitialized `Vec` capacity is outside the guarantee unless explicitly
+initialized and its cleanup is verified. The proposal has no
+public `encode(&Item)` API. It is not in force unless a human accepts ADR-0012,
+approves the KMIPKIT-0005 feature specification, and approves the enforceable
+private boundary. The first client feature PR must include its sole production
+callsite and owner-through-transport integration test together. CI must pass
+the test against the candidate callsite before merge, enablement, or release.
+Until then, the release branch must have neither the callsite nor a secret-bearing send. If review rejects that
+boundary or it cannot be enforced, do not approve or implement a secret-bearing
+request path. The proposal does not authorize diagnostics, general-purpose
+serialization, logging, formatting, error inclusion, persistence, or arbitrary
+inbound raw-byte retention or re-emission. ADR-0011 addresses received Reserved
+Tags and does not authorize wire encoding.
 
 ## Errors
 

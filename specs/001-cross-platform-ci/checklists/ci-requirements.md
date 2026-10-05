@@ -9,7 +9,7 @@
 ## CI matrix and fork security
 
 - [x] CHK001 Does the spec identify the exact target branches, runner operating systems, and Rust toolchains required for every pull request? [Completeness, FR-001–FR-003]
-- [x] CHK002 Are token permissions, secrets, trigger types, checkout credential persistence, and fork-code handling explicit enough to distinguish safe from unsafe workflows? [Security, FR-008, FR-010]
+- [x] CHK002 Are token permissions, secrets, trigger types, checkout credential persistence, and fork-code handling explicit enough to distinguish safe from unsafe workflows? [Security, FR-008, FR-010, FR-013]
 - [x] CHK003 Is the prohibition on package publishing and repository-setting changes stated as an observable workflow boundary? [Scope, FR-010]
 - [x] CHK004 Are external action pinning and release identification objectively verifiable? [Measurability, FR-012]
 
@@ -31,4 +31,5 @@
 ## Boundaries and evidence
 
 - [x] CHK014 Does the spec clearly defer OASIS source integrity, dependency/license policy, generation, traceability, bindings, and branch-protection administration to their own applicable work? [Scope, Context and References]
-- [x] CHK015 Does every functional requirement map to a measurable outcome and an implementation task? [Traceability, FR-001–FR-012, SC-001–SC-008]
+- [x] CHK015 Does every functional requirement map to a measurable outcome and an implementation task? [Traceability, FR-001–FR-013, SC-001–SC-009]
+- [x] CHK016 Does runner routing use the self-hosted ARM64 Linux runner only for same-repository PRs and scheduled branch coverage, while preserving hosted Linux for forks and hosted Windows/macOS? [Security, FR-008, FR-013]
