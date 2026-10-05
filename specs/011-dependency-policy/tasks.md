@@ -89,3 +89,9 @@ machine-readable compliance traceability artifact from this planning map.
 - [x] T025 Add pinned cargo-deny fixtures for missing and invalid license metadata and assert the exact `unlicensed` error code and package/version, per FR-003 and SC-002 (missing).
 - [x] T026 Extend the FR-013/SC-008 executable invariant test to preserve both project lockfiles and resolved package versions, per FR-013 and SC-008 (partial).
 - [x] T027 [US2] Reject non-empty or malformed cargo-deny `bans.skip-tree` configuration, which can bypass exact duplicate-exception matching; add a negative test, update FR-007 traceability, and document the prohibition per SC-005 (security review finding).
+
+## Phase 6: Convergence
+
+- [ ] T028 [US2] Run waiver-free root and fuzz cargo-deny scans, parse only complete structured findings, match findings one-to-one against the exact exception register, reject wildcard and architecture-ban findings, then run the configured policy and report matched exception IDs only after success per FR-003, FR-004, FR-006, FR-007, and US2/AC1 (partial).
+- [ ] T029 [US2] Add exact package/version yanked exceptions to the register schema and cargo-deny `advisories.ignore` correspondence, with Red/Green tests proving another version or package remains rejected per FR-004 and US2/AC1 (partial).
+- [ ] T030 [US2] Detect and reject cargo-deny local exception files discovered from either workspace manifest's ancestor chain, and cover each supported filename with a negative test per FR-003 and FR-007 (partial).

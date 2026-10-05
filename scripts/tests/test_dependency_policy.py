@@ -513,6 +513,45 @@ class DependencyExceptionTests(unittest.TestCase):
         }
         policy.validate_exception_config(register, config)
 
+    def test_yanked_exception_has_an_exact_advisories_ignore_package_scope(self) -> None:
+        policy = self.require_policy()
+        entry = exact_exception("yanked")
+        policy.validate_exception_config(
+            {"schema_version": 1, "exceptions": [entry]},
+            {"advisories": {"ignore": [{"crate": "example-crate@1.2.3", "reason": entry["id"]}]}},
+        )
+
+    def test_exception_free_config_must_preserve_policy_and_remove_waivers(self) -> None:
+        policy = self.require_policy()
+        register = {"schema_version": 1, "exceptions": []}
+        configured = {
+            "advisories": {"ignore": []},
+            "bans": {"multiple-versions": "deny", "skip": []},
+            "licenses": {"allow": ["MIT"], "clarify": []},
+            "sources": {"allow-git": [], "allow-registry": ["https://example.invalid"]},
+        }
+        baseline = {
+            "advisories": {"ignore": []},
+            "bans": {"multiple-versions": "allow", "skip": []},
+            "licenses": {"allow": ["MIT"], "clarify": []},
+            "sources": {"allow-git": [], "allow-registry": ["https://example.invalid"]},
+        }
+        with self.assertRaises(self.policy_error()):
+            policy.validate_exception_config(register, configured, baseline_config=baseline)
+
+    def test_local_cargo_deny_exception_file_is_rejected(self) -> None:
+        policy = self.require_policy()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = root / "Cargo.toml"
+            manifest.write_text("[workspace]\n", encoding="utf-8")
+            exception_file = root / ".cargo" / "deny.exceptions.toml"
+            exception_file.parent.mkdir()
+            exception_file.write_text("[licenses]\nallow = [\"GPL-3.0-only\"]\n", encoding="utf-8")
+            with self.assertRaises(self.policy_error()) as raised:
+                policy.validate_no_local_exception_files((manifest,))
+        self.assertIn("local cargo-deny exception file", str(raised.exception))
+
     def test_exception_config_mismatch_reports_rule_and_exception_id_without_secrets(self) -> None:
         policy = self.require_policy()
         source = "git+https://github.com/example/dependency?rev=" + "b" * 40 + "#" + "b" * 40
@@ -1032,6 +1071,69 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         self.assertIn("safe-crate@1.0.0", report)
         self.assertIn("rule=policy-check", report)
         self.assertNotIn("sentinel-secret", report)
+
+    def test_baseline_parser_uses_affected_crate_not_graph_parents(self) -> None:
+        parser = getattr(POLICY, "parse_cargo_deny_findings", None)
+        self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
+        raw = "\n".join(
+            (
+                json.dumps(
+                    {
+                        "type": "diagnostic",
+                        "fields": {
+                            "code": "vulnerability",
+                            "severity": "error",
+                            "advisory": {"id": "RUSTSEC-2026-0001", "package": "unsafe-crate"},
+                            "graphs": [
+                                {
+                                    "Krate": {"name": "unsafe-crate", "version": "1.2.3"},
+                                    "parents": [{"Krate": {"name": "parent-crate", "version": "9.0.0"}}],
+                                }
+                            ],
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "summary",
+                        "fields": {
+                            check: {"errors": int(check == "advisories"), "warnings": 0, "notes": 0, "helps": 0}
+                            for check in ("advisories", "bans", "licenses", "sources")
+                        },
+                    }
+                ),
+            )
+        )
+        metadata = {
+            "root": {
+                "packages": [
+                    {
+                        "name": "unsafe-crate",
+                        "version": "1.2.3",
+                        "source": "registry+https://github.com/rust-lang/crates.io-index",
+                    },
+                    {
+                        "name": "parent-crate",
+                        "version": "9.0.0",
+                        "source": "registry+https://github.com/rust-lang/crates.io-index",
+                    },
+                ]
+            },
+            "fuzz": {"packages": []},
+        }
+
+        findings = parser(raw, metadata, "root", 1)
+
+        self.assertEqual(["unsafe-crate"], [item["package"] for item in findings])
+        self.assertEqual("RUSTSEC-2026-0001", findings[0]["advisory_id"])
+
+    def test_baseline_parser_rejects_unknown_errors_and_incomplete_json(self) -> None:
+        parser = getattr(POLICY, "parse_cargo_deny_findings", None)
+        self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
+        with self.assertRaises(POLICY.PolicyError):
+            parser('{"type":"diagnostic","fields":{"code":"mystery","severity":"error"}}', {}, "root", 1)
+        with self.assertRaises(POLICY.PolicyError):
+            parser("not-json", {}, "root", 0)
 
     def test_cli_formats_piped_json_without_persisting_or_echoing_raw_diagnostics(self) -> None:
         raw_output = (
