@@ -570,6 +570,14 @@ class DependencyExceptionTests(unittest.TestCase):
         self.assertNotIn("sentinel-token", message)
         self.assertNotIn("kmip-user", message)
 
+    def test_malformed_source_url_fails_with_a_safe_policy_diagnostic(self) -> None:
+        malformed_source = "git+https://[invalid"
+        entry = exact_exception("source", source=malformed_source)
+        issue = finding("source", source=malformed_source)
+        with self.assertRaises(self.policy_error()) as context:
+            self.validate([entry], [issue])
+        self.assertNotIn(malformed_source, str(context.exception))
+
 
 class DependencyPolicyRunnerContractTests(unittest.TestCase):
     RUNNER = REPOSITORY_ROOT / "scripts" / "Test-DependencyPolicy.ps1"
