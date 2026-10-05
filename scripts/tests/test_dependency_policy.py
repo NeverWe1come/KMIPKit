@@ -205,6 +205,50 @@ class DependencyPolicyApiTests(unittest.TestCase):
             with self.assertRaises(self.policy_error()):
                 policy.validate_workspace_metadata(root, metadata)
 
+    def test_git_source_exception_covers_only_the_exact_revision_in_both_workspace_graphs(self) -> None:
+        policy = self.require_policy()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, metadata = self.make_repository(root)
+            allowed_hash = "a" * 40
+            other_hash = "b" * 40
+            allowed_source = (
+                "git+https://example.invalid/dependency?rev=" + allowed_hash + "#" + allowed_hash
+            )
+            other_revision = (
+                "git+https://example.invalid/dependency?rev=" + other_hash + "#" + other_hash
+            )
+            metadata["root"]["packages"].append(
+                package("git-crate", "1.0.0", root / "vendor" / "git-crate" / "Cargo.toml", source=other_revision)
+            )
+            register = {
+                "schema_version": 1,
+                "exceptions": [
+                    exact_exception("source", package_name="git-crate", version="1.0.0", source=allowed_source)
+                ],
+            }
+            with self.assertRaises(self.policy_error()):
+                policy.validate_workspace_metadata(root, metadata, register, today=date(2026, 1, 15))
+
+            metadata["root"]["packages"][-1]["source"] = allowed_source
+            policy.validate_workspace_metadata(root, metadata, register, today=date(2026, 1, 15))
+
+    def test_non_crates_io_registry_is_rejected_without_an_exact_source_policy(self) -> None:
+        policy = self.require_policy()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, metadata = self.make_repository(root)
+            metadata["root"]["packages"].append(
+                package(
+                    "mirror-crate",
+                    "1.0.0",
+                    root / "mirror" / "Cargo.toml",
+                    source="registry+https://mirror.example.invalid/index",
+                )
+            )
+            with self.assertRaises(self.policy_error()):
+                policy.validate_workspace_metadata(root, metadata, {"schema_version": 1, "exceptions": []})
+
     def test_fuzz_package_declares_apache_license_and_matching_local_crate_version(self) -> None:
         fuzz_manifest = tomllib.loads((REPOSITORY_ROOT / "fuzz" / "Cargo.toml").read_text(encoding="utf-8"))
         workspace_manifest = tomllib.loads((REPOSITORY_ROOT / "Cargo.toml").read_text(encoding="utf-8"))
