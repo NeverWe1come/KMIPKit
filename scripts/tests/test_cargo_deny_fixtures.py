@@ -241,6 +241,18 @@ class CargoDenyNegativeFixtureTests(unittest.TestCase):
         self.assertEqual(generated.returncode, 0, generated.stderr)
         return fixture
 
+    def create_missing_license_fixture(self, *, config: str | None = None) -> Path:
+        fixture = self.create_fixture(
+            [("fixture-unlicensed", "1.0.0", "MIT", False)], config=config
+        )
+        package_manifest = next((fixture / "crates").glob("*/Cargo.toml"))
+        manifest = package_manifest.read_text(encoding="utf-8")
+        self.assertIn('license = "MIT"\n', manifest)
+        package_manifest.write_text(
+            manifest.replace('license = "MIT"\n', 'publish = false\n'), encoding="utf-8"
+        )
+        return fixture
+
     def create_unapproved_git_fixture(self) -> tuple[Path, Path]:
         """Create a local pinned Git source and synthetic metadata, with no fetch."""
         source = self.root / "git-source"
@@ -638,6 +650,26 @@ allow-git = []
     def test_disallowed_license_reports_rejected_package_and_version(self) -> None:
         fixture = self.create_fixture([("fixture-gpl", "1.2.3", "GPL-3.0-only", False)])
         self.assert_finding(fixture, "licenses", "rejected", {("fixture-gpl", "1.2.3")})
+
+    def test_missing_license_metadata_reports_unlicensed_package_and_version(self) -> None:
+        fixture_policy = self.fixture_deny_config() + '\n[licenses.private]\nignore = true\n'
+        fixture = self.create_missing_license_fixture(config=fixture_policy)
+        self.assert_finding(
+            fixture, "licenses", "unlicensed", {("fixture-unlicensed", "1.0.0")}
+        )
+
+    def test_invalid_license_expression_reports_unlicensed_package_and_version(self) -> None:
+        fixture = self.create_fixture([("fixture-invalid-license", "1.0.0", "MIT", False)])
+        package_manifest = next((fixture / "crates").glob("*/Cargo.toml"))
+        manifest = package_manifest.read_text(encoding="utf-8")
+        self.assertIn('license = "MIT"\n', manifest)
+        package_manifest.write_text(
+            manifest.replace('license = "MIT"\n', 'license = "Not-A-Real-SPDX-License"\n'),
+            encoding="utf-8",
+        )
+        self.assert_finding(
+            fixture, "licenses", "unlicensed", {("fixture-invalid-license", "1.0.0")}
+        )
 
     def test_each_architecture_ban_reports_banned_package_and_version(self) -> None:
         banned_packages = {"native-tls", "openssl", "openssl-sys"}

@@ -297,6 +297,14 @@ class DependencyPolicyApiTests(unittest.TestCase):
         self.assertEqual("../crates/kmipkit-ttlv", edge["path"])
         self.assertEqual(expected_version, edge.get("version"))
 
+    def test_private_packages_are_not_exempt_from_license_policy(self) -> None:
+        policy_config = tomllib.loads(
+            (REPOSITORY_ROOT / ".cargo" / "deny.toml").read_text(encoding="utf-8")
+        )
+        private_policy = policy_config["licenses"].get("private")
+        self.assertIsInstance(private_policy, dict, "license private-package policy must be explicit")
+        self.assertIs(private_policy.get("ignore"), False)
+
     def test_fuzz_candidate_scan_no_longer_reports_metadata_policy_findings(self) -> None:
         deny_config = REPOSITORY_ROOT / ".cargo" / "deny.toml"
         cargo = shutil.which("cargo")
