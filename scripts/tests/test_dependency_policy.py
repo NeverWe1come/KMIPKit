@@ -1325,6 +1325,33 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
             parser(raw, metadata, "root", 2)
         with self.assertRaises(POLICY.PolicyError):
             parser(raw, metadata, "root", 16)
+        source_record = {
+            "type": "diagnostic",
+            "fields": {
+                "code": "source-not-allowed",
+                "severity": "error",
+                "graphs": [{"Krate": {"name": "source-crate", "version": "3.0.0"}}],
+            },
+        }
+        source_summary = json.loads(json.dumps(records[-1]))
+        for check in ("advisories", "bans", "licenses"):
+            source_summary["fields"][check]["errors"] = 0
+        source_summary["fields"]["sources"]["errors"] = 1
+        source_metadata = json.loads(json.dumps(metadata))
+        source_metadata["root"]["packages"].append(
+            {
+                "name": "source-crate",
+                "version": "3.0.0",
+                "source": "registry+https://github.com/rust-lang/crates.io-index",
+            }
+        )
+        source_only = parser(
+            "\n".join((json.dumps(source_record), json.dumps(source_summary))),
+            source_metadata,
+            "root",
+            8,
+        )
+        self.assertEqual(["source"], [item["kind"] for item in source_only])
 
     def test_baseline_parser_rejects_unknown_errors_and_incomplete_json(self) -> None:
         parser = getattr(POLICY, "parse_cargo_deny_findings", None)

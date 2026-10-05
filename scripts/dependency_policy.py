@@ -191,6 +191,15 @@ def _top_level_diagnostic_packages(fields: dict[str, Any]) -> list[tuple[str, st
     return sorted(found)
 
 
+def _cargo_deny_error_exit_bitmask(error_counts: dict[str, int]) -> int:
+    """Map failed policy sections to cargo-deny's check exit bitset."""
+    exit_bitmask = 0
+    for check, bit in CARGO_DENY_CHECK_EXIT_BITS.items():
+        if error_counts.get(check, 0) > 0:
+            exit_bitmask |= bit
+    return exit_bitmask
+
+
 def parse_cargo_deny_findings(
     raw_output: str,
     metadata_by_workspace: Any,
@@ -321,10 +330,9 @@ def parse_cargo_deny_findings(
         }
         for kind, package_name, version, source, advisory_id in sorted(findings)
     ]
-    expected_exit_code = 0
-    for check, bit in CARGO_DENY_CHECK_EXIT_BITS.items():
-        if observed_counts[check]["errors"]:
-            expected_exit_code |= bit
+    expected_exit_code = _cargo_deny_error_exit_bitmask(
+        {check: counts["errors"] for check, counts in observed_counts.items()}
+    )
     if exit_code != expected_exit_code:
         raise PolicyError("cargo-deny baseline exit status contradicts error diagnostics")
     return result
