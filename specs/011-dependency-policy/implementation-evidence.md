@@ -40,3 +40,21 @@ The focused fuzz candidate scan changed from the Red findings above to passing. 
 At this point the complete policy suite still reports 42 expected assertion failures and the workflow suite still reports 6 expected assertion failures; these cover tasks not implemented by T006. Both suites have zero test errors. They are not claimed as passing.
 
 An independent review of T006 found no blocking issue. The reviewer noted that Cargo interprets `version = "0.1.0"` as a caret requirement rather than an exact pin; it resolves to the existing local package under both tested toolchains and matches the task's requirement to specify the local crate version. The unused-license warnings above are expected for a shared allowlist covering the union of the root and fuzz graphs.
+
+## Green evidence: T007
+
+T007 adds the version-1 exception register with no default waivers and a validator for exact rule/package/version findings, required rationale and mitigation, reviewer separation, durable approval evidence, review/expiry dates, human-reviewed cargo-deny license clarifications, exact immutable Git revisions, and bidirectional correspondence with waiver fields. Source-less metadata packages must resolve to canonical member manifests within the root/fuzz workspace union; lexical and canonical path checks reject checkout escapes and symlink escapes. Diagnostics omit untrusted URL parser input and normalize invalid checkout-root failures.
+
+Fresh Windows checks after Green:
+
+```text
+python -m py_compile scripts/dependency_policy.py
+passed
+
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyExceptionTests scripts.tests.test_dependency_policy.DependencyPolicyApiTests
+Ran 30 tests ... OK (skipped=1)
+```
+
+The one skip is the directory-symlink escape test: this Windows account lacks the privilege required to create directory symlinks (`WinError 1314`). The path validation itself also has lexical escape tests and canonical resolution checks. A prior fresh run exposed that Python's `cp1252` default could not decode cargo-deny UTF-8 output in the candidate-scan test; the test now requests UTF-8 and replaces invalid bytes. The same test passes without setting environment overrides.
+
+Both locked all-feature Cargo metadata commands completed for the root and fuzz manifests without platform filters. Running the validator against those generated metadata files printed `dependency policy metadata and exception register are valid` and exited zero. `git diff --check` passed. The independent T007 review found no blocking issue and confirmed the checkout-root diagnostic regression is closed. It recorded a non-blocking observation that the validator synchronizes waiver fields but does not independently pin every baseline setting; T006's reviewed cargo-deny configuration remains responsible for those baseline values, outside T007/T011's waiver-synchronization contract.
