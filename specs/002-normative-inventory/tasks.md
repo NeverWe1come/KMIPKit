@@ -149,6 +149,14 @@ minimum-field questions while correcting requirement scope and element links.
 - [x] T046 **Green**: Correct the catalog and reciprocal element links; add open DISC-041 and DISC-042 without decisions; keep the Device minimum-field summary neutral and note DISC-042; regenerate the coverage report. The initial focused command passed all 3 tests (DCO commit `e8f5c55`); the follow-up Device tests passed (DCO commit `c5b7533`). `python -B tools/normative_catalog/validate.py` reported 4 sources, 1,411 clauses, and 4,020 records valid; report generation and `--check` passed.
 - [x] T047 **Refactor**: Record the pinned-source review in `specification/catalog/review-evidence.md`, confirm deterministic report generation (two writes produced SHA-256 `41C4CC63A0D82E9A5A86F2D0E203A6A65AE3F286AE111D6EF4EBDCB5FFE973D8`), update this task traceability, and run the complete catalog suite (162 tests, 7 platform-specific skips), source audit `--check` (1,411 candidates), immutable-source check, catalog validation (4 sources, 1,411 clauses, 4,020 records), report `--check`, and `git diff --check` against base `849b46f772fd7cbcea2f42393cdbcf58e92cac94`. Independent parent QA passed with no blockers.
 
+## Open-discrepancy report follow-up
+
+This follow-up to T033/T034 keeps the generated `Open discrepancies` section aligned with its state=open count under FR-010 and FR-012. It changes report presentation only; catalog discrepancy records and decisions remain unchanged.
+
+- [x] T048 **Red**: Add `test_open_discrepancy_section_omits_resolved_rows_and_matches_count` using an open row and catalog-valid `resolved_by_approved_decision` row. `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_open_discrepancy_section_omits_resolved_rows_and_matches_count` failed as expected: the report count was 1, the open row appeared, and `KMIPKIT-DISC-RESOLVED` incorrectly appeared in the section. DCO commit `cde900623a922194314a51e1aac900595baed776`.
+- [x] T049 **Green**: Filter the generated discrepancy rows to `state == open` and regenerate the report with `python -B tools/normative_catalog/report.py --write`. `python -B -m unittest tools.normative_catalog.tests.test_report` passed (19 tests, 1 platform-specific skip). DCO commit `1a4be9bf3934f22d35743f23b6f48068b83a6246`.
+- [x] T050 **Refactor**: Compute the sorted open-discrepancy list once and reuse it for both the count and table rows. `python -B -m unittest tools.normative_catalog.tests.test_report` passed (19 tests, 1 platform-specific skip), and `python -B tools/normative_catalog/report.py --check` verified the regenerated report. DCO commit `89539e29e094ea6c84011d17e29193cb5b10aae7`.
+
 ## Requirement-to-Task Traceability
 
 | Requirement | Tasks |
@@ -161,9 +169,9 @@ minimum-field questions while correcting requirement scope and element links.
 | FR-005 | T020, T021, T022, T026 |
 | FR-007, FR-008 | T023, T029, T031, T034, T035, T042, T043, T044 |
 | FR-009 | T017, T024, T025, T034 |
-| FR-010 | T030, T032, T034, T035 |
+| FR-010 | T030, T032, T033, T034, T035, T048, T049, T050 |
 | FR-011 | T003, T033 |
-| FR-012 | T005, T028, T033, T042, T043, T044, T045, T046, T047 |
+| FR-012 | T005, T028, T033, T042, T043, T044, T045, T046, T047, T048, T049, T050 |
 | FR-013, FR-018 | T002, T006, T007, T008, T009, T010, T011, T019, T036, T037 |
 | FR-014 | T038 |
 | FR-015, FR-016 | T002, T004, T007, T009, T040 |
@@ -178,8 +186,8 @@ minimum-field questions while correcting requirement scope and element links.
 | SC-001 | T012, T014, T018 |
 | SC-002 | T013, T015, T016, T033, T042, T043, T044, T045, T046, T047 |
 | SC-003 | T006, T020, T022, T027, T045, T046, T047 |
-| SC-004 | T017, T024, T029, T031, T032, T042, T043, T044 |
-| SC-005 | T005, T025, T028, T033, T042, T043, T044, T045, T046, T047 |
+| SC-004 | T017, T024, T029, T031, T032, T033, T042, T043, T044, T048, T049, T050 |
+| SC-005 | T005, T025, T028, T033, T042, T043, T044, T045, T046, T047, T048, T049, T050 |
 | SC-006 | T005, T010, T036 |
 | SC-007 | T004, T005, T009, T010 |
 | SC-008 | T004, T008, T037, T047 |

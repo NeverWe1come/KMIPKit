@@ -187,6 +187,32 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("open", report)
         self.assertIn("blocked for affected records", report)
 
+    def test_open_discrepancy_section_omits_resolved_rows_and_matches_count(self) -> None:
+        catalog = report_catalog()
+        catalog["discrepancies"] = [
+            {
+                "discrepancy_id": "KMIPKIT-DISC-OPEN",
+                "summary": "Unresolved wording conflict",
+                "state": "open",
+                "source_refs": [],
+            },
+            {
+                "discrepancy_id": "KMIPKIT-DISC-RESOLVED",
+                "summary": "Resolved wording conflict",
+                "state": "resolved_by_approved_decision",
+                "source_refs": [],
+            },
+        ]
+
+        report = render_report(catalog)
+        open_discrepancy_section = report.split("## Open discrepancies\n", 1)[1].split(
+            "\n## Project policies", 1
+        )[0]
+
+        self.assertIn("| Open discrepancies | 1 |", report)
+        self.assertIn("KMIPKIT-DISC-OPEN", open_discrepancy_section)
+        self.assertNotIn("KMIPKIT-DISC-RESOLVED", open_discrepancy_section)
+
     def test_lists_unassigned_protocol_capabilities_with_direction_and_scope(self) -> None:
         catalog = report_catalog()
         catalog["elements"] = [
