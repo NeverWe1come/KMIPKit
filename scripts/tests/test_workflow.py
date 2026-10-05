@@ -188,13 +188,25 @@ class WorkflowContractTests(unittest.TestCase):
     def test_scheduled_policy_reports_scanned_commit_and_each_rustsec_revision(self) -> None:
         contents = self.require_workflow()
         job = self.scheduled_policy_job(contents)
-        self.assertRegex(job, r"(?im)^\s*run:\s*echo\s+[\"']Active release ref:")
+        self.assertRegex(job, r"(?m)^\s*run:\s*'echo \"Active release ref:")
         self.assertIn("$ACTIVE_RELEASE_REF", job)
         runner = self.require_policy_runner()
         output = job + "\n" + runner
         for required in ("scanned commit", "RustSec", "root", "fuzz", "SHA", "timestamp"):
             with self.subTest(required=required):
                 self.assertIn(required.lower(), output.lower())
+
+    def test_inline_run_commands_with_yaml_colons_are_quoted(self) -> None:
+        contents = self.require_workflow()
+        for line_number, line in enumerate(contents.splitlines(), start=1):
+            match = re.match(r"^\s*run:\s*(.*?)\s*$", line)
+            if match is None:
+                continue
+            scalar = match.group(1)
+            if ": " in scalar and not scalar.startswith(("'", '"')):
+                self.fail(
+                    f"Inline run scalar on workflow line {line_number} contains an unquoted YAML colon."
+                )
 
     def test_testing_guide_explains_schedule_default_branch_activation(self) -> None:
         guide = TESTING_GUIDE.read_text(encoding="utf-8").lower()
