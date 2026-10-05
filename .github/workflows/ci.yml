@@ -234,11 +234,11 @@ jobs:
 
       - name: Report active release ref
         shell: bash
-        run: echo "Active release ref: $ACTIVE_RELEASE_REF"
+        run: 'echo "Active release ref: $ACTIVE_RELEASE_REF"'
 
       - name: Report scanned commit
         shell: bash
-        run: echo "Scanned commit: $(git rev-parse HEAD)"
+        run: 'echo "Scanned commit: $(git rev-parse HEAD)"'
 
       - name: Run root and fuzz dependency policy
         shell: pwsh
