@@ -158,6 +158,20 @@ class DependencyPolicyApiTests(unittest.TestCase):
             _, metadata = self.make_repository(root)
             policy.validate_workspace_metadata(root, metadata)
 
+    def test_checkout_root_symlink_alias_matches_metadata_paths(self) -> None:
+        policy = self.require_policy()
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "checkout"
+            root.mkdir()
+            alias = parent / "checkout-alias"
+            try:
+                alias.symlink_to(root, target_is_directory=True)
+            except OSError as error:
+                self.skipTest(f"directory symlinks are unavailable: {error}")
+            _, metadata = self.make_repository(alias)
+            policy.validate_workspace_metadata(root, metadata)
+
     def test_optional_feature_only_external_path_dependency_is_rejected(self) -> None:
         policy = self.require_policy()
         with tempfile.TemporaryDirectory() as directory:
@@ -308,16 +322,15 @@ class DependencyPolicyApiTests(unittest.TestCase):
 
     def test_fuzz_candidate_scan_no_longer_reports_metadata_policy_findings(self) -> None:
         deny_config = REPOSITORY_ROOT / ".cargo" / "deny.toml"
-        cargo = shutil.which("cargo")
-        if not deny_config.is_file() or cargo is None:
-            self.skipTest("the candidate scan runs after Green adds the reviewed config and pinned tool")
+        deny = os.environ.get("CARGO_DENY")
+        if not deny_config.is_file() or not deny:
+            self.skipTest("the candidate scan runs only with the pinned cargo-deny from the policy runner")
 
         lockfile = REPOSITORY_ROOT / "fuzz" / "Cargo.lock"
         before = lockfile.read_bytes()
         completed = subprocess.run(
             [
-                cargo,
-                "deny",
+                deny,
                 "--manifest-path",
                 str(REPOSITORY_ROOT / "fuzz" / "Cargo.toml"),
                 "--config",
