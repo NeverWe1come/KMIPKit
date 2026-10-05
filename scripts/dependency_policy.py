@@ -76,6 +76,15 @@ BASELINE_FINDING_KINDS = {
     "banned": "ban",
     "wildcard": "wildcard",
 }
+BASELINE_FINDING_SECTIONS = {
+    "advisory": "advisories",
+    "yanked": "advisories",
+    "ban": "bans",
+    "duplicate": "bans",
+    "wildcard": "bans",
+    "license": "licenses",
+    "source": "sources",
+}
 LOCAL_CARGO_DENY_EXCEPTION_FILES = (
     Path("deny.exceptions.toml"),
     Path(".deny.exceptions.toml"),
@@ -247,15 +256,6 @@ def parse_cargo_deny_findings(
     if summary is None:
         raise PolicyError("cargo-deny baseline output is missing its completion summary")
 
-    section_by_kind = {
-        "advisory": "advisories",
-        "yanked": "advisories",
-        "ban": "bans",
-        "duplicate": "bans",
-        "wildcard": "bans",
-        "license": "licenses",
-        "source": "sources",
-    }
     observed_counts = {
         check: {"errors": 0, "warnings": 0, "notes": 0, "helps": 0}
         for check in ("advisories", "bans", "licenses", "sources")
@@ -270,9 +270,9 @@ def parse_cargo_deny_findings(
             observed_counts["licenses"]["warnings"] += 1
             continue
         kind = BASELINE_FINDING_KINDS.get(code)
-        if kind is None or kind not in section_by_kind or severity not in {"error", "warning"}:
+        section = BASELINE_FINDING_SECTIONS.get(kind)
+        if section is None or severity not in {"error", "warning"}:
             raise PolicyError("cargo-deny baseline contains an unsupported policy diagnostic")
-        section = section_by_kind[kind]
         observed_counts[section]["errors" if severity == "error" else "warnings"] += 1
         coordinates = _top_level_diagnostic_packages(fields)
         advisory_id: str | None = None
