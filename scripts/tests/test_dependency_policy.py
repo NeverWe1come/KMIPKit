@@ -120,7 +120,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
 
     def test_policy_runner_rejects_a_host_absent_from_the_reviewed_ci_set(self) -> None:
         policy = self.require_policy()
-        policy.validate_host_triple("x86_64-unknown-linux-gnu", {"aarch64-unknown-linux-gnu"})
+        policy.validate_host_triple("aarch64-unknown-linux-gnu", {"aarch64-unknown-linux-gnu"})
         with self.assertRaises(self.policy_error()):
             policy.validate_host_triple("x86_64-pc-windows-msvc", {"aarch64-unknown-linux-gnu"})
 
