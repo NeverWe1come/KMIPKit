@@ -15,7 +15,7 @@ const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
-const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0002;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const BATCH_COUNT: u32 = 0x0042_000D;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
@@ -161,7 +161,7 @@ fn valid_response(time_stamp: Option<i64>, status: u32, include_payload: bool) -
     )
 }
 
-fn raw_enumeration(view: StructureView<'_>, field_tag: u32) -> Option<u32> {
+fn raw_enumeration(view: &StructureView<'_>, field_tag: u32) -> Option<u32> {
     view.children()
         .iter()
         .find(|child| child.tag().raw() == field_tag)
@@ -173,7 +173,7 @@ fn raw_enumeration(view: StructureView<'_>, field_tag: u32) -> Option<u32> {
         })
 }
 
-fn raw_date_time(view: StructureView<'_>, field_tag: u32) -> Option<i64> {
+fn raw_date_time(view: &StructureView<'_>, field_tag: u32) -> Option<i64> {
     view.children()
         .iter()
         .find(|child| child.tag().raw() == field_tag)
@@ -207,6 +207,48 @@ fn valid_request_and_response_preserve_envelope_order_and_counts() {
 }
 
 #[test]
+fn batch_views_expose_typed_fields_and_exact_size_iterators() {
+    let request = RequestMessage::try_from_ttlv(valid_request(None))
+        .expect("the request has a valid operation and payload");
+    let mut request_items = request.batch_items();
+    assert_eq!(request_items.len(), 1);
+    let request_item = request_items
+        .next()
+        .expect("the request has one batch item");
+    assert_eq!(request_item.operation(), Some(1));
+    assert_eq!(request_item.ephemeral(), None);
+    assert_eq!(request_item.with_unique_batch_item_id(<[u8]>::len), None);
+    assert_eq!(
+        request_item.with_request_payload(|payload| payload.children().len()),
+        Some(0)
+    );
+    assert_eq!(request_item.message_extension_count(), 0);
+    assert!(request_item.message_extension(0).is_none());
+
+    let response = ResponseMessage::try_from_ttlv(valid_response(Some(1), 0, true))
+        .expect("the response has a valid status and payload");
+    let mut response_items = response.batch_items();
+    assert_eq!(response_items.len(), 1);
+    let response_item = response_items
+        .next()
+        .expect("the response has one batch item");
+    assert_eq!(response_item.operation(), None);
+    assert_eq!(
+        response_item.result_status(),
+        Some(kmipkit_protocol::ResultStatus::from_raw(0))
+    );
+    assert_eq!(response_item.result_reason(), None);
+    assert_eq!(
+        response_item.with_response_payload(|payload| payload.children().len()),
+        Some(0)
+    );
+    assert_eq!(
+        response_item.with_asynchronous_correlation_value(<[u8]>::to_vec),
+        None
+    );
+}
+
+#[test]
 fn request_time_stamp_is_optional_and_preserved_as_raw_date_time() {
     let omitted = RequestMessage::try_from_ttlv(valid_request(None))
         .expect("Table 395 makes request Time Stamp optional");
@@ -217,7 +259,8 @@ fn request_time_stamp_is_optional_and_preserved_as_raw_date_time() {
     assert_eq!(omitted.header().time_stamp(), None);
     assert_eq!(present.header().time_stamp(), Some(raw_seconds));
     let round_trip = present.into_ttlv();
-    let request_header = round_trip.view().children()[0];
+    let round_trip_view = round_trip.view();
+    let request_header = &round_trip_view.children()[0];
     let actual = request_header.with_value(|value| match value {
         ValueView::Structure(header) => header
             .children()
@@ -264,7 +307,7 @@ fn response_time_stamp_is_required_and_preserved_as_raw_date_time() {
     assert_eq!(present.header().time_stamp(), raw_seconds);
     let round_trip = present.into_ttlv();
     let actual = round_trip.view().children()[0].with_value(|value| match value {
-        ValueView::Structure(header) => raw_date_time(header, TIME_STAMP),
+        ValueView::Structure(header) => raw_date_time(&header, TIME_STAMP),
         _ => None,
     });
     assert_eq!(actual, Some(raw_seconds));
@@ -512,7 +555,7 @@ fn raw_request_option_enumerations_survive_parse_and_conversion() {
         .expect("parsing preserves raw Enumeration values without send policy");
         let round_trip = request.into_ttlv();
         let raw_value = round_trip.view().children()[0].with_value(|value| match value {
-            ValueView::Structure(header) => raw_enumeration(header, ASYNCHRONOUS_INDICATOR),
+            ValueView::Structure(header) => raw_enumeration(&header, ASYNCHRONOUS_INDICATOR),
             _ => None,
         });
         assert_eq!(raw_value, Some(raw));
@@ -537,7 +580,7 @@ fn raw_request_option_enumerations_survive_parse_and_conversion() {
         let round_trip = request.into_ttlv();
         let raw_value = round_trip.view().children()[0].with_value(|value| match value {
             ValueView::Structure(header) => {
-                raw_enumeration(header, BATCH_ERROR_CONTINUATION_OPTION)
+                raw_enumeration(&header, BATCH_ERROR_CONTINUATION_OPTION)
             }
             _ => None,
         });

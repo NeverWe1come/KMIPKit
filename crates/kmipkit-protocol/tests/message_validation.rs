@@ -1,8 +1,10 @@
-//! OASIS KMIP Specification v2.1: §§8.3, 8.6, 9.21; Tables 396 and 399.
+//! OASIS KMIP Specification v2.1: §§8.3, 8.6, 9.1–9.2, 9.9–9.10, 9.13,
+//! 9.19, 9.21; Tables 396, 399, 400, 408–409, and 418.
 //!
-//! Traceability: KMIPKIT-0006-FR-004; SC-002 and SC-003.
+//! Traceability: KMIPKIT-0006-FR-004, FR-008, FR-010, FR-011, FR-014, FR-020,
+//! FR-021; SC-002, SC-003, SC-004, SC-006.
 
-use kmipkit_protocol::{RequestMessage, ResponseMessage};
+use kmipkit_protocol::{MessageValidationErrorKind, RequestMessage, ResponseMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 use quickcheck::{Arbitrary, Gen, QuickCheck};
 
@@ -19,6 +21,14 @@ const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const RESULT_STATUS: u32 = 0x0042_007F;
 const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
+const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
+const MESSAGE_EXTENSION: u32 = 0x0042_0051;
+const RESULT_MESSAGE: u32 = 0x0042_007D;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
+const SERVER_CORRELATION_VALUE: u32 = 0x0042_0106;
+const VENDOR_EXTENSION: u32 = 0x0042_009C;
+const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const PROPERTY_SEED: u64 = 0x4B4D_4950_4B49_5430;
 
 fn tag(raw: u32) -> Tag {
@@ -89,6 +99,38 @@ fn response(id: &[u8]) -> Structure {
                 item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
             ])),
         ),
+    ])
+}
+
+fn message_extension(vendor: &str, criticality: bool) -> Structure {
+    structure([
+        item(VENDOR_IDENTIFICATION, Value::text_string(vendor.to_owned())),
+        item(CRITICALITY_INDICATOR, Value::boolean(criticality)),
+        item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+    ])
+}
+
+fn request_with_extensions(extensions: impl IntoIterator<Item = Structure>) -> Structure {
+    let mut batch_fields = vec![item(OPERATION, Value::enumeration(1))];
+    batch_fields.push(item(REQUEST_PAYLOAD, Value::structure(Structure::new())));
+    batch_fields.extend(
+        extensions
+            .into_iter()
+            .map(|extension| item(MESSAGE_EXTENSION, Value::structure(extension))),
+    );
+    request_tree_with_batch(structure(batch_fields), 1)
+}
+
+fn request_tree_with_batch(batch_item: Structure, batch_count: i32) -> Structure {
+    structure([
+        item(
+            REQUEST_HEADER,
+            Value::structure(structure([
+                item(PROTOCOL_VERSION, version()),
+                item(BATCH_COUNT, Value::integer(batch_count)),
+            ])),
+        ),
+        item(BATCH_ITEM, Value::structure(batch_item)),
     ])
 }
 
@@ -176,4 +218,298 @@ fn request_item_ids_remain_associated_in_seeded_batch_order() {
         .rng(Gen::from_size_and_seed(64, PROPERTY_SEED))
         .tests(256)
         .quickcheck(ids_remain_attached_to_items_in_source_order as fn(IdCase) -> bool);
+}
+
+#[test]
+fn repeated_request_extensions_preserve_order_and_expose_typed_fields() {
+    let tree = request_with_extensions([
+        message_extension("Vendor_A", false),
+        message_extension("Vendor.B", true),
+    ]);
+    let message = RequestMessage::try_from_ttlv(tree)
+        .expect("Table 396 permits repeated, well-formed Message Extensions");
+    let batch_item = message.batch_items().next().expect("one item exists");
+
+    assert_eq!(batch_item.message_extension_count(), 2);
+    let first = batch_item
+        .message_extension(0)
+        .expect("first extension exists");
+    let second = batch_item
+        .message_extension(1)
+        .expect("second extension exists");
+    assert_eq!(
+        first.with_vendor_identification(str::to_owned),
+        Some("Vendor_A".to_owned())
+    );
+    assert_eq!(first.criticality_indicator(), Some(false));
+    assert_eq!(
+        second.with_vendor_identification(str::to_owned),
+        Some("Vendor.B".to_owned())
+    );
+    assert_eq!(second.criticality_indicator(), Some(true));
+    assert!(
+        second
+            .with_vendor_extension(|extension| extension.children().is_empty())
+            .unwrap_or_default()
+    );
+    assert!(batch_item.message_extension(2).is_none());
+}
+
+#[test]
+fn malformed_request_message_extension_is_rejected() {
+    let missing_vendor_extension = structure([
+        item(
+            VENDOR_IDENTIFICATION,
+            Value::text_string("Vendor".to_owned()),
+        ),
+        item(CRITICALITY_INDICATOR, Value::boolean(false)),
+    ]);
+    let wrong_order = structure([
+        item(
+            VENDOR_IDENTIFICATION,
+            Value::text_string("Vendor".to_owned()),
+        ),
+        item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+        item(CRITICALITY_INDICATOR, Value::boolean(false)),
+    ]);
+    let invalid_vendor_characters = message_extension("bad vendor", false);
+    let wrong_vendor_type = structure([
+        item(VENDOR_IDENTIFICATION, Value::enumeration(1)),
+        item(CRITICALITY_INDICATOR, Value::boolean(false)),
+        item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+    ]);
+
+    for extension in [
+        missing_vendor_extension,
+        wrong_order,
+        invalid_vendor_characters,
+        wrong_vendor_type,
+    ] {
+        let tree = request_with_extensions([extension]);
+        assert!(RequestMessage::try_from_ttlv(tree).is_err());
+    }
+}
+
+#[test]
+fn response_message_extension_is_a_singleton() {
+    let batch_item = structure([
+        item(RESULT_STATUS, Value::enumeration(0)),
+        item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+        item(
+            MESSAGE_EXTENSION,
+            Value::structure(message_extension("Vendor", false)),
+        ),
+        item(
+            MESSAGE_EXTENSION,
+            Value::structure(message_extension("OtherVendor", true)),
+        ),
+    ]);
+    let response = structure([
+        item(
+            RESPONSE_HEADER,
+            Value::structure(structure([
+                item(PROTOCOL_VERSION, version()),
+                item(TIME_STAMP, Value::date_time(1)),
+                item(BATCH_COUNT, Value::integer(1)),
+            ])),
+        ),
+        item(BATCH_ITEM, Value::structure(batch_item)),
+    ]);
+
+    let error = ResponseMessage::try_from_ttlv(response)
+        .expect_err("Table 399 permits at most one Message Extension");
+    assert_eq!(error.kind(), MessageValidationErrorKind::DuplicateField);
+}
+
+#[test]
+fn client_correlation_values_are_preserved_at_message_header_scope() {
+    let request = request_tree_with_header_fields(item(
+        CLIENT_CORRELATION_VALUE,
+        Value::text_string("request-17".to_owned()),
+    ));
+    let request = RequestMessage::try_from_ttlv(request).expect("request header is valid");
+    assert_eq!(
+        request
+            .header()
+            .with_client_correlation_value(str::to_owned),
+        Some("request-17".to_owned())
+    );
+
+    let response = response_with_correlations();
+    let response = ResponseMessage::try_from_ttlv(response).expect("response header is valid");
+    assert_eq!(
+        response
+            .header()
+            .with_client_correlation_value(str::to_owned),
+        Some("request-17".to_owned())
+    );
+    assert_eq!(
+        response
+            .header()
+            .with_server_correlation_value(str::to_owned),
+        Some("server-29".to_owned())
+    );
+}
+
+#[test]
+fn known_header_field_with_wrong_ttlv_type_reports_safe_category() {
+    let tree = request_tree_with_header_fields(item(0x0042_0050, Value::boolean(true)));
+    let error = RequestMessage::try_from_ttlv(tree)
+        .expect_err("Maximum Response Size is an Integer in Table 395");
+
+    assert_eq!(error.kind(), MessageValidationErrorKind::WrongItemType);
+    assert!(!error.to_string().contains("true"));
+}
+
+fn request_tree_with_header_fields(extra: Item) -> Structure {
+    structure([
+        item(
+            REQUEST_HEADER,
+            Value::structure(structure([
+                item(PROTOCOL_VERSION, version()),
+                extra,
+                item(BATCH_COUNT, Value::integer(1)),
+            ])),
+        ),
+        item(
+            BATCH_ITEM,
+            Value::structure(structure([
+                item(OPERATION, Value::enumeration(1)),
+                item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
+            ])),
+        ),
+    ])
+}
+
+fn response_with_correlations() -> Structure {
+    structure([
+        item(
+            RESPONSE_HEADER,
+            Value::structure(structure([
+                item(PROTOCOL_VERSION, version()),
+                item(TIME_STAMP, Value::date_time(1)),
+                item(
+                    CLIENT_CORRELATION_VALUE,
+                    Value::text_string("request-17".to_owned()),
+                ),
+                item(
+                    SERVER_CORRELATION_VALUE,
+                    Value::text_string("server-29".to_owned()),
+                ),
+                item(BATCH_COUNT, Value::integer(1)),
+            ])),
+        ),
+        item(
+            BATCH_ITEM,
+            Value::structure(structure([
+                item(RESULT_STATUS, Value::enumeration(0)),
+                item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+            ])),
+        ),
+    ])
+}
+
+fn response_tree_with_batch_items(
+    batch_items: impl IntoIterator<Item = Structure>,
+    batch_count: i32,
+) -> Structure {
+    let header = structure([
+        item(PROTOCOL_VERSION, version()),
+        item(TIME_STAMP, Value::date_time(1)),
+        item(BATCH_COUNT, Value::integer(batch_count)),
+    ]);
+    let mut message = vec![item(RESPONSE_HEADER, Value::structure(header))];
+    message.extend(
+        batch_items
+            .into_iter()
+            .map(|batch_item| item(BATCH_ITEM, Value::structure(batch_item))),
+    );
+    structure(message)
+}
+
+#[test]
+fn unknown_result_status_round_trips_without_pending_only_fields() {
+    let unknown_status = 0xF123_4567;
+    let batch_item = structure([
+        item(RESULT_STATUS, Value::enumeration(unknown_status)),
+        item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+    ]);
+    let response = ResponseMessage::try_from_ttlv(response_tree_with_batch_items([batch_item], 1))
+        .expect("an unknown raw Result Status is not treated as Pending");
+    let status = response
+        .batch_items()
+        .next()
+        .expect("one response item exists")
+        .result_status()
+        .expect("Result Status is required");
+
+    assert_eq!(status.raw(), unknown_status);
+    let round_trip = response.into_ttlv();
+    assert_eq!(
+        round_trip.view().children()[1].with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Structure(batch) =>
+                batch.children()[0].with_value(|value| match value {
+                    kmipkit_ttlv::ValueView::Enumeration(raw) => Some(*raw),
+                    _ => None,
+                }),
+            _ => None,
+        }),
+        Some(unknown_status)
+    );
+}
+
+#[test]
+fn pending_requires_correlation_and_forbids_result_message() {
+    let missing_correlation = structure([
+        item(RESULT_STATUS, Value::enumeration(2)),
+        item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+    ]);
+    let invalid_result_message = structure([
+        item(RESULT_STATUS, Value::enumeration(2)),
+        item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(vec![0x00, 0xA5]),
+        ),
+        item(
+            RESULT_MESSAGE,
+            Value::text_string("pending-result-message".to_owned()),
+        ),
+        item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+    ]);
+
+    assert!(
+        ResponseMessage::try_from_ttlv(response_tree_with_batch_items([missing_correlation], 1,))
+            .is_err()
+    );
+    assert!(
+        ResponseMessage::try_from_ttlv(
+            response_tree_with_batch_items([invalid_result_message], 1,)
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn one_response_batch_can_mix_completed_and_pending_results() {
+    let completed = structure([
+        item(RESULT_STATUS, Value::enumeration(0)),
+        item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+    ]);
+    let pending = structure([
+        item(RESULT_STATUS, Value::enumeration(2)),
+        item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(vec![0x00, 0xA5]),
+        ),
+        item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+    ]);
+    let response =
+        ResponseMessage::try_from_ttlv(response_tree_with_batch_items([completed, pending], 2))
+            .expect("completed and Pending items may coexist in a response batch");
+    let statuses: Vec<_> = response
+        .batch_items()
+        .filter_map(|batch_item| batch_item.result_status().map(|status| status.raw()))
+        .collect();
+
+    assert_eq!(statuses, [0, 2]);
 }

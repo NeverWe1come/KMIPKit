@@ -1,8 +1,9 @@
-//! OASIS KMIP Specification v2.1: §§9.2, 9.6, 9.10, 10.1.2; Tables 395–399,
-//! 421, 432, and 435. These derived property tests exercise in-memory conversion;
-//! they are not official OASIS fixtures and do not assert wire validity.
+//! OASIS KMIP Specification v2.1: §§9.1–9.2, 9.6, 9.10, 9.21, 10.1.2;
+//! Tables 395–400, 408–409, 421, 432, and 435. These derived property tests
+//! exercise in-memory conversion; they are not official OASIS fixtures and do
+//! not assert wire validity.
 //!
-//! Traceability: KMIPKIT-0006-FR-013, FR-014, FR-017, FR-022; SC-003,
+//! Traceability: KMIPKIT-0006-FR-010, FR-013, FR-014, FR-017, FR-022; SC-003,
 //! SC-004, and SC-006.
 
 use kmipkit_protocol::{RequestMessage, ResponseMessage};
@@ -14,7 +15,7 @@ const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
-const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0002;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const BATCH_COUNT: u32 = 0x0042_000D;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const REQUEST_HEADER: u32 = 0x0042_0077;
@@ -22,13 +23,14 @@ const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const RESULT_REASON: u32 = 0x0042_007E;
+const RESULT_MESSAGE: u32 = 0x0042_007D;
 const RESULT_STATUS: u32 = 0x0042_007F;
 const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
 const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
 const OPERATION: u32 = 0x0042_005C;
-const ATTESTATION_TYPE: u32 = 0x0042_0003;
+const ATTESTATION_TYPE: u32 = 0x0042_00C7;
 const SERVER_CORRELATION_VALUE: u32 = 0x0042_0106;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 
@@ -125,18 +127,18 @@ fn opaque_payload(case: &GeneratedCase) -> Structure {
     structure([
         item(
             CRYPTOGRAPHIC_USAGE_MASK,
-            Value::integer(case.raw_bit_mask as i32),
+            Value::integer(case.raw_bit_mask.cast_signed()),
         ),
         item(case.extension_tag, Value::structure(nested)),
         item(
             case.extension_tag,
-            Value::integer(case.raw_enumeration as i32),
+            Value::integer(case.raw_enumeration.cast_signed()),
         ),
     ])
 }
 
 fn request_tree(case: &GeneratedCase) -> Structure {
-    let item_count = case.item_count as i32;
+    let item_count = i32::try_from(case.item_count).unwrap_or(1);
     let mut header_fields = vec![
         item(PROTOCOL_VERSION, version_value()),
         item(case.extension_tag, Value::enumeration(case.raw_enumeration)),
@@ -172,7 +174,9 @@ fn request_tree(case: &GeneratedCase) -> Structure {
         if case.item_count > 1 {
             batch_fields.push(item(
                 UNIQUE_BATCH_ITEM_ID,
-                Value::byte_string(vec![index as u8 + 1]),
+                Value::byte_string(vec![
+                    u8::try_from(index).unwrap_or_default().saturating_add(1),
+                ]),
             ));
         }
         batch_fields.push(item(
@@ -194,7 +198,10 @@ fn response_tree(case: &GeneratedCase) -> Structure {
             SERVER_CORRELATION_VALUE,
             Value::text_string("server-response".into()),
         ),
-        item(BATCH_COUNT, Value::integer(case.item_count as i32)),
+        item(
+            BATCH_COUNT,
+            Value::integer(i32::try_from(case.item_count).unwrap_or(1)),
+        ),
     ]);
     let mut message_fields = vec![item(RESPONSE_HEADER, Value::structure(header))];
     message_fields.push(item(
@@ -232,12 +239,12 @@ fn pending_response(correlation: &[u8]) -> Structure {
     ])
 }
 
-fn snapshot(view: StructureView<'_>) -> Vec<Node> {
+fn snapshot(view: &StructureView<'_>) -> Vec<Node> {
     view.children()
         .iter()
         .map(|child| {
             let value = child.with_value(|value| match value {
-                ValueView::Structure(nested) => NodeValue::Structure(snapshot(nested)),
+                ValueView::Structure(nested) => NodeValue::Structure(snapshot(&nested)),
                 ValueView::Integer(raw) => NodeValue::Integer(*raw),
                 ValueView::LongInteger(raw) => NodeValue::LongInteger(*raw),
                 ValueView::BigInteger(raw) => NodeValue::BigInteger(raw.to_vec()),
@@ -258,26 +265,32 @@ fn snapshot(view: StructureView<'_>) -> Vec<Node> {
         .collect()
 }
 
+// QuickCheck's Testable property callback requires an owned Arbitrary input.
+#[allow(clippy::needless_pass_by_value)]
 fn request_round_trip_preserves_generated_tree(case: GeneratedCase) -> bool {
     let source = request_tree(&case);
-    let before = snapshot(source.view());
+    let before = snapshot(&source.view());
     let Ok(parsed) = RequestMessage::try_from_ttlv(source) else {
         return false;
     };
     let round_trip = parsed.into_ttlv();
-    snapshot(round_trip.view()) == before
+    snapshot(&round_trip.view()) == before
 }
 
+// QuickCheck's Testable property callback requires an owned Arbitrary input.
+#[allow(clippy::needless_pass_by_value)]
 fn response_round_trip_preserves_generated_tree(case: GeneratedCase) -> bool {
     let source = response_tree(&case);
-    let before = snapshot(source.view());
+    let before = snapshot(&source.view());
     let Ok(parsed) = ResponseMessage::try_from_ttlv(source) else {
         return false;
     };
     let round_trip = parsed.into_ttlv();
-    snapshot(round_trip.view()) == before
+    snapshot(&round_trip.view()) == before
 }
 
+// QuickCheck's Testable property callback requires an owned Arbitrary input.
+#[allow(clippy::needless_pass_by_value)]
 fn asynchronous_correlation_round_trip_preserves_exact_bytes(sample: CorrelationSample) -> bool {
     let source = pending_response(&sample.0);
     let Ok(parsed) = ResponseMessage::try_from_ttlv(source) else {
@@ -402,7 +415,10 @@ fn message_formatting_and_validation_errors_redact_payload_sentinels() {
     let failure_item = structure([
         item(RESULT_STATUS, Value::enumeration(1)),
         item(RESULT_REASON, Value::enumeration(0)),
-        item(0x0042_0080, Value::text_string(RESULT_SENTINEL.to_owned())),
+        item(
+            RESULT_MESSAGE,
+            Value::text_string(RESULT_SENTINEL.to_owned()),
+        ),
     ]);
     let response = structure([
         item(RESPONSE_HEADER, Value::structure(response_header)),
@@ -417,7 +433,10 @@ fn message_formatting_and_validation_errors_redact_payload_sentinels() {
 
     let success_with_result_message = structure([
         item(RESULT_STATUS, Value::enumeration(0)),
-        item(0x0042_0080, Value::text_string(RESULT_SENTINEL.to_owned())),
+        item(
+            RESULT_MESSAGE,
+            Value::text_string(RESULT_SENTINEL.to_owned()),
+        ),
         item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
     ]);
     let response_header = structure([
