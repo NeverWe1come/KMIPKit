@@ -85,6 +85,9 @@ BASELINE_FINDING_SECTIONS = {
     "license": "licenses",
     "source": "sources",
 }
+CARGO_DENY_SUMMARY_SEVERITIES = ("errors", "warnings", "notes", "helps")
+# cargo-deny aggregates `helps` without emitting matching diagnostic records.
+CARGO_DENY_DIAGNOSTIC_SEVERITIES = ("errors", "warnings", "notes")
 LOCAL_CARGO_DENY_EXCEPTION_FILES = (
     Path("deny.exceptions.toml"),
     Path(".deny.exceptions.toml"),
@@ -245,7 +248,7 @@ def parse_cargo_deny_findings(
                 if not isinstance(check_summary, dict):
                     raise PolicyError("cargo-deny baseline summary omits a policy check")
                 counts: dict[str, int] = {}
-                for severity in ("errors", "warnings", "notes", "helps"):
+                for severity in CARGO_DENY_SUMMARY_SEVERITIES:
                     count = check_summary.get(severity)
                     if isinstance(count, bool) or not isinstance(count, int) or count < 0:
                         raise PolicyError("cargo-deny baseline summary counts are malformed")
@@ -257,7 +260,7 @@ def parse_cargo_deny_findings(
         raise PolicyError("cargo-deny baseline output is missing its completion summary")
 
     observed_counts = {
-        check: {"errors": 0, "warnings": 0, "notes": 0}
+        check: dict.fromkeys(CARGO_DENY_DIAGNOSTIC_SEVERITIES, 0)
         for check in ("advisories", "bans", "licenses", "sources")
     }
     findings: set[tuple[str, str, str, str | None, str | None]] = set()
@@ -298,7 +301,8 @@ def parse_cargo_deny_findings(
             findings.add((kind, package_name, version, source, advisory_id))
 
     for check, severities in observed_counts.items():
-        for severity, count in severities.items():
+        for severity in CARGO_DENY_DIAGNOSTIC_SEVERITIES:
+            count = severities[severity]
             if summary[check][severity] != count:
                 raise PolicyError("cargo-deny baseline summary does not match its diagnostics")
     result = [
