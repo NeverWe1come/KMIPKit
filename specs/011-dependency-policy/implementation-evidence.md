@@ -228,3 +228,16 @@ Ran 16 tests ... OK
 git diff --check
 passed
 ```
+
+
+### Independent review follow-up: exception lifecycle coverage
+
+The second scoped review confirmed T009's release-ref output and the semantic test links for FR-004, FR-011, and SC-006. It found that the FR-011 documentation contract still did not assert the exception-review lifecycle. The policy guide already documented exact package/version scope, rationale, mitigation, distinct owner and reviewer, expiry, approval evidence, and renewal/removal. Expanded the existing documentation contract to assert those points and whitespace-normalize prose before checking it. No policy documentation behavior needed correction.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_workflow scripts.tests.test_requirement_traceability -v
+Ran 16 tests ... OK
+
+git diff --check
+passed
+```

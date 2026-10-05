@@ -208,7 +208,21 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("pwsh -File .\\scripts\\Test-DependencyPolicy.ps1", testing_guide)
         self.assertIn("0.20.2", testing_guide)
         self.assertIn("root and fuzz", testing_guide)
-        self.assertRegex(policy_guide.lower(), r"tool upgrades?.{0,160}(?:review|version|engineering)")
+        normalized_policy_guide = " ".join(policy_guide.lower().split())
+        self.assertRegex(normalized_policy_guide, r"tool upgrades?.{0,160}(?:review|version|engineering)")
+        self.assertRegex(normalized_policy_guide, r"(?s)## exception review lifecycle.*?before expiry")
+        for required in (
+            "exact crate name and resolved version",
+            "rationale",
+            "mitigation",
+            "accountable owner",
+            "reviewer different from that owner",
+            "expiry",
+            "approval reference",
+            "renewal is a new human decision",
+        ):
+            with self.subTest(exception_review=required):
+                self.assertIn(required, normalized_policy_guide)
 
 
 if __name__ == "__main__":
