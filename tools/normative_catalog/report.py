@@ -313,7 +313,10 @@ def render_report(catalog: dict[str, Any]) -> str:
     lines.extend(_table(("Fixture state", "Count"), _count_by(test_cases, "fixture_availability")))
     lines.append("")
 
-    discrepancies = sorted(catalog.get("discrepancies", []), key=lambda row: row.get("discrepancy_id", ""))
+    discrepancies = sorted(
+        (row for row in catalog.get("discrepancies", []) if row.get("state") == "open"),
+        key=lambda row: row.get("discrepancy_id", ""),
+    )
     lines.extend(["## Open discrepancies", ""])
     lines.extend(_table(
         ("Discrepancy", "State", "Implementation gate", "Affected records", "Summary", "Source"),
