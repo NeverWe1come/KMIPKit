@@ -345,3 +345,67 @@ Ran 5 tests ... OK
 git diff --check f241f38..350768f
 passed
 ```
+
+## Convergence evidence: T019
+
+Assessed the approved specification, plan, tasks, current implementation, and
+constitution. The review covered 13 functional requirements, 8 success
+criteria, 10 acceptance scenarios, 6 edge cases, 9 design decisions, and all
+5 constitution principles. No untracked buildable gap remained, so no
+convergence task was appended. The existing T017, T018, and T020 entries
+continue to track full verification, independent final review, and draft PR
+creation.
+
+## Red/Green evidence: T022 offline cargo-deny fixtures
+
+Red commit `a0668a3` added the original pinned-tool negative fixtures. The
+first independent review found that Cargo fixture creation could reach the
+network and that expected findings could mask plain-text or warning output.
+Green commit `edebb8c` made every fixture Cargo invocation use both
+`CARGO_NET_OFFLINE=true` and `--offline`, tightened the structured-output
+parser, and added guards against online Cargo calls. The scoped re-review of
+`a0668a3..edebb8c` marked both findings addressed with no regressions.
+
+The wildcard case has a distinct Red/Green pair. Red commit `436fd64` runs the
+fixture with `wildcards = "allow"`; the test failed because cargo-deny
+returned success with no wildcard finding. Green commit `a4fb756` restores the
+fixture's denied-wildcard policy. The test asserts the exact `wildcard` rule,
+declaring package `fixture-root@0.1.0`, the manifest requirement `*`, and the
+locked dependency `fixture-wildcard@1.0.0`. The scoped re-review of
+`436fd64..a4fb756` found no issues.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_cargo_deny_fixtures -v
+Ran 15 tests ... OK
+
+python -X utf8 -m unittest discover -s scripts/tests -p 'test_*.py' -v
+Ran 123 tests ... OK (skipped=4)
+
+pwsh -NoProfile -File scripts/tests/Test-Wsl.ps1
+All PowerShell WSL tests passed.
+
+pwsh -NoProfile -File scripts/Test-DependencyPolicy.ps1
+Verified cargo-deny 0.20.2; root and fuzz checks passed after online RustSec
+refresh at ef6173cbc5c50ec8166f9a5b28f07834144373ee
+2026-10-03T10:14:03+02:00; root and fuzz Cargo.lock SHA256 values unchanged.
+```
+
+The four Python skips on Windows are directory-symlink cases requiring
+privileges unavailable to the current user. CI covers those cases on Linux
+and macOS. The candidate scan passed with cargo-deny 0.20.2 when supplied via
+`CARGO_DENY`.
+
+## Local verification evidence: T017 progress
+
+On the Windows host, the following CI-equivalent checks passed: `cargo fmt
+--all --check`; Clippy and workspace tests with `--locked`; and
+`cargo doc --workspace --all-features --no-deps --locked`. The full Rust test
+command completed with no failed tests or doctests. The normative catalog
+validated 4 sources, 1,411 clauses, and 4,021 records; the 167 catalog tests,
+immutable-source check, source-candidate audit, and both generated-output
+checks passed. `git diff --check` and both lockfile immutability checks passed.
+
+The Windows LLVM JSON report normalized successfully and measured TTLV/
+protocol at 97.46%, transport/FFI at 100%, and workspace at 97.31%. Linux,
+macOS, and the three-platform aggregate remain for PR CI; T017 remains open
+until those required checks and the remaining repository gates are recorded.
