@@ -133,6 +133,14 @@ T007 Refactor is implemented in DCO-signed commit `f576a82d98cbd4c121cbef6739212
 | --- | --- |
 | `tasks.md` | `0FCD80EB4A573699933D7716CB9B50466885152DDFB48EB9365D5832F3D35CCE` |
 
+## Execution update — T008
+
+T008's deterministic encoder-to-decoder round-trip tests are in DCO-signed commit `06fcdf8f193e3608f51bfa99541ff316d2cefa10`; the evidence and independent review are in `task-8-report.md` and `task-8-review.md`. Review returned PASS with no findings. I independently reran formatting, client Clippy with warnings denied, all-feature client check, all 40 client unit/integration tests, client rustdoc, and diff check on Windows; all passed. The generated test runs 88 fixed-seed bounded roots across all eleven Item Types; dedicated Big Integer vectors cover positive/negative unaligned sign extension and aligned exact preservation. T009 decoder-limit Red is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `9E55EA51D12689D472942E530F2420C3F820E2BE78973037A0F7BD049B8E43B2` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository

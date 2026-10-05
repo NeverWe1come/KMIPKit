@@ -1,8 +1,8 @@
-# T008 Test Report (provisional)
+# T008 Test Report
 
 ## Scope and status
 
-This report records only KMIPKIT-0005 T008. The test change is in `crates/kmipkit-client/src/wire_encoder.rs` under its private unit-test module. It adds no production code, API, manifest or lockfile changes, client integration, configurable decoder limits, or new dependency. T008 remains unchecked in `tasks.md` pending independent review.
+This report records only KMIPKIT-0005 T008. The test change is in `crates/kmipkit-client/src/wire_encoder.rs` under its private unit-test module. It adds no production code, API, manifest or lockfile changes, client integration, configurable decoder limits, or new dependency.
 
 DCO-signed test commit: `06fcdf8f193e3608f51bfa99541ff316d2cefa10` (`test(client): add deterministic TTLV round trips`).
 
@@ -27,4 +27,14 @@ The following commands completed with exit code 0 after the final source changes
 
 The test run reported 34 unit tests and 6 integration tests passed, 0 failed or ignored; there were 0 doctests. This is 40 passed tests total. The generated round-trip property is one of the 34 unit tests and executes all 88 generated roots; the dedicated Big Integer vector test is a second new unit test.
 
-No production behavior was changed. Independent T008 review is pending; this report does not close the task.
+No production behavior was changed.
+
+## Independent review
+
+The static review of test commit `06fcdf8f193e3608f51bfa99541ff316d2cefa10`
+returned **PASS** with no findings. It confirmed the bounded fixed-seed
+generator, all eleven root types, observable sibling order, recursive
+comparison, Big Integer canonicalization/vectors, test-only scope, and
+normative/project attribution. The reviewer did not run commands; the root
+agent independently ran the verification commands above. The review record is
+[`task-8-review.md`](task-8-review.md).
