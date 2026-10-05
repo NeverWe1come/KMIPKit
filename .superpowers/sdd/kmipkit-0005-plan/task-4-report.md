@@ -45,7 +45,7 @@ Post-fix verification:
 - `cargo check -p kmipkit-client --all-features` — passed.
 - `git diff --check` — passed.
 
-The Green commit SHA is recorded in the immediate report follow-up because a commit cannot contain its own object hash.
+Green implementation commit: `ce0be6fd3b517fcf58e33774cc498658e7ed0cca` (DCO-signed). Red test/report commit: `3372bc587fd45c1b26aa614ffe1c5f66afec0c9a` (DCO-signed). This report-only follow-up records the Green commit hash after creation; T004 remains unchecked pending independent review.
 
 ## Verification
 
