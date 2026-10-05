@@ -1,3 +1,5 @@
+mod tests {
+    use super::*;
     use kmipkit_ttlv::{RawTag, Structure, Tag, Value};
 
     fn tag(raw: u32) -> Tag {
@@ -733,3 +735,4 @@
             MessageValidationErrorKind::InvalidBatchCount,
         );
     }
+}
