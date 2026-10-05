@@ -67,14 +67,21 @@ fn public_decoder_rejects_empty_and_misaligned_big_integer_values() {
     );
 }
 
-// OASIS KMIP Specification v2.1, §§10.1.2 and 11.23; traceability
-// KMIPKIT-0005-NR-002.
+// OASIS KMIP Specification v2.1, §10.1.2; Text String UTF-8 requirement,
+// traceability KMIPKIT-0005-NR-002.
 #[test]
-fn public_decoder_rejects_invalid_text_and_unsupported_item_types() {
+fn public_decoder_rejects_invalid_text_string_utf8() {
     assert_kind(
         &item(ASSIGNED_TAG, 0x07, 1, &[0xFF, 0, 0, 0, 0, 0, 0, 0]),
         DecodeErrorKind::InvalidUtf8,
     );
+}
+
+// OASIS KMIP Specification v2.1 §11.23 lists assigned Item Types
+// (KMIPKIT-0005-NR-002); rejection of an unsupported value is KMIPKit project
+// requirement KMIPKIT-0005-FR-005, not an OASIS decoder requirement.
+#[test]
+fn public_decoder_rejects_item_types_outside_the_generic_model() {
     assert_kind(
         &item(ASSIGNED_TAG, 0x7F, 0, &[]),
         DecodeErrorKind::UnsupportedItemType,

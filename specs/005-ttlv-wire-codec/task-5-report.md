@@ -119,14 +119,14 @@ focused error/boundary refactor remains T007 scope.
 - `cargo clippy -p kmipkit-ttlv --all-targets --all-features -- -D warnings` —
   passed.
 - `cargo check -p kmipkit-ttlv --all-features` — passed.
-- `cargo test -p kmipkit-ttlv` — passed, all 81 unit, integration, trybuild,
+- `cargo test -p kmipkit-ttlv` — passed, all 82 unit, integration, trybuild,
   and documentation tests.
 - `git diff --check` — passed.
 
 The 33 promoted private cases cover all eleven Item Types, integer bit
 preservation, Structure ordering and boundaries, Tag policy, and malformed
 framing. The external `codec_api.rs` test imports and calls the public API.
-Fifteen `codec_negative.rs` cases exercise malformed inputs, the three
+Sixteen `codec_negative.rs` cases exercise malformed inputs, the three
 default resource caps, and error redaction. No configurable public limits,
 client/protocol integration, or T007 refactor was added. Existing model
 constructors retain their documented allocation-failure caveat; no unsafe code

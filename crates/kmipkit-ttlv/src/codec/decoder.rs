@@ -55,7 +55,7 @@ pub enum DecodeErrorKind {
 impl Display for DecodeErrorKind {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         let message = match self {
-            Self::MessageTooLarge => "message exceeds the configured byte limit",
+            Self::MessageTooLarge => "message exceeds the byte limit",
             Self::TruncatedHeader => "truncated TTLV header",
             Self::TruncatedValue => "truncated TTLV value",
             Self::InvalidItemLength => "invalid TTLV Item Length",
@@ -68,8 +68,8 @@ impl Display for DecodeErrorKind {
             Self::ReservedTag => "received a Reserved Tag",
             Self::UnallocatedTag => "Tag is not allocated by the KMIP 2.1 catalog",
             Self::InvalidPaddingExtent => "invalid TTLV padding extent",
-            Self::StructureDepthExceeded => "Structure depth exceeds the configured limit",
-            Self::ElementLimitExceeded => "item count exceeds the configured limit",
+            Self::StructureDepthExceeded => "Structure depth exceeds the default limit",
+            Self::ElementLimitExceeded => "item count exceeds the default limit",
             Self::AllocationFailed => "unable to reserve decoder-owned storage",
             Self::ModelConstraint => "decoded item violates a model constraint",
         };

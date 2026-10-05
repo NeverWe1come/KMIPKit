@@ -1,12 +1,17 @@
-//! In-memory, typed representations of generic KMIP TTLV item values.
+//! In-memory, typed representations of generic KMIP TTLV item values, plus a
+//! bounded decoder for one complete TTLV item.
 //!
 //! This crate checks 24-bit raw tag representation, tag allocation, the
 //! relationship between a value representation and its Item Type, and the
 //! local maximum Structure depth of 64. It retains Structure child order and
-//! exposes payloads through borrowed callbacks. It does not encode or decode
-//! TTLV, validate TTLV framing or padding, validate schema-specific field
-//! order or cardinality, or establish extension or operation semantics. A
-//! value in this model is not thereby declared wire-valid or protocol-valid.
+//! exposes payloads through borrowed callbacks. [`codec::decode`] validates
+//! framing, type-specific lengths, required padding extents, and default
+//! resource limits before returning exactly one item. It does not encode TTLV
+//! or validate schema-specific field order, cardinality, or operation
+//! semantics. Values built with the model constructors satisfy only model
+//! constraints; construction does not establish wire validity. Decoded values
+//! pass generic wire checks but are not validated against a KMIP operation
+//! schema.
 //! Owned payloads are held in private zeroizing allocations and are cleared
 //! when dropped.
 //!
