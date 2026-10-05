@@ -1,0 +1,36 @@
+[package]
+name = "kmipkit-ttlv-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+rust-version = "1.94"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+kmipkit-ttlv = { path = "../crates/kmipkit-ttlv" }
+libfuzzer-sys = "=0.4.12"
+
+[[bin]]
+name = "ttlv_decode"
+path = "fuzz_targets/ttlv_decode.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
+members = ["."]
+resolver = "3"
+
+[workspace.lints.rust]
+rust_2018_idioms = "deny"
+unused_must_use = "deny"
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+
+[lints]
+workspace = true
