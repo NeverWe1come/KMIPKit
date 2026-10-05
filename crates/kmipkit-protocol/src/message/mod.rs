@@ -1,9 +1,11 @@
 //! Validated, ordered KMIP Request and Response Messages.
 
+mod batch;
 mod header;
 mod validation;
 mod version;
 
+pub use batch::{MessageExtensionView, RequestBatchItemView, ResponseBatchItemView};
 pub use header::{RequestHeaderView, ResponseHeaderView};
 pub use validation::{MessageValidationError, MessageValidationErrorKind};
 pub use version::ProtocolVersion;
@@ -57,6 +59,14 @@ impl RequestMessage {
     #[must_use]
     pub const fn header(&self) -> RequestHeaderView<'_> {
         RequestHeaderView::new(self)
+    }
+
+    /// Returns request batch items in source order.
+    pub fn batch_items(&self) -> impl ExactSizeIterator<Item = RequestBatchItemView<'_>> + '_ {
+        self.batch_indices
+            .iter()
+            .copied()
+            .map(|index| RequestBatchItemView::new(self, index))
     }
 
     /// Lends the original ordered generic TTLV tree for callback-scoped access.
@@ -148,6 +158,14 @@ impl ResponseMessage {
     #[must_use]
     pub const fn header(&self) -> ResponseHeaderView<'_> {
         ResponseHeaderView::new(self)
+    }
+
+    /// Returns response batch items in source order.
+    pub fn batch_items(&self) -> impl ExactSizeIterator<Item = ResponseBatchItemView<'_>> + '_ {
+        self.batch_indices
+            .iter()
+            .copied()
+            .map(|index| ResponseBatchItemView::new(self, index))
     }
 
     /// Lends the original ordered generic TTLV tree for callback-scoped access.

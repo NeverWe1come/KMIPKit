@@ -7,8 +7,9 @@ mod result;
 
 pub use error::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 pub use message::{
-    MessageValidationError, MessageValidationErrorKind, ProtocolVersion, RequestHeaderView,
-    RequestMessage, ResponseHeaderView, ResponseMessage,
+    MessageExtensionView, MessageValidationError, MessageValidationErrorKind, ProtocolVersion,
+    RequestBatchItemView, RequestHeaderView, RequestMessage, ResponseBatchItemView,
+    ResponseHeaderView, ResponseMessage,
 };
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
