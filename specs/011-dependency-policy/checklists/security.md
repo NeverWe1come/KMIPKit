@@ -8,6 +8,7 @@
 - [ ] Fork-controlled code cannot execute on a persistent self-hosted runner with sensitive files or credentials.
 - [ ] Advisory refresh failure or stale data cannot yield a successful fresh-scan status.
 - [ ] Root and fuzz lockfiles are both checked without auto-fix or mutation.
+- [ ] The FR-013 manifest correction is limited to first-party unpublished fuzz metadata and preserves resolved packages and both lockfiles.
 - [ ] Unknown source, license, advisory, banned crate, wildcard, and duplicate defaults fail closed.
 - [ ] No exception can permit a TLS backend that conflicts with ADR-0005.
 - [ ] Each exception is exact, reviewed, auditable, and time-bounded; expired or orphaned exceptions fail.

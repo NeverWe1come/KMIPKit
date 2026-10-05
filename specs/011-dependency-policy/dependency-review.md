@@ -166,9 +166,10 @@ by FR-004.
 2. Verify a C toolchain is present on the self-hosted Linux ARM64 runner and
    test the source installation on the hosted Linux runner used for fork PRs.
 3. Before implementation, resolve the non-waivable fuzz wildcard and establish
-   reviewed license evidence/disposition for `kmipkit-ttlv-fuzz`; then refresh
-   both lockfile baselines and review every SPDX ID before setting a finite
-   allowlist or any eligible exact exception.
+   the fuzz package's first-party `Apache-2.0` metadata through the FR-013
+   Red/Green tasks; do not use an exception for either finding. Then refresh
+   both lockfile baselines and complete review of every third-party SPDX ID
+   before setting a finite allowlist or any eligible exact exception.
 4. Keep this record scoped to the tool; new KMIPKit runtime dependencies
    continue to require their feature-specific dependency review.
 

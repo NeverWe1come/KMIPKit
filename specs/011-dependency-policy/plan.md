@@ -42,8 +42,10 @@ self-hosted Linux ARM64 path. Verify and record the exact target list in T001.
 
 **Constraints**: No secrets, write permissions, mutable action references,
 lockfile changes, auto-fixes, unpinned policy tools, unbounded exceptions,
-new runtime dependencies, or OASIS source changes. Policy database failures
-must fail visibly rather than be skipped.
+new runtime dependencies, or OASIS source changes. The only manifest edits
+are the two first-party unpublished fuzz metadata corrections in FR-013; they
+must follow Red tests and preserve resolved package versions. Policy database
+failures must fail visibly rather than be skipped.
 
 **Scale/Scope**: One policy configuration and validator covering two Cargo
 lockfiles, wired to existing PR and scheduled CI. No SBOM, attestation,
@@ -67,10 +69,12 @@ release-signing, branch-protection, Java, or Python package policy.
 
 ### After design
 
-Pass. The design adds only repository policy/configuration, a narrow validator,
-workflow wiring, and documentation. It does not change accepted ADRs,
-constitution, OASIS inputs, or published artifacts. Administrator-owned branch
-protection remains an external limitation and will not be claimed as enforced.
+Pass. The design adds repository policy/configuration, a narrow validator,
+workflow wiring, documentation, and two first-party metadata corrections to
+the unpublished fuzz workspace. It does not change accepted ADRs,
+constitution, OASIS inputs, runtime dependencies, resolved package versions,
+or published artifacts. Administrator-owned branch protection remains an
+external limitation and will not be claimed as enforced.
 
 ## Design decisions
 
@@ -118,6 +122,12 @@ protection remains an external limitation and will not be claimed as enforced.
 8. Do not alter existing license/source policy in other tooling. OASIS source
    integrity, action SHA pinning, and future release SBOM/provenance/signatures
    remain separate controls.
+9. Resolve the T001 fuzz baseline within this feature, after Red tests: declare
+   `Apache-2.0` on the unpublished first-party fuzz package and state an
+   explicit version requirement matching the existing `kmipkit-ttlv` path
+   package. These metadata-only corrections must not change either lockfile or
+   the resolved package versions and must not be treated as third-party
+   license approval.
 
 ## Implementation Phases
 
@@ -141,13 +151,17 @@ protection remains an external limitation and will not be claimed as enforced.
   policy configuration or CI commands.
 - Cover both workspace invocations, all finding categories, exact exception
   matching and expiry, locked operation, no secret/write permissions, and
-  scheduled release checkout behavior.
+  scheduled release checkout behavior. Include assertions for the existing
+  fuzz manifest's FR-013 license/version metadata and the two baseline findings.
 - Run the tests and record behavioral failures, not syntax or harness errors.
 
 ### Phase 2: Green commits
 
 - Add the reviewed finite policy to `.cargo/deny.toml` and a structured
   exception register with no blanket ignores.
+- In the same Green change, apply only FR-013's explicit license and version
+  metadata to the existing unpublished fuzz package/path dependency; verify no
+  lockfile or resolved-version change occurs.
 - Add the standard-library exception validator and its local/CI entry point.
 - Add the pinned policy job to `.github/workflows/ci.yml` for every PR; add
   the scheduled job to the existing daily trigger and make it scan the
@@ -198,6 +212,7 @@ specs/011-dependency-policy/
 ```text
 .cargo/deny.toml
 .github/workflows/ci.yml
+fuzz/Cargo.toml
 docs/development/testing.md
 docs/development/rust-workspace.md
 docs/security/dependency-policy.md

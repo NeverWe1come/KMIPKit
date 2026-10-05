@@ -18,6 +18,14 @@ requirements and conformance vectors are not applicable. It does not change
 the product architecture, runtime dependencies, supported platforms, or
 published package behavior.
 
+The current fuzz-workspace baseline also requires two narrowly scoped
+first-party metadata corrections: declare the existing unpublished fuzz
+package's `Apache-2.0` license and add a version requirement matching the
+existing `kmipkit-ttlv` path package. These corrections are part of this
+feature, must follow the Red/Green test sequence, and must preserve both
+lockfiles and the resolved package versions. They do not change published or
+runtime dependencies.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Detect an unacceptable dependency before merge (Priority: P1)
@@ -50,6 +58,12 @@ dependency graph and confirm success without modifying either lockfile.
    checks the root and fuzz lockfiles, development dependencies, and every
    supported target represented by the resolved dependency graphs without
    rewriting manifests or lockfiles.
+5. **Given** the existing unpublished fuzz package, **When** its reviewed
+   metadata remediation is applied, **Then** its license matches the
+   repository's `Apache-2.0` license, the existing local `kmipkit-ttlv` path
+   edge states that package's current version, cargo-deny no longer reports
+   these two metadata findings, and neither lockfile nor resolved package
+   version changes.
 
 ### User Story 2 - Review a narrowly scoped policy exception (Priority: P1)
 
@@ -176,6 +190,12 @@ unexcepted finding.
 - **FR-012**: The policy report MUST identify each finding by package, version,
   a safely redacted source reference, license or advisory as applicable, and
   policy rule; it MUST NOT emit credentials or secret material.
+- **FR-013**: The implementation MUST correct the existing unpublished fuzz
+  package metadata by declaring `Apache-2.0` and giving its existing local
+  `kmipkit-ttlv` dependency an explicit version matching that package. These
+  first-party metadata corrections MUST be covered by failing tests before
+  the Green commit and MUST leave both lockfiles and resolved package versions
+  unchanged.
 
 ### Explicit Exclusions
 
@@ -188,6 +208,9 @@ unexcepted finding.
 - Maven, PyPI, Java, Python, or future language-package dependency policy.
 - Automatic dependency updates, vulnerability remediation, or changes to
   application/runtime dependencies as part of this infrastructure feature.
+  The only manifest edits in scope are the two metadata corrections to the
+  existing unpublished fuzz package and its existing local path dependency
+  described by FR-013.
 - `cargo-vet` supply-chain audit records or a second redundant advisory tool.
 - Legal advice or a claim that automated license metadata is a complete
   source-code license audit.
@@ -214,7 +237,8 @@ unexcepted finding.
   symlink-escaping local path, banned-package, normal/dev duplicate-version,
   and expired-exception cases fails before implementation is considered ready.
 - **SC-003**: A clean accepted graph passes without any manifest or lockfile
-  diff; all denied test cases fail with a rule-specific finding.
+  or lockfile diff caused by a policy invocation; all denied test cases fail
+  with a rule-specific finding.
 - **SC-004**: The scheduled workflow's interval is no longer than seven days,
   and its successful result records the active-release ref and the RustSec
   advisory database commit SHA and timestamp used by each workspace check.
@@ -224,6 +248,10 @@ unexcepted finding.
   documented command and the exact CI tool version.
 - **SC-007**: The policy job uses no secrets and requests no repository write
   permission.
+- **SC-008**: After FR-013 is implemented, the root and fuzz policy runs no
+  longer report a wildcard for the existing local fuzz dependency or missing
+  license data for `kmipkit-ttlv-fuzz`, while both committed lockfiles and the
+  resolved package versions remain unchanged by the metadata correction.
 
 ## Assumptions
 
@@ -234,6 +262,11 @@ unexcepted finding.
 - Local path dependencies are allowed only when Cargo metadata identifies the
   package manifest as a member of the root or fuzz workspace; the known fuzz
   edge to the root `kmipkit-ttlv` crate remains valid.
+- The fuzz package is first-party, unpublished, and covered by the repository's
+  Apache-2.0 `LICENSE`; its isolated Cargo workspace must repeat that metadata
+  explicitly. The path dependency's requirement will match the current local
+  package version and must be intentionally updated if that package version
+  changes later.
 - `cargo-deny` is the preferred unified checker because its supported checks
   cover advisories, licenses, banned/duplicate packages, and dependency
   sources. The exact release pin and all configuration semantics will be
@@ -248,6 +281,7 @@ unexcepted finding.
 No `[NEEDS CLARIFICATION]` markers remain. The chosen tool family, workspace
 scope, CI targets, exception boundary, and exclusions follow the existing
 testing guide, the accepted project constraints, and current official tool
-documentation. The exact dependency-license entries and tool release pin are
-implementation inputs that must be recorded with their independent review;
-they are not silently inferred from the project license.
+documentation. The T001 scan's two first-party fuzz metadata findings are now
+bounded by FR-013; the exact third-party license allowlist and tool release
+pin remain implementation inputs that must be recorded with their independent
+review. The repository license does not silently approve third-party licenses.

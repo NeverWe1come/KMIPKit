@@ -15,3 +15,4 @@
 - [ ] Are CI permissions read-only, secret-free, and free of a mutable or unreviewed checker action?
 - [ ] Are the limitations of automated license metadata stated without implying legal completeness?
 - [ ] Are branch protection, release attestations, OASIS integrity, and language adapters clearly outside this feature?
+- [ ] Are the only manifest changes limited to FR-013's unpublished fuzz package license and matching local-path version metadata, with no resolved-version or lockfile change?

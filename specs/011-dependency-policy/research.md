@@ -19,6 +19,13 @@
 - Root and fuzz workspaces use separate lockfiles. Current CI Rust checks use
   `--locked`; there is no checked-in cargo-deny configuration or dependency
   policy job on this baseline.
+- The unpublished `fuzz` package is a separate workspace and therefore does
+  not inherit the root workspace's `license = "Apache-2.0"` metadata. Its
+  manifest currently omits a package license and its local `kmipkit-ttlv`
+  path dependency omits the version already declared by the path package.
+  cargo-deny 0.20.2 reports these as an unlicensed local package and a
+  wildcard dependency. The T001 baseline and full license-ID inventory are in
+  [dependency-review.md](dependency-review.md) and `evidence/`.
 - `docs/development/coding-standards.md` requires every new dependency review
   to cover capability, alternatives, maintenance, security history, MSRV,
   license, platform support, and transitive cost. Published builds may not use
@@ -123,6 +130,11 @@ review before the exact pin is added to workflow code.
 8. **Separate controls**: keep immutable OASIS inputs, generated catalog
    checks, action SHA pinning, and release signatures/SBOM/provenance separate.
    Do not alter branch protection or claim a failing job is a required check.
+9. **First-party fuzz metadata**: after test-only Red commits, add the
+   repository's declared `Apache-2.0` license to its unpublished fuzz package
+   and add an explicit version requirement matching the current local
+   `kmipkit-ttlv` package. Keep the resolved versions and both lockfiles
+   unchanged. This is not an approval of any third-party license identifier.
 
 ## Clarification outcome
 

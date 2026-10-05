@@ -66,3 +66,7 @@ not write manifests or lockfiles.
 6. Cargo metadata path packages are accepted only when their canonical
    manifest is in the union of root/fuzz workspace members and remains under
    the canonical checkout root.
+7. The unpublished fuzz package declares the repository's Apache-2.0 license,
+   and its existing local `kmipkit-ttlv` edge has a version requirement
+   matching that package; this is static first-party metadata, not a policy
+   invocation-time manifest or lockfile mutation.

@@ -25,6 +25,8 @@
 ## Feature Readiness
 
 - [x] Functional requirements have measurable acceptance criteria
+- [x] The two T001 fuzz metadata findings have a bounded in-scope remediation
+      with Red tests, Green changes, and lockfile/version invariants
 - [x] User stories cover the policy, exception, and refresh flows
 - [x] Success criteria map to buildable outcomes
 - [x] No unresolved architectural boundary change is implied
