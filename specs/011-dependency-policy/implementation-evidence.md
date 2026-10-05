@@ -526,3 +526,47 @@ The security reviewer must re-review commit `4d2eb05` and complete the
 reviewer-owned checklist. T017 remains open until CI runs successfully on
 Linux, Windows, macOS, and the coverage aggregate; T020 remains open until
 the final release-base update and review package are complete.
+
+## Phase 6: exact dependency-exception evidence
+
+Convergence added T028-T030 after review found that the runner could not
+validate registered non-source exceptions, yanked packages had no exact
+register representation, and cargo-deny could discover local exception files
+outside the explicit policy config. The Red commits are `b508d31` (exact
+diagnostic and yanked matching tests) and `f945431` (runner ordering and
+accepted-ID contract); they precede implementation commit `14a7643`.
+That Green commit adds `.cargo/deny-baseline.toml`, strictly parses complete
+structured scans from both workspaces, matches affected package coordinates
+and metadata sources one-to-one, checks exact yanked package/version ignores,
+rejects cargo-deny auto-discovered exception files, and reports matched IDs
+only after configured scans succeed. `abceaac` is the separate Refactor
+commit centralizing the diagnostic-to-policy-section mapping and extending
+the requirement-to-task map.
+
+Windows verification after the Green implementation:
+
+```text
+python -m unittest discover -s scripts/tests
+Ran 140 tests ... OK (skipped=25)
+
+$env:CARGO_DENY = (Get-Command cargo-deny).Source
+python -m unittest scripts.tests.test_cargo_deny_fixtures
+Ran 18 tests ... OK
+
+pwsh -NoProfile -File scripts/Test-DependencyPolicy.ps1
+Verified cargo-deny 0.20.2
+RustSec root and fuzz: ef6173cbc5c50ec8166f9a5b28f07834144373ee
+Dependency policy checks passed; Cargo.lock and fuzz/Cargo.lock SHA256 hashes are unchanged.
+```
+
+The repository exception register is currently empty, so the real runner
+verified the zero-exception path. A pinned cargo-deny local-registry fixture
+also accepted the exact yanked `crate@version` ignore form, while validator
+tests reject a different version. The full Python suite, the 18 pinned
+cargo-deny fixtures, and `git diff --check` passed again after Refactor.
+The script suite skips 25 platform/tool-dependent checks in this Windows
+environment. The latest GitHub run available before these commits was queued
+against older head `a0956fc`; fresh Linux, Windows, macOS, and aggregate CI
+evidence remains outstanding. T017 and T018 remain open pending CI and
+independent review; T020 remains open pending the release-base update and
+final review package.
