@@ -824,23 +824,20 @@ def main(argv: list[str] | None = None) -> int:
         findings = validate_workspace_metadata(root, metadata, register)
         validate_exception_config(register, config)
         exceptions = register.get("exceptions") if isinstance(register, dict) else None
-        if exceptions:
-            if arguments.findings is None and any(
+        if arguments.findings is None:
+            if exceptions and any(
                 isinstance(entry, dict) and entry.get("kind") != "source" for entry in exceptions
             ):
                 raise PolicyError("non-source exceptions require exact finding evidence via --findings")
-            if arguments.findings is not None:
-                additional_findings = _read_json(arguments.findings, "dependency findings")
-                if not isinstance(additional_findings, list):
-                    raise PolicyError("dependency findings must be a JSON array")
-                findings.extend(additional_findings)
-            validate_exceptions(register, findings)
-        elif arguments.findings is not None:
+        else:
             additional_findings = _read_json(arguments.findings, "dependency findings")
             if not isinstance(additional_findings, list):
                 raise PolicyError("dependency findings must be a JSON array")
-            if additional_findings:
+            if not exceptions and additional_findings:
                 raise PolicyError("dependency findings were supplied without registered exceptions")
+            findings.extend(additional_findings)
+        if exceptions:
+            validate_exceptions(register, findings)
     except PolicyError as error:
         print(f"dependency policy: {error}", file=sys.stderr)
         return 1
