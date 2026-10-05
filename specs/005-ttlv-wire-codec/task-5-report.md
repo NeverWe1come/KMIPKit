@@ -84,8 +84,9 @@ Specification v2.1 section and stable requirement ID:
   with only 8 bytes present, and Structure child/parent span mismatches
   (`NR-004`, `FR-006`, `FR-008`).
 
-All vectors are bounded small fixtures. T006 has not started; the seam has not
-been promoted and no production decoder is present in this commit.
+All vectors are bounded small fixtures. At the T005 Red commit, T006 had not
+started and the seam had not been promoted. T006 Green evidence is recorded in
+[`task-6-report.md`](task-6-report.md).
 
 ## Independent review
 
@@ -99,35 +100,3 @@ been promoted and no production decoder is present in this commit.
   consistent with §10.1.5.
 - The reviewer performed static review only and did not independently rerun
   builds or tests. The Red command results above were observed in the task run.
-
-## T006 Green evidence (provisional; independent review pending)
-
-The T005 private adapter now calls the production `kmipkit_ttlv::codec::decode`
-and maps only its public error kind for the existing concise assertions. The
-production facade decodes one complete Item, validates checked spans against
-input and parent Structure boundaries, preserves ordered child/value data,
-applies assigned/extension/Reserved Tag dispositions, and returns payload-free
-errors with safe offsets. Decoder-owned Big Integer, Text String, and Byte
-String copies reserve fallibly after type, limit, and available-input checks.
-Default byte, Structure-depth, and total-Item limits are covered at their
-boundaries. `CodecLimits` and configurable decoding remain T010 scope; the
-focused error/boundary refactor remains T007 scope.
-
-### Verification
-
-- `cargo fmt --all --check` — passed.
-- `cargo clippy -p kmipkit-ttlv --all-targets --all-features -- -D warnings` —
-  passed.
-- `cargo check -p kmipkit-ttlv --all-features` — passed.
-- `cargo test -p kmipkit-ttlv` — passed, all 82 unit, integration, trybuild,
-  and documentation tests.
-- `git diff --check` — passed.
-
-The 33 promoted private cases cover all eleven Item Types, integer bit
-preservation, Structure ordering and boundaries, Tag policy, and malformed
-framing. The external `codec_api.rs` test imports and calls the public API.
-Sixteen `codec_negative.rs` cases exercise malformed inputs, the three
-default resource caps, and error redaction. No configurable public limits,
-client/protocol integration, or T007 refactor was added. Existing model
-constructors retain their documented allocation-failure caveat; no unsafe code
-or raw input retention was introduced.

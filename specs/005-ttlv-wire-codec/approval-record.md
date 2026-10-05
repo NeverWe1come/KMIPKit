@@ -117,6 +117,14 @@ T005 Red is complete in DCO-signed commit `0937633685d44aaa921e13aec3449d6cce319
 | --- | --- |
 | `tasks.md` | `4EA2A97243B9D025D79CA2BA05C348D859A1DF3BD31E0B50132D29CD8A717C89` |
 
+## Execution update — T006
+
+T006's checked decoder and public `codec::decode` facade are implemented in Green commit `6419a4304a05e3607e0c088d9d64eb9080f04817`. The documentation and normative-attribution follow-up is `71534fda7f74a14e1ecdb12187ed26b9ce51e54b`. Independent review returned PASS after verifying the parser's limits/bounds and resolving three documentation/traceability findings; it did not run tests. The root agent independently reran formatting, Clippy, all-feature crate check, the full `kmipkit-ttlv` test suite (82 passed), rustdoc generation, and diff check on Windows; all passed. The complete evidence and review record are in `task-6-report.md` and `task-6-review.md`. T007 remains next and will refactor the decoder without adding T010 configurable limits.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `66FBAECA316C3AE7CF2281DF8673060DFA5DA78A700AEED37F9A09A042AAA9DB` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository
