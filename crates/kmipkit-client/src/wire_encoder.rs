@@ -352,10 +352,9 @@ impl EncodedOwner {
 #[cfg(test)]
 impl Drop for EncodedOwner {
     fn drop(&mut self) {
-        let bytes: &mut Vec<u8> = &mut self.bytes;
-        bytes.zeroize();
+        self.bytes.as_mut_slice().zeroize();
         if let Some(observer) = &self.drop_observer {
-            observer.observe_before_deallocation(bytes);
+            observer.observe_before_deallocation(self.bytes.as_slice());
         }
     }
 }

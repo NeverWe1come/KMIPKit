@@ -27,6 +27,26 @@ Changed the test-only observer to record the initialized slice length as well as
 - `cargo fmt --all` — passed.
 - `cargo test -p kmipkit-client owner_drop_zeroizes_initialized_bytes_before_backing_allocation_deallocation` — failed as expected at `observer must see initialized bytes`; 0 passed, 1 failed, 31 filtered out. This confirms the observer sees no initialized bytes after the current `Vec::zeroize` call.
 
+## Independent review follow-up — Green
+
+Red test/report commit: `3372bc587fd45c1b26aa614ffe1c5f66afec0c9a` (DCO-signed). The focused Red failure above is retained in that commit.
+
+The test-only Drop now calls `self.bytes.as_mut_slice().zeroize()` before observing `self.bytes.as_slice()`. This wipes the initialized bytes in place while preserving the `Vec` length for the observer. After the owner Drop returns, the `Zeroizing<Vec<u8>>` field performs its normal zeroize/clear/deallocation. The observer reads a live initialized slice before deallocation; there is no unsafe code or freed-memory read.
+
+- `cargo fmt --all` — passed.
+- `cargo test -p kmipkit-client owner_drop_zeroizes_initialized_bytes_before_backing_allocation_deallocation` — passed: 1 unit test, 0 failed; the test requires a nonzero observed length and all bytes zero.
+
+Post-fix verification:
+
+- `cargo fmt --all --check` — passed.
+- `cargo test -p kmipkit-client owner_drop_zeroizes_initialized_bytes_before_backing_allocation_deallocation` — passed: 1 unit test, 0 failed, 31 filtered out.
+- `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings` — passed.
+- `cargo test -p kmipkit-client` — passed: 32 unit tests, 6 integration tests, 0 doc tests.
+- `cargo check -p kmipkit-client --all-features` — passed.
+- `git diff --check` — passed.
+
+The Green commit SHA is recorded in the immediate report follow-up because a commit cannot contain its own object hash.
+
 ## Verification
 
 Baseline before editing: `cargo test -p kmipkit-client` passed with 32 unit tests, 6 integration tests, and 0 doc tests.
