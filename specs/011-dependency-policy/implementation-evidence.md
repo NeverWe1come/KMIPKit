@@ -162,3 +162,38 @@ passed
 ```
 
 The single API-suite skip remains the Windows directory-symlink escape test, unavailable because this account lacks the required privilege (`WinError 1314`).
+
+
+## Green evidence: T009 pull-request and scheduled policy jobs
+
+The workflow Red contract from T004/T013 initially had six behavioral assertion failures and no test errors. The Green workflow adds a read-only policy job to every supported pull request, routes same-repository Linux PRs to the established Linux ARM64 runner and fork PRs to GitHub-hosted Linux, and adds a separate daily schedule job. The scheduled job checks out the explicit `ACTIVE_RELEASE_REF` (`release/1.0.0`), prints the scanned commit, then reports root and fuzz RustSec revision evidence through the shared runner. Both jobs use the exact pinned checkout action and no secrets or write permissions. Separate PR and schedule jobs ensure the scheduled job checks out only its configured release ref while PR checks still evaluate their merge commit.
+
+The existing workflow contract had one false-negative assertion: it expected a literal shell command for cargo-deny installation, while the runner safely passes an argument vector through `ProcessStartInfo`. The assertion now verifies the exact `0.20.2` version variable and ordered install arguments (`install --locked --version <version> cargo-deny`) without requiring shell-concatenated execution.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_workflow -v
+Ran 14 tests ... OK
+```
+
+## Red evidence: T015 normative traceability
+
+Added `scripts/tests/test_requirement_traceability.py` before the CSV. It extracts every FR/SC identifier from the approved specification and requires one CSV row per identifier, existing safe repository-relative configuration and implementation paths, and a reference to a real `unittest.TestCase.test_*` method.
+
+```text
+python scripts/tests/test_requirement_traceability.py -v
+Ran 1 test ... FAILED (failures=1)
+```
+
+The expected behavioral failure was that `specification/compliance/requirements/KMIPKIT-0011.csv` did not exist; there were no test errors. Test-only Red commit: `54a298aa5d028ecf1c62eaeb76fae96fff3e1ef8`.
+
+## Green evidence: T015 normative traceability
+
+Added `specification/compliance/requirements/KMIPKIT-0011.csv` with exactly 21 rows covering FR-001 through FR-013 and SC-001 through SC-008. Each row identifies a TOML/JSON/YAML configuration location, a policy script or workflow location, and an executable Python test method. The workflow schedule is wired to the active release as part of the same Green change.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_requirement_traceability -v
+Ran 1 test ... OK
+
+git diff --check
+passed
+```

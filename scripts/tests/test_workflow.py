@@ -155,7 +155,11 @@ class WorkflowContractTests(unittest.TestCase):
         job = self.require_policy_job(contents, "dependency-policy")
         self.assertRegex(job, r"(?i)Test-DependencyPolicy\.ps1")
         runner = self.require_policy_runner()
-        self.assertRegex(runner, r"(?i)cargo(?:\.exe)?\s+install\s+--locked\s+--version\s+0\.20\.2\s+cargo-deny")
+        self.assertIn("$expectedDenyVersion = '0.20.2'", runner)
+        self.assertRegex(
+            runner,
+            r"(?is)-Arguments\s+@\(\s*'install',\s*'--locked',\s*'--version',\s*\$expectedDenyVersion,\s*'cargo-deny'\s*\)",
+        )
         for workspace in ("Cargo.toml", "fuzz/Cargo.toml"):
             with self.subTest(workspace=workspace):
                 self.assertIn(workspace, runner)
