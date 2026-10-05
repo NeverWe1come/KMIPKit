@@ -210,9 +210,7 @@ class CargoDenyNegativeFixtureTests(unittest.TestCase):
         return fixture
 
     def create_wildcard_fixture(self) -> Path:
-        fixture_policy = self.fixture_deny_config().replace(
-            'wildcards = "deny"', 'wildcards = "allow"'
-        )
+        fixture_policy = self.fixture_deny_config()
         fixture = self.create_fixture(
             [("fixture-wildcard", "1.0.0", "MIT", False)], config=fixture_policy
         )
