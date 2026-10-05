@@ -638,7 +638,21 @@ def normalize_llvm_export(document: str | bytes, workspace_root: str | Path) -> 
             for filename in function["filenames"]:
                 if not isinstance(filename, str):
                     raise CoverageDataError("LLVM filename table contains a non-string path.")
-                canonical = _canonical_source_path(filename, root)
+                try:
+                    canonical = _canonical_source_path(filename, root)
+                except CoverageDataError:
+                    path = Path(filename)
+                    if not path.is_absolute():
+                        path = root / path
+                    try:
+                        path.resolve(strict=False).relative_to(root)
+                    except (OSError, ValueError):
+                        # Macro expansion can add registry or standard-library paths
+                        # to a function's filename table without adding coverage files.
+                        # Keep the table index but remove machine-specific paths.
+                        normalized.append("__external_source__")
+                        continue
+                    raise
                 if canonical is None:
                     # Keep non-production paths relative to the workspace when they belong to it.
                     path = Path(filename)
