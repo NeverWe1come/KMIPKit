@@ -23,8 +23,10 @@ const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
 const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
+const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
 const EPHEMERAL: u32 = 0x0042_0154;
 const MAXIMUM_RESPONSE_SIZE: u32 = 0x0042_0050;
+const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const NONCE: u32 = 0x0042_00C8;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_HEADER: u32 = 0x0042_0077;
@@ -38,6 +40,8 @@ const SERVER_CORRELATION_VALUE: u32 = 0x0042_0106;
 const SERVER_HASHED_PASSWORD: u32 = 0x0042_0155;
 const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+const VENDOR_EXTENSION: u32 = 0x0042_009C;
+const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 
 /// Safe category for a rejected request/response message structure.
 #[non_exhaustive]
@@ -220,6 +224,7 @@ const REQUEST_BATCH_FIELDS: &[FieldSpec] = &[
     field(EPHEMERAL, ItemType::Boolean),
     field(UNIQUE_BATCH_ITEM_ID, ItemType::ByteString),
     field(REQUEST_PAYLOAD, ItemType::Structure),
+    repeated_field(MESSAGE_EXTENSION, ItemType::Structure),
 ];
 const RESPONSE_BATCH_FIELDS: &[FieldSpec] = &[
     field(OPERATION, ItemType::Enumeration),
@@ -229,6 +234,12 @@ const RESPONSE_BATCH_FIELDS: &[FieldSpec] = &[
     field(RESULT_MESSAGE, ItemType::TextString),
     field(ASYNCHRONOUS_CORRELATION_VALUE, ItemType::ByteString),
     field(RESPONSE_PAYLOAD, ItemType::Structure),
+    field(MESSAGE_EXTENSION, ItemType::Structure),
+];
+const MESSAGE_EXTENSION_FIELDS: &[FieldSpec] = &[
+    field(VENDOR_IDENTIFICATION, ItemType::TextString),
+    field(CRITICALITY_INDICATOR, ItemType::Boolean),
+    field(VENDOR_EXTENSION, ItemType::Structure),
 ];
 pub(super) fn validate_request_message(
     root: &StructureView<'_>,
@@ -553,6 +564,13 @@ fn validate_request_batch_item(
             None,
         ));
     }
+    for (index, child) in view.children().iter().enumerate() {
+        if child.tag().raw() == MESSAGE_EXTENSION {
+            with_structure(child, top_index, Some(index), |view| {
+                validate_message_extension(&view)
+            })?;
+        }
+    }
     Ok(id)
 }
 
@@ -625,6 +643,47 @@ fn validate_response_batch_item(
         return Err(error(
             MessageValidationErrorKind::MissingRequiredField,
             Some(top_index),
+            None,
+        ));
+    }
+    for (index, child) in view.children().iter().enumerate() {
+        if child.tag().raw() == MESSAGE_EXTENSION {
+            with_structure(child, top_index, Some(index), |view| {
+                validate_message_extension(&view)
+            })?;
+        }
+    }
+    Ok(())
+}
+
+fn validate_message_extension(view: &StructureView<'_>) -> Result<(), MessageValidationError> {
+    validate_fields(
+        view.children(),
+        MESSAGE_EXTENSION_FIELDS,
+        &[
+            VENDOR_IDENTIFICATION,
+            CRITICALITY_INDICATOR,
+            VENDOR_EXTENSION,
+        ],
+        None,
+    )?;
+    // §9.13 requires a value that identifies the vendor; empty text cannot do so.
+    let vendor_is_valid = required_child(view.children(), VENDOR_IDENTIFICATION, 0)?
+        .with_value(|value| match value {
+            ValueView::TextString(value) => Some(
+                !value.is_empty()
+                    && value
+                        .as_bytes()
+                        .iter()
+                        .all(|byte| byte.is_ascii_alphanumeric() || matches!(*byte, b'_' | b'.')),
+            ),
+            _ => None,
+        })
+        .ok_or_else(|| error(MessageValidationErrorKind::WrongItemType, None, None))?;
+    if !vendor_is_valid {
+        return Err(error(
+            MessageValidationErrorKind::InvalidFieldValue,
+            None,
             None,
         ));
     }
