@@ -258,13 +258,6 @@ pub(super) fn validate_request_message(
                         None,
                     ));
                 }
-                if !batch_indices.is_empty() {
-                    return Err(error(
-                        MessageValidationErrorKind::FieldOutOfOrder,
-                        Some(index),
-                        None,
-                    ));
-                }
                 let header_value = with_structure(child, index, None, |view| {
                     validate_request_header(&view, index)
                 })?;
@@ -318,13 +311,6 @@ pub(super) fn validate_request_message(
             None,
         ));
     }
-    if header.batch_count < 1 {
-        return Err(error(
-            MessageValidationErrorKind::InvalidBatchCount,
-            Some(header_index),
-            None,
-        ));
-    }
     if usize::try_from(header.batch_count).ok() != Some(batch_indices.len()) {
         return Err(error(
             MessageValidationErrorKind::BatchCountMismatch,
@@ -352,13 +338,6 @@ pub(super) fn validate_response_message(
                 if header.is_some() {
                     return Err(error(
                         MessageValidationErrorKind::DuplicateField,
-                        Some(index),
-                        None,
-                    ));
-                }
-                if !batch_indices.is_empty() {
-                    return Err(error(
-                        MessageValidationErrorKind::FieldOutOfOrder,
                         Some(index),
                         None,
                     ));
@@ -402,13 +381,6 @@ pub(super) fn validate_response_message(
     if batch_indices.is_empty() {
         return Err(error(
             MessageValidationErrorKind::MissingRequiredField,
-            Some(header_index),
-            None,
-        ));
-    }
-    if header.batch_count < 1 {
-        return Err(error(
-            MessageValidationErrorKind::InvalidBatchCount,
             Some(header_index),
             None,
         ));
