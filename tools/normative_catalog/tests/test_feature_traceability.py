@@ -257,6 +257,23 @@ class MessageModelTraceabilityTests(unittest.TestCase):
         by_id = {row["requirement_id"]: row for row in rows}
         self.assertEqual(len(by_id), len(rows))
 
+        field_order_id = "KMIPKIT-REQ-SPEC-10.1.2-001"
+        field_order_row = by_id[field_order_id]
+        self.assertEqual(field_order_row["status"], "scoped_verified")
+        self.assertIn("only the 0006 scope", field_order_row["statement"])
+        field_order_refs = field_order_row["test_ids"].split("; ")
+        self.assertTrue(field_order_refs)
+        for reference in field_order_refs:
+            self.assertTrue(self._is_executable_test_ref(reference), reference)
+
+        global_field_order = next(
+            record
+            for record in catalog["requirements"]
+            if record["requirement_id"] == field_order_id
+        )
+        self.assertEqual(global_field_order["status"], "unassigned")
+        self.assertIsNone(global_field_order["feature_spec"])
+
         source_requirements = {
             record["requirement_id"]
             for record in catalog["requirements"]
