@@ -32,7 +32,7 @@
 - [ ] CHK017 Confirm each FR/SC has a measurable acceptance test and stable traceability ID.
 - [ ] CHK018 Confirm C ABI, Java/Python, live transport, all other operation schemas, Poll/Cancel/Process, retries, and server-initiated behavior are explicit exclusions.
 - [ ] CHK019 Confirm no public raw-send or arbitrary-transport injection path is added and any API examples are executable/doctested.
-- [ ] CHK020 Confirm the optional request Time Stamp is represented as Date-Time, an explicit caller value is preserved exactly and absence stays absent, no countdown-derived outgoing value is exposed under the OD-004 scope disposition, and Server Correlation Value is excluded from the typed client-initiated request API.
+- [ ] CHK020 Confirm the optional request Time Stamp is represented as Date-Time, an explicit caller value is preserved exactly and absence stays absent, the value is absent from diagnostics, error formatting and exposed error-source chains and never logged, no countdown-derived outgoing value is exposed under the OD-004 scope disposition, and Server Correlation Value is excluded from the typed client-initiated request API.
 - [ ] CHK021 Confirm this Draft records and defers ADR-0012's callsite/test ownership ambiguity to the first secret-bearing operation specification; this Discover Versions-only slice does not authorize secret-bearing requests.
 
 ## Notes
