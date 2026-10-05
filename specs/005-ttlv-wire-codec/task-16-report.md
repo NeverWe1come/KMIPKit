@@ -17,12 +17,23 @@ Local host: Windows, Rust `1.99.0`; supported-platform CI remains required.
   LLVM function filename tables because of macro expansion. Such entries are
   replaced by `__external_source__`; external `files` entries and workspace
   source paths remain strictly validated.
+- Scope resolution: this is a narrow T016 correction to the required coverage
+  verification path. A supported LLVM export included a proc-macro registry
+  path in a function's filename table without a corresponding coverage file;
+  rejecting that metadata made the repository coverage check fail before it
+  could assess workspace sources. T016 now authorizes normalization of those
+  external function-table entries only. It does not relax validation of
+  coverage `files` records, source paths, or the exact changed-source scan and
+  does not change KMIPKit's product API or protocol boundary.
 - Updated the current verification tree and traceability map to the test
   support paths.
 
 The normalizer change followed test-first evidence: the new regression test
 failed on the external `static_assertions` source path before the fix and passed
-after it. The Red and Green commits are `90543e5` and `8dfcb3a`.
+after it. The Red, Green, and Refactor commits are `90543e5`, `8dfcb3a`, and
+`620c8b8` respectively. The Refactor commit extracts the function-table path
+logic into a focused helper without changing behavior; the existing regression
+test and all script tests pass afterward.
 
 ## Verification results
 

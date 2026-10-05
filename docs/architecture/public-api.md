@@ -47,11 +47,11 @@ KMIPKit's 64-level Structure limit.
 The model is not a TTLV wire message and does not establish wire or protocol
 validity. It does not store original framing, encoded lengths, or padding
 bytes, and it does not validate schema-specific field order, cardinality,
-required fields, or operation semantics. The planned public `kmipkit-ttlv`
+required fields, or operation semantics. The public `kmipkit-ttlv`
 codec surface provides the bounded decoder for framing, exact wire lengths,
 endianness, padding, and configured resource limits; it exposes no
-byte-producing encoder. KMIPKIT-0005 may implement and test a private writer,
-but adds no `Client::execute`, permit type/constructor, or production callsite.
+byte-producing encoder. KMIPKIT-0005 implements and tests a private writer, but
+adds no `Client::execute`, permit type/constructor, or production callsite.
 The first client feature/spec owns the execute API, its private permit type and
 constructor, the sole production mint/callsite, and an exact-one audit. That
 execute path must accept only a closed typed request input. The delegated
@@ -143,8 +143,9 @@ and the [pinned 1.9.0 source](https://docs.rs/crate/zeroize/1.9.0/source/src/lib
 In that version, `Vec::zeroize` clears its initialized elements and sets the
 length to zero; it does not guarantee wiping spare or otherwise uninitialized
 allocation capacity. `String::zeroize` delegates to its initialized backing
-vector contents. For the proposed outbound owner, the guarantee is limited to
-zeroizing the initialized encoded byte range before deallocation/owner drop.
+vector contents. For the private outbound owner implemented by KMIPKIT-0005,
+the guarantee is limited to zeroizing the initialized encoded byte range
+before deallocation/owner drop.
 Spare capacity is outside the guarantee unless explicitly initialized and its
 cleanup is verified. This is not a guarantee that every process copy of a
 value has been erased. Caller-side copies, buffers left by reallocations before

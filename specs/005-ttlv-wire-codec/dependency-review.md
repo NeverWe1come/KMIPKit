@@ -1,6 +1,6 @@
 # Client dependency review: KMIP TTLV wire codec
 
-**Status**: Independent dependency review complete; delegated maintainer dispositions recorded 2026-10-05. T002 added only the independently reviewed development-dependency edges to `kmipkit-client`; no normal client dependency has been added. T003 controls any subsequent normal dependency edit.
+**Status**: Independent dependency review complete; delegated maintainer dispositions recorded 2026-10-05. T002 added the reviewed dependencies for Red tests. T003 promoted `kmipkit-ttlv` and `zeroize` to normal client dependencies for the private production writer; the selected versions, features, and normal/development scopes are covered by this review.
 
 This completed record documents the independent review and delegated
 dispositions required before a change to `crates/kmipkit-client/Cargo.toml`.
@@ -19,12 +19,12 @@ package metadata at edit time, resolve the exact `default-features` and
 changing the manifest. An unresolved selection is a hard prerequisite failure
 for any client manifest edit.
 
-## Planned direct dependency candidates
+## Reviewed direct dependencies and candidates
 
-This inventory records the reviewed dependency choices for KMIPKIT-0005. It does not authorize a manifest edit outside T002/T003.
+This inventory records the reviewed dependency choices for KMIPKIT-0005. The implementation's manifest scopes reflect the T002/T003 changes reviewed below.
 
 
-| Package | Proposed scope and pin | Review status |
+| Package | Reviewed scope and pin | Review status |
 | --- | --- | --- |
 | `kmipkit-ttlv` | Workspace dependency; current workspace version `0.1.0`; no declared features; client dev-dependency for Red tests, then normal dependency in T003 | Independent reviewer recommends acceptance; accepted under delegated authorization for the stated scopes |
 | `zeroize` | Workspace dependency `=1.9.0`, `default-features = false`, feature `alloc`; client dev-dependency for Red tests, then normal dependency in T003 | Independent reviewer recommends acceptance with the documented performance caveat; accepted under delegated authorization |
