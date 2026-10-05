@@ -50,8 +50,8 @@ pub fn decode(bytes: &[u8]) -> Result<Item, DecodeError> {
 /// use kmipkit_ttlv::{ItemType, ValueView};
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// // OASIS KMIP Specification v2.1 §§10.1.2, 10.1.5, 11.23, and 11.56;
-/// // KMIPKIT-0005-NR-002, KMIPKIT-0005-NR-005,
+/// // OASIS KMIP Specification v2.1 §§10.1.1–10.1.3, 10.1.5, 11.23, and 11.56;
+/// // KMIPKIT-0005-NR-001, NR-002, NR-004, NR-005,
 /// // KMIPKIT-REQ-SPEC-10.1.5-001-002, and KMIPKIT-REQ-SPEC-11.56-001.
 /// // Generic order, repeated Tags, and unknown mask/Enumeration values are
 /// // KMIPKit project behavior under KMIPKIT-0005-FR-005. Checking padding
