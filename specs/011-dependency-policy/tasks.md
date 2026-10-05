@@ -30,7 +30,7 @@
 
 ## Phase 3: Refactor, convergence, and final evidence
 
-- [ ] T016 [US1] Make one separate Refactor commit after Green: reduce duplication in validator/runner logic without changing behavior; rerun focused tests and retain distinct Red, Green, and Refactor commit evidence.
+- [x] T016 [US1] Make one separate Refactor commit after Green: reduce duplication in validator/runner logic without changing behavior; rerun focused tests and retain distinct Red, Green, and Refactor commit evidence.
 - [ ] T019 [US3] Run `/speckit-converge` after implementation and Refactor. Add any remaining buildable gaps to this task list, implement each with Red/Green/Refactor commits, and repeat convergence until no buildable gap remains.
 - [ ] T017 [US1] After convergence is clear, run the full dependency policy for root/fuzz and all supported targets; verify FR-013 produces no wildcard or missing-license finding and no lockfile or resolved-version change; run Python/PowerShell checks, formatting, Clippy, workspace tests/docs, generators, coverage, and Linux/Windows/macOS CI. Record commands/results, lockfile immutability, and environment limitations.
 - [ ] T018 [US2] Obtain independent QA and security reviews of the final spec and implementation, including exception validation, policy configuration, tool review, workflow permissions/fork routing, and diagnostic output. Resolve all blocking/high findings. If a review or convergence adds work, repeat TDD, convergence, full affected verification, QA, and security review before proceeding. Reviewer-owned checklists must be completed by the reviewers.

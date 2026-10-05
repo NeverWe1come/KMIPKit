@@ -36,6 +36,12 @@ fail. Cached advisory data alone is not a successful fresh scan. The check
 does not update manifests or lockfiles; it uses locked operations and compares
 lockfile hashes so an accidental change fails.
 
+Tool upgrades require a reviewed change that updates the exact runner pin,
+the documented local version, and this independent tool review together.
+Re-run the policy against both workspaces and verify the new release,
+checksum, toolchain requirements, and advisory behavior before changing the
+pin.
+
 The [empty exception register](../../specification/compliance/dependency-policy-exceptions.json)
 is the source of exception records. `.cargo/deny.toml` carries only the
 corresponding tool-native entries. The validator checks both directions so an

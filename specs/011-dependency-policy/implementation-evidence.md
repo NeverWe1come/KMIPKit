@@ -197,3 +197,34 @@ Ran 1 test ... OK
 git diff --check
 passed
 ```
+
+
+## Refactor evidence: T016
+
+Refactor commit `f75a901` consolidates the two duplicated JSON findings-file read/type-check branches in `main` into one path. It preserves the existing order and messages for malformed finding data, non-source exceptions without `--findings`, and findings supplied without registered exceptions; policy matching is unchanged. Red and Green feature commits remain distinct: baseline contract Red `2285fc8`, T009/T015 Green `91ee32b`, traceability Red `54a298a`, and T011 Red/Green pairs `af431b3`/`81c0675` and `609933b`/`9d5210e`.
+
+The complete Python contract suite passed before the Refactor commit (98 tests, four skips) and after it:
+
+```text
+python -X utf8 -m unittest discover -s scripts/tests -p 'test_*.py' -v
+Ran 98 tests ... OK (skipped=4)
+```
+
+The skips are environment-conditional coverage checks and the Windows directory-symlink privilege check; no test failed. `git diff --check` passed.
+
+
+## Independent review follow-up: T009/T015 acceptance and traceability
+
+The first independent review found that the scheduled job did not print `ACTIVE_RELEASE_REF`, and that FR-004, FR-011, and SC-006 pointed to tests that did not exercise their stated acceptance criteria. The review otherwise passed the PR trigger, runner routing, read-only permissions, and daily checkout behavior.
+
+Added test-only Red commit `0ce8856`. The focused workflow and traceability suites produced five behavioral assertion failures and no errors: the schedule did not report its active ref, the tool-upgrade review instruction was absent, and the three traceability rows linked to different test methods than the requirement-specific contracts.
+
+Green now prints both the active release ref and scanned commit. The security guide requires a reviewed tool upgrade to update the exact runner pin, local documentation, and independent review together. The CSV links FR-004 to the runner's online RustSec evidence test, and FR-011/SC-006 to a documentation contract that checks the reproducible command, tool version, both workspaces, and review process.
+
+```text
+python -X utf8 -m unittest scripts.tests.test_workflow scripts.tests.test_requirement_traceability -v
+Ran 16 tests ... OK
+
+git diff --check
+passed
+```
