@@ -266,6 +266,24 @@ class MessageModelTraceabilityTests(unittest.TestCase):
         for reference in field_order_refs:
             self.assertTrue(self._is_executable_test_ref(reference), reference)
 
+        changed_ttlv_sources = {
+            "crates/kmipkit-ttlv/src/lib.rs",
+            "crates/kmipkit-ttlv/src/structure.rs",
+            "crates/kmipkit-ttlv/src/value.rs",
+        }
+        for requirement_id in (
+            "KMIPKIT-0006-FR-017",
+            "KMIPKIT-0006-SC-006",
+            "KMIPKIT-0006-SC-007",
+        ):
+            implementation_paths = set(
+                by_id[requirement_id]["implementation_location"].split("; ")
+            )
+            self.assertTrue(
+                changed_ttlv_sources.issubset(implementation_paths),
+                requirement_id,
+            )
+
         global_field_order = next(
             record
             for record in catalog["requirements"]
