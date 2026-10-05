@@ -3,6 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
+use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, ValueView};
 #[cfg(test)]
 use zeroize::Zeroize;
@@ -10,35 +11,45 @@ use zeroize::Zeroizing;
 
 const HEADER_BYTES: u64 = 8;
 const PADDING_BYTES: u64 = 8;
-const DEFAULT_MAX_MESSAGE_BYTES: u64 = 16 * 1024 * 1024;
 const MODEL_MAX_STRUCTURE_DEPTH: u64 = 64;
-const DEFAULT_MAX_ELEMENTS: u64 = 100_000;
 
-/// Limits are read through a borrowed private seam, so a future public
-/// configuration value can be used without cloning or rebuilding settings.
+/// Private adapter reads the public immutable values without cloning or
+/// reconstructing the per-operation limits instance.
 trait BorrowedLimitsView {
-    fn max_message_bytes(&self) -> u64;
-    fn max_structure_depth(&self) -> u64;
-    fn max_elements(&self) -> u64;
-}
+    fn max_message_bytes(&self) -> u128;
+    fn max_structure_depth(&self) -> u128;
+    fn max_elements(&self) -> u128;
 
-struct DefaultLimits;
-
-impl BorrowedLimitsView for DefaultLimits {
-    fn max_message_bytes(&self) -> u64 {
-        DEFAULT_MAX_MESSAGE_BYTES
-    }
-
-    fn max_structure_depth(&self) -> u64 {
-        MODEL_MAX_STRUCTURE_DEPTH
-    }
-
-    fn max_elements(&self) -> u64 {
-        DEFAULT_MAX_ELEMENTS
+    #[cfg(test)]
+    fn codec_limits(&self) -> Option<&CodecLimits> {
+        None
     }
 }
 
-static DEFAULT_LIMITS: DefaultLimits = DefaultLimits;
+impl BorrowedLimitsView for CodecLimits {
+    fn max_message_bytes(&self) -> u128 {
+        usize_limit_to_u128(self.max_message_bytes())
+    }
+
+    fn max_structure_depth(&self) -> u128 {
+        usize_limit_to_u128(self.max_structure_depth())
+    }
+
+    fn max_elements(&self) -> u128 {
+        usize_limit_to_u128(self.max_elements())
+    }
+
+    #[cfg(test)]
+    fn codec_limits(&self) -> Option<&CodecLimits> {
+        Some(self)
+    }
+}
+
+fn usize_limit_to_u128(value: usize) -> u128 {
+    // Planner counts use u64, so a larger configured limit accepts every
+    // representable plan and can be saturated without narrowing that plan.
+    u128::from(u64::try_from(value).unwrap_or(u64::MAX))
+}
 
 enum EncodeError {
     EmptyBigInteger,
@@ -304,11 +315,33 @@ fn plan_item_length(value_length: u64) -> Result<u32, EncodeError> {
 }
 
 fn check_plan(plan: &EncodingPlan, limits: &impl BorrowedLimitsView) -> Result<(), EncodeError> {
-    let max_depth = limits.max_structure_depth().min(MODEL_MAX_STRUCTURE_DEPTH);
+    check_plan_inner(
+        plan,
+        limits,
+        #[cfg(test)]
+        None,
+    )
+}
 
-    if plan.encoded_bytes > limits.max_message_bytes()
-        || plan.structure_depth > max_depth
-        || plan.elements > limits.max_elements()
+fn check_plan_inner(
+    plan: &EncodingPlan,
+    limits: &impl BorrowedLimitsView,
+    #[cfg(test)] limits_observer: Option<&tests::LimitsIdentityObserver<'_>>,
+) -> Result<(), EncodeError> {
+    #[cfg(test)]
+    if let Some(observer) = limits_observer
+        && let Some(codec_limits) = limits.codec_limits()
+    {
+        observer.record(codec_limits);
+    }
+
+    let max_depth = limits
+        .max_structure_depth()
+        .min(u128::from(MODEL_MAX_STRUCTURE_DEPTH));
+
+    if u128::from(plan.encoded_bytes) > limits.max_message_bytes()
+        || u128::from(plan.structure_depth) > max_depth
+        || u128::from(plan.elements) > limits.max_elements()
     {
         return Err(EncodeError::LimitExceeded);
     }
@@ -360,12 +393,13 @@ impl Drop for EncodedOwner {
 }
 
 fn encode_item(item: &Item) -> Result<EncodedOwner, EncodeError> {
+    let limits = CodecLimits::defaults();
     #[cfg(test)]
     let observer = tests::PayloadCopyObserver::default();
 
     encode_item_with_limits(
         item,
-        &DEFAULT_LIMITS,
+        &limits,
         #[cfg(test)]
         &observer,
     )
@@ -373,11 +407,42 @@ fn encode_item(item: &Item) -> Result<EncodedOwner, EncodeError> {
 
 fn encode_item_with_limits(
     item: &Item,
-    limits: &impl BorrowedLimitsView,
+    limits: &CodecLimits,
     #[cfg(test)] observer: &tests::PayloadCopyObserver,
 ) -> Result<EncodedOwner, EncodeError> {
+    encode_item_inner(
+        item,
+        limits,
+        #[cfg(test)]
+        observer,
+        #[cfg(test)]
+        None,
+    )
+}
+
+#[cfg(test)]
+fn encode_item_with_identity_observer(
+    item: &Item,
+    limits: &CodecLimits,
+    copy_observer: &tests::PayloadCopyObserver,
+    limits_observer: &tests::LimitsIdentityObserver<'_>,
+) -> Result<EncodedOwner, EncodeError> {
+    encode_item_inner(item, limits, copy_observer, Some(limits_observer))
+}
+
+fn encode_item_inner(
+    item: &Item,
+    limits: &CodecLimits,
+    #[cfg(test)] copy_observer: &tests::PayloadCopyObserver,
+    #[cfg(test)] limits_observer: Option<&tests::LimitsIdentityObserver<'_>>,
+) -> Result<EncodedOwner, EncodeError> {
     let plan = EncodingPlan::for_item(item)?;
-    check_plan(&plan, limits)?;
+    check_writer_plan(
+        &plan,
+        limits,
+        #[cfg(test)]
+        limits_observer,
+    )?;
     let capacity = usize::try_from(plan.encoded_bytes).map_err(|_| EncodeError::SizeOverflow)?;
 
     let output = reserve_output_buffer(capacity)?;
@@ -389,12 +454,24 @@ fn encode_item_with_limits(
         let mut writer = Writer {
             bytes: &mut owner.bytes,
             #[cfg(test)]
-            observer,
+            observer: copy_observer,
         };
         writer.write_item(item);
     }
 
     Ok(owner)
+}
+
+fn check_writer_plan(
+    plan: &EncodingPlan,
+    limits: &CodecLimits,
+    #[cfg(test)] limits_observer: Option<&tests::LimitsIdentityObserver<'_>>,
+) -> Result<(), EncodeError> {
+    #[cfg(test)]
+    if let Some(observer) = limits_observer {
+        return check_plan_inner(plan, limits, Some(observer));
+    }
+    check_plan(plan, limits)
 }
 
 fn reserve_output_buffer(capacity: usize) -> Result<Vec<u8>, EncodeError> {
@@ -612,12 +689,14 @@ mod tests {
     use std::fmt;
     use std::rc::Rc;
 
+    use kmipkit_ttlv::codec::CodecLimits;
     use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
     use static_assertions::assert_not_impl_any;
 
     use super::{
         BorrowedLimitsView, EncodeError, EncodedOwner, EncodingPlan, check_plan,
-        encode_item_with_limits, plan_item_length, reserve_output_buffer,
+        encode_item_with_identity_observer, encode_item_with_limits, plan_item_length,
+        reserve_output_buffer,
     };
 
     const TEST_TAG_RAW: u32 = 0x0042_0173;
@@ -670,16 +749,16 @@ mod tests {
     }
 
     impl BorrowedLimitsView for LimitsView {
-        fn max_message_bytes(&self) -> u64 {
-            self.message_bytes
+        fn max_message_bytes(&self) -> u128 {
+            u128::from(self.message_bytes)
         }
 
-        fn max_structure_depth(&self) -> u64 {
-            self.structure_depth
+        fn max_structure_depth(&self) -> u128 {
+            u128::from(self.structure_depth)
         }
 
-        fn max_elements(&self) -> u64 {
-            self.elements
+        fn max_elements(&self) -> u128 {
+            u128::from(self.elements)
         }
     }
 
@@ -716,6 +795,36 @@ mod tests {
 
         pub(super) fn record_copy(&self) {
             self.calls.set(self.calls.get() + 1);
+        }
+    }
+
+    pub(super) struct LimitsIdentityObserver<'a> {
+        expected: &'a CodecLimits,
+        calls: Cell<usize>,
+        same_instance: Cell<bool>,
+    }
+
+    impl<'a> LimitsIdentityObserver<'a> {
+        pub(super) fn new(expected: &'a CodecLimits) -> Self {
+            Self {
+                expected,
+                calls: Cell::new(0),
+                same_instance: Cell::new(true),
+            }
+        }
+
+        pub(super) fn record(&self, actual: &CodecLimits) {
+            self.calls.set(self.calls.get().saturating_add(1));
+            self.same_instance
+                .set(self.same_instance.get() && std::ptr::eq(self.expected, actual));
+        }
+
+        fn calls(&self) -> usize {
+            self.calls.get()
+        }
+
+        fn always_same_instance(&self) -> bool {
+            self.same_instance.get()
         }
     }
 
@@ -1212,6 +1321,26 @@ mod tests {
     }
 
     #[test]
+    fn writer_uses_the_same_borrowed_codec_limits_instance_for_each_operation() {
+        // KMIPKit's private per-operation configuration boundary: FR-007.
+        let limits = CodecLimits::new(16, 0, 1).expect("limits fit the model boundary");
+        let observer = LimitsIdentityObserver::new(&limits);
+        let copy_observer = PayloadCopyObserver::default();
+        let input = item(Value::byte_string(vec![0x5a]));
+
+        for _ in 0..2 {
+            let output =
+                encode_item_with_identity_observer(&input, &limits, &copy_observer, &observer)
+                    .expect("16 encoded bytes fit the exact configured byte limit");
+            assert_eq!(output.as_bytes().len(), limits.max_message_bytes());
+        }
+
+        assert_eq!(observer.calls(), 2);
+        assert!(observer.always_same_instance());
+        assert_eq!(copy_observer.calls(), 2);
+    }
+
+    #[test]
     fn item_length_planner_accepts_u32_max_without_allocating() {
         // OASIS KMIP Specification v2.1 §10.1.3, KMIPKIT-0005-NR-004: Item Length
         // is unsigned 32-bit. This synthetic maximum is never materialized.
@@ -1247,7 +1376,7 @@ mod tests {
         // Project-only security/error behavior under KMIPKIT-0005-FR-009. The
         // observer sits at the production payload-copy boundary. The item is
         // rejected by preflight before the output buffer or any payload copy.
-        let limits = LimitsView::new(4, MODEL_MAX_STRUCTURE_DEPTH, DEFAULT_MAX_ELEMENTS);
+        let limits = CodecLimits::new(4, 64, 100_000).expect("depth is within the model");
         let copy_observer = PayloadCopyObserver::default();
         let payload = vec![0xa5, 0x5a, 0xa5];
         let input = item(Value::byte_string(payload));
@@ -1260,7 +1389,7 @@ mod tests {
     #[test]
     fn preflight_error_does_not_format_payload_bytes() {
         // Project-only payload-redaction behavior under KMIPKIT-0005-FR-009.
-        let limits = LimitsView::new(4, MODEL_MAX_STRUCTURE_DEPTH, DEFAULT_MAX_ELEMENTS);
+        let limits = CodecLimits::new(4, 64, 100_000).expect("depth is within the model");
         let payload = vec![0xde, 0xad, 0xbe, 0xef];
         let input = item(Value::byte_string(payload));
         let copy_observer = PayloadCopyObserver::default();

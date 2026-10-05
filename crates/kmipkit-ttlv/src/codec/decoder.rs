@@ -2,13 +2,10 @@
 
 use std::str;
 
-use super::{DecodeError, DecodeErrorKind};
+use super::{CodecLimits, DecodeError, DecodeErrorKind};
 use crate::{Item, ModelError, RawTag, Structure, Tag, Value};
 
 const HEADER_LENGTH: usize = 8;
-const DEFAULT_MAX_MESSAGE_BYTES: usize = 16 * 1024 * 1024;
-const DEFAULT_MAX_STRUCTURE_DEPTH: usize = 64;
-const DEFAULT_MAX_ELEMENTS: usize = 100_000;
 
 /// Decodes exactly one complete TTLV item using the default resource limits.
 ///
@@ -21,11 +18,45 @@ const DEFAULT_MAX_ELEMENTS: usize = 100_000;
 /// Returns a payload-free [`DecodeError`] for malformed input, unsupported or
 /// unallocated Tags, extra trailing bytes, or an exceeded default limit.
 pub fn decode(bytes: &[u8]) -> Result<Item, DecodeError> {
-    if bytes.len() > DEFAULT_MAX_MESSAGE_BYTES {
-        return Err(DecodeError::new(DecodeErrorKind::MessageTooLarge, 0));
-    }
+    decode_with_limits(bytes, &CodecLimits::defaults())
+}
 
-    let mut state = DecodeState { elements: 0 };
+/// Decodes exactly one complete TTLV item using the supplied immutable limits.
+///
+/// The input is checked against the message-size limit before traversal.
+/// Declared lengths, Structure depth, and total Item count are checked before
+/// accepting each Item or reserving storage for a peer-provided payload. A
+/// Structure root has depth one, a non-Structure root has depth zero, and the
+/// root counts toward the element limit. Existing model constructors use
+/// infallible allocations; allocation failure inside those constructors may
+/// abort even though decoder-owned payload reservations are fallible.
+///
+/// # Errors
+///
+/// Returns a payload-free [`DecodeError`] for malformed input, unsupported or
+/// unallocated Tags, extra trailing bytes, or an exceeded per-call limit.
+pub fn decode_with_limits(bytes: &[u8], limits: &CodecLimits) -> Result<Item, DecodeError> {
+    decode_inner(
+        bytes,
+        limits,
+        #[cfg(test)]
+        None,
+    )
+}
+
+fn decode_inner(
+    bytes: &[u8],
+    limits: &CodecLimits,
+    #[cfg(test)] observer: Option<&super::limits_tests::DecodeObserver>,
+) -> Result<Item, DecodeError> {
+    preflight_message_length(bytes.len(), limits)?;
+
+    let mut state = DecodeState {
+        elements: 0,
+        limits,
+        #[cfg(test)]
+        observer,
+    };
     let (item, end) = decode_item(bytes, 0, bytes.len(), 0, &mut state)?;
     if end != bytes.len() {
         return Err(DecodeError::new(DecodeErrorKind::TrailingBytes, end));
@@ -33,25 +64,70 @@ pub fn decode(bytes: &[u8]) -> Result<Item, DecodeError> {
     Ok(item)
 }
 
-struct DecodeState {
-    elements: usize,
+#[cfg(test)]
+pub(super) fn decode_with_observer<'a>(
+    bytes: &[u8],
+    limits: &'a CodecLimits,
+    observer: &'a super::limits_tests::DecodeObserver,
+) -> Result<Item, DecodeError> {
+    decode_inner(bytes, limits, Some(observer))
 }
 
-impl DecodeState {
+fn preflight_message_length(
+    message_length: usize,
+    limits: &CodecLimits,
+) -> Result<(), DecodeError> {
+    if message_length > limits.max_message_bytes() {
+        return Err(DecodeError::new(DecodeErrorKind::MessageTooLarge, 0));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+pub(super) fn test_preflight_message_length(
+    message_length: usize,
+    limits: &CodecLimits,
+) -> Result<(), DecodeError> {
+    preflight_message_length(message_length, limits)
+}
+
+struct DecodeState<'a> {
+    elements: usize,
+    limits: &'a CodecLimits,
+    #[cfg(test)]
+    observer: Option<&'a super::limits_tests::DecodeObserver>,
+}
+
+impl DecodeState<'_> {
     fn consume_element(&mut self, offset: usize) -> Result<(), DecodeError> {
-        let next = self
-            .elements
-            .checked_add(1)
-            .ok_or_else(|| DecodeError::new(DecodeErrorKind::ElementLimitExceeded, offset))?;
-        if next > DEFAULT_MAX_ELEMENTS {
-            return Err(DecodeError::new(
-                DecodeErrorKind::ElementLimitExceeded,
-                offset,
-            ));
-        }
-        self.elements = next;
+        self.elements = next_element_count(self.elements, self.limits, offset)?;
         Ok(())
     }
+}
+
+fn next_element_count(
+    current: usize,
+    limits: &CodecLimits,
+    offset: usize,
+) -> Result<usize, DecodeError> {
+    let next = current
+        .checked_add(1)
+        .ok_or_else(|| DecodeError::new(DecodeErrorKind::ElementLimitExceeded, offset))?;
+    if next > limits.max_elements() {
+        return Err(DecodeError::new(
+            DecodeErrorKind::ElementLimitExceeded,
+            offset,
+        ));
+    }
+    Ok(next)
+}
+
+#[cfg(test)]
+pub(super) fn test_next_element_count(
+    current: usize,
+    limits: &CodecLimits,
+) -> Result<usize, DecodeError> {
+    next_element_count(current, limits, 0)
 }
 
 fn decode_item(
@@ -59,14 +135,22 @@ fn decode_item(
     start: usize,
     parent_end: usize,
     parent_structure_depth: usize,
-    state: &mut DecodeState,
+    state: &mut DecodeState<'_>,
 ) -> Result<(Item, usize), DecodeError> {
     state.consume_element(start)?;
 
     let header = parse_item_header(bytes, start, parent_end, parent_structure_depth)?;
-    let structure_depth = structure_depth_for(header.item_kind, parent_structure_depth, start)?;
-    let span = item_span(&header, start)?;
+    let structure_depth = structure_depth_for(
+        header.item_kind,
+        parent_structure_depth,
+        start,
+        state.limits,
+    )?;
+    let span = item_span(&header, start, state.limits)?;
     validate_parent_boundary(&span, parent_end, parent_structure_depth)?;
+    if span.exceeds_message_limit {
+        return Err(DecodeError::new(DecodeErrorKind::MessageTooLarge, start));
+    }
     let value_bytes = bytes
         .get(span.value_start..span.value_end)
         .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedValue, span.value_start))?;
@@ -157,6 +241,7 @@ fn structure_depth_for(
     item_kind: ItemKind,
     parent_structure_depth: usize,
     offset: usize,
+    limits: &CodecLimits,
 ) -> Result<usize, DecodeError> {
     if item_kind != ItemKind::Structure {
         return Ok(parent_structure_depth);
@@ -165,7 +250,7 @@ fn structure_depth_for(
     let depth = parent_structure_depth
         .checked_add(1)
         .ok_or_else(|| DecodeError::new(DecodeErrorKind::StructureDepthExceeded, offset))?;
-    if depth > DEFAULT_MAX_STRUCTURE_DEPTH {
+    if depth > limits.max_structure_depth() {
         return Err(DecodeError::new(
             DecodeErrorKind::StructureDepthExceeded,
             offset,
@@ -174,14 +259,27 @@ fn structure_depth_for(
     Ok(depth)
 }
 
+#[cfg(test)]
+pub(super) fn test_structure_depth(
+    parent_structure_depth: usize,
+    limits: &CodecLimits,
+) -> Result<usize, DecodeError> {
+    structure_depth_for(ItemKind::Structure, parent_structure_depth, 0, limits)
+}
+
 struct ItemSpan {
     item_start: usize,
     value_start: usize,
     value_end: usize,
     item_end: usize,
+    exceeds_message_limit: bool,
 }
 
-fn item_span(header: &ItemHeader, item_start: usize) -> Result<ItemSpan, DecodeError> {
+fn item_span(
+    header: &ItemHeader,
+    item_start: usize,
+    limits: &CodecLimits,
+) -> Result<ItemSpan, DecodeError> {
     let value_end = checked_end_offset(
         header.value_start,
         header.item_length,
@@ -199,6 +297,10 @@ fn item_span(header: &ItemHeader, item_start: usize) -> Result<ItemSpan, DecodeE
         value_start: header.value_start,
         value_end,
         item_end,
+        // The complete input was already size-preflighted. Keep the limit in
+        // span validation as a defense-in-depth invariant, but report wire
+        // truncation or parent-boundary errors first below.
+        exceeds_message_limit: item_end > limits.max_message_bytes(),
     })
 }
 
@@ -239,6 +341,11 @@ fn checked_end_offset(
         .ok_or_else(|| DecodeError::new(error_kind, error_offset))
 }
 
+#[cfg(test)]
+pub(super) fn test_checked_end(start: usize, extent: usize) -> Result<usize, DecodeError> {
+    checked_end_offset(start, extent, DecodeErrorKind::TruncatedValue, 0)
+}
+
 fn decode_value(
     bytes: &[u8],
     value_start: usize,
@@ -246,7 +353,7 @@ fn decode_value(
     value_bytes: &[u8],
     item_kind: ItemKind,
     structure_depth: usize,
-    state: &mut DecodeState,
+    state: &mut DecodeState<'_>,
 ) -> Result<Value, DecodeError> {
     let value = match item_kind {
         ItemKind::Structure => {
@@ -267,7 +374,13 @@ fn decode_value(
         }
         ItemKind::Integer => Value::integer(read_i32(value_bytes, value_start)?),
         ItemKind::LongInteger => Value::long_integer(read_i64(value_bytes, value_start)?),
-        ItemKind::BigInteger => Value::big_integer(copy_payload(value_bytes, value_start)?),
+        ItemKind::BigInteger => Value::big_integer(copy_payload(
+            value_bytes,
+            value_start,
+            state.limits,
+            #[cfg(test)]
+            state.observer,
+        )?),
         ItemKind::Enumeration => Value::enumeration(read_u32(value_bytes, value_start)?),
         ItemKind::Boolean => {
             let raw = read_u64(value_bytes, value_start)?;
@@ -285,12 +398,24 @@ fn decode_value(
         ItemKind::TextString => {
             str::from_utf8(value_bytes)
                 .map_err(|_| DecodeError::new(DecodeErrorKind::InvalidUtf8, value_start))?;
-            let owned = copy_payload(value_bytes, value_start)?;
+            let owned = copy_payload(
+                value_bytes,
+                value_start,
+                state.limits,
+                #[cfg(test)]
+                state.observer,
+            )?;
             let text = String::from_utf8(owned)
                 .map_err(|_| DecodeError::new(DecodeErrorKind::InvalidUtf8, value_start))?;
             Value::text_string(text)
         }
-        ItemKind::ByteString => Value::byte_string(copy_payload(value_bytes, value_start)?),
+        ItemKind::ByteString => Value::byte_string(copy_payload(
+            value_bytes,
+            value_start,
+            state.limits,
+            #[cfg(test)]
+            state.observer,
+        )?),
         ItemKind::DateTime => Value::date_time(read_i64(value_bytes, value_start)?),
         ItemKind::Interval => Value::interval(read_u32(value_bytes, value_start)?),
         ItemKind::DateTimeExtended => {
@@ -374,11 +499,27 @@ fn padding_length(item_kind: ItemKind, value_length: usize) -> usize {
     }
 }
 
-fn copy_payload(bytes: &[u8], offset: usize) -> Result<Vec<u8>, DecodeError> {
+fn copy_payload(
+    bytes: &[u8],
+    offset: usize,
+    limits: &CodecLimits,
+    #[cfg(test)] observer: Option<&super::limits_tests::DecodeObserver>,
+) -> Result<Vec<u8>, DecodeError> {
+    if bytes.len() > limits.max_message_bytes() {
+        return Err(DecodeError::new(DecodeErrorKind::MessageTooLarge, offset));
+    }
     let mut owned = Vec::new();
+    #[cfg(test)]
+    if let Some(observer) = observer {
+        observer.record_reservation(bytes.len());
+    }
     owned
         .try_reserve_exact(bytes.len())
         .map_err(|_| DecodeError::new(DecodeErrorKind::AllocationFailed, offset))?;
+    #[cfg(test)]
+    if let Some(observer) = observer {
+        observer.record_peer_copy();
+    }
     owned.extend_from_slice(bytes);
     Ok(owned)
 }

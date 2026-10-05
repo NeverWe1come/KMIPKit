@@ -4,14 +4,15 @@
 //! This crate checks 24-bit raw tag representation, tag allocation, the
 //! relationship between a value representation and its Item Type, and the
 //! local maximum Structure depth of 64. It retains Structure child order and
-//! exposes payloads through borrowed callbacks. [`codec::decode`] validates
+//! exposes payloads through borrowed callbacks. [`crate::codec::decode`] validates
 //! framing, type-specific lengths, required padding extents, and default
-//! resource limits before returning exactly one item. It does not encode TTLV
-//! or validate schema-specific field order, cardinality, or operation
-//! semantics. Values built with the model constructors satisfy only model
-//! constraints; construction does not establish wire validity. Decoded values
-//! pass generic wire checks but are not validated against a KMIP operation
-//! schema.
+//! resource limits before returning exactly one item;
+//! [`crate::codec::decode_with_limits`] accepts immutable per-call limits. It
+//! does not encode TTLV or validate schema-specific field order, cardinality,
+//! or operation semantics. Values
+//! built with the model constructors satisfy only model constraints;
+//! construction does not establish wire validity. Decoded values pass generic
+//! wire checks but are not validated against a KMIP operation schema.
 //! Owned payloads are held in private zeroizing allocations and are cleared
 //! when dropped.
 //!
