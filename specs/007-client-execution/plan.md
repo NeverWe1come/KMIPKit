@@ -59,7 +59,7 @@ The trait should expose one synchronous exchange per explicit `execute` call. Th
 - Construct the request through the typed operation and message model; validate header/option values before minting the private permit.
 - Mint the private permit only inside `Client::execute`, at the only call to the private writer. Preserve the same borrowed per-call `CodecLimits`; do not clone or reconstruct limits.
 - Keep the encoded owner alive until `Transport::exchange` returns, including success, short write, and error paths. Drop then zeroize initialized bytes.
-- Preserve a caller-supplied optional request Time Stamp Date-Time exactly and omit it when absent. Do not generate a Time Stamp or accept a countdown-timer source while OD-004 remains unresolved.
+- Preserve a caller-supplied optional request Time Stamp Date-Time exactly and omit it when absent. Do not generate a Time Stamp or expose a countdown-timer source; countdown-derived output is outside this feature's scope under OD-004.
 - Never serialize Server Correlation Value in a client-initiated request; Client Correlation Value remains optional metadata and is not used for item matching.
 - Bound the response in the transport while reading; independently reject any oversized returned buffer before calling the decoder. Decoder limits remain separate and unchanged.
 - Advance delivery state monotonically: before any write `NotSent`; once any request bytes may have reached the peer `PossiblySent`; once response bytes begin `ResponseStarted`. Never infer that a possibly sent operation is safe to replay.
