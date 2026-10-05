@@ -92,10 +92,10 @@ machine-readable compliance traceability artifact from this planning map.
 
 ## Phase 6: Convergence
 
-- [ ] T028 [US2] Run waiver-free root and fuzz cargo-deny scans, parse only complete structured findings, match findings one-to-one against the exact exception register, reject wildcard and architecture-ban findings, then run the configured policy and report matched exception IDs only after success per FR-003, FR-004, FR-006, FR-007, and US2/AC1 (partial).
-- [ ] T029 [US2] Add exact package/version yanked exceptions to the register schema and cargo-deny `advisories.ignore` correspondence, with Red/Green tests proving another version or package remains rejected per FR-004 and US2/AC1 (partial).
-- [ ] T030 [US2] Detect and reject cargo-deny local exception files discovered from either workspace manifest's ancestor chain, and cover each supported filename with a negative test per FR-003 and FR-007 (partial).
+- [x] T028 [US2] Run waiver-free root and fuzz cargo-deny scans, parse only complete structured findings, match findings one-to-one against the exact exception register, reject wildcard and architecture-ban findings, then run the configured policy and report matched exception IDs only after success per FR-003, FR-004, FR-006, FR-007, and US2/AC1.
+- [x] T029 [US2] Add exact package/version yanked exceptions to the register schema and cargo-deny `advisories.ignore` correspondence, with Red/Green tests proving another version or package remains rejected per FR-004 and US2/AC1.
+- [x] T030 [US2] Detect and reject cargo-deny local exception files discovered from either workspace manifest's ancestor chain, and cover each supported filename with a negative test per FR-003 and FR-007.
 
 ## Phase 7: Security review convergence
 
-- [ ] T031 [US2] Accept cargo-deny 0.20.2's nonzero summary `helps` counters when they have no individual diagnostic records, while continuing to validate their shape and exact-match errors, warnings, and notes; add a realistic license-warning fixture, update traceability and implementation evidence, and rerun the full root/fuzz dependency-policy command per FR-003 (security review finding).
+- [x] T031 [US2] Accept cargo-deny 0.20.2's nonzero summary `helps` counters when they have no individual diagnostic records, while continuing to validate their shape and exact-match errors, warnings, and notes; add a realistic license-warning fixture, update traceability and implementation evidence, and rerun the full root/fuzz dependency-policy command per FR-003 (security review finding).

@@ -570,3 +570,41 @@ against older head `a0956fc`; fresh Linux, Windows, macOS, and aggregate CI
 evidence remains outstanding. T017 and T018 remain open pending CI and
 independent review; T020 remains open pending the release-base update and
 final review package.
+
+## Phase 7: cargo-deny summary convergence
+
+The independent security review found that cargo-deny 0.20.2 reports
+license-summary `helps` counters (40 for root and 13 for fuzz in the reviewed
+scan) without corresponding diagnostic records. The parser incorrectly
+compared those aggregate counts to individual diagnostics and stopped before
+exception matching. Red commit `16da040` added a realistic summary fixture;
+the focused test failed with `cargo-deny baseline summary does not match its
+diagnostics`. Green commit `213c5ee` now validates all four summary counters
+as nonnegative integers while matching errors, warnings, and notes to their
+diagnostics. The regression also verifies that a malformed `helps` counter
+still fails closed. Refactor commit `e49b4bf` names the summary and
+diagnostic severity sets separately and records why `helps` is excluded from
+diagnostic equality. T031 and implementation tasks T028-T030 are complete.
+
+Post-fix Windows verification:
+
+```text
+python -m unittest discover -s scripts/tests
+Ran 141 tests ... OK (skipped=25)
+
+$env:CARGO_DENY = (Get-Command cargo-deny).Source
+python -m unittest scripts.tests.test_cargo_deny_fixtures
+Ran 18 tests ... OK
+
+pwsh -NoProfile -File scripts/Test-DependencyPolicy.ps1
+Verified cargo-deny 0.20.2
+RustSec root and fuzz: ef6173cbc5c50ec8166f9a5b28f07834144373ee
+Dependency policy checks passed; Cargo.lock and fuzz/Cargo.lock SHA256 hashes are unchanged.
+```
+
+The complete PowerShell runner now reaches both waiver-free baseline scans,
+exact exception validation, and both configured scans. CI run `37386279203`
+targeted pre-fix head `d2f4c29` and is not evidence for this correction.
+T017 remains open for CI on the corrected head; T018 remains open until the
+security reviewer rechecks the fix and completes the reviewer-owned checklist
+and independent QA review.
