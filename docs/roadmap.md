@@ -31,8 +31,9 @@ Parallel feature development must wait until this phase is accepted.
 ## Phase 2: typed KMIP protocol
 
 - Managed objects and attributes.
-- `KMIPKIT-0008-credentials-attestation`: message credentials and attestation models, including truthful Attestation Capable Indicator behavior.
+- `KMIPKIT-0008-credentials-attestation`: credential construction and message credential models; authentication policy; Device Identifier; hashed-password algorithm/timestamp/default rules; conditional credential/header fields; and attestation, including truthful Attestation Capable Indicator behavior. Add exact-clause tests for credential variants and required/conditional fields, authentication policy, Device Identifier handling, hash/default behavior, and indicator truthfulness against supported Attestation Credential creation capability.
 - `KMIPKIT-0009-asynchronous-operations`: client-initiated Poll/Cancel/Process models and explicit pending-operation follow-up using the exact Asynchronous Correlation Value bytes. Tests verify byte-for-byte preservation in both Poll and Cancel requests and no automatic polling or retry. It also owns `KMIPKIT-DISC-039`/§6.1.41 Query Asynchronous Requests response mapping: review the exact normative source conflict, document and test the decision, and assume no resolution in KMIPKIT-0006.
+- `KMIPKIT-0010-profile-conformance`: profile-specific requirement applicability, defaults, validation, and claims; each claimed profile must have exact OASIS Profile clause mapping and passing executable tests before any support claim.
 - All client initiated request and response types.
 - Profile-specific validation.
 - KMIP protocol asynchronous outcome model.

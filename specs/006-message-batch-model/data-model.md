@@ -60,7 +60,7 @@ Known fields MUST appear in the exact order shown in the tables below. Unknown b
 7. Server Correlation Value — Text String, optional.
 8. Batch Count — Integer, required and derived from item count.
 
-The exact conditional-presence checks for authentication are deferred to the credential and profile specifications; attestation checks belong to `KMIPKIT-0008-credentials-attestation`. This feature preserves and exposes those fields but does not claim the corresponding credential/profile semantics.
+The exact conditional-presence and credential rules are deferred to `KMIPKIT-0008-credentials-attestation`; profile-specific applicability/default rules belong to `KMIPKIT-0010-profile-conformance`. Attestation checks also belong to `KMIPKIT-0008-credentials-attestation`. KMIPKIT-0008 must add exact-clause tests for credential variants, required/conditional fields, authentication policy, Device Identifier handling, hashed-password algorithm/timestamp/default behavior, and Attestation Capable Indicator truthfulness. KMIPKIT-0010 must map each claimed profile to its exact OASIS clauses and executable tests. This feature preserves and exposes these fields but does not claim the corresponding authentication, credential, attestation, or profile semantics.
 
 ### Response Batch Item (Specification Table 399)
 
