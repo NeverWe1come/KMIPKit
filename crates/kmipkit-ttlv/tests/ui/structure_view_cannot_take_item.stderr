@@ -1,0 +1,13 @@
+error[E0508]: cannot move out of type `[Item]`, a non-copy slice
+ --> tests/ui/structure_view_cannot_take_item.rs:7:29
+  |
+7 |     let _owned_item: Item = view.children()[0];
+  |                             ^^^^^^^^^^^^^^^^^^
+  |                             |
+  |                             cannot move out of here
+  |                             move occurs because value has type `Item`, which does not implement the `Copy` trait
+  |
+help: consider borrowing here
+  |
+7 |     let _owned_item: Item = &view.children()[0];
+  |                             +
