@@ -1,114 +1,14 @@
 //! Checked, bounded parsing of a single TTLV item.
 
-use std::fmt::{self, Display, Formatter};
 use std::str;
 
-use crate::{Item, ModelError, RawTag, Structure, Value};
+use super::{DecodeError, DecodeErrorKind};
+use crate::{Item, ModelError, RawTag, Structure, Tag, Value};
 
 const HEADER_LENGTH: usize = 8;
 const DEFAULT_MAX_MESSAGE_BYTES: usize = 16 * 1024 * 1024;
 const DEFAULT_MAX_STRUCTURE_DEPTH: usize = 64;
 const DEFAULT_MAX_ELEMENTS: usize = 100_000;
-
-/// The safe category of a TTLV decoding failure.
-///
-/// This value contains no input bytes or decoded payload.
-#[non_exhaustive]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum DecodeErrorKind {
-    /// The complete input exceeds the default message-size limit.
-    MessageTooLarge,
-    /// The input ends before a complete eight-byte header is available.
-    TruncatedHeader,
-    /// The input ends before the declared Item Value is available.
-    TruncatedValue,
-    /// A type's declared Item Length is not valid for that type.
-    InvalidItemLength,
-    /// A Big Integer has zero Item Value octets.
-    EmptyBigInteger,
-    /// A Text String contains bytes that are not valid UTF-8.
-    InvalidUtf8,
-    /// A Boolean is not encoded as the defined eight-byte false or true value.
-    InvalidBoolean,
-    /// The Item Type byte is not one of the eleven represented by the model.
-    UnsupportedItemType,
-    /// Bytes remain after the single complete root item.
-    TrailingBytes,
-    /// A child item extends beyond its parent Structure boundary.
-    StructureBoundary,
-    /// A received Tag is classified as Reserved by the KMIP 2.1 catalog.
-    ReservedTag,
-    /// A Tag is not assigned or in an accepted extension range.
-    UnallocatedTag,
-    /// Required non-Structure padding bytes are missing.
-    InvalidPaddingExtent,
-    /// The nested Structure depth exceeds the generic model's limit.
-    StructureDepthExceeded,
-    /// The total number of Items exceeds the default element limit.
-    ElementLimitExceeded,
-    /// A decoder-owned payload reservation failed.
-    AllocationFailed,
-    /// A parsed value violates a generic model construction constraint.
-    ModelConstraint,
-}
-
-impl Display for DecodeErrorKind {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        let message = match self {
-            Self::MessageTooLarge => "message exceeds the byte limit",
-            Self::TruncatedHeader => "truncated TTLV header",
-            Self::TruncatedValue => "truncated TTLV value",
-            Self::InvalidItemLength => "invalid TTLV Item Length",
-            Self::EmptyBigInteger => "empty Big Integer value",
-            Self::InvalidUtf8 => "Text String is not valid UTF-8",
-            Self::InvalidBoolean => "invalid TTLV Boolean value",
-            Self::UnsupportedItemType => "unsupported TTLV Item Type",
-            Self::TrailingBytes => "bytes remain after the complete TTLV item",
-            Self::StructureBoundary => "child item exceeds its Structure boundary",
-            Self::ReservedTag => "received a Reserved Tag",
-            Self::UnallocatedTag => "Tag is not allocated by the KMIP 2.1 catalog",
-            Self::InvalidPaddingExtent => "invalid TTLV padding extent",
-            Self::StructureDepthExceeded => "Structure depth exceeds the default limit",
-            Self::ElementLimitExceeded => "item count exceeds the default limit",
-            Self::AllocationFailed => "unable to reserve decoder-owned storage",
-            Self::ModelConstraint => "decoded item violates a model constraint",
-        };
-        formatter.write_str(message)
-    }
-}
-
-/// A payload-free TTLV decoding error with a safe input offset.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct DecodeError {
-    kind: DecodeErrorKind,
-    offset: usize,
-}
-
-impl DecodeError {
-    const fn new(kind: DecodeErrorKind, offset: usize) -> Self {
-        Self { kind, offset }
-    }
-
-    /// Returns the safe category of this decoding failure.
-    #[must_use]
-    pub const fn kind(&self) -> DecodeErrorKind {
-        self.kind
-    }
-
-    /// Returns the byte offset at which decoding detected the failure.
-    #[must_use]
-    pub const fn offset(&self) -> usize {
-        self.offset
-    }
-}
-
-impl Display for DecodeError {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{} at byte offset {}", self.kind, self.offset)
-    }
-}
-
-impl std::error::Error for DecodeError {}
 
 /// Decodes exactly one complete TTLV item using the default resource limits.
 ///
@@ -163,9 +63,47 @@ fn decode_item(
 ) -> Result<(Item, usize), DecodeError> {
     state.consume_element(start)?;
 
-    let header_end = start
-        .checked_add(HEADER_LENGTH)
-        .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedHeader, start))?;
+    let header = parse_item_header(bytes, start, parent_end, parent_structure_depth)?;
+    let structure_depth = structure_depth_for(header.item_kind, parent_structure_depth, start)?;
+    let span = item_span(&header, start)?;
+    validate_parent_boundary(&span, parent_end, parent_structure_depth)?;
+    let value_bytes = bytes
+        .get(span.value_start..span.value_end)
+        .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedValue, span.value_start))?;
+    let value = decode_value(
+        bytes,
+        span.value_start,
+        span.value_end,
+        value_bytes,
+        header.item_kind,
+        structure_depth,
+        state,
+    )?;
+    let item = Item::new(header.tag, value)
+        .map_err(|_| DecodeError::new(DecodeErrorKind::ModelConstraint, start))?;
+    Ok((item, span.item_end))
+}
+
+struct ItemHeader {
+    tag: Tag,
+    item_kind: ItemKind,
+    item_length: usize,
+    value_start: usize,
+    length_offset: usize,
+}
+
+fn parse_item_header(
+    bytes: &[u8],
+    start: usize,
+    parent_end: usize,
+    parent_structure_depth: usize,
+) -> Result<ItemHeader, DecodeError> {
+    let header_end = checked_end_offset(
+        start,
+        HEADER_LENGTH,
+        DecodeErrorKind::TruncatedHeader,
+        start,
+    )?;
     if header_end > parent_end {
         let kind = if parent_structure_depth > 0 {
             DecodeErrorKind::StructureBoundary
@@ -174,26 +112,36 @@ fn decode_item(
         };
         return Err(DecodeError::new(kind, start));
     }
+
     let header = bytes
         .get(start..header_end)
         .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedHeader, start))?;
-    let item_type_offset = start
-        .checked_add(3)
-        .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedHeader, start))?;
-    let item_length_offset = start
-        .checked_add(4)
-        .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedHeader, start))?;
-
+    let item_type_offset = checked_end_offset(start, 3, DecodeErrorKind::TruncatedHeader, start)?;
+    let length_offset = checked_end_offset(start, 4, DecodeErrorKind::TruncatedHeader, start)?;
     let tag_value =
         (u32::from(header[0]) << 16) | (u32::from(header[1]) << 8) | u32::from(header[2]);
     let item_type = header[3];
     let item_length = u32::from_be_bytes([header[4], header[5], header[6], header[7]]);
     let item_length = usize::try_from(item_length)
-        .map_err(|_| DecodeError::new(DecodeErrorKind::TruncatedValue, item_length_offset))?;
+        .map_err(|_| DecodeError::new(DecodeErrorKind::TruncatedValue, length_offset))?;
+    let tag = checked_tag(tag_value, start)?;
+    let item_kind = ItemKind::from_wire(item_type)
+        .ok_or_else(|| DecodeError::new(DecodeErrorKind::UnsupportedItemType, item_type_offset))?;
+    validate_item_length(item_kind, item_length, length_offset)?;
 
+    Ok(ItemHeader {
+        tag,
+        item_kind,
+        item_length,
+        value_start: header_end,
+        length_offset,
+    })
+}
+
+fn checked_tag(tag_value: u32, offset: usize) -> Result<Tag, DecodeError> {
     let raw_tag = RawTag::new(tag_value)
-        .map_err(|_| DecodeError::new(DecodeErrorKind::UnallocatedTag, start))?;
-    let tag = raw_tag.try_checked().map_err(|error| {
+        .map_err(|_| DecodeError::new(DecodeErrorKind::UnallocatedTag, offset))?;
+    raw_tag.try_checked().map_err(|error| {
         let kind = match error {
             ModelError::TagNotAllocated if raw_tag.is_reserved() => DecodeErrorKind::ReservedTag,
             ModelError::TagNotAllocated | ModelError::RawTagOutOfRange => {
@@ -201,68 +149,94 @@ fn decode_item(
             }
             ModelError::StructureDepthExceeded => DecodeErrorKind::ModelConstraint,
         };
-        DecodeError::new(kind, start)
-    })?;
+        DecodeError::new(kind, offset)
+    })
+}
 
-    let item_kind = ItemKind::from_wire(item_type)
-        .ok_or_else(|| DecodeError::new(DecodeErrorKind::UnsupportedItemType, item_type_offset))?;
-    validate_item_length(item_kind, item_length, item_length_offset)?;
-
-    let structure_depth = if item_kind == ItemKind::Structure {
-        let depth = parent_structure_depth
-            .checked_add(1)
-            .ok_or_else(|| DecodeError::new(DecodeErrorKind::StructureDepthExceeded, start))?;
-        if depth > DEFAULT_MAX_STRUCTURE_DEPTH {
-            return Err(DecodeError::new(
-                DecodeErrorKind::StructureDepthExceeded,
-                start,
-            ));
-        }
-        depth
-    } else {
-        parent_structure_depth
-    };
-
-    let value_start = header_end;
-    let value_end = value_start
-        .checked_add(item_length)
-        .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedValue, item_length_offset))?;
-    let padding_length = padding_length(item_kind, item_length);
-    let item_end = value_end
-        .checked_add(padding_length)
-        .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedValue, item_length_offset))?;
-
-    if item_end > parent_end && parent_structure_depth > 0 {
-        return Err(DecodeError::new(DecodeErrorKind::StructureBoundary, start));
+fn structure_depth_for(
+    item_kind: ItemKind,
+    parent_structure_depth: usize,
+    offset: usize,
+) -> Result<usize, DecodeError> {
+    if item_kind != ItemKind::Structure {
+        return Ok(parent_structure_depth);
     }
-    if value_end > parent_end {
+
+    let depth = parent_structure_depth
+        .checked_add(1)
+        .ok_or_else(|| DecodeError::new(DecodeErrorKind::StructureDepthExceeded, offset))?;
+    if depth > DEFAULT_MAX_STRUCTURE_DEPTH {
+        return Err(DecodeError::new(
+            DecodeErrorKind::StructureDepthExceeded,
+            offset,
+        ));
+    }
+    Ok(depth)
+}
+
+struct ItemSpan {
+    item_start: usize,
+    value_start: usize,
+    value_end: usize,
+    item_end: usize,
+}
+
+fn item_span(header: &ItemHeader, item_start: usize) -> Result<ItemSpan, DecodeError> {
+    let value_end = checked_end_offset(
+        header.value_start,
+        header.item_length,
+        DecodeErrorKind::TruncatedValue,
+        header.length_offset,
+    )?;
+    let item_end = checked_end_offset(
+        value_end,
+        padding_length(header.item_kind, header.item_length),
+        DecodeErrorKind::TruncatedValue,
+        header.length_offset,
+    )?;
+    Ok(ItemSpan {
+        item_start,
+        value_start: header.value_start,
+        value_end,
+        item_end,
+    })
+}
+
+fn validate_parent_boundary(
+    span: &ItemSpan,
+    parent_end: usize,
+    parent_structure_depth: usize,
+) -> Result<(), DecodeError> {
+    if span.item_end > parent_end && parent_structure_depth > 0 {
+        return Err(DecodeError::new(
+            DecodeErrorKind::StructureBoundary,
+            span.item_start,
+        ));
+    }
+    if span.value_end > parent_end {
         return Err(DecodeError::new(
             DecodeErrorKind::TruncatedValue,
-            value_start,
+            span.value_start,
         ));
     }
-    if item_end > parent_end {
+    if span.item_end > parent_end {
         return Err(DecodeError::new(
             DecodeErrorKind::InvalidPaddingExtent,
-            value_end,
+            span.value_end,
         ));
     }
+    Ok(())
+}
 
-    let value_bytes = bytes
-        .get(value_start..value_end)
-        .ok_or_else(|| DecodeError::new(DecodeErrorKind::TruncatedValue, value_start))?;
-    let value = decode_value(
-        bytes,
-        value_start,
-        value_end,
-        value_bytes,
-        item_kind,
-        structure_depth,
-        state,
-    )?;
-    let item = Item::new(tag, value)
-        .map_err(|_| DecodeError::new(DecodeErrorKind::ModelConstraint, start))?;
-    Ok((item, item_end))
+fn checked_end_offset(
+    offset: usize,
+    extent: usize,
+    error_kind: DecodeErrorKind,
+    error_offset: usize,
+) -> Result<usize, DecodeError> {
+    offset
+        .checked_add(extent)
+        .ok_or_else(|| DecodeError::new(error_kind, error_offset))
 }
 
 fn decode_value(
