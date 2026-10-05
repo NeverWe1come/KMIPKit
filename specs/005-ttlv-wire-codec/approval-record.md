@@ -189,6 +189,14 @@ T014's attributed fixture corpus and executable test are in DCO-signed commit `6
 | --- | --- |
 | `tasks.md` | `317F9ABB2AC51F83B934671EC12FC422653CE0CDD6CBBC1915C072484FC3513D` |
 
+## Execution update — T015
+
+T015's policy/owner verification is recorded in `task-15-report.md`. I reran the focused private writer suite (37 passed), decoder fixture/malformed/public API/redaction suites (21 passed), client Clippy with warnings denied, formatting, and diff checks. Static audit confirmed the private zeroizing owner and immutable accessor, test-verified payload-free errors and zero-copy preflight, same-instance limits borrowing, and no `Client::execute`, permit, public encoder export, or production callsite in KMIPKIT-0005. The decoder keeps typed payload values as modeled but does not retain or re-emit the complete original message. No transport lifecycle or request-path claim is made; T016 follows.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `49EE1B9F238806A8518C7D6C2A6DF20EE16A1B16647A8AEE26394BAE22DC0E25` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository
