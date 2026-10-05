@@ -64,9 +64,10 @@ pinned HTML inventory. It checked the 186 profile requirement keywords against
 the source candidate ledger; 34 rows gained conditional requirements and 44
 rows were reclassified with source-based rationales. Every remaining
 conditional or applicable profile row has linked requirement evidence. The
-catalog has 40 unique open discrepancies, no selected decisions, and no
-resolved status without erratum or accepted-decision evidence. The generated
-coverage report lists affected records as implementation gates.
+catalog has 42 discrepancy records: 41 remain open and `KMIPKIT-DISC-037` is
+resolved by accepted decision `KMIPKIT-DEC-001`. No other discrepancy has an
+accepted decision or resolved status. The generated coverage report lists
+affected open records as implementation gates.
 
 Independent table review identified two further Specification source defects.
 Under §6.1.41, Table 286 is printed as “PKCS#11 Response Payload” inside Query
@@ -92,10 +93,10 @@ the generated report lists each gap. All 203 cited XML fixtures remain
 unavailable, as recorded by DISC-036 and each TestCase fixture state.
 
 The source audit and section review preserve unresolved source wording as
-discrepancies. The catalog contains 40 open discrepancy records and selects no
-decision for them. Affected records are listed in the generated report as
-implementation gates. No profile is claimed; all 35 claim states remain
-`not_claimed`.
+discrepancies. Of 42 discrepancy records, 41 remain open; `KMIPKIT-DISC-037`
+is resolved by accepted decision `KMIPKIT-DEC-001`. Affected open records are
+listed in the generated report as implementation gates. No profile is claimed;
+all 35 claim states remain `not_claimed`.
 
 The independent Specification reconciliation counted 877 candidate locators
 by top-level section: front matter 8; §§1–12 respectively 11, 16, 29, 163, 12,
@@ -118,7 +119,7 @@ discrepancy that affects its scope gated until resolution evidence exists.
 
 ## Final QA and execution verification
 
-Independent QA rechecked the acceptance evidence and found no additional catalog blockers. Requirement evidence is reciprocal for 85 official case-to-requirement links across 15 requirements; the remaining 552 requirements carry explicit source-evidence gap notes and appear individually in the generated report. All 19 catalog-readiness criteria were checked against the source review, validation rules, generated report, and recorded reconciliation evidence. There are 40 open discrepancies with no selected interpretations, 35 profile claim states remain `not_claimed`, and all 203 cited XML fixtures are unavailable in the pinned source tree.
+Independent QA rechecked the acceptance evidence and found no additional catalog blockers. Requirement evidence is reciprocal for 85 official case-to-requirement links across 15 requirements; the remaining 552 requirements carry explicit source-evidence gap notes and appear individually in the generated report. All 19 catalog-readiness criteria were checked against the source review, validation rules, generated report, and recorded reconciliation evidence. There are 41 open discrepancies and one resolved discrepancy (`KMIPKIT-DISC-037`) supported by accepted decision `KMIPKIT-DEC-001`; 35 profile claim states remain `not_claimed`, and all 203 cited XML fixtures are unavailable in the pinned source tree.
 
 Fresh verification on 2026-10-04:
 
