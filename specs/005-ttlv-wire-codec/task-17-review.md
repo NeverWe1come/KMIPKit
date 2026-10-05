@@ -50,9 +50,11 @@ tests requiring symlink privilege, POSIX symlinks, or POSIX fixtures.
 
 ## Remaining gates and release limits
 
-- T016 remains open until pull-request CI supplies Linux, macOS, Rust 1.94, and
-  cross-platform coverage-aggregation evidence. The local results are not a
-  substitute for those checks.
+- T016 is complete. Pull-request CI run
+  [37326087477](https://github.com/NeverWe1come/KMIPKit/actions/runs/37326087477)
+  passed Linux, Windows, and macOS stable/MSRV matrices, script contracts,
+  normative inventory, per-platform coverage, and three-platform coverage
+  aggregation.
 - The default `cargo deny check` license phase requires the separate
   infrastructure-owned license allowlist; this feature does not invent that
   policy.
@@ -72,5 +74,4 @@ tests requiring symlink privilege, POSIX symlinks, or POSIX fixtures.
 
 The terminal-created **draft** pull request to `release/1.0.0` is
 [KMIPKit PR #30](https://github.com/NeverWe1come/KMIPKit/pull/30). It does not
-claim that pending platform CI or the separate qualified human review has
-passed.
+claim that the separate qualified human security review has passed.
