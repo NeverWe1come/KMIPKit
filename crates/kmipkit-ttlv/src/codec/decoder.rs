@@ -11,6 +11,9 @@ use std::str;
 use super::{CodecLimits, DecodeError, DecodeErrorKind};
 use crate::{Item, ModelError, RawTag, Structure, Tag, Value};
 
+#[path = "../../tests/support/decoder_internal_tests.rs"]
+mod internal_tests;
+
 const HEADER_LENGTH: usize = 8;
 
 /// Decodes exactly one complete TTLV item using the default resource limits.

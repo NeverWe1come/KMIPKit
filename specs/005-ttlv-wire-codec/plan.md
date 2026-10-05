@@ -62,14 +62,18 @@ Related repository decision records: `docs/adr/0011-reserved-tag-decoding-policy
 ```text
 crates/kmipkit-ttlv/src/
 ├── lib.rs                  # public generic tree; cfg(test) Red module before promotion
-├── codec_red_tests.rs      # cfg(test) Red decoder seam/tests; no pre-T006 public API references
 └── codec/
     ├── mod.rs              # public decoder facade, limits, and errors; no encoder export
     ├── decoder.rs          # checked slice parser and Structure decode
-    └── limits_tests.rs     # cfg(test) Red limits seam/tests; no pre-T010 public API references
+crates/kmipkit-ttlv/tests/support/
+├── codec_red_tests.rs      # cfg(test) Red decoder seam/tests; no pre-T006 public API references
+├── codec_limits_tests.rs   # cfg(test) Red limits seam/tests; no pre-T010 public API references
+└── decoder_internal_tests.rs # direct tests for checked spans and defensive boundaries
 crates/kmipkit-client/src/
 ├── lib.rs                  # private wire_encoder module declaration
-└── wire_encoder.rs         # private uncalled writer, zeroizing owner, and unit tests; no permit/callsite here
+└── wire_encoder.rs         # private uncalled writer and zeroizing owner; no permit/callsite here
+crates/kmipkit-client/tests/support/
+└── wire_encoder_tests.rs   # private writer unit tests
 crates/kmipkit-ttlv/tests/
 ├── codec_api.rs            # public decode API visibility after T006
 ├── codec_negative.rs       # malformed, unsupported, and decoder-limit cases

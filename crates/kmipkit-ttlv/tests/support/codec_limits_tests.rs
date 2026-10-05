@@ -1,3 +1,4 @@
+#![cfg(test)]
 //! Decoder resource-limit tests tied to the production preflight helpers.
 
 use std::cell::Cell;
@@ -158,6 +159,17 @@ fn production_item_preflight_accepts_exact_and_rejects_one_over_synthetically() 
 }
 
 #[test]
+fn element_counter_rejects_arithmetic_overflow() {
+    assert_eq!(
+        error_kind(&super::decoder::test_next_element_count(
+            usize::MAX,
+            &CodecLimits::defaults()
+        )),
+        Some(DecodeErrorKind::ElementLimitExceeded)
+    );
+}
+
+#[test]
 fn configured_byte_limit_accepts_exact_and_rejects_one_over() {
     // Project resource policy only: KMIPKit FR-007. Fixtures are 8 and 16 bytes.
     let limits = limits(
@@ -268,4 +280,44 @@ fn configured_limit_rejects_before_size_driven_allocation_or_copy() {
     assert_eq!(observer.reservation_attempts(), 0);
     assert_eq!(observer.requested_reservation_bytes(), 0);
     assert_eq!(observer.peer_copy_calls(), 0);
+}
+
+#[test]
+fn successful_payload_copy_records_one_bounded_reservation_and_copy() {
+    let bytes = byte_string_item(&[0x5a]);
+    let limits = CodecLimits::defaults();
+    let observer = DecodeObserver::default();
+    let result = super::decoder::decode_with_observer(&bytes, &limits, &observer);
+
+    assert!(result.is_ok());
+    assert_eq!(observer.reservation_attempts(), 1);
+    assert_eq!(observer.requested_reservation_bytes(), 1);
+    assert_eq!(observer.peer_copy_calls(), 1);
+}
+
+#[test]
+fn every_decoder_error_kind_has_a_safe_display_message() {
+    let kinds = [
+        DecodeErrorKind::MessageTooLarge,
+        DecodeErrorKind::TruncatedHeader,
+        DecodeErrorKind::TruncatedValue,
+        DecodeErrorKind::InvalidItemLength,
+        DecodeErrorKind::EmptyBigInteger,
+        DecodeErrorKind::InvalidUtf8,
+        DecodeErrorKind::InvalidBoolean,
+        DecodeErrorKind::UnsupportedItemType,
+        DecodeErrorKind::TrailingBytes,
+        DecodeErrorKind::StructureBoundary,
+        DecodeErrorKind::ReservedTag,
+        DecodeErrorKind::UnallocatedTag,
+        DecodeErrorKind::InvalidPaddingExtent,
+        DecodeErrorKind::StructureDepthExceeded,
+        DecodeErrorKind::ElementLimitExceeded,
+        DecodeErrorKind::AllocationFailed,
+        DecodeErrorKind::ModelConstraint,
+    ];
+
+    for kind in kinds {
+        assert_ne!(kind.to_string(), "");
+    }
 }

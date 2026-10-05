@@ -47,7 +47,7 @@ mod generated;
 /// Bounded decoding for one complete generic TTLV item.
 pub mod codec;
 
-#[cfg(test)]
+#[path = "../tests/support/codec_red_tests.rs"]
 mod codec_red_tests;
 
 pub use error::ModelError;

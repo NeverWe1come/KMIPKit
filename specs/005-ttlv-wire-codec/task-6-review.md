@@ -18,4 +18,3 @@
 The follow-up changes only crate rustdoc, static error wording, test separation/citations, and T006 report counts. No parser logic changed, and no regression was found in the reviewed diff. The T005 private adapter still calls production `decode`; the split raises public negative tests from 15 to 16 and the report from 81 to 82 total tests, consistent with the added test function. `codec_api.rs` remains the public API import/use test. The T006 section in `task-5-report.md` still labels its evidence provisional pending independent review; this re-review supplies that review evidence, but does not alter that report or the unchecked T006 task line.
 
 No T010 configurable-limits API, client API, or T007 refactor was added by the follow-up. T006 remains unchecked in the reviewed commit.
-

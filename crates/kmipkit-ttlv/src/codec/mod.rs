@@ -17,7 +17,7 @@ use std::fmt::{self, Display, Formatter};
 
 mod decoder;
 
-#[cfg(test)]
+#[path = "../../tests/support/codec_limits_tests.rs"]
 mod limits_tests;
 
 pub use decoder::{decode, decode_with_limits};

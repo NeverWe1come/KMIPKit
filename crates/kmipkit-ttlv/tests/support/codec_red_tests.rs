@@ -1,3 +1,4 @@
+#![cfg(test)]
 //! Decoder regression cases promoted from the T005 Red harness.
 //!
 //! Every behavioral expectation reaches the production decoder through the
@@ -182,6 +183,15 @@ fn decodes_a_valid_true_boolean_item() {
     let wire = item_bytes(ASSIGNED_TAG, BOOLEAN, 8, &[0, 0, 0, 0, 0, 0, 0, 1]);
 
     assert!(matches!(decode_candidate(&wire), Ok(item) if has_boolean(&item, true)));
+}
+
+// OASIS KMIP Specification v2.1, §§10.1.2 and 11.23; traceability
+// KMIPKIT-0005-NR-002.
+#[test]
+fn decodes_a_valid_false_boolean_item() {
+    let wire = item_bytes(ASSIGNED_TAG, BOOLEAN, 8, &[0; 8]);
+
+    assert!(matches!(decode_candidate(&wire), Ok(item) if has_boolean(&item, false)));
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2, 10.1.5, and §11.23; traceability
