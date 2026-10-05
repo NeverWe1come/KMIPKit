@@ -1,9 +1,9 @@
-//! Red harness for the not-yet-implemented TTLV decoder.
+//! Decoder regression cases promoted from the T005 Red harness.
 //!
-//! Every decoder expectation goes through `decode_candidate`. The deliberately
-//! incomplete seam keeps this commit compile-clean while each missing behavior
-//! fails as a test assertion rather than as an unresolved production symbol.
+//! Every behavioral expectation reaches the production decoder through the
+//! private adapter, which retains T005's concise error-category assertions.
 
+use crate::codec::{DecodeErrorKind as CandidateError, decode};
 use crate::{Item, ItemType, ValueView};
 
 const ASSIGNED_TAG: u32 = 0x0042_0173;
@@ -19,27 +19,8 @@ const INTERVAL: u8 = 0x0A;
 const DATE_TIME_EXTENDED: u8 = 0x0B;
 const STRUCTURE: u8 = 0x01;
 
-// Expected variants are referenced by assertions now and constructed only
-// when T006 replaces the incomplete candidate stub.
-#[allow(dead_code)]
-#[derive(Debug, Eq, PartialEq)]
-enum CandidateError {
-    Incomplete,
-    TruncatedHeader,
-    TruncatedValue,
-    InvalidItemLength,
-    EmptyBigInteger,
-    InvalidUtf8,
-    InvalidBoolean,
-    UnsupportedItemType,
-    TrailingBytes,
-    StructureBoundary,
-    ReservedTag,
-    InvalidPaddingExtent,
-}
-
-fn decode_candidate(_input: &[u8]) -> Result<Item, CandidateError> {
-    Err(CandidateError::Incomplete)
+fn decode_candidate(input: &[u8]) -> Result<Item, CandidateError> {
+    decode(input).map_err(|error| error.kind())
 }
 
 fn item_bytes(tag: u32, item_type: u8, item_length: u32, body: &[u8]) -> Vec<u8> {

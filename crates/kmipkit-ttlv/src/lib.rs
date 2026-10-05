@@ -38,6 +38,9 @@ mod value;
 
 mod generated;
 
+/// Bounded decoding for one complete generic TTLV item.
+pub mod codec;
+
 #[cfg(test)]
 mod codec_red_tests;
 
