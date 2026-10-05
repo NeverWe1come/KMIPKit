@@ -147,6 +147,10 @@ def render_report(catalog: dict[str, Any]) -> str:
 
     elements = catalog.get("elements", [])
     requirements = catalog.get("requirements", [])
+    open_discrepancies = sorted(
+        (row for row in catalog.get("discrepancies", []) if row.get("state") == "open"),
+        key=lambda row: row.get("discrepancy_id", ""),
+    )
     operations = [row for row in elements if row.get("kind") == "operation"]
     count_rows: list[tuple[Any, ...]] = [
         ("Sources", len(sources)),
@@ -158,7 +162,7 @@ def render_report(catalog: dict[str, Any]) -> str:
         ("Normative requirements", len(requirements)),
         ("Profiles", len(catalog.get("profiles", []))),
         ("Test cases", len(catalog.get("test_cases", []))),
-        ("Open discrepancies", sum(row.get("state") == "open" for row in catalog.get("discrepancies", []))),
+        ("Open discrepancies", len(open_discrepancies)),
         ("Project policies", len(catalog.get("policies", []))),
     ]
     lines.extend(["## Count reconciliation", ""])
@@ -313,10 +317,6 @@ def render_report(catalog: dict[str, Any]) -> str:
     lines.extend(_table(("Fixture state", "Count"), _count_by(test_cases, "fixture_availability")))
     lines.append("")
 
-    discrepancies = sorted(
-        (row for row in catalog.get("discrepancies", []) if row.get("state") == "open"),
-        key=lambda row: row.get("discrepancy_id", ""),
-    )
     lines.extend(["## Open discrepancies", ""])
     lines.extend(_table(
         ("Discrepancy", "State", "Implementation gate", "Affected records", "Summary", "Source"),
@@ -340,7 +340,7 @@ def render_report(catalog: dict[str, Any]) -> str:
                 if row.get(field)
             ) or "none linked",
             row.get("summary"), _source_reference(row),
-        ) for row in discrepancies],
+        ) for row in open_discrepancies],
     ))
     lines.append("")
 
