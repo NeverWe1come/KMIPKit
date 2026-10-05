@@ -446,6 +446,20 @@ class DependencyExceptionTests(unittest.TestCase):
                 {"bans": {"skip": [{"crate": "example-crate@1.2.3", "reason": "unregistered"}]}},
             )
 
+    def test_policy_config_rejects_unregistered_duplicate_skip_trees(self) -> None:
+        policy = self.require_policy()
+        with self.assertRaises(self.policy_error()) as context:
+            policy.validate_exception_config(
+                {"schema_version": 1, "exceptions": []},
+                {
+                    "bans": {
+                        "skip": [],
+                        "skip-tree": [{"crate": "example-crate@1.2.3", "reason": "unregistered"}],
+                    }
+                },
+            )
+        self.assertIn("skip-tree", str(context.exception))
+
     def test_each_registered_exception_has_a_matching_cargo_deny_surface(self) -> None:
         policy = self.require_policy()
         source = "git+https://github.com/example/dependency?rev=" + "a" * 40 + "#" + "a" * 40
