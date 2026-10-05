@@ -109,6 +109,14 @@ After the maintainer reported that intervening PRs were merged, a terminal GitHu
 | `specification/catalog/kmip-2.1.json` | `06D10D118F4D877033BD0D83EEC7C9345C350823149714236BAB2F6094694F53` |
 | `specification/catalog/coverage-report.md` | `9C36100B581D9E94DEB3E842A5521639EB49649229A0013100462DAB6ECFA578` |
 
+## Execution update — T005
+
+T005 Red is complete in DCO-signed commit `0937633685d44aaa921e13aec3449d6cce319f40`. The decoder test module is private and test-only; all 33 Red cases compiled and failed at behavioral assertions against the intentionally incomplete seam. The independent review recorded PASS for scope and test quality with no blockers. It confirmed the assigned and extension Tag fixtures, OASIS attribution, and padding extent semantics; the reviewer did not rerun commands. The task report retains the command evidence and review limitations. T006 is now unblocked; its Green work will promote the private seam to the production decoder and public facade, preserving the approved one-item, bounded, payload-redacted contract.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `4EA2A97243B9D025D79CA2BA05C348D859A1DF3BD31E0B50132D29CD8A717C89` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository

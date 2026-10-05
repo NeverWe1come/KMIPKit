@@ -86,3 +86,16 @@ Specification v2.1 section and stable requirement ID:
 
 All vectors are bounded small fixtures. T006 has not started; the seam has not
 been promoted and no production decoder is present in this commit.
+
+## Independent review
+
+- Reviewed commit: `0937633685d44aaa921e13aec3449d6cce319f40`.
+- Verdict: **PASS** for spec compliance and task quality; no blocking findings.
+- The reviewer confirmed the test-only boundary, all 33 behavior-only Red
+  cases and eleven type vectors, fixture bounds, and report counts. The assigned
+  Tag `0x420173` is Asynchronous Request under OASIS KMIP 2.1 §11.56; `0x541234`
+  is in the Extension range. Reserved-tag rejection remains identified as
+  KMIPKit policy. Padding extent checks do not constrain padding octet values,
+  consistent with §10.1.5.
+- The reviewer performed static review only and did not independently rerun
+  builds or tests. The Red command results above were observed in the task run.
