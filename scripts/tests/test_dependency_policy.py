@@ -319,6 +319,18 @@ class DependencyPolicyApiTests(unittest.TestCase):
         self.assertIsInstance(private_policy, dict, "license private-package policy must be explicit")
         self.assertIs(private_policy.get("ignore"), False)
 
+    def test_checked_in_baseline_deny_config_removes_only_registered_waiver_fields(self) -> None:
+        policy = self.require_policy()
+        configured = tomllib.loads((REPOSITORY_ROOT / ".cargo" / "deny.toml").read_text(encoding="utf-8"))
+        baseline = tomllib.loads(
+            (REPOSITORY_ROOT / ".cargo" / "deny-baseline.toml").read_text(encoding="utf-8")
+        )
+        policy.validate_exception_config(
+            {"schema_version": 1, "exceptions": []},
+            configured,
+            baseline_config=baseline,
+        )
+
     def test_fuzz_candidate_scan_no_longer_reports_metadata_policy_findings(self) -> None:
         deny_config = REPOSITORY_ROOT / ".cargo" / "deny.toml"
         deny = os.environ.get("CARGO_DENY")
@@ -959,6 +971,22 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
         for required in ("'--format', 'json'", "'--color', 'never'", "-CargoDenyDiagnostics", "Format-CargoDenyFailure"):
             with self.subTest(required=required):
                 self.assertIn(required, contents)
+
+    def test_runner_matches_waiver_free_findings_before_final_configured_scans(self) -> None:
+        contents = self.require_runner()
+        for required in (
+            "deny-baseline.toml",
+            "--preflight-only",
+            "--extract-cargo-deny-findings",
+            "--baseline-deny-config",
+            "--findings",
+            "Validated exception IDs:",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, contents)
+        self.assertLess(contents.index("--preflight-only"), contents.index("--extract-cargo-deny-findings"))
+        self.assertLess(contents.index("--extract-cargo-deny-findings"), contents.index("--findings"))
+        self.assertLess(contents.index("--findings"), contents.rindex("$workspace in @("))
 
     def test_runner_executes_negative_fixtures_with_the_verified_pinned_binary(self) -> None:
         contents = self.require_runner()
