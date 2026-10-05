@@ -775,6 +775,51 @@ allow-git = []
             metadata_path=metadata,
         )
 
+    def test_exact_yanked_package_spec_can_be_ignored_by_the_reviewed_config(self) -> None:
+        fixture, metadata = self.create_local_registry_fixture(
+            "fixture-yanked-exact", "1.0.0", yanked=True
+        )
+        config_path = fixture / ".cargo" / "deny.toml"
+        config = config_path.read_text(encoding="utf-8")
+        self.assertIn("ignore = []", config)
+        config_path.write_text(
+            config.replace(
+                "ignore = []",
+                'ignore = [{ crate = "fixture-yanked-exact@1.0.0", reason = "KMIPKIT-0011-EX-001" }]',
+                1,
+            ),
+            encoding="utf-8",
+        )
+        lockfile = fixture / "Cargo.lock"
+        lockfile_before = hashlib.sha256(lockfile.read_bytes()).hexdigest()
+        result = subprocess.run(
+            [
+                self.cargo_deny,
+                "--manifest-path",
+                str(fixture / "Cargo.toml"),
+                "--config",
+                str(config_path),
+                "--metadata-path",
+                str(metadata),
+                "--format",
+                "json",
+                "--color",
+                "never",
+                "--offline",
+                "--locked",
+                "check",
+                "advisories",
+            ],
+            cwd=fixture,
+            env=self.env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual(lockfile_before, hashlib.sha256(lockfile.read_bytes()).hexdigest())
+
     def test_rustsec_vulnerability_reports_exact_vulnerability_code(self) -> None:
         fixture, metadata = self.create_local_registry_fixture(
             "fixture-vulnerable",

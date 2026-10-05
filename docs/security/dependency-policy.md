@@ -50,10 +50,20 @@ Re-run the policy against both workspaces and verify the new release,
 checksum, toolchain requirements, and advisory behavior before changing the
 pin.
 
-The [empty exception register](../../specification/compliance/dependency-policy-exceptions.json)
+The [exception register](../../specification/compliance/dependency-policy-exceptions.json)
 is the source of exception records. `.cargo/deny.toml` carries only the
-corresponding tool-native entries. The validator checks both directions so an
-unregistered cargo-deny waiver or an unused register entry fails.
+corresponding tool-native entries. `.cargo/deny-baseline.toml` preserves the
+same policy with registered waivers removed. The runner scans both workspaces
+with that baseline first, matches every structured finding exactly to the
+register, then runs the configured policy and reports accepted exception IDs
+only after both scans pass. This prevents a global advisory ignore or a
+duplicate skip from hiding a finding for another exact package/version.
+
+cargo-deny also discovers local exception files from manifest ancestors even
+when `--config` is supplied. The runner rejects `deny.exceptions.toml`,
+`.deny.exceptions.toml`, and `.cargo/deny.exceptions.toml` anywhere in either
+workspace's ancestor chain, so they cannot add unregistered license
+allowances.
 
 ## Exception review lifecycle
 
@@ -63,10 +73,12 @@ for a dependency. Add an entry only after a reviewer has accepted the
 specific risk and recorded durable approval evidence. Each entry must identify:
 
 - A unique `KMIPKIT-0011-EX-NNN` ID and one supported rule kind: `advisory`,
-  `license`, `source`, or `duplicate`.
+  `yanked`, `license`, `source`, or `duplicate`.
 - The exact crate name and resolved version, plus the exact advisory ID,
-  source, or license evidence required by that rule. Wildcards, ranges, and
-  broad package matching are invalid.
+  yanked package/version, source, or license evidence required by that rule.
+  Wildcards, ranges, and broad package matching are invalid. Yanked exceptions
+  use cargo-deny's exact `crate@version` ignore form; they do not invent an
+  advisory identifier.
 - A specific rationale, mitigation/remediation path, accountable owner, and
   a reviewer different from that owner.
 - An ISO review date, an expiry no more than 90 days later, and an approval

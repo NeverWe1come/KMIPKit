@@ -20,7 +20,7 @@ types, protocol fields, or serialized network data.
 
 | Field | Meaning | Validation |
 |---|---|---|
-| rule | Advisory, license, ban, duplicate, wildcard, or source policy | Must map to a configured check class |
+| rule | Advisory, yanked version, license, ban, duplicate, wildcard, or source policy | Must map to a configured check class |
 | package | Crate name and resolved version | Must come from Cargo metadata/lockfile |
 | source | Registry, Git revision, or local workspace path | Must match the source rule or an exact exception; emitted evidence removes URL user-info and secret query values |
 | evidence | SPDX expression, advisory ID, duplicate set, or source record | Must be included in CI output without secret data |
@@ -35,10 +35,10 @@ is empty. Any later entry has this logical schema:
 | Field | Meaning | Validation |
 |---|---|---|
 | id | Stable `KMIPKIT-0011-EX-NNN` identifier | Unique and referenced by the policy config |
-| kind | `advisory`, `license`, `source`, or `duplicate` | Exact known value; architecture bans and wildcard requirements cannot be excepted |
+| kind | `advisory`, `yanked`, `license`, `source`, or `duplicate` | Exact known value; architecture bans and wildcard requirements cannot be excepted |
 | package | Exact crate name | No wildcard |
 | version | Exact resolved package version | Required; no range or wildcard |
-| advisory_id | Exact RustSec ID for advisory exception | Required only for advisory kind |
+| advisory_id | Exact RustSec ID for advisory exception | Required only for advisory kind; yanked exceptions instead use their exact crate/version |
 | source | Exact source or immutable Git revision for source exception | Required for source kind |
 | license_evidence | Human-reviewed license evidence and disposition | Required only for a license clarification; a waiver alone is insufficient |
 | rationale | Why the finding cannot be removed now | Non-empty and specific |
@@ -55,8 +55,16 @@ must never be echoed in diagnostics.
 
 The validator checks exact matching, field completeness, date ordering,
 maximum expiry, and correspondence between register entries and actual policy
-exceptions. Expired or unmatched entries fail CI. An exception never grants
-permission to another package/version or broader source.
+exceptions. Before the configured policy is run, both workspaces are scanned
+with `.cargo/deny-baseline.toml`, which must preserve every policy setting
+while removing registered waiver fields. Structured findings are matched
+one-to-one against the register; repeated findings shared by both graphs are
+deduplicated. The configured policy then runs normally to verify each waiver,
+including license-file hashes. Expired or unmatched entries fail CI. An
+exception never grants permission to another package/version or broader source.
+Cargo-deny's auto-discovered `deny.exceptions.toml`, `.deny.exceptions.toml`,
+and `.cargo/deny.exceptions.toml` files are rejected for both manifest ancestor
+chains so they cannot add unregistered license allowances.
 
 ### Policy run
 

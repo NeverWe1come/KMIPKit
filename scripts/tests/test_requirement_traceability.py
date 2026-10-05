@@ -16,7 +16,21 @@ TRACEABILITY = REPOSITORY_ROOT / "specification" / "compliance" / "requirements"
 CSV_COLUMNS = ("requirement_id", "configuration_path", "implementation_path", "test_reference")
 CONFIGURATION_SUFFIXES = {".json", ".toml", ".yaml", ".yml"}
 EXPECTED_REQUIREMENT_TESTS = {
-    "FR-004": "scripts/tests/test_dependency_policy.py::DependencyPolicyRunnerContractTests.test_runner_refreshes_rustsec_per_workspace_and_reports_sha_and_timestamp",
+    "FR-003": ";".join(
+        (
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_exception_free_config_must_preserve_policy_and_remove_waivers",
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_local_cargo_deny_exception_file_is_rejected",
+            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_uses_affected_crate_not_graph_parents",
+        )
+    ),
+    "FR-004": ";".join(
+        (
+            "scripts/tests/test_dependency_policy.py::DependencyPolicyRunnerContractTests.test_runner_refreshes_rustsec_per_workspace_and_reports_sha_and_timestamp",
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_exact_yanked_exception_covers_only_its_package_version",
+            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_uses_affected_crate_not_graph_parents",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_exact_yanked_package_spec_can_be_ignored_by_the_reviewed_config",
+        )
+    ),
     "FR-005": ";".join(
         (
             "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_optional_feature_only_external_path_dependency_is_rejected",
@@ -28,9 +42,18 @@ EXPECTED_REQUIREMENT_TESTS = {
     "FR-006": ";".join(
         (
             "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_architecture_ban_exceptions_cannot_waive_the_three_adr_0005_crates",
+            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_rejects_unknown_errors_and_incomplete_json",
+            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_duplicate_baseline_finding_covers_each_top_level_version_exactly",
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_each_architecture_ban_reports_banned_package_and_version",
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_wildcard_dependency_requirement_reports_exact_rule",
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_normal_and_dev_duplicate_versions_report_both_versions",
+        )
+    ),
+    "FR-007": ";".join(
+        (
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_exception_free_config_must_preserve_policy_and_remove_waivers",
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_local_cargo_deny_exception_file_is_rejected",
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_policy_config_rejects_unregistered_duplicate_skip_trees",
         )
     ),
     "FR-011": "scripts/tests/test_workflow.py::WorkflowContractTests.test_dependency_policy_local_command_and_review_process_are_documented",
@@ -41,6 +64,11 @@ EXPECTED_REQUIREMENT_TESTS = {
     "SC-008": "scripts/tests/test_dependency_policy.py::DependencyPolicyApiTests.test_policy_scans_preserve_both_lockfiles_and_resolved_package_versions",
     "SC-002": ";".join(
         (
+            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_uses_affected_crate_not_graph_parents",
+            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_rejects_unknown_errors_and_incomplete_json",
+            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_duplicate_baseline_finding_covers_each_top_level_version_exactly",
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_exact_yanked_exception_covers_only_its_package_version",
+            "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_exact_yanked_package_spec_can_be_ignored_by_the_reviewed_config",
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_vulnerability_reports_exact_vulnerability_code",
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_unsoundness_reports_exact_unsound_code",
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_rustsec_unmaintained_reports_exact_unmaintained_code",
@@ -69,6 +97,13 @@ EXPECTED_REQUIREMENT_TESTS = {
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_each_architecture_ban_reports_banned_package_and_version",
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_wildcard_dependency_requirement_reports_exact_rule",
             "scripts/tests/test_cargo_deny_fixtures.py::CargoDenyNegativeFixtureTests.test_normal_and_dev_duplicate_versions_report_both_versions",
+        )
+    ),
+    "SC-005": ";".join(
+        (
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_valid_but_orphaned_exception_entry_is_rejected",
+            "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_exact_yanked_exception_covers_only_its_package_version",
+            "scripts/tests/test_dependency_policy.py::DependencyPolicyRunnerContractTests.test_runner_matches_waiver_free_findings_before_final_configured_scans",
         )
     ),
 }

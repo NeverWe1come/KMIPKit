@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 import re
@@ -56,6 +57,29 @@ CARGO_DENY_POLICY_CODES = frozenset(
         "git-source-underspecified",
         "source-not-allowed",
     }
+)
+BASELINE_FINDING_KINDS = {
+    "vulnerability": "advisory",
+    "unsound": "advisory",
+    "unmaintained": "advisory",
+    "yanked": "yanked",
+    "rejected": "license",
+    "unlicensed": "license",
+    "no-license-field": "license",
+    "empty-license-field": "license",
+    "parse-error": "license",
+    "gather-failure": "license",
+    "missing-clarification-file": "license",
+    "duplicate": "duplicate",
+    "source-not-allowed": "source",
+    "git-source-underspecified": "source",
+    "banned": "ban",
+    "wildcard": "wildcard",
+}
+LOCAL_CARGO_DENY_EXCEPTION_FILES = (
+    Path("deny.exceptions.toml"),
+    Path(".deny.exceptions.toml"),
+    Path(".cargo") / "deny.exceptions.toml",
 )
 SECRET_QUERY_PATTERN = re.compile(
     r"(?:token|secret|pass(?:word|wd)?|credential|authorization|signature|(?:api|access|private|client)[_-]?key)",
@@ -122,6 +146,176 @@ def _diagnostic_packages(fields: dict[str, Any]) -> list[tuple[str, str]]:
 
     visit(fields.get("graphs"))
     return sorted(found)
+
+
+def _top_level_diagnostic_packages(fields: dict[str, Any]) -> list[tuple[str, str]]:
+    """Return only affected Krate nodes, excluding dependency graph parents."""
+    graphs = fields.get("graphs")
+    if not isinstance(graphs, list):
+        raise PolicyError("cargo-deny finding graphs are malformed")
+    found: set[tuple[str, str]] = set()
+    for graph in graphs:
+        crate = graph.get("Krate") if isinstance(graph, dict) else None
+        if not isinstance(crate, dict):
+            raise PolicyError("cargo-deny finding package is malformed")
+        name = crate.get("name")
+        version = crate.get("version")
+        if (
+            not isinstance(name, str)
+            or not PACKAGE_PATTERN.fullmatch(name)
+            or not isinstance(version, str)
+            or not VERSION_PATTERN.fullmatch(version)
+        ):
+            raise PolicyError("cargo-deny finding package coordinates are malformed")
+        found.add((name, version))
+    if not found:
+        raise PolicyError("cargo-deny finding does not identify an affected package")
+    return sorted(found)
+
+
+def parse_cargo_deny_findings(
+    raw_output: str,
+    metadata_by_workspace: Any,
+    workspace_name: str,
+    exit_code: int,
+) -> list[dict[str, str]]:
+    """Extract exact policy findings from one complete cargo-deny JSON scan."""
+    if not isinstance(raw_output, str) or len(raw_output) > 16 * 1024 * 1024:
+        raise PolicyError("cargo-deny baseline output is malformed or exceeds the report limit")
+    if workspace_name not in {"root", "fuzz"}:
+        raise PolicyError("cargo-deny baseline workspace is unsupported")
+    if isinstance(exit_code, bool) or not isinstance(exit_code, int) or exit_code not in {0, 1, 2}:
+        raise PolicyError("cargo-deny baseline exit status is malformed")
+    if not isinstance(metadata_by_workspace, dict):
+        raise PolicyError("cargo metadata for cargo-deny findings is malformed")
+    workspace_metadata = metadata_by_workspace.get(workspace_name)
+    packages = workspace_metadata.get("packages") if isinstance(workspace_metadata, dict) else None
+    if not isinstance(packages, list):
+        raise PolicyError("cargo metadata omits the scanned workspace packages")
+
+    source_by_coordinate: dict[tuple[str, str], set[str | None]] = {}
+    for package_item in packages:
+        if not isinstance(package_item, dict):
+            raise PolicyError("cargo metadata contains an invalid package")
+        name = package_item.get("name")
+        version = package_item.get("version")
+        source = package_item.get("source")
+        if (
+            not isinstance(name, str)
+            or not PACKAGE_PATTERN.fullmatch(name)
+            or not isinstance(version, str)
+            or not VERSION_PATTERN.fullmatch(version)
+            or (source is not None and not isinstance(source, str))
+        ):
+            raise PolicyError("cargo metadata package coordinates are malformed")
+        source_by_coordinate.setdefault((name, version), set()).add(source)
+
+    diagnostics: list[tuple[str, dict[str, Any]]] = []
+    summary: dict[str, dict[str, int]] | None = None
+    for line in raw_output.splitlines():
+        if not line.strip():
+            continue
+        try:
+            item = json.loads(line)
+        except (json.JSONDecodeError, RecursionError, TypeError):
+            raise PolicyError("cargo-deny baseline output contains malformed JSON") from None
+        if not isinstance(item, dict):
+            raise PolicyError("cargo-deny baseline output contains an invalid record")
+        record_type = item.get("type")
+        fields = item.get("fields")
+        if record_type == "diagnostic":
+            if not isinstance(fields, dict):
+                raise PolicyError("cargo-deny baseline diagnostic is malformed")
+            diagnostics.append(("diagnostic", fields))
+        elif record_type == "summary":
+            if summary is not None or not isinstance(fields, dict):
+                raise PolicyError("cargo-deny baseline summary is malformed or duplicated")
+            summary = {}
+            for check in ("advisories", "bans", "licenses", "sources"):
+                check_summary = fields.get(check)
+                if not isinstance(check_summary, dict):
+                    raise PolicyError("cargo-deny baseline summary omits a policy check")
+                counts: dict[str, int] = {}
+                for severity in ("errors", "warnings", "notes", "helps"):
+                    count = check_summary.get(severity)
+                    if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+                        raise PolicyError("cargo-deny baseline summary counts are malformed")
+                    counts[severity] = count
+                summary[check] = counts
+        else:
+            raise PolicyError("cargo-deny baseline output contains an unsupported record")
+    if summary is None:
+        raise PolicyError("cargo-deny baseline output is missing its completion summary")
+
+    section_by_kind = {
+        "advisory": "advisories",
+        "yanked": "advisories",
+        "ban": "bans",
+        "duplicate": "bans",
+        "wildcard": "bans",
+        "license": "licenses",
+        "source": "sources",
+    }
+    observed_counts = {
+        check: {"errors": 0, "warnings": 0, "notes": 0, "helps": 0}
+        for check in ("advisories", "bans", "licenses", "sources")
+    }
+    findings: set[tuple[str, str, str, str | None, str | None]] = set()
+    for _, fields in diagnostics:
+        code = fields.get("code")
+        severity = fields.get("severity")
+        if not isinstance(code, str) or severity not in {"error", "warning", "note", "help", "bug"}:
+            raise PolicyError("cargo-deny baseline diagnostic classification is malformed")
+        if code == "license-not-encountered" and severity == "warning":
+            observed_counts["licenses"]["warnings"] += 1
+            continue
+        kind = BASELINE_FINDING_KINDS.get(code)
+        if kind is None or kind not in section_by_kind or severity not in {"error", "warning"}:
+            raise PolicyError("cargo-deny baseline contains an unsupported policy diagnostic")
+        section = section_by_kind[kind]
+        observed_counts[section]["errors" if severity == "error" else "warnings"] += 1
+        coordinates = _top_level_diagnostic_packages(fields)
+        advisory_id: str | None = None
+        if kind == "advisory":
+            advisory = fields.get("advisory")
+            raw_id = advisory.get("id") if isinstance(advisory, dict) else None
+            if not isinstance(raw_id, str) or not ADVISORY_ID_PATTERN.fullmatch(raw_id):
+                raise PolicyError("cargo-deny advisory finding has no valid structured identifier")
+            advisory_id = raw_id
+            advisory_package = advisory.get("package") if isinstance(advisory, dict) else None
+            if advisory_package is not None and (
+                not isinstance(advisory_package, str)
+                or any(package_name != advisory_package for package_name, _ in coordinates)
+            ):
+                raise PolicyError("cargo-deny advisory package does not match its affected package")
+        for package_name, version in coordinates:
+            sources = source_by_coordinate.get((package_name, version))
+            if not sources or len(sources) != 1:
+                raise PolicyError("cargo-deny finding has missing or ambiguous metadata source")
+            source = next(iter(sources))
+            if source is not None:
+                _validate_source(source, require_immutable_git=False)
+            findings.add((kind, package_name, version, source, advisory_id))
+
+    for check, severities in observed_counts.items():
+        for severity, count in severities.items():
+            if summary[check][severity] != count:
+                raise PolicyError("cargo-deny baseline summary does not match its diagnostics")
+    result = [
+        {
+            "kind": kind,
+            "package": package_name,
+            "version": version,
+            **({"source": source} if source is not None else {}),
+            **({"advisory_id": advisory_id} if advisory_id is not None else {}),
+        }
+        for kind, package_name, version, source, advisory_id in sorted(findings)
+    ]
+    if exit_code and not result:
+        raise PolicyError("cargo-deny baseline failed without a complete registered-policy finding")
+    if not exit_code and any(counts["errors"] for counts in observed_counts.values()):
+        raise PolicyError("cargo-deny baseline exit status contradicts error diagnostics")
+    return result
 
 
 def _diagnostic_sources(metadata_by_workspace: Any) -> dict[tuple[str, str], str]:
@@ -467,8 +661,8 @@ def _validate_entry(entry: Any, today: date, *, check_current: bool = True) -> d
     if not isinstance(entry, dict):
         raise PolicyError("exception entry must be an object")
     kind = entry.get("kind")
-    if not isinstance(kind, str) or kind not in {"advisory", "license", "source", "duplicate"}:
-        raise PolicyError("exception kind must be advisory, license, source, or duplicate")
+    if not isinstance(kind, str) or kind not in {"advisory", "yanked", "license", "source", "duplicate"}:
+        raise PolicyError("exception kind must be advisory, yanked, license, source, or duplicate")
 
     required = {
         "id",
@@ -694,7 +888,7 @@ def _finding_matches(entry: dict[str, Any], item: dict[str, Any]) -> bool:
     return True
 
 
-def validate_exceptions(register: Any, findings: list[dict], *, today: date | None = None) -> None:
+def validate_exceptions(register: Any, findings: list[dict], *, today: date | None = None) -> list[str]:
     """Require a one-to-one exact match between current exceptions and findings."""
     current_date = today or date.today()
     if not isinstance(current_date, date):
@@ -713,7 +907,7 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
             if package_name in ADR_0005_BANNED_PACKAGES:
                 raise PolicyError(f"ADR-0005 architecture ban for {package_name} cannot be excepted")
             raise PolicyError(f"{kind} dependency findings cannot be excepted")
-        if not isinstance(kind, str) or kind not in {"advisory", "license", "source", "duplicate"}:
+        if not isinstance(kind, str) or kind not in {"advisory", "yanked", "license", "source", "duplicate"}:
             raise PolicyError("dependency finding rule is unsupported")
         if not isinstance(package_name, str) or not PACKAGE_PATTERN.fullmatch(package_name):
             raise PolicyError("dependency finding package is malformed")
@@ -744,6 +938,7 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
     if len(matched_entry_indexes) != len(entries):
         orphaned = next(entry for index, entry in enumerate(entries) if index not in matched_entry_indexes)
         raise PolicyError(f"exception {orphaned['id']} has no matching current finding")
+    return sorted(entry["id"] for entry in entries)
 
 
 def _git_config_source(source: str) -> str:
@@ -789,7 +984,59 @@ def _license_files(value: Any, label: str) -> list[dict[str, Any]]:
     return normalized
 
 
-def validate_exception_config(register: Any, config: dict[str, Any], *, today: date | None = None) -> None:
+def validate_no_local_exception_files(manifests: Iterable[Path | str]) -> None:
+    """Reject cargo-deny exception files auto-discovered beside either manifest."""
+    try:
+        manifest_paths = tuple(Path(manifest) for manifest in manifests)
+    except (TypeError, ValueError):
+        raise PolicyError("Cargo manifest inventory is malformed") from None
+    if not manifest_paths:
+        raise PolicyError("Cargo manifest inventory is empty")
+    for manifest in manifest_paths:
+        lexical_manifest = Path(os.path.abspath(os.fspath(manifest)))
+        try:
+            canonical_manifest = manifest.resolve(strict=True)
+        except (OSError, RuntimeError, ValueError):
+            raise PolicyError("Cargo manifest cannot be canonicalized") from None
+        if not canonical_manifest.is_file():
+            raise PolicyError("Cargo manifest is not a file")
+        for start in {lexical_manifest.parent, canonical_manifest.parent}:
+            for directory in (start, *start.parents):
+                for relative_path in LOCAL_CARGO_DENY_EXCEPTION_FILES:
+                    candidate = directory / relative_path
+                    if candidate.is_file() or candidate.is_symlink():
+                        raise PolicyError("local cargo-deny exception file is not permitted")
+
+
+def _exception_free_config(config: dict[str, Any]) -> dict[str, Any]:
+    """Copy all reviewed policy settings while removing every waiver surface."""
+    if not isinstance(config, dict):
+        raise PolicyError("cargo-deny configuration is malformed")
+    baseline = copy.deepcopy(config)
+    for section, field in (
+        ("advisories", "ignore"),
+        ("bans", "skip"),
+        ("licenses", "clarify"),
+        ("licenses", "exceptions"),
+        ("sources", "allow-git"),
+    ):
+        section_value = baseline.setdefault(section, {})
+        if not isinstance(section_value, dict):
+            raise PolicyError("cargo-deny configuration is malformed")
+        section_value[field] = []
+    bans = baseline.get("bans")
+    if isinstance(bans, dict) and bans.get("skip-tree") == []:
+        bans.pop("skip-tree")
+    return baseline
+
+
+def validate_exception_config(
+    register: Any,
+    config: dict[str, Any],
+    *,
+    baseline_config: dict[str, Any] | None = None,
+    today: date | None = None,
+) -> None:
     """Require exact bidirectional correspondence with cargo-deny waiver fields."""
     current_date = today or date.today()
     entries = _validate_register(register, current_date, check_current=False)
@@ -797,6 +1044,11 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
         raise PolicyError("cargo-deny configuration is malformed")
 
     expected_advisories = {entry["advisory_id"] for entry in entries if entry["kind"] == "advisory"}
+    expected_yanked = {
+        (f"{entry['package']}@{entry['version']}", entry["id"])
+        for entry in entries
+        if entry["kind"] == "yanked"
+    }
     expected_clarifications = {
         f"{entry['package']}@{entry['version']}": {
             "expression": entry["license_evidence"]["expression"],
@@ -828,27 +1080,62 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
     if not isinstance(advisories, dict) or not isinstance(advisories.get("ignore", []), list):
         raise PolicyError("cargo-deny advisory exception configuration is malformed")
     configured_advisories = advisories.get("ignore", [])
+    configured_advisory_ids: list[str] = []
+    configured_yanked: set[tuple[str, str]] = set()
+    for item in configured_advisories:
+        if isinstance(item, str):
+            configured_advisory_ids.append(item)
+            continue
+        if (
+            not isinstance(item, dict)
+            or set(item) != {"crate", "reason"}
+            or not isinstance(item.get("crate"), str)
+            or not isinstance(item.get("reason"), str)
+        ):
+            raise PolicyError("cargo-deny advisory ignore entry is malformed")
+        crate = item["crate"]
+        reason = item["reason"]
+        ids = [
+            entry["id"]
+            for entry in entries
+            if entry["kind"] == "yanked" and f"{entry['package']}@{entry['version']}" == crate
+        ]
+        if len(ids) != 1 or ids[0] not in reason:
+            raise PolicyError("cargo-deny yanked ignore does not cite one exact registered exception ID")
+        configured_yanked.add((crate, ids[0]))
     if (
-        any(not isinstance(value, str) for value in configured_advisories)
-        or len(set(configured_advisories)) != len(configured_advisories)
-        or set(configured_advisories) != expected_advisories
+        len(set(configured_advisory_ids)) != len(configured_advisory_ids)
+        or set(configured_advisory_ids) != expected_advisories
+        or len(configured_yanked) != sum(
+            1 for item in configured_advisories if isinstance(item, dict)
+        )
+        or configured_yanked != expected_yanked
     ):
         duplicate_advisories = {
             value
-            for value in configured_advisories
-            if isinstance(value, str) and configured_advisories.count(value) > 1
+            for value in configured_advisory_ids
+            if configured_advisory_ids.count(value) > 1
         }
         missing_ids = [
             entry["id"]
             for entry in entries
             if entry["kind"] == "advisory"
-            and (entry["advisory_id"] not in configured_advisories or entry["advisory_id"] in duplicate_advisories)
+            and (
+                entry["advisory_id"] not in configured_advisory_ids
+                or entry["advisory_id"] in duplicate_advisories
+            )
         ]
         has_unregistered_waiver = any(
-            isinstance(value, str) and value not in expected_advisories for value in configured_advisories
+            value not in expected_advisories for value in configured_advisory_ids
+        )
+        missing_ids.extend(
+            exception_id for crate, exception_id in expected_yanked - configured_yanked
+        )
+        has_unregistered_waiver = has_unregistered_waiver or any(
+            value not in expected_yanked for value in configured_yanked
         )
         raise PolicyError(
-            "cargo-deny advisory ignores do not match the exception register; "
+            "cargo-deny advisory and yanked ignores do not match the exception register; "
             f"{mismatch_details(missing_ids, has_unregistered_waiver)}"
         )
 
@@ -980,6 +1267,9 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
             f"{mismatch_details(related_ids, False)}"
         )
 
+    if baseline_config is not None and baseline_config != _exception_free_config(config):
+        raise PolicyError("waiver-free cargo-deny baseline policy does not match the reviewed policy")
+
 
 def _read_json(path: Path, label: str) -> Any:
     try:
@@ -1008,14 +1298,47 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--findings",
         type=Path,
-        help="JSON array of advisory, license, and duplicate findings for exact exception matching",
+        help="JSON array of structured cargo-deny findings for exact exception matching",
+    )
+    parser.add_argument(
+        "--baseline-deny-config",
+        type=Path,
+        help="waiver-free cargo-deny config that must differ only by registered waiver fields",
     )
     parser.add_argument(
         "--format-cargo-deny-diagnostics",
         action="store_true",
         help="read cargo-deny JSON from stdin and print a safely redacted failure report",
     )
+    parser.add_argument(
+        "--extract-cargo-deny-findings",
+        action="store_true",
+        help="parse one waiver-free cargo-deny JSON scan from stdin into safe exact findings",
+    )
+    parser.add_argument("--scan-workspace", choices=("root", "fuzz"))
+    parser.add_argument("--scan-exit-code", type=int)
+    parser.add_argument("--preflight-only", action="store_true")
     arguments = parser.parse_args(argv)
+    if arguments.extract_cargo_deny_findings:
+        try:
+            metadata = {
+                "root": _read_json(arguments.root_metadata, "root Cargo metadata"),
+                "fuzz": _read_json(arguments.fuzz_metadata, "fuzz Cargo metadata"),
+            }
+            if arguments.scan_workspace is None or arguments.scan_exit_code is None:
+                raise PolicyError("baseline scan context is incomplete")
+            raw_output = sys.stdin.read(16 * 1024 * 1024 + 1)
+            findings = parse_cargo_deny_findings(
+                raw_output,
+                metadata,
+                arguments.scan_workspace,
+                arguments.scan_exit_code,
+            )
+            print(json.dumps(findings, separators=(",", ":")))
+        except (OSError, UnicodeError, PolicyError):
+            print("dependency policy: waiver-free cargo-deny findings are incomplete or invalid", file=sys.stderr)
+            return 1
+        return 0
     if arguments.format_cargo_deny_diagnostics:
         try:
             metadata = {
@@ -1042,9 +1365,21 @@ def main(argv: list[str] | None = None) -> int:
                 config = tomllib.load(stream)
         except (OSError, tomllib.TOMLDecodeError):
             raise PolicyError("cargo-deny configuration cannot be read as valid TOML") from None
+        baseline_config: dict[str, Any] | None = None
+        if arguments.baseline_deny_config is not None:
+            try:
+                with arguments.baseline_deny_config.open("rb") as stream:
+                    baseline_config = tomllib.load(stream)
+            except (OSError, tomllib.TOMLDecodeError):
+                raise PolicyError("waiver-free cargo-deny baseline cannot be read as valid TOML") from None
+        validate_no_local_exception_files((root / "Cargo.toml", root / "fuzz" / "Cargo.toml"))
         findings = validate_workspace_metadata(root, metadata, register)
-        validate_exception_config(register, config)
+        validate_exception_config(register, config, baseline_config=baseline_config)
         exceptions = register.get("exceptions") if isinstance(register, dict) else None
+        matched_exception_ids: list[str] = []
+        if arguments.preflight_only:
+            print("Dependency policy inputs, local exception discovery, and waiver-free config are valid.")
+            return 0
         if arguments.findings is None:
             if exceptions and any(
                 isinstance(entry, dict) and entry.get("kind") != "source" for entry in exceptions
@@ -1056,13 +1391,20 @@ def main(argv: list[str] | None = None) -> int:
                 raise PolicyError("dependency findings must be a JSON array")
             if not exceptions and additional_findings:
                 raise PolicyError("dependency findings were supplied without registered exceptions")
-            findings.extend(additional_findings)
+            unique_findings = {
+                json.dumps(item, sort_keys=True, separators=(",", ":")): item
+                for item in additional_findings
+            }
+            findings.extend(unique_findings.values())
         if exceptions:
-            validate_exceptions(register, findings)
+            matched_exception_ids = validate_exceptions(register, findings)
     except PolicyError as error:
         print(f"dependency policy: {error}", file=sys.stderr)
         return 1
-    print("dependency policy metadata and exception register are valid")
+    if matched_exception_ids:
+        print("Validated exception IDs: " + ", ".join(matched_exception_ids))
+    else:
+        print("No dependency exceptions were registered.")
     return 0
 
 

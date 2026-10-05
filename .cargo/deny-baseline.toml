@@ -1,0 +1,36 @@
+[graph]
+all-features = true
+
+[advisories]
+ignore = []
+unsound = "all"
+unmaintained = "all"
+yanked = "deny"
+
+[bans]
+multiple-versions = "deny"
+multiple-versions-include-dev = true
+wildcards = "deny"
+allow-wildcard-paths = false
+deny = [
+    "native-tls",
+    "openssl",
+    "openssl-sys",
+]
+skip = []
+
+[licenses]
+include-dev = true
+allow = ["Apache-2.0", "MIT", "NCSA", "Unicode-3.0", "Unlicense"]
+exceptions = []
+clarify = []
+
+[licenses.private]
+ignore = false
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+required-git-spec = "rev"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

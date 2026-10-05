@@ -5,6 +5,7 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $rootManifest = Join-Path $repositoryRoot 'Cargo.toml'
 $fuzzManifest = Join-Path $repositoryRoot 'fuzz/Cargo.toml'
+$baselineDenyConfig = Join-Path $repositoryRoot '.cargo/deny-baseline.toml'
 $lockfiles = @(
     (Join-Path $repositoryRoot 'Cargo.lock'),
     (Join-Path $repositoryRoot 'fuzz/Cargo.lock')
@@ -80,7 +81,8 @@ function Invoke-CapturedCommand {
         [Parameter(Mandatory = $true)][string[]]$Arguments,
         [Parameter(Mandatory = $true)][string]$Operation,
         [string]$StdoutPath,
-        [switch]$CargoDenyDiagnostics
+        [switch]$CargoDenyDiagnostics,
+        [switch]$AllowNonzero
     )
 
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
@@ -107,7 +109,7 @@ function Invoke-CapturedCommand {
         if ($StdoutPath) {
             [System.IO.File]::WriteAllText($StdoutPath, $stdout, [System.Text.UTF8Encoding]::new($false))
         }
-        if ($process.ExitCode -ne 0) {
+        if ($process.ExitCode -ne 0 -and -not $AllowNonzero) {
             if ($CargoDenyDiagnostics) {
                 $safeReport = Format-CargoDenyFailure -RawOutput ($stdout + "`n" + $stderr) `
                     -PythonExecutable $pythonExecutable -RootMetadata $rootMetadata -FuzzMetadata $fuzzMetadata
@@ -115,10 +117,78 @@ function Invoke-CapturedCommand {
             }
             throw "$Operation failed with exit code $($process.ExitCode)."
         }
+        if ($AllowNonzero) {
+            return [pscustomobject]@{
+                ExitCode = $process.ExitCode
+                Stdout = $stdout
+                Stderr = $stderr
+            }
+        }
         return $stdout
     }
     finally {
         $process.Dispose()
+    }
+}
+
+function Convert-CargoDenyFindings {
+    param(
+        [Parameter(Mandatory = $true)][string]$RawOutput,
+        [Parameter(Mandatory = $true)][int]$ExitCode,
+        [Parameter(Mandatory = $true)][ValidateSet('root', 'fuzz')][string]$Workspace,
+        [Parameter(Mandatory = $true)][string]$PythonExecutable,
+        [Parameter(Mandatory = $true)][string]$RootMetadata,
+        [Parameter(Mandatory = $true)][string]$FuzzMetadata
+    )
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $PythonExecutable
+    $startInfo.WorkingDirectory = $repositoryRoot
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardInput = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.StandardInputEncoding = [System.Text.UTF8Encoding]::new($false)
+    [void]$startInfo.ArgumentList.Add('-X')
+    [void]$startInfo.ArgumentList.Add('utf8')
+    [void]$startInfo.ArgumentList.Add((Join-Path $repositoryRoot 'scripts/dependency_policy.py'))
+    [void]$startInfo.ArgumentList.Add('--extract-cargo-deny-findings')
+    [void]$startInfo.ArgumentList.Add('--scan-workspace')
+    [void]$startInfo.ArgumentList.Add($Workspace)
+    [void]$startInfo.ArgumentList.Add('--scan-exit-code')
+    [void]$startInfo.ArgumentList.Add([string]$ExitCode)
+    [void]$startInfo.ArgumentList.Add('--root-metadata')
+    [void]$startInfo.ArgumentList.Add($RootMetadata)
+    [void]$startInfo.ArgumentList.Add('--fuzz-metadata')
+    [void]$startInfo.ArgumentList.Add($FuzzMetadata)
+
+    $parser = [System.Diagnostics.Process]::new()
+    $parser.StartInfo = $startInfo
+    try {
+        if (-not $parser.Start()) {
+            throw 'Waiver-free cargo-deny findings parser could not be started.'
+        }
+        $stdoutTask = $parser.StandardOutput.ReadToEndAsync()
+        $stderrTask = $parser.StandardError.ReadToEndAsync()
+        $parser.StandardInput.Write($RawOutput)
+        $parser.StandardInput.Close()
+        $parser.WaitForExit()
+        $stdout = $stdoutTask.GetAwaiter().GetResult().Trim()
+        [void]$stderrTask.GetAwaiter().GetResult()
+        if ($parser.ExitCode -ne 0 -or -not $stdout) {
+            throw 'Waiver-free cargo-deny findings are incomplete or invalid.'
+        }
+        $findings = ConvertFrom-Json -InputObject $stdout -NoEnumerate -ErrorAction Stop
+        if ($findings -isnot [System.Array]) {
+            throw 'Waiver-free cargo-deny findings did not produce a JSON array.'
+        }
+        return ,$findings
+    }
+    catch {
+        throw 'Waiver-free cargo-deny findings are incomplete or invalid.'
+    }
+    finally {
+        $parser.Dispose()
     }
 }
 
@@ -185,7 +255,7 @@ function Get-RustSecEvidence {
 }
 
 try {
-    foreach ($requiredPath in @($rootManifest, $fuzzManifest) + $lockfiles) {
+    foreach ($requiredPath in @($rootManifest, $fuzzManifest, $baselineDenyConfig) + $lockfiles) {
         if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {
             throw "Required dependency-policy input is missing: $([System.IO.Path]::GetFileName($requiredPath))"
         }
@@ -227,14 +297,48 @@ try {
     [void](Invoke-CapturedCommand -Executable $cargoExecutable -Arguments @('metadata', '--manifest-path', $rootManifest, '--locked', '--format-version', '1', '--all-features') -Operation 'root cargo metadata' -StdoutPath $rootMetadata)
     [void](Invoke-CapturedCommand -Executable $cargoExecutable -Arguments @('metadata', '--manifest-path', $fuzzManifest, '--locked', '--format-version', '1', '--all-features') -Operation 'fuzz cargo metadata' -StdoutPath $fuzzMetadata)
 
-    # T007's validator checks canonical workspace paths and the reviewed exception/config correspondence.
+    # Validate inputs before cargo-deny because it also discovers local exception files.
     [void](Invoke-CapturedCommand -Executable $pythonExecutable -Arguments @(
         (Join-Path $repositoryRoot 'scripts/dependency_policy.py'),
         '--checkout-root', $repositoryRoot,
         '--root-metadata', $rootMetadata,
-        '--fuzz-metadata', $fuzzMetadata
-    ) -Operation 'dependency policy metadata and exception validation')
-    Write-Output 'Dependency metadata and exception register are valid.'
+        '--fuzz-metadata', $fuzzMetadata,
+        '--baseline-deny-config', $baselineDenyConfig,
+        '--preflight-only'
+    ) -Operation 'dependency policy preflight validation')
+
+    # Scan without registered waivers so global or skip-based configuration cannot hide scope.
+    $baselineFindings = [System.Collections.Generic.List[object]]::new()
+    foreach ($workspace in @(
+        [pscustomobject]@{ Name = 'root'; Manifest = $rootManifest },
+        [pscustomobject]@{ Name = 'fuzz'; Manifest = $fuzzManifest }
+    )) {
+        $baselineScan = Invoke-CapturedCommand -Executable $denyExecutable -Arguments @(
+            '--manifest-path', $workspace.Manifest,
+            '--config', $baselineDenyConfig,
+            '--workspace', '--all-features', '--locked', '--format', 'json', '--color', 'never', 'check'
+        ) -Operation "$($workspace.Name) waiver-free cargo-deny scan" -AllowNonzero
+        $rawBaselineOutput = $baselineScan.Stdout + "`n" + $baselineScan.Stderr
+        $workspaceFindings = Convert-CargoDenyFindings -RawOutput $rawBaselineOutput `
+            -ExitCode $baselineScan.ExitCode -Workspace $workspace.Name `
+            -PythonExecutable $pythonExecutable -RootMetadata $rootMetadata -FuzzMetadata $fuzzMetadata
+        foreach ($finding in $workspaceFindings) {
+            $baselineFindings.Add($finding)
+        }
+    }
+    $findingsPath = Join-Path $metadataRoot 'findings.json'
+    $safeFindings = ConvertTo-Json -InputObject @($baselineFindings.ToArray()) -Depth 16 -Compress
+    [System.IO.File]::WriteAllText($findingsPath, $safeFindings, [System.Text.UTF8Encoding]::new($false))
+
+    # Exact, one-to-one exception evidence is required before the configured scans run.
+    $exceptionValidation = Invoke-CapturedCommand -Executable $pythonExecutable -Arguments @(
+        (Join-Path $repositoryRoot 'scripts/dependency_policy.py'),
+        '--checkout-root', $repositoryRoot,
+        '--root-metadata', $rootMetadata,
+        '--fuzz-metadata', $fuzzMetadata,
+        '--baseline-deny-config', $baselineDenyConfig,
+        '--findings', $findingsPath
+    ) -Operation 'dependency policy exact exception validation'
 
     foreach ($workspace in @(
         [pscustomobject]@{ Name = 'root'; Manifest = $rootManifest },
@@ -248,6 +352,7 @@ try {
         $rustSecEvidence = Get-RustSecEvidence -Workspace $workspace.Name
         Write-Output "RustSec $($workspace.Name): remote $rustSecRemote; commit $($rustSecEvidence.Commit); timestamp $($rustSecEvidence.Timestamp)"
     }
+    Write-Output $exceptionValidation
 
     # Run offline negative fixtures with the exact binary verified above.
     $env:CARGO_DENY = $denyExecutable

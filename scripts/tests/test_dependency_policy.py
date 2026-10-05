@@ -533,6 +533,12 @@ class DependencyExceptionTests(unittest.TestCase):
             {"advisories": {"ignore": [{"crate": "example-crate@1.2.3", "reason": entry["id"]}]}},
         )
 
+    def test_exact_yanked_exception_covers_only_its_package_version(self) -> None:
+        entry = exact_exception("yanked")
+        self.validate([entry], [finding("yanked")])
+        with self.assertRaises(self.policy_error()):
+            self.validate([entry], [finding("yanked", version="1.2.4")])
+
     def test_exception_free_config_must_preserve_policy_and_remove_waivers(self) -> None:
         policy = self.require_policy()
         register = {"schema_version": 1, "exceptions": []}
@@ -553,16 +559,17 @@ class DependencyExceptionTests(unittest.TestCase):
 
     def test_local_cargo_deny_exception_file_is_rejected(self) -> None:
         policy = self.require_policy()
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            manifest = root / "Cargo.toml"
-            manifest.write_text("[workspace]\n", encoding="utf-8")
-            exception_file = root / ".cargo" / "deny.exceptions.toml"
-            exception_file.parent.mkdir()
-            exception_file.write_text("[licenses]\nallow = [\"GPL-3.0-only\"]\n", encoding="utf-8")
-            with self.assertRaises(self.policy_error()) as raised:
-                policy.validate_no_local_exception_files((manifest,))
-        self.assertIn("local cargo-deny exception file", str(raised.exception))
+        for relative_name in ("deny.exceptions.toml", ".deny.exceptions.toml", ".cargo/deny.exceptions.toml"):
+            with self.subTest(relative_name=relative_name), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                manifest = root / "Cargo.toml"
+                manifest.write_text("[workspace]\n", encoding="utf-8")
+                exception_file = root / relative_name
+                exception_file.parent.mkdir(parents=True, exist_ok=True)
+                exception_file.write_text("[licenses]\nallow = [\"GPL-3.0-only\"]\n", encoding="utf-8")
+                with self.assertRaises(self.policy_error()) as raised:
+                    policy.validate_no_local_exception_files((manifest,))
+                self.assertIn("local cargo-deny exception file", str(raised.exception))
 
     def test_exception_config_mismatch_reports_rule_and_exception_id_without_secrets(self) -> None:
         policy = self.require_policy()
@@ -980,13 +987,22 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
             "--extract-cargo-deny-findings",
             "--baseline-deny-config",
             "--findings",
-            "Validated exception IDs:",
+            "Write-Output $exceptionValidation",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, contents)
-        self.assertLess(contents.index("--preflight-only"), contents.index("--extract-cargo-deny-findings"))
-        self.assertLess(contents.index("--extract-cargo-deny-findings"), contents.index("--findings"))
-        self.assertLess(contents.index("--findings"), contents.rindex("$workspace in @("))
+        self.assertLess(
+            contents.index("dependency policy preflight validation"),
+            contents.index("waiver-free cargo-deny scan"),
+        )
+        self.assertLess(
+            contents.index("waiver-free cargo-deny scan"),
+            contents.index("dependency policy exact exception validation"),
+        )
+        self.assertLess(
+            contents.index("dependency policy exact exception validation"),
+            contents.rindex("$workspace in @("),
+        )
 
     def test_runner_executes_negative_fixtures_with_the_verified_pinned_binary(self) -> None:
         contents = self.require_runner()
@@ -1155,6 +1171,64 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         self.assertEqual(["unsafe-crate"], [item["package"] for item in findings])
         self.assertEqual("RUSTSEC-2026-0001", findings[0]["advisory_id"])
 
+    def test_duplicate_baseline_finding_covers_each_top_level_version_exactly(self) -> None:
+        parser = getattr(POLICY, "parse_cargo_deny_findings", None)
+        self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
+        raw = "\n".join(
+            (
+                json.dumps(
+                    {
+                        "type": "diagnostic",
+                        "fields": {
+                            "code": "duplicate",
+                            "severity": "error",
+                            "graphs": [
+                                {
+                                    "Krate": {"name": "duplicate-crate", "version": version},
+                                    "parents": [{"Krate": {"name": "fixture-root", "version": "0.1.0"}}],
+                                }
+                                for version in ("1.0.0", "2.0.0")
+                            ],
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "summary",
+                        "fields": {
+                            check: {"errors": int(check == "bans"), "warnings": 0, "notes": 0, "helps": 0}
+                            for check in ("advisories", "bans", "licenses", "sources")
+                        },
+                    }
+                ),
+            )
+        )
+        source = "registry+https://github.com/rust-lang/crates.io-index"
+        metadata = {
+            "root": {
+                "packages": [
+                    {"name": "duplicate-crate", "version": version, "source": source}
+                    for version in ("1.0.0", "2.0.0")
+                ]
+            },
+            "fuzz": {"packages": []},
+        }
+
+        findings = parser(raw, metadata, "root", 2)
+        entries = [
+            exact_exception("duplicate", package_name="duplicate-crate", version=version)
+            for version in ("1.0.0", "2.0.0")
+        ]
+        entries[1]["id"] = "KMIPKIT-0011-EX-002"
+        matched = POLICY.validate_exceptions(
+            {"schema_version": 1, "exceptions": entries},
+            findings,
+            today=date(2026, 1, 15),
+        )
+
+        self.assertEqual(["KMIPKIT-0011-EX-001", "KMIPKIT-0011-EX-002"], matched)
+        self.assertEqual({"1.0.0", "2.0.0"}, {item["version"] for item in findings})
+
     def test_baseline_parser_rejects_unknown_errors_and_incomplete_json(self) -> None:
         parser = getattr(POLICY, "parse_cargo_deny_findings", None)
         self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
@@ -1162,6 +1236,26 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
             parser('{"type":"diagnostic","fields":{"code":"mystery","severity":"error"}}', {}, "root", 1)
         with self.assertRaises(POLICY.PolicyError):
             parser("not-json", {}, "root", 0)
+
+        summary = {
+            "type": "summary",
+            "fields": {
+                check: {
+                    "errors": 0,
+                    "warnings": 0,
+                    "notes": 0,
+                    "helps": int(check == "licenses"),
+                }
+                for check in ("advisories", "bans", "licenses", "sources")
+            },
+        }
+        with self.assertRaises(POLICY.PolicyError):
+            parser(
+                json.dumps(summary),
+                {"root": {"packages": []}},
+                "root",
+                0,
+            )
 
     def test_cli_formats_piped_json_without_persisting_or_echoing_raw_diagnostics(self) -> None:
         raw_output = (
