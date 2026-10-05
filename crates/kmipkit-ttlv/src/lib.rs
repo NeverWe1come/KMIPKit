@@ -38,6 +38,9 @@ mod value;
 
 mod generated;
 
+#[cfg(test)]
+mod codec_red_tests;
+
 pub use error::ModelError;
 pub use item::Item;
 pub use structure::{Structure, StructureView};
