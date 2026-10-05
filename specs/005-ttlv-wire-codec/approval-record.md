@@ -141,6 +141,14 @@ T008's deterministic encoder-to-decoder round-trip tests are in DCO-signed commi
 | --- | --- |
 | `tasks.md` | `9E55EA51D12689D472942E530F2420C3F820E2BE78973037A0F7BD049B8E43B2` |
 
+## Execution update — T009
+
+T009 Red is implemented in DCO-signed commit `b3bd550a8360a2fbe69a5cbf82072d8c707607e0`; report and independent static review are in `task-9-report.md` and `task-9-review.md`. Review returned PASS. I independently ran the directed Red command: two control tests passed and nine limit/overflow/pre-allocation assertions failed as intended, all as behavioral failures without compile or panic failures. The implementer's format, Clippy, all-feature check, test-binary compile, and diff checks also passed. T010 will promote the private candidate seams to the immutable public limits API and production decoder.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `30498F68A7FC0AB988F33A2B88B46B57671DA4BC22660470A6E774CA8C815BFE` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository

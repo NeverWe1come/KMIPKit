@@ -2,13 +2,14 @@
 
 ## Scope and status
 
-This provisional report records only the T009 Red phase. The test-only module
+This report records only the completed T009 Red phase. The test-only module
 `crates/kmipkit-ttlv/src/codec/limits_tests.rs` is wired under `#[cfg(test)]`
 from the codec module. `RedLimits`, limited-decode/preflight stubs, a checked-end
 stub, and an observer are private to unit tests. No production decoder, API,
 client, manifest, dependency, task status, or FR-013 behavior was changed.
 
-T009 remains unchecked pending Green implementation and independent review.
+T009 is complete. T010 will replace the limited-decode, preflight, and checked-
+end candidates with the production limits path.
 
 ## Red coverage
 
@@ -51,5 +52,14 @@ were no missing-symbol, compile, or panic-path failures. The full crate test
 suite is expected to remain red until T010 replaces these stubs with the
 production limits path.
 
-No production behavior was changed. No completion or PASS claim is made for
-T009.
+No production behavior was changed.
+
+## Independent review
+
+The independent static review of `b3bd550a8360a2fbe69a5cbf82072d8c707607e0`
+returned **PASS** with no findings. It confirmed the module's test-only scope,
+two Red controls and nine behavioral assertion failures, bounded fixtures,
+observer behavior, and project/OASIS attribution. The reviewer did not run
+tests; the root agent independently ran the directed Red command and observed
+2 passed and 9 expected behavioral failures with no compile or panic failures.
+The review record is [`task-9-review.md`](task-9-review.md).
