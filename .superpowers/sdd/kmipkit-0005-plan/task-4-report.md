@@ -59,4 +59,8 @@ After the refactor:
 - `cargo check -p kmipkit-client --all-features` — passed.
 - `git diff --check` — passed.
 
-The T002 Red and T003 Green behavior evidence remains in its existing commits; this T004 change is a separate Refactor phase. No T004 completion status is claimed before independent review.
+The T002 Red and T003 Green behavior evidence remains in its existing commits; this T004 change is a separate Refactor phase.
+
+## Independent review disposition
+
+The independent review found the original zeroization observer vacuous because `Vec::zeroize()` cleared the length before observation. The Red test now requires a nonzero observed length, and Green zeroizes the initialized slice in place before observing it. The reviewer confirmed the observer sees a nonempty all-zero slice before field destruction, with no unsafe or freed-memory access; automatic `Zeroizing<Vec<u8>>` drop still follows. The reviewer reported no new findings. The reviewer did not run tests; the coordinator independently ran `cargo test -p kmipkit-client` after Green and confirmed 32 unit tests and 6 integration tests passed. T004 is complete.

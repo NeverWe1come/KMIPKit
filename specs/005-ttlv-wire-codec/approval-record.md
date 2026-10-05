@@ -88,7 +88,7 @@ was verified against those refs on 2026-10-05. Task progress is included below.
 
 ## Execution update — 2026-10-05
 
-After the maintainer reported that intervening PRs were merged, a terminal GitHub API check confirmed PRs #14–#29 were closed as merged. This feature branch integrated `origin/release/1.0.0` at `d46e13dfdd83ac05e4b58d24af5b928e355e092d` in merge commit `bd27ebc`. The catalog merge preserves `KMIPKIT-DEC-001` / `KMIPKIT-DISC-037` and the merged credential corrections and open `KMIPKIT-DISC-041` / `KMIPKIT-DISC-042`; the generated coverage report was regenerated from the validated catalog. The catalog regression test now accepts discrepancies resolved by an accepted decision while requiring unresolved rows to remain open. Validation, report verification, source audit, immutable-source check, generators, and all catalog tests pass. T003 is complete after a clean scoped review; this update does not expand its approved scope. The artifact digests below reflect the merged release and completed T003 task state.
+After the maintainer reported that intervening PRs were merged, a terminal GitHub API check confirmed PRs #14–#29 were closed as merged. This feature branch integrated `origin/release/1.0.0` at `d46e13dfdd83ac05e4b58d24af5b928e355e092d` in merge commit `bd27ebc`. The catalog merge preserves `KMIPKIT-DEC-001` / `KMIPKIT-DISC-037` and the merged credential corrections and open `KMIPKIT-DISC-041` / `KMIPKIT-DISC-042`; the generated coverage report was regenerated from the validated catalog. The catalog regression test now accepts discrepancies resolved by an accepted decision while requiring unresolved rows to remain open. Validation, report verification, source audit, immutable-source check, generators, and all catalog tests pass. T003 and T004 are complete after clean scoped reviews; the T004 observer regression was corrected with separate Red/Green commits. These changes do not expand the approved scope. The artifact digests below reflect the merged release and completed T004 task state.
 
 | Artifact | SHA-256 |
 | --- | --- |
@@ -99,7 +99,7 @@ After the maintainer reported that intervening PRs were merged, a terminal GitHu
 | `contracts/rust-ttlv-codec.md` | `728BABDA1F12996AC47A617999E0FDF7FF0F884B87A73AE51C3D3509942F5CEA` |
 | `quickstart.md` | `8AB455C58E907DA26931217CCC6DFA4EA0F45E34A5775FA8F74926E9883F85F1` |
 | `dependency-review.md` | `60FE528D34DCB30F8F83BC6176B91E8522B4A6FA9CA1A5875B32697E9F0206B4` |
-| `tasks.md` | `BB03893FA35BEFCBBDE349389DF46764D66B8DC37AEFD05C39CF923F182BB292` |
+| `tasks.md` | `E8A9FB122CC504B15A97B754DF235AD97620B06230221FC5120CCF95A181947F` |
 | `docs/adr/0011-reserved-tag-decoding-policy.md` | `3A5C0589554B2080835EC7F10F1D537B297CFF9B60F21E89F03869DE428A1D2A` |
 | `docs/adr/0012-caller-requested-wire-encoding-policy.md` | `130C4CAD7AFC9985BC816286F8652729B392425C5E510DCAB9285223E827F333` |
 | `docs/adr/README.md` | `EA965F505F893CAA505E6A783ECE6BF5488AE61B77D3E4A37192B2E8B34F4ECC` |
