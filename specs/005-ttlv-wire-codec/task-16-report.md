@@ -3,7 +3,7 @@
 Date: 2026-10-05
 Branch: `feature/KMIPKIT-0005-ttlv-wire-codec`
 Verification base: `release/1.0.0` at `d46e13dfdd83ac05e4b58d24af5b928e355e092d`
-Local host: Windows, Rust `1.99.0`; supported-platform CI remains required.
+Local host: Windows, Rust `1.99.0`.
 
 ## Changes made
 
@@ -51,6 +51,7 @@ test and all script tests pass afterward.
 | Generated catalog report, TTLV tags, and result values | All `--check` commands pass |
 | Coverage preflight and LLVM path normalization | Pass |
 | `git diff --check` | Pass |
+| Pull-request CI | Pass on Linux, Windows, and macOS; Rust stable and 1.94 matrices, script contracts, normative inventory, per-platform coverage, and three-platform coverage aggregation all succeeded. [Run 37326087477](https://github.com/NeverWe1come/KMIPKit/actions/runs/37326087477) |
 
 Windows line coverage from the normalized workspace export:
 
@@ -64,8 +65,9 @@ Windows line coverage from the normalized workspace export:
 | `kmipkit-ffi` | Not applicable; no executable FFI source lines were emitted |
 | Rust workspace | 95.32% |
 
-The local coverage thresholds pass. Linux, macOS, MSRV 1.94, and cross-platform
-aggregation still require the pull-request workflow.
+Local and pull-request coverage thresholds pass. The pull-request workflow
+completed on Linux, Windows, and macOS, including Rust 1.94 and the aggregated
+three-platform coverage gate.
 
 ## Dependency and license scan
 
@@ -81,4 +83,5 @@ aggregation still require the pull-request workflow.
   feature does not invent or broaden that allowlist.
 
 The bounded 1,000-iteration libFuzzer run and fixture checks remain recorded in
-the T014 report. No decoder production behavior changed in T016.
+the T014 report. No decoder production behavior changed in T016. A separate
+qualified human security review remains a release requirement.
