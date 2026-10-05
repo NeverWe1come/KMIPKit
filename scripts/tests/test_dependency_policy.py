@@ -207,6 +207,8 @@ class DependencyPolicyApiTests(unittest.TestCase):
 
     def test_git_source_exception_covers_only_the_exact_revision_in_both_workspace_graphs(self) -> None:
         policy = self.require_policy()
+        source_validator = getattr(policy, "validate_metadata_sources", None)
+        self.assertTrue(callable(source_validator), "dependency_policy.py must validate exact source metadata.")
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             _, metadata = self.make_repository(root)
@@ -228,13 +230,15 @@ class DependencyPolicyApiTests(unittest.TestCase):
                 ],
             }
             with self.assertRaises(self.policy_error()):
-                policy.validate_workspace_metadata(root, metadata, register, today=date(2026, 1, 15))
+                source_validator(metadata, register, today=date(2026, 1, 15))
 
             metadata["root"]["packages"][-1]["source"] = allowed_source
-            policy.validate_workspace_metadata(root, metadata, register, today=date(2026, 1, 15))
+            source_validator(metadata, register, today=date(2026, 1, 15))
 
     def test_non_crates_io_registry_is_rejected_without_an_exact_source_policy(self) -> None:
         policy = self.require_policy()
+        source_validator = getattr(policy, "validate_metadata_sources", None)
+        self.assertTrue(callable(source_validator), "dependency_policy.py must validate exact source metadata.")
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             _, metadata = self.make_repository(root)
@@ -247,7 +251,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
                 )
             )
             with self.assertRaises(self.policy_error()):
-                policy.validate_workspace_metadata(root, metadata, {"schema_version": 1, "exceptions": []})
+                source_validator(metadata, {"schema_version": 1, "exceptions": []})
 
     def test_fuzz_package_declares_apache_license_and_matching_local_crate_version(self) -> None:
         fuzz_manifest = tomllib.loads((REPOSITORY_ROOT / "fuzz" / "Cargo.toml").read_text(encoding="utf-8"))
