@@ -50917,9 +50917,19 @@
         "KMIPKIT-TEST-PROF-5-12-6-2",
         "KMIPKIT-TEST-PROF-5-12-6-3"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Structure, MAY be repeated",
       "source_requiredness": "Yes"
     },
@@ -50941,9 +50951,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "Yes"
     },
@@ -50963,9 +50983,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -50984,12 +51014,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.2-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51007,12 +51049,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.3-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51030,12 +51084,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8.2-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No, MAY be repeated"
     },
     {
@@ -51056,9 +51122,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51076,12 +51152,25 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.5-001-001",
+        "KMIPKIT-REQ-SPEC-9.5-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "Yes"
     },
     {
@@ -51099,12 +51188,26 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.6-001-001",
+        "KMIPKIT-REQ-SPEC-9.6-001-002",
+        "KMIPKIT-REQ-SPEC-9.6-001-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No",
       "source_comment": "If omitted, then Stop is assumed"
     },
@@ -51123,12 +51226,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.8-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No",
       "source_comment": "If omitted, then True is assumed"
     },
@@ -51147,12 +51262,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.9-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51170,16 +51297,28 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.12-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [
         "KMIPKIT-TEST-PROF-5-3-3-1",
         "KMIPKIT-TEST-PROF-5-4-4-1",
         "KMIPKIT-TEST-PROF-5-5-4-1"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51200,9 +51339,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "Yes"
     },
     {
@@ -51223,9 +51372,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "Yes",
       "source_comment": "Structure"
@@ -51248,9 +51407,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51268,12 +51437,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.20-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51294,9 +51475,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "Yes",
       "source_comment": "Structure"
@@ -51319,9 +51511,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "No",
       "source_comment": "Indicates that the Data output of the operation should not be returned to the client. Boolean."
     },
@@ -51340,12 +51543,27 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8.3-004",
+        "KMIPKIT-REQ-SPEC-9.13-001-001",
+        "KMIPKIT-REQ-SPEC-9.13-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "No, MAY be repeated"
     },
     {
@@ -51366,9 +51584,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "Yes"
     },
     {
@@ -51389,9 +51618,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "Yes",
       "source_comment": "Structure, contents depend on the Operation"
     },
@@ -51410,12 +51650,26 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8.3-003",
+        "KMIPKIT-REQ-SPEC-9.21-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "No",
       "source_comment": "REQUIRED if Batch Count > 1"
     },
@@ -51437,9 +51691,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_encoding": "Structure, MAY be repeated",
       "source_requiredness": "Yes"
     },
@@ -51461,9 +51726,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "Yes"
     },
@@ -51483,9 +51759,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -51504,12 +51791,25 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8.2-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_requiredness": "No, MAY be repeated",
       "source_comment": "REQUIRED in Attestation Required error message if client set Attestation Capable Indicator to True in the request"
     },
@@ -51528,12 +51828,26 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.5-001-001",
+        "KMIPKIT-REQ-SPEC-9.5-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_requiredness": "Yes"
     },
     {
@@ -51551,12 +51865,25 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.9-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51577,9 +51904,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51600,9 +51938,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_requiredness": "Yes"
     },
     {
@@ -51623,9 +51972,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "Yes",
       "source_comment": "Structure"
@@ -51648,9 +52008,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51671,9 +52042,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_requiredness": "Yes, if Hashed Password credential was used",
       "source_comment": "Hash(Timestamp || S1 || Hash(S2)), where S1, S2 and the Hash algorithm are defined in the Hashed Password credential."
     },
@@ -51692,12 +52074,25 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.20-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_requiredness": "Yes"
     },
     {
@@ -51718,9 +52113,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "No",
       "source_comment": "REQUIRED if Result Status is Pending"
     },
@@ -51742,9 +52148,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "Yes",
       "source_comment": "Structure"
@@ -51764,12 +52181,27 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8.3-004",
+        "KMIPKIT-REQ-SPEC-9.13-001-001",
+        "KMIPKIT-REQ-SPEC-9.13-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "No"
     },
     {
@@ -51790,9 +52222,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "Yes, if specified in Request Batch Item"
     },
     {
@@ -51813,9 +52256,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "Yes, if not a failure",
       "source_comment": "Structure, contents depend on the Operation"
     },
@@ -51837,9 +52291,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "No",
       "source_comment": "OPTIONAL if Result Status is not Pending or Success"
     },
@@ -51861,9 +52326,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "Yes, if Result Status is Failure",
       "source_comment": "REQUIRED if Result Status is Failure, otherwise OPTIONAL"
     },
@@ -51885,9 +52361,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "Yes"
     },
     {
@@ -51905,12 +52392,26 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8.3-003",
+        "KMIPKIT-REQ-SPEC-9.21-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_requiredness": "No",
       "source_comment": "REQUIRED if present in Request Batch Item"
     },
@@ -51932,9 +52433,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_encoding": "Byte String"
     },
     {
@@ -51956,9 +52468,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Text String"
     },
     {
@@ -51976,12 +52498,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.12-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Integer"
     },
     {
@@ -51999,12 +52533,25 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.13-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_encoding": "Boolean"
     },
     {
@@ -52023,12 +52570,27 @@
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8.3-004",
+        "KMIPKIT-REQ-SPEC-9.13-001-001",
+        "KMIPKIT-REQ-SPEC-9.13-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_encoding": "Structure"
     },
     {
@@ -52046,12 +52608,25 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.13-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_encoding": "Structure"
     },
     {
@@ -52069,12 +52644,26 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.13-001-002",
+        "KMIPKIT-REQ-SPEC-9.13-001-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_encoding": "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])"
     },
     {
@@ -52095,9 +52684,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -52119,9 +52719,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_encoding": "Byte String",
       "source_requiredness": "Yes"
     },
@@ -52143,9 +52754,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_encoding": "Byte String",
       "source_requiredness": "Yes"
     },
@@ -52168,9 +52790,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Enumeration"
     },
     {
@@ -52192,9 +52824,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Structure"
     },
     {
@@ -52215,9 +52857,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Integer"
     },
     {
@@ -52238,9 +52890,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Integer"
     },
     {
@@ -52261,9 +52923,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_encoding": "Text String"
     },
     {
@@ -52284,9 +52957,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/result_contract.rs"
+      ],
       "source_encoding": "Enumeration"
     },
     {
@@ -52307,9 +52991,20 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_encoding": "Enumeration"
     },
     {
@@ -52327,12 +53022,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.2-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Enumeration"
     },
     {
@@ -52351,12 +53058,24 @@
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.20-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Date-Time"
     },
     {
@@ -52375,12 +53094,26 @@
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8.3-003",
+        "KMIPKIT-REQ-SPEC-9.21-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/message_conversion.rs"
+      ],
       "source_encoding": "Byte String"
     },
     {
@@ -52398,12 +53131,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.3-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Boolean"
     },
     {
@@ -52427,9 +53172,19 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Structure"
     },
     {
@@ -52454,7 +53209,7 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure"
@@ -52475,12 +53230,25 @@
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.5-001-001",
+        "KMIPKIT-REQ-SPEC-9.5-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Integer"
     },
     {
@@ -52498,12 +53266,26 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.6-001-001",
+        "KMIPKIT-REQ-SPEC-9.6-001-002",
+        "KMIPKIT-REQ-SPEC-9.6-001-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Enumeration"
     },
     {
@@ -52525,9 +53307,19 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Structure"
     },
     {
@@ -52545,12 +53337,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.8-001-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Boolean"
     },
     {
@@ -52569,12 +53373,24 @@
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE",
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.9-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs"
+      ],
       "source_encoding": "Text String"
     },
     {
@@ -90904,13 +91720,23 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
+        "crates/kmipkit-protocol/tests/message_conversion.rs::request_message_conversion_preserves_bounded_generated_trees"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8-002",
@@ -90934,13 +91760,23 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::request_known_fields_and_envelope_reject_reordering",
+        "crates/kmipkit-protocol/tests/message_contract.rs::response_known_fields_and_envelope_reject_reordering"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8-003-001",
@@ -90964,13 +91800,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0007; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8-003-002",
@@ -90994,13 +91830,22 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs::one_response_batch_can_mix_completed_and_pending_results"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.1-002",
@@ -91024,13 +91869,22 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.2-002",
@@ -91051,16 +91905,28 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_accessors.rs::request_header_accessors_expose_every_represented_field"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.3-003",
@@ -91081,16 +91947,30 @@
       "direction": "client_to_server",
       "condition": "When Batch Count exceeds one.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs::every_multi_item_request_requires_an_id",
+        "crates/kmipkit-protocol/tests/message_validation.rs::multi_item_request_rejects_repeated_unique_batch_item_ids"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.3-004",
@@ -91111,16 +91991,29 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.1-001",
@@ -91144,13 +92037,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0009",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0009; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-001",
@@ -91176,13 +92069,13 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-001",
@@ -91213,13 +92106,13 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "The section 9.11 phrase “at least one field” has two plausible scopes: all six Table 412 fields or the four uniqueness fields named in the preceding sentence; see KMIPKIT-DISC-042. No interpretation is selected. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 does not choose a meaning for this requirement. The section 9.11 phrase “at least one field” has two plausible scopes: all six Table 412 fields or the four uniqueness fields named in the preceding sentence; see KMIPKIT-DISC-042. No interpretation is selected. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -91248,13 +92141,13 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-003",
@@ -91280,13 +92173,13 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-006",
@@ -91310,13 +92203,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-010-001",
@@ -91340,13 +92233,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-010-002",
@@ -91370,13 +92263,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-001",
@@ -91397,16 +92290,28 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_accessors.rs::request_header_accessors_expose_every_represented_field"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-002",
@@ -91430,13 +92335,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0007; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-003",
@@ -91460,13 +92365,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0007; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-001",
@@ -91487,16 +92392,29 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-002",
@@ -91517,16 +92435,33 @@
       "direction": "client_to_server",
       "condition": "When sending an extension.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-EXTENSION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_accessors.rs::request_batch_and_extension_accessors_preserve_order_and_values",
+        "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-003",
@@ -91547,16 +92482,28 @@
       "direction": "client_to_server",
       "condition": "When sending an extension.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected",
+        "crates/kmipkit-protocol/tests/support/message_validation_unit.rs::message_extension_validation_checks_required_fields_order_and_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-004",
@@ -91580,13 +92527,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0007; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-005",
@@ -91610,13 +92557,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0007; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.19-002",
@@ -91640,13 +92587,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0009",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0009; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.2-001",
@@ -91667,16 +92614,29 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::request_header_defaults_preserve_field_absence",
+        "crates/kmipkit-protocol/tests/message_contract.rs::raw_request_option_enumerations_survive_parse_and_conversion"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.20-001-001",
@@ -91697,16 +92657,29 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::request_time_stamp_is_optional_and_preserved_as_raw_date_time"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -91730,13 +92703,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0007; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.21-001-001",
@@ -91757,16 +92730,30 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs::a_single_item_request_may_omit_its_unique_id",
+        "crates/kmipkit-protocol/tests/message_validation.rs::request_item_ids_remain_associated_in_seeded_batch_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.21-001-002",
@@ -91790,13 +92777,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0007; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.3-001-001",
@@ -91820,13 +92807,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.3-001-002",
@@ -91847,16 +92834,28 @@
       "direction": "client_to_server",
       "condition": "When omitted.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::request_header_defaults_preserve_field_absence"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.4-001-001",
@@ -91882,13 +92881,13 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 only represents the optional Authentication header structure. The pinned KMIP Specification 2.1 section 9.4 uses lowercase “must” in the statement that multiple Credential structures must all be satisfied; section 1.2 defines uppercase key words by RFC 2119, so this classification remains unresolved in KMIPKIT-DISC-041. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.4-001-002",
@@ -91915,13 +92914,13 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.4-001-003",
@@ -91979,13 +92978,13 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.5-001-001",
@@ -92006,16 +93005,29 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.5-001-002",
@@ -92036,16 +93048,29 @@
       "direction": "client_to_server",
       "condition": "For one operation.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.6-001-001",
@@ -92066,16 +93091,28 @@
       "direction": "client_to_server",
       "condition": "When including the option.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::request_batch_options_are_rejected_for_a_single_item"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.6-001-002",
@@ -92096,16 +93133,19 @@
       "direction": "client_to_server",
       "condition": "When the option is present.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "deferred",
+      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0007; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.6-001-003",
@@ -92126,16 +93166,28 @@
       "direction": "client_to_server",
       "condition": "When omitted.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::absent_batch_options_keep_effective_defaults_without_materializing_fields"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.7-001",
@@ -92159,13 +93211,23 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
+        "crates/kmipkit-protocol/tests/message_accessors.rs::request_batch_and_extension_accessors_preserve_order_and_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.8-001-001",
@@ -92186,16 +93248,28 @@
       "direction": "client_to_server",
       "condition": "When the option is present.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_contract.rs::request_batch_options_are_rejected_for_a_single_item"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.8-001-002",
@@ -92219,13 +93293,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0006",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "This SHALL assigns batch execution order to the server in OASIS KMIP Specification v2.1 §9.8. It is retained for source coverage but is not a client implementation requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "classified",
+      "review_note": "Classified by KMIPKIT-0006 as server_only. This server duty is not implemented or claimed by the client library. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.8-001-003",
@@ -92249,13 +93323,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0006",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "This MAY grants the server permission to execute in any order in OASIS KMIP Specification v2.1 §9.8. The absent-means-True default is separately represented by the client message model; this record is retained for source coverage but is not a client implementation requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "classified",
+      "review_note": "Classified by KMIPKIT-0006 as server_only. This server duty is not implemented or claimed by the client library. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.9-001",
@@ -92276,16 +93350,29 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/mod.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/validation.rs",
+        "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/result.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/message_validation.rs::client_correlation_values_are_preserved_at_message_header_scope"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     }
   ],
   "policies": [

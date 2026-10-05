@@ -8,6 +8,8 @@ use kmipkit_ttlv::Structure;
 
 fn validate_message(tree: Structure) -> Result<(), Box<dyn std::error::Error>> {
     let message = RequestMessage::try_from_ttlv(tree)?;
+    // This example assumes a KMIPKit 1.0 request, whose client policy uses 2.1.
+    // The message model preserves other raw version pairs; client execution enforces 1.0 policy.
     let version: ProtocolVersion = message.header().protocol_version();
     assert_eq!(version.major(), 2);
     assert_eq!(version.minor(), 1);

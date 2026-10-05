@@ -4,7 +4,9 @@
 //! This crate checks 24-bit raw tag representation, tag allocation, the
 //! relationship between a value representation and its Item Type, and the
 //! local maximum Structure depth of 64. It retains Structure child order and
-//! exposes payloads through borrowed callbacks. [`crate::codec::decode`] validates
+//! exposes payloads through borrowed callbacks. `Structure::view` lends an
+//! immutable [`StructureView`] without transferring or cloning child payloads.
+//! [`crate::codec::decode`] validates
 //! framing, type-specific lengths, required padding extents, and default
 //! resource limits before returning exactly one item;
 //! [`crate::codec::decode_with_limits`] accepts immutable per-call limits. It

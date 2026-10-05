@@ -44,14 +44,17 @@ determines the Item Type. It also preserves child order, raw Enumeration
 values, bitmask bits, and exact Big Integer Item Value octets. The tree has
 KMIPKit's 64-level Structure limit.
 
-The model is not a TTLV wire message and does not establish wire or protocol
-validity. It does not store original framing, encoded lengths, or padding
-bytes, and it does not validate schema-specific field order, cardinality,
-required fields, or operation semantics. The public `kmipkit-ttlv`
-codec surface provides the bounded decoder for framing, exact wire lengths,
-endianness, padding, and configured resource limits; it exposes no
-byte-producing encoder. KMIPKIT-0005 implements and tests a private writer, but
-adds no `Client::execute`, permit type/constructor, or production callsite.
+The generic TTLV layer does not establish wire or protocol validity. It does
+not store original framing, encoded lengths, or padding bytes, and it does not
+validate schema-specific field order, cardinality, required fields, or
+operation semantics. The KMIP 2.1 message layer validates the Request/Response
+Message envelopes, common headers, batch items, result relationships, and
+Message Extension shapes while retaining the source tree. It leaves operation
+payload contents generic. The public `kmipkit-ttlv` codec surface provides the
+bounded decoder for framing, exact wire lengths, endianness, padding, and
+configured resource limits; it exposes no byte-producing encoder. KMIPKIT-0005
+implements and tests a private writer, but adds no `Client::execute`, permit
+type/constructor, or production callsite.
 The first client feature/spec owns the execute API, its private permit type and
 constructor, the sole production mint/callsite, and an exact-one audit. That
 execute path must accept only a closed typed request input. The delegated
@@ -69,6 +72,26 @@ in the protocol/client layer before transmission. There is no public
 re-emission. See the
 [generic value-model specification](../../specs/004-generic-ttlv-model/spec.md)
 for the model's exact scope and constraints.
+
+### KMIP message model
+
+`kmipkit-protocol` exposes owning `RequestMessage` and `ResponseMessage` values
+created from a generic TTLV `Structure`. Parsing checks message and batch field
+order, required fields, singleton and repeatable fields, Batch Count, request
+item IDs, result-status constraints, and extension structure. Conversion back
+to TTLV returns the original tree, including unknown values and source order.
+Typed header, batch-item, and extension views lend nested values only for the
+duration of an accessor callback. Raw Enumeration values and field presence
+remain observable; absent Asynchronous Indicator, Batch Order Option, Batch
+Error Continuation Option, and Attestation Capable Indicator expose their
+specified effective defaults without materializing fields.
+
+This model is for in-memory validation and inspection. It does not encode or
+send a message, validate operation-specific payloads, apply client send policy,
+or automatically Poll, Cancel, wait, or retry. See the
+[English message-model guide](../user-guide/en/message-model.md) and
+[Spanish message-model guide](../user-guide/es/modelo-mensaje.md) for the
+application-facing behavior.
 
 ## Builder policy
 

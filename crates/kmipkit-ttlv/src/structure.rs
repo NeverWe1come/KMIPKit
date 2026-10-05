@@ -70,7 +70,12 @@ impl Structure {
         Ok(())
     }
 
-    pub(crate) fn as_view(&self) -> StructureView<'_> {
+    /// Borrows this Structure's child items in their original insertion order.
+    ///
+    /// The returned view cannot outlive this borrow and exposes no mutable
+    /// access or ownership transfer for the child items or their payloads.
+    #[must_use]
+    pub fn view(&self) -> StructureView<'_> {
         StructureView {
             children: &self.children,
         }

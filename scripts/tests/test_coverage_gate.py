@@ -653,6 +653,18 @@ trait Example { fn declaration(&self); }
             with self.assertRaises(GATE.InlineTestModuleError):
                 GATE.scan_production_sources(root)
 
+    def test_repository_production_preflight_excludes_message_validation_unit_tests(self) -> None:
+        self.require_gate()
+        scan = GATE.scan_production_sources(REPOSITORY_ROOT)
+        self.assertTrue(scan.eligible)
+        self.assertTrue(scan.complete)
+        self.assertGreater(scan.files_scanned, 0)
+        self.assertFalse(
+            GATE.is_coverage_source_path(
+                "crates/kmipkit-protocol/tests/support/message_validation_unit.rs"
+            )
+        )
+
     def test_path_attribute_keeps_suffix_named_production_module_in_coverage(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:

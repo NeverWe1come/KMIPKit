@@ -3,9 +3,9 @@
 **Purpose**: Review the completeness and clarity of the message-model requirements.
 **Created**: 2026-10-04
 **Feature**: [spec.md](../spec.md)
-**Reviewed spec blob**: `85a63666337fac0883918acce711b6be1c1e4835`
+**Reviewed spec blob**: `5d5a8fd6c3372a41e05ef66cf14acfde7d289b8a`
 
-**Revision note**: CHK020 wording is clarified in this PR. Its existing checked status and reviewed blob refer to the prior wording only. KMIPKIT-0006 T001 remains open and requires an independent reviewer to evaluate the checklist against the exact updated specification revision before implementation.
+**Revision note**: On 2026-10-05 an independent reviewer evaluated the exact spec blob above. CHK001–CHK022 passed and all 16 checked requirements-quality assertions passed. The reviewer made no edits and changed no reviewer-owned checkboxes.
 
 **Review ownership**: Reviewer-owned. `[x]` means the requirement wording was reviewed and found adequate; it does not indicate implementation completion.
 
