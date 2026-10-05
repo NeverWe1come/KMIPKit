@@ -9,12 +9,12 @@
 The reviewer checked requirement coverage, OASIS references, decision gates, task sequencing, and cross-artifact consistency. Findings and resolutions:
 
 1. **Secret-send gate could be satisfied without testing the candidate callsite.** KMIPKIT-0008 is now explicitly in-memory only and cannot add a production credential writer or send path in any gate state. A later client feature must own its candidate callsite and owner-through-transport lifecycle test.
-2. **OD-006 was not represented consistently.** The six decisions belonging to this specification are included in its implementation gate and identify the OTP wording as `KMIPKIT-CLAUSE-SPEC-9.11-008`. They are separate from KMIPKIT-0007 OD-006, which governs future secret-bearing request lifecycle-test ownership.
+2. **OD-006 was not represented consistently in the prior revision.** That revision listed all six decisions as unresolved and identified the OTP wording as `KMIPKIT-CLAUSE-SPEC-9.11-008`. This is separate from KMIPKIT-0007 OD-006, which governs future secret-bearing request lifecycle-test ownership.
 3. **Final approval could follow a changed specification.** T001 is preliminary QA only; T004 now requires independent review and human approval of the final specification revision and updated checklist after catalog and interface edits.
 4. **Missing fixture evidence omitted its catalog discrepancy.** Both the spec and research record cite `KMIPKIT-DISC-036` and classify the acceptance tests as derived, not official vectors.
 5. **Two success criteria lacked explicit task references.** Round-trip preservation (SC-002) and the Attestation Capable Indicator (SC-004) are now directly mapped to test/implementation tasks.
 
-The final QA re-review confirmed the OD-006 separation and absolute no-send boundary, with no remaining findings in its requested scope.
+The prior final QA re-review confirmed the OD-006 separation and absolute no-send boundary, with no remaining findings in its requested scope at that revision.
 
 ## Independent security review
 
@@ -27,6 +27,19 @@ The reviewer checked secret handling, zeroization limits, send-path ownership, s
 
 The final security re-review confirmed these corrections and reported no remaining findings in its requested scope.
 
+## Task 5 disposition reconciliation
+
+The independent source audit updated the decision register without approving the specification or changing any human-owned checklist marker:
+
+- OD-001 remains open for catalog-owner review. The §9.4 lowercase “must” classification and `KMIPKIT-REQ-SPEC-9.11-001` summary/element links are tracked in a separate catalog workflow item; this feature task does not edit catalog input or generated output, and no client “all Credentials satisfied” test is assigned.
+- OD-002 remains open only for the empty/minimum Device field set. Every Table 412 field remains representable and preservable; no local/global uniqueness enforcement is claimed.
+- OD-003 remains open for Timestamp owner, comparison scope, and clock behavior. Caller Timestamp/hash bytes and effective SHA-256 default are explicit; no hash calculation or monotonicity check/test is specified before review.
+- OD-004 is resolved by KMIPKIT-0008's permanent in-memory scope. Any future send path requires its own approved feature and candidate-callsite/owner-through-transport lifecycle evidence.
+- OD-005 remains open only for execution integration, including inherited defaults, request/batch replacement, omission, precedence, and one Request Header Authentication applying to the whole batch. Standalone in-memory models do not require an execution API.
+- OD-006 is resolved by the catalog's `informative_context` classification for `KMIPKIT-CLAUSE-SPEC-9.11-008`, which has no requirement ID. No library-wide OTP replay/single-use state or normative client enforcement is introduced; request-scoped use follows architecture. It remains distinct from KMIPKIT-0007 OD-006.
+
+T002–T004 and all implementation tasks remain unchecked. Independent review and human approval are still required for the final specification revision and updated checklist.
+
 ## Verification boundary
 
-These reviews cover design artifacts only. They do not approve this specification, resolve its normative catalog decisions, approve ADR-0012, authorize implementation, or replace the final review gate in T004. No code tests were run because this change contains no implementation code.
+These reviews cover design artifacts only. They do not approve this specification, close OD-001 catalog-owner review, approve ADR-0012, authorize implementation, or replace the final review gate in T004. No code tests were run because this change contains no implementation code.

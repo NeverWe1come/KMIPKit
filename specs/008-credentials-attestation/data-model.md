@@ -37,7 +37,7 @@ Unknown children within a known structure remain available through the retained 
 
 An optional message-header structure (Specification §9.4, Table 403) containing a non-empty, ordered, repeatable list of Credentials. It is absent or contains one or more entries; it is never present-empty. The model does not determine whether a server accepts the entries or whether multiple entries are satisfied.
 
-Selection for an outgoing operation can inherit client defaults or replace them at request/batch scope per `docs/architecture/transport-security.md`. The exact representation, explicit omission behavior, and precedence at the client boundary are gated by OD-005 and KMIPKIT-0007.
+This in-memory model has no execution API. If Authentication is later selected for an outgoing operation, the KMIPKIT-0007 handoff must settle inherited defaults, request/batch replacement, explicit omission, precedence, and one Request Header Authentication applying to the whole batch. OD-005 gates that execution integration only.
 
 ## Nonce
 
@@ -55,6 +55,7 @@ The indicator is a Boolean property of the shipped public API: true only if a ca
 
 ## Source constraints
 
-- Device uniqueness cannot be established by a client without an external registry. The four named fields in §9.11 prose and the separate `Device Identifier` in Table 412 require OD-002 disposition before an at-least-one validator is fixed.
-- Hashed Password monotonic Timestamp state and comparison scope require OD-003 disposition. Timestamp pass-through alone is not compliance evidence.
-- This feature is in-memory only and never adds a production credential send path, regardless of OD-004. Any future send path belongs to a separate approved feature that owns the candidate callsite and its owner-through-transport lifecycle test.
+- Table 412 fields are all representable and preserved, including Device Serial Number, Network Identifier, Machine Identifier, Media Identifier, optional Device Identifier, and optional Password. Only empty/minimum-field validation is gated by OD-002 until the covered set is reviewed. Client-local data cannot prove global uniqueness; do not claim or implement local uniqueness enforcement.
+- Require and preserve caller-supplied Hashed Password Timestamp and hashed bytes; report SHA-256 as the effective default when Hashing Algorithm is omitted while preserving its absence. OD-003 leaves monotonicity checking and tests out of scope until owner, comparison scope, and clock behavior are reviewed. No hash is calculated.
+- OD-004 is resolved by scope: this feature is permanently in-memory and never adds a production credential writer or send path. Any future send path belongs to a separate approved feature that owns the candidate callsite and its owner-through-transport lifecycle test.
+- OD-006 is resolved by the informative classification of `KMIPKIT-CLAUSE-SPEC-9.11-008`; no library-wide OTP replay/single-use state or normative enforcement is introduced. Request-scoped OTP values follow architecture, with execution selection covered by OD-005.

@@ -4,7 +4,7 @@
 
 ## Summary
 
-Define typed, lossless Rust models and structural validation for the seven KMIP 2.1 Credential Type variants, Authentication and Nonce values, and truthful Attestation Capable Indicator behavior. Implementation must be gated on exact feature approval, dependencies, catalog dispositions, request-level API handoff, timestamp/Device decisions, and the approved secret lifecycle contract. This feature is in-memory only and makes no production credential send path available.
+Define typed, lossless Rust models and structural validation for the seven KMIP 2.1 Credential Type variants, Authentication and Nonce values, and truthful Attestation Capable Indicator behavior. Implementation must be gated on exact feature approval, dependencies, OD-001 catalog-owner review, OD-002 Device validation scope, OD-003 timestamp policy, the OD-005 execution handoff, and the approved secret lifecycle contract. OD-004 is resolved by scope and OD-006 by the informative catalog classification. This feature remains permanently in-memory for its scope and makes no production credential send path available.
 
 ## Technical Context
 
@@ -28,11 +28,11 @@ Define typed, lossless Rust models and structural validation for the seven KMIP 
 | Secure and lossless | Redacted secret types, approved zeroization, unknown enum/subtree preservation; this feature adds no production credential send path. |
 | Human governed | Draft stays Draft; reviewer checklists and approval gates remain unchecked; no self-approval, merge, release, or direct release-branch update. |
 
-**Pre-design gate**: Constitution alignment passes. **Implementation gate**: Not passed. Resolve/disposition this specification's OD-001–OD-006, including its OTP clause `KMIPKIT-CLAUSE-SPEC-9.11-008`, separately from KMIPKIT-0007 OD-006, which concerns future secret-bearing request lifecycle-test ownership. Also verify exact 0005/0006/0007 dependency revisions and approvals. Independent review and human approval must apply to the final specification revision and updated checklist after catalog and interface changes. This feature remains in-memory only and must not add a production credential send path.
+**Pre-design gate**: Constitution alignment passes. **Implementation gate**: Not passed. OD-001, OD-002, OD-003, and OD-005 remain open. OD-004 is resolved by this feature's permanent in-memory scope; OD-006 is resolved because `KMIPKIT-CLAUSE-SPEC-9.11-008` is cataloged as informative and has no requirement ID. Keep this feature's OD-006 distinct from KMIPKIT-0007 OD-006, which concerns future secret-bearing request lifecycle-test ownership. Verify exact 0005/0006/0007 dependency revisions and approvals. Independent review and human approval must apply to the final specification revision and updated checklist after the separate catalog and interface workflows. This feature never adds a production credential send path.
 
 ## Research summary
 
-See [research.md](research.md). The source supports table-driven typed structures, but three unresolved source/policy questions affect validators (Device minimum fields, hashed-password Timestamp state, and catalog classification); a fourth controls whether secrets can cross the writer boundary. Authentication integration also needs an explicit 0007 handoff. These are blockers, not implementation-time discretion.
+See [research.md](research.md). Open decisions concern catalog-owner review (OD-001), Device empty/minimum-field validation (OD-002), Timestamp monotonicity policy (OD-003), and the execution boundary (OD-005). OD-004 is resolved by scope; secret-memory lifecycle remains a separate dependency gate. Authentication execution integration also needs an explicit 0007 handoff, while standalone in-memory models do not require an execution API. These are gates, not implementation-time discretion.
 
 ## Proposed architecture
 
@@ -72,13 +72,13 @@ specs/008-credentials-attestation/
 
 ### Phase 0 — review gates
 
-1. Resolve and record this specification's OD-001 through OD-006, including its OTP wording disposition at `KMIPKIT-CLAUSE-SPEC-9.11-008`; separately record the accepted KMIPKIT-0007 OD-006 disposition for future secret-bearing lifecycle-test ownership. Update the normative catalog only via its reviewed source-input workflow and regenerate the report with `tools/normative_catalog/report.py`.
-2. Confirm exact accepted KMIPKIT-0005 codec/secret-writer boundary, KMIPKIT-0006 Authentication header model, and KMIPKIT-0007 request selection contract. Rebase the feature branch on active release after prerequisites are present.
+1. Record OD-001, OD-002, OD-003, and OD-005 as open with their limited safe treatment; record OD-004 as resolved by scope and OD-006 as resolved by the catalog's informative classification. Track the exact OD-001 catalog corrections and owner-review evidence in a separate catalog workflow item; do not edit catalog inputs or generated output in this feature task. Keep this feature's OD-006 distinct from KMIPKIT-0007 OD-006, which covers future secret-send lifecycle-test ownership.
+2. Confirm exact accepted KMIPKIT-0005 codec/secret-memory lifecycle contract, KMIPKIT-0006 Authentication header model, and KMIPKIT-0007 execution handoff. The 0007 handoff must settle inherited defaults, request/batch replacement, omission, precedence, and one Request Header Authentication applying to the whole batch; it governs execution integration only. Rebase the feature branch on active release after prerequisites are present.
 3. An independent reviewer checks the requirements checklist. Human approval of the exact spec revision is required under repository governance. No code starts until these gates are evidenced.
 
 ### Phase 1 — Red tests
 
-Add focused failing tests for each variant's source-defined fields/types/order, Authentication absent/non-empty/repeated behavior, unknown enums and opaque subtrees, Nonce byte preservation, Attestation Capability derivation, secret redaction, and model lifecycle. Gate Device minimum-field and monotonic timestamp tests to the resolved OD behavior. All tests in this feature remain in-memory; this feature never adds a production credential send path.
+Add focused failing tests for each variant's source-defined fields/types/order, Authentication absent/non-empty/repeated behavior, unknown enums and opaque subtrees, Nonce byte preservation, Attestation Capability derivation, secret redaction, and model lifecycle. Represent and preserve every Device field; do not test empty/minimum-field validation before OD-002 review. Require and preserve caller Timestamp and hashed bytes and expose the effective SHA-256 default, but do not add hash calculation or monotonicity checks/tests before OD-003 review. All tests in this feature remain in-memory; this feature never adds a production credential send path.
 
 Before adding any new test dependency, add `dependency-review.md` with license, maintenance/security history, MSRV, platforms, transitive footprint, and alternatives; get independent review. Prefer existing dependencies if they meet fixed-seed, bounded generation requirements.
 
@@ -105,9 +105,9 @@ Run focused tests, format, Clippy, workspace tests, docs, catalog validation/rep
 
 ## Risks and limits
 
-- Catalog scope errors can falsely turn server behavior into client conformance; OD-001 must close before implementation.
-- Device identity uniqueness and minimum-field language are not fully actionable without review; local guesses could reject valid values or claim unverifiable conformance.
-- Timestamp monotonicity needs an explicit state and time source; inventing one risks persistent secret/account state or clock regressions.
+- Catalog scope errors can falsely turn server behavior into client conformance; OD-001 remains open for the separate catalog-owner workflow, and the client must not test/enforce “all Credentials satisfied.”
+- Device identity uniqueness is not locally verifiable, and the minimum-field set remains open; represent and preserve all fields while gating only empty/minimum-field validation.
+- Timestamp monotonicity needs an explicit owner, comparison scope, and clock behavior; do not calculate hashes or claim a monotonicity check/test until OD-003 review.
 - Redaction and zeroization do not make secret transmission permissible. KMIPKIT-0008 adds no production send path; any later client feature must satisfy its own independently reviewed approval and owner-through-transport lifecycle test evidence.
 - The open source test-case fixtures are unavailable; tests remain derived conformance tests.
 
