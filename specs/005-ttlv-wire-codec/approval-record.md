@@ -165,6 +165,14 @@ T011 Refactor is implemented in DCO-signed commit `1e904459b1addda85c7b702400fab
 | --- | --- |
 | `tasks.md` | `4E128B2E7ECB05FFDF08C7158FFCEE10396E5581AB31E92A9F72661274588705` |
 
+## Execution update — T012
+
+T012's catalog and extension-Tag characterization test are in DCO-signed commit `60e2014b6a81a0285b23013278996c45af443009`; its report and independent static review are in `task-12-report.md` and `task-12-review.md` (PASS, no findings). Exactly five applicable requirements gained implementation/test references; the generic Structure-order requirement remains explicitly unassigned until typed ownership and executable order checks cover every applicable Structure. No official Test Case IDs or 100% roadmap coverage are claimed. I independently reran catalog validation, report check, both generated-code checks, all 162 catalog tests (7 skipped), formatting, both crates' Clippy/all-feature checks/tests/docs, the focused `0x54` test, and diff check; all passed. The validator reports 4 sources, 1,411 clauses, and 4,021 records. T013 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `37F3E21F24959585C7EF7C46F15B8CF7E0A3C6F00403B863211FD7B98D8117F5` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository
