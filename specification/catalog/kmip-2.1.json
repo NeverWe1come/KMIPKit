@@ -92498,7 +92498,7 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected",
-        "crates/kmipkit-protocol/src/message/validation.rs::message_extension_validation_checks_required_fields_order_and_values"
+        "crates/kmipkit-protocol/tests/support/message_validation_unit.rs::message_extension_validation_checks_required_fields_order_and_values"
       ],
       "negative_verification_required": false,
       "decision_id": null,
