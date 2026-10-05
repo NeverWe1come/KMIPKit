@@ -58,3 +58,39 @@ Ran 30 tests ... OK (skipped=1)
 The one skip is the directory-symlink escape test: this Windows account lacks the privilege required to create directory symlinks (`WinError 1314`). The path validation itself also has lexical escape tests and canonical resolution checks. A prior fresh run exposed that Python's `cp1252` default could not decode cargo-deny UTF-8 output in the candidate-scan test; the test now requests UTF-8 and replaces invalid bytes. The same test passes without setting environment overrides.
 
 Both locked all-feature Cargo metadata commands completed for the root and fuzz manifests without platform filters. Running the validator against those generated metadata files printed `dependency policy metadata and exception register are valid` and exited zero. `git diff --check` passed. The independent T007 review found no blocking issue and confirmed the checkout-root diagnostic regression is closed. It recorded a non-blocking observation that the validator synchronizes waiver fields but does not independently pin every baseline setting; T006's reviewed cargo-deny configuration remains responsible for those baseline values, outside T007/T011's waiver-synchronization contract.
+
+## Green evidence: T008
+
+T008 added the PowerShell dependency-policy runner and was exercised with the committed runner-contract tests first. The initial Red run was:
+
+```text
+python -m unittest scripts.tests.test_dependency_policy.DependencyPolicyRunnerContractTests
+Ran 8 tests ... FAILED (failures=8)
+```
+
+All eight failures asserted that `scripts/Test-DependencyPolicy.ps1` was missing; there were no test errors. After implementation, the focused runner, API, and exception suites passed:
+
+```text
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyPolicyRunnerContractTests scripts.tests.test_dependency_policy.DependencyPolicyApiTests scripts.tests.test_dependency_policy.DependencyExceptionTests
+Ran 38 tests ... OK (skipped=1)
+```
+
+The one skip is the directory-symlink escape test: this Windows account lacks the required symlink privilege (`WinError 1314`). PowerShell parser validation passed. The full Windows runner passed on `x86_64-pc-windows-msvc` with cargo-deny 0.20.2, unfiltered root/fuzz metadata validation, and separate online root and fuzz workspace checks:
+
+```text
+pwsh -NoLogo -NoProfile -File scripts/Test-DependencyPolicy.ps1
+```
+
+Each successful workspace scan verified the RustSec remote and emitted its database commit and ISO timestamp:
+
+| Workspace | RustSec remote | Commit | Commit timestamp |
+|---|---|---|---|
+| root | `https://github.com/RustSec/advisory-db` | `ef6173cbc5c50ec8166f9a5b28f07834144373ee` | `2026-10-03T10:14:03+02:00` |
+| fuzz | `https://github.com/RustSec/advisory-db` | `ef6173cbc5c50ec8166f9a5b28f07834144373ee` | `2026-10-03T10:14:03+02:00` |
+
+The runner confirmed both lockfiles remained unchanged:
+
+| Lockfile | SHA-256 |
+|---|---|
+| `Cargo.lock` | `08cbbb0bbfb0db6e567eec2db83d2b63788cc6ffada8531be0d50033a8ff0231` |
+| `fuzz/Cargo.lock` | `ea34d89d36fa78841f0b1c63064726f09a353f62e68725cc7cdc99d32c6c7778` |
