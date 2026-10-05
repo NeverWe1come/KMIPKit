@@ -458,6 +458,89 @@ class DependencyExceptionTests(unittest.TestCase):
                 self.assertIn(entry["id"], diagnostic)
                 self.assertNotIn("secret-value", diagnostic)
 
+    def test_duplicate_configured_waivers_report_registered_exception_ids_without_values(self) -> None:
+        policy = self.require_policy()
+        source = "git+https://github.com/example/dependency?rev=" + "c" * 40 + "#" + "c" * 40
+        source_value = source.removeprefix("git+").split("?", 1)[0]
+        clarification = {
+            "crate": "license-crate@1.2.3",
+            "expression": "MIT",
+            "license-files": [{"path": "LICENSE", "hash": 0xBD0EED23}],
+        }
+        cases = (
+            (
+                "advisory",
+                exact_exception("advisory", advisory_id="RUSTSEC-2025-0001"),
+                {"advisories": {"ignore": ["RUSTSEC-2025-0001", "RUSTSEC-2025-0001"]}},
+                "RUSTSEC-2025-0001",
+            ),
+            (
+                "license",
+                exact_exception(
+                    "license",
+                    package_name="license-crate",
+                    license_evidence={
+                        "reviewed_by": "Security reviewer",
+                        "reference": "review-42",
+                        "disposition": "clarify",
+                        "expression": "MIT",
+                        "license_files": [{"path": "LICENSE", "hash": "0xbd0eed23"}],
+                    },
+                ),
+                {"licenses": {"clarify": [clarification, clarification.copy()]}},
+                "license-crate@1.2.3",
+            ),
+            (
+                "source",
+                exact_exception("source", package_name="source-crate", source=source),
+                {"sources": {"allow-git": [source_value, source_value]}},
+                source_value,
+            ),
+            (
+                "duplicate",
+                exact_exception("duplicate", package_name="duplicate-crate"),
+                {
+                    "bans": {
+                        "skip": [
+                            {"crate": "duplicate-crate@1.2.3", "reason": "KMIPKIT-0011-EX-004"},
+                            {"crate": "duplicate-crate@1.2.3", "reason": "KMIPKIT-0011-EX-004"},
+                        ]
+                    }
+                },
+                "duplicate-crate@1.2.3",
+            ),
+        )
+
+        for index, (rule, entry, config, configured_value) in enumerate(cases, start=1):
+            entry["id"] = f"KMIPKIT-0011-EX-{index:03d}"
+            with self.subTest(rule=rule):
+                with self.assertRaises(self.policy_error()) as raised:
+                    policy.validate_exception_config(
+                        {"schema_version": 1, "exceptions": [entry]},
+                        config,
+                        today=date(2026, 1, 15),
+                    )
+                diagnostic = str(raised.exception)
+                self.assertIn(rule, diagnostic.lower())
+                self.assertIn(entry["id"], diagnostic)
+                self.assertNotIn(configured_value, diagnostic)
+
+    def test_unregistered_secret_bearing_git_waiver_names_rule_without_echoing_value(self) -> None:
+        policy = self.require_policy()
+        configured_source = "https://token:secret-value@example.invalid/repo"
+        with self.assertRaises(self.policy_error()) as raised:
+            policy.validate_exception_config(
+                {"schema_version": 1, "exceptions": []},
+                {"sources": {"allow-git": [configured_source]}},
+                today=date(2026, 1, 15),
+            )
+
+        diagnostic = str(raised.exception).lower()
+        self.assertIn("git source", diagnostic)
+        self.assertIn("no registered exception id exists", diagnostic)
+        self.assertNotIn("secret-value", diagnostic)
+        self.assertNotIn(configured_source, diagnostic)
+
     def test_exact_advisory_license_source_and_duplicate_exceptions_cover_only_their_findings(self) -> None:
         cases = (
             (
