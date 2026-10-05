@@ -173,6 +173,14 @@ T012's catalog and extension-Tag characterization test are in DCO-signed commit 
 | --- | --- |
 | `tasks.md` | `37F3E21F24959585C7EF7C46F15B8CF7E0A3C6F00403B863211FD7B98D8117F5` |
 
+## Execution update — T013
+
+T013's executable quickstart and public doctest are in DCO-signed commit `0131fc042f643fe93172e649f7538113d062ff95`; the exact-clause attribution correction is in `92b90a4257a2d6ed3e1d07ed992268f583963504`. Independent static review passed with no actionable findings (see `task-13-review.md`). I independently reran the doctests (2 passed), formatting, and diff checks. The reviewed example remains documentation-only; no public encoder example or behavior change was added. The review clarified that T013 was complete; T014 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `8A550F3CBA332C337B4FA1CCC0E14EB86EB959093EDD85BC28DA7A56384BC58E` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository

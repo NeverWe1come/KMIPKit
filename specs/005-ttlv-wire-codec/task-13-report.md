@@ -2,9 +2,11 @@
 
 ## Scope and status
 
-This report records the provisional T013 documentation change in commit
-`0131fc042f643fe93172e649f7538113d062ff95`. T013 remains unchecked pending
-independent review. No push or pull request was created.
+This report records T013's documentation change in commit
+`0131fc042f643fe93172e649f7538113d062ff95` and attribution fix in commit
+`92b90a4257a2d6ed3e1d07ed992268f583963504`. The independent review in
+`task-13-review.md` passed with no actionable findings. No push or pull
+request was created.
 
 The `rust,ignore` placeholder in `quickstart.md` is now a runnable Rust
 scenario using a complete 56-byte generic Structure. The same scenario is an
@@ -54,4 +56,5 @@ All final commands completed successfully:
 
 ## Review status
 
-Pending independent review. No push or pull request was created.
+Independent static review passed after the attribution fix; the reviewed
+commit IDs and findings are recorded in `task-13-review.md`.
