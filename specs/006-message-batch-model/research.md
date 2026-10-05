@@ -12,6 +12,12 @@
 
 ## Decisions
 
+### Bound property-test inputs without narrowing the protocol
+
+- **Decision**: Use deterministic property tests with 256 cases per property and a fixed seed. Bound generated message size, nesting, field count, and byte-string lengths as specified in `plan.md`; generate raw `u32` Enumeration values and `u32` Bit Mask values, while Tags remain subject to the existing generic TTLV allocation policy. Disable external failure-state persistence and promote minimized counterexamples to named deterministic regressions. Select and pin any test-only framework only after documenting the dependency review required by `docs/development/coding-standards.md`.
+- **Rationale**: Finite, fixed inputs make CI reproducible while testing broad raw-value and ordering behavior. Separating generation bounds from protocol limits avoids converting test constraints into wire acceptance policy.
+- **Alternatives considered**: Unseeded fuzz-like properties make CI outcomes harder to reproduce; claiming 100% over unbounded input domains is not a measurable acceptance criterion; broadening generic TTLV allocation policy solely for tests would weaken the protocol boundary.
+
 ### Keep the feature as an in-memory protocol model
 
 - **Decision**: Define request/response wrappers and typed read-only views in `kmipkit-protocol`; validate and own the existing generic TTLV tree, then return it by ownership without producing bytes or cloning payloads. Leave runtime request/response matching and delivery orchestration to a later `kmipkit-client` feature.
