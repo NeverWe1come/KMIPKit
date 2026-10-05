@@ -28011,9 +28011,9 @@
         "KMIPKIT-REQ-SPEC-9.8-001-003"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "both",
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "mixed",
       "condition": null
     },
     {
@@ -92127,10 +92127,10 @@
       "normative_strength": "mandatory",
       "subject": "Batch Order Option",
       "summary": "When Batch Order Option is true, batch execution follows the request order.",
-      "role": "client",
+      "role": "server",
       "direction": "client_to_server",
       "condition": "When set to true.",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -92140,7 +92140,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "This SHALL assigns batch execution order to the server in OASIS KMIP Specification v2.1 §9.8. It is retained for source coverage but is not a client implementation requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.8-001-003",
@@ -92156,11 +92156,11 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Batch Order Option",
-      "summary": "When Batch Order Option is false the server may execute in any order; when absent, true is assumed.",
-      "role": "client",
+      "summary": "When Batch Order Option is false, the server may execute batch items in any order.",
+      "role": "server",
       "direction": "client_to_server",
       "condition": "For multi-item requests.",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -92170,7 +92170,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "This MAY grants the server permission to execute in any order in OASIS KMIP Specification v2.1 §9.8. The absent-means-True default is separately represented by the client message model; this record is retained for source coverage but is not a client implementation requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.9-001",

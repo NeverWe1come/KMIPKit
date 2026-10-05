@@ -58,9 +58,10 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Strength | permission\_or\_optional | 180 |
 | Strength | prohibited | 47 |
 | Strength | recommended | 21 |
-| Scope | client\_1\_0 | 371 |
+| Scope | client\_1\_0 | 369 |
 | Scope | out\_of\_scope | 1 |
 | Scope | profile\_conditional | 195 |
+| Scope | server\_only | 2 |
 | Direction | both | 14 |
 | Direction | client\_to\_server | 378 |
 | Direction | server\_to\_client | 16 |
@@ -1112,8 +1113,8 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-9.6-001-003 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.6 |
 | KMIPKIT-REQ-SPEC-9.7-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.7 |
 | KMIPKIT-REQ-SPEC-9.8-001-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.8 |
-| KMIPKIT-REQ-SPEC-9.8-001-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §9.8 |
-| KMIPKIT-REQ-SPEC-9.8-001-003 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §9.8 |
+| KMIPKIT-REQ-SPEC-9.8-001-002 | mandatory | server\_only | KMIPKIT-SRC-spec §9.8 |
+| KMIPKIT-REQ-SPEC-9.8-001-003 | permission\_or\_optional | server\_only | KMIPKIT-SRC-spec §9.8 |
 | KMIPKIT-REQ-SPEC-9.9-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §9.9 |
 
 ## Requirements without official test-case links
@@ -1669,8 +1670,8 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-9.6-001-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.6 |
 | KMIPKIT-REQ-SPEC-9.7-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.7 |
 | KMIPKIT-REQ-SPEC-9.8-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.8 |
-| KMIPKIT-REQ-SPEC-9.8-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.8 |
-| KMIPKIT-REQ-SPEC-9.8-001-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.8 |
+| KMIPKIT-REQ-SPEC-9.8-001-002 | This SHALL assigns batch execution order to the server in OASIS KMIP Specification v2.1 §9.8. It is retained for source coverage but is not a client implementation requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.8 |
+| KMIPKIT-REQ-SPEC-9.8-001-003 | This MAY grants the server permission to execute in any order in OASIS KMIP Specification v2.1 §9.8. The absent-means-True default is separately represented by the client message model; this record is retained for source coverage but is not a client implementation requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.8 |
 | KMIPKIT-REQ-SPEC-9.9-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §9.9 |
 
 ## Requirements needing negative verification
