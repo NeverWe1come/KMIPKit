@@ -7,6 +7,8 @@ use kmipkit_ttlv::{Item, ItemType, StructureView, ValueView};
 
 use crate::{KmipOperationResult, ResultReason, ResultStatus};
 
+use super::version::ProtocolVersion;
+
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
@@ -135,23 +137,30 @@ impl Error for MessageValidationError {}
 /// Metadata retained by a successfully validated request.
 #[derive(Clone, Copy)]
 pub(super) struct ValidatedRequestHeader {
-    batch_count: i32,
+    pub(super) protocol_version: ProtocolVersion,
+    pub(super) batch_count: i32,
 }
 
 /// Metadata retained by a successfully validated response.
 #[derive(Clone, Copy)]
 pub(super) struct ValidatedResponseHeader {
-    batch_count: i32,
+    pub(super) protocol_version: ProtocolVersion,
+    pub(super) time_stamp: i64,
+    pub(super) batch_count: i32,
 }
 
 /// Validated positions and the copied required header values for a request.
 pub(super) struct ValidatedRequestMessage {
+    pub(super) header_index: usize,
     pub(super) batch_indices: Vec<usize>,
+    pub(super) header: ValidatedRequestHeader,
 }
 
 /// Validated positions and the copied required header values for a response.
 pub(super) struct ValidatedResponseMessage {
+    pub(super) header_index: usize,
     pub(super) batch_indices: Vec<usize>,
+    pub(super) header: ValidatedResponseHeader,
 }
 
 #[derive(Clone, Copy)]
@@ -302,7 +311,11 @@ pub(super) fn validate_request_message(
         ));
     }
 
-    Ok(ValidatedRequestMessage { batch_indices })
+    Ok(ValidatedRequestMessage {
+        header_index,
+        batch_indices,
+        header,
+    })
 }
 
 pub(super) fn validate_response_message(
@@ -386,7 +399,11 @@ pub(super) fn validate_response_message(
         ));
     }
 
-    Ok(ValidatedResponseMessage { batch_indices })
+    Ok(ValidatedResponseMessage {
+        header_index,
+        batch_indices,
+        header,
+    })
 }
 
 fn validate_request_header(
@@ -400,7 +417,7 @@ fn validate_request_header(
         Some(top_index),
     )?;
     let version_item = required_child(view.children(), PROTOCOL_VERSION, top_index)?;
-    with_structure(version_item, top_index, None, |view| {
+    let protocol_version = with_structure(version_item, top_index, None, |view| {
         validate_protocol_version(&view)
     })?;
     let count_item = required_child(view.children(), BATCH_COUNT, top_index)?;
@@ -432,7 +449,10 @@ fn validate_request_header(
             None,
         ));
     }
-    Ok(ValidatedRequestHeader { batch_count })
+    Ok(ValidatedRequestHeader {
+        protocol_version,
+        batch_count,
+    })
 }
 
 fn validate_response_header(
@@ -446,10 +466,10 @@ fn validate_response_header(
         Some(top_index),
     )?;
     let version_item = required_child(view.children(), PROTOCOL_VERSION, top_index)?;
-    with_structure(version_item, top_index, None, |view| {
+    let protocol_version = with_structure(version_item, top_index, None, |view| {
         validate_protocol_version(&view)
     })?;
-    let _timestamp = required_child(view.children(), TIME_STAMP, top_index)?
+    let time_stamp = required_child(view.children(), TIME_STAMP, top_index)?
         .with_value(|value| match value {
             ValueView::DateTime(raw) => Some(*raw),
             _ => None,
@@ -476,17 +496,27 @@ fn validate_response_header(
             None,
         ));
     }
-    Ok(ValidatedResponseHeader { batch_count })
+    Ok(ValidatedResponseHeader {
+        protocol_version,
+        time_stamp,
+        batch_count,
+    })
 }
 
-fn validate_protocol_version(view: &StructureView<'_>) -> Result<(), MessageValidationError> {
+fn validate_protocol_version(
+    view: &StructureView<'_>,
+) -> Result<ProtocolVersion, MessageValidationError> {
     validate_fields(
         view.children(),
         VERSION_FIELDS,
         &[PROTOCOL_VERSION_MAJOR, PROTOCOL_VERSION_MINOR],
         None,
     )?;
-    Ok(())
+    let major = integer_value(required_child(view.children(), PROTOCOL_VERSION_MAJOR, 0)?)
+        .ok_or_else(|| error(MessageValidationErrorKind::WrongItemType, None, None))?;
+    let minor = integer_value(required_child(view.children(), PROTOCOL_VERSION_MINOR, 0)?)
+        .ok_or_else(|| error(MessageValidationErrorKind::WrongItemType, None, None))?;
+    Ok(ProtocolVersion::from_raw(major, minor))
 }
 
 fn validate_request_batch_item(
