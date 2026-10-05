@@ -88,7 +88,7 @@ enum ValueRepr {
 impl Debug for Value {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let child_count = match self.inner.boxed.as_ref() {
-            ValueRepr::Structure(structure) => Some(structure.as_view().children().len()),
+            ValueRepr::Structure(structure) => Some(structure.view().children().len()),
             _ => None,
         };
 
@@ -272,7 +272,7 @@ impl Value {
 
     pub(crate) fn as_view(&self) -> ValueView<'_> {
         match self.inner.boxed.as_ref() {
-            ValueRepr::Structure(value) => ValueView::Structure(value.as_view()),
+            ValueRepr::Structure(value) => ValueView::Structure(value.view()),
             ValueRepr::Integer(value) => ValueView::Integer(value),
             ValueRepr::LongInteger(value) => ValueView::LongInteger(value),
             ValueRepr::BigInteger(value) => ValueView::BigInteger(value),

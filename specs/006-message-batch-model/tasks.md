@@ -23,7 +23,7 @@
 
 - [x] T004 [RED COMMIT] Added public API tests for borrowed Structure views, original child order, and original Item access in `crates/kmipkit-ttlv/tests/structure_view.rs`, plus compile-fail cases for owner lifetime, mutable children, and moving an Item in `crates/kmipkit-ttlv/tests/ui/`. RED evidence: `cargo test -p kmipkit-ttlv --test structure_view` failed as expected at both call sites because `Structure::view()` is not implemented yet (FR-017; SC-006). The implementation remains for T005 GREEN.
 - [x] T005 [GREEN COMMIT] Added safe documented `Structure::view()` returning the existing borrowed immutable `StructureView`; the crate-level API docs explain that payload ownership is not transferred or cloned. `cargo test -p kmipkit-ttlv` passed (112 tests and 2 doctests, including the three new trybuild cases); `cargo clippy -p kmipkit-ttlv --all-targets -- -D warnings` passed. Rustfmt cleanup of the new test is recorded in T006 REFACTOR (FR-017; SC-006).
-- [ ] T006 [REFACTOR COMMIT] Refine view API documentation and tests; retain `#![forbid(unsafe_code)}` and existing zeroization behavior (FR-017; SC-006).
+- [x] T006 [REFACTOR COMMIT] Removed the redundant private `Structure::as_view` wrapper, routed the two internal view consumers through the public borrow, and applied rustfmt to the new tests. The first refactor run exposed those two stale call sites; after correcting them, `cargo test -p kmipkit-ttlv` passed (112 tests and 2 doctests), `cargo fmt --all --check` passed, and `cargo clippy -p kmipkit-ttlv --all-targets -- -D warnings` passed. `#![forbid(unsafe_code)]` and zeroization behavior remain intact (FR-017; SC-006).
 
 **Checkpoint**: The read-only view API is merged on the feature branch before message model work.
 

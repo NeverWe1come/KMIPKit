@@ -45,8 +45,7 @@ fn public_view_exposes_the_original_child_items() {
     let mut structure = Structure::new();
     structure
         .try_push(
-            Item::new(tag, Value::integer(17))
-                .expect("the checked tag and value form an item"),
+            Item::new(tag, Value::integer(17)).expect("the checked tag and value form an item"),
         )
         .expect("a flat item fits the Structure depth limit");
 

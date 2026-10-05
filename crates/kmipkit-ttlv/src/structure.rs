@@ -76,10 +76,6 @@ impl Structure {
     /// access or ownership transfer for the child items or their payloads.
     #[must_use]
     pub fn view(&self) -> StructureView<'_> {
-        self.as_view()
-    }
-
-    pub(crate) fn as_view(&self) -> StructureView<'_> {
         StructureView {
             children: &self.children,
         }
