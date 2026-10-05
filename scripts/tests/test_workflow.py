@@ -10,6 +10,7 @@ from pathlib import Path
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = REPOSITORY_ROOT / ".github" / "workflows" / "ci.yml"
 TESTING_GUIDE = REPOSITORY_ROOT / "docs" / "development" / "testing.md"
+POLICY_RUNNER = REPOSITORY_ROOT / "scripts" / "Test-DependencyPolicy.ps1"
 
 
 class WorkflowContractTests(unittest.TestCase):
@@ -30,6 +31,23 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", body)
         self.assertIn("fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')", body)
         self.assertIn(fallback, body)
+
+    def require_policy_job(self, contents: str, job: str) -> str:
+        return self.require_job(contents, job)
+
+    def require_policy_runner(self) -> str:
+        self.assertTrue(
+            POLICY_RUNNER.is_file(),
+            "The pinned dependency-policy runner must exist before its workflow contract can pass.",
+        )
+        return POLICY_RUNNER.read_text(encoding="utf-8")
+
+    def scheduled_policy_job(self, contents: str) -> str:
+        jobs = re.findall(r"(?ms)^  ([a-z][\w-]*):\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
+        for _, body in jobs:
+            if "Test-DependencyPolicy.ps1" in body and re.search(r"(?i)github\.event_name.*schedule", body):
+                return body
+        self.fail("A scheduled job must invoke the dependency-policy runner.")
 
     def test_pull_request_targets_only_supported_integration_branches(self) -> None:
         contents = self.require_workflow()
@@ -107,6 +125,76 @@ class WorkflowContractTests(unittest.TestCase):
         normalized_paragraph = " ".join(paragraph.group(0).split())
         self.assertIn("only on a daily schedule", normalized_paragraph)
         self.assertIn("does not run on pull requests", normalized_paragraph)
+
+    def test_every_supported_pull_request_runs_the_dependency_policy_job(self) -> None:
+        contents = self.require_workflow()
+        trigger = re.search(r"(?ms)^on:\s*\n(.*?)(?=^permissions:)", contents)
+        self.assertIsNotNone(trigger, "The workflow must declare pull-request triggers.")
+        pull_request = re.search(r"(?ms)^  pull_request:\s*\n(.*?)(?=^  schedule:|\Z)", trigger.group(1))
+        self.assertIsNotNone(pull_request, "Dependency policy requires pull_request events.")
+        self.assertIn("master", pull_request.group(1))
+        self.assertRegex(pull_request.group(1), r"release/\*\*")
+        self.assertNotRegex(pull_request.group(1), r"(?m)^\s*paths(?:-ignore)?:")
+
+        job = self.require_policy_job(contents, "dependency-policy")
+        self.assertNotRegex(job, r"(?m)^\s*if:.*(?:paths|changed-files)")
+        self.assertRegex(job, r"(?i)Test-DependencyPolicy\.ps1")
+
+    def test_dependency_policy_job_is_read_only_and_routes_fork_runs_to_hosted_linux(self) -> None:
+        contents = self.require_workflow()
+        self.assertRegex(contents, r"(?ms)^permissions:\s*\n\s*contents:\s*read\b")
+        self.assertNotRegex(contents, r"(?m)^\s*(?:contents|pull-requests|packages):\s*write\b")
+        self.assertNotIn("secrets.", contents)
+        self.assertNotRegex(contents, r"(?m)^\s*pull_request_target\s*:")
+
+        job = self.require_policy_job(contents, "dependency-policy")
+        self.assert_pi_runner_with_hosted_fallback(job, "|| 'ubuntu-latest'")
+
+    def test_dependency_policy_job_pins_tool_and_checks_both_workspaces(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_policy_job(contents, "dependency-policy")
+        self.assertRegex(job, r"(?i)Test-DependencyPolicy\.ps1")
+        runner = self.require_policy_runner()
+        self.assertRegex(runner, r"(?i)cargo(?:\.exe)?\s+install\s+--locked\s+--version\s+0\.20\.2\s+cargo-deny")
+        for workspace in ("Cargo.toml", "fuzz/Cargo.toml"):
+            with self.subTest(workspace=workspace):
+                self.assertIn(workspace, runner)
+        self.assertIn("--all-features", runner)
+        self.assertIn("--locked", runner)
+
+    def test_daily_policy_schedule_checks_out_the_configured_active_release_ref(self) -> None:
+        contents = self.require_workflow()
+        self.assertRegex(contents, r"(?m)^\s+schedule:\s*$")
+        self.assertRegex(contents, r"(?m)^\s+- cron:\s*['\"](?:\d+\s+\d+\s+\*\s+\*\s+\*|@daily)['\"]")
+
+        job = self.scheduled_policy_job(contents)
+        self.assertRegex(job, r"(?i)github\.event_name.*schedule")
+        self.assertRegex(job, r"(?i)actions/checkout")
+
+        active_ref = re.search(
+            r"(?im)^\s*(?:ACTIVE_RELEASE_REF|active-release-ref):\s*([^\s#]+)", contents
+        )
+        self.assertIsNotNone(active_ref, "The active release ref must be an explicit workflow setting.")
+        self.assertRegex(
+            job,
+            r"(?i)ref:\s*\$\{\{\s*(?:env|vars)\.(?:ACTIVE_RELEASE_REF|active-release-ref)\s*\}\}",
+        )
+        self.assertNotIn("ref: ${{ github.sha }}", job)
+
+    def test_scheduled_policy_reports_scanned_commit_and_each_rustsec_revision(self) -> None:
+        contents = self.require_workflow()
+        job = self.scheduled_policy_job(contents)
+        runner = self.require_policy_runner()
+        output = job + "\n" + runner
+        for required in ("scanned commit", "RustSec", "root", "fuzz", "SHA", "timestamp"):
+            with self.subTest(required=required):
+                self.assertIn(required.lower(), output.lower())
+
+    def test_testing_guide_explains_schedule_default_branch_activation(self) -> None:
+        guide = TESTING_GUIDE.read_text(encoding="utf-8").lower()
+        self.assertIn("default branch", guide)
+        self.assertRegex(guide, r"(?s)schedul.{0,180}(?:integrat|default branch)")
+        self.assertRegex(guide, r"(?s)(?:integrat|merged).{0,180}(?:default branch|scheduled)")
 
 
 if __name__ == "__main__":
