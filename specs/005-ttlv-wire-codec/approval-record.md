@@ -125,6 +125,14 @@ T006's checked decoder and public `codec::decode` facade are implemented in Gree
 | --- | --- |
 | `tasks.md` | `66FBAECA316C3AE7CF2281DF8673060DFA5DA78A700AEED37F9A09A042AAA9DB` |
 
+## Execution update — T007
+
+T007 Refactor is implemented in DCO-signed commit `f576a82d98cbd4c121cbef67392121ebad6ce4e2`; its evidence is in `task-7-report.md`. The independent static review returned PASS in `task-7-review.md`, confirming validation order, error categories/offsets, payload redaction, public API paths, and scope. I independently reran format, Clippy with warnings denied, all-feature check, all 82 TTLV crate tests, rustdoc generation, and diff check on Windows; all passed. `AllocationFailed` and the defensive `ModelConstraint` mapping have no deterministic direct test injection, documented without adding production hooks. T008 is next.
+
+| Updated artifact | SHA-256 |
+| --- | --- |
+| `tasks.md` | `0FCD80EB4A573699933D7716CB9B50466885152DDFB48EB9365D5832F3D35CCE` |
+
 This authorization does not authorize agents to approve or merge their PRs,
 push to `master` or `release/*`, publish a release, or bypass the first-client
 integration gate. Human approval and merge remain governed by the repository

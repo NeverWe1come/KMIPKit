@@ -1,8 +1,8 @@
-# T007 Refactor report (provisional)
+# T007 Refactor report
 
 ## Scope and status
 
-This report records the T007 Refactor for KMIPKIT-0005. The implementation refactors only `crates/kmipkit-ttlv/src/codec/decoder.rs` and `crates/kmipkit-ttlv/src/codec/mod.rs`. No tests, protocol/client integration, configurable `CodecLimits`, `decode_with_limits`, or T008 roundtrip work were added. T007 remains unchecked in `tasks.md` pending independent review.
+This report records the completed T007 Refactor for KMIPKIT-0005. The implementation refactors only `crates/kmipkit-ttlv/src/codec/decoder.rs` and `crates/kmipkit-ttlv/src/codec/mod.rs`. No tests, protocol/client integration, configurable `CodecLimits`, `decode_with_limits`, or T008 roundtrip work were added.
 
 Refactor commit: `f576a82` (`refactor(ttlv): isolate decoder span checks`), with a DCO sign-off.
 
@@ -31,4 +31,17 @@ All commands below completed with exit code 0 after the refactor:
 
 The crate test run reported 82 passed, 0 failed, 0 ignored across 33 decoder unit tests, 1 public codec API test, 16 codec negative tests, 2 public API tests, 2 redaction tests, 8 tag allocation tests, 16 value model tests, 2 value zeroization tests, 1 zeroization test, and 1 doctest.
 
-No behavior adjustment was needed. Independent T007 review is pending; this report does not close the task.
+No behavior adjustment was needed.
+
+## Independent review
+
+The independent static review of `f576a82d98cbd4c121cbef67392121ebad6ce4e2`
+returned **PASS** with no actionable findings. It confirmed the prior validation
+order, error categories, offsets, and public error paths are preserved, and
+found no payload retention/formatting, unsafe code, or scope expansion. The
+reviewer did not run commands; the root agent independently ran every command
+listed above. The review record is [`task-7-review.md`](task-7-review.md).
+
+`AllocationFailed` and the defensive `ModelConstraint` mapping lack
+deterministic direct test injection. This remains a documented test limitation;
+no production hooks were added.
