@@ -128,3 +128,37 @@ passed
 ```
 
 The API-suite skip is the Windows directory-symlink escape test, unavailable because this account lacks the required symlink privilege (`WinError 1314`). A supplemental in-memory check exercised config-only advisory, license clarification, Git source, and duplicate waivers with an empty register; all four diagnostics named the relevant rule, stated that no registered exception ID exists, and did not expose the secret-bearing URL sentinel.
+
+## Red evidence: T011 duplicate configured waivers
+
+Added `test_duplicate_configured_waivers_report_registered_exception_ids_without_values` for duplicated advisory, license clarification, Git source, and duplicate waiver entries, plus `test_unregistered_secret_bearing_git_waiver_names_rule_without_echoing_value` for reverse-direction safe diagnostics. The duplicate waiver case and config-only source case already behaved correctly. The three remaining duplicate-config subcases exposed missing register IDs: the advisory branch fell back to claiming no ID existed, while duplicate license and Git entries failed in early branches without ID-aware diagnostics.
+
+```text
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyExceptionTests.test_duplicate_configured_waivers_report_registered_exception_ids_without_values scripts.tests.test_dependency_policy.DependencyExceptionTests.test_unregistered_secret_bearing_git_waiver_names_rule_without_echoing_value
+Ran 2 tests ... FAILED (failures=3)
+```
+
+The failure was behavioral with zero test errors. The config-only secret-bearing Git source check passed and confirmed the configured URL was not echoed.
+
+## Green evidence: T011 duplicate configured waivers
+
+Duplicate advisory values now resolve to matching register entries before diagnostics are assembled. Duplicate license clarifications and Git source entries include their matching registered IDs; unregistered duplicated values retain rule-specific no-ID wording. Duplicate waiver diagnostics retain their previously correct register ID. No configured values are included in these diagnostics.
+
+```text
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyExceptionTests.test_exception_config_mismatch_reports_rule_and_exception_id_without_secrets scripts.tests.test_dependency_policy.DependencyExceptionTests.test_duplicate_configured_waivers_report_registered_exception_ids_without_values scripts.tests.test_dependency_policy.DependencyExceptionTests.test_unregistered_secret_bearing_git_waiver_names_rule_without_echoing_value
+Ran 3 tests ... OK
+
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyExceptionTests
+Ran 22 tests ... OK
+
+python -m unittest -v scripts.tests.test_dependency_policy.DependencyPolicyApiTests
+Ran 11 tests ... OK (skipped=1)
+
+python -m py_compile scripts/dependency_policy.py
+passed
+
+git diff --check
+passed
+```
+
+The single API-suite skip remains the Windows directory-symlink escape test, unavailable because this account lacks the required privilege (`WinError 1314`).

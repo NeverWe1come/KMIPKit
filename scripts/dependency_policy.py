@@ -631,10 +631,16 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
         or len(set(configured_advisories)) != len(configured_advisories)
         or set(configured_advisories) != expected_advisories
     ):
+        duplicate_advisories = {
+            value
+            for value in configured_advisories
+            if isinstance(value, str) and configured_advisories.count(value) > 1
+        }
         missing_ids = [
             entry["id"]
             for entry in entries
-            if entry["kind"] == "advisory" and entry["advisory_id"] not in configured_advisories
+            if entry["kind"] == "advisory"
+            and (entry["advisory_id"] not in configured_advisories or entry["advisory_id"] in duplicate_advisories)
         ]
         has_unregistered_waiver = any(
             isinstance(value, str) and value not in expected_advisories for value in configured_advisories
@@ -664,7 +670,16 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
             raise PolicyError("cargo-deny license clarification entry is malformed")
         crate = item["crate"]
         if crate in configured_clarifications:
-            raise PolicyError("cargo-deny license clarification entry is duplicated")
+            duplicate_ids = [
+                entry["id"]
+                for entry in entries
+                if entry["kind"] == "license" and crate == f"{entry['package']}@{entry['version']}"
+            ]
+            has_unregistered_waiver = not duplicate_ids
+            raise PolicyError(
+                "cargo-deny license clarification entry is duplicated; "
+                f"{mismatch_details(duplicate_ids, has_unregistered_waiver)}"
+            )
         configured_clarifications[crate] = {
             "expression": item["expression"],
             "license_files": _license_files(item["license-files"], "cargo-deny license clarification"),
@@ -687,11 +702,22 @@ def validate_exception_config(register: Any, config: dict[str, Any], *, today: d
     if not isinstance(sources, dict) or not isinstance(sources.get("allow-git", []), list):
         raise PolicyError("cargo-deny Git source exception configuration is malformed")
     configured_git_sources = sources.get("allow-git", [])
-    if (
-        any(not isinstance(value, str) for value in configured_git_sources)
-        or len(set(configured_git_sources)) != len(configured_git_sources)
-    ):
+    if any(not isinstance(value, str) for value in configured_git_sources):
         raise PolicyError("cargo-deny Git source exception configuration is malformed")
+    if len(set(configured_git_sources)) != len(configured_git_sources):
+        duplicate_sources = {
+            value for value in configured_git_sources if configured_git_sources.count(value) > 1
+        }
+        duplicate_ids = [
+            entry["id"]
+            for entry in entries
+            if entry["kind"] == "source" and _git_config_source(entry["source"]) in duplicate_sources
+        ]
+        has_unregistered_waiver = any(value not in expected_git_sources for value in duplicate_sources)
+        raise PolicyError(
+            "cargo-deny Git source exception configuration contains duplicate entries; "
+            f"{mismatch_details(duplicate_ids, has_unregistered_waiver)}"
+        )
     if set(configured_git_sources) != expected_git_sources:
         missing_ids = [
             entry["id"]
