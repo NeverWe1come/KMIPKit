@@ -18,7 +18,14 @@ The test-only payload-copy observer is held by `Writer` under `cfg(test)` and re
 
 Tree measurement, checked size/limit validation, conversion to the allocation size, and the single complete `try_reserve_exact` occur before `Writer` is constructed. `Writer` and all per-type write helpers return no `Result`, so they have no fallible encode-error exit after a payload copy starts. The output is placed in `EncodedOwner` backed by `Zeroizing<Vec<u8>>` before writing begins. Payload-free `EncodeError` formatting and the retained `TryReserveError` source are unchanged.
 
-The existing test-only per-owner Drop observer remains in place. The test-only Drop implementation zeroizes the initialized `Vec` bytes, then passes only the live initialized slice to the observer before the owner's fields drop and the backing allocation is deallocated. It uses no unsafe code and performs no freed-memory read. Uninitialized spare capacity remains outside the guarantee.
+The original observer claim above was incorrect. In the test-only `Drop`, `self.bytes.zeroize()` resolves to `Vec<u8>::zeroize`, which wipes the elements and clears the vector length before the observer runs. The observer therefore received an empty slice, and `all(byte == 0)` succeeded vacuously. Production zeroization through `Zeroizing<Vec<u8>>` remained active; the test did not establish that initialized bytes were cleared before deallocation.
+
+## Independent review follow-up — Red
+
+Changed the test-only observer to record the initialized slice length as well as whether every observed byte is zero. The owner Drop test now requires a nonzero observed length and all-zero bytes. No production code change is part of this Red phase.
+
+- `cargo fmt --all` — passed.
+- `cargo test -p kmipkit-client owner_drop_zeroizes_initialized_bytes_before_backing_allocation_deallocation` — failed as expected at `observer must see initialized bytes`; 0 passed, 1 failed, 31 filtered out. This confirms the observer sees no initialized bytes after the current `Vec::zeroize` call.
 
 ## Verification
 

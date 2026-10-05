@@ -721,7 +721,7 @@ mod tests {
     }
 
     #[derive(Clone)]
-    pub(super) struct ZeroizationObserver(Rc<Cell<Option<bool>>>);
+    pub(super) struct ZeroizationObserver(Rc<Cell<Option<(usize, bool)>>>);
 
     impl ZeroizationObserver {
         pub(super) fn new() -> Self {
@@ -729,11 +729,13 @@ mod tests {
         }
 
         pub(super) fn observe_before_deallocation(&self, initialized_bytes: &[u8]) {
-            self.0
-                .set(Some(initialized_bytes.iter().all(|byte| *byte == 0)));
+            self.0.set(Some((
+                initialized_bytes.len(),
+                initialized_bytes.iter().all(|byte| *byte == 0),
+            )));
         }
 
-        fn result(&self) -> Option<bool> {
+        fn result(&self) -> Option<(usize, bool)> {
             self.0.get()
         }
     }
@@ -1282,6 +1284,13 @@ mod tests {
 
         drop(owner);
 
-        assert_eq!(observer.result(), Some(true));
+        let (observed_length, all_zero) =
+            observer.result().expect("Drop reports initialized bytes");
+
+        assert!(observed_length > 0, "observer must see initialized bytes");
+        assert!(
+            all_zero,
+            "initialized bytes must be zeroized before deallocation"
+        );
     }
 }
