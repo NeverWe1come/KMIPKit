@@ -72,6 +72,14 @@ def _render_required_row(label: str, job_id: str, needs: Mapping[str, Any]) -> t
     return f"| {_safe_text(label)} | {RESULT_LABELS[result]} |", result == "success"
 
 
+def _render_required_rows(
+    job_group: tuple[tuple[str, str], ...], needs: Mapping[str, Any]
+) -> tuple[list[str], list[bool]]:
+    """Render one required group and return its pass flags in display order."""
+    rendered = [_render_required_row(label, job_id, needs) for label, job_id in job_group]
+    return [row for row, _ in rendered], [passed for _, passed in rendered]
+
+
 def _commit_link(context: Mapping[str, str], server_url: str) -> str:
     repository = context.get("repository", "")
     sha = context.get("sha", "")
@@ -97,14 +105,11 @@ def build_summary(
     if re.fullmatch(r"[^/\s]+/[^/\s]+", repository) and run_id.isdecimal() and attempt.isdecimal():
         run_url = f"{server_url}/{repository}/actions/runs/{run_id}/attempts/{attempt}"
 
-    rows: list[str] = []
-    required_results: list[bool] = []
+    rows: list[str]
+    required_results: list[bool]
 
     if event_name == "pull_request":
-        for label, job_id in PR_REQUIRED_JOBS:
-            row, passed = _render_required_row(label, job_id, needs)
-            rows.append(row)
-            required_results.append(passed)
+        rows, required_results = _render_required_rows(PR_REQUIRED_JOBS, needs)
         rows.extend(
             (
                 "| Scheduled dependency policy | ⚪ Not applicable — schedule-triggered checks |",
@@ -112,12 +117,12 @@ def build_summary(
             )
         )
     elif event_name == "schedule":
-        for label in PR_ONLY_JOBS:
-            rows.append(f"| {_safe_text(label)} | ⚪ Not applicable — pull-request check |")
-        for label, job_id in SCHEDULED_JOBS:
-            row, passed = _render_required_row(label, job_id, needs)
-            rows.append(row)
-            required_results.append(passed)
+        rows = [
+            f"| {_safe_text(label)} | ⚪ Not applicable — pull-request check |"
+            for label in PR_ONLY_JOBS
+        ]
+        scheduled_rows, required_results = _render_required_rows(SCHEDULED_JOBS, needs)
+        rows.extend(scheduled_rows)
 
         branch_status = _branch_coverage_summary_status(needs)
         branch_text = {
@@ -127,8 +132,8 @@ def build_summary(
         }[branch_status]
         rows.append(f"| Branch coverage | {branch_text} |")
     else:
-        rows.append("| CI event | ❌ Unsupported event |")
-        required_results.append(False)
+        rows = ["| CI event | ❌ Unsupported event |"]
+        required_results = [False]
 
     passed_count = sum(required_results)
     required_count = len(required_results)
