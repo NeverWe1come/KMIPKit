@@ -318,6 +318,16 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "client_batch_trait_argument_conversion_impl",
+        path: "tests/fixtures/execute_boundary/client_batch_trait_argument_conversion_impl.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/client_batch_trait_argument_conversion_impl.rs"
+        ),
+        probe: "impl Into<ClientBatch> for CallerInput",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "public_impl_trait_conversion_input",
         path: "tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs",
         source: include_str!(
@@ -630,6 +640,7 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "client_request_conversion_trait_impls",
     "client_batch_conversion_trait_impl",
     "client_batch_item_conversion_trait_impl",
+    "client_batch_trait_argument_conversion_impl",
     "public_impl_trait_conversion_input",
     "approved_error_validation_source",
     "approved_batch_response_iter_output",
@@ -2607,6 +2618,15 @@ fn client_batch_item_rejects_inbound_conversion_trait_implementations() {
         candidate_check_fixture(fixture("client_batch_item_conversion_trait_impl")),
         Err(CandidateRejection::BoundaryViolation),
         "TryFrom implementations must not admit caller-defined ClientBatchItem inputs"
+    );
+}
+
+#[test]
+fn request_model_conversion_trait_arguments_are_checked() {
+    assert_eq!(
+        candidate_check_fixture(fixture("client_batch_trait_argument_conversion_impl")),
+        Err(CandidateRejection::BoundaryViolation),
+        "conversion implementations must be rejected when a request model occurs in trait arguments"
     );
 }
 
