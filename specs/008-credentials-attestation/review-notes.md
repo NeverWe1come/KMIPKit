@@ -248,6 +248,21 @@ Verification:
 - `cargo +1.94.0 doc -p kmipkit-client --no-deps` — passed.
 - `cargo +1.94.0 fmt --all --check` — passed.
 
+## Documentation — credential ownership and capability behavior (2026-10-06)
+
+Updated the public API and transport-security architecture docs plus English
+and Spanish client guides. They describe in-memory model ownership, omitted
+Hashing Algorithm with effective SHA-256, caller responsibility for actual
+Device identifier uniqueness without inventing a scope, the observable
+Attestation Capable Indicator=True bit, redaction, and bounded
+KMIPKit-owned-memory zeroization. The docs do not state Authentication
+selection, default, or replacement behavior. They also retain the current
+absence of a production client constructor and live transport.
+
+Verification: `git diff --check` passed. Reviewed the four changed documents
+against `specs/008-credentials-attestation/spec.md`, `data-model.md`, and
+`quickstart.md`; no implementation or generated catalog output changed.
+
 ## User Story 2 REFACTOR — shared diagnostics and validation categories (2026-10-06)
 
 Moved credential tree Debug formatting and redacted Display text through
