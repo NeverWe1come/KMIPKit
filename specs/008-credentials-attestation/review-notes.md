@@ -1,5 +1,7 @@
 # KMIPKIT-0008 Review Record
 
+**Record status**: Sections through “Verification boundary” document the preliminary review of the 2026-10-05 revision. The 2026-10-06 release evidence refresh and final review section supersede their earlier gate/status statements.
+
 **Date**: 2026-10-05
 
 **Scope**: Specification, plan, tasks, requirements checklist, Rust contract, data model, and test scenarios. No implementation code was reviewed.
@@ -10,7 +12,7 @@ The reviewer checked requirement coverage, OASIS references, decision gates, tas
 
 1. **Secret-send gate could be satisfied without testing the candidate callsite.** KMIPKIT-0008 is now explicitly in-memory only and cannot add a production credential writer or send path in any gate state. A later client feature must own its candidate callsite and owner-through-transport lifecycle test.
 2. **OD-006 was not represented consistently in the prior revision.** That revision listed all six decisions as unresolved and identified the OTP wording as `KMIPKIT-CLAUSE-SPEC-9.11-008`. This is separate from KMIPKIT-0007 OD-006, which governs future secret-bearing request lifecycle-test ownership.
-3. **Final approval could follow a changed specification.** T001 is preliminary QA only; T004 now requires independent review and human approval of the final specification revision and updated checklist after catalog and interface edits.
+3. **Final approval could follow a changed specification.** T001 was preliminary QA only; T004 requires independent review of the final specification revision and updated checklist after catalog and interface reconciliation.
 4. **Missing fixture evidence omitted its catalog discrepancy.** Both the spec and research record cite `KMIPKIT-DISC-036` and classify the acceptance tests as derived, not official vectors.
 5. **Two success criteria lacked explicit task references.** Round-trip preservation (SC-002) and the Attestation Capable Indicator (SC-004) are now directly mapped to test/implementation tasks.
 
@@ -27,7 +29,7 @@ The reviewer checked secret handling, zeroization limits, send-path ownership, s
 
 The final security re-review confirmed these corrections and reported no remaining findings in its requested scope.
 
-## Task 5 disposition reconciliation
+## Task 5 disposition reconciliation (preliminary snapshot, 2026-10-05)
 
 The independent source audit updated the decision register without approving the specification or changing any human-owned checklist marker:
 
@@ -38,8 +40,37 @@ The independent source audit updated the decision register without approving the
 - OD-005 remains open only for execution integration, including inherited defaults, request/batch replacement, omission, precedence, and one Request Header Authentication applying to the whole batch. Standalone in-memory models do not require an execution API.
 - OD-006 is resolved by the catalog's `informative_context` classification for `KMIPKIT-CLAUSE-SPEC-9.11-008`, which has no requirement ID. No library-wide OTP replay/single-use state or normative client enforcement is introduced; request-scoped use follows architecture. It remains distinct from KMIPKIT-0007 OD-006.
 
-T002–T004 and all implementation tasks remain unchecked. Independent review and human approval are still required for the final specification revision and updated checklist.
+At this 2026-10-05 snapshot, T002–T004 and all implementation tasks remained unchecked. The release evidence refresh below supersedes this snapshot and records the updated dependency/decision state; final T004 review evidence is recorded separately below.
 
 ## Verification boundary
 
-These reviews cover design artifacts only. They do not approve this specification, close OD-001 catalog-owner review, approve ADR-0012, authorize implementation, or replace the final review gate in T004. No code tests were run because this change contains no implementation code.
+At this preliminary-review snapshot, these reviews covered design artifacts only. They did not close OD-001, approve ADR-0012, authorize implementation, or replace T004. No code tests were run because that review contained no implementation code.
+
+## Release evidence refresh (2026-10-06)
+
+The accepted release catalog now contains the correction tracked by OD-001.
+KMIPKIT-0002 T045–T047 records the §9.4 `role=server`, `server_only`,
+`unassigned` disposition, the corrected §9.11-001 summary and reciprocal
+Credential link, the generated report, pinned-source review, and independent
+parent QA. `KMIPKIT-DISC-041` remains open because the lowercase `must` force
+has not been decided; no explicit catalog-owner sign-off is named. The 0008
+specification and research were refreshed to match this evidence without
+changing catalog inputs, generated output, or the immutable OASIS source.
+
+The accepted 0005/0006/0007 dependencies and ADR-0012 were also checked against
+the release and exact merged PR SHAs in `research.md`. The 0007 authentication
+selection handoff does not exist; OD-005 remains limited to a future execution
+integration and does not block standalone in-memory credential models. These
+updates are coordinator evidence only. The requirements checklist remains
+reviewer-owned and has not been checked or approved by this update.
+
+## Independent QA findings disposition (2026-10-06 working revision)
+
+The independent QA review identified two blocking issues and two wording issues:
+
+- The Device Credential Value cannot be empty because §9.11 says the client SHALL provide at least one field. The spec now interprets “field” as one of the six Table 412 members, rejects an empty structure, and separates presence from text length and uniqueness. A second normative review confirmed this as the strongest literal reading: the four-field uniqueness rule does not narrow the separate minimum-presence rule. Uniqueness remains unverified and is not part of the cardinality check.
+- The first QA report said indicator emission could not be implemented because the 0006 header view is read-only. A focused reassessment inspected the existing 0007 `build_request_message` path in `crates/kmipkit-client/src/execute.rs` and confirmed that 0008 can add the non-secret indicator there without adding a writer, permit, Authentication selection, Credential payload, or secret-bearing path. The spec, plan, and tasks now target this existing path, and a fake-transport capture must verify Authentication remains absent.
+- Known members are validated by their OASIS table, while unknown children from an existing generic TTLV tree remain preserved and accessible without typed interpretation.
+- T026 now asks for contract tests that execute the quickstart acceptance scenarios; the quickstart is not represented as executable code examples.
+
+This is a working disposition only. The requirement checklist remains unchecked until an independent reviewer re-evaluates the exact final snapshot. T004 remains incomplete until that review, the active-release rebase, and the delegated authorization record are complete.
