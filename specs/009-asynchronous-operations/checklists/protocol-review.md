@@ -10,12 +10,12 @@
 
 - [ ] CHK001 Poll request includes the required original asynchronous correlation value (§6.1.38, Table 276).
 - [ ] CHK002 Poll is not treated as asynchronous, while an incomplete original operation can yield Pending with no operation payload (§6.1.38 and §8.6, Table 399).
-- [ ] CHK003 Completed Poll exposes the original operation response payload, not a Poll result schema (§6.1.38).
+- [ ] CHK003 Completed Poll exposes the original operation's terminal status/reason and payload semantics: successful payload is the original operation payload; terminal Failure exposes Result Reason with no payload (§6.1.38 and §8.6/Table 399).
 - [ ] CHK004 `KMIPKIT-REQ-SPEC-9.1-001` and `KMIPKIT-REQ-SPEC-9.19-002` direct exact server-provided values to subsequent Poll/Cancel as applicable.
 
 ## Cancel and Process
 
-- [ ] CHK005 Cancel request and response payloads match Tables 176 and 177; error cases match Table 178.
+- [ ] CHK005 Cancel request and response payloads match Tables 176 and 177; error cases match Table 178; Pending/asynchronous Cancel responses are rejected per §6.1.5.
 - [ ] CHK006 Cancellation Result known values and forward-compatible unknown values are preserved (§11.7).
 - [ ] CHK007 Process request's required correlation and empty response match Tables 278 and 279.
 - [ ] CHK008 Process's possible effects on other batch items are accurately conditioned on Batch Order Option (§6.1.39).
@@ -32,3 +32,4 @@
 - [ ] CHK013 Process Table 278 missing catalog requirement ID remains a visible catalog workflow item; generated JSON is not changed in this feature.
 - [ ] CHK014 No official test case, profile support, certification, or server behavior is claimed without evidence.
 - [ ] CHK015 Source paths under `specification/oasis/kmip-2.1/upstream/` remain immutable.
+- [ ] CHK016 Query Asynchronous Correlation Value filters receive the same redaction and KMIP-owned zeroization protections as Pending values, without claiming to zeroize caller-owned input storage. Pending values remain borrowed-only and have no ordinary unzeroized duplicate.

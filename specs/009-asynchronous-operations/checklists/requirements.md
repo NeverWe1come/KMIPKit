@@ -17,7 +17,7 @@
 
 - [ ] CHK005 Verify every OASIS citation names the pinned document, exact section, and table where applicable.
 - [ ] CHK006 Verify Poll Pending semantics reconcile §6.1.38/Table 276 with §8.6/Table 399 without treating Poll as recursively asynchronous.
-- [ ] CHK007 Verify Cancel request/response semantics and known/unknown Cancellation Result handling against Tables 176–178 and §11.7.
+- [ ] CHK007 Verify Cancel request/response semantics, Pending-response rejection, and known/unknown Cancellation Result handling against Tables 176–178, §6.1.5, and §11.7.
 - [ ] CHK008 Verify Process's required request field and empty response payload against Tables 278–280; confirm the missing catalog requirement ID stays visible.
 - [ ] CHK009 Verify `KMIPKIT-DISC-039` exact caption conflict, generic response disposition, and blocked typed mapping.
 - [ ] CHK010 Verify `KMIPKIT-REQ-SPEC-9.1-001`, `KMIPKIT-REQ-SPEC-9.19-002`, and `KMIPKIT-CLAUSE-SPEC-8.6-003` are assigned to the correct client/server duties.
@@ -25,10 +25,10 @@
 
 ## Security and Delivery Semantics
 
-- [ ] CHK012 Verify correlation bytes cannot appear in Debug, Display, errors, logs, or raw-body diagnostics.
+- [ ] CHK012 Verify Pending and Query-filter correlation bytes cannot appear in Debug, Display, errors, logs, or raw-body diagnostics.
 - [ ] CHK013 Verify one-shot follow-up preserves `NotSent`, `PossiblySent`, and `ResponseStarted` states and does not retry.
 - [ ] CHK014 Verify Poll Pending returns control to the caller and no wait, backoff, recursive Poll, or background work is described.
-- [ ] CHK015 Verify zeroization claims match accepted ownership limits and do not claim cleanup of caller or TLS-library copies.
+- [ ] CHK015 Verify Pending values use only the explicit borrowed accessor, no ordinary unzeroized duplicate exists, KMIPKit-owned Pending and Query-filter copies are zeroized within accepted ownership limits, and caller-owned Query input storage remains caller responsibility.
 - [ ] CHK016 Verify Batch Order Option effects are described as possible server behavior, not a client guarantee.
 
 ## Readiness and Exclusions

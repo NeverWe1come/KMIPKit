@@ -6,13 +6,13 @@
 
 ## Summary
 
-Add typed Poll, Cancel, Process, and Query Asynchronous Requests operation models and one-shot client follow-up for a Pending result. Correlation values remain opaque exact bytes; Poll completion uses the original operation's generic response payload until a typed model is available. Query Asynchronous Requests response remains generic TTLV while `KMIPKIT-DISC-039` is open. The implementation reuses KMIPKIT-0005 TTLV, KMIPKIT-0006 message and batch models, KMIPKIT-0007 execution, and ADR-0014's bounded synchronous transport exchange; it adds no transport, retry loop, or server behavior.
+Add typed Poll, Cancel, Process, and Query Asynchronous Requests operation models and one-shot client follow-up for a Pending result. Correlation values remain opaque exact bytes; terminal Poll results expose the original operation's status/reason and payload semantics, with a generic payload on success and Result Reason without payload on Failure. Query Asynchronous Requests response remains generic TTLV while `KMIPKIT-DISC-039` is open. The implementation reuses KMIPKIT-0005 TTLV, KMIPKIT-0006 message and batch models, KMIPKIT-0007 execution, and ADR-0014's bounded synchronous transport exchange; it adds no transport, retry loop, or server behavior.
 
 ## Technical Context
 
 **Language/Version**: Rust Edition 2024; MSRV 1.94.
 **Primary Dependencies**: Existing `kmipkit-ttlv`, `kmipkit-protocol`, `kmipkit-client`, `kmipkit-transport`, `zeroize`, and current workspace dependencies. No new dependency is proposed.
-**Storage**: No persistent storage. Correlation bytes are held only in KMIPKit-owned, zeroizing memory while a pending outcome/request exists.
+**Storage**: No persistent storage. Pending owners and any copies created and retained by KMIPKit use zeroizing storage while a pending outcome/request exists. Caller-owned Query filter input storage remains the caller's responsibility.
 **Testing**: Rust unit and integration tests, pinned-source-derived TTLV vectors, malformed input tests, property-based round trips, and deterministic fake-transport tests. No official operation-specific Test Case IDs are currently linked by the catalog.
 **Target Platform**: Existing Rust workspace platforms; platform matrix remains owned by CI.
 **Project Type**: Rust library workspace protocol/client feature.
@@ -38,15 +38,16 @@ Add typed Poll, Cancel, Process, and Query Asynchronous Requests operation model
 
 - Add protocol value models for Poll, Cancel, Process, and Query Asynchronous Requests using the existing generic TTLV `Structure`/`Item` model and typed views. Known Cancellation Result values receive typed variants while retaining unknown raw Enumeration values.
 - Extend the typed client request path to emit one selected asynchronous operation and use KMIPKIT-0007's existing request-header, response-ID association, size-limit, error, and delivery-state logic.
-- Generalize pending-operation data so it retains the exact correlation bytes and enough request association to form a follow-up. It must remain redacted and zeroizing. No `Debug`, `Display`, or error formatter may include the value.
-- A Poll that remains Pending produces a caller-visible Pending outcome with no original-operation payload and the correlation value from that response. A completed Poll exposes the original operation's payload as a generic `Structure`. It is never decoded as `DiscoverVersionsResponse` unless the original operation is Discover Versions and its typed interpretation is explicitly supported.
-- Cancel exposes its response echo and Cancellation Result. A mismatch between request and echoed correlation value is a protocol association error; unknown Cancellation Result values are preserved.
+- Generalize pending-operation data so it retains the exact correlation bytes and enough request association to form a follow-up. Expose Pending values only through KMIPKIT-0007's explicit borrowed accessor; keep KMIPKit-owned storage zeroizing and do not create ordinary unzeroized duplicates. No `Debug`, `Display`, or error formatter may include the value.
+- A Poll that remains Pending produces a caller-visible Pending outcome with no original-operation payload and the correlation value from that response. A terminal Poll exposes the original operation's status/reason and response payload semantics. Failure outcomes expose Result Reason and no payload; successful operation payloads are generic `Structure` values until a typed model exists. It is never decoded as `DiscoverVersionsResponse` unless the original operation is Discover Versions and its typed interpretation is explicitly supported.
+- Cancel exposes its response echo and Cancellation Result. A mismatch between request and echoed correlation value is a protocol association error; unknown Cancellation Result values are preserved. Since §6.1.5 prohibits an asynchronous Cancel response, any Pending status in a Cancel response is a protocol error even if the original request permitted asynchronous results.
 - Process is a separate request and result. Its payload is empty per Table 279. The client does not assert that a subsequent Poll completes, and it documents the possible original-batch effects when Batch Order Option is true or absent.
 - Query Asynchronous Requests has optional correlation-value and operation filters. Its response is a generic TTLV tree while DISC-039 remains unresolved; do not add a guessed typed response model.
 
 ### Transport and lifecycle boundaries
 
 - Every public follow-up action maps to at most one call to the existing `Transport::exchange`; Poll Pending never recurses or loops.
+- Every Asynchronous Correlation Value is sensitive diagnostic data, including values supplied as Query filters. Caller-owned Query input storage remains the caller's responsibility; redact all such values, zeroize KMIPKit-owned copies under ADR-0014, and do not create ordinary unzeroized duplicates. Pending values remain accessible only through the explicit borrowed accessor.
 - Transport/protocol errors preserve NotSent, PossiblySent, or ResponseStarted evidence established by KMIPKIT-0007 and ADR-0014. No request is resent automatically.
 - Correlation bytes are copied into the encoded request only for the duration/ownership boundary defined by ADR-0014; owner drop zeroizes the initialized bytes that KMIPKit owns. Tests use sentinels at request and pending-owner boundaries.
 - A production TLS/HTTPS constructor remains the responsibility of the transport/configuration feature. KMIPKIT-0009 tests the private fake-transport client seam and does not make transport injection public.
@@ -56,9 +57,9 @@ Add typed Poll, Cancel, Process, and Query Asynchronous Requests operation model
 | Requirement | Planned code location | Planned verification |
 |---|---|---|
 | FR-001, FR-003–FR-007 | `crates/kmipkit-protocol/src/{poll,cancel,process,query_async_requests}.rs`; protocol module exports | Model and exact TTLV field/order tests; operation-level pending/completed/error vectors |
-| FR-002, FR-008–FR-010 | `crates/kmipkit-client/src/execute.rs` or a focused async execution module; existing private encoder/response decoder | Fake-transport one-exchange tests, exact-byte correlation sentinels, pending lifecycle tests, response association/error delivery tests |
-| FR-006–FR-007 | `crates/kmipkit-protocol/src/query_async_requests.rs` and generic response view | Filter encoding and opaque response round-trip; no Table 286 typed mapping |
-| FR-009 | `crates/kmipkit-client/tests/unit/` plus current zeroization test-support seams | Debug/Display/error/log sentinel checks and drop observation |
+| FR-002, FR-008–FR-010 | `crates/kmipkit-client/src/execute.rs` or a focused async execution module; existing private encoder/response decoder | Fake-transport one-exchange tests, borrowed accessor and no-duplicate checks, zeroization, exact-byte correlation sentinels, pending lifecycle tests, terminal Poll Failure, rejected Cancel Pending, response association/error delivery tests |
+| FR-006–FR-007, FR-009 | `crates/kmipkit-protocol/src/query_async_requests.rs` and generic response view | Filter encoding, sentinel redaction/zeroization, and opaque response round-trip; no Table 286 typed mapping |
+| FR-009 | `crates/kmipkit-client/tests/unit/` plus current zeroization test-support seams | Debug/Display/error/log sentinel checks, borrowed-only Pending access, no ordinary unzeroized duplicate, drop observation for KMIPKit-owned Pending and Query filter values, and caller-owned input boundary |
 | FR-012 | `specification/catalog/kmip-2.1.json` workflow is out of scope here; tests remain in protocol/client suites | Before release, catalog-owner workflow must assign/verify a stable requirement for Table 278's client field; feature tests cite this feature FR until then |
 
 Exact source links and clause IDs are in `spec.md`. These paths are proposed, not permission to start code before the approval gate.
@@ -103,7 +104,7 @@ crates/
 5. **Converge and gates**: run convergence, update any discovered tasks, run format, Clippy, workspace tests/docs, coverage thresholds, immutable-source/catalog checks, dependency/security checks, and CI matrix. Resolve failures without changing scope silently.
 6. **Review**: independent QA and security reviews, then a terminal-created draft PR. No self-approval or merge.
 
-Tests must include the §6.1.38 special Pending Poll shape (no payload but Pending correlation), completed original-operation generic payload, Cancel echo/result, Process empty response payload, Query opaque response, and exact byte requests. Property tests must include arbitrary binary correlation bytes within `CodecLimits`; do not impose a token format or an unsupported empty-value restriction.
+Tests must include the §6.1.38 special Pending Poll shape (no payload but Pending correlation), borrowed-only Pending access with no ordinary unzeroized duplicate, successful and failed terminal original-operation outcomes, rejected Pending Cancel response, Cancel echo/result, Process empty response payload, Query opaque response and sensitive filters, and exact byte requests. Query tests distinguish caller-owned input storage from zeroized KMIPKit-owned copies. Property tests must include arbitrary binary correlation bytes within `CodecLimits`; do not impose a token format or an unsupported empty-value restriction.
 
 ## Complexity Tracking
 
