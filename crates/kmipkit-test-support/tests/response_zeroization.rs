@@ -61,7 +61,7 @@ fn dropping_an_unconsumed_script_zeroizes_its_response_fixture() {
 }
 
 #[test]
-fn exhausted_script_fails_closed_without_a_second_exchange() {
+fn exhausted_script_rejects_a_second_exchange_without_a_new_script() {
     let mut transport = ScriptedTransport::new(ExchangeScript::FailBeforeWrite);
     let first = transport
         .exchange(b"request", usize::MAX)
