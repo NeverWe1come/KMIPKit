@@ -1,13 +1,13 @@
 //! Scripted low-level fake used by deterministic exchange tests.
 
-use std::io;
+use std::{fmt, io};
 
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
 
 /// One deterministic action for [`ScriptedTransport`].
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub enum ExchangeScript {
     /// Writes the request in the listed chunks and returns `response`.
     Success {
@@ -32,9 +32,36 @@ pub enum ExchangeScript {
     },
 }
 
+impl fmt::Debug for ExchangeScript {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Success {
+                response,
+                request_write_chunks,
+            } => formatter
+                .debug_struct("Success")
+                .field("response_len", &response.len())
+                .field("request_write_chunks", request_write_chunks)
+                .finish(),
+            Self::FailBeforeWrite => formatter.write_str("FailBeforeWrite"),
+            Self::FailAfterPartialWrite { written_bytes } => formatter
+                .debug_struct("FailAfterPartialWrite")
+                .field("written_bytes", written_bytes)
+                .finish(),
+            Self::FailAfterPartialRead {
+                written_bytes,
+                response_bytes,
+            } => formatter
+                .debug_struct("FailAfterPartialRead")
+                .field("written_bytes", written_bytes)
+                .field("response_bytes_len", &response_bytes.len())
+                .finish(),
+        }
+    }
+}
+
 /// A one-exchange fake that records bounds and delivery behavior without
 /// retaining or formatting request contents.
-#[derive(Debug)]
 pub struct ScriptedTransport {
     script: Option<ExchangeScript>,
     exchange_count: usize,
@@ -44,6 +71,28 @@ pub struct ScriptedTransport {
     maximum_response_bytes_retained: usize,
     retained_request: Option<Vec<u8>>,
     captured_logs: Vec<String>,
+}
+
+impl fmt::Debug for ScriptedTransport {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ScriptedTransport")
+            .field("script", &self.script)
+            .field("exchange_count", &self.exchange_count)
+            .field("write_call_count", &self.write_call_count)
+            .field("written_byte_count", &self.written_byte_count)
+            .field("last_response_limit", &self.last_response_limit)
+            .field(
+                "maximum_response_bytes_retained",
+                &self.maximum_response_bytes_retained,
+            )
+            .field(
+                "retained_request_len",
+                &self.retained_request.as_ref().map(Vec::len),
+            )
+            .field("captured_log_count", &self.captured_logs.len())
+            .finish()
+    }
 }
 
 impl ScriptedTransport {
