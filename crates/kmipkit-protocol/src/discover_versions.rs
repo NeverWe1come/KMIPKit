@@ -272,7 +272,7 @@ fn parse_protocol_version(
                     return Err(DiscoverVersionsError::MalformedProtocolVersion);
                 }
             }
-            _ => {}
+            _ => return Err(DiscoverVersionsError::MalformedProtocolVersion),
         }
     }
 
