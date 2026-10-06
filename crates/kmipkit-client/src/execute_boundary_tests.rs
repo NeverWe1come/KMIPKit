@@ -298,6 +298,26 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "client_batch_conversion_trait_impl",
+        path: "tests/fixtures/execute_boundary/client_batch_conversion_trait_impl.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/client_batch_conversion_trait_impl.rs"
+        ),
+        probe: "impl From<Vec<u8>> for ClientBatch",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "client_batch_item_conversion_trait_impl",
+        path: "tests/fixtures/execute_boundary/client_batch_item_conversion_trait_impl.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/client_batch_item_conversion_trait_impl.rs"
+        ),
+        probe: "impl TryFrom<Structure> for ClientBatchItem",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "public_impl_trait_conversion_input",
         path: "tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs",
         source: include_str!(
@@ -608,6 +628,8 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "matches_guard_logical_not",
     "public_conversion_hooks",
     "client_request_conversion_trait_impls",
+    "client_batch_conversion_trait_impl",
+    "client_batch_item_conversion_trait_impl",
     "public_impl_trait_conversion_input",
     "approved_error_validation_source",
     "approved_batch_response_iter_output",
@@ -2567,6 +2589,24 @@ fn client_request_rejects_inbound_conversion_trait_implementations() {
         candidate_check_fixture(fixture("client_request_conversion_trait_impls")),
         Err(CandidateRejection::BoundaryViolation),
         "From/TryFrom implementations must not add caller-defined ClientRequest conversions"
+    );
+}
+
+#[test]
+fn client_batch_rejects_inbound_conversion_trait_implementations() {
+    assert_eq!(
+        candidate_check_fixture(fixture("client_batch_conversion_trait_impl")),
+        Err(CandidateRejection::BoundaryViolation),
+        "From implementations must not admit caller-defined ClientBatch inputs"
+    );
+}
+
+#[test]
+fn client_batch_item_rejects_inbound_conversion_trait_implementations() {
+    assert_eq!(
+        candidate_check_fixture(fixture("client_batch_item_conversion_trait_impl")),
+        Err(CandidateRejection::BoundaryViolation),
+        "TryFrom implementations must not admit caller-defined ClientBatchItem inputs"
     );
 }
 
