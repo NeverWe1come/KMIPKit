@@ -182,6 +182,35 @@ explicitly illustrative in `contracts/rust-credentials.md`.
 Verification on Rust 1.94.0:
 
 - `cargo +1.94.0 fmt --all --check` — passed.
+
+## User Story 2 RED — Attestation and Nonce validation (2026-10-06)
+
+Re-ran the existing derived §9.11/Table 413 and §9.14/Table 419 tests after
+the public model wrappers compiled. The Nonce case failed because a missing
+Nonce member was accepted; the Attestation case failed because neither
+evidence member was required. Both failures reached the expected assertion.
+
+Focused commands:
+
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract nonce_requires_byte_string_id_and_value_and_preserves_exact_server_bytes` — failed at the expected malformed-Nonce rejection assertion.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract attestation_requires_nonce_type_and_one_or_both_evidence_fields` — failed at the expected missing-evidence rejection assertion.
+
+## User Story 2 GREEN — Attestation Credential and server Nonce (2026-10-06)
+
+Implemented required Attestation Nonce and Attestation Type fields, at least
+one Byte String evidence field, and validation of both nested Nonce Byte
+Strings in Table order. Both evidence fields remain allowed. Unknown
+Attestation Type values and exact caller/server byte sequences are retained;
+all known members follow Tables 413 and 419. No Nonce generation or
+attestation verification was added.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 61 unit tests, 18 credential contract tests, 2 redaction tests, 4 credential round-trip tests, 56 other integration tests, and 2 doctests.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_redaction` — passed: 2 tests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
 - `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract` — 5
   passed, 0 failed.
 - `cargo +1.94.0 clippy -p kmipkit-protocol --test credential_contract -- -D warnings`

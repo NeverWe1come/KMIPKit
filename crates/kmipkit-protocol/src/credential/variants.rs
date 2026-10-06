@@ -143,9 +143,9 @@ impl CredentialValue {
                 validate(&tree, DEVICE_RULES, DEVICE_IDENTIFIER_GROUP)?;
                 Ok(Self::Device(DeviceCredential::from_tree(tree)))
             }
-            3 => Ok(Self::Attestation(
-                AttestationCredential::from_unvalidated_tree(tree),
-            )),
+            3 => Ok(Self::Attestation(AttestationCredential::try_from_ttlv(
+                tree,
+            )?)),
             4 => {
                 validate(&tree, OTP_RULES, &[])?;
                 Ok(Self::OneTimePassword(OneTimePasswordCredential::from_tree(

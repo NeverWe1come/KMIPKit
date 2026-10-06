@@ -2,9 +2,26 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::Structure;
+use kmipkit_ttlv::{Structure, StructureView};
 
-use super::CredentialValidationError;
+use super::validation::{FieldKind, FieldRule};
+use super::{CredentialValidationError, validation};
+
+const NONCE_ID: u32 = 0x0042_00C9;
+const NONCE_VALUE: u32 = 0x0042_00CA;
+
+const NONCE_RULES: &[FieldRule] = &[
+    FieldRule {
+        tag: NONCE_ID,
+        kind: FieldKind::ByteString,
+        required: true,
+    },
+    FieldRule {
+        tag: NONCE_VALUE,
+        kind: FieldKind::ByteString,
+        required: true,
+    },
+];
 
 /// A server-sourced Attestation Nonce retaining its exact TTLV bytes.
 pub struct Nonce {
@@ -19,9 +36,19 @@ impl Nonce {
     /// # Errors
     ///
     /// Returns a payload-free validation error when a required member is
-    /// missing, duplicated, or has the wrong TTLV Item Type.
+    /// missing, duplicated, out of order, or has the wrong TTLV Item Type.
     pub fn try_from_ttlv(tree: Structure) -> Result<Self, CredentialValidationError> {
+        Self::validate_view(&tree.view())?;
         Ok(Self { tree })
+    }
+
+    pub(super) fn validate_view(view: &StructureView<'_>) -> Result<(), CredentialValidationError> {
+        validation::validate_fields(view, NONCE_RULES, &[])
+    }
+
+    /// Lends the original Nonce structure for callback-scoped byte access.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
+        callback(self.tree.view())
     }
 
     /// Returns the original ordered TTLV Structure without rebuilding it.
