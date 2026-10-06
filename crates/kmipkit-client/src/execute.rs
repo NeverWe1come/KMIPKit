@@ -442,7 +442,7 @@ impl ClientBatchResponse {
     }
 
     /// Iterates over the results in request order, independent of response order.
-    #[must_use]
+    #[must_use = "use the iterator or explicitly ignore its results"]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = &ClientBatchItemResponse> + '_ {
         self.items.iter()
     }

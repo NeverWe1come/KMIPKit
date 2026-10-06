@@ -30,7 +30,7 @@ fn private_validation_errors_have_safe_display_text() {
         BatchValidationError::InvalidBatchErrorContinuation,
     ];
     for error in errors {
-        assert!(!error.to_string().is_empty());
+        assert_ne!(error.to_string(), "");
         assert!(Error::source(&error).is_none());
     }
 

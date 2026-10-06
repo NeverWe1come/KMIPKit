@@ -53,7 +53,7 @@ fn discover_versions_errors_have_stable_safe_display_and_source_behavior() {
     ];
 
     for error in errors {
-        assert!(!error.to_string().is_empty());
+        assert_ne!(error.to_string(), "");
         if matches!(error, DiscoverVersionsError::InvalidOperationResult(_)) {
             assert!(Error::source(&error).is_some());
         } else {
