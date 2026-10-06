@@ -163,3 +163,30 @@ bytes; its custom `Debug` output reports only type bits and payload length.
 `cargo +1.94.0 test -p kmipkit-protocol --test credential_roundtrip` failed
 with only `E0432` for the intentionally not-yet-implemented public `Credential`
 API. No production code has been added.
+
+## User Story 1 GREEN — Authentication and discriminator model (2026-10-06)
+
+Added the credential module and root exports, non-empty Authentication
+construction/parsing, a callback-scoped ordered Credential iterator, raw
+Credential Type decoding for all six assigned values, the `8XXXXXXX`
+Extensions range, and future raw values. Authentication retains the original
+generic tree and lends views into it; it does not copy secret-bearing payloads
+or claim server-side Credential satisfaction. The table-driven round-trip RED
+tests remain pending T011's public Credential conversion boundary.
+
+The public test was aligned to the callback-scoped view contract. This avoids
+duplicating the original TTLV tree merely to expose its repeated children.
+The contract remains a non-empty ordered sequence and exact APIs were
+explicitly illustrative in `contracts/rust-credentials.md`.
+
+Verification on Rust 1.94.0:
+
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract` — 5
+  passed, 0 failed.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --test credential_contract -- -D warnings`
+  — passed.
+
+The first Clippy run found a missing non-exhaustive Debug marker and module
+inception; both were corrected, the module file was renamed to `value.rs`, and
+the five traceability paths were updated before the passing rerun.

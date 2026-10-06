@@ -19,7 +19,7 @@
 
 - [x] T005 Review the existing test dependency before deciding whether KMIPKIT-0008 needs another one. The independent review confirmed QuickCheck 1.1.0 is already pinned, no direct dependency or manifest change is needed, and the test plan must account for its transitive `rand`/`getrandom` graph and non-portable `SmallRng` sequences. Evidence and references are in `dependency-review.md`.
 - [x] T006 Add traceability to `specification/compliance/requirements/KMIPKIT-0008.csv`: all 11 catalog requirements assigned to KMIPKIT-0008 are present with exact clause IDs, scopes, implementation locations, and planned executable test paths; the existing 0006 Attestation Capable Indicator default is linked separately; server-only duties and deferred timestamp policy are classified; project policies, including exact Nonce byte preservation, are identified separately from OASIS rows.
-- [ ] T007 Add the credential module skeleton in `crates/kmipkit-protocol/src/credential/mod.rs` and public exports in `crates/kmipkit-protocol/src/lib.rs`; keep `#![forbid(unsafe_code)]` and add no production writer or transport path.
+- [x] T007 Add the credential module skeleton in `crates/kmipkit-protocol/src/credential/mod.rs` and public exports in `crates/kmipkit-protocol/src/lib.rs`; keep `#![forbid(unsafe_code)]` and add no production writer or transport path. Added as part of the first Green commit after the Authentication and Credential RED commits.
 
 ## Phase 3: User Story 1 — Build a typed Authentication value (P1)
 
@@ -34,8 +34,8 @@
 
 ### Implementation — Green
 
-- [ ] T010 [US1] [GREEN COMMIT] Implement non-empty `Authentication` and the Credential discriminator/value model in `crates/kmipkit-protocol/src/credential/authentication.rs` and `credential.rs` (FR-001–FR-003).
-- [ ] T011 [US1] [GREEN COMMIT] Implement typed conversion and raw unknown/opaque preservation in `crates/kmipkit-protocol/src/credential/conversion.rs` and `credential.rs` (FR-003, FR-004, FR-011, SC-002).
+- [x] T010 [US1] [GREEN COMMIT] Implement non-empty `Authentication` and the Credential discriminator/value model in `crates/kmipkit-protocol/src/credential/authentication.rs` and `value.rs` (FR-001–FR-003). Focused Authentication tests and Clippy pass; exact evidence is recorded in `review-notes.md`.
+- [ ] T011 [US1] [GREEN COMMIT] Implement typed conversion and raw unknown/opaque preservation in `crates/kmipkit-protocol/src/credential/conversion.rs` and `value.rs` (FR-003, FR-004, FR-011, SC-002).
 
 ### Refactor
 

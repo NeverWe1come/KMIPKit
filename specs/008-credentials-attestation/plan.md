@@ -48,7 +48,7 @@ crates/kmipkit-protocol/
 │   ├── credential/
 │   │   ├── mod.rs
 │   │   ├── authentication.rs
-│   │   ├── credential.rs
+│   │   ├── value.rs
 │   │   ├── variants.rs
 │   │   ├── conversion.rs
 │   │   ├── hashed_password.rs

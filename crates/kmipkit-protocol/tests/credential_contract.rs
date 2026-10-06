@@ -7,7 +7,7 @@
 //! Traceability: KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002,
 //! KMIPKIT-REQ-SPEC-9.4-002; KMIPKIT-0008-FR-001, FR-002, FR-009; SC-001.
 
-use kmipkit_protocol::{Authentication, Credential, RequestMessage};
+use kmipkit_protocol::{Authentication, RequestMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -109,7 +109,7 @@ fn authentication_preserves_nonempty_credential_order() {
         .expect("repeated Credential structures remain in source order");
     let raw_types: Vec<_> = parsed
         .credentials()
-        .map(Credential::credential_type_raw)
+        .map(|entry| entry.credential_type_raw())
         .collect();
 
     assert_eq!(raw_types, [0xF123_4567, 0xE234_5678]);

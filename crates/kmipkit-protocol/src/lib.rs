@@ -3,6 +3,7 @@
 
 mod asynchronous;
 mod cancel;
+mod credential;
 mod discover_versions;
 mod error;
 mod message;
@@ -13,6 +14,10 @@ mod result;
 
 pub use asynchronous::AsynchronousOperationError;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
+pub use credential::{
+    Authentication, Credential, CredentialType, CredentialValidationError,
+    CredentialValidationErrorKind, CredentialView,
+};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
