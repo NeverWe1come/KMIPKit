@@ -16,6 +16,7 @@ mod authentication;
 mod conversion;
 mod hashed_password;
 mod nonce;
+mod secret;
 mod validation;
 mod value;
 mod variants;
@@ -24,6 +25,7 @@ pub use attestation::AttestationCredential;
 pub use authentication::{Authentication, CredentialView};
 pub use hashed_password::HashedPasswordCredential;
 pub use nonce::Nonce;
+pub use secret::{SecretBytes, SecretText};
 pub use value::{Credential, CredentialType};
 pub use variants::{
     CredentialValue, DeviceCredential, OneTimePasswordCredential, OpaqueTtlv, TicketCredential,

@@ -17,8 +17,8 @@ pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use credential::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
     CredentialValidationErrorKind, CredentialValue, CredentialView, DeviceCredential,
-    HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, TicketCredential,
-    UsernameAndPasswordCredential,
+    HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, SecretBytes,
+    SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,

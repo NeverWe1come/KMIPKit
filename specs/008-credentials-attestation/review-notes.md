@@ -211,6 +211,36 @@ Fresh Rust 1.94.0 verification:
 - `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
 - `cargo +1.94.0 fmt --all --check` — passed.
 - `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
+
+## User Story 2 RED — secret owner API (2026-10-06)
+
+Added public contract tests for redacted caller-owned text and byte wrappers,
+closure-scoped access, and ownership transfer into TTLV's existing redacted
+value type. The focused command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_secret` failed at
+compile time because `SecretText` and `SecretBytes` were not yet exported
+(`E0432`).
+
+## User Story 2 GREEN — secret owners and zeroization (2026-10-06)
+
+Added non-cloneable `SecretText` and `SecretBytes` owners. Their Debug and
+Display output is redacted; closure-scoped access cannot return a borrowed
+secret; consuming conversion moves the existing String/Vec allocation into
+TTLV's redacted `Value`, which zeroizes its owned payload on drop. Secret
+storage calls the pinned `zeroize` implementation before deallocation. A
+DropProbe test verifies that the owner invokes `Zeroize`; KMIPKIT-0004 tests
+verify the TTLV payload owner clears each payload variant and nested values.
+No credential writer or transmission callsite was added. The documented
+guarantee excludes prior allocations, caller/dependency/runtime copies,
+borrowed-view copies, and temporary stack/register copies.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 62 unit tests, 18 credential contract tests, 2 redaction tests, 4 credential round-trip tests, 2 secret-owner integration tests, 56 other integration tests, and 2 doctests.
+- `cargo +1.94.0 test -p kmipkit-ttlv --test value_zeroization` — passed: 2 tests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
 - `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract` — 5
   passed, 0 failed.
 - `cargo +1.94.0 clippy -p kmipkit-protocol --test credential_contract -- -D warnings`
