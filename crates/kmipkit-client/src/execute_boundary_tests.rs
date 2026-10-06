@@ -261,15 +261,39 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_impl_trait_conversion_input",
         path: "tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs"),
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs"
+        ),
         probe: "request: impl Into<ClientRequest>",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "approved_error_validation_source",
+        path: "tests/fixtures/execute_boundary/approved_error_validation_source.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/approved_error_validation_source.rs"
+        ),
+        probe: "pub fn validation<E>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "approved_batch_response_iter_output",
+        path: "tests/fixtures/execute_boundary/approved_batch_response_iter_output.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/approved_batch_response_iter_output.rs"
+        ),
+        probe: "impl ExactSizeIterator<Item = &ClientBatchItemResponse>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
         id: "unbounded_public_type_parameter",
         path: "tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs"),
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs"
+        ),
         probe: "pub fn execute<T>",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -301,7 +325,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "permit_constructor_qualified_derives",
         path: "tests/fixtures/execute_boundary/permit_constructor_qualified_derives.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/permit_constructor_qualified_derives.rs"),
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/permit_constructor_qualified_derives.rs"
+        ),
         probe: "derive(core::default::Default, core::clone::Clone)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -540,6 +566,8 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "macro_hidden_second_exchange",
     "public_conversion_hooks",
     "public_impl_trait_conversion_input",
+    "approved_error_validation_source",
+    "approved_batch_response_iter_output",
     "unbounded_public_type_parameter",
     "nongeneric_bytes_input_output",
     "permit_qself_mint",
@@ -590,11 +618,30 @@ struct BoundaryAudit {
     misplaced_permit_struct_constructions: usize,
     current_impl_type: Option<String>,
     current_function: Option<String>,
+    current_source_path: Option<PathBuf>,
+    current_inline_modules: Vec<String>,
     allowed_call_target: bool,
     logged_sensitive_value: bool,
 }
 
 impl BoundaryAudit {
+    fn visit_source_file(&mut self, file: &syn::File, source_path: &Path) {
+        let previous_source_path = self.current_source_path.replace(source_path.to_path_buf());
+        let previous_inline_modules = std::mem::take(&mut self.current_inline_modules);
+        visit::visit_file(self, file);
+        self.current_source_path = previous_source_path;
+        self.current_inline_modules = previous_inline_modules;
+    }
+
+    fn is_execute_root_scope(&self) -> bool {
+        self.is_source_root(Path::new("execute.rs"))
+    }
+
+    fn is_source_root(&self, source_path: &Path) -> bool {
+        self.current_source_path.as_deref() == Some(source_path)
+            && self.current_inline_modules.is_empty()
+    }
+
     fn reject(&mut self, reason: impl Into<String>) {
         self.rejection_reasons.push(reason.into());
     }
@@ -642,19 +689,38 @@ impl BoundaryAudit {
 
     fn check_public_signature(&mut self, signature: &syn::Signature, impl_type: Option<&str>) {
         let mut finder = PublicTypeFinder::default();
-        finder.visit_generics(&signature.generics);
-        let unique_id_setter = is_exact_unique_batch_id_setter(impl_type, signature);
-        let extension_view_callback = is_exact_extension_view_callback(impl_type, signature);
+        let execute_root_scope = self.is_execute_root_scope();
+        let error_root_scope = self.is_source_root(Path::new("error.rs"));
+        let unique_id_setter =
+            is_exact_unique_batch_id_setter(execute_root_scope, impl_type, signature);
+        let extension_view_callback =
+            is_exact_extension_view_callback(execute_root_scope, impl_type, signature);
+        let batch_from_items = is_exact_batch_from_items(execute_root_scope, impl_type, signature);
+        let error_validation_source =
+            is_exact_error_validation_source(error_root_scope, impl_type, signature);
+        let batch_response_iterator =
+            is_exact_batch_response_iterator(execute_root_scope, impl_type, signature);
+        let approved_generic_signature = extension_view_callback || error_validation_source;
+        if has_public_type_or_const_generics(signature) && !approved_generic_signature {
+            finder
+                .violations
+                .insert(PublicTypeViolation::CallerConversion);
+        }
+        if !error_validation_source {
+            finder.visit_generics(&signature.generics);
+        }
         for (index, argument) in signature.inputs.iter().enumerate() {
             if let syn::FnArg::Typed(argument) = argument {
-                if (unique_id_setter || extension_view_callback) && index == 1 {
+                if (unique_id_setter || extension_view_callback) && index == 1
+                    || batch_from_items && index == 0
+                {
                     continue;
                 }
                 finder.visit_type(&argument.ty);
             }
         }
         let mut output_finder = PublicTypeFinder::default();
-        if let syn::ReturnType::Type(_, output) = &signature.output {
+        if !batch_response_iterator && let syn::ReturnType::Type(_, output) = &signature.output {
             output_finder.visit_type(output);
         }
         if finder.has_forbidden_type() || output_finder.has_forbidden_output_type() {
@@ -692,7 +758,10 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
         // External module discovery is performed separately from AST policy.
         self.check_attributes(&module.attrs);
         if module.content.is_some() && !is_test_cfg(&module.attrs) {
+            let previous_depth = self.current_inline_modules.len();
+            self.current_inline_modules.push(module.ident.to_string());
             visit::visit_item_mod(self, module);
+            self.current_inline_modules.truncate(previous_depth);
         }
     }
 
@@ -744,6 +813,13 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
 
     fn visit_item_impl(&mut self, implementation: &'ast syn::ItemImpl) {
         self.check_attributes(&implementation.attrs);
+        if implementation.trait_.is_some() {
+            let mut permit_references = PermitReferenceFinder::default();
+            permit_references.visit_item_impl(implementation);
+            if permit_references.found {
+                self.reject("OperationEncodingPermit cannot participate in a trait implementation");
+            }
+        }
         let previous = std::mem::replace(
             &mut self.current_impl_type,
             type_path_name(&implementation.self_ty),
@@ -756,6 +832,11 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
         self.check_attributes(&structure.attrs);
         if is_test_cfg(&structure.attrs) {
             return;
+        }
+        if structure.ident == "OperationEncodingPermit"
+            && structure.attrs.iter().any(permit_enabling_derive)
+        {
+            self.reject("OperationEncodingPermit cannot derive Default, Clone, or Copy");
         }
         if matches!(structure.vis, syn::Visibility::Public(_)) {
             for field in &structure.fields {
@@ -1002,6 +1083,13 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
     }
 
     fn visit_expr_path(&mut self, expression: &'ast syn::ExprPath) {
+        if expression
+            .qself
+            .as_ref()
+            .is_some_and(|qself| type_mentions_permit(&qself.ty))
+        {
+            self.reject("qualified permit paths are not allowed");
+        }
         let segments = expression
             .path
             .segments
@@ -1057,6 +1145,7 @@ enum PublicTypeViolation {
     OwnedBytes,
     RawBody,
     TransportBound,
+    CallerConversion,
 }
 
 #[derive(Default)]
@@ -1076,6 +1165,7 @@ impl PublicTypeFinder {
                 PublicTypeViolation::GenericTtlv
                     | PublicTypeViolation::OwnedBytes
                     | PublicTypeViolation::TransportBound
+                    | PublicTypeViolation::CallerConversion
             )
         })
     }
@@ -1083,9 +1173,17 @@ impl PublicTypeFinder {
 
 impl<'ast> Visit<'ast> for PublicTypeFinder {
     fn visit_type_param_bound(&mut self, bound: &'ast syn::TypeParamBound) {
-        if matches!(bound, syn::TypeParamBound::Trait(trait_bound) if trait_bound.path.segments.iter().any(|segment| segment.ident == "Transport"))
-        {
-            self.violations.insert(PublicTypeViolation::TransportBound);
+        if let syn::TypeParamBound::Trait(trait_bound) = bound {
+            self.violations
+                .insert(PublicTypeViolation::CallerConversion);
+            if trait_bound
+                .path
+                .segments
+                .iter()
+                .any(|segment| segment.ident == "Transport")
+            {
+                self.violations.insert(PublicTypeViolation::TransportBound);
+            }
         }
         visit::visit_type_param_bound(self, bound);
     }
@@ -1148,8 +1246,13 @@ fn is_generic_ttlv_path(path: &syn::Path) -> bool {
                 .any(|segment| segment.ident == "kmipkit_ttlv"))
 }
 
-fn is_exact_extension_view_callback(impl_type: Option<&str>, signature: &syn::Signature) -> bool {
-    if impl_type != Some("ClientMessageExtension")
+fn is_exact_extension_view_callback(
+    execute_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !execute_root_scope
+        || impl_type != Some("ClientMessageExtension")
         || signature.ident != "with_ttlv"
         || signature.generics.params.len() != 1
         || signature.generics.where_clause.is_some()
@@ -1286,6 +1389,9 @@ fn is_owned_byte_container_path(path: &syn::TypePath) -> bool {
     let Some(segment) = path.path.segments.last() else {
         return false;
     };
+    if matches!(segment.ident.to_string().as_str(), "Bytes" | "BytesMut") {
+        return true;
+    }
     if !matches!(
         segment.ident.to_string().as_str(),
         "Vec" | "Box" | "Cow" | "Arc" | "Rc" | "Bytes" | "BytesMut"
@@ -1313,8 +1419,13 @@ fn is_u8(ty: &Type) -> bool {
     matches!(ty, Type::Path(path) if path.path.is_ident("u8"))
 }
 
-fn is_exact_unique_batch_id_setter(impl_type: Option<&str>, signature: &syn::Signature) -> bool {
-    if impl_type != Some("ClientBatchItem")
+fn is_exact_unique_batch_id_setter(
+    execute_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !execute_root_scope
+        || impl_type != Some("ClientBatchItem")
         || signature.ident != "with_unique_batch_item_id"
         || !signature.generics.params.is_empty()
         || signature.generics.where_clause.is_some()
@@ -1351,6 +1462,246 @@ fn is_exact_unique_batch_id_setter(impl_type: Option<&str>, signature: &syn::Sig
     correct_name && correct_input && correct_output
 }
 
+fn is_exact_batch_from_items(
+    execute_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !execute_root_scope
+        || impl_type != Some("ClientBatch")
+        || signature.ident != "from_items"
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 1
+        || !matches!(&signature.output, syn::ReturnType::Type(_, ty) if is_plain_type_path(ty, "Self"))
+    {
+        return false;
+    }
+    let Some(syn::FnArg::Typed(argument)) = signature.inputs.first() else {
+        return false;
+    };
+    let input_name = matches!(argument.pat.as_ref(), syn::Pat::Ident(pattern)
+        if pattern.ident == "items"
+            && pattern.by_ref.is_none()
+            && pattern.mutability.is_none()
+            && pattern.subpat.is_none()
+            && pattern.attrs.is_empty());
+    let Type::ImplTrait(implementation_trait) = argument.ty.as_ref() else {
+        return false;
+    };
+    if implementation_trait.bounds.len() != 1 {
+        return false;
+    }
+    let Some(syn::TypeParamBound::Trait(trait_bound)) = implementation_trait.bounds.first() else {
+        return false;
+    };
+    if !matches!(&trait_bound.modifier, syn::TraitBoundModifier::None)
+        || trait_bound.lifetimes.is_some()
+        || trait_bound.path.leading_colon.is_some()
+        || trait_bound.path.segments.len() != 1
+    {
+        return false;
+    }
+    let segment = &trait_bound.path.segments[0];
+    if segment.ident != "IntoIterator" {
+        return false;
+    }
+    let syn::PathArguments::AngleBracketed(arguments) = &segment.arguments else {
+        return false;
+    };
+    if arguments.args.len() != 1 {
+        return false;
+    }
+    let Some(syn::GenericArgument::AssocType(binding)) = arguments.args.first() else {
+        return false;
+    };
+    let input_type = binding.ident == "Item"
+        && binding.generics.is_none()
+        && is_plain_type_path(&binding.ty, "ClientBatchItem");
+
+    input_name && input_type
+}
+
+fn has_public_type_or_const_generics(signature: &syn::Signature) -> bool {
+    signature.generics.params.iter().any(|parameter| {
+        matches!(
+            parameter,
+            syn::GenericParam::Type(_) | syn::GenericParam::Const(_)
+        )
+    })
+}
+
+fn is_exact_error_validation_source(
+    error_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !error_root_scope
+        || impl_type != Some("ClientError")
+        || signature.ident != "validation"
+        || signature.generics.params.len() != 1
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 3
+        || !matches!(&signature.output, syn::ReturnType::Type(_, ty) if is_plain_type_path(ty, "Self"))
+    {
+        return false;
+    }
+
+    let generic_is_plain_e = matches!(
+        signature.generics.params.first(),
+        Some(syn::GenericParam::Type(parameter))
+            if parameter.ident == "E"
+                && parameter.attrs.is_empty()
+                && parameter.colon_token.is_none()
+                && parameter.bounds.is_empty()
+                && parameter.eq_token.is_none()
+                && parameter.default.is_none()
+    );
+    let where_clause_is_exact_error_bound = signature.generics.where_clause.as_ref().is_some_and(
+        |where_clause| {
+            if where_clause.predicates.len() != 1 {
+                return false;
+            }
+            let Some(syn::WherePredicate::Type(predicate)) = where_clause.predicates.first() else {
+                return false;
+            };
+            if predicate.lifetimes.is_some()
+                || !is_plain_type_path(&predicate.bounded_ty, "E")
+                || predicate.bounds.len() != 2
+            {
+                return false;
+            }
+            let mut bounds = predicate.bounds.iter();
+            let error_bound = matches!(
+                (bounds.next(), bounds.next()),
+                (
+                    Some(syn::TypeParamBound::Trait(trait_bound)),
+                    Some(syn::TypeParamBound::Lifetime(lifetime))
+                ) if matches!(&trait_bound.modifier, syn::TraitBoundModifier::None)
+                    && trait_bound.lifetimes.is_none()
+                    && trait_bound.path.leading_colon.is_none()
+                    && trait_bound.path.segments.len() == 1
+                    && trait_bound.path.segments[0].ident == "Error"
+                    && matches!(&trait_bound.path.segments[0].arguments, syn::PathArguments::None)
+                    && lifetime.ident == "static"
+            );
+            error_bound
+        },
+    );
+
+    let mut inputs = signature.inputs.iter();
+    let cause_is_exact = matches!(
+        inputs.next(),
+        Some(syn::FnArg::Typed(argument))
+            if is_named_typed_argument(argument, "cause")
+                && is_plain_type_path(&argument.ty, "ClientCauseCategory")
+    );
+    let delivery_is_exact = matches!(
+        inputs.next(),
+        Some(syn::FnArg::Typed(argument))
+            if is_named_typed_argument(argument, "delivery_state")
+                && is_plain_type_path(&argument.ty, "RequestDeliveryState")
+    );
+    let source_is_exact = matches!(
+        inputs.next(),
+        Some(syn::FnArg::Typed(argument))
+            if is_named_typed_argument(argument, "source")
+                && is_plain_type_path(&argument.ty, "E")
+    );
+
+    generic_is_plain_e
+        && where_clause_is_exact_error_bound
+        && cause_is_exact
+        && delivery_is_exact
+        && source_is_exact
+}
+
+fn is_named_typed_argument(argument: &syn::PatType, expected_name: &str) -> bool {
+    argument.attrs.is_empty()
+        && matches!(argument.pat.as_ref(), syn::Pat::Ident(pattern)
+            if pattern.ident == expected_name
+                && pattern.by_ref.is_none()
+                && pattern.mutability.is_none()
+                && pattern.subpat.is_none()
+                && pattern.attrs.is_empty())
+}
+
+fn is_exact_batch_response_iterator(
+    execute_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !execute_root_scope
+        || impl_type != Some("ClientBatchResponse")
+        || signature.ident != "iter"
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 1
+        || !matches!(signature.inputs.first(), Some(syn::FnArg::Receiver(receiver))
+            if receiver.reference.as_ref().is_some_and(|(_, lifetime)| lifetime.is_none())
+                && receiver.mutability.is_none()
+                && receiver.colon_token.is_none()
+                && receiver.attrs.is_empty())
+    {
+        return false;
+    }
+    let syn::ReturnType::Type(_, output) = &signature.output else {
+        return false;
+    };
+    let Type::ImplTrait(implementation_trait) = output.as_ref() else {
+        return false;
+    };
+    if implementation_trait.bounds.len() != 2 {
+        return false;
+    }
+    let mut bounds = implementation_trait.bounds.iter();
+    let iterator_bound_is_exact = matches!(bounds.next(),
+        Some(syn::TypeParamBound::Trait(trait_bound))
+            if matches!(&trait_bound.modifier, syn::TraitBoundModifier::None)
+                && trait_bound.lifetimes.is_none()
+                && trait_bound.path.leading_colon.is_none()
+                && trait_bound.path.segments.len() == 1
+                && trait_bound.path.segments[0].ident == "ExactSizeIterator"
+                && exact_iterator_item_type(&trait_bound.path.segments[0].arguments));
+    let opaque_lifetime_is_exact = matches!(
+        bounds.next(),
+        Some(syn::TypeParamBound::Lifetime(lifetime)) if lifetime.ident == "_"
+    );
+    iterator_bound_is_exact && opaque_lifetime_is_exact
+}
+
+fn exact_iterator_item_type(arguments: &syn::PathArguments) -> bool {
+    let syn::PathArguments::AngleBracketed(arguments) = arguments else {
+        return false;
+    };
+    if arguments.args.len() != 1 {
+        return false;
+    }
+    let Some(syn::GenericArgument::AssocType(binding)) = arguments.args.first() else {
+        return false;
+    };
+    binding.ident == "Item"
+        && binding.generics.is_none()
+        && matches!(&binding.ty, Type::Reference(reference)
+            if reference.lifetime.is_none()
+                && reference.mutability.is_none()
+                && is_plain_type_path(&reference.elem, "ClientBatchItemResponse"))
+}
+
 fn supported_derive(attribute: &Attribute) -> bool {
     let Meta::List(list) = &attribute.meta else {
         return false;
@@ -1383,6 +1734,65 @@ fn type_path_name(ty: &Type) -> Option<String> {
         ),
         _ => None,
     }
+}
+
+#[derive(Default)]
+struct PermitReferenceFinder {
+    found: bool,
+}
+
+impl<'ast> Visit<'ast> for PermitReferenceFinder {
+    fn visit_path(&mut self, path: &'ast syn::Path) {
+        if path
+            .segments
+            .iter()
+            .any(|segment| segment.ident == "OperationEncodingPermit")
+        {
+            self.found = true;
+        }
+        visit::visit_path(self, path);
+    }
+
+    fn visit_type_path(&mut self, path: &'ast syn::TypePath) {
+        if path
+            .path
+            .segments
+            .iter()
+            .any(|segment| segment.ident == "OperationEncodingPermit")
+        {
+            self.found = true;
+        }
+        visit::visit_type_path(self, path);
+    }
+}
+
+fn type_mentions_permit(ty: &Type) -> bool {
+    let mut finder = PermitReferenceFinder::default();
+    finder.visit_type(ty);
+    finder.found
+}
+
+fn permit_enabling_derive(attribute: &Attribute) -> bool {
+    if !attribute.path().is_ident("derive") {
+        return false;
+    }
+    let Meta::List(list) = &attribute.meta else {
+        return false;
+    };
+    let derives = syn::parse::Parser::parse2(
+        syn::punctuated::Punctuated::<syn::Path, syn::Token![,]>::parse_terminated,
+        list.tokens.clone(),
+    );
+    derives.is_ok_and(|derives| {
+        derives.iter().any(|derive| {
+            let Some(final_segment) = derive.segments.last() else {
+                return false;
+            };
+            ["Default", "Clone", "Copy"]
+                .iter()
+                .any(|name| final_segment.ident == *name)
+        })
+    })
 }
 
 fn is_permit_mint(segments: &[String]) -> bool {
@@ -1499,6 +1909,7 @@ fn contains_protected_macro_tokens(tokens: &str) -> bool {
         "operationencodingpermit",
         "private_wire_writer",
         "encode",
+        "exchange",
         "mint",
         "asynchronous_correlation_value",
         "time_stamp",
@@ -1508,9 +1919,13 @@ fn contains_protected_macro_tokens(tokens: &str) -> bool {
 }
 
 fn audit_source(source: &str) -> Result<BoundaryAudit, CandidateRejection> {
+    audit_source_at(source, Path::new("fixture.rs"))
+}
+
+fn audit_source_at(source: &str, source_path: &Path) -> Result<BoundaryAudit, CandidateRejection> {
     let parsed = syn::parse_file(source).map_err(|_| CandidateRejection::UninspectedSource)?;
     let mut audit = BoundaryAudit::default();
-    audit.visit_file(&parsed);
+    audit.visit_source_file(&parsed, source_path);
     audit.finish_fixture().map(|()| audit)
 }
 
@@ -1528,7 +1943,21 @@ fn candidate_check_fixture(fixture: &Fixture) -> Result<(), CandidateRejection> 
     } else {
         format!("{}\n{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}", fixture.source)
     };
-    audit_source(&complete_source).map(|_| ())
+    let source_path = if matches!(
+        fixture.id,
+        "exact_unique_batch_id_setter"
+            | "approved_extension_view_callback"
+            | "approved_batch_from_items_iterator"
+            | "approved_batch_response_iter_output"
+            | "counterfeit_exception_types"
+    ) {
+        Path::new("execute.rs")
+    } else if fixture.id == "approved_error_validation_source" {
+        Path::new("error.rs")
+    } else {
+        Path::new("fixture.rs")
+    };
+    audit_source_at(&complete_source, source_path).map(|_| ())
 }
 
 fn candidate_check_inventory(inventory: &[&Fixture]) -> Result<(), CandidateRejection> {
@@ -1645,8 +2074,15 @@ fn discover_module_file(path: &Path, src: &Path, inventory: &mut ProductionSourc
         return;
     };
     let child_base = module_base(&canonical);
+    let Some(source_path) = canonical.strip_prefix(src).ok() else {
+        inventory.rejected = true;
+        inventory
+            .rejection_reasons
+            .push(format!("module source escapes src: {canonical:?}"));
+        return;
+    };
     let mut audit = BoundaryAudit::default();
-    audit.visit_file(&parsed);
+    audit.visit_source_file(&parsed, source_path);
     inventory.rejected |= audit.is_rejected();
     if audit.is_rejected() {
         inventory.rejection_reasons.push(format!(
@@ -1784,10 +2220,17 @@ fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_perm
         );
     }
 
+    let source_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src")
+        .canonicalize()
+        .expect("the client source root exists");
     let mut audit = BoundaryAudit::default();
-    for (_, source) in &inventory.files {
+    for (path, source) in &inventory.files {
         let parsed = syn::parse_file(source).expect("the discovered production source parsed");
-        audit.visit_file(&parsed);
+        let relative_path = path
+            .strip_prefix(&source_root)
+            .expect("production source belongs to the client src root");
+        audit.visit_source_file(&parsed, relative_path);
     }
     assert!(
         !audit.is_rejected(),
@@ -1956,6 +2399,24 @@ fn approved_batch_from_items_iterator_remains_allowed() {
 }
 
 #[test]
+fn approved_validation_source_factory_remains_allowed() {
+    assert_eq!(
+        candidate_check_fixture(fixture("approved_error_validation_source")),
+        Ok(()),
+        "the exact source-discarding validation factory remains allowed in error.rs root"
+    );
+}
+
+#[test]
+fn approved_batch_response_iterator_remains_allowed() {
+    assert_eq!(
+        candidate_check_fixture(fixture("approved_batch_response_iter_output")),
+        Ok(()),
+        "the exact opaque iterator output remains allowed in execute.rs root"
+    );
+}
+
+#[test]
 fn ufcs_transport_exchange_call_outside_execute_is_rejected() {
     assert_eq!(
         candidate_check_fixture(fixture("raw_exchange_ufcs_outside_execute")),
@@ -2103,6 +2564,8 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "exact_unique_batch_id_setter"
                     | "approved_extension_view_callback"
                     | "approved_batch_from_items_iterator"
+                    | "approved_error_validation_source"
+                    | "approved_batch_response_iter_output"
             )),
             ExpectedDecision::Reject => assert!(!matches!(
                 fixture.id,
@@ -2110,6 +2573,8 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "canonical_vec_macro"
                     | "exact_unique_batch_id_setter"
                     | "approved_extension_view_callback"
+                    | "approved_error_validation_source"
+                    | "approved_batch_response_iter_output"
             )),
         }
     }
