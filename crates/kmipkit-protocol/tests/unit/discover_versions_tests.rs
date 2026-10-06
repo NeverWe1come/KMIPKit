@@ -306,7 +306,7 @@ fn response_rejects_a_repeated_minor_component() {
 }
 
 #[test]
-fn response_ignores_unknown_protocol_version_components() {
+fn response_rejects_unrecognized_protocol_version_components() {
     let message = malformed_version([
         item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
         item(EXTENSION_PAYLOAD_TAG, Value::integer(7)),
@@ -314,10 +314,8 @@ fn response_ignores_unknown_protocol_version_components() {
     ]);
 
     assert_eq!(
-        decode_response(&message)
-            .expect("unknown generic fields do not replace known Protocol Version fields")
-            .supported_versions(),
-        Some(&[KMIP_2_1][..])
+        decode_response(&message).unwrap_err(),
+        DiscoverVersionsError::MalformedProtocolVersion
     );
 }
 
