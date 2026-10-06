@@ -101,6 +101,7 @@ dependencies = [
  "kmipkit-protocol",
  "kmipkit-transport",
  "kmipkit-ttlv",
+ "zeroize",
 ]
 
 [[package]]

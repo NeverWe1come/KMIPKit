@@ -8,6 +8,7 @@ use std::{cell::Cell, rc::Rc};
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
+use zeroize::Zeroize;
 
 /// One deterministic action for [`ScriptedTransport`].
 #[derive(Clone, Eq, PartialEq)]
@@ -33,6 +34,18 @@ pub enum ExchangeScript {
         /// Initialized response bytes received before failure.
         response_bytes: Vec<u8>,
     },
+}
+
+impl Drop for ExchangeScript {
+    fn drop(&mut self) {
+        match self {
+            Self::Success { response, .. } => response.as_mut_slice().zeroize(),
+            Self::FailAfterPartialRead { response_bytes, .. } => {
+                response_bytes.as_mut_slice().zeroize();
+            }
+            Self::FailBeforeWrite | Self::FailAfterPartialWrite { .. } => {}
+        }
+    }
 }
 
 struct ZeroizingFixtureBytes {
@@ -69,6 +82,7 @@ impl ZeroizingFixtureBytes {
 
 impl Drop for ZeroizingFixtureBytes {
     fn drop(&mut self) {
+        self.bytes.as_mut_slice().zeroize();
         #[cfg(test)]
         if let Some(observer) = &self.observer {
             observer.record(&self.bytes);
@@ -163,7 +177,7 @@ impl fmt::Debug for ScriptedTransport {
                 &self.retained_request.as_ref().map(Vec::len),
             )
             .field("captured_log_count", &self.captured_logs.len())
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -278,6 +292,8 @@ impl ScriptedTransport {
         Ok(TransportResponse::new(response_bytes))
     }
 
+    // The receiver supplies a test-only observer; production builds omit it.
+    #[allow(clippy::unused_self)]
     fn owned_response_fixture(&self, bytes: Vec<u8>) -> ZeroizingFixtureBytes {
         #[cfg(test)]
         if let Some(observer) = &self.response_drop_observer {
@@ -353,6 +369,7 @@ impl Drop for ScriptedTransport {
                 }
             };
             if let Some(response) = response {
+                response.as_mut_slice().zeroize();
                 #[cfg(test)]
                 if let Some(observer) = &self.response_drop_observer {
                     observer.record(response);
@@ -360,6 +377,12 @@ impl Drop for ScriptedTransport {
                 #[cfg(not(test))]
                 let _ = response;
             }
+        }
+        if let Some(request) = &mut self.retained_request {
+            request.as_mut_slice().zeroize();
+        }
+        for log in &mut self.captured_logs {
+            log.zeroize();
         }
     }
 }

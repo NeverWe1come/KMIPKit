@@ -12,6 +12,7 @@ publish = false
 kmipkit-protocol.workspace = true
 kmipkit-transport.workspace = true
 kmipkit-ttlv.workspace = true
+zeroize.workspace = true
 
 [lints]
 workspace = true
