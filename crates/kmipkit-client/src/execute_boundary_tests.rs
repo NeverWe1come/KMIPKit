@@ -481,7 +481,11 @@ struct BoundaryAudit {
     writer_calls: usize,
     misplaced_permit_calls: usize,
     misplaced_writer_calls: usize,
-    in_client_impl: bool,
+    misplaced_exchange_calls: usize,
+    exchange_calls: usize,
+    permit_struct_constructions: usize,
+    misplaced_permit_struct_constructions: usize,
+    current_impl_type: Option<String>,
     current_function: Option<String>,
     allowed_call_target: bool,
     logged_sensitive_value: bool,
@@ -533,18 +537,27 @@ impl BoundaryAudit {
         }
     }
 
-    fn check_public_signature(&mut self, signature: &syn::Signature) {
+    fn check_public_signature(&mut self, signature: &syn::Signature, impl_type: Option<&str>) {
         let mut finder = PublicTypeFinder::default();
         finder.visit_generics(&signature.generics);
-        for argument in &signature.inputs {
+        let unique_id_setter = is_exact_unique_batch_id_setter(impl_type, signature);
+        let extension_view_callback = is_exact_extension_view_callback(impl_type, signature);
+        for (index, argument) in signature.inputs.iter().enumerate() {
             if let syn::FnArg::Typed(argument) = argument {
+                if (unique_id_setter || extension_view_callback) && index == 1 {
+                    continue;
+                }
                 finder.visit_type(&argument.ty);
             }
         }
-        if finder.has_untyped_item || finder.has_raw_body || finder.has_transport_bound {
+        let mut output_finder = PublicTypeFinder::default();
+        if let syn::ReturnType::Type(_, output) = &signature.output {
+            output_finder.visit_type(output);
+        }
+        if finder.has_forbidden_type() || output_finder.has_forbidden_output_type() {
             self.reject(format!(
-                "public signature exposes a forbidden input (Item={}, raw_body={}, Transport={})",
-                finder.has_untyped_item, finder.has_raw_body, finder.has_transport_bound
+                "public signature exposes a forbidden type (input={:?}, output={:?})",
+                finder.violations, output_finder.violations
             ));
         }
     }
@@ -553,6 +566,9 @@ impl BoundaryAudit {
         if self.is_rejected()
             || self.misplaced_permit_calls != 0
             || self.misplaced_writer_calls != 0
+            || self.misplaced_exchange_calls != 0
+            || self.misplaced_permit_struct_constructions != 0
+            || self.exchange_calls != 1
             || self.permit_calls != self.writer_calls
             || self.permit_calls > 1
         {
@@ -598,7 +614,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             self.reject("public writer function");
         }
         if matches!(function.vis, syn::Visibility::Public(_)) {
-            self.check_public_signature(&function.sig);
+            self.check_public_signature(&function.sig, None);
         }
         let previous = self
             .current_function
@@ -613,7 +629,8 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             return;
         }
         if matches!(function.vis, syn::Visibility::Public(_)) {
-            self.check_public_signature(&function.sig);
+            let impl_type = self.current_impl_type.clone();
+            self.check_public_signature(&function.sig, impl_type.as_deref());
         }
         let previous = self
             .current_function
@@ -624,10 +641,12 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
 
     fn visit_item_impl(&mut self, implementation: &'ast syn::ItemImpl) {
         self.check_attributes(&implementation.attrs);
-        let previous = self.in_client_impl;
-        self.in_client_impl = type_path_ends_with_client(&implementation.self_ty);
+        let previous = std::mem::replace(
+            &mut self.current_impl_type,
+            type_path_name(&implementation.self_ty),
+        );
         visit::visit_item_impl(self, implementation);
-        self.in_client_impl = previous;
+        self.current_impl_type = previous;
     }
 
     fn visit_item_struct(&mut self, structure: &'ast syn::ItemStruct) {
@@ -640,8 +659,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 if matches!(field.vis, syn::Visibility::Public(_)) {
                     let mut finder = PublicTypeFinder::default();
                     finder.visit_type(&field.ty);
-                    if finder.has_untyped_item || finder.has_raw_body || finder.has_transport_bound
-                    {
+                    if finder.has_forbidden_type() {
                         self.reject("public struct field exposes forbidden input");
                     }
                 }
@@ -663,7 +681,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             {
                 let mut finder = PublicTypeFinder::default();
                 finder.visit_type(&field.ty);
-                if finder.has_untyped_item || finder.has_raw_body || finder.has_transport_bound {
+                if finder.has_forbidden_type() {
                     self.reject("public enum variant exposes forbidden input");
                 }
             }
@@ -688,7 +706,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             for field in &union.fields.named {
                 finder.visit_type(&field.ty);
             }
-            if finder.has_untyped_item || finder.has_raw_body || finder.has_transport_bound {
+            if finder.has_forbidden_type() {
                 self.reject("union exposes forbidden input");
             }
         }
@@ -705,14 +723,14 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             for bound in &trait_item.supertraits {
                 finder.visit_type_param_bound(bound);
             }
-            if finder.has_untyped_item || finder.has_raw_body || finder.has_transport_bound {
+            if finder.has_forbidden_type() {
                 self.reject("public trait exposes a forbidden bound");
             }
             for member in &trait_item.items {
                 match member {
                     syn::TraitItem::Fn(function) if !is_test_cfg(&function.attrs) => {
                         self.check_attributes(&function.attrs);
-                        self.check_public_signature(&function.sig);
+                        self.check_public_signature(&function.sig, None);
                     }
                     syn::TraitItem::Type(associated) => {
                         let mut finder = PublicTypeFinder::default();
@@ -723,20 +741,14 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                         if let Some((_, default)) = &associated.default {
                             finder.visit_type(default);
                         }
-                        if finder.has_untyped_item
-                            || finder.has_raw_body
-                            || finder.has_transport_bound
-                        {
+                        if finder.has_forbidden_type() {
                             self.reject("public trait associated type exposes forbidden input");
                         }
                     }
                     syn::TraitItem::Const(constant) => {
                         let mut finder = PublicTypeFinder::default();
                         finder.visit_type(&constant.ty);
-                        if finder.has_untyped_item
-                            || finder.has_raw_body
-                            || finder.has_transport_bound
-                        {
+                        if finder.has_forbidden_type() {
                             self.reject("public trait associated constant exposes forbidden type");
                         }
                     }
@@ -759,6 +771,9 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 || use_tree_has_name(&item_use.tree, "encode_for_execute"))
         {
             self.reject("public transport or writer reexport");
+        }
+        if use_tree_has_glob(&item_use.tree) {
+            self.reject("glob imports are not inspected by the boundary audit");
         }
         if use_tree_has_name(&item_use.tree, "renamed_encode")
             || use_tree_has_rename(&item_use.tree)
@@ -797,15 +812,29 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 .iter()
                 .map(|segment| segment.ident.to_string())
                 .collect::<Vec<_>>();
+            if segments.last().is_some_and(|segment| segment == "exchange") {
+                self.reject(
+                    "transport exchange call target must use the canonical method call in Client::execute",
+                );
+            }
             if is_permit_mint(&segments) {
                 self.permit_calls += 1;
-                if !self.in_client_impl || self.current_function.as_deref() != Some("execute") {
+                if self.current_impl_type.as_deref() != Some("Client")
+                    || self.current_function.as_deref() != Some("execute")
+                {
                     self.misplaced_permit_calls += 1;
                 }
+            } else if path_mentions_permit(&segments) {
+                self.reject("OperationEncodingPermit is constructed outside mint");
             }
-            if is_writer_call(&segments) {
+            if is_writer_target(&segments) {
                 self.writer_calls += 1;
-                if !self.in_client_impl || self.current_function.as_deref() != Some("execute") {
+                if !is_writer_call(&segments) {
+                    self.reject("writer function called without its canonical private path");
+                }
+                if self.current_impl_type.as_deref() != Some("Client")
+                    || self.current_function.as_deref() != Some("execute")
+                {
                     self.misplaced_writer_calls += 1;
                 }
             }
@@ -824,14 +853,49 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
         if matches!(
             method.as_str(),
             "encode" | "encode_for_execute" | "encode_raw"
-        ) && is_private_writer_receiver(&call.receiver)
-        {
+        ) {
             self.writer_calls += 1;
-            if !self.in_client_impl || self.current_function.as_deref() != Some("execute") {
+            if !is_private_writer_receiver(&call.receiver) {
+                self.reject("writer method called through a noncanonical receiver");
+            }
+            if self.current_impl_type.as_deref() != Some("Client")
+                || self.current_function.as_deref() != Some("execute")
+            {
                 self.misplaced_writer_calls += 1;
             }
         }
+        if method == "exchange" {
+            self.exchange_calls += 1;
+            if self.current_impl_type.as_deref() != Some("Client")
+                || self.current_function.as_deref() != Some("execute")
+                || !is_client_transport_receiver(&call.receiver)
+            {
+                self.misplaced_exchange_calls += 1;
+            }
+        }
         visit::visit_expr_method_call(self, call);
+    }
+
+    fn visit_expr_struct(&mut self, expression: &'ast syn::ExprStruct) {
+        let segments = expression
+            .path
+            .segments
+            .iter()
+            .map(|segment| segment.ident.to_string())
+            .collect::<Vec<_>>();
+        let is_self_literal = expression.path.is_ident("Self");
+        let is_permit_impl = self.current_impl_type.as_deref() == Some("OperationEncodingPermit");
+        if path_mentions_permit(&segments) || (is_permit_impl && is_self_literal) {
+            self.permit_struct_constructions += 1;
+            let is_mint_construction = is_permit_impl
+                && is_self_literal
+                && self.current_function.as_deref() == Some("mint");
+            if !is_mint_construction {
+                self.misplaced_permit_struct_constructions += 1;
+                self.reject("OperationEncodingPermit construction is allowed only in mint");
+            }
+        }
+        visit::visit_expr_struct(self, expression);
     }
 
     fn visit_expr_path(&mut self, expression: &'ast syn::ExprPath) {
@@ -841,7 +905,17 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             .iter()
             .map(|segment| segment.ident.to_string())
             .collect::<Vec<_>>();
-        if (is_permit_mint(&segments) || is_writer_call(&segments)) && !self.allowed_call_target {
+        if segments.len() > 1
+            && segments.last().is_some_and(|segment| segment == "exchange")
+            && !self.allowed_call_target
+        {
+            self.reject(format!(
+                "transport exchange path must use the canonical method call in Client::execute: {segments:?}"
+            ));
+        }
+        if (path_mentions_permit(&segments) || is_writer_target(&segments))
+            && !self.allowed_call_target
+        {
             self.reject(format!(
                 "writer or permit function used as an alias: {segments:?}"
             ));
@@ -850,17 +924,15 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
     }
 
     fn visit_macro(&mut self, macro_call: &'ast syn::Macro) {
-        let last = macro_call
-            .path
-            .segments
-            .last()
-            .map(|segment| segment.ident.to_string());
         let tokens = macro_call.tokens.to_string();
         if is_sensitive_log_macro(&macro_call.path) && contains_logged_sensitive_value(&tokens) {
             self.logged_sensitive_value = true;
             self.reject("sensitive request metadata appears in a logger macro");
         }
-        if !matches!(last.as_deref(), Some("write" | "matches" | "vec")) {
+        if !(macro_call.path.is_ident("write")
+            || macro_call.path.is_ident("matches")
+            || macro_call.path.is_ident("vec"))
+        {
             let path = macro_call
                 .path
                 .segments
@@ -876,30 +948,51 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
     }
 }
 
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+enum PublicTypeViolation {
+    GenericTtlv,
+    OwnedBytes,
+    RawBody,
+    TransportBound,
+}
+
 #[derive(Default)]
 struct PublicTypeFinder {
-    has_untyped_item: bool,
-    has_raw_body: bool,
-    has_transport_bound: bool,
+    violations: HashSet<PublicTypeViolation>,
+}
+
+impl PublicTypeFinder {
+    fn has_forbidden_type(&self) -> bool {
+        !self.violations.is_empty()
+    }
+
+    fn has_forbidden_output_type(&self) -> bool {
+        self.violations.iter().any(|violation| {
+            matches!(
+                violation,
+                PublicTypeViolation::GenericTtlv
+                    | PublicTypeViolation::OwnedBytes
+                    | PublicTypeViolation::TransportBound
+            )
+        })
+    }
 }
 
 impl<'ast> Visit<'ast> for PublicTypeFinder {
     fn visit_type_param_bound(&mut self, bound: &'ast syn::TypeParamBound) {
         if matches!(bound, syn::TypeParamBound::Trait(trait_bound) if trait_bound.path.segments.iter().any(|segment| segment.ident == "Transport"))
         {
-            self.has_transport_bound = true;
+            self.violations.insert(PublicTypeViolation::TransportBound);
         }
         visit::visit_type_param_bound(self, bound);
     }
 
     fn visit_type_path(&mut self, path: &'ast syn::TypePath) {
-        if path
-            .path
-            .segments
-            .iter()
-            .any(|segment| segment.ident == "Item")
-        {
-            self.has_untyped_item = true;
+        if is_generic_ttlv_path(&path.path) {
+            self.violations.insert(PublicTypeViolation::GenericTtlv);
+        }
+        if is_owned_byte_container_path(path) {
+            self.violations.insert(PublicTypeViolation::OwnedBytes);
         }
         if path
             .path
@@ -907,7 +1000,7 @@ impl<'ast> Visit<'ast> for PublicTypeFinder {
             .iter()
             .any(|segment| segment.ident == "Transport")
         {
-            self.has_transport_bound = true;
+            self.violations.insert(PublicTypeViolation::TransportBound);
         }
         visit::visit_type_path(self, path);
     }
@@ -916,10 +1009,243 @@ impl<'ast> Visit<'ast> for PublicTypeFinder {
         if let Type::Slice(slice) = reference.elem.as_ref()
             && matches!(slice.elem.as_ref(), Type::Path(path) if path.path.is_ident("u8"))
         {
-            self.has_raw_body = true;
+            self.violations.insert(PublicTypeViolation::RawBody);
         }
         visit::visit_type_reference(self, reference);
     }
+
+    fn visit_type_array(&mut self, array: &'ast syn::TypeArray) {
+        if is_u8(&array.elem) {
+            self.violations.insert(PublicTypeViolation::OwnedBytes);
+        }
+        visit::visit_type_array(self, array);
+    }
+}
+
+fn is_generic_ttlv_path(path: &syn::Path) -> bool {
+    const GENERIC_TTLV_TYPES: &[&str] = &[
+        "Item",
+        "Structure",
+        "StructureView",
+        "Tag",
+        "RawTag",
+        "ItemType",
+        "Value",
+        "ValueView",
+    ];
+    let Some(last) = path.segments.last() else {
+        return false;
+    };
+    let name = last.ident.to_string();
+    GENERIC_TTLV_TYPES.contains(&name.as_str())
+        && (path.segments.len() == 1
+            || path
+                .segments
+                .iter()
+                .any(|segment| segment.ident == "kmipkit_ttlv"))
+}
+
+fn is_exact_extension_view_callback(impl_type: Option<&str>, signature: &syn::Signature) -> bool {
+    if impl_type != Some("ClientMessageExtension")
+        || signature.ident != "with_ttlv"
+        || signature.generics.params.len() != 1
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 2
+    {
+        return false;
+    }
+
+    let generic_is_plain_result = matches!(
+        signature.generics.params.first(),
+        Some(syn::GenericParam::Type(parameter))
+            if parameter.ident == "R"
+                && parameter.attrs.is_empty()
+                && parameter.colon_token.is_none()
+                && parameter.bounds.is_empty()
+                && parameter.eq_token.is_none()
+                && parameter.default.is_none()
+    );
+    let mut inputs = signature.inputs.iter();
+    let receiver_is_shared_self = matches!(
+        inputs.next(),
+        Some(syn::FnArg::Receiver(receiver))
+            if receiver.reference.as_ref().is_some_and(|(_, lifetime)| lifetime.is_none())
+                && receiver.mutability.is_none()
+                && receiver.colon_token.is_none()
+                && receiver.attrs.is_empty()
+    );
+    let callback_is_exact = matches!(
+        inputs.next(),
+        Some(syn::FnArg::Typed(argument))
+            if matches!(argument.pat.as_ref(), syn::Pat::Ident(pattern)
+                if pattern.ident == "callback"
+                    && pattern.by_ref.is_none()
+                    && pattern.mutability.is_none()
+                    && pattern.subpat.is_none()
+                    && pattern.attrs.is_empty())
+                && argument.attrs.is_empty()
+                && is_exact_extension_view_callback_type(&argument.ty)
+    );
+    let returns_result = matches!(
+        &signature.output,
+        syn::ReturnType::Type(_, output) if is_plain_type_path(output, "R")
+    );
+
+    generic_is_plain_result && receiver_is_shared_self && callback_is_exact && returns_result
+}
+
+fn is_exact_extension_view_callback_type(ty: &Type) -> bool {
+    let Type::ImplTrait(implementation_trait) = ty else {
+        return false;
+    };
+    if implementation_trait.bounds.len() != 1 {
+        return false;
+    }
+    let Some(syn::TypeParamBound::Trait(trait_bound)) = implementation_trait.bounds.first() else {
+        return false;
+    };
+    if !matches!(&trait_bound.modifier, syn::TraitBoundModifier::None) {
+        return false;
+    }
+    if trait_bound.path.leading_colon.is_some() {
+        return false;
+    }
+    let Some(lifetimes) = &trait_bound.lifetimes else {
+        return false;
+    };
+    let mut lifetime_parameters = lifetimes.lifetimes.iter();
+    let higher_ranked_lifetime_is_plain_a = matches!(
+        (lifetime_parameters.next(), lifetime_parameters.next()),
+        (Some(syn::GenericParam::Lifetime(parameter)), None)
+            if parameter.lifetime.ident == "a"
+                && parameter.attrs.is_empty()
+                && parameter.colon_token.is_none()
+                && parameter.bounds.is_empty()
+    );
+    let mut path_segments = trait_bound.path.segments.iter();
+    let Some(segment) = path_segments.next() else {
+        return false;
+    };
+    if path_segments.next().is_some() {
+        return false;
+    }
+    let syn::PathArguments::Parenthesized(arguments) = &segment.arguments else {
+        return false;
+    };
+    let mut callback_inputs = arguments.inputs.iter();
+    let callback_input_is_structure_view = matches!(
+        (callback_inputs.next(), callback_inputs.next()),
+        (Some(Type::Path(path)), None)
+            if path.qself.is_none()
+                && path.path.leading_colon.is_none()
+                && path.path.segments.len() == 1
+                && path.path.segments[0].ident == "StructureView"
+                && matches!(&path.path.segments[0].arguments,
+                    syn::PathArguments::AngleBracketed(arguments)
+                        if arguments.args.len() == 1
+                            && matches!(arguments.args.first(),
+                                Some(syn::GenericArgument::Lifetime(lifetime))
+                                    if lifetime.ident == "a"))
+    );
+    let callback_output_is_result = matches!(
+        &arguments.output,
+        syn::ReturnType::Type(_, output) if is_plain_type_path(output, "R")
+    );
+
+    higher_ranked_lifetime_is_plain_a
+        && segment.ident == "FnOnce"
+        && callback_input_is_structure_view
+        && callback_output_is_result
+}
+
+fn is_plain_type_path(ty: &Type, expected: &str) -> bool {
+    matches!(ty, Type::Path(path)
+        if path.qself.is_none()
+            && path.path.leading_colon.is_none()
+            && path.path.segments.len() == 1
+            && path.path.segments[0].ident == expected
+            && matches!(&path.path.segments[0].arguments, syn::PathArguments::None))
+}
+
+fn is_owned_byte_container(ty: &Type) -> bool {
+    let Type::Path(path) = ty else {
+        return false;
+    };
+    is_owned_byte_container_path(path)
+}
+
+fn is_owned_byte_container_path(path: &syn::TypePath) -> bool {
+    let Some(segment) = path.path.segments.last() else {
+        return false;
+    };
+    if !matches!(
+        segment.ident.to_string().as_str(),
+        "Vec" | "Box" | "Cow" | "Arc" | "Rc" | "Bytes" | "BytesMut"
+    ) {
+        return false;
+    }
+    let syn::PathArguments::AngleBracketed(arguments) = &segment.arguments else {
+        return false;
+    };
+    arguments.args.iter().any(|argument| {
+        let syn::GenericArgument::Type(argument_type) = argument else {
+            return false;
+        };
+        is_byte_slice(argument_type)
+            || is_u8(argument_type)
+            || is_owned_byte_container(argument_type)
+    })
+}
+
+fn is_byte_slice(ty: &Type) -> bool {
+    matches!(ty, Type::Slice(slice) if is_u8(&slice.elem))
+}
+
+fn is_u8(ty: &Type) -> bool {
+    matches!(ty, Type::Path(path) if path.path.is_ident("u8"))
+}
+
+fn is_exact_unique_batch_id_setter(impl_type: Option<&str>, signature: &syn::Signature) -> bool {
+    if impl_type != Some("ClientBatchItem")
+        || signature.ident != "with_unique_batch_item_id"
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 2
+    {
+        return false;
+    }
+    let mut inputs = signature.inputs.iter();
+    let Some(syn::FnArg::Receiver(receiver)) = inputs.next() else {
+        return false;
+    };
+    if receiver.reference.is_some() || receiver.colon_token.is_some() {
+        return false;
+    }
+    let Some(syn::FnArg::Typed(argument)) = inputs.next() else {
+        return false;
+    };
+    let correct_name =
+        matches!(argument.pat.as_ref(), syn::Pat::Ident(pattern) if pattern.ident == "id");
+    let correct_input = matches!(argument.ty.as_ref(), Type::Path(path)
+        if path.qself.is_none()
+            && path.path.segments.len() == 1
+            && path.path.segments[0].ident == "Vec"
+            && matches!(&path.path.segments[0].arguments, syn::PathArguments::AngleBracketed(arguments)
+                if arguments.args.len() == 1
+                    && matches!(arguments.args.first(), Some(syn::GenericArgument::Type(ty)) if is_u8(ty))));
+    let correct_output = matches!(&signature.output, syn::ReturnType::Type(_, ty)
+        if matches!(ty.as_ref(), Type::Path(path) if path.path.is_ident("Self")));
+    correct_name && correct_input && correct_output
 }
 
 fn supported_derive(attribute: &Attribute) -> bool {
@@ -942,8 +1268,18 @@ fn supported_derive(attribute: &Attribute) -> bool {
     })
 }
 
-fn type_path_ends_with_client(ty: &Type) -> bool {
-    matches!(ty, Type::Path(path) if path.path.segments.last().is_some_and(|segment| segment.ident == "Client"))
+fn type_path_name(ty: &Type) -> Option<String> {
+    match ty {
+        Type::Path(path) if path.qself.is_none() => Some(
+            path.path
+                .segments
+                .iter()
+                .map(|segment| segment.ident.to_string())
+                .collect::<Vec<_>>()
+                .join("::"),
+        ),
+        _ => None,
+    }
 }
 
 fn is_permit_mint(segments: &[String]) -> bool {
@@ -953,13 +1289,25 @@ fn is_permit_mint(segments: &[String]) -> bool {
     )
 }
 
+fn path_mentions_permit(segments: &[String]) -> bool {
+    segments
+        .iter()
+        .any(|segment| segment == "OperationEncodingPermit")
+}
+
+fn is_writer_target(segments: &[String]) -> bool {
+    matches!(
+        segments.last().map(String::as_str),
+        Some("encode" | "encode_for_execute" | "encode_raw")
+    )
+}
+
 fn is_writer_call(segments: &[String]) -> bool {
-    segments.len() >= 2
-        && segments[segments.len() - 2] == "private_wire_writer"
-        && matches!(
-            segments.last().map(String::as_str),
-            Some("encode" | "encode_for_execute" | "encode_raw")
-        )
+    matches!(
+        segments,
+        [module, function]
+            if module == "private_wire_writer" && function == "encode_for_execute"
+    )
 }
 
 fn is_private_writer_receiver(receiver: &Expr) -> bool {
@@ -968,6 +1316,15 @@ fn is_private_writer_receiver(receiver: &Expr) -> bool {
         Expr::Field(field)
             if matches!(field.base.as_ref(), Expr::Path(path) if path.path.is_ident("self"))
                 && matches!(&field.member, syn::Member::Named(name) if name == "writer")
+    )
+}
+
+fn is_client_transport_receiver(receiver: &Expr) -> bool {
+    matches!(
+        receiver,
+        Expr::Field(field)
+            if matches!(field.base.as_ref(), Expr::Path(path) if path.path.is_ident("self"))
+                && matches!(&field.member, syn::Member::Named(name) if name == "transport")
     )
 }
 
@@ -990,6 +1347,15 @@ fn use_tree_has_rename(tree: &UseTree) -> bool {
         UseTree::Rename(_) => true,
         UseTree::Group(group) => group.items.iter().any(use_tree_has_rename),
         UseTree::Name(_) | UseTree::Glob(_) => false,
+    }
+}
+
+fn use_tree_has_glob(tree: &UseTree) -> bool {
+    match tree {
+        UseTree::Path(path) => use_tree_has_glob(&path.tree),
+        UseTree::Group(group) => group.items.iter().any(use_tree_has_glob),
+        UseTree::Glob(_) => true,
+        UseTree::Name(_) | UseTree::Rename(_) => false,
     }
 }
 
@@ -1045,11 +1411,21 @@ fn audit_source(source: &str) -> Result<BoundaryAudit, CandidateRejection> {
     audit.finish_fixture().map(|()| audit)
 }
 
+const CANONICAL_EXECUTE_EXCHANGE_FIXTURE: &str =
+    "impl Client { fn execute(&mut self) { self.transport.exchange(&[], 1); } }";
+
 fn candidate_check_fixture(fixture: &Fixture) -> Result<(), CandidateRejection> {
     if fixture.coverage == SourceCoverage::Uninspected {
         return Err(CandidateRejection::UninspectedSource);
     }
-    audit_source(fixture.source).map(|_| ())
+    // Most fixtures isolate one construct, so supply the canonical execute
+    // exchange context required by the complete-source candidate checker.
+    let complete_source = if fixture.source.contains(".exchange(") {
+        fixture.source.to_owned()
+    } else {
+        format!("{}\n{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}", fixture.source)
+    };
+    audit_source(&complete_source).map(|_| ())
 }
 
 fn candidate_check_inventory(inventory: &[&Fixture]) -> Result<(), CandidateRejection> {
@@ -1324,6 +1700,10 @@ fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_perm
     );
     assert_eq!(audit.misplaced_permit_calls, 0);
     assert_eq!(audit.misplaced_writer_calls, 0);
+    assert_eq!(audit.exchange_calls, 1, "expected one transport exchange");
+    assert_eq!(audit.misplaced_exchange_calls, 0);
+    assert_eq!(audit.permit_struct_constructions, 1);
+    assert_eq!(audit.misplaced_permit_struct_constructions, 0);
 }
 
 fn candidate_rejects_boundary_fixture(fixture: &Fixture) -> bool {
@@ -1381,12 +1761,8 @@ fn low_level_exception_does_not_bypass_the_typed_client_boundary() {
         Err(CandidateRejection::BoundaryViolation),
         "client source may exchange only from Client::execute"
     );
-    assert_eq!(
-        candidate_check_fixture(fixture("raw_exchange_ufcs_outside_execute")),
-        Err(CandidateRejection::BoundaryViolation),
-        "client source may exchange only through the canonical method call in Client::execute"
-    );
     let accepted = accepted_ids_for_rejected_fixtures(&[
+        "raw_exchange_ufcs_outside_execute",
         "public_writer",
         "client_raw_body_execute",
         "public_client_transport_injection",
@@ -1446,24 +1822,26 @@ fn canonical_macros_and_unique_batch_identifier_setter_remain_allowed() {
 }
 
 #[test]
-fn permit_struct_literals_are_confined_to_the_mint_constructor() {
-    let fixture = fixture("permit_mint_and_helper_struct_literals");
+fn permit_self_literals_are_restricted_to_the_mint_constructor() {
     assert_eq!(
-        candidate_check_fixture(fixture),
+        candidate_check_fixture(fixture("permit_mint_and_helper_struct_literals")),
         Err(CandidateRejection::BoundaryViolation),
-        "Self literals in permit helpers must not bypass mint ownership"
+        "a Self literal in a permit helper must be rejected even when mint is valid"
     );
 }
 
 #[test]
-fn complete_execute_candidate_requires_one_transport_exchange() {
-    assert!(
-        matches!(
-            audit_source(fixture("canonical_vec_macro").source),
-            Err(CandidateRejection::BoundaryViolation)
-        ),
-        "a complete client source inventory must contain one canonical exchange"
-    );
+fn complete_execute_audit_requires_exactly_one_canonical_exchange() {
+    assert!(matches!(
+        audit_source(fixture("canonical_vec_macro").source),
+        Err(CandidateRejection::BoundaryViolation)
+    ));
+    let two_exchanges =
+        format!("{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}\n{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}");
+    assert!(matches!(
+        audit_source(&two_exchanges),
+        Err(CandidateRejection::BoundaryViolation)
+    ));
 }
 
 #[test]
