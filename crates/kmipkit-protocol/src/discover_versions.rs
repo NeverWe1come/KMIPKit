@@ -11,7 +11,7 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 
 use crate::{
     KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
-    ResponseBatchItemView, ResultMessage,
+    ResponseBatchItemView, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
 
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -116,8 +116,7 @@ impl DiscoverVersionsResponse {
             .result_status()
             .ok_or(DiscoverVersionsError::MissingResultStatus)?;
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
-        let result = KmipOperationResult::new(status, item.result_reason(), result_message)
-            .map_err(|_| DiscoverVersionsError::InvalidOperationResult)?;
+        let result = operation_result(status, item.result_reason(), result_message)?;
 
         if status.raw() != SUCCESS {
             return Ok(Self {
@@ -161,7 +160,9 @@ pub enum DiscoverVersionsError {
     /// A validated response item did not expose a Result Status.
     MissingResultStatus,
     /// The response Result Status, Reason, or Message combination is invalid.
-    InvalidOperationResult,
+    ///
+    /// The typed [`ResultValidationError`] is retained as the error source.
+    InvalidOperationResult(ResultValidationError),
     /// A successful response omitted its required Response Payload Structure.
     MissingSuccessPayload,
     /// A Protocol Version field did not match §9.16, Table 421.
@@ -175,7 +176,12 @@ impl fmt::Display for DiscoverVersionsError {
         let message = match self {
             Self::UnexpectedOperation => "response item is not Discover Versions",
             Self::MissingResultStatus => "Discover Versions result status is missing",
-            Self::InvalidOperationResult => "Discover Versions operation result is invalid",
+            Self::InvalidOperationResult(cause) => {
+                return write!(
+                    formatter,
+                    "Discover Versions operation result is invalid: {cause}"
+                );
+            }
             Self::MissingSuccessPayload => "successful Discover Versions response has no payload",
             Self::MalformedProtocolVersion => {
                 "Discover Versions response has a malformed Protocol Version"
@@ -188,7 +194,23 @@ impl fmt::Display for DiscoverVersionsError {
     }
 }
 
-impl Error for DiscoverVersionsError {}
+impl Error for DiscoverVersionsError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::InvalidOperationResult(cause) => Some(cause),
+            _ => None,
+        }
+    }
+}
+
+fn operation_result(
+    status: ResultStatus,
+    reason: Option<ResultReason>,
+    message: Option<ResultMessage>,
+) -> Result<KmipOperationResult, DiscoverVersionsError> {
+    KmipOperationResult::new(status, reason, message)
+        .map_err(DiscoverVersionsError::InvalidOperationResult)
+}
 
 fn parse_response_versions(
     payload: &StructureView<'_>,
@@ -284,37 +306,30 @@ mod result_error_tests {
 
     use crate::{ResultStatus, ResultValidationError};
 
-    use super::{DiscoverVersionsError, KmipOperationResult};
-
-    // Deliberately incomplete T009 correction candidate: it reproduces the
-    // current mapping that drops the safe ResultValidationError cause.
-    fn candidate_invalid_result_error(_cause: ResultValidationError) -> DiscoverVersionsError {
-        DiscoverVersionsError::InvalidOperationResult
-    }
+    use super::{DiscoverVersionsError, operation_result};
 
     #[test]
     fn invalid_operation_result_error_retains_its_typed_validation_cause() {
-        let missing_failure_reason =
-            KmipOperationResult::new(ResultStatus::from_raw(1), None, None)
-                .expect_err("Failure without a reason violates the existing result model");
-        let success_with_reason = KmipOperationResult::new(
-            ResultStatus::from_raw(0),
-            Some(crate::ResultReason::from_raw(1)),
-            None,
-        )
-        .expect_err("Success with a reason violates the existing result model");
-
-        for (cause, expected) in [
+        let invalid_results = [
             (
-                missing_failure_reason,
+                ResultStatus::from_raw(1),
+                None,
                 ResultValidationError::FailureRequiresReason,
             ),
             (
-                success_with_reason,
+                ResultStatus::from_raw(0),
+                Some(crate::ResultReason::from_raw(1)),
                 ResultValidationError::SuccessForbidsReason,
             ),
-        ] {
-            let error = candidate_invalid_result_error(cause);
+        ];
+
+        for (status, reason, expected) in invalid_results {
+            let error = operation_result(status, reason, None)
+                .expect_err("invalid result combinations return a typed conversion error");
+            assert_eq!(
+                error,
+                DiscoverVersionsError::InvalidOperationResult(expected)
+            );
             let source = Error::source(&error)
                 .expect("typed Discover Versions errors retain safe result-validation causes");
             assert_eq!(
