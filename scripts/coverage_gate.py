@@ -218,22 +218,15 @@ def _excluded_test_module(
     module_index: int,
 ) -> bool:
     """Return whether a test-only module points to an existing excluded test file."""
-    path_attributes = [
-        (start, end)
-        for start, end in attributes
-        if re.fullmatch(
+    path_attributes = []
+    for start, end in attributes:
+        path_match = re.fullmatch(
             r'\s*#\s*\[\s*path\s*=\s*"([^"\\]*)"\s*\]\s*',
             source[start:end],
         )
-    ]
+        if path_match is not None:
+            path_attributes.append(path_match.group(1))
     if len(path_attributes) != 1:
-        return False
-
-    path_attribute = source[slice(*path_attributes[0])]
-    path_match = re.fullmatch(
-        r'\s*#\s*\[\s*path\s*=\s*"([^"\\]*)"\s*\]\s*', path_attribute
-    )
-    if path_match is None:
         return False
 
     module_match = re.match(
@@ -250,7 +243,7 @@ def _excluded_test_module(
     tests_root = crate_root / "tests"
     try:
         resolved_tests_root = tests_root.resolve(strict=True)
-        resolved_test_file = (source_path.parent / path_match.group(1)).resolve(strict=True)
+        resolved_test_file = (source_path.parent / path_attributes[0]).resolve(strict=True)
         resolved_test_file.relative_to(resolved_tests_root)
     except (OSError, ValueError):
         return False
