@@ -137,3 +137,17 @@ preservation is a separate project-policy row rather than being attributed to
 the Attestation Credential requirement. A 31-row uniqueness/schema/catalog
 consistency check passed. Executable paths are assigned now and become
 verified evidence only after their respective tests are implemented.
+
+## User Story 1 RED — Authentication contract (2026-10-06)
+
+Added `crates/kmipkit-protocol/tests/credential_contract.rs` with cases for an
+absent header Authentication, rejection of a present-empty typed value,
+ordered repeated Credential values, and client-side non-assertion of server
+credential satisfaction. These are derived local-model cases, not official
+OASIS test vectors. `cargo +1.94.0 fmt --all --check` passed. The focused RED
+command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract`
+failed with `E0432` for the intentionally not-yet-implemented public imports
+`Authentication` and `Credential`; no other compiler errors were reported.
+This compile-level failure records the missing public API required by the test.
+No production code has been added.
