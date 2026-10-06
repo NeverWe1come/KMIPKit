@@ -74,3 +74,11 @@ The independent QA review identified two blocking issues and two wording issues:
 - T026 now asks for contract tests that execute the quickstart acceptance scenarios; the quickstart is not represented as executable code examples.
 
 This is a working disposition only. The requirement checklist remains unchecked until an independent reviewer re-evaluates the exact final snapshot. T004 remains incomplete until that review, the active-release rebase, and the delegated authorization record are complete.
+
+## Active release refresh (2026-10-06)
+
+PR #44 for KMIPKIT-0009 merged into `release/1.0.0` as
+`ae87b89d43957e4fc028e785dc181e69b0165dac`. The KMIPKIT-0008 feature branch
+was rebased onto that exact commit; `git merge-base HEAD origin/release/1.0.0`
+returns the same SHA. `git diff --check` passed after the readiness corrections.
+The independent final QA review of this exact rebased revision is still pending.

@@ -82,9 +82,10 @@ T004.
 | KMIPKIT-0006 message and batch model | PR #32 merged as `35a445f500d0ac0b55fe39cd95bf25984ea65216` | `specs/006-message-batch-model/approval-record.md` SHA-256: `910EE6B15EB35EBB40FF2457BB13F839FF07F9E8F63329C53C5B91D579B4AB33`. | The Request Header exposes Authentication only as a callback-scoped generic structure (`crates/kmipkit-protocol/src/message/header.rs`, `RequestHeaderView::with_authentication`). There is no typed credential-selection API in this dependency. |
 | KMIPKIT-0007 typed client execution | PR #40 merged as `4126d62f16927753a6ae6fc3f5e628d29245683f` | `specs/007-client-execution/approval-record.md` SHA-256: `E2FFE0A1E3D4285E965F3E9B0EA7B60D6BD4EE941BEE60662EE985243A7F8B85`. | `Client::execute` owns the existing private Request Header builder and sole writer/permit path. It has no credential defaults, Authentication precedence, or Authentication selection API. 0008 reuses this path only to emit the non-secret Attestation Capable Indicator; OD-005 remains open for future Authentication selection. |
 
-The current 0008 worktree was originally created from the prior release tip
-`5c0cc5e4de73f8ba4d3583693a3d1a0c21dfa842`; it still needs to be rebased to
-the new release tip above before T004 is complete. The pinned OASIS source SHA-256 is
+The 0008 feature branch has now been rebased onto the exact active release tip
+`ae87b89d43957e4fc028e785dc181e69b0165dac`; the branch's merge base matches
+that commit. The rebase includes the merged KMIPKIT-0009 implementation in PR
+#44. The pinned OASIS source SHA-256 is
 `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`.
 Only this local immutable source copy was used. The release contains the
 accepted 0005/0006/0007 implementation gates and the accepted ADR-0012
