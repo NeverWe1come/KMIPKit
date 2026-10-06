@@ -1,9 +1,6 @@
 //! Scripted low-level fake used by deterministic exchange tests.
 
-use std::{fmt, io};
-
-#[cfg(test)]
-use std::{cell::Cell, rc::Rc};
+use std::{cell::Cell, fmt, io, rc::Rc};
 
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
@@ -50,7 +47,6 @@ impl Drop for ExchangeScript {
 
 struct ZeroizingFixtureBytes {
     bytes: Vec<u8>,
-    #[cfg(test)]
     observer: Option<ResponseDropObserver>,
 }
 
@@ -58,12 +54,10 @@ impl ZeroizingFixtureBytes {
     fn new(bytes: Vec<u8>) -> Self {
         Self {
             bytes,
-            #[cfg(test)]
             observer: None,
         }
     }
 
-    #[cfg(test)]
     fn with_observer(bytes: Vec<u8>, observer: ResponseDropObserver) -> Self {
         Self {
             bytes,
@@ -83,23 +77,26 @@ impl ZeroizingFixtureBytes {
 impl Drop for ZeroizingFixtureBytes {
     fn drop(&mut self) {
         self.bytes.as_mut_slice().zeroize();
-        #[cfg(test)]
         if let Some(observer) = &self.observer {
             observer.record(&self.bytes);
         }
     }
 }
 
-#[cfg(test)]
-#[derive(Clone)]
-struct ResponseDropObserver {
+/// Observes whether a scripted response fixture was zeroized before release.
+///
+/// This test-support hook records only the initialized byte count and whether
+/// those bytes were zeroized. It never retains or exposes response contents.
+#[derive(Clone, Debug)]
+pub struct ResponseDropObserver {
     initialized_len: usize,
     zeroized: Rc<Cell<bool>>,
 }
 
-#[cfg(test)]
 impl ResponseDropObserver {
-    fn new(initialized_len: usize) -> Self {
+    /// Creates an observer for a response fixture with `initialized_len` bytes.
+    #[must_use]
+    pub fn new(initialized_len: usize) -> Self {
         Self {
             initialized_len,
             zeroized: Rc::new(Cell::new(false)),
@@ -111,7 +108,9 @@ impl ResponseDropObserver {
             .set(bytes.len() == self.initialized_len && bytes.iter().all(|byte| *byte == 0));
     }
 
-    fn initialized_bytes_were_zeroized(&self) -> bool {
+    /// Returns whether the observed fixture's initialized bytes were zeroized.
+    #[must_use]
+    pub fn initialized_bytes_were_zeroized(&self) -> bool {
         self.zeroized.get()
     }
 }
@@ -155,7 +154,6 @@ pub struct ScriptedTransport {
     maximum_response_bytes_retained: usize,
     retained_request: Option<Vec<u8>>,
     captured_logs: Vec<String>,
-    #[cfg(test)]
     response_drop_observer: Option<ResponseDropObserver>,
 }
 
@@ -194,9 +192,15 @@ impl ScriptedTransport {
             maximum_response_bytes_retained: 0,
             retained_request: None,
             captured_logs: Vec::new(),
-            #[cfg(test)]
             response_drop_observer: None,
         }
+    }
+
+    /// Attaches a test observer for zeroization of the owned response fixture.
+    #[must_use]
+    pub fn with_response_drop_observer(mut self, observer: ResponseDropObserver) -> Self {
+        self.response_drop_observer = Some(observer);
+        self
     }
 
     /// Returns how many exchange calls the fake has received.
@@ -292,10 +296,7 @@ impl ScriptedTransport {
         Ok(TransportResponse::new(response_bytes))
     }
 
-    // The receiver supplies a test-only observer; production builds omit it.
-    #[allow(clippy::unused_self)]
     fn owned_response_fixture(&self, bytes: Vec<u8>) -> ZeroizingFixtureBytes {
-        #[cfg(test)]
         if let Some(observer) = &self.response_drop_observer {
             return ZeroizingFixtureBytes::with_observer(bytes, observer.clone());
         }
@@ -370,12 +371,9 @@ impl Drop for ScriptedTransport {
             };
             if let Some(response) = response {
                 response.as_mut_slice().zeroize();
-                #[cfg(test)]
                 if let Some(observer) = &self.response_drop_observer {
                     observer.record(response);
                 }
-                #[cfg(not(test))]
-                let _ = response;
             }
         }
         if let Some(request) = &mut self.retained_request {
@@ -384,64 +382,5 @@ impl Drop for ScriptedTransport {
         for log in &mut self.captured_logs {
             log.zeroize();
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{ExchangeScript, ResponseDropObserver, ScriptedTransport};
-    use kmipkit_transport::{RequestDeliveryState, Transport};
-
-    const RESPONSE: &[u8] = b"SCRIPTED_RESPONSE_SECRET_SENTINEL";
-
-    #[test]
-    fn successful_exchange_zeroizes_the_owned_response_fixture() {
-        let observer = ResponseDropObserver::new(RESPONSE.len());
-        let mut transport = ScriptedTransport::new(ExchangeScript::Success {
-            response: RESPONSE.to_vec(),
-            request_write_chunks: vec![1],
-        });
-        transport.response_drop_observer = Some(observer.clone());
-
-        let response = transport
-            .exchange(b"request", usize::MAX)
-            .expect("scripted success returns its response");
-
-        assert_eq!(response.as_bytes(), RESPONSE);
-        assert!(observer.initialized_bytes_were_zeroized());
-    }
-
-    #[test]
-    fn partial_read_error_zeroizes_the_owned_response_fixture() {
-        let observer = ResponseDropObserver::new(RESPONSE.len());
-        let mut transport = ScriptedTransport::new(ExchangeScript::FailAfterPartialRead {
-            written_bytes: 1,
-            response_bytes: RESPONSE.to_vec(),
-        });
-        transport.response_drop_observer = Some(observer.clone());
-
-        let error = transport
-            .exchange(b"request", usize::MAX)
-            .expect_err("scripted partial read fails");
-
-        assert_eq!(
-            error.delivery_state(),
-            RequestDeliveryState::ResponseStarted
-        );
-        assert!(observer.initialized_bytes_were_zeroized());
-    }
-
-    #[test]
-    fn dropping_an_unconsumed_script_zeroizes_its_response_fixture() {
-        let observer = ResponseDropObserver::new(RESPONSE.len());
-        let mut transport = ScriptedTransport::new(ExchangeScript::Success {
-            response: RESPONSE.to_vec(),
-            request_write_chunks: vec![1],
-        });
-        transport.response_drop_observer = Some(observer.clone());
-
-        drop(transport);
-
-        assert!(observer.initialized_bytes_were_zeroized());
     }
 }

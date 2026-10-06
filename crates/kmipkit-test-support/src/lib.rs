@@ -15,4 +15,4 @@ pub mod fixtures {
     pub const PARTIAL_RESPONSE: &[u8] = b"KMIPKIT_PARTIAL_RESPONSE_FIXTURE";
 }
 
-pub use transport::{ExchangeScript, ScriptedTransport};
+pub use transport::{ExchangeScript, ResponseDropObserver, ScriptedTransport};
