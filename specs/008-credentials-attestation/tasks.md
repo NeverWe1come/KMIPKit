@@ -81,7 +81,7 @@
 
 ### Refactor
 
-- [ ] T024 [US3] [REFACTOR COMMIT] Document indicator semantics and ensure no caller configuration can contradict the shipped capability; preserve the existing one-writer/one-permit audit in `crates/kmipkit-client` (FR-008, FR-009, SC-004).
+- [x] T024 [US3] [REFACTOR COMMIT] Document indicator semantics and ensure no caller configuration can contradict the shipped capability; preserve the existing one-writer/one-permit audit in `crates/kmipkit-client` (FR-008, FR-009, SC-004).
 
 ## Phase 6: Documentation, verification, and review
 

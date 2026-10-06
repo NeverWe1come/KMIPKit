@@ -608,6 +608,12 @@ impl Client {
     /// [`CodecLimits::max_message_bytes`]. No Poll, Cancel, retry, failover,
     /// implicit Discover Versions call, or background wait is performed.
     ///
+    /// Every request advertises `Attestation Capable Indicator = True` because
+    /// the public protocol API can construct an Attestation Credential. This
+    /// reports construction capability only: it does not submit
+    /// Authentication or Credential data, generate or verify evidence, or
+    /// guarantee server acceptance. There is no per-request override.
+    ///
     /// # Errors
     ///
     /// Returns a sanitized validation, protocol, or transport error with the

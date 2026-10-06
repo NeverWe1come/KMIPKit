@@ -231,6 +231,23 @@ Fresh Rust 1.94.0 verification:
 - Clippy first identified `map().flatten()` in the new test; replaced it with
   `and_then()` and reran Clippy before the Green commit.
 
+## User Story 3 REFACTOR — document the capability boundary (2026-10-06)
+
+Documented on `Client::execute` that every request carries the capability
+indicator because the public protocol API constructs Attestation Credential.
+The docs state that this reports construction support only, does not submit
+Authentication or Credential data or evaluate evidence/server acceptance, and
+has no per-request override. The existing production inventory audit still
+enforces one writer, one permit, and one exchange in the shared execution
+boundary; no call site or runtime behavior was added in this refactor.
+
+Verification:
+
+- `cargo +1.94.0 test -p kmipkit-client attestation_indicator_tests` — passed.
+- `cargo +1.94.0 test -p kmipkit-client production_source_inventory_is_complete_and_execute_owns_the_only_writer_permit_pair` — passed.
+- `cargo +1.94.0 doc -p kmipkit-client --no-deps` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+
 ## User Story 2 REFACTOR — shared diagnostics and validation categories (2026-10-06)
 
 Moved credential tree Debug formatting and redacted Display text through
