@@ -34,6 +34,46 @@ esta funcionalidad. El doble interno solo se usa en pruebas deterministas de
 ejecución. Aquí no se ofrece un adaptador TLS/HTTPS ni disponibilidad para
 servidores reales.
 
+## Credenciales y capacidad de atestación
+
+KMIPKIT-0008 proporciona valores tipados de Credential y Authentication que
+conservan el árbol TTLV original en `kmipkit-protocol`. Authentication
+contiene una o más Credential en el orden indicado por el llamador. En este
+incremento son modelos solo en memoria; el payload de petición no incluye
+datos de Authentication o Credential.
+
+Una Credential tipada Hashed Password requiere la marca de tiempo y los bytes
+hash proporcionados por el llamador. Hashing Algorithm es opcional. Si se
+omite, el modelo informa SHA-256 como algoritmo efectivo (valor bruto `6`) y
+conserva el campo como ausente en el árbol TTLV. KMIPKit no calcula el hash.
+
+Una Credential tipada Device debe incluir al menos uno de estos campos:
+Device Serial Number, Network Identifier, Machine Identifier o Media
+Identifier. El llamador es responsable de elegir un identificador o una
+combinación que realmente sea única. KMIPKit no define el ámbito de
+comparación ni comprueba la unicidad. Los campos Password y Device Identifier
+no sustituyen ese requisito; su presencia
+tampoco exige que el texto no esté vacío.
+
+Los constructores síncronos y asíncronos de la cabecera Request emiten
+`Attestation Capable Indicator = True` porque la API de Rust puede construir
+una Credential Attestation. Esto anuncia únicamente capacidad de construcción:
+no genera ni verifica evidencia de atestación, no envía una Credential ni predice si el
+servidor la aceptará. No existe una opción para cambiarlo en cada petición. El
+valor se observa en el intercambio capturado con el transporte de prueba; esta
+funcionalidad aún no ofrece un constructor de cliente de producción ni un
+transporte para servidores reales.
+
+KMIPKit no registra el contenido de las Credential; Debug, Display y los
+diagnósticos de validación también lo redactan. `SecretText` y `SecretBytes`
+ponen a cero los bytes inicializados de la asignación actual propiedad de
+KMIPKit cuando se destruye su propietario; la conversión a TTLV transfiere la
+propiedad sin clonar. La capacidad libre o no inicializada solo queda
+cubierta si se inicializa y se verifica su limpieza. Esto no borra copias
+creadas por el llamador, asignaciones anteriores que queden tras ampliar un buffer, copias
+hechas desde vistas prestadas en callbacks, copias temporales en pila o
+registros, ni copias conservadas por runtimes externos o dependencias.
+
 ## Metadatos de petición y resultados de lote
 
 La marca de tiempo opcional de la cabecera Request se omite de forma

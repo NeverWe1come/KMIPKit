@@ -37,6 +37,7 @@ const BATCH_ITEM: u32 = 0x0042_000F;
 const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
 const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
+const ATTESTATION_CAPABLE_INDICATOR: u32 = 0x0042_00D3;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
@@ -607,6 +608,12 @@ impl Client {
     /// [`CodecLimits::max_message_bytes`]. No Poll, Cancel, retry, failover,
     /// implicit Discover Versions call, or background wait is performed.
     ///
+    /// Every request advertises `Attestation Capable Indicator = True` because
+    /// the public protocol API can construct an Attestation Credential. This
+    /// reports construction capability only: it does not submit
+    /// Authentication or Credential data, generate or verify evidence, or
+    /// guarantee server acceptance. There is no per-request override.
+    ///
     /// # Errors
     ///
     /// Returns a sanitized validation, protocol, or transport error with the
@@ -1133,6 +1140,11 @@ fn build_request_message(
             Value::enumeration(indicator),
         )?;
     }
+    push(
+        &mut header,
+        ATTESTATION_CAPABLE_INDICATOR,
+        Value::boolean(true),
+    )?;
     if let Some(value) = options.batch_error_continuation.encoded {
         push(
             &mut header,
@@ -1210,6 +1222,11 @@ fn build_async_request_message(
             Value::enumeration(indicator),
         )?;
     }
+    push(
+        &mut header,
+        ATTESTATION_CAPABLE_INDICATOR,
+        Value::boolean(true),
+    )?;
     push(&mut header, BATCH_COUNT, Value::integer(1))?;
 
     let mut batch_item = Structure::new();

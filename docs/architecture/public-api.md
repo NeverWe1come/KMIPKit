@@ -44,6 +44,27 @@ caller-byte API under ADR-0014. See the
 [client execution guide](../user-guide/en/client-execution.md) and
 [ADR-0014](../adr/0014-public-transport-exchange-contract.md).
 
+### Credential and Authentication values
+
+KMIPKIT-0008 adds typed, raw-preserving Credential and Authentication values
+to `kmipkit-protocol`. Authentication requires one or more Credentials in
+caller-supplied order. Known Credential Values validate their KMIP 2.1 table
+fields; unknown Credential Types, fields, and raw Enumeration values remain
+available through the retained TTLV tree. Device values require at least one
+of Device Serial Number, Network Identifier, Machine Identifier, or Media
+Identifier. The caller remains responsible for supplying an identifier or
+combination that is actually unique; KMIPKit neither chooses a comparison
+scope nor checks actual uniqueness.
+
+These values are in-memory protocol models. KMIPKIT-0008 does not add
+Authentication or Credential data to the request payload or introduce a
+secret-bearing request path. Every synchronous and asynchronous client
+Request Header advertises `Attestation Capable Indicator = True` because the
+public API can construct Attestation Credentials. That bit reports
+construction capability only; it
+does not claim to generate or verify evidence, submit a Credential, or predict
+server acceptance. Callers cannot override it per request.
+
 ### Generic TTLV
 
 Advanced users can build and inspect an in-memory ordered tree of KMIP items.
@@ -178,6 +199,19 @@ are defined by [ADR-0012](../adr/0012-caller-requested-wire-encoding-policy.md).
 The separate low-level raw-byte exchange exception and its response-wrapper
 limits are defined by [ADR-0014](../adr/0014-public-transport-exchange-contract.md). The typed client
 always decodes the response wrapper and does not expose raw bodies.
+
+Credential `SecretText` and `SecretBytes` take ownership of their supplied
+String or byte-vector allocation without cloning it and zeroize the owned
+value on drop. Consuming a wrapper into a TTLV value moves that allocation to
+the TTLV owner. The guarantee applies to the owned current allocation before
+its owner releases it. It cannot erase caller-created copies, prior
+allocations left by earlier growth, copies made from callback-borrowed views,
+temporary stack or register copies, or copies retained by a foreign runtime,
+TLS implementation, operating system, or other dependency. The documented
+guarantee covers initialized bytes in KMIPKit-owned current allocations; spare
+or uninitialized capacity is covered only when initialized and cleanup is
+verified. Logging, formatting, and validation diagnostics redact Credential
+contents, including identifiers inside a Credential.
 
 ## Errors
 

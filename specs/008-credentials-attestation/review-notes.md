@@ -1,5 +1,7 @@
 # KMIPKIT-0008 Review Record
 
+**Record status**: Sections through “Verification boundary” document the preliminary review of the 2026-10-05 revision. The 2026-10-06 release evidence refresh and final review section supersede their earlier gate/status statements.
+
 **Date**: 2026-10-05
 
 **Scope**: Specification, plan, tasks, requirements checklist, Rust contract, data model, and test scenarios. No implementation code was reviewed.
@@ -10,7 +12,7 @@ The reviewer checked requirement coverage, OASIS references, decision gates, tas
 
 1. **Secret-send gate could be satisfied without testing the candidate callsite.** KMIPKIT-0008 is now explicitly in-memory only and cannot add a production credential writer or send path in any gate state. A later client feature must own its candidate callsite and owner-through-transport lifecycle test.
 2. **OD-006 was not represented consistently in the prior revision.** That revision listed all six decisions as unresolved and identified the OTP wording as `KMIPKIT-CLAUSE-SPEC-9.11-008`. This is separate from KMIPKIT-0007 OD-006, which governs future secret-bearing request lifecycle-test ownership.
-3. **Final approval could follow a changed specification.** T001 is preliminary QA only; T004 now requires independent review and human approval of the final specification revision and updated checklist after catalog and interface edits.
+3. **Final approval could follow a changed specification.** T001 was preliminary QA only; T004 requires independent review of the final specification revision and updated checklist after catalog and interface reconciliation.
 4. **Missing fixture evidence omitted its catalog discrepancy.** Both the spec and research record cite `KMIPKIT-DISC-036` and classify the acceptance tests as derived, not official vectors.
 5. **Two success criteria lacked explicit task references.** Round-trip preservation (SC-002) and the Attestation Capable Indicator (SC-004) are now directly mapped to test/implementation tasks.
 
@@ -27,19 +29,666 @@ The reviewer checked secret handling, zeroization limits, send-path ownership, s
 
 The final security re-review confirmed these corrections and reported no remaining findings in its requested scope.
 
-## Task 5 disposition reconciliation
+## Task 5 disposition reconciliation (preliminary snapshot, 2026-10-05)
 
 The independent source audit updated the decision register without approving the specification or changing any human-owned checklist marker:
 
 - OD-001 remains open for catalog-owner review. The §9.4 lowercase “must” classification and `KMIPKIT-REQ-SPEC-9.11-001` summary/element links are tracked in a separate catalog workflow item; this feature task does not edit catalog input or generated output, and no client “all Credentials satisfied” test is assigned.
-- OD-002 remains open only for the empty/minimum Device field set. Every Table 412 field remains representable and preservable; no local/global uniqueness enforcement is claimed.
+- OD-002 is resolved: typed Device values require at least one of the four identifier members named in §9.11 so the caller can satisfy the uniqueness SHALL; Password or Device Identifier alone is insufficient. Preserve all six fields and keep presence independent of text content. The caller owns actual uniqueness; the source comparison scope is unspecified and KMIPKit does not verify uniqueness from client-local data. Generic TTLV remains lossless for unvalidated trees.
 - OD-003 remains open for Timestamp owner, comparison scope, and clock behavior. Caller Timestamp/hash bytes and effective SHA-256 default are explicit; no hash calculation or monotonicity check/test is specified before review.
 - OD-004 is resolved by KMIPKIT-0008's permanent in-memory scope. Any future send path requires its own approved feature and candidate-callsite/owner-through-transport lifecycle evidence.
 - OD-005 remains open only for execution integration, including inherited defaults, request/batch replacement, omission, precedence, and one Request Header Authentication applying to the whole batch. Standalone in-memory models do not require an execution API.
 - OD-006 is resolved by the catalog's `informative_context` classification for `KMIPKIT-CLAUSE-SPEC-9.11-008`, which has no requirement ID. No library-wide OTP replay/single-use state or normative client enforcement is introduced; request-scoped use follows architecture. It remains distinct from KMIPKIT-0007 OD-006.
 
-T002–T004 and all implementation tasks remain unchecked. Independent review and human approval are still required for the final specification revision and updated checklist.
+At this 2026-10-05 snapshot, T002–T004 and all implementation tasks remained unchecked. The release evidence refresh below supersedes this snapshot and records the updated dependency/decision state; final T004 review evidence is recorded separately below.
 
 ## Verification boundary
 
-These reviews cover design artifacts only. They do not approve this specification, close OD-001 catalog-owner review, approve ADR-0012, authorize implementation, or replace the final review gate in T004. No code tests were run because this change contains no implementation code.
+At this preliminary-review snapshot, these reviews covered design artifacts only. They did not close OD-001, approve ADR-0012, authorize implementation, or replace T004. No code tests were run because that review contained no implementation code.
+
+## Release evidence refresh (2026-10-06)
+
+The accepted release catalog now contains the correction tracked by OD-001.
+KMIPKIT-0002 T045–T047 records the §9.4 `role=server`, `server_only`,
+`unassigned` disposition, the corrected §9.11-001 summary and reciprocal
+Credential link, the generated report, pinned-source review, and independent
+parent QA. `KMIPKIT-DISC-041` remains open because the lowercase `must` force
+has not been decided; no explicit catalog-owner sign-off is named. The 0008
+specification and research were refreshed to match this evidence without
+changing catalog inputs, generated output, or the immutable OASIS source.
+
+The accepted 0005/0006/0007 dependencies and ADR-0012 were also checked against
+the release and exact merged PR SHAs in `research.md`. The 0007 authentication
+selection handoff does not exist; OD-005 remains limited to a future execution
+integration and does not block standalone in-memory credential models. These
+updates are coordinator evidence only. The requirements checklist remains
+reviewer-owned and has not been checked or approved by this update.
+
+## Independent QA findings disposition (2026-10-06 working revision)
+
+The independent QA review identified two blocking issues and two wording issues:
+
+- The Device Credential Value cannot be empty because §9.11 says the client SHALL provide at least one field. The spec now interprets “field” as one of the six Table 412 members, rejects an empty structure, and separates presence from text length and uniqueness. A second normative review confirmed this as the strongest literal reading: the four-field uniqueness rule does not narrow the separate minimum-presence rule. Uniqueness remains unverified and is not part of the cardinality check.
+- The first QA report said indicator emission could not be implemented because the 0006 header view is read-only. A focused reassessment inspected the existing 0007 `build_request_message` path in `crates/kmipkit-client/src/execute.rs` and confirmed that 0008 can add the non-secret indicator there without adding a writer, permit, Authentication selection, Credential payload, or secret-bearing path. The spec, plan, and tasks now target this existing path, and a fake-transport capture must verify Authentication remains absent.
+- Known members are validated by their OASIS table, while unknown children from an existing generic TTLV tree remain preserved and accessible without typed interpretation.
+
+
+The QA re-review at `e0e6af1493d1988e0103728916482057860a85fb` found that accepting any single Table 412 field could treat Password or Device Identifier alone as satisfying a Credential that must also meet the separate identifier uniqueness SHALL. This revision requires at least one of the four named identifier members in typed Device values, preserves the two other fields as supplementary values, keeps actual uniqueness with the caller, and leaves comparison scope unspecified. It separately documents generic TTLV preservation for unvalidated trees. Request independent normative and QA re-reviews of this exact revision before marking T004 complete.
+
+The independent normative disposition reviewed pinned OASIS §9.11 at `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html:44184-44189` (source hash `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`). It concluded that a typed Device value must conservatively contain at least one of the four identifiers named by the uniqueness SHALL; §9.11 does not state that exact presence rule verbatim. Keep actual uniqueness with the caller, comparison scope unspecified, and no inferred non-empty text rule. Preserve all six fields; Device Identifier's omission from the named uniqueness set is not reinterpreted. The final spec marks this as a conservative interpretation. Request a read-only QA re-review of the exact resulting revision before passing T004.
+- T026 now asks for contract tests that execute the quickstart acceptance scenarios; the quickstart is not represented as executable code examples.
+
+At this earlier readiness snapshot, the checklist remained unchecked and T004 was incomplete pending exact-revision review, the active-release rebase, and application of delegated authorization.
+
+## Active release refresh (2026-10-06)
+
+PR #44 for KMIPKIT-0009 merged into `release/1.0.0` as
+`ae87b89d43957e4fc028e785dc181e69b0165dac`. The KMIPKIT-0008 feature branch
+was rebased onto that exact commit; `git merge-base HEAD origin/release/1.0.0`
+returns the same SHA. `git diff --check` passed after the readiness corrections.
+The independent final QA review of this exact rebased revision was still pending at that point.
+
+## Final requirements review and T004 disposition
+
+Independent QA reviewed exact HEAD `7943d090c129482c022e1b9a5197ac2e3433aa3a`
+against release base `ae87b89d43957e4fc028e785dc181e69b0165dac`. The reviewer
+reported no substantive blockers and substantiated CHK001–CHK024. The review
+confirmed the conservative Device identifier-presence rule, T022 test-module
+registration, T025 FR-008 documentation coverage, and the unchanged
+single-writer/no-credential-send boundary. No tests were run because the review
+covered specification quality only.
+
+The delegated authorization in `approval-record.md` was applied to this
+revision. T004 is complete, the checklist is checked, and `spec.md` is approved
+for implementation. The QA reviewer identified trailing whitespace on
+`approval-record.md:3`; it was removed in the gate-record update. Run
+`git diff --check origin/release/1.0.0...HEAD` passed after the cleanup in
+commit `f1afc67910509603f4ec60906ca4655de1bbd818`. The independent security
+design review is recorded below.
+
+## Independent security design review
+
+The independent security reviewer examined exact HEAD
+`f1afc67910509603f4ec60906ca4655de1bbd818` against release base
+`ae87b89d43957e4fc028e785dc181e69b0165dac` before implementation. Result:
+PASS, with no blocking security design issue or required specification/task
+change. The review confirmed in-memory credential scope, redaction and
+zeroization constraints, the existing-writer/non-secret-indicator boundary,
+caller-owned Device uniqueness, and no added production dependency. No tests
+were run because this was a design review. Final implementation security review
+remains T028 and the independent qualified review remains required before 1.0.
+
+## Dependency and traceability gates (2026-10-06)
+
+The independent dependency reviewer examined `dependency-review.md` and the
+resolved QuickCheck 1.1.0 test graph at `bbc2d83`. The review found no need for
+a new direct dependency or Cargo manifest/lockfile change. Its corrections are
+recorded in that review: include target-specific `r-efi 6.0.0`, distinguish
+QuickCheck from its existing `rand`/`getrandom` transitive dependencies, and
+limit fixed-seed reproducibility claims because `SmallRng` is not portable
+across platforms or releases. The reviewed graph stays test-only.
+
+T006's CSV was checked against `specification/catalog/kmip-2.1.json`: all 11
+catalog requirements assigned to KMIPKIT-0008 are present with their exact
+`source_clause_ids` and requirement IDs; the existing 0006 default-indicator
+requirement is separately mapped; server-only and deferred rows remain
+classified; project policies cite KMIPKit sources, not OASIS. Nonce byte
+preservation is a separate project-policy row rather than being attributed to
+the Attestation Credential requirement. A 31-row uniqueness/schema/catalog
+consistency check passed. Executable paths are assigned now and become
+verified evidence only after their respective tests are implemented.
+
+## User Story 1 RED — Authentication contract (2026-10-06)
+
+Added `crates/kmipkit-protocol/tests/credential_contract.rs` with cases for an
+absent header Authentication, rejection of a present-empty typed value,
+ordered repeated Credential values, and client-side non-assertion of server
+credential satisfaction. These are derived local-model cases, not official
+OASIS test vectors. `cargo +1.94.0 fmt --all --check` passed. The focused RED
+command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract`
+failed with `E0432` for the intentionally not-yet-implemented public imports
+`Authentication` and `Credential`; no other compiler errors were reported.
+This compile-level failure records the missing public API required by the test.
+No production code has been added.
+
+## User Story 1 RED — generic Credential round-trip (2026-10-06)
+
+Added `crates/kmipkit-protocol/tests/credential_roundtrip.rs`. Fixed cases
+cover all six assigned values and the Extensions range, an unknown raw type,
+unknown children, and exact source-order/value preservation. A bounded,
+seeded QuickCheck property varies unknown raw type bits and opaque payload
+bytes; its custom `Debug` output reports only type bits and payload length.
+`cargo +1.94.0 fmt --all --check` passed. The focused command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_roundtrip` failed
+with only `E0432` for the intentionally not-yet-implemented public `Credential`
+API. No production code has been added.
+
+## User Story 1 GREEN — Authentication and discriminator model (2026-10-06)
+
+Added the credential module and root exports, non-empty Authentication
+construction/parsing, a callback-scoped ordered Credential iterator, raw
+Credential Type decoding for all six assigned values, the `8XXXXXXX`
+Extensions range, and future raw values. Authentication retains the original
+generic tree and lends views into it; it does not copy secret-bearing payloads
+or claim server-side Credential satisfaction. The table-driven round-trip RED
+tests remain pending T011's public Credential conversion boundary.
+
+The public test was aligned to the callback-scoped view contract. This avoids
+duplicating the original TTLV tree merely to expose its repeated children.
+The contract remains a non-empty ordered sequence and exact APIs were
+explicitly illustrative in `contracts/rust-credentials.md`.
+
+Verification on Rust 1.94.0:
+
+- `cargo +1.94.0 fmt --all --check` — passed.
+
+## User Story 2 RED — Attestation and Nonce validation (2026-10-06)
+
+Re-ran the existing derived §9.11/Table 413 and §9.14/Table 419 tests after
+the public model wrappers compiled. The Nonce case failed because a missing
+Nonce member was accepted; the Attestation case failed because neither
+evidence member was required. Both failures reached the expected assertion.
+
+Focused commands:
+
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract nonce_requires_byte_string_id_and_value_and_preserves_exact_server_bytes` — failed at the expected malformed-Nonce rejection assertion.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract attestation_requires_nonce_type_and_one_or_both_evidence_fields` — failed at the expected missing-evidence rejection assertion.
+
+## User Story 2 GREEN — Attestation Credential and server Nonce (2026-10-06)
+
+Implemented required Attestation Nonce and Attestation Type fields, at least
+one Byte String evidence field, and validation of both nested Nonce Byte
+Strings in Table order. Both evidence fields remain allowed. Unknown
+Attestation Type values and exact caller/server byte sequences are retained;
+all known members follow Tables 413 and 419. No Nonce generation or
+attestation verification was added.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 61 unit tests, 18 credential contract tests, 2 redaction tests, 4 credential round-trip tests, 56 other integration tests, and 2 doctests.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_redaction` — passed: 2 tests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
+
+## T028 — asynchronous Attestation Capable Indicator correction (2026-10-06)
+
+Independent security review found that KMIP 2.1 §9.3 was marked verified from
+the synchronous `Client::execute` test while the public asynchronous
+Poll/Cancel/Process/Query paths shared a separate Request Header builder that
+omitted the indicator. The pinned source requires True when the client can
+create an Attestation Credential and defines absence as False. The corrected
+FR-008 now covers all client-generated synchronous and asynchronous Request
+Headers. `build_async_request_message` emits the non-secret True indicator
+after the optional Asynchronous Indicator and before Batch Count, preserving
+the canonical Table 400 order and existing writer/permit boundary. Fake-
+transport tests cover synchronous execution and asynchronous Poll; both assert
+True and no Authentication or Credential payload. No secret-bearing send
+path was added.
+
+Red/Green/Refactor evidence:
+
+- RED commit `3c323a405810c9bcc65cd0639ef63ca4438e3ede` added the async Poll
+  capture test. `cargo +1.94.0 test -p kmipkit-client --lib
+  async_follow_up_request_advertises_attestation_capability` failed as
+  expected: the captured indicator was `None`, expected `Some(true)`. The same
+  commit made the traceability test require both synchronous and async
+  evidence on the OASIS requirement row.
+- GREEN commit `03403070fbffe4cc9d24d263a77f2c083e1647a9` updated the async
+  builder, FR-008 scope, product documentation, and OASIS traceability. The
+  first full client run exposed that insertion before Asynchronous Indicator
+  violated field order; the field was moved after it before committing Green.
+- REFACTOR commit `ff79c225eac202c7454887cce0096b2b78224d7b` shares test
+  inspection helpers and checks that both requests contain no Authentication
+  or Credential fields.
+- Traceability RED commit `68608f0c593e1a9592526a92079edab4b100373b` made the
+  CSV test require both test IDs on project FR-008. The focused test failed
+  because the FR row still linked only the synchronous test.
+- Traceability GREEN commit `b3e0dab7e861e42b5288c00b46e57b05a358dee3`
+  corrected the FR-008 CSV row and checklist CHK013. The focused
+  `FeatureTraceabilityTests.test_credentials_and_attestation_traceability_rows_are_complete`
+  test passed.
+
+Verification at `b3e0dab7e861e42b5288c00b46e57b05a358dee3`:
+
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 test -p kmipkit-client --all-features --locked` — passed:
+  176 client unit tests, 6 error-contract tests, and all 3 doctests.
+- `cargo +1.94.0 clippy -p kmipkit-client --all-targets --all-features
+  --locked -- -D warnings` — passed.
+- `python -B -m unittest
+  tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_credentials_and_attestation_traceability_rows_are_complete`
+  — passed.
+- `python -B -m unittest discover -s tools/normative_catalog/tests -p
+  test_*.py` — passed: 170 tests, 7 platform skips.
+- `python -B tools/normative_catalog/validate.py --repo-root .` — passed:
+  4 sources, 1,411 clauses, 4,024 records.
+- `git diff --check` — passed.
+
+Independent QA re-review passed with no findings at `b3e0dab7e861e42b5288c00b46e57b05a358dee3` against base `ae87b89d43957e4fc028e785dc181e69b0165dac`. It verified the OASIS and FR-008 CSV links, checklist, regression test, and async header order. Independent security re-review at the same revision found no reportable findings; it confirmed all async calls use the shared builder and no Authentication or Credential transmission, secrecy, lifecycle, FFI, unsafe-code, or dependency regression. Platform matrix CI, final generated-output checks, and updated coverage measurement remain T029 work.
+
+## User Story 3 GREEN — advertise Attestation construction capability (2026-10-06)
+
+Added the Attestation Capable Indicator with value True to the existing
+request-header builder, after the asynchronous indicator and before later
+header options, matching the Request Header field order. The client advertises
+its shipped Attestation Credential construction capability on its existing
+execute path. It does not select Authentication or include Credential data.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-client attestation_indicator_tests` — passed:
+  1 test, including an actual fake-transport execution and captured TTLV
+  assertions for True, absent Authentication, and absent Credential payload.
+- `cargo +1.94.0 test -p kmipkit-client` — passed: 175 unit tests, 6 error
+  contract tests, and 3 doctests.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- Clippy first identified `map().flatten()` in the new test; replaced it with
+  `and_then()` and reran Clippy before the Green commit.
+
+## User Story 3 REFACTOR — document the capability boundary (2026-10-06)
+
+Documented on `Client::execute` that every request carries the capability
+indicator because the public protocol API constructs Attestation Credential.
+The docs state that this reports construction support only, does not submit
+Authentication or Credential data or evaluate evidence/server acceptance, and
+has no per-request override. The existing production inventory audit still
+enforces one writer, one permit, and one exchange in the shared execution
+boundary; no call site or runtime behavior was added in this refactor.
+
+Verification:
+
+- `cargo +1.94.0 test -p kmipkit-client attestation_indicator_tests` — passed.
+- `cargo +1.94.0 test -p kmipkit-client production_source_inventory_is_complete_and_execute_owns_the_only_writer_permit_pair` — passed.
+- `cargo +1.94.0 doc -p kmipkit-client --no-deps` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+
+## Documentation — credential ownership and capability behavior (2026-10-06)
+
+Updated the public API and transport-security architecture docs plus English
+and Spanish client guides. They describe in-memory model ownership, omitted
+Hashing Algorithm with effective SHA-256, caller responsibility for actual
+Device identifier uniqueness without inventing a scope, the observable
+Attestation Capable Indicator=True bit, redaction, and bounded
+KMIPKit-owned-memory zeroization. The docs do not state Authentication
+selection, default, or replacement behavior. They also retain the current
+absence of a production client constructor and live transport.
+
+Verification: `git diff --check` passed. Reviewed the four changed documents
+against `specs/008-credentials-attestation/spec.md`, `data-model.md`, and
+`quickstart.md`; no implementation or generated catalog output changed.
+
+## Contract verification — quickstart acceptance scenarios (2026-10-06)
+
+Reviewed the derived contract tests against every Authentication, Credential
+variant, safety, and capability scenario in `quickstart.md`. Existing tests
+cover in-memory ordered Authentication/Credential values, all assigned and
+unknown variants, malformed schemas, exact TTLV preservation, synthetic
+secret sentinels and owner lifecycle, and the fake-execute capture that
+contains only the non-secret indicator. No fixture contains real credentials.
+Because these contracts were already added in the Red/Green tasks, no duplicate
+test module was introduced.
+
+Fresh Rust 1.94.0 verification: `cargo +1.94.0 test -p kmipkit-protocol -p
+kmipkit-client -p kmipkit-ttlv` — passed (exit code 0), including all credential
+contracts, the Attestation Indicator fake-transport test, all secret redaction
+and zeroization tests, and package doctests.
+
+## User Story 2 REFACTOR — shared diagnostics and validation categories (2026-10-06)
+
+Moved credential tree Debug formatting and redacted Display text through
+shared helpers in `credential/secret.rs`. Common payload-free validation
+categories are now created by `credential/validation.rs`, and Authentication,
+Credential Value, Attestation, Hashed Password, Nonce, and variant wrappers
+reuse those helpers. Existing diagnostic strings, error categories, and all
+parsing behavior remain unchanged.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 62 unit tests, 18 credential contract tests, 2 redaction tests, 4 credential round-trip tests, 2 secret-owner tests, 56 other integration tests, and 2 doctests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed without warnings.
+
+## User Story 3 RED — execute Attestation Capable Indicator (2026-10-06)
+
+Added a fake-transport `Client::execute` request-capture contract. It inspects
+the captured TTLV Request Header and requires Attestation Capable Indicator
+True, Authentication absence, and no Credential tag anywhere in the request.
+The response fixture completes Discover Versions so the assertion crosses the
+real execute exchange boundary without a network or credential payload.
+
+`cargo +1.94.0 fmt --all` passed. The focused command
+`cargo +1.94.0 test -p kmipkit-client attestation_indicator_tests` failed at
+the expected indicator assertion: the existing request builder omitted the
+field (`None`, expected `Some(true)`).
+
+## User Story 2 RED — secret owner API (2026-10-06)
+
+Added public contract tests for redacted caller-owned text and byte wrappers,
+closure-scoped access, and ownership transfer into TTLV's existing redacted
+value type. The focused command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_secret` failed at
+compile time because `SecretText` and `SecretBytes` were not yet exported
+(`E0432`).
+
+## User Story 2 GREEN — secret owners and zeroization (2026-10-06)
+
+Added non-cloneable `SecretText` and `SecretBytes` owners. Their Debug and
+Display output is redacted; closure-scoped access cannot return a borrowed
+secret; consuming conversion moves the existing String/Vec allocation into
+TTLV's redacted `Value`, which zeroizes its owned payload on drop. Secret
+storage calls the pinned `zeroize` implementation before deallocation. A
+DropProbe test verifies that the owner invokes `Zeroize`; KMIPKIT-0004 tests
+verify the TTLV payload owner clears each payload variant and nested values.
+No credential writer or transmission callsite was added. The documented
+guarantee excludes prior allocations, caller/dependency/runtime copies,
+borrowed-view copies, and temporary stack/register copies.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 62 unit tests, 18 credential contract tests, 2 redaction tests, 4 credential round-trip tests, 2 secret-owner integration tests, 56 other integration tests, and 2 doctests.
+- `cargo +1.94.0 test -p kmipkit-ttlv --test value_zeroization` — passed: 2 tests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract` — 5
+  passed, 0 failed.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --test credential_contract -- -D warnings`
+  — passed.
+
+The first Clippy run found a missing non-exhaustive Debug marker and module
+inception; both were corrected, the module file was renamed to `value.rs`, and
+the five traceability paths were updated before the passing rerun.
+
+## User Story 1 RED — Authentication TTLV conversion (2026-10-06)
+
+Extended `credential_contract.rs` with a round-trip contract that requires
+`Authentication::into_ttlv` to preserve unknown Authentication children,
+repeated Credential order, and opaque extension bytes. Added the exact test
+path to the OASIS §9.4-002, FR-002, FR-011, and unknown-preservation traceability
+rows. `cargo +1.94.0 fmt --all --check` passed. The focused Rust 1.94 command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract authentication_roundtrip_preserves_unknown_fields_and_credential_order`
+fails only with `E0599` because `Authentication::into_ttlv` is the behavior
+under test and has not yet been implemented. No production code was added.
+
+## User Story 1 GREEN — typed TTLV conversion (2026-10-06)
+
+Implemented `Credential::try_from_ttlv` and `into_ttlv`, validating the outer
+Credential Type and Credential Value fields while retaining the complete
+original tree. Credential Value must be a Structure. Added consuming
+`Authentication::into_ttlv`, which returns its retained tree unchanged; unknown
+children, repeated credentials, and opaque bytes remain in original order and
+are not copied. The first full crate run exposed a test-fixture error: the
+table-driven unknown-type case reached the fixture's `unreachable!` fallback.
+The fixture now supplies an empty generic value for that explicit future raw
+type; no production behavior changed for this correction.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 61 unit tests, 6
+  credential contract tests, 4 credential round-trip tests, 56 other
+  integration tests, and 2 doctests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`
+  — passed.
+
+## User Story 1 REFACTOR — shared validation and public contract (2026-10-06)
+
+Moved the outer Credential ordering, cardinality, and Item Type checks into
+`credential/validation.rs`; both standalone Credential conversion and
+Authentication parsing now call the same validator. Expanded the module-level
+public contract to distinguish outer shape validation from future
+variant-specific validation, state the unknown-child preservation behavior,
+and document that these models neither assert server satisfaction nor send
+credentials. Behavior is unchanged from the Green implementation.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 61 unit tests, 10
+  credential tests, 56 other integration tests, and 2 doctests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`
+  — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
+
+## User Story 2 RED — Hashed Password validation (2026-10-06)
+
+Re-ran the existing derived §9.11/Table 415 malformed-member contract after
+the public Credential Value enum compiled. It failed because the raw wrapper
+accepted a missing required member, confirming that the earlier compile-time
+RED was not the only guard needed before behavior was implemented.
+
+## T027 verification and Linux coverage (2026-10-06)
+
+Ran the final KMIPKIT-0008 local verification against feature revision
+`fe87006` and the current GitHub `release/1.0.0` base
+`ae87b89d43957e4fc028e785dc181e69b0165dac`. Added
+`credential_public_api.rs` to exercise public Credential and Authentication
+views, construction and conversion paths, every typed wrapper's callback view
+and redacted formatting, Nonce conversion, and each public validation error
+category. This adds no production behavior or credential-send path.
+
+Rust verification on Ubuntu with Rust 1.94.0:
+
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 clippy --workspace --all-targets --all-features --locked -- -D warnings` — passed.
+- `cargo +1.94.0 test --workspace --all-features --locked` — passed, including the new public API cases and workspace doctests.
+- `cargo +1.94.0 doc --workspace --all-features --no-deps --locked` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol --all-features` and protocol Clippy — passed.
+
+The full Linux `cargo +stable llvm-cov --workspace --all-features --locked`
+run passed and exported a normalized report. Using the exact release-to-feature
+Rust diff, measured Linux coverage was:
+
+- Changed Rust: 506/523 (96.75%; 95% minimum).
+- TTLV/protocol: 2,923/3,006 (97.24%; 95% minimum).
+- Transport/FFI: 87/87 (100%; 85% minimum).
+- Workspace: 4,759/4,918 (96.77%; 90% minimum).
+
+The added direct API cases closed enough uncovered public paths to pass all
+four local thresholds. The report still has an uncovered error-propagation
+line at `execute.rs:1147`; the fake-transport test observes the True indicator,
+and aggregate changed-code coverage remains above its threshold. These
+figures are Linux-only; Windows/macOS artifacts and three-platform aggregation
+remain T029 work and are not claimed here.
+
+Normative and generated-input checks against the same exact release base:
+
+- `check_immutable_sources.py` — passed; the pinned OASIS source tree is unchanged.
+- `audit_sources.py --check` — passed; 1,411 normative source candidates reconciled.
+- `validate.py` — passed: 4 sources, 1,411 clauses, 4,024 records.
+- Coverage report, TTLV tags, and result-value generators with `--check` — passed.
+- `scripts/tests` — 156 passed, 25 skipped because the pinned cargo-deny executable is unavailable on this Windows host.
+- `tools/normative_catalog/tests` — 169 passed, 7 POSIX-only tests skipped on Windows.
+
+The WSL worktree metadata still prevents WSL Git from following its Windows
+absolute `gitdir` path, so Git-dependent normative checks were run with native
+Windows Git/Python. Rust compilation and Linux coverage ran in Ubuntu. No
+repository worktree metadata was changed to work around this host-specific
+tooling boundary.
+
+## T028 independent QA findings and traceability correction (2026-10-06)
+
+QA reviewed `c031f01952979a98c7e0e8036b318246d9cae8a3` against base
+`ae87b89d43957e4fc028e785dc181e69b0165dac` without editing files or running
+tests. It found eight `test_ids` references that did not name executable test
+functions and reported that all 29 applicable CSV rows were still `planned`,
+so SC-005 was not demonstrated. The findings were reproduced locally.
+
+Added `FeatureTraceabilityTests.test_credentials_and_attestation_traceability_rows_are_complete`
+first. The focused unittest failed on the eight invalid references and the
+unverified Device uniqueness status. Then corrected the CSV references,
+including the actual zeroization test path, and set requirement states from
+the completed evidence: verified for implemented/tested scope, scoped-verified
+for the caller-owned Device uniqueness obligation, deferred for Timestamp
+monotonicity under OD-003, and server-only for the §9.4 server duty. Re-running
+the focused unittest passed. The new check now validates every KMIPKIT-0008
+test reference, source/code path, feature requirement ID, OASIS requirement
+ID, and the three explicit dispositions.
+
+QA also confirmed the Attestation Capable Indicator is asserted through the
+existing fake-transport `Client::execute` path and found no production
+credential-send callsite. It identified cross-language API parity as an
+unmet 1.0.0 release gate: KMIPKIT-0008 exposes the protocol models in Rust
+only. This is already scheduled in roadmap Phases 3–4 and remains outside this
+feature's approved implementation scope. Updated `docs/roadmap.md` to require
+the versioned public API manifest and equivalent Rust, C, Java, and Python
+capabilities before claiming 1.0 API completeness. The release remains gated
+until those separate approved API/bindings specifications are complete.
+
+QA's re-review of the traceability correction and the independent security
+review remain pending. Windows/macOS CI also remains T029 work.
+
+The focused command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types`
+failed at the expected assertion that an invalid value be rejected.
+
+## User Story 2 GREEN — Hashed Password (2026-10-06)
+
+Implemented Table 415 validation for required Username, Date Time Extended
+Timestamp, and Hashed Password Byte String, plus optional Hashing Algorithm
+Enumeration. The shared validator rejects duplicate and noncanonical known
+members while retaining unknown children. Omitted algorithm remains absent
+and reports effective SHA-256 (`6`); explicitly assigned and unknown raw
+algorithm values, caller timestamps, and hashed bytes remain unchanged. No
+hash calculation or timestamp monotonicity behavior was added.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_omission_exposes_sha256_default_without_materializing_field` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_preserves_explicit_and_unknown_algorithm_values` — passed.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+
+## User Story 2 RED — Username, OTP, Ticket, and Device schemas (2026-10-06)
+
+Added derived table-based cases in `credential_contract.rs` for Username and
+Password (§9.11/Table 411), Device (§9.11/Table 412), One Time Password
+(§9.11/Table 414), and nested Ticket (§7.39 and §9.11/Table 416). The Device
+cases cover all six Text String members, each of the four named identifier
+members including present-empty text, wrong Item Types, and rejection when
+only Password or Device Identifier is present. A separate case retains a
+generic Device tree without applying the typed one-of-four rule. Traceability
+paths were updated for the corresponding normative and project requirements.
+
+`cargo +1.94.0 fmt --all --check` passed. The focused RED command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract` fails at
+the intentionally missing public `CredentialValue` API (`E0432`). Rust also
+reports two `E0282` inference cascades at the TTLV assertions which depend on
+that unavailable type; no production code was added.
+
+## User Story 2 RED — Hashed Password (2026-10-06)
+
+Added derived §9.11/Table 415 cases for required Username, Date Time Extended
+Timestamp, and hashed bytes; wrong Item Types; omitted, explicit, and unknown
+Hashing Algorithm values; effective SHA-256 without materializing the omitted
+field; and exact timestamp/hash-byte round trips. No timestamp monotonicity
+assertion or test was added under OD-003. Updated OASIS and FR-007 traceability
+to the new test paths.
+
+`cargo +1.94.0 fmt --all --check` passed. The focused command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types`
+fails with `E0432` for the not-yet-implemented `CredentialValue`; four
+`E0282` inference cascades also depend on that missing API type. No production
+code was added.
+
+## User Story 2 RED — Attestation and Nonce (2026-10-06)
+
+Added derived cases for required Nonce ID/Value Byte Strings and exact server
+byte preservation (§9.14/Table 419), plus Attestation Type and Nonce required
+members and neither/either/both Measurement and Assertion evidence cases
+(§9.11/Table 413). Wrong Item Types and unknown Attestation Type raw-value
+preservation are covered. Updated OASIS, FR-004/FR-006, and project Nonce
+preservation traceability paths.
+
+`cargo +1.94.0 fmt --all --check` passed. The focused RED command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract nonce_requires_byte_string_id_and_value_and_preserves_exact_server_bytes`
+fails with `E0432` for the missing public `CredentialValue` and `Nonce` APIs;
+five `E0282` diagnostics are inference cascades from those missing types. No
+production code was added.
+
+## User Story 2 RED — secret diagnostic redaction (2026-10-06)
+
+Added sentinel coverage in `credential_redaction.rs` for Username/Password,
+Device identifiers, OTP, hashed bytes, Ticket, Nonce ID/Value, and both
+Attestation evidence fields. The tests exercise typed values, generic
+Credential/Authentication wrappers, malformed-value errors, and a captured
+in-memory log sink built from the public Debug/Display formatting surface.
+The protocol crate currently has no production logger dependency or callsites;
+no logging dependency was added. Owned-memory lifecycle assertions remain
+deferred to T020 after its reviewed contract, as required by T016.
+
+`cargo +1.94.0 fmt --all --check` passed. The focused RED command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_redaction` fails
+only with `E0432` for the not-yet-implemented `CredentialValue` and `Nonce`
+public APIs. No production code was added.
+
+## User Story 2 RED — canonical variant member order (2026-10-06)
+
+Added a derived KMIPKIT-0008-FR-004 case requiring known members to follow
+their Table 411, 412, and 414 order. The case covers Username/Password,
+Device, and OTP inputs in reversed or displaced order. Unknown members remain
+outside the typed order comparison and are retained in the original tree.
+
+`cargo +1.94.0 fmt --all` passed. The focused RED command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract known_credential_members_reject_noncanonical_table_order`
+failed at the assertion because the typed parser accepted noncanonical member
+order. This confirms the test exercises the missing behavior.
+
+## User Story 2 GREEN — Username, Device, OTP, Ticket, and opaque values (2026-10-06)
+
+Added typed wrappers for Username and Password, Device, OTP, Ticket,
+Extensions, and unknown values. The shared validator now checks singleton
+members, required members, Item Types, the resolved one-of-four Device
+identifier rule, and known member order from Tables 411, 412, 414, and 416.
+The wrappers retain the complete original TTLV trees, including unknown
+members and their order; Debug and Display expose only variant metadata.
+Hashed Password, Attestation, and Nonce wrappers are present only to stabilize
+the common public enum surface and remain subject to T018/T019 validation.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract -- --skip hashed_password --skip nonce --skip attestation` — passed: 13 tests; five deferred Hashed Password, Attestation, and Nonce tests were filtered.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_roundtrip` — passed: 4 tests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
+
+## T029 — release-base, coverage, and generated-output verification (2026-10-06)
+
+Fetched `origin/release/1.0.0` at `ae87b89d43957e4fc028e785dc181e69b0165dac`; the
+feature branch merge base matches that release revision. Rechecked the
+immutable OASIS source candidates, catalog validation, generated coverage
+report, TTLV tag allocations, and result mappings; all checks passed.
+
+Ran the complete workspace tests under Rust stable 1.99.0 with
+`cargo llvm-cov --workspace --all-features --locked --json` from a clean Linux
+filesystem copy. The coverage gate evaluated against the exact release-to-HEAD
+Rust diff and reported changed Rust 96.58%, TTLV/protocol 97.24%, transport/FFI
+100%, and workspace 96.75%, all above their required thresholds. The first
+local run from the Windows-mounted WSL worktree could not export a report
+because DrvFs marks Cargo's zero-byte `.cargo-artifact-lock` as executable;
+LLVM then treated it as an object file. The Linux-filesystem run completed and
+generated a valid report, so no CI workflow or coverage exclusion was needed.
+
+Draft PR #45 was created and verified through the terminal against
+`release/1.0.0`. Its current GitHub state is open for review.
+
+The first run of draft PR #45 exposed stable-Clippy diagnostics on macOS and
+Windows: a message-free `#[must_use]` on the iterator accessor triggered
+`double_must_use`, while MSRV Clippy requires a must-use annotation. Kept the
+annotation with an explicit message so both toolchains accept it, and changed
+one equality assertion to `assert_eq!` for stable's `manual_assert_eq` lint.
+After these corrections, local formatting and workspace Clippy passed on both
+Rust 1.94 and stable 1.99, and the complete stable workspace test suite passed.
+
+GitHub Actions run `37527468287` passed in full on PR head
+`570959b7d025814f314aa18ba0495e36313d79fd`: core tests, Clippy and docs on
+Linux, Windows, and macOS with Rust 1.94 and stable; all three platform
+coverage jobs and their aggregate gate; normative inventory and immutable
+sources; script contracts; dependency policy; and the final CI summary. The
+aggregate thresholds passed with changed Rust 96.58%, TTLV/protocol 97.24%,
+transport/FFI 100%, and workspace 96.75%.

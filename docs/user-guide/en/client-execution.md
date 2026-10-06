@@ -34,6 +34,44 @@ applications cannot construct a production `Client` in this feature. The
 internal fake exists for deterministic execution tests only. No TLS/HTTPS
 adapter or live-server readiness is provided here.
 
+## Credentials and attestation capability
+
+KMIPKIT-0008 provides typed, raw-preserving Credential and Authentication
+values in `kmipkit-protocol`. Authentication values contain one or more
+Credentials in caller-supplied order. These are in-memory models in this
+increment; the request payload does not include Authentication or Credential
+data.
+
+A typed Hashed Password Credential requires the caller's Timestamp and hashed
+bytes. Hashing Algorithm is optional. If omitted, the model reports effective
+SHA-256 (raw Enumeration value `6`) while leaving the field absent in the
+retained TTLV tree. KMIPKit does not calculate the hash.
+
+A typed Device Credential must include at least one of Device Serial Number,
+Network Identifier, Machine Identifier, or Media Identifier. The caller is
+responsible for choosing an identifier or combination that is actually
+unique. KMIPKit does not define the comparison scope or check actual
+uniqueness. Password and Device Identifier fields do not
+replace this requirement; their presence does not imply non-empty text.
+
+Synchronous and asynchronous Request Header builders emit
+`Attestation Capable Indicator = True` because the Rust API can construct an
+Attestation Credential. This
+advertises construction capability only: it does not generate or verify
+attestation evidence, submit a Credential, or predict server acceptance. There
+is no per-request override. The value appears in the captured fake-transport
+exchange; this feature still has no production client constructor or live
+server transport.
+
+KMIPKit does not log Credential contents; Debug, Display, and validation
+diagnostics redact them. `SecretText` and `SecretBytes` zeroize initialized
+bytes in the KMIPKit-owned current allocation when its owner is dropped;
+conversion into TTLV moves ownership without cloning. Spare or uninitialized
+capacity is covered only when initialized and cleanup is verified. This does
+not erase caller-made copies, older allocations left by buffer growth, copies
+made from callback-borrowed views, temporary stack/register copies, or copies
+retained by foreign runtimes or dependencies.
+
 ## Request metadata and batch results
 
 The optional Request Header Time Stamp is omitted by default. If supplied by

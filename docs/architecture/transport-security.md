@@ -88,10 +88,36 @@ future work.
 
 ## Credentials
 
-Transport identity and KMIP message authentication are separate. A client has
-default KMIP credentials and a request or batch may replace them. All KMIP 2.1
-credential structures in scope are represented. Short-lived OTPs and tickets
-can be scoped to one request.
+Transport identity (TLS client identity) and KMIP message Authentication are
+separate. KMIPKIT-0008 models ordered Authentication and raw-preserving
+Credentials in memory. It does not add Authentication or Credential data to a
+request payload; request integration is outside this increment.
+
+The typed Hashed Password model requires caller-provided Timestamp and hashed
+bytes. Hashing Algorithm is optional: when absent, the model reports the
+effective SHA-256 value while preserving that the field was absent. KMIPKit
+does not calculate the hash. A typed Device value contains at least one of
+Device Serial Number, Network Identifier, Machine Identifier, or Media
+Identifier. The caller must supply one or a combination that is actually
+unique; KMIPKit does not infer a uniqueness comparison scope or check actual
+uniqueness. Generic TTLV can retain a Device tree without typed validation.
+
+The synchronous and asynchronous request builders emit
+`Attestation Capable Indicator = True` because the public API can construct
+an Attestation Credential. This advertises
+construction capability only; it neither sends Authentication or Credential
+payloads nor generates/verifies evidence or predicts server acceptance. There
+is no request-level override.
+
+KMIPKit does not log Credential contents; text and byte wrappers also redact
+Debug, Display, and validation diagnostics. KMIPKit zeroizes initialized bytes
+in the owned current allocation when its owner is dropped, including after
+ownership moves into a TTLV value. Spare or uninitialized capacity is not
+covered unless initialized and cleanup is verified. This cannot clear
+caller-made copies, old allocations from earlier buffer growth, callback-view copies,
+temporary stack/register copies, or copies retained by foreign runtimes, TLS,
+the operating system, or dependencies. The guarantee is about KMIPKit-owned
+storage and does not claim process-wide erasure.
 
 ## Logging
 
