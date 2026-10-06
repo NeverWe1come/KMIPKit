@@ -531,12 +531,12 @@ impl Client {
             ClientError::protocol(protocol, kmipkit_transport::RequestDeliveryState::NotSent)
         })?;
 
-        let exchange = self
+        let transport_result = self
             .transport
             .exchange(encoded.as_bytes(), limits.max_message_bytes());
         drop(encoded);
 
-        let response = exchange.map_err(ClientError::transport)?;
+        let response = transport_result.map_err(ClientError::transport)?;
         let response_message = decode_bounded_response(
             response.as_bytes(),
             limits,

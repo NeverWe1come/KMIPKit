@@ -21,8 +21,11 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use syn::parse::{Parse, ParseStream};
 use syn::visit::{self, Visit};
-use syn::{Attribute, Expr, ExprCall, ExprMethodCall, Item, ItemMod, Meta, Type, UseTree};
+use syn::{
+    Attribute, Expr, ExprCall, ExprMethodCall, Item, ItemMod, Macro, Meta, Pat, Type, UseTree,
+};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum SourceCoverage {
@@ -267,6 +270,14 @@ const FIXTURES: &[Fixture] = &[
         probe: "matches!(hidden!(), _)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "matches_guard_logical_not",
+        path: "tests/fixtures/execute_boundary/matches_guard_logical_not.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/matches_guard_logical_not.rs"),
+        probe: "matches!(value, Some(item) if !(item == 0))",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
     },
     Fixture {
         id: "public_conversion_hooks",
@@ -594,6 +605,7 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "qself_exchange_method_item",
     "macro_hidden_second_exchange",
     "nested_macro_in_whitelisted_macro",
+    "matches_guard_logical_not",
     "public_conversion_hooks",
     "client_request_conversion_trait_impls",
     "public_impl_trait_conversion_input",
@@ -844,6 +856,11 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
 
     fn visit_item_impl(&mut self, implementation: &'ast syn::ItemImpl) {
         self.check_attributes(&implementation.attrs);
+        if is_request_conversion_impl(implementation) {
+            self.reject(
+                "conversion trait implementation exposes ClientRequest to caller-defined input",
+            );
+        }
         if implementation.trait_.is_some() {
             let mut permit_references = PermitReferenceFinder::default();
             permit_references.visit_item_impl(implementation);
@@ -1127,10 +1144,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             .iter()
             .map(|segment| segment.ident.to_string())
             .collect::<Vec<_>>();
-        if segments.len() > 1
-            && segments.last().is_some_and(|segment| segment == "exchange")
-            && !self.allowed_call_target
-        {
+        if segments.last().is_some_and(|segment| segment == "exchange") {
             self.reject(format!(
                 "transport exchange path must use the canonical method call in Client::execute: {segments:?}"
             ));
@@ -1163,6 +1177,8 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 .collect::<Vec<_>>()
                 .join("::");
             self.reject(format!("unsupported macro: {path}"));
+        } else if allowed_macro_contains_nested_invocation(macro_call) {
+            self.reject("nested macro invocation appears in an allowed macro token tree");
         }
         if contains_protected_macro_tokens(&tokens) {
             self.reject("protected boundary tokens appear in opaque macro input");
@@ -1767,6 +1783,44 @@ fn type_path_name(ty: &Type) -> Option<String> {
     }
 }
 
+fn is_request_conversion_impl(implementation: &syn::ItemImpl) -> bool {
+    let Some((_, trait_path, _)) = &implementation.trait_ else {
+        return false;
+    };
+    let Some(trait_segment) = trait_path.segments.last() else {
+        return false;
+    };
+    if !matches!(
+        trait_segment.ident.to_string().as_str(),
+        "From" | "TryFrom" | "Into" | "TryInto"
+    ) {
+        return false;
+    }
+
+    let mut finder = ClientRequestReferenceFinder::default();
+    finder.visit_type(&implementation.self_ty);
+    finder.visit_path(trait_path);
+    finder.found
+}
+
+#[derive(Default)]
+struct ClientRequestReferenceFinder {
+    found: bool,
+}
+
+impl<'ast> Visit<'ast> for ClientRequestReferenceFinder {
+    fn visit_path(&mut self, path: &'ast syn::Path) {
+        if path
+            .segments
+            .iter()
+            .any(|segment| segment.ident == "ClientRequest")
+        {
+            self.found = true;
+        }
+        visit::visit_path(self, path);
+    }
+}
+
 #[derive(Default)]
 struct PermitReferenceFinder {
     found: bool,
@@ -1947,6 +2001,125 @@ fn contains_protected_macro_tokens(tokens: &str) -> bool {
     ]
     .iter()
     .any(|needle| normalized.contains(needle))
+}
+
+struct MatchesMacroInput {
+    expression: Expr,
+    pattern: Pat,
+    guard: Option<Expr>,
+}
+
+impl Parse for MatchesMacroInput {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let expression = input.parse::<Expr>()?;
+        input.parse::<syn::Token![,]>()?;
+        let pattern = input.call(Pat::parse_multi_with_leading_vert)?;
+        let guard = if input.peek(syn::Token![if]) {
+            input.parse::<syn::Token![if]>()?;
+            Some(input.parse::<Expr>()?)
+        } else {
+            None
+        };
+        if !input.is_empty() {
+            return Err(input.error("unexpected tokens in matches! input"));
+        }
+        Ok(Self {
+            expression,
+            pattern,
+            guard,
+        })
+    }
+}
+
+struct VecMacroInput {
+    expressions: Vec<Expr>,
+}
+
+impl Parse for VecMacroInput {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        if input.is_empty() {
+            return Ok(Self {
+                expressions: Vec::new(),
+            });
+        }
+        let first = input.parse::<Expr>()?;
+        let mut expressions = vec![first];
+        if input.peek(syn::Token![;]) {
+            input.parse::<syn::Token![;]>()?;
+            expressions.push(input.parse::<Expr>()?);
+        } else {
+            while input.peek(syn::Token![,]) {
+                input.parse::<syn::Token![,]>()?;
+                if input.is_empty() {
+                    break;
+                }
+                expressions.push(input.parse::<Expr>()?);
+            }
+        }
+        if !input.is_empty() {
+            return Err(input.error("unexpected tokens in vec! input"));
+        }
+        Ok(Self { expressions })
+    }
+}
+
+#[derive(Default)]
+struct NestedMacroFinder {
+    found: bool,
+}
+
+impl<'ast> Visit<'ast> for NestedMacroFinder {
+    fn visit_macro(&mut self, _macro_call: &'ast Macro) {
+        self.found = true;
+    }
+}
+
+fn allowed_macro_contains_nested_invocation(macro_call: &Macro) -> bool {
+    let Some(name) = macro_call
+        .path
+        .segments
+        .last()
+        .map(|segment| segment.ident.to_string())
+    else {
+        return true;
+    };
+    match name.as_str() {
+        "matches" => {
+            syn::parse2::<MatchesMacroInput>(macro_call.tokens.clone()).map_or(true, |input| {
+                let mut finder = NestedMacroFinder::default();
+                finder.visit_expr(&input.expression);
+                finder.visit_pat(&input.pattern);
+                if let Some(guard) = &input.guard {
+                    finder.visit_expr(guard);
+                }
+                finder.found
+            })
+        }
+        "vec" => syn::parse2::<VecMacroInput>(macro_call.tokens.clone()).map_or(true, |input| {
+            let mut finder = NestedMacroFinder::default();
+            for expression in &input.expressions {
+                finder.visit_expr(expression);
+            }
+            finder.found
+        }),
+        "write" => {
+            let parser = syn::punctuated::Punctuated::<Expr, syn::Token![,]>::parse_terminated;
+            syn::parse::Parser::parse2(parser, macro_call.tokens.clone()).map_or(
+                true,
+                |expressions| {
+                    if expressions.len() < 2 {
+                        return true;
+                    }
+                    let mut finder = NestedMacroFinder::default();
+                    for expression in &expressions {
+                        finder.visit_expr(expression);
+                    }
+                    finder.found
+                },
+            )
+        }
+        _ => true,
+    }
 }
 
 fn audit_source(source: &str) -> Result<BoundaryAudit, CandidateRejection> {
@@ -2371,6 +2544,15 @@ fn allowed_macro_tokens_cannot_contain_nested_macro_invocations() {
 }
 
 #[test]
+fn logical_not_in_a_matches_guard_remains_allowed() {
+    assert_eq!(
+        candidate_check_fixture(fixture("matches_guard_logical_not")),
+        Ok(()),
+        "a logical negation in a matches guard is not a nested macro invocation"
+    );
+}
+
+#[test]
 fn public_signatures_reject_caller_defined_conversion_hooks() {
     assert_eq!(
         candidate_check_fixture(fixture("public_conversion_hooks")),
@@ -2624,6 +2806,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "approved_batch_from_items_iterator"
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"
+                    | "matches_guard_logical_not"
             )),
             ExpectedDecision::Reject => assert!(!matches!(
                 fixture.id,
@@ -2633,6 +2816,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "approved_extension_view_callback"
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"
+                    | "matches_guard_logical_not"
             )),
         }
     }
