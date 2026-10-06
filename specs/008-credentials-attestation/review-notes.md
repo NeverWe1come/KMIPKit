@@ -78,7 +78,7 @@ The QA re-review at `e0e6af1493d1988e0103728916482057860a85fb` found that accept
 The independent normative disposition reviewed pinned OASIS §9.11 at `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html:44184-44189` (source hash `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`). It concluded that a typed Device value must conservatively contain at least one of the four identifiers named by the uniqueness SHALL; §9.11 does not state that exact presence rule verbatim. Keep actual uniqueness with the caller, comparison scope unspecified, and no inferred non-empty text rule. Preserve all six fields; Device Identifier's omission from the named uniqueness set is not reinterpreted. The final spec marks this as a conservative interpretation. Request a read-only QA re-review of the exact resulting revision before passing T004.
 - T026 now asks for contract tests that execute the quickstart acceptance scenarios; the quickstart is not represented as executable code examples.
 
-This is a working disposition only. The requirement checklist remains unchecked until an independent reviewer re-evaluates the exact final snapshot. T004 remains incomplete until that review, the active-release rebase, and the delegated authorization record are complete.
+At this earlier readiness snapshot, the checklist remained unchecked and T004 was incomplete pending exact-revision review, the active-release rebase, and application of delegated authorization.
 
 ## Active release refresh (2026-10-06)
 
@@ -86,4 +86,22 @@ PR #44 for KMIPKIT-0009 merged into `release/1.0.0` as
 `ae87b89d43957e4fc028e785dc181e69b0165dac`. The KMIPKIT-0008 feature branch
 was rebased onto that exact commit; `git merge-base HEAD origin/release/1.0.0`
 returns the same SHA. `git diff --check` passed after the readiness corrections.
-The independent final QA review of this exact rebased revision is still pending.
+The independent final QA review of this exact rebased revision was still pending at that point.
+
+## Final requirements review and T004 disposition
+
+Independent QA reviewed exact HEAD `7943d090c129482c022e1b9a5197ac2e3433aa3a`
+against release base `ae87b89d43957e4fc028e785dc181e69b0165dac`. The reviewer
+reported no substantive blockers and substantiated CHK001–CHK024. The review
+confirmed the conservative Device identifier-presence rule, T022 test-module
+registration, T025 FR-008 documentation coverage, and the unchanged
+single-writer/no-credential-send boundary. No tests were run because the review
+covered specification quality only.
+
+The delegated authorization in `approval-record.md` was applied to this
+revision. T004 is complete, the checklist is checked, and `spec.md` is approved
+for implementation. The QA reviewer identified trailing whitespace on
+`approval-record.md:3`; it was removed in the gate-record update. Run
+`git diff --check origin/release/1.0.0...HEAD` after committing to verify this
+hygiene correction. Independent security design review remains the next gate
+before code.
