@@ -118,6 +118,10 @@ impl Authentication {
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
         callback(self.tree.view())
     }
+
+    pub(super) fn into_tree(self) -> Structure {
+        self.tree
+    }
 }
 
 /// A callback-scoped view of one Credential contained in Authentication.

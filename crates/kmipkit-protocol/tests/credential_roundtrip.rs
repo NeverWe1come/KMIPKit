@@ -144,7 +144,7 @@ fn known_value(raw_type: u32) -> Structure {
                 item(TICKET_VALUE, Value::byte_string(vec![0x55])),
             ])),
         )]),
-        0x8000_0001 => Structure::new(),
+        0x8000_0001 | 0xF123_4567 => Structure::new(),
         _ => unreachable!("the table-driven fixture lists assigned type values"),
     }
 }

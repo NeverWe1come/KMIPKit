@@ -201,3 +201,24 @@ rows. `cargo +1.94.0 fmt --all --check` passed. The focused Rust 1.94 command
 `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract authentication_roundtrip_preserves_unknown_fields_and_credential_order`
 fails only with `E0599` because `Authentication::into_ttlv` is the behavior
 under test and has not yet been implemented. No production code was added.
+
+## User Story 1 GREEN — typed TTLV conversion (2026-10-06)
+
+Implemented `Credential::try_from_ttlv` and `into_ttlv`, validating the outer
+Credential Type and Credential Value fields while retaining the complete
+original tree. Credential Value must be a Structure. Added consuming
+`Authentication::into_ttlv`, which returns its retained tree unchanged; unknown
+children, repeated credentials, and opaque bytes remain in original order and
+are not copied. The first full crate run exposed a test-fixture error: the
+table-driven unknown-type case reached the fixture's `unreachable!` fallback.
+The fixture now supplies an empty generic value for that explicit future raw
+type; no production behavior changed for this correction.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 61 unit tests, 6
+  credential contract tests, 4 credential round-trip tests, 56 other
+  integration tests, and 2 doctests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`
+  — passed.

@@ -69,6 +69,14 @@ pub struct Credential {
 }
 
 impl Credential {
+    pub(super) fn from_tree(tree: Structure) -> Result<Self, CredentialValidationError> {
+        let credential_type = Self::credential_type_from_view(&tree.view())?;
+        Ok(Self {
+            tree,
+            credential_type,
+        })
+    }
+
     /// Returns the raw Credential Type value without interpreting its Credential Value.
     #[must_use]
     pub const fn credential_type(&self) -> CredentialType {
@@ -129,6 +137,13 @@ impl Credential {
                     if credential_type.is_none() {
                         return Err(CredentialValidationError::new(
                             CredentialValidationErrorKind::FieldOutOfOrder,
+                        ));
+                    }
+                    let is_structure =
+                        field.with_value(|value| matches!(value, ValueView::Structure(_)));
+                    if !is_structure {
+                        return Err(CredentialValidationError::new(
+                            CredentialValidationErrorKind::WrongFieldType,
                         ));
                     }
                     credential_value_seen = true;

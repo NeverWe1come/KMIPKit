@@ -116,7 +116,7 @@ fn authentication_preserves_nonempty_credential_order() {
     assert_eq!(raw_types, [0xF123_4567, 0xE234_5678]);
 }
 
-fn assert_authentication_tree_preserves_unknown_fields_and_order(roundtrip: Structure) {
+fn assert_authentication_tree_preserves_unknown_fields_and_order(roundtrip: &Structure) {
     let view = roundtrip.view();
     let fields: &[Item] = view.children();
     let tags: Vec<u32> = fields.iter().map(|field| field.tag().raw()).collect();
@@ -155,7 +155,8 @@ fn authentication_roundtrip_preserves_unknown_fields_and_credential_order() {
     let parsed = Authentication::try_from_ttlv(source)
         .expect("repeated Credentials and unknown Authentication fields are retained");
 
-    assert_authentication_tree_preserves_unknown_fields_and_order(parsed.into_ttlv());
+    let roundtrip = parsed.into_ttlv();
+    assert_authentication_tree_preserves_unknown_fields_and_order(&roundtrip);
 }
 
 #[test]

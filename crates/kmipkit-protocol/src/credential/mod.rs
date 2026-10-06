@@ -1,6 +1,7 @@
 //! Lossless typed KMIP Credential and Authentication values.
 
 mod authentication;
+mod conversion;
 mod value;
 
 pub use authentication::{Authentication, CredentialView};
