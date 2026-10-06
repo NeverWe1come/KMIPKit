@@ -54,7 +54,7 @@ impl fmt::Debug for TransportResponse {
 
 impl Drop for TransportResponse {
     fn drop(&mut self) {
-        (*self.bytes).zeroize();
+        self.bytes.as_mut_slice().zeroize();
         #[cfg(test)]
         if let Some(observer) = &self.drop_observer {
             observer.record_initialized_range_is_zero(self.bytes.as_slice());

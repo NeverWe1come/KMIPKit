@@ -54,7 +54,7 @@ impl ObservedRequestCopy {
 
 impl Drop for ObservedRequestCopy {
     fn drop(&mut self) {
-        self.bytes.zeroize();
+        self.bytes.as_mut_slice().zeroize();
         self.observer
             .record_initialized_range_is_zero(self.bytes.as_slice());
     }
