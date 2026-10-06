@@ -2,6 +2,9 @@
 
 use std::{fmt, io};
 
+#[cfg(test)]
+use std::{cell::Cell, rc::Rc};
+
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
@@ -30,6 +33,73 @@ pub enum ExchangeScript {
         /// Initialized response bytes received before failure.
         response_bytes: Vec<u8>,
     },
+}
+
+struct ZeroizingFixtureBytes {
+    bytes: Vec<u8>,
+    #[cfg(test)]
+    observer: Option<ResponseDropObserver>,
+}
+
+impl ZeroizingFixtureBytes {
+    fn new(bytes: Vec<u8>) -> Self {
+        Self {
+            bytes,
+            #[cfg(test)]
+            observer: None,
+        }
+    }
+
+    #[cfg(test)]
+    fn with_observer(bytes: Vec<u8>, observer: ResponseDropObserver) -> Self {
+        Self {
+            bytes,
+            observer: Some(observer),
+        }
+    }
+
+    fn as_slice(&self) -> &[u8] {
+        &self.bytes
+    }
+
+    fn len(&self) -> usize {
+        self.bytes.len()
+    }
+}
+
+impl Drop for ZeroizingFixtureBytes {
+    fn drop(&mut self) {
+        #[cfg(test)]
+        if let Some(observer) = &self.observer {
+            observer.record(&self.bytes);
+        }
+    }
+}
+
+#[cfg(test)]
+#[derive(Clone)]
+struct ResponseDropObserver {
+    initialized_len: usize,
+    zeroized: Rc<Cell<bool>>,
+}
+
+#[cfg(test)]
+impl ResponseDropObserver {
+    fn new(initialized_len: usize) -> Self {
+        Self {
+            initialized_len,
+            zeroized: Rc::new(Cell::new(false)),
+        }
+    }
+
+    fn record(&self, bytes: &[u8]) {
+        self.zeroized
+            .set(bytes.len() == self.initialized_len && bytes.iter().all(|byte| *byte == 0));
+    }
+
+    fn initialized_bytes_were_zeroized(&self) -> bool {
+        self.zeroized.get()
+    }
 }
 
 impl fmt::Debug for ExchangeScript {
@@ -71,6 +141,8 @@ pub struct ScriptedTransport {
     maximum_response_bytes_retained: usize,
     retained_request: Option<Vec<u8>>,
     captured_logs: Vec<String>,
+    #[cfg(test)]
+    response_drop_observer: Option<ResponseDropObserver>,
 }
 
 impl fmt::Debug for ScriptedTransport {
@@ -108,6 +180,8 @@ impl ScriptedTransport {
             maximum_response_bytes_retained: 0,
             retained_request: None,
             captured_logs: Vec::new(),
+            #[cfg(test)]
+            response_drop_observer: None,
         }
     }
 
@@ -204,6 +278,14 @@ impl ScriptedTransport {
         Ok(TransportResponse::new(response_bytes))
     }
 
+    fn owned_response_fixture(&self, bytes: Vec<u8>) -> ZeroizingFixtureBytes {
+        #[cfg(test)]
+        if let Some(observer) = &self.response_drop_observer {
+            return ZeroizingFixtureBytes::with_observer(bytes, observer.clone());
+        }
+        ZeroizingFixtureBytes::new(bytes)
+    }
+
     fn error(delivery_state: RequestDeliveryState) -> TransportError {
         TransportError::new(
             delivery_state,
@@ -221,39 +303,122 @@ impl Transport for ScriptedTransport {
     ) -> Result<TransportResponse, TransportError> {
         self.exchange_count += 1;
         self.last_response_limit = Some(max_response_bytes);
-        let Some(script) = self.script.take() else {
+        let Some(mut script) = self.script.take() else {
             return Err(Self::error(RequestDeliveryState::not_sent()));
         };
 
-        match script {
+        match &mut script {
             ExchangeScript::Success {
                 response,
                 request_write_chunks,
             } => {
-                let delivery_state = self.write_chunks(request, &request_write_chunks);
-                self.response(&response, max_response_bytes, delivery_state)
+                let response = self.owned_response_fixture(std::mem::take(response));
+                let delivery_state = self.write_chunks(request, request_write_chunks);
+                self.response(response.as_slice(), max_response_bytes, delivery_state)
             }
             ExchangeScript::FailBeforeWrite => Err(Self::error(RequestDeliveryState::not_sent())),
             ExchangeScript::FailAfterPartialWrite { written_bytes } => {
                 let mut delivery_state = RequestDeliveryState::not_sent();
-                self.write_bytes(request.len(), written_bytes, &mut delivery_state);
+                self.write_bytes(request.len(), *written_bytes, &mut delivery_state);
                 Err(Self::error(delivery_state))
             }
             ExchangeScript::FailAfterPartialRead {
                 written_bytes,
                 response_bytes,
             } => {
+                let response_bytes = self.owned_response_fixture(std::mem::take(response_bytes));
                 let mut delivery_state = RequestDeliveryState::not_sent();
-                self.write_bytes(request.len(), written_bytes, &mut delivery_state);
+                self.write_bytes(request.len(), *written_bytes, &mut delivery_state);
                 let response_len = response_bytes.len().min(max_response_bytes);
                 self.maximum_response_bytes_retained =
                     self.maximum_response_bytes_retained.max(response_len);
                 let response_state = delivery_state.response_bytes_received(response_len);
                 drop(TransportResponse::new(
-                    response_bytes[..response_len].to_vec(),
+                    response_bytes.as_slice()[..response_len].to_vec(),
                 ));
                 Err(Self::error(response_state))
             }
         }
+    }
+}
+
+impl Drop for ScriptedTransport {
+    fn drop(&mut self) {
+        if let Some(script) = &mut self.script {
+            let response = match script {
+                ExchangeScript::Success { response, .. } => Some(response),
+                ExchangeScript::FailAfterPartialRead { response_bytes, .. } => Some(response_bytes),
+                ExchangeScript::FailBeforeWrite | ExchangeScript::FailAfterPartialWrite { .. } => {
+                    None
+                }
+            };
+            if let Some(response) = response {
+                #[cfg(test)]
+                if let Some(observer) = &self.response_drop_observer {
+                    observer.record(response);
+                }
+                #[cfg(not(test))]
+                let _ = response;
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ExchangeScript, ResponseDropObserver, ScriptedTransport};
+    use kmipkit_transport::{RequestDeliveryState, Transport};
+
+    const RESPONSE: &[u8] = b"SCRIPTED_RESPONSE_SECRET_SENTINEL";
+
+    #[test]
+    fn successful_exchange_zeroizes_the_owned_response_fixture() {
+        let observer = ResponseDropObserver::new(RESPONSE.len());
+        let mut transport = ScriptedTransport::new(ExchangeScript::Success {
+            response: RESPONSE.to_vec(),
+            request_write_chunks: vec![1],
+        });
+        transport.response_drop_observer = Some(observer.clone());
+
+        let response = transport
+            .exchange(b"request", usize::MAX)
+            .expect("scripted success returns its response");
+
+        assert_eq!(response.as_bytes(), RESPONSE);
+        assert!(observer.initialized_bytes_were_zeroized());
+    }
+
+    #[test]
+    fn partial_read_error_zeroizes_the_owned_response_fixture() {
+        let observer = ResponseDropObserver::new(RESPONSE.len());
+        let mut transport = ScriptedTransport::new(ExchangeScript::FailAfterPartialRead {
+            written_bytes: 1,
+            response_bytes: RESPONSE.to_vec(),
+        });
+        transport.response_drop_observer = Some(observer.clone());
+
+        let error = transport
+            .exchange(b"request", usize::MAX)
+            .expect_err("scripted partial read fails");
+
+        assert_eq!(
+            error.delivery_state(),
+            RequestDeliveryState::ResponseStarted
+        );
+        assert!(observer.initialized_bytes_were_zeroized());
+    }
+
+    #[test]
+    fn dropping_an_unconsumed_script_zeroizes_its_response_fixture() {
+        let observer = ResponseDropObserver::new(RESPONSE.len());
+        let mut transport = ScriptedTransport::new(ExchangeScript::Success {
+            response: RESPONSE.to_vec(),
+            request_write_chunks: vec![1],
+        });
+        transport.response_drop_observer = Some(observer.clone());
+
+        drop(transport);
+
+        assert!(observer.initialized_bytes_were_zeroized());
     }
 }
