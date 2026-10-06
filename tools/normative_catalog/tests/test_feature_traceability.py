@@ -21,6 +21,10 @@ CLIENT_EXECUTION_SPEC_PATH = ROOT / "specs/007-client-execution/spec.md"
 CLIENT_EXECUTION_REQUIREMENTS_PATH = (
     ROOT / "specification/compliance/requirements/KMIPKIT-0007.csv"
 )
+CLIENT_CREDENTIALS_REQUIREMENTS_PATH = (
+    ROOT / "specification/compliance/requirements/KMIPKIT-0008.csv"
+)
+CLIENT_CREDENTIALS_SPEC_PATH = ROOT / "specs/008-credentials-attestation/spec.md"
 CLIENT_EXECUTION_OWNED_REQUIREMENT_IDS = {
     "KMIPKIT-REQ-SPEC-8-003-001",
     "KMIPKIT-REQ-SPEC-9.12-001-002",
@@ -91,6 +95,88 @@ def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
 
 
 class FeatureTraceabilityTests(unittest.TestCase):
+    def test_credentials_and_attestation_traceability_rows_are_complete(self) -> None:
+        with CLIENT_CREDENTIALS_REQUIREMENTS_PATH.open(
+            encoding="utf-8", newline=""
+        ) as stream:
+            rows = list(csv.DictReader(stream))
+
+        self.assertTrue(rows)
+        by_id = {row["requirement_id"]: row for row in rows}
+        self.assertEqual(len(rows), len(by_id))
+
+        specification = CLIENT_CREDENTIALS_SPEC_PATH.read_text(encoding="utf-8")
+        expected_feature_ids = {
+            f"KMIPKIT-0008-FR-{number}"
+            for number in re.findall(r"^\s*- \*\*FR-(\d{3})\*\*", specification, re.MULTILINE)
+        }
+        actual_feature_ids = {
+            row["requirement_id"]
+            for row in rows
+            if row["requirement_id"].startswith("KMIPKIT-0008-FR-")
+        }
+        self.assertEqual(actual_feature_ids, expected_feature_ids)
+
+        expected_oasis_ids = {
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-002",
+            "KMIPKIT-REQ-SPEC-9.4-001-001",
+            "KMIPKIT-REQ-SPEC-9.4-001-002",
+            "KMIPKIT-REQ-SPEC-9.4-001-003",
+            "KMIPKIT-REQ-SPEC-9.4-002",
+            "KMIPKIT-REQ-SPEC-9.11-001",
+            "KMIPKIT-REQ-SPEC-9.11-004-001",
+            "KMIPKIT-REQ-SPEC-9.11-004-002",
+            "KMIPKIT-REQ-SPEC-9.11-004-003",
+            "KMIPKIT-REQ-SPEC-9.11-006",
+            "KMIPKIT-REQ-SPEC-9.11-010-001",
+            "KMIPKIT-REQ-SPEC-9.11-010-002",
+        }
+        actual_oasis_ids = {
+            row["requirement_id"]
+            for row in rows
+            if row["requirement_kind"] == "OASIS normative"
+        }
+        self.assertEqual(actual_oasis_ids, expected_oasis_ids)
+
+        for row in rows:
+            requirement_id = row["requirement_id"]
+            with self.subTest(requirement_id=requirement_id):
+                self.assertTrue(row["source_document"])
+                self.assertTrue(row["source_section"])
+                implementation_refs = row["implementation_location"].split("; ")
+                test_refs = row["test_ids"].split("; ")
+                for reference in filter(None, implementation_refs):
+                    self.assertTrue((ROOT / reference).is_file(), reference)
+                if row["status"] in {"verified", "scoped_verified"}:
+                    self.assertTrue(row["implementation_location"], requirement_id)
+                    self.assertTrue(row["test_ids"], requirement_id)
+                for reference in filter(None, test_refs):
+                    self.assertTrue(
+                        self._is_executable_test_ref(reference),
+                        f"{requirement_id}: {reference}",
+                    )
+
+        for requirement_id, status in (
+            ("KMIPKIT-REQ-SPEC-9.4-001-003", "server_only"),
+            ("KMIPKIT-REQ-SPEC-9.11-004-002", "scoped_verified"),
+            ("KMIPKIT-REQ-SPEC-9.11-010-001", "deferred"),
+        ):
+            self.assertEqual(by_id[requirement_id]["status"], status)
+        self.assertIn("OD-003", by_id["KMIPKIT-REQ-SPEC-9.11-010-001"]["scope"])
+        self.assertIn("caller", by_id["KMIPKIT-REQ-SPEC-9.11-004-002"]["statement"].lower())
+        self.assertIn("comparison scope", by_id["KMIPKIT-REQ-SPEC-9.11-004-002"]["statement"].lower())
+
+        for row in rows:
+            if row["requirement_id"] in {
+                "KMIPKIT-REQ-SPEC-9.4-001-003",
+                "KMIPKIT-REQ-SPEC-9.11-010-001",
+            }:
+                continue
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-9.11-004-002":
+                continue
+            self.assertEqual(row["status"], "verified", row["requirement_id"])
+
     def test_result_contract_elements_link_to_their_spec_code_and_tests(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         elements = catalog["elements"]
