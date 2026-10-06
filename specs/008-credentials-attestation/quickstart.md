@@ -13,7 +13,7 @@ These are acceptance scenarios for the implementation. Credential and Authentica
 
 1. For Tables 411–416, build the minimum-valid and optional-field variants and compare field order/type to the source table.
 2. Reject missing Username, OTP, Timestamp, Hashed Password, Attestation Type, or Nonce where required.
-3. Represent and preserve every Table 412 Device field and validate individual field types. Reject a Device with no Table 412 member; accept field presence independently of text content. Do not claim local/global uniqueness enforcement.
+3. Represent and preserve every Table 412 Device field and validate individual field types. Reject a Device with no Table 412 member; accept field presence independently of text content. Document that the caller must supply a unique one or combination of the four identifiers named in §9.11. The source does not specify comparison scope, and KMIPKit does not verify uniqueness from client-local data.
 4. Test omitted, explicit SHA-256, other known, and unknown Hashing Algorithm values. Omitted algorithm has effective SHA-256 semantics while retaining absence.
 5. Require and preserve caller-provided Timestamp and hashed bytes, and expose effective SHA-256 when the optional algorithm is omitted. Do not calculate hashes or implement/claim monotonicity checking or tests until OD-003 review settles owner, comparison scope, and clock behavior.
 6. Preserve Nonce ID/Value bytes, including embedded zero bytes; never generate or modify them.

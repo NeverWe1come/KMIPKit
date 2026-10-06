@@ -17,7 +17,7 @@
 ## Domain ambiguity and defaults
 
 - [ ] CHK007 Does the spec preserve all six Table 412 fields, reject a Device with none present, avoid imposing non-empty text, and keep uniqueness separate?
-- [ ] CHK008 Does the spec avoid claiming local/global uniqueness enforcement where client-local data cannot establish it?
+- [ ] CHK008 Does the spec retain the caller's OASIS uniqueness obligation for the four named identifiers, leave the source's comparison scope unspecified, and avoid claiming that KMIPKit verifies or enforces uniqueness from client-local data?
 - [ ] CHK009 Does the Hashed Password section require/preserve caller-owned hash bytes and Timestamp, expose effective SHA-256 when omitted, and defer monotonicity checks/tests pending OD-003 review?
 - [ ] CHK010 Does the SHA-256 default preserve the optional wire-field absence while exposing an unambiguous effective value?
 - [ ] CHK011 Does the Attestation Credential require Nonce and Attestation Type and at least one evidence field, while accurately describing whether both are allowed?

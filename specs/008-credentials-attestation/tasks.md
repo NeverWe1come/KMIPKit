@@ -49,7 +49,7 @@
 
 ### Tests — Red
 
-- [ ] T013 [US2] [RED COMMIT] Add failing tests for Username and Password, OTP, Ticket, and Device field types/requiredness in `crates/kmipkit-protocol/tests/credential_contract.rs`; reject no Device fields and accept each Table 412 field by presence, including an empty text value (FR-004, FR-005; Tables 411, 412, 414, 416).
+- [ ] T013 [US2] [RED COMMIT] Add failing tests for Username and Password, OTP, Ticket, and Device field types/requiredness in `crates/kmipkit-protocol/tests/credential_contract.rs`; reject no Device fields and accept each Table 412 field by presence, including an empty text value (FR-004, FR-005; Tables 411, 412, 414, 416). Ensure the public contract documents the caller's uniqueness responsibility for one or a combination of the four §9.11 identifiers; do not invent a comparison scope or add a client-side uniqueness test.
 - [ ] T014 [US2] [RED COMMIT] Add failing Hashed Password tests for required fields, algorithm absent/effective SHA-256/explicit/unknown values, and exact caller timestamp/hash-byte preservation in `crates/kmipkit-protocol/tests/credential_contract.rs`. Do not add monotonicity checking/tests until OD-003 review settles owner, comparison scope, and clock behavior (FR-007; §9.11/Table 415).
 - [ ] T015 [US2] [RED COMMIT] Add failing Attestation and Nonce tests for required Nonce/Type, neither/either/both evidence fields, and exact server Nonce byte preservation in `crates/kmipkit-protocol/tests/credential_contract.rs` (FR-006; §§9.11 and 9.14, Tables 413 and 419).
 - [ ] T016 [US2] [RED COMMIT] Add secret sentinel tests proving no credential, OTP, ticket, Nonce, or attestation value appears in Debug, Display, validation errors, or captured logs in `crates/kmipkit-protocol/tests/credential_redaction.rs`; include owned-memory lifecycle evidence only after the separately approved secret lifecycle contract is fixed (FR-010; secret-lifecycle dependency).
@@ -73,7 +73,7 @@
 
 ### Tests — Red
 
-- [ ] T022 [US3] [RED COMMIT] Add a failing fake-transport request-capture test in `crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs`; assert the existing outbound header advertises True, Authentication stays absent, and no Credential payload is emitted. Retain protocol tests for absent/effective-false parsed headers (FR-008, SC-004; §9.3/Table 402).
+- [ ] T022 [US3] [RED COMMIT] Add a failing fake-transport request-capture test in `crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs`, register the test module in `crates/kmipkit-client/src/lib.rs`, and assert the existing outbound header advertises True, Authentication stays absent, and no Credential payload is emitted. Retain protocol tests for absent/effective-false parsed headers (FR-008, SC-004; §9.3/Table 402).
 
 ### Implementation — Green
 
@@ -87,7 +87,7 @@
 
 **Purpose**: Complete traceability and establish review evidence for a draft implementation PR.
 
-- [ ] T025 Update `docs/architecture/public-api.md`, `docs/architecture/transport-security.md`, and English/Spanish user documentation with approved credential ownership, the effective SHA-256 default and optional-field absence, redaction, and runtime zeroization limits (FR-009, FR-010). Do not document KMIPKit Authentication selection/default/override behavior here; that remains under OD-005.
+- [ ] T025 Update `docs/architecture/public-api.md`, `docs/architecture/transport-security.md`, and English/Spanish user documentation with approved credential ownership, the effective SHA-256 default and optional-field absence, the caller's Device identifier uniqueness responsibility without an invented comparison scope, observable Attestation Capable Indicator=True behavior, redaction, and runtime zeroization limits (FR-005, FR-008–FR-010). Do not document KMIPKit Authentication selection/default/override behavior here; that remains under OD-005.
 - [ ] T026 Add and run contract tests for the acceptance scenarios in `specs/008-credentials-attestation/quickstart.md`; construct credential/authentication values in memory, capture only the non-secret indicator in the fake execute path, and include no real secret fixtures (SC-001–SC-006).
 - [ ] T027 Run focused protocol tests, `cargo fmt --all --check`, workspace Clippy/tests/docs, catalog validation/report regeneration, and immutable-source checks; demonstrate at least 95% changed/protocol code line coverage and at least 90% workspace coverage or document the exact blocking evidence (SC-001–SC-006).
 - [ ] T028 Run independent QA and security reviews sequentially against spec, catalog, code, tests, traceability, and secret lifecycle; fix findings and record exact revision/commands. Confirm this feature introduced no production credential send path; any future send path must move to a separate approved feature with its own candidate-callsite lifecycle evidence (SC-003, SC-005, SC-006).

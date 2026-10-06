@@ -108,7 +108,7 @@ Run focused tests, format, Clippy, workspace tests, docs, catalog validation/rep
 ## Risks and limits
 
 - Catalog scope errors can falsely turn server behavior into client conformance; preserve the accepted server-only/unassigned record and open `KMIPKIT-DISC-041`, and do not test/enforce “all Credentials satisfied” as a client duty.
-- Device identity uniqueness is not locally verifiable. The minimum-presence interpretation requires at least one Table 412 member and imposes no text-length rule.
+- The caller is responsible for supplying a unique one or combination of the four §9.11 Device identifiers. The source does not define comparison scope, and client-local data cannot verify it. The separate minimum-presence interpretation requires at least one Table 412 member and imposes no text-length rule.
 - Timestamp monotonicity needs an explicit owner, comparison scope, and clock behavior; do not calculate hashes or claim a monotonicity check/test until OD-003 review.
 - Redaction and zeroization do not make secret transmission permissible. KMIPKIT-0008 only changes the existing request header's non-secret capability indicator; it adds no Authentication or Credential payload. Any later secret-bearing send path must satisfy its own independently reviewed approval and owner-through-transport lifecycle test evidence.
 - The open source test-case fixtures are unavailable; tests remain derived conformance tests.
