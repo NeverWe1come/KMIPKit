@@ -16,7 +16,7 @@
 
 ## Domain ambiguity and defaults
 
-- [ ] CHK007 Does the spec preserve all six Table 412 fields, reject a Device with none present, avoid imposing non-empty text, and keep uniqueness separate?
+- [ ] CHK007 Does the spec preserve all six Table 412 fields, label the one-of-four identifier presence rule as a conservative interpretation rather than verbatim source text, keep Password and Device Identifier representable without treating them as identifiers, and avoid imposing non-empty text?
 - [ ] CHK008 Does the spec retain the caller's OASIS uniqueness obligation for the four named identifiers, leave the source's comparison scope unspecified, and avoid claiming that KMIPKit verifies or enforces uniqueness from client-local data?
 - [ ] CHK009 Does the Hashed Password section require/preserve caller-owned hash bytes and Timestamp, expose effective SHA-256 when omitted, and defer monotonicity checks/tests pending OD-003 review?
 - [ ] CHK010 Does the SHA-256 default preserve the optional wire-field absence while exposing an unambiguous effective value?
