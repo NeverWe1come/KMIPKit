@@ -1,14 +1,15 @@
-//! OASIS KMIP v2.1 §§7.39, 9.4, 9.11; Tables 403, 410–412, 414, 416, and 442.
+//! OASIS KMIP v2.1 §§7.39, 9.4, 9.11, 9.14; Tables 403, 410–414, 416, 419, and 442.
 //!
 //! These derived contract cases validate in-memory Authentication and
 //! Credential models. They do not claim official OASIS test-vector coverage
 //! or server-side credential satisfaction.
 //!
 //! Traceability: KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002,
-//! KMIPKIT-REQ-SPEC-9.4-002, KMIPKIT-REQ-SPEC-9.11-004-001/-002/-003;
-//! KMIPKIT-0008-FR-001, FR-002, FR-004, FR-005, FR-009; SC-001, SC-002.
+//! KMIPKIT-REQ-SPEC-9.4-002, KMIPKIT-REQ-SPEC-9.11-004-001/-002/-003,
+//! KMIPKIT-REQ-SPEC-9.11-006; KMIPKIT-0008-FR-001, FR-002, FR-004–FR-006,
+//! FR-009; SC-001, SC-002.
 
-use kmipkit_protocol::{Authentication, CredentialType, CredentialValue, RequestMessage};
+use kmipkit_protocol::{Authentication, CredentialType, CredentialValue, Nonce, RequestMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -34,6 +35,12 @@ const TICKET_TYPE: u32 = 0x0042_014A;
 const TICKET_VALUE: u32 = 0x0042_014B;
 const ONE_TIME_PASSWORD: u32 = 0x0042_0156;
 const HASHED_PASSWORD: u32 = 0x0042_0157;
+const ATTESTATION_TYPE: u32 = 0x0042_00C7;
+const NONCE: u32 = 0x0042_00C8;
+const NONCE_ID: u32 = 0x0042_00C9;
+const NONCE_VALUE: u32 = 0x0042_00CA;
+const ATTESTATION_MEASUREMENT: u32 = 0x0042_00CB;
+const ATTESTATION_ASSERTION: u32 = 0x0042_00CC;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_HEADER: u32 = 0x0042_0077;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -74,6 +81,13 @@ fn credential_value(
     value: Structure,
 ) -> Result<CredentialValue, kmipkit_protocol::CredentialValidationError> {
     CredentialValue::try_from_ttlv(CredentialType::from_raw(raw_type), value)
+}
+
+fn valid_nonce_value() -> Structure {
+    structure([
+        item(NONCE_ID, Value::byte_string(vec![0x00, 0x80])),
+        item(NONCE_VALUE, Value::byte_string(vec![0xFE, 0xFF])),
+    ])
 }
 
 fn value_tags(value: CredentialValue) -> Vec<u32> {
@@ -595,5 +609,213 @@ fn hashed_password_preserves_explicit_and_unknown_algorithm_values() {
             }),
             Some(secret_bytes.clone())
         );
+    }
+}
+
+#[test]
+fn nonce_requires_byte_string_id_and_value_and_preserves_exact_server_bytes() {
+    let nonce_id = vec![0x00, 0x80, 0xFE];
+    let nonce_value = vec![0xFF, 0x00, 0x7F, 0x81];
+    let parsed = Nonce::try_from_ttlv(structure([
+        item(NONCE_ID, Value::byte_string(nonce_id.clone())),
+        item(NONCE_VALUE, Value::byte_string(nonce_value.clone())),
+    ]))
+    .expect("server Nonce contains both Table 419 Byte String fields");
+    let roundtrip = parsed.into_ttlv();
+    let view = roundtrip.view();
+    let fields = view.children();
+    assert_eq!(fields[0].tag().raw(), NONCE_ID);
+    assert_eq!(fields[1].tag().raw(), NONCE_VALUE);
+    assert_eq!(
+        fields[0].with_value(|value| match value {
+            ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+            _ => None,
+        }),
+        Some(nonce_id)
+    );
+    assert_eq!(
+        fields[1].with_value(|value| match value {
+            ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+            _ => None,
+        }),
+        Some(nonce_value)
+    );
+
+    for invalid in [
+        Structure::new(),
+        structure([item(NONCE_ID, Value::byte_string(vec![0x01]))]),
+        structure([item(NONCE_VALUE, Value::byte_string(vec![0x02]))]),
+        structure([
+            item(NONCE_ID, Value::boolean(true)),
+            item(NONCE_VALUE, Value::byte_string(vec![0x02])),
+        ]),
+        structure([
+            item(NONCE_ID, Value::byte_string(vec![0x01])),
+            item(NONCE_VALUE, Value::boolean(true)),
+        ]),
+        structure([
+            item(NONCE_ID, Value::byte_string(vec![0x01])),
+            item(NONCE_ID, Value::byte_string(vec![0x03])),
+            item(NONCE_VALUE, Value::byte_string(vec![0x02])),
+        ]),
+    ] {
+        assert!(Nonce::try_from_ttlv(invalid).is_err());
+    }
+}
+
+#[test]
+fn attestation_requires_nonce_type_and_one_or_both_evidence_fields() {
+    let attestation_type = 0xF123_4567;
+    let measurement = vec![0x00, 0xA1, 0xFE];
+    let assertion = vec![0xFF, 0x00, 0x81];
+
+    assert!(
+        credential_value(
+            3,
+            structure([
+                item(NONCE, Value::structure(valid_nonce_value())),
+                item(ATTESTATION_TYPE, Value::enumeration(attestation_type)),
+            ]),
+        )
+        .is_err()
+    );
+
+    let measurement_only = credential_value(
+        3,
+        structure([
+            item(NONCE, Value::structure(valid_nonce_value())),
+            item(ATTESTATION_TYPE, Value::enumeration(attestation_type)),
+            item(
+                ATTESTATION_MEASUREMENT,
+                Value::byte_string(measurement.clone()),
+            ),
+        ]),
+    )
+    .expect("Attestation Measurement alone satisfies the evidence requirement");
+    assert!(matches!(measurement_only, CredentialValue::Attestation(_)));
+
+    let assertion_only = credential_value(
+        3,
+        structure([
+            item(NONCE, Value::structure(valid_nonce_value())),
+            item(ATTESTATION_TYPE, Value::enumeration(attestation_type)),
+            item(ATTESTATION_ASSERTION, Value::byte_string(assertion.clone())),
+        ]),
+    )
+    .expect("Attestation Assertion alone satisfies the evidence requirement");
+    assert!(matches!(assertion_only, CredentialValue::Attestation(_)));
+
+    let both = credential_value(
+        3,
+        structure([
+            item(NONCE, Value::structure(valid_nonce_value())),
+            item(ATTESTATION_TYPE, Value::enumeration(attestation_type)),
+            item(
+                ATTESTATION_MEASUREMENT,
+                Value::byte_string(measurement.clone()),
+            ),
+            item(ATTESTATION_ASSERTION, Value::byte_string(assertion.clone())),
+        ]),
+    )
+    .expect("both evidence fields remain representable");
+    let roundtrip = both.into_ttlv();
+    let view = roundtrip.view();
+    let fields = view.children();
+    assert_eq!(
+        fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [
+            NONCE,
+            ATTESTATION_TYPE,
+            ATTESTATION_MEASUREMENT,
+            ATTESTATION_ASSERTION
+        ]
+    );
+    assert_eq!(
+        fields[1].with_value(|value| match value {
+            ValueView::Enumeration(raw) => Some(*raw),
+            _ => None,
+        }),
+        Some(attestation_type)
+    );
+    assert_eq!(
+        fields[2].with_value(|value| match value {
+            ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+            _ => None,
+        }),
+        Some(measurement)
+    );
+    assert_eq!(
+        fields[3].with_value(|value| match value {
+            ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+            _ => None,
+        }),
+        Some(assertion)
+    );
+
+    for invalid in [
+        Structure::new(),
+        structure([item(
+            NONCE,
+            Value::structure(structure([
+                item(NONCE_ID, Value::byte_string(vec![0x01])),
+                item(NONCE_VALUE, Value::byte_string(vec![0x02])),
+            ])),
+        )]),
+        structure([
+            item(NONCE, Value::boolean(true)),
+            item(ATTESTATION_TYPE, Value::enumeration(1)),
+            item(ATTESTATION_MEASUREMENT, Value::byte_string(vec![0x01])),
+        ]),
+        structure([
+            item(
+                NONCE,
+                Value::structure(structure([
+                    item(NONCE_ID, Value::byte_string(vec![0x01])),
+                    item(NONCE_VALUE, Value::byte_string(vec![0x02])),
+                ])),
+            ),
+            item(ATTESTATION_MEASUREMENT, Value::byte_string(vec![0x01])),
+        ]),
+        structure([
+            item(
+                NONCE,
+                Value::structure(structure([
+                    item(NONCE_ID, Value::byte_string(vec![0x01])),
+                    item(NONCE_VALUE, Value::byte_string(vec![0x02])),
+                ])),
+            ),
+            item(ATTESTATION_TYPE, Value::text_string("unknown".to_owned())),
+            item(ATTESTATION_MEASUREMENT, Value::byte_string(vec![0x01])),
+        ]),
+        structure([
+            item(
+                NONCE,
+                Value::structure(structure([
+                    item(NONCE_ID, Value::byte_string(vec![0x01])),
+                    item(NONCE_VALUE, Value::byte_string(vec![0x02])),
+                ])),
+            ),
+            item(ATTESTATION_TYPE, Value::enumeration(1)),
+            item(
+                ATTESTATION_MEASUREMENT,
+                Value::text_string("measurement".to_owned()),
+            ),
+        ]),
+        structure([
+            item(
+                NONCE,
+                Value::structure(structure([
+                    item(NONCE_ID, Value::byte_string(vec![0x01])),
+                    item(NONCE_VALUE, Value::byte_string(vec![0x02])),
+                ])),
+            ),
+            item(ATTESTATION_TYPE, Value::enumeration(1)),
+            item(ATTESTATION_ASSERTION, Value::boolean(true)),
+        ]),
+    ] {
+        assert!(credential_value(3, invalid).is_err());
     }
 }

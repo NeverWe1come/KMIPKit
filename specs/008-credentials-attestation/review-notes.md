@@ -273,3 +273,18 @@ to the new test paths.
 fails with `E0432` for the not-yet-implemented `CredentialValue`; four
 `E0282` inference cascades also depend on that missing API type. No production
 code was added.
+
+## User Story 2 RED — Attestation and Nonce (2026-10-06)
+
+Added derived cases for required Nonce ID/Value Byte Strings and exact server
+byte preservation (§9.14/Table 419), plus Attestation Type and Nonce required
+members and neither/either/both Measurement and Assertion evidence cases
+(§9.11/Table 413). Wrong Item Types and unknown Attestation Type raw-value
+preservation are covered. Updated OASIS, FR-004/FR-006, and project Nonce
+preservation traceability paths.
+
+`cargo +1.94.0 fmt --all --check` passed. The focused RED command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract nonce_requires_byte_string_id_and_value_and_preserves_exact_server_bytes`
+fails with `E0432` for the missing public `CredentialValue` and `Nonce` APIs;
+five `E0282` diagnostics are inference cascades from those missing types. No
+production code was added.
