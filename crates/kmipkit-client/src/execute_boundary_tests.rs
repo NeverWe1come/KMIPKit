@@ -4,8 +4,9 @@
 //! compiled, executed, or read from OASIS sources. T011 replaces these
 //! deliberately incomplete test-only checker candidates with the approved
 //! pinned Rust-AST audit; T017 wires that production audit into CI.
-//! The direct caller-owned transport fixture is an ADR-0014 positive control;
-//! raw request access through the typed client or facade remains forbidden.
+//! The low-level caller-owned transport exception belongs to
+//! `kmipkit-transport`; client source may call `exchange` only from
+//! `Client::execute`.
 //! The audit is syntactic: it walks the production module graph under `src`,
 //! accepts only `cfg(test)`/`cfg(not(test))`, and rejects unknown attributes,
 //! imported protected names, custom macros, and every macro outside its small
@@ -54,6 +55,14 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Accept,
     },
     Fixture {
+        id: "canonical_vec_macro",
+        path: "tests/fixtures/execute_boundary/canonical_vec_macro.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/canonical_vec_macro.rs"),
+        probe: "vec![0u8]",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
         id: "generic_item_input",
         path: "tests/fixtures/execute_boundary/generic_item_input.rs",
         source: include_str!("../tests/fixtures/execute_boundary/generic_item_input.rs"),
@@ -66,6 +75,46 @@ const FIXTURES: &[Fixture] = &[
         path: "tests/fixtures/execute_boundary/raw_body_input.rs",
         source: include_str!("../tests/fixtures/execute_boundary/raw_body_input.rs"),
         probe: "body: &[u8]",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "public_structure_input",
+        path: "tests/fixtures/execute_boundary/public_structure_input.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/public_structure_input.rs"),
+        probe: "kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "owned_vec_bytes_input",
+        path: "tests/fixtures/execute_boundary/owned_vec_bytes_input.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/owned_vec_bytes_input.rs"),
+        probe: "body: Vec<u8>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "boxed_byte_slice_input",
+        path: "tests/fixtures/execute_boundary/boxed_byte_slice_input.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/boxed_byte_slice_input.rs"),
+        probe: "Box<[u8]>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "exact_unique_batch_id_setter",
+        path: "tests/fixtures/execute_boundary/exact_unique_batch_id_setter.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/exact_unique_batch_id_setter.rs"),
+        probe: "with_unique_batch_item_id",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "other_owned_bytes_setter",
+        path: "tests/fixtures/execute_boundary/other_owned_bytes_setter.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/other_owned_bytes_setter.rs"),
+        probe: "with_bytes",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
     },
@@ -115,7 +164,7 @@ const FIXTURES: &[Fixture] = &[
         source: include_str!("../tests/fixtures/execute_boundary/raw_exchange_outside_execute.rs"),
         probe: "transport.exchange(request, max_response_bytes)",
         coverage: SourceCoverage::CandidateInspected,
-        expected: ExpectedDecision::Accept,
+        expected: ExpectedDecision::Reject,
     },
     Fixture {
         id: "client_raw_body_execute",
@@ -208,6 +257,22 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "qualified_custom_vec_macro",
+        path: "tests/fixtures/execute_boundary/qualified_custom_vec_macro.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/qualified_custom_vec_macro.rs"),
+        probe: "untrusted::vec![0u8]",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "glob_writer_import_with_direct_permit",
+        path: "tests/fixtures/execute_boundary/glob_writer_import_with_direct_permit.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/glob_writer_import_with_direct_permit.rs"),
+        probe: "use crate::private_wire_writer::*",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "include_bypass",
         path: "tests/fixtures/execute_boundary/include_bypass.rs",
         source: include_str!("../tests/fixtures/execute_boundary/include_bypass.rs"),
@@ -269,8 +334,14 @@ const FIXTURES: &[Fixture] = &[
 
 const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "valid_execute",
+    "canonical_vec_macro",
     "generic_item_input",
     "raw_body_input",
+    "public_structure_input",
+    "owned_vec_bytes_input",
+    "boxed_byte_slice_input",
+    "exact_unique_batch_id_setter",
+    "other_owned_bytes_setter",
     "public_enum_input",
     "public_type_alias",
     "item_reexport_alias",
@@ -288,6 +359,8 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "writer_alias",
     "writer_reexport",
     "macro_token_tree",
+    "qualified_custom_vec_macro",
+    "glob_writer_import_with_direct_permit",
     "include_bypass",
     "included_writer_source",
     "generated_source",
@@ -1180,6 +1253,10 @@ fn generic_item_and_raw_body_inputs_are_rejected() {
     let accepted = accepted_ids_for_rejected_fixtures(&[
         "generic_item_input",
         "raw_body_input",
+        "public_structure_input",
+        "owned_vec_bytes_input",
+        "boxed_byte_slice_input",
+        "other_owned_bytes_setter",
         "public_enum_input",
         "public_type_alias",
         "item_reexport_alias",
@@ -1196,8 +1273,8 @@ fn generic_item_and_raw_body_inputs_are_rejected() {
 fn low_level_exception_does_not_bypass_the_typed_client_boundary() {
     assert_eq!(
         candidate_check_fixture(fixture("raw_exchange_outside_execute")),
-        Ok(()),
-        "ADR-0014 allows direct low-level exchange with caller-owned bytes"
+        Err(CandidateRejection::BoundaryViolation),
+        "client source may exchange only from Client::execute"
     );
     let accepted = accepted_ids_for_rejected_fixtures(&[
         "public_writer",
@@ -1234,11 +1311,28 @@ fn exactly_one_permit_and_writer_call_are_inside_execute() {
 }
 
 #[test]
+fn canonical_macros_and_unique_batch_identifier_setter_remain_allowed() {
+    for id in [
+        "valid_execute",
+        "canonical_vec_macro",
+        "exact_unique_batch_id_setter",
+    ] {
+        assert_eq!(
+            candidate_check_fixture(fixture(id)),
+            Ok(()),
+            "approved positive-control fixture should be accepted: {id}"
+        );
+    }
+}
+
+#[test]
 fn aliases_macros_includes_generated_and_cfg_sources_cannot_bypass_the_audit() {
     let accepted = accepted_ids_for_rejected_fixtures(&[
         "writer_alias",
         "writer_reexport",
         "macro_token_tree",
+        "qualified_custom_vec_macro",
+        "glob_writer_import_with_direct_permit",
         "include_bypass",
         "included_writer_source",
         "generated_source",
@@ -1305,11 +1399,11 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
         match fixture.expected {
             ExpectedDecision::Accept => assert!(matches!(
                 fixture.id,
-                "valid_execute" | "raw_exchange_outside_execute"
+                "valid_execute" | "canonical_vec_macro" | "exact_unique_batch_id_setter"
             )),
             ExpectedDecision::Reject => assert!(!matches!(
                 fixture.id,
-                "valid_execute" | "raw_exchange_outside_execute"
+                "valid_execute" | "canonical_vec_macro" | "exact_unique_batch_id_setter"
             )),
         }
     }
