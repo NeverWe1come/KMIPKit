@@ -87,6 +87,56 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "public_structure_view_input",
+        path: "tests/fixtures/execute_boundary/public_structure_view_input.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/public_structure_view_input.rs"),
+        probe: "StructureView<'_>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "public_tag_input",
+        path: "tests/fixtures/execute_boundary/public_tag_input.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/public_tag_input.rs"),
+        probe: "kmipkit_ttlv::Tag",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "public_item_type_input",
+        path: "tests/fixtures/execute_boundary/public_item_type_input.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/public_item_type_input.rs"),
+        probe: "kmipkit_ttlv::ItemType",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "public_value_view_input",
+        path: "tests/fixtures/execute_boundary/public_value_view_input.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/public_value_view_input.rs"),
+        probe: "kmipkit_ttlv::ValueView",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "structure_view_wrong_callback",
+        path: "tests/fixtures/execute_boundary/structure_view_wrong_callback.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/structure_view_wrong_callback.rs"),
+        probe: "fn with_view",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "approved_extension_view_callback",
+        path: "tests/fixtures/execute_boundary/approved_extension_view_callback.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/approved_extension_view_callback.rs"
+        ),
+        probe: "fn with_ttlv",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
         id: "owned_vec_bytes_input",
         path: "tests/fixtures/execute_boundary/owned_vec_bytes_input.rs",
         source: include_str!("../tests/fixtures/execute_boundary/owned_vec_bytes_input.rs"),
@@ -275,7 +325,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "glob_writer_import_with_direct_permit",
         path: "tests/fixtures/execute_boundary/glob_writer_import_with_direct_permit.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/glob_writer_import_with_direct_permit.rs"),
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/glob_writer_import_with_direct_permit.rs"
+        ),
         probe: "use crate::private_wire_writer::*",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -283,7 +335,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "permit_mint_and_helper_struct_literals",
         path: "tests/fixtures/execute_boundary/permit_mint_and_helper_struct_literals.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/permit_mint_and_helper_struct_literals.rs"),
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/permit_mint_and_helper_struct_literals.rs"
+        ),
         probe: "fn helper() -> Self",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -354,6 +408,12 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "generic_item_input",
     "raw_body_input",
     "public_structure_input",
+    "public_structure_view_input",
+    "public_tag_input",
+    "public_item_type_input",
+    "public_value_view_input",
+    "structure_view_wrong_callback",
+    "approved_extension_view_callback",
     "owned_vec_bytes_input",
     "boxed_byte_slice_input",
     "fixed_array_bytes_input",
@@ -1272,6 +1332,11 @@ fn generic_item_and_raw_body_inputs_are_rejected() {
         "generic_item_input",
         "raw_body_input",
         "public_structure_input",
+        "public_structure_view_input",
+        "public_tag_input",
+        "public_item_type_input",
+        "public_value_view_input",
+        "structure_view_wrong_callback",
         "owned_vec_bytes_input",
         "boxed_byte_slice_input",
         "fixed_array_bytes_input",
@@ -1335,6 +1400,7 @@ fn canonical_macros_and_unique_batch_identifier_setter_remain_allowed() {
         "valid_execute",
         "canonical_vec_macro",
         "exact_unique_batch_id_setter",
+        "approved_extension_view_callback",
     ] {
         assert_eq!(
             candidate_check_fixture(fixture(id)),
@@ -1439,11 +1505,17 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
         match fixture.expected {
             ExpectedDecision::Accept => assert!(matches!(
                 fixture.id,
-                "valid_execute" | "canonical_vec_macro" | "exact_unique_batch_id_setter"
+                "valid_execute"
+                    | "canonical_vec_macro"
+                    | "exact_unique_batch_id_setter"
+                    | "approved_extension_view_callback"
             )),
             ExpectedDecision::Reject => assert!(!matches!(
                 fixture.id,
-                "valid_execute" | "canonical_vec_macro" | "exact_unique_batch_id_setter"
+                "valid_execute"
+                    | "canonical_vec_macro"
+                    | "exact_unique_batch_id_setter"
+                    | "approved_extension_view_callback"
             )),
         }
     }
