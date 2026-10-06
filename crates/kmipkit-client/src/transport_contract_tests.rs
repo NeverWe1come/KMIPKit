@@ -14,17 +14,27 @@ use zeroize::Zeroize;
 
 const RESPONSE_LIMIT: usize = 8;
 
-#[derive(Clone, Debug, Default)]
-struct RequestCopyObserver(Arc<AtomicBool>);
+#[derive(Clone)]
+struct RequestCopyObserver {
+    zeroized: Arc<AtomicBool>,
+    expected_len: usize,
+}
 
 impl RequestCopyObserver {
+    fn new(expected_len: usize) -> Self {
+        Self {
+            zeroized: Arc::default(),
+            expected_len,
+        }
+    }
+
     fn record_initialized_range_is_zero(&self, bytes: &[u8]) {
-        let all_zero = bytes.iter().all(|byte| *byte == 0);
-        self.0.store(all_zero, Ordering::SeqCst);
+        let all_zero = bytes.len() == self.expected_len && bytes.iter().all(|byte| *byte == 0);
+        self.zeroized.store(all_zero, Ordering::SeqCst);
     }
 
     fn initialized_range_was_zero(&self) -> bool {
-        self.0.load(Ordering::SeqCst)
+        self.zeroized.load(Ordering::SeqCst)
     }
 }
 
@@ -131,7 +141,7 @@ fn request_sentinel_is_not_logged_or_retained_and_temporary_copy_is_zeroized_on_
         response: SUCCESS_RESPONSE.to_vec(),
         request_write_chunks: vec![2, REQUEST_SENTINEL.len()],
     });
-    let observer = RequestCopyObserver::default();
+    let observer = RequestCopyObserver::new(REQUEST_SENTINEL.len());
     let mut transport = CopyingFakeTransport::new(fake, observer.clone());
 
     let response = transport
@@ -139,7 +149,10 @@ fn request_sentinel_is_not_logged_or_retained_and_temporary_copy_is_zeroized_on_
         .expect("the scripted exchange succeeds");
 
     assert_eq!(response.as_bytes(), SUCCESS_RESPONSE);
-    assert!(observer.initialized_range_was_zero());
+    assert!(
+        observer.initialized_range_was_zero(),
+        "observer must reject a zero-length slice after the initialized request copy was stored"
+    );
     assert_eq!(transport.fake.exchange_count(), 1);
     assert_request_not_logged_or_retained(&transport.fake);
 }
@@ -150,7 +163,7 @@ fn request_sentinel_is_not_logged_or_retained_and_temporary_copy_is_zeroized_on_
         written_bytes: 2,
         response_bytes: PARTIAL_RESPONSE.to_vec(),
     });
-    let observer = RequestCopyObserver::default();
+    let observer = RequestCopyObserver::new(REQUEST_SENTINEL.len());
     let mut transport = CopyingFakeTransport::new(fake, observer.clone());
 
     let error = transport
@@ -161,7 +174,10 @@ fn request_sentinel_is_not_logged_or_retained_and_temporary_copy_is_zeroized_on_
         error.delivery_state(),
         RequestDeliveryState::ResponseStarted
     );
-    assert!(observer.initialized_range_was_zero());
+    assert!(
+        observer.initialized_range_was_zero(),
+        "observer must reject a zero-length slice on the exchange error path"
+    );
     assert_eq!(transport.fake.exchange_count(), 1);
     assert_request_not_logged_or_retained(&transport.fake);
     assert!(!format!("{error} {error:?}").contains("KMIPKIT_LOW_LEVEL_REQUEST_SENTINEL_73"));
