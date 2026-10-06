@@ -256,6 +256,39 @@ fn username_and_password_requires_username_and_preserves_optional_password_prese
 }
 
 #[test]
+fn known_credential_members_reject_noncanonical_table_order() {
+    for (raw_type, invalid_order) in [
+        (
+            1,
+            structure([
+                item(PASSWORD, Value::text_string("secret".to_owned())),
+                item(USERNAME, Value::text_string("alice".to_owned())),
+            ]),
+        ),
+        (
+            2,
+            structure([
+                item(NETWORK_IDENTIFIER, Value::text_string("network".to_owned())),
+                item(
+                    DEVICE_SERIAL_NUMBER,
+                    Value::text_string("serial".to_owned()),
+                ),
+            ]),
+        ),
+        (
+            4,
+            structure([
+                item(USERNAME, Value::text_string("alice".to_owned())),
+                item(ONE_TIME_PASSWORD, Value::text_string("123456".to_owned())),
+                item(PASSWORD, Value::text_string("secret".to_owned())),
+            ]),
+        ),
+    ] {
+        assert!(credential_value(raw_type, invalid_order).is_err());
+    }
+}
+
+#[test]
 fn one_time_password_requires_username_and_otp_and_validates_optional_password() {
     let valid = credential_value(
         4,
@@ -664,6 +697,7 @@ fn nonce_requires_byte_string_id_and_value_and_preserves_exact_server_bytes() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)] // Keeps the attestation evidence matrix in one executable contract case.
 fn attestation_requires_nonce_type_and_one_or_both_evidence_fields() {
     let attestation_type = 0xF123_4567;
     let measurement = vec![0x00, 0xA1, 0xFE];
