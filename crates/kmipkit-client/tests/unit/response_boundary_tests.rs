@@ -123,6 +123,26 @@ fn client_accepts_a_valid_transport_response_exactly_at_the_limit() {
 }
 
 #[test]
+fn empty_successful_transport_response_preserves_possibly_sent_state() {
+    let limits = limits_with_response_cap(256);
+    let exchange_count = Rc::new(Cell::new(0));
+    let transport = ExactLimitTransport {
+        response: Vec::new(),
+        exchange_count: Rc::clone(&exchange_count),
+        last_response_cap: Rc::new(Cell::new(None)),
+    };
+    let mut client = Client::for_test(transport);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+
+    let error = client
+        .execute(batch, &limits)
+        .expect_err("an empty response cannot decode as a KMIP message");
+
+    assert_eq!(exchange_count.get(), 1);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::PossiblySent));
+}
+
+#[test]
 fn response_wrapper_debug_redacts_initialized_response_bytes() {
     let response = TransportResponse::new(RESPONSE_DEBUG_SENTINEL.to_vec());
 
