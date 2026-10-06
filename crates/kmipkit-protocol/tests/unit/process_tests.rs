@@ -109,6 +109,40 @@ fn process_pending_exposes_a_borrowed_new_correlation_value() {
 }
 
 #[test]
+fn process_pending_rejects_a_nonempty_table_279_payload() {
+    use crate::ProcessResponse;
+    use crate::async_operation_fixtures::{
+        ASYNCHRONOUS_CORRELATION_VALUE, PROCESS, item, response_message, structure,
+    };
+    use kmipkit_ttlv::Value;
+
+    // OASIS KMIP v2.1 §8.6/Table 399 permits a Response Payload on every
+    // non-Failure response and requires correlation for Pending. §6.1.39/
+    // Table 279 defines no Process response-payload members. The generic
+    // message remains valid; this operation-specific boundary must reject it.
+    let correlation = [0x00, 0xff, 0x80];
+    let message = response_message(
+        PROCESS,
+        2,
+        None,
+        Some(&correlation),
+        Some(structure([item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"unexpected-pending-process-payload".to_vec()),
+        )])),
+    );
+    let item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+
+    assert!(matches!(
+        ProcessResponse::try_from_response_item(item),
+        Err(AsynchronousOperationError::MalformedResponsePayload)
+    ));
+}
+
+#[test]
 fn process_failure_has_no_payload_or_correlation_value() {
     use crate::ProcessResponse;
     use crate::async_operation_fixtures::{PROCESS, response_message};

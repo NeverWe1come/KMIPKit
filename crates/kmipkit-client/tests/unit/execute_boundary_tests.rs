@@ -2784,6 +2784,53 @@ fn supported_cfg(attribute: &Attribute) -> bool {
 }
 
 #[test]
+fn query_request_is_dropped_before_exchange_and_not_retained_by_the_client() {
+    let source_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/execute.rs");
+    let source = fs::read_to_string(source_path).expect("the client source is readable");
+    let syntax = syn::parse_file(&source).expect("the client source parses");
+    let body = syntax
+        .items
+        .iter()
+        .filter_map(|item| match item {
+            Item::Impl(implementation) => Some(implementation.items.iter()),
+            _ => None,
+        })
+        .flatten()
+        .find_map(|item| match item {
+            syn::ImplItem::Fn(function) if function.sig.ident == "execute_query_async_requests" => {
+                Some(&function.block)
+            }
+            _ => None,
+        })
+        .expect("the Query execution method exists");
+    let request_drop = body.stmts.iter().position(|statement| match statement {
+        syn::Stmt::Expr(Expr::Call(call), _) => {
+            let drops_request = matches!(
+                call.func.as_ref(),
+                Expr::Path(path)
+                    if path.path.segments.last().is_some_and(|segment| segment.ident == "drop")
+            );
+            drops_request
+                && call.args.len() == 1
+                && matches!(&call.args[0], Expr::Path(path) if path.path.is_ident("request"))
+        }
+        _ => false,
+    });
+    let exchange = body.stmts.iter().position(|statement| {
+        matches!(
+            statement,
+            syn::Stmt::Expr(Expr::MethodCall(call), _)
+                if call.method == "execute_async_request"
+        )
+    });
+
+    assert!(
+        matches!((request_drop, exchange), (Some(drop), Some(exchange)) if drop < exchange),
+        "the consumed Query request and filter values must be dropped before the client exchange"
+    );
+}
+
+#[test]
 fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_permit_pair() {
     let inventory = production_sources();
     assert!(

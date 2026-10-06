@@ -9,7 +9,10 @@ use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 
-use crate::asynchronous_execution_test_support::{client_for, request_contains};
+use crate::asynchronous_execution_test_support::{
+    client_for, client_for_with_request_observer, request_contains,
+};
+use crate::execute::ZeroizationObserver;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::{ClientErrorCategory, ClientOperation};
 
@@ -51,6 +54,55 @@ fn cancel_exposes_matching_echo_and_assigned_cancellation_result() {
     assert!(request_contains(&request, CORRELATION));
     assert_eq!(fake.borrow().exchange_count(), 1);
     assert!(!format!("{result:?}").contains("CANCEL_ASYNC_CORRELATION"));
+}
+
+#[test]
+fn cancel_encoded_request_copy_is_zeroized_after_success() {
+    let payload = test_structure([
+        test_item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(CORRELATION.to_vec()),
+        ),
+        test_item(CANCELLATION_RESULT, Value::enumeration(1)),
+    ]);
+    let response = asynchronous_response_bytes(CANCEL, 0, None, None, Some(payload));
+    let observer = ZeroizationObserver::new(None);
+    let (mut client, fake, captured) = client_for_with_request_observer(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        observer.clone(),
+    );
+
+    client
+        .execute_cancel(CancelRequest::new(CORRELATION), &CodecLimits::defaults())
+        .expect("a valid synchronous Cancel response succeeds");
+
+    assert!(request_contains(&captured, CORRELATION));
+    assert_eq!(observer.result(), Some(true));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn cancel_encoded_request_copy_is_zeroized_after_exchange_error() {
+    let observer = ZeroizationObserver::new(None);
+    let (mut client, fake, captured) = client_for_with_request_observer(
+        ExchangeScript::FailAfterPartialWrite { written_bytes: 3 },
+        observer.clone(),
+    );
+
+    let error = client
+        .execute_cancel(CancelRequest::new(CORRELATION), &CodecLimits::defaults())
+        .expect_err("the scripted exchange fails after sending part of the request");
+
+    assert!(matches!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::PossiblySent)
+    ));
+    assert!(request_contains(&captured, CORRELATION));
+    assert_eq!(observer.result(), Some(true));
+    assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
 #[test]

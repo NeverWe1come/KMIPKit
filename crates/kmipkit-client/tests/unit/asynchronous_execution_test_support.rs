@@ -7,7 +7,7 @@ use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{Transport, TransportError, TransportResponse};
 use zeroize::Zeroizing;
 
-use crate::execute::Client;
+use crate::execute::{Client, ZeroizationObserver};
 
 type SharedFake = Rc<RefCell<ScriptedTransport>>;
 type CapturedRequest = Rc<RefCell<Option<Zeroizing<Vec<u8>>>>>;
@@ -36,6 +36,22 @@ pub(crate) fn client_for(script: ExchangeScript) -> ClientFixture {
         fake: Rc::clone(&fake),
         request: Rc::clone(&request),
     });
+    (client, fake, request)
+}
+
+pub(crate) fn client_for_with_request_observer(
+    script: ExchangeScript,
+    observer: ZeroizationObserver,
+) -> ClientFixture {
+    let fake = Rc::new(RefCell::new(ScriptedTransport::new(script)));
+    let request = Rc::new(RefCell::new(None));
+    let client = Client::for_test_with_request_observer(
+        CapturingTransport {
+            fake: Rc::clone(&fake),
+            request: Rc::clone(&request),
+        },
+        observer,
+    );
     (client, fake, request)
 }
 

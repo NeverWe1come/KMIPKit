@@ -14,8 +14,11 @@ use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, Transpo
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Value, ValueView};
 
-use crate::asynchronous_execution_test_support::{client_for, request_contains};
+use crate::asynchronous_execution_test_support::{
+    client_for, client_for_with_request_observer, request_contains,
+};
 use crate::execute::Client;
+use crate::execute::ZeroizationObserver;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 
 const QUERY: u32 = 0x0000_0039;
@@ -94,6 +97,60 @@ fn query_executes_once_and_exposes_generic_response_structure() {
     assert!(request_contains(&captured, CORRELATION));
     assert_eq!(fake.borrow().exchange_count(), 1);
     assert!(!format!("{result:?}").contains("QUERY_RESPONSE_SECRET"));
+}
+
+#[test]
+fn query_filter_encoded_request_copy_is_zeroized_after_success() {
+    let response = asynchronous_response_bytes(QUERY, 0, None, None, Some(test_structure([])));
+    let observer = ZeroizationObserver::new(None);
+    let (mut client, fake, captured) = client_for_with_request_observer(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        observer.clone(),
+    );
+    // Keep one caller-owned allocation and transfer a separate Vec to KMIPKit.
+    let caller_owned_copy = CORRELATION.to_vec();
+    let transferred_filter = caller_owned_copy.clone();
+
+    client
+        .execute_query_async_requests(
+            QueryAsyncRequestsRequest::new().with_correlation_values([transferred_filter]),
+            None,
+            &CodecLimits::defaults(),
+        )
+        .expect("a valid generic Query response succeeds");
+
+    assert!(request_contains(&captured, CORRELATION));
+    assert_eq!(observer.result(), Some(true));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(caller_owned_copy, CORRELATION);
+}
+
+#[test]
+fn query_filter_encoded_request_copy_is_zeroized_after_exchange_error() {
+    let observer = ZeroizationObserver::new(None);
+    let (mut client, fake, captured) = client_for_with_request_observer(
+        ExchangeScript::FailAfterPartialWrite { written_bytes: 3 },
+        observer.clone(),
+    );
+
+    let error = client
+        .execute_query_async_requests(
+            QueryAsyncRequestsRequest::new().with_correlation_values([CORRELATION.to_vec()]),
+            None,
+            &CodecLimits::defaults(),
+        )
+        .expect_err("the scripted exchange fails after sending part of the request");
+
+    assert!(matches!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::PossiblySent)
+    ));
+    assert!(request_contains(&captured, CORRELATION));
+    assert_eq!(observer.result(), Some(true));
+    assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
 #[test]

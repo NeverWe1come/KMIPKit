@@ -7,13 +7,16 @@
 use crate::ClientErrorCategory;
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
 use crate::execute_test_support::{
-    asynchronous_response_bytes, asynchronous_response_with_batch_id_bytes, test_structure,
+    asynchronous_response_bytes, asynchronous_response_with_batch_id_bytes, test_item,
+    test_structure,
 };
 use kmipkit_protocol::ProcessRequest;
 use kmipkit_test_support::ExchangeScript;
+use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 
 const PROCESS: u32 = 0x0000_003A;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const CORRELATION: &[u8] = b"PROCESS_ASYNC_CORRELATION_SENTINEL";
 
 #[test]
@@ -72,6 +75,37 @@ fn process_success_requires_the_empty_table_279_payload() {
         result.with_response_payload(|payload| payload.children().len()),
         Some(0)
     );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn process_pending_with_nonempty_payload_is_rejected_after_one_exchange() {
+    // OASIS KMIP v2.1 §8.6/Table 399 defines the Pending response shape;
+    // §6.1.39/Table 279 defines the operation-specific empty payload.
+    let response = asynchronous_response_bytes(
+        PROCESS,
+        2,
+        None,
+        Some(CORRELATION),
+        Some(test_structure([test_item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"unexpected-pending-process-payload".to_vec()),
+        )])),
+    );
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .execute_process(
+            ProcessRequest::new(CORRELATION),
+            Some(2),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("a Pending Process response must follow Table 279's empty payload");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
