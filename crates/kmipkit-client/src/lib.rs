@@ -3,6 +3,9 @@
 
 mod error;
 
+#[cfg(test)]
+mod execution_tests;
+
 // T003 adds the private writer before the execute-owning feature wires its sole caller.
 #[allow(dead_code)]
 mod wire_encoder;

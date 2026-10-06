@@ -71,6 +71,7 @@ dependencies = [
  "kmipkit-protocol",
  "kmipkit-transport",
  "kmipkit-ttlv",
+ "quickcheck",
  "serde",
  "static_assertions",
  "zeroize",
