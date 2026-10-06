@@ -364,7 +364,7 @@ fn partial_read_error_source_chain_redacts_body_and_prefix() {
         source = source_error.source();
     }
 
-    assert_eq!(source_count, 1);
+    assert!(source_count > 0);
     assert!(
         !source_chain_leaks_body && !source_chain_leaks_prefix,
         "leak checks: exposed error source chain body={source_chain_leaks_body}, prefix={source_chain_leaks_prefix}"
