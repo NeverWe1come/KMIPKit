@@ -674,8 +674,8 @@ because DrvFs marks Cargo's zero-byte `.cargo-artifact-lock` as executable;
 LLVM then treated it as an object file. The Linux-filesystem run completed and
 generated a valid report, so no CI workflow or coverage exclusion was needed.
 
-T029 remains open for the Linux/Windows/macOS pull-request CI matrix and
-terminal draft-PR creation/verification.
+Draft PR #45 was created and verified through the terminal against
+`release/1.0.0`. Its current GitHub state is open for review.
 
 The first run of draft PR #45 exposed stable-Clippy diagnostics on macOS and
 Windows: a message-free `#[must_use]` on the iterator accessor triggered
@@ -684,4 +684,11 @@ annotation with an explicit message so both toolchains accept it, and changed
 one equality assertion to `assert_eq!` for stable's `manual_assert_eq` lint.
 After these corrections, local formatting and workspace Clippy passed on both
 Rust 1.94 and stable 1.99, and the complete stable workspace test suite passed.
-The PR CI matrix is rerunning on the updated commit.
+
+GitHub Actions run `37527468287` passed in full on PR head
+`570959b7d025814f314aa18ba0495e36313d79fd`: core tests, Clippy and docs on
+Linux, Windows, and macOS with Rust 1.94 and stable; all three platform
+coverage jobs and their aggregate gate; normative inventory and immutable
+sources; script contracts; dependency policy; and the final CI summary. The
+aggregate thresholds passed with changed Rust 96.58%, TTLV/protocol 97.24%,
+transport/FFI 100%, and workspace 96.75%.

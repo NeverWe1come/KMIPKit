@@ -91,7 +91,7 @@
 - [x] T026 Add and run contract tests for the acceptance scenarios in `specs/008-credentials-attestation/quickstart.md`; construct credential/authentication values in memory, capture only the non-secret indicator on synchronous and asynchronous fake-transport paths, and include no real secret fixtures (SC-001–SC-006).
 - [x] T027 Run focused protocol tests, `cargo fmt --all --check`, workspace Clippy/tests/docs, catalog validation/report regeneration, and immutable-source checks; demonstrate at least 95% changed/protocol code line coverage and at least 90% workspace coverage or document the exact blocking evidence (SC-001–SC-006).
 - [x] T028 Run independent QA and security reviews sequentially against spec, catalog, code, tests, traceability, and secret lifecycle; fix findings and record exact revision/commands. The §9.3 finding on the asynchronous Request Header omission is resolved in commit `03403070fbffe4cc9d24d263a77f2c083e1647a9`; final QA and security reviews passed on `b3e0dab7e861e42b5288c00b46e57b05a358dee3`. No production credential send path was introduced; any future send path must move to a separate approved feature with its own candidate-callsite lifecycle evidence (SC-003, SC-005, SC-006). Full evidence is in `review-notes.md`.
-- [ ] T029 Rebase onto current `release/1.0.0`, run supported Linux/Windows/macOS CI, verify generated output is current, and create/verify a draft PR through terminal. Include distinct Red, Green, Refactor commits and their exact evidence.
+- [x] T029 Rebased onto current `release/1.0.0`, passed supported Linux/Windows/macOS CI, verified generated output, and created/verified PR #45 through terminal. The PR was opened as a draft; its current GitHub state is open for review. Red, Green, and Refactor commits and evidence are listed in the PR and `review-notes.md`.
 
 ## Dependencies and execution order
 
@@ -108,7 +108,7 @@ After T001–T007 pass, separate test authors may prepare isolated Red test file
 
 ## Implementation strategy
 
-1. Keep the current PR documentation-only and leave every implementation checkbox unchecked.
+1. Completed before implementation: the initial specification-approval PR was documentation-only, and implementation tasks remained unchecked until their approval gates passed. The implementation and verification evidence is now reflected in the checkboxes above.
 2. After the spec gate, implement Authentication/Credential common models first, then variant models, then the Attestation Indicator in every existing synchronous and asynchronous request builder.
 3. Use one responsible implementer for shared protocol modules; maintain distinct Red, Green, Refactor commits.
 4. KMIPKIT-0008 never exposes secret-bearing transmission. Any future client feature that adds a send path must have separate approval and owner-through-transport lifecycle evidence.
