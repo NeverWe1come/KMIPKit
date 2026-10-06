@@ -3,6 +3,8 @@
 
 mod error;
 
+mod execute;
+
 #[cfg(test)]
 mod execution_tests;
 
@@ -22,13 +24,16 @@ mod codec_limits_identity_tests;
 mod execute_lifecycle_tests;
 
 #[cfg(test)]
-mod execute_boundary_tests;
+mod execute_test_support;
 
-// T003 adds the private writer before the execute-owning feature wires its sole caller.
-#[allow(dead_code)]
-mod wire_encoder;
+#[cfg(test)]
+mod execute_boundary_tests;
 
 #[cfg(test)]
 mod transport_contract_tests;
 
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};
+pub use execute::{
+    Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
+    ClientBatchResponse, ClientMessageExtension, ClientRequest, PendingOutcome,
+};

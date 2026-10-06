@@ -17,6 +17,12 @@
 use kmipkit_protocol::RequestMessage;
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
+use crate::execute::{
+    OutcomeValidationError, PendingState, validate_async_indicator_for_test,
+    validate_batch_error_continuation_for_test, validate_pending_states_for_test,
+    validate_unknown_extension_for_test,
+};
+
 const ASYNCHRONOUS_INDICATOR_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_INDICATOR_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_INDICATOR_PROHIBITED: u32 = 3;
@@ -71,45 +77,86 @@ struct CandidateUnknownExtension {
 fn candidate_validate_outbound_async_indicator(
     raw: Option<u32>,
 ) -> Result<Option<u32>, CandidateValidationError> {
-    match raw {
-        None | Some(ASYNCHRONOUS_INDICATOR_MANDATORY..=ASYNCHRONOUS_INDICATOR_PROHIBITED) => {
-            Ok(raw)
-        }
-        Some(_) => Err(CandidateValidationError::InvalidOption),
-    }
+    validate_async_indicator_for_test(raw).map_err(|()| CandidateValidationError::InvalidOption)
 }
 
 fn candidate_build_batch_error_option(
     batch_count: usize,
     values: &[u32],
 ) -> Result<CandidateBatchErrorOption, CandidateValidationError> {
-    let encoded = values.first().copied();
-    let _ = batch_count;
+    let value = validate_batch_error_continuation_for_test(batch_count, values).map_err(
+        |error| match error {
+            crate::execute::BatchValidationError::RepeatedBatchErrorContinuation => {
+                CandidateValidationError::RepeatedOption
+            }
+            crate::execute::BatchValidationError::SingleItemBatchErrorContinuation => {
+                CandidateValidationError::SingleItemOption
+            }
+            crate::execute::BatchValidationError::InvalidBatchErrorContinuation
+            | crate::execute::BatchValidationError::EmptyBatch
+            | crate::execute::BatchValidationError::MissingBatchItemId
+            | crate::execute::BatchValidationError::DuplicateBatchItemId
+            | crate::execute::BatchValidationError::InvalidAsynchronousIndicator => {
+                CandidateValidationError::InvalidOption
+            }
+        },
+    )?;
     Ok(CandidateBatchErrorOption {
-        encoded,
-        effective: encoded.unwrap_or(0),
+        encoded: value.encoded,
+        effective: value.effective,
     })
 }
 
 fn candidate_validate_outbound_batch_error_continuation(
     raw: u32,
 ) -> Result<u32, CandidateValidationError> {
-    Ok(raw)
+    validate_batch_error_continuation_for_test(2, &[raw])
+        .map(|value| value.encoded.unwrap_or(BATCH_ERROR_CONTINUATION_STOP))
+        .map_err(|_| CandidateValidationError::InvalidOption)
 }
 
 fn candidate_validate_response_outcomes(
     asynchronous_indicator: Option<u32>,
     outcomes: &[CandidateBatchOutcome],
 ) -> Result<Vec<CandidateBatchOutcome>, CandidateValidationError> {
-    let _ = asynchronous_indicator;
-    Ok(outcomes.to_vec())
+    let states = outcomes
+        .iter()
+        .map(|outcome| match outcome {
+            CandidateBatchOutcome::Completed => PendingState {
+                pending: false,
+                has_correlation_value: false,
+            },
+            CandidateBatchOutcome::Pending {
+                asynchronous_correlation_value,
+            } => PendingState {
+                pending: true,
+                has_correlation_value: asynchronous_correlation_value
+                    .as_ref()
+                    .is_some_and(|value| !value.is_empty()),
+            },
+        })
+        .collect::<Vec<_>>();
+    validate_pending_states_for_test(asynchronous_indicator, &states)
+        .map(|()| outcomes.to_vec())
+        .map_err(|error| match error {
+            OutcomeValidationError::PendingNotPermitted => {
+                CandidateValidationError::PendingNotPermitted
+            }
+            OutcomeValidationError::PendingCorrelationMissing => {
+                CandidateValidationError::PendingCorrelationMissing
+            }
+            OutcomeValidationError::UnknownCriticalExtension => {
+                CandidateValidationError::UnknownCriticalExtension
+            }
+        })
 }
 
 fn candidate_process_unknown_extension(
     extension: &CandidateUnknownExtension,
 ) -> Result<Option<Vec<u8>>, CandidateValidationError> {
-    let _ = extension;
-    Ok(None)
+    validate_unknown_extension_for_test(extension.critical)
+        .map(|()| Some(extension.opaque_ttlv.clone()))
+        .map_err(|_| CandidateValidationError::UnknownCriticalExtension)
 }
 
 #[test]

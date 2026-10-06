@@ -111,17 +111,17 @@ fn assert_plan_boundary(
 }
 
 #[derive(Default)]
-pub(super) struct EncodingObserver {
+pub(in crate::execute) struct EncodingObserver {
     calls: Cell<usize>,
     output_reservation_calls: Cell<usize>,
 }
 
 impl EncodingObserver {
-    pub(super) fn calls(&self) -> usize {
+    pub(in crate::execute) fn calls(&self) -> usize {
         self.calls.get()
     }
 
-    pub(super) fn record_copy(&self) {
+    pub(in crate::execute) fn record_copy(&self) {
         self.calls.set(self.calls.get() + 1);
     }
 
@@ -129,7 +129,7 @@ impl EncodingObserver {
         self.output_reservation_calls.get()
     }
 
-    pub(super) fn record_output_reservation(&self) {
+    pub(in crate::execute) fn record_output_reservation(&self) {
         self.output_reservation_calls
             .set(self.output_reservation_calls.get() + 1);
     }
@@ -166,22 +166,32 @@ impl<'a> LimitsIdentityObserver<'a> {
 }
 
 #[derive(Clone)]
-pub(super) struct ZeroizationObserver(Rc<Cell<Option<(usize, bool)>>>);
+pub(crate) struct ZeroizationObserver {
+    expected_len: Rc<Cell<Option<usize>>>,
+    result: Rc<Cell<Option<bool>>>,
+}
 
 impl ZeroizationObserver {
-    pub(super) fn new() -> Self {
-        Self(Rc::new(Cell::new(None)))
+    pub(crate) fn new(expected_len: Option<usize>) -> Self {
+        Self {
+            expected_len: Rc::new(Cell::new(expected_len)),
+            result: Rc::new(Cell::new(None)),
+        }
     }
 
-    pub(super) fn observe_before_deallocation(&self, initialized_bytes: &[u8]) {
-        self.0.set(Some((
-            initialized_bytes.len(),
-            initialized_bytes.iter().all(|byte| *byte == 0),
-        )));
+    pub(in crate::execute) fn expect_initialized_len(&self, expected_len: usize) {
+        self.expected_len.set(Some(expected_len));
     }
 
-    fn result(&self) -> Option<(usize, bool)> {
-        self.0.get()
+    pub(crate) fn observe_before_deallocation(&self, initialized_bytes: &[u8]) {
+        self.result.set(Some(
+            self.expected_len.get() == Some(initialized_bytes.len())
+                && initialized_bytes.iter().all(|byte| *byte == 0),
+        ));
+    }
+
+    pub(crate) fn result(&self) -> Option<bool> {
+        self.result.get()
     }
 }
 
@@ -808,13 +818,7 @@ fn owner_drop_zeroizes_initialized_bytes_before_backing_allocation_deallocation(
 
     drop(owner);
 
-    let (observed_length, all_zero) = observer.result().expect("Drop reports initialized bytes");
-
-    assert!(observed_length > 0, "observer must see initialized bytes");
-    assert!(
-        all_zero,
-        "initialized bytes must be zeroized before deallocation"
-    );
+    assert_eq!(observer.result(), Some(true));
 }
 
 const GENERATED_ROUNDTRIP_CASES: usize = 88;

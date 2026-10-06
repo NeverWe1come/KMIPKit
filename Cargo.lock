@@ -75,6 +75,7 @@ dependencies = [
  "quickcheck",
  "serde",
  "static_assertions",
+ "syn",
  "zeroize",
 ]
 

@@ -9,59 +9,24 @@
 //! `KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP`.
 
 use std::error::Error;
-use std::fmt;
+
+use kmipkit_protocol::RequestMessage;
+use kmipkit_transport::RequestDeliveryState;
+use kmipkit_ttlv::codec::CodecLimits;
+
+use crate::execute::{ClientBatch, ClientBatchItem, ClientRequest, request_message_for_test};
+use crate::{ClientCauseCategory, ClientError};
 
 const REQUEST_TIME_STAMP_SENTINEL: i64 = 1_234_567_890;
 const REQUEST_TIME_STAMP_PREFIX: &str = "123456";
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct CandidateOutgoingRequestHeader {
-    time_stamp: Option<i64>,
-}
-
-impl fmt::Display for CandidateOutgoingRequestHeader {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "RequestHeader(time_stamp={:?})", self.time_stamp)
+fn candidate_build_request_header(caller_time_stamp: Option<i64>) -> RequestMessage {
+    let mut batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+    if let Some(time_stamp) = caller_time_stamp {
+        batch = batch.with_request_time_stamp(time_stamp);
     }
-}
-
-/// Deliberately incomplete candidate: the future client currently omits a
-/// caller-supplied Time Stamp instead of preserving its Date-Time unchanged.
-fn candidate_build_request_header(
-    _caller_time_stamp: Option<i64>,
-) -> CandidateOutgoingRequestHeader {
-    CandidateOutgoingRequestHeader { time_stamp: None }
-}
-
-#[derive(Debug)]
-struct CandidateRequestErrorSource {
-    time_stamp: i64,
-}
-
-impl fmt::Display for CandidateRequestErrorSource {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "request failed at {}", self.time_stamp)
-    }
-}
-
-impl Error for CandidateRequestErrorSource {}
-
-#[derive(Debug)]
-struct CandidateRequestError {
-    time_stamp: i64,
-    source_error: CandidateRequestErrorSource,
-}
-
-impl fmt::Display for CandidateRequestError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "request failed at {}", self.time_stamp)
-    }
-}
-
-impl Error for CandidateRequestError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Some(&self.source_error)
-    }
+    request_message_for_test(&batch, &CodecLimits::defaults())
+        .expect("typed request header is valid")
 }
 
 fn timestamp_leak_flags(rendered: &str) -> (bool, bool) {
@@ -75,21 +40,23 @@ fn timestamp_leak_flags(rendered: &str) -> (bool, bool) {
 fn outgoing_request_preserves_the_caller_time_stamp_date_time_exactly() {
     let request = candidate_build_request_header(Some(REQUEST_TIME_STAMP_SENTINEL));
 
-    assert_eq!(request.time_stamp, Some(REQUEST_TIME_STAMP_SENTINEL));
+    assert_eq!(
+        request.header().time_stamp(),
+        Some(REQUEST_TIME_STAMP_SENTINEL)
+    );
 }
 
 #[test]
 fn outgoing_request_omits_time_stamp_when_the_caller_did_not_supply_one() {
     let request = candidate_build_request_header(None);
 
-    assert_eq!(request.time_stamp, None);
+    assert_eq!(request.header().time_stamp(), None);
 }
 
 #[test]
 fn outgoing_request_debug_and_display_redact_the_caller_time_stamp() {
-    let request = CandidateOutgoingRequestHeader {
-        time_stamp: Some(REQUEST_TIME_STAMP_SENTINEL),
-    };
+    let request = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()))
+        .with_request_time_stamp(REQUEST_TIME_STAMP_SENTINEL);
     let rendered_debug = format!("{request:?}");
     let rendered_display = request.to_string();
     let (debug_leaks_value, debug_leaks_prefix) = timestamp_leak_flags(&rendered_debug);
@@ -103,12 +70,12 @@ fn outgoing_request_debug_and_display_redact_the_caller_time_stamp() {
 
 #[test]
 fn request_error_debug_display_and_every_source_redact_the_time_stamp() {
-    let error = CandidateRequestError {
-        time_stamp: REQUEST_TIME_STAMP_SENTINEL,
-        source_error: CandidateRequestErrorSource {
-            time_stamp: REQUEST_TIME_STAMP_SENTINEL,
-        },
-    };
+    let source = std::io::Error::other(REQUEST_TIME_STAMP_SENTINEL.to_string());
+    let error = ClientError::validation(
+        ClientCauseCategory::InvalidInput,
+        RequestDeliveryState::NotSent,
+        source,
+    );
     let rendered_debug = format!("{error:?}");
     let rendered_display = error.to_string();
     let (debug_leaks_value, debug_leaks_prefix) = timestamp_leak_flags(&rendered_debug);
@@ -160,8 +127,8 @@ tracing::debug!(batch_count = request.header().batch_count(), "sending request")
 }
 
 /// Incomplete T008 candidate seam. Static analysis is intentionally absent.
-fn candidate_logger_audit_detects_time_stamp(_callsite: &str) -> bool {
-    false
+fn candidate_logger_audit_detects_time_stamp(callsite: &str) -> bool {
+    crate::execute_boundary_tests::audit_callsite_for_test(callsite)
 }
 
 #[test]

@@ -5,7 +5,7 @@
 //! requests and responses; Client Correlation Value is optional and need not
 //! be unique; Server Correlation Value is response metadata for client-to-
 //! server operations. Batch Order Option controls execution order, while
-//! KMIPKit associates response items by their IDs regardless of response
+//! `KMIPKit` associates response items by their IDs regardless of response
 //! order. These derived tests are not official OASIS vectors.
 //!
 //! Traceability: `KMIPKIT-0007-FR-004`, `-FR-006`, and `-FR-016`;
@@ -13,7 +13,14 @@
 //! `KMIPKIT-REQ-SPEC-9.21-001-002`, `KMIPKIT-DISC-022`,
 //! `KMIPKIT-0006-FR-008`, and `KMIPKIT-0006-FR-022`.
 
+use kmipkit_protocol::ProtocolVersion;
+use kmipkit_ttlv::codec::CodecLimits;
 use quickcheck::{Arbitrary, Gen, QuickCheck};
+
+use crate::execute::{
+    BatchIdentity, ClientBatch, ClientBatchItem, ClientRequest, associate_batch_items,
+    request_message_for_test, version_is_supported,
+};
 
 const PROPERTY_GEN_SIZE: usize = 32;
 const HEADER_PROPERTY_SEED: u64 = 0x4B4D_4950_4B49_5430;
@@ -94,8 +101,8 @@ impl Arbitrary for ReorderedBatchCase {
 
 // Deliberately incomplete test-only seams. T009 supplies the typed execution
 // path and replaces these candidate functions with production behavior.
-fn candidate_accepts_header_version(_version: CandidateProtocolVersion) -> bool {
-    true
+fn candidate_accepts_header_version(version: CandidateProtocolVersion) -> bool {
+    version_is_supported(ProtocolVersion::from_raw(version.major, version.minor))
 }
 
 fn candidate_build_outgoing_request(
@@ -103,11 +110,41 @@ fn candidate_build_outgoing_request(
     batch_order_option: Option<bool>,
     client_correlation_value: Option<String>,
 ) -> CandidateRequest {
+    // The candidate's arbitrary operation numbers exercise association logic;
+    // the typed wire request itself is intentionally limited to Discover Versions.
+    let mut wire_ids = std::collections::HashSet::new();
+    let typed_items = batch_items.iter().enumerate().map(|(index, candidate)| {
+        let item = ClientBatchItem::new(ClientRequest::discover_versions());
+        match &candidate.unique_batch_item_id {
+            Some(id) if wire_ids.insert(id.clone()) => item.with_unique_batch_item_id(id.clone()),
+            Some(_) => item.with_unique_batch_item_id(format!("fixture-{index}").into_bytes()),
+            None if batch_items.len() > 1 => {
+                item.with_unique_batch_item_id(format!("fixture-{index}").into_bytes())
+            }
+            None => item,
+        }
+    });
+    let mut batch = ClientBatch::from_items(typed_items);
+    if let Some(value) = batch_order_option {
+        batch = batch.with_batch_order_option(value);
+    }
+    if let Some(value) = client_correlation_value {
+        batch = batch.with_client_correlation_value(value);
+    }
+    let limits = CodecLimits::defaults();
+    let message = request_message_for_test(&batch, &limits)
+        .expect("the typed Discover Versions request is valid");
+    let header = message.header();
     CandidateRequest {
-        protocol_version: CandidateProtocolVersion::new(2, 0),
-        batch_order_option,
-        client_correlation_value,
-        server_correlation_value: Some("server-value-is-response-metadata".to_owned()),
+        protocol_version: CandidateProtocolVersion::new(
+            header.protocol_version().major(),
+            header.protocol_version().minor(),
+        ),
+        batch_order_option: header.batch_order_option(),
+        client_correlation_value: header.with_client_correlation_value(str::to_owned),
+        // RequestHeaderView intentionally exposes no server-correlation
+        // accessor: that field belongs to server messages.
+        server_correlation_value: None,
         batch_items,
     }
 }
@@ -116,13 +153,34 @@ fn candidate_associate_response(
     request: &CandidateRequest,
     response: &CandidateResponse,
 ) -> Result<Vec<CandidateBatchItem>, CandidateValidationError> {
-    if !candidate_accepts_header_version(response.protocol_version)
-        || request.batch_items.len() != response.batch_items.len()
-    {
+    if !candidate_accepts_header_version(response.protocol_version) {
         return Err(CandidateValidationError::Rejected);
     }
 
-    Ok(response.batch_items.clone())
+    let request_items = request
+        .batch_items
+        .iter()
+        .map(|item| BatchIdentity {
+            operation: item.operation,
+            unique_batch_item_id: item.unique_batch_item_id.clone(),
+        })
+        .collect::<Vec<_>>();
+    let response_items = response
+        .batch_items
+        .iter()
+        .map(|item| BatchIdentity {
+            operation: item.operation,
+            unique_batch_item_id: item.unique_batch_item_id.clone(),
+        })
+        .collect::<Vec<_>>();
+    associate_batch_items(&request_items, &response_items)
+        .map(|indices| {
+            indices
+                .into_iter()
+                .map(|index| response.batch_items[index].clone())
+                .collect()
+        })
+        .map_err(|_| CandidateValidationError::Rejected)
 }
 
 fn item(operation: u32, id: Option<&[u8]>) -> CandidateBatchItem {
