@@ -319,6 +319,11 @@ fn mixed_batch_rejects_pending_when_asynchronous_responses_are_prohibited() {
     );
 }
 
+/// A Pending response carries the field required by OASIS KMIP Specification
+/// v2.1 §8.6, Table 399 (with related context in §9.1), catalog element
+/// `KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`. The
+/// separately cited §9.19 / `KMIPKIT-REQ-SPEC-9.19-002` concerns using that
+/// value in a subsequent Poll request.
 #[test]
 fn pending_response_requires_its_asynchronous_correlation_value() {
     let pending = [CandidateBatchOutcome::Pending {
