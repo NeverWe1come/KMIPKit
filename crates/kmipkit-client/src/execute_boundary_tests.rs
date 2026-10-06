@@ -233,6 +233,16 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "raw_exchange_ufcs_outside_execute",
+        path: "tests/fixtures/execute_boundary/raw_exchange_ufcs_outside_execute.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/raw_exchange_ufcs_outside_execute.rs"
+        ),
+        probe: "Transport::exchange(&mut self.transport, request, max_response_bytes)",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "client_raw_body_execute",
         path: "tests/fixtures/execute_boundary/client_raw_body_execute.rs",
         source: include_str!("../tests/fixtures/execute_boundary/client_raw_body_execute.rs"),
@@ -434,6 +444,7 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "public_trait_transport_input",
     "public_writer",
     "raw_exchange_outside_execute",
+    "raw_exchange_ufcs_outside_execute",
     "client_raw_body_execute",
     "public_client_transport_injection",
     "facade_transport_reexport",
@@ -1370,6 +1381,11 @@ fn low_level_exception_does_not_bypass_the_typed_client_boundary() {
         Err(CandidateRejection::BoundaryViolation),
         "client source may exchange only from Client::execute"
     );
+    assert_eq!(
+        candidate_check_fixture(fixture("raw_exchange_ufcs_outside_execute")),
+        Err(CandidateRejection::BoundaryViolation),
+        "client source may exchange only through the canonical method call in Client::execute"
+    );
     let accepted = accepted_ids_for_rejected_fixtures(&[
         "public_writer",
         "client_raw_body_execute",
@@ -1380,6 +1396,15 @@ fn low_level_exception_does_not_bypass_the_typed_client_boundary() {
     assert!(
         accepted.is_empty(),
         "accepted forbidden fixtures: {accepted:?}"
+    );
+}
+
+#[test]
+fn ufcs_transport_exchange_call_outside_execute_is_rejected() {
+    assert_eq!(
+        candidate_check_fixture(fixture("raw_exchange_ufcs_outside_execute")),
+        Err(CandidateRejection::BoundaryViolation),
+        "UFCS must not bypass the canonical Client::execute exchange boundary"
     );
 }
 
