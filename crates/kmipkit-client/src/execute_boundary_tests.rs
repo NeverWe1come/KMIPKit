@@ -889,9 +889,9 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
 
     fn visit_item_impl(&mut self, implementation: &'ast syn::ItemImpl) {
         self.check_attributes(&implementation.attrs);
-        if is_request_conversion_impl(implementation) {
+        if is_request_model_conversion_impl(implementation) {
             self.reject(
-                "conversion trait implementation exposes ClientRequest to caller-defined input",
+                "conversion trait implementation exposes a closed request model to caller-defined input",
             );
         }
         if implementation.trait_.is_some() {
@@ -1816,7 +1816,9 @@ fn type_path_name(ty: &Type) -> Option<String> {
     }
 }
 
-fn is_request_conversion_impl(implementation: &syn::ItemImpl) -> bool {
+const CLOSED_REQUEST_MODEL_NAMES: &[&str] = &["ClientRequest", "ClientBatch", "ClientBatchItem"];
+
+fn is_request_model_conversion_impl(implementation: &syn::ItemImpl) -> bool {
     let Some((_, trait_path, _)) = &implementation.trait_ else {
         return false;
     };
@@ -1830,24 +1832,23 @@ fn is_request_conversion_impl(implementation: &syn::ItemImpl) -> bool {
         return false;
     }
 
-    let mut finder = ClientRequestReferenceFinder::default();
+    let mut finder = RequestModelReferenceFinder::default();
     finder.visit_type(&implementation.self_ty);
     finder.visit_path(trait_path);
     finder.found
 }
 
 #[derive(Default)]
-struct ClientRequestReferenceFinder {
+struct RequestModelReferenceFinder {
     found: bool,
 }
 
-impl<'ast> Visit<'ast> for ClientRequestReferenceFinder {
+impl<'ast> Visit<'ast> for RequestModelReferenceFinder {
     fn visit_path(&mut self, path: &'ast syn::Path) {
-        if path
-            .segments
-            .iter()
-            .any(|segment| segment.ident == "ClientRequest")
-        {
+        if path.segments.iter().any(|segment| {
+            let name = segment.ident.to_string();
+            CLOSED_REQUEST_MODEL_NAMES.contains(&name.as_str())
+        }) {
             self.found = true;
         }
         visit::visit_path(self, path);
