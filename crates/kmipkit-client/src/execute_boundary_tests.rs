@@ -1344,12 +1344,9 @@ fn is_generic_ttlv_path(path: &syn::Path) -> bool {
         return false;
     };
     let name = last.ident.to_string();
+    // Dependency renames and crate aliases change the qualifier, so the public
+    // boundary must reject these generic model names regardless of path prefix.
     GENERIC_TTLV_TYPES.contains(&name.as_str())
-        && (path.segments.len() == 1
-            || path
-                .segments
-                .iter()
-                .any(|segment| segment.ident == "kmipkit_ttlv"))
 }
 
 fn is_exact_extension_view_callback(
