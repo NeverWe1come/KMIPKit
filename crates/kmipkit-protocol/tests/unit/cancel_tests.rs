@@ -123,3 +123,32 @@ fn cancel_rejects_pending_and_malformed_success_payloads() {
         .expect("one response item exists");
     assert!(CancelResponse::try_from_response_item(malformed_item).is_err());
 }
+
+#[test]
+fn cancel_rejects_repeated_table_177_singleton_fields() {
+    use crate::CancelResponse;
+    use crate::async_operation_fixtures::{
+        CANCEL, CANCELLATION_RESULT, response_message, structure,
+    };
+    use kmipkit_ttlv::Value;
+
+    let payload = structure([
+        item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"first".to_vec()),
+        ),
+        item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"duplicate".to_vec()),
+        ),
+        item(CANCELLATION_RESULT, Value::enumeration(1)),
+        item(CANCELLATION_RESULT, Value::enumeration(2)),
+    ]);
+    let message = response_message(CANCEL, 0, None, None, Some(payload));
+    let item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+
+    assert!(CancelResponse::try_from_response_item(item).is_err());
+}

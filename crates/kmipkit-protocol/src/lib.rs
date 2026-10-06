@@ -52,3 +52,7 @@ mod process_tests;
 #[cfg(test)]
 #[path = "../tests/unit/query_async_requests_tests.rs"]
 mod query_async_requests_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/query_async_response_tests.rs"]
+mod query_async_response_tests;

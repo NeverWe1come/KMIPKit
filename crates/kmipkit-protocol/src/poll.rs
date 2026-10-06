@@ -16,6 +16,18 @@ const POLL_OPERATION: u32 = 0x0000_001A;
 ///
 /// The correlation bytes are opaque and are kept in zeroizing storage. The
 /// request is one-shot; creating or encoding it never initiates another Poll.
+///
+/// ```
+/// use kmipkit_protocol::PollRequest;
+///
+/// let correlation = [0x00, 0xff, 0x80];
+/// let request = PollRequest::new(&correlation);
+/// let payload = request
+///     .to_ttlv_payload()
+///     .expect("the Poll fields are allocated by KMIP 2.1 Table 276");
+/// assert_eq!(request.asynchronous_correlation_value(), correlation);
+/// assert_eq!(payload.view().children().len(), 1);
+/// ```
 #[derive(Clone)]
 pub struct PollRequest {
     asynchronous_correlation_value: SecretBytes,

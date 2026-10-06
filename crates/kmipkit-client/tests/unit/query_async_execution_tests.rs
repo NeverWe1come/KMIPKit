@@ -1,15 +1,21 @@
 //! Client Query Asynchronous Requests behavior derived from OASIS KMIP v2.1
-//! §6.1.41, Tables 285–287, and §8.6, Table 399; these are not official vectors.
+//! §6.1.41, Tables 285–287, §8.6, Table 399, and §9.12, Table 417; these are
+//! not official vectors.
 //!
 //! Traceability: KMIPKIT-0009-FR-006–FR-010. The typed Table 286 response
 //! mapping remains excluded while KMIPKIT-DISC-039 is open.
 
+use std::cell::Cell;
+use std::rc::Rc;
+
 use kmipkit_protocol::QueryAsyncRequestsRequest;
 use kmipkit_test_support::ExchangeScript;
+use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Value, ValueView};
 
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
+use crate::execute::Client;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 
 const QUERY: u32 = 0x0000_0039;
@@ -17,6 +23,22 @@ const ASYNCHRONOUS_CORRELATION_VALUES: u32 = 0x0042_0176;
 const CORRELATION: &[u8] = b"QUERY_ASYNC_CORRELATION_SENTINEL";
 const RESPONSE_SECRET: &[u8] = b"QUERY_RESPONSE_SECRET_SENTINEL";
 const GENERIC_TAG: u32 = 0x0042_0012;
+
+struct CapIgnoringTransport {
+    response: Vec<u8>,
+    exchange_count: Rc<Cell<usize>>,
+}
+
+impl Transport for CapIgnoringTransport {
+    fn exchange(
+        &mut self,
+        _request: &[u8],
+        _max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        self.exchange_count.set(self.exchange_count.get() + 1);
+        Ok(TransportResponse::new(std::mem::take(&mut self.response)))
+    }
+}
 
 #[test]
 fn query_executes_once_and_exposes_generic_response_structure() {
@@ -93,4 +115,64 @@ fn query_preserves_delivery_evidence_without_retry() {
     assert_eq!(fake.borrow().exchange_count(), 1);
     assert!(!error.to_string().contains("QUERY_ASYNC_CORRELATION"));
     assert!(!format!("{error:?}").contains("QUERY_ASYNC_CORRELATION"));
+}
+
+#[test]
+fn query_filter_encoding_obeys_the_per_call_message_limit_before_transport() {
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response: Vec::new(),
+        request_write_chunks: Vec::new(),
+    });
+    let limits = CodecLimits::new(8, 64, 100_000)
+        .expect("the configured structure depth remains within the model limit");
+    let error = client
+        .execute_query_async_requests(
+            QueryAsyncRequestsRequest::new().with_correlation_values([CORRELATION.to_vec()]),
+            None,
+            &limits,
+        )
+        .expect_err("an oversized Query filter must fail before transport");
+
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert!(captured.borrow().is_none());
+    assert!(!error.to_string().contains("QUERY_ASYNC_CORRELATION"));
+    assert!(!format!("{error:?}").contains("QUERY_ASYNC_CORRELATION"));
+}
+
+#[test]
+fn query_rejects_a_response_over_the_per_call_message_limit_after_one_exchange() {
+    let response = asynchronous_response_bytes(
+        QUERY,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            GENERIC_TAG,
+            Value::byte_string(vec![0xa5; 512]),
+        )])),
+    );
+    let exchange_count = Rc::new(Cell::new(0));
+    let transport = CapIgnoringTransport {
+        response,
+        exchange_count: Rc::clone(&exchange_count),
+    };
+    let mut client = Client::for_test(transport);
+    let limits = CodecLimits::new(256, 64, 100_000)
+        .expect("the configured structure depth remains within the model limit");
+
+    let error = client
+        .execute_query_async_requests(QueryAsyncRequestsRequest::new(), None, &limits)
+        .expect_err("the client rejects a response over the caller's message-size limit");
+
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert_eq!(exchange_count.get(), 1);
 }

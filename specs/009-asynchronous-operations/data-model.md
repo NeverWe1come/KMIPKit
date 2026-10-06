@@ -32,7 +32,7 @@ All wire values use the existing generic TTLV model and source field order. Type
 - Request: one required Asynchronous Correlation Value.
 - Successful response: the echoed value and required Cancellation Result Enumeration.
 - Response mode: Cancel cannot itself be asynchronous. A Pending Cancel response is invalid even when the original request allowed Pending.
-- Known Cancellation Result raw values 1 and 2 receive typed views for Canceled and Unable to Cancel; unknown values remain available unchanged.
+- OASIS KMIP v2.1 §11.7, Table 438 assigns Cancellation Result values 1 `Canceled`, 2 `Unable to Cancel`, 3 `Completed`, 4 `Failed`, and 5 `Unavailable`; Table 437 describes these values. Each assigned value receives a typed view, while extension and future raw Enumeration values remain available unchanged.
 - Response/error association uses the existing batch item rules.
 
 ### Process Request and Outcome
