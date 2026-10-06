@@ -1317,7 +1317,9 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 .join("::");
             self.reject(format!("unsupported macro: {path}"));
         } else if allowed_macro_contains_forbidden_content(macro_call) {
-            self.reject("nested macro or execute invocation appears in an allowed macro token tree");
+            self.reject(
+                "nested macro or execute invocation appears in an allowed macro token tree",
+            );
         }
         if contains_protected_macro_tokens(&tokens) {
             self.reject("protected boundary tokens appear in opaque macro input");

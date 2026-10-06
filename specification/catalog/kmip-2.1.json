@@ -91805,7 +91805,7 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/src/option_tests.rs::outbound_asynchronous_indicator_preserves_each_assigned_value"
+        "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_asynchronous_indicator_preserves_each_assigned_value"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -92345,8 +92345,8 @@
         "crates/kmipkit-transport/src/lib.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/src/response_boundary_tests.rs::client_accepts_a_valid_transport_response_exactly_at_the_limit",
-        "crates/kmipkit-client/src/response_boundary_tests.rs::client_rejects_oversized_transport_response_before_decoder_entry"
+        "crates/kmipkit-client/tests/unit/response_boundary_tests.rs::client_accepts_a_valid_transport_response_exactly_at_the_limit",
+        "crates/kmipkit-client/tests/unit/response_boundary_tests.rs::client_rejects_oversized_transport_response_before_decoder_entry"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -92381,7 +92381,7 @@
         "crates/kmipkit-protocol/src/discover_versions.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/src/response_boundary_tests.rs::discover_versions_omits_peer_response_cap_and_server_correlation_fields"
+        "crates/kmipkit-client/tests/unit/response_boundary_tests.rs::discover_versions_omits_peer_response_cap_and_server_correlation_fields"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -92547,8 +92547,8 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/src/option_tests.rs::unknown_critical_message_extension_rejects_the_response",
-        "crates/kmipkit-client/src/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected"
+        "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_critical_message_extension_rejects_the_response",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -92583,8 +92583,8 @@
         "crates/kmipkit-protocol/src/message/batch.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/src/option_tests.rs::unknown_non_critical_message_extension_is_preserved_opaque",
-        "crates/kmipkit-client/src/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected"
+        "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_non_critical_message_extension_is_preserved_opaque",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -92808,8 +92808,8 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/src/execution_tests.rs::reordered_response_items_are_associated_by_id_with_both_order_options",
-        "crates/kmipkit-client/src/execute_lifecycle_tests.rs::reordered_response_batch_is_associated_by_unique_id_and_returned_in_request_order"
+        "crates/kmipkit-client/tests/unit/execution_tests.rs::reordered_response_items_are_associated_by_id_with_both_order_options",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::reordered_response_batch_is_associated_by_unique_id_and_returned_in_request_order"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -93176,9 +93176,9 @@
         "crates/kmipkit-protocol/src/message/batch.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/src/option_tests.rs::outbound_batch_error_continuation_accepts_the_three_assigned_values",
-        "crates/kmipkit-client/src/option_tests.rs::outbound_batch_error_continuation_rejects_extension_allocation_value",
-        "crates/kmipkit-client/src/option_tests.rs::generic_message_model_preserves_unassigned_and_extension_batch_enumerations"
+        "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_batch_error_continuation_accepts_the_three_assigned_values",
+        "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_batch_error_continuation_rejects_extension_allocation_value",
+        "crates/kmipkit-client/tests/unit/option_tests.rs::generic_message_model_preserves_unassigned_and_extension_batch_enumerations"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-002",
