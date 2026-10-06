@@ -404,6 +404,55 @@ the public Credential Value enum compiled. It failed because the raw wrapper
 accepted a missing required member, confirming that the earlier compile-time
 RED was not the only guard needed before behavior was implemented.
 
+## T027 verification and Linux coverage (2026-10-06)
+
+Ran the final KMIPKIT-0008 local verification against feature revision
+`fe87006` and the current GitHub `release/1.0.0` base
+`ae87b89d43957e4fc028e785dc181e69b0165dac`. Added
+`credential_public_api.rs` to exercise public Credential and Authentication
+views, construction and conversion paths, every typed wrapper's callback view
+and redacted formatting, Nonce conversion, and each public validation error
+category. This adds no production behavior or credential-send path.
+
+Rust verification on Ubuntu with Rust 1.94.0:
+
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 clippy --workspace --all-targets --all-features --locked -- -D warnings` — passed.
+- `cargo +1.94.0 test --workspace --all-features --locked` — passed, including the new public API cases and workspace doctests.
+- `cargo +1.94.0 doc --workspace --all-features --no-deps --locked` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol --all-features` and protocol Clippy — passed.
+
+The full Linux `cargo +stable llvm-cov --workspace --all-features --locked`
+run passed and exported a normalized report. Using the exact release-to-feature
+Rust diff, measured Linux coverage was:
+
+- Changed Rust: 506/523 (96.75%; 95% minimum).
+- TTLV/protocol: 2,923/3,006 (97.24%; 95% minimum).
+- Transport/FFI: 87/87 (100%; 85% minimum).
+- Workspace: 4,759/4,918 (96.77%; 90% minimum).
+
+The added direct API cases closed enough uncovered public paths to pass all
+four local thresholds. The report still has an uncovered error-propagation
+line at `execute.rs:1147`; the fake-transport test observes the True indicator,
+and aggregate changed-code coverage remains above its threshold. These
+figures are Linux-only; Windows/macOS artifacts and three-platform aggregation
+remain T029 work and are not claimed here.
+
+Normative and generated-input checks against the same exact release base:
+
+- `check_immutable_sources.py` — passed; the pinned OASIS source tree is unchanged.
+- `audit_sources.py --check` — passed; 1,411 normative source candidates reconciled.
+- `validate.py` — passed: 4 sources, 1,411 clauses, 4,024 records.
+- Coverage report, TTLV tags, and result-value generators with `--check` — passed.
+- `scripts/tests` — 156 passed, 25 skipped because the pinned cargo-deny executable is unavailable on this Windows host.
+- `tools/normative_catalog/tests` — 169 passed, 7 POSIX-only tests skipped on Windows.
+
+The WSL worktree metadata still prevents WSL Git from following its Windows
+absolute `gitdir` path, so Git-dependent normative checks were run with native
+Windows Git/Python. Rust compilation and Linux coverage ran in Ubuntu. No
+repository worktree metadata was changed to work around this host-specific
+tooling boundary.
+
 The focused command
 `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types`
 failed at the expected assertion that an invalid value be rejected.
