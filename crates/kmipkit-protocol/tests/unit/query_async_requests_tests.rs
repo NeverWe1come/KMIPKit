@@ -26,7 +26,8 @@ fn query_filters_preserve_absence_order_repetition_and_arbitrary_bytes() {
     let payload = query
         .to_ttlv_payload()
         .expect("Query request filter structures follow Table 285");
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     assert_eq!(fields.len(), 2);
     assert_eq!(fields[0].tag().raw(), ASYNCHRONOUS_CORRELATION_VALUES);
@@ -66,6 +67,28 @@ fn query_filters_preserve_absence_order_repetition_and_arbitrary_bytes() {
     });
     assert_eq!(operations, Some(vec![0x1a, 0xdead_beef, 0x1a]));
     assert!(!format!("{query:?}").contains("255"));
+}
+
+#[test]
+fn query_preserves_present_but_empty_filter_structures() {
+    let query = QueryAsyncRequestsRequest::new()
+        .with_correlation_values(std::iter::empty::<Vec<u8>>())
+        .with_operations(std::iter::empty());
+    let payload = query
+        .to_ttlv_payload()
+        .expect("empty filter structures remain distinguishable from absent filters");
+    let view = payload.view();
+    let fields = view.children();
+
+    assert_eq!(fields.len(), 2);
+    assert_eq!(fields[0].tag().raw(), ASYNCHRONOUS_CORRELATION_VALUES);
+    assert_eq!(fields[1].tag().raw(), OPERATIONS);
+    for field in fields {
+        assert!(field.with_value(|value| match value {
+            ValueView::Structure(value) => value.children().is_empty(),
+            _ => false,
+        }));
+    }
 }
 
 #[test]

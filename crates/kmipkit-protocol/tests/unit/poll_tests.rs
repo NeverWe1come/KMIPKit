@@ -4,11 +4,43 @@
 //! §§6.1.38, 8.6, 9.1, and 9.19, Tables 276, 399, 400, and 424.
 
 use kmipkit_ttlv::{Value, ValueView};
+use quickcheck::{Arbitrary, Gen, QuickCheck};
 
 use crate::async_operation_fixtures::{
     ASYNCHRONOUS_CORRELATION_VALUE, POLL, item, response_message, structure,
 };
 use crate::{PollRequest, PollResponse};
+
+const PROPERTY_SEED: u64 = 0x4b4d_4950_4b49_5439;
+
+#[derive(Clone, Debug)]
+struct CorrelationCase(Vec<u8>);
+
+impl Arbitrary for CorrelationCase {
+    fn arbitrary(generator: &mut Gen) -> Self {
+        Self(Vec::<u8>::arbitrary(generator))
+    }
+
+    fn shrink(&self) -> Box<dyn Iterator<Item = Self>> {
+        Box::new(self.0.shrink().map(Self))
+    }
+}
+
+#[allow(clippy::needless_pass_by_value)]
+fn poll_payload_preserves_arbitrary_correlation_bytes(case: CorrelationCase) -> bool {
+    let request = PollRequest::new(&case.0);
+    let Ok(payload) = request.to_ttlv_payload() else {
+        return false;
+    };
+    let view = payload.view();
+    let Some(field) = view.children().first() else {
+        return false;
+    };
+    field.with_value(|value| match value {
+        ValueView::ByteString(bytes) => bytes == case.0.as_slice(),
+        _ => false,
+    })
+}
 
 #[test]
 fn poll_request_preserves_arbitrary_correlation_bytes_in_table_order() {
@@ -18,7 +50,8 @@ fn poll_request_preserves_arbitrary_correlation_bytes_in_table_order() {
         .to_ttlv_payload()
         .expect("the Poll payload uses allocated KMIP 2.1 fields");
 
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
     assert_eq!(fields.len(), 1);
     assert_eq!(fields[0].tag().raw(), ASYNCHRONOUS_CORRELATION_VALUE);
     let actual = fields[0].with_value(|value| match value {
@@ -28,6 +61,16 @@ fn poll_request_preserves_arbitrary_correlation_bytes_in_table_order() {
     assert_eq!(actual, Some(correlation.to_vec()));
     assert_eq!(request.asynchronous_correlation_value(), correlation);
     assert!(!format!("{request:?}").contains("255"));
+}
+
+#[test]
+fn poll_payload_round_trips_arbitrary_binary_correlation_values() {
+    QuickCheck::new()
+        .rng(Gen::from_size_and_seed(32, PROPERTY_SEED))
+        .tests(256)
+        .quickcheck(
+            poll_payload_preserves_arbitrary_correlation_bytes as fn(CorrelationCase) -> bool,
+        );
 }
 
 #[test]
@@ -52,6 +95,17 @@ fn poll_pending_response_has_no_payload_and_lends_exact_correlation() {
         None
     );
     assert!(!format!("{poll:?}").contains("255"));
+}
+
+#[test]
+fn poll_pending_rejects_an_unexpected_response_payload() {
+    let response = response_message(POLL, 2, None, Some(b"corr"), Some(structure([])));
+    let item = response
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+
+    assert!(PollResponse::try_from_response_item(item).is_err());
 }
 
 #[test]
@@ -94,6 +148,9 @@ fn poll_failure_exposes_reason_without_an_operation_payload() {
 
     assert!(!poll.is_pending());
     assert_eq!(poll.result().status().raw(), 1);
-    assert_eq!(poll.result().reason().map(|reason| reason.raw()), Some(1));
+    assert_eq!(
+        poll.result().reason().map(crate::ResultReason::raw),
+        Some(1)
+    );
     assert_eq!(poll.with_response_payload(|_| ()), None);
 }

@@ -1,11 +1,18 @@
 //! KMIP 2.1 protocol models and validation for `KMIPKit`.
 #![forbid(unsafe_code)]
 
+mod asynchronous;
+mod cancel;
 mod discover_versions;
 mod error;
 mod message;
+mod poll;
+mod process;
+mod query_async_requests;
 mod result;
 
+pub use asynchronous::AsynchronousOperationError;
+pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
@@ -15,6 +22,9 @@ pub use message::{
     RequestBatchItemView, RequestHeaderView, RequestMessage, ResponseBatchItemView,
     ResponseHeaderView, ResponseMessage,
 };
+pub use poll::{PollRequest, PollResponse};
+pub use process::{ProcessRequest, ProcessResponse};
+pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };

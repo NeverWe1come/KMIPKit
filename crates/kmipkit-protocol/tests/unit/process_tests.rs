@@ -16,7 +16,8 @@ fn process_request_contains_only_the_required_exact_correlation_field() {
     let payload = request
         .to_ttlv_payload()
         .expect("the Process payload uses allocated KMIP 2.1 fields");
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     assert_eq!(fields.len(), 1);
     assert_eq!(fields[0].tag().raw(), ASYNCHRONOUS_CORRELATION_VALUE);
@@ -49,12 +50,44 @@ fn process_success_accepts_the_empty_table_279_payload() {
 }
 
 #[test]
+fn process_success_rejects_unexpected_payload_members() {
+    use crate::ProcessResponse;
+    use crate::async_operation_fixtures::{PROCESS, response_message, structure};
+    use kmipkit_ttlv::Value;
+
+    let message = response_message(
+        PROCESS,
+        0,
+        None,
+        None,
+        Some(structure([crate::async_operation_fixtures::item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"unexpected".to_vec()),
+        )])),
+    );
+    let item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+
+    assert!(ProcessResponse::try_from_response_item(item).is_err());
+}
+
+#[test]
 fn process_pending_exposes_a_borrowed_new_correlation_value() {
     use crate::ProcessResponse;
     use crate::async_operation_fixtures::{PROCESS, response_message};
 
     let correlation = [0x00, 0xff, 0x80];
-    let message = response_message(PROCESS, 2, None, Some(&correlation), None);
+    // §8.6/Table 399 requires a Response Payload for every non-Failure status;
+    // Table 279 defines Process's payload as an empty Structure.
+    let message = response_message(
+        PROCESS,
+        2,
+        None,
+        Some(&correlation),
+        Some(crate::async_operation_fixtures::structure([])),
+    );
     let item = message
         .batch_items()
         .next()
