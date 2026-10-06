@@ -103,6 +103,14 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "fixed_array_bytes_input",
+        path: "tests/fixtures/execute_boundary/fixed_array_bytes_input.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/fixed_array_bytes_input.rs"),
+        probe: "body: [u8; 32]",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "exact_unique_batch_id_setter",
         path: "tests/fixtures/execute_boundary/exact_unique_batch_id_setter.rs",
         source: include_str!("../tests/fixtures/execute_boundary/exact_unique_batch_id_setter.rs"),
@@ -273,6 +281,14 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "permit_mint_and_helper_struct_literals",
+        path: "tests/fixtures/execute_boundary/permit_mint_and_helper_struct_literals.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/permit_mint_and_helper_struct_literals.rs"),
+        probe: "fn helper() -> Self",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "include_bypass",
         path: "tests/fixtures/execute_boundary/include_bypass.rs",
         source: include_str!("../tests/fixtures/execute_boundary/include_bypass.rs"),
@@ -340,6 +356,7 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "public_structure_input",
     "owned_vec_bytes_input",
     "boxed_byte_slice_input",
+    "fixed_array_bytes_input",
     "exact_unique_batch_id_setter",
     "other_owned_bytes_setter",
     "public_enum_input",
@@ -361,6 +378,7 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "macro_token_tree",
     "qualified_custom_vec_macro",
     "glob_writer_import_with_direct_permit",
+    "permit_mint_and_helper_struct_literals",
     "include_bypass",
     "included_writer_source",
     "generated_source",
@@ -1256,6 +1274,7 @@ fn generic_item_and_raw_body_inputs_are_rejected() {
         "public_structure_input",
         "owned_vec_bytes_input",
         "boxed_byte_slice_input",
+        "fixed_array_bytes_input",
         "other_owned_bytes_setter",
         "public_enum_input",
         "public_type_alias",
@@ -1323,6 +1342,27 @@ fn canonical_macros_and_unique_batch_identifier_setter_remain_allowed() {
             "approved positive-control fixture should be accepted: {id}"
         );
     }
+}
+
+#[test]
+fn permit_struct_literals_are_confined_to_the_mint_constructor() {
+    let fixture = fixture("permit_mint_and_helper_struct_literals");
+    assert_eq!(
+        candidate_check_fixture(fixture),
+        Err(CandidateRejection::BoundaryViolation),
+        "Self literals in permit helpers must not bypass mint ownership"
+    );
+}
+
+#[test]
+fn complete_execute_candidate_requires_one_transport_exchange() {
+    assert!(
+        matches!(
+            audit_source(fixture("canonical_vec_macro").source),
+            Err(CandidateRejection::BoundaryViolation)
+        ),
+        "a complete client source inventory must contain one canonical exchange"
+    );
 }
 
 #[test]
