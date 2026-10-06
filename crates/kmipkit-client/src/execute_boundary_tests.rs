@@ -243,6 +243,74 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "macro_hidden_second_exchange",
+        path: "tests/fixtures/execute_boundary/macro_hidden_second_exchange.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/macro_hidden_second_exchange.rs"),
+        probe: "vec![self.transport.exchange(&[], 1)]",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "public_conversion_hooks",
+        path: "tests/fixtures/execute_boundary/public_conversion_hooks.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/public_conversion_hooks.rs"),
+        probe: "T: Into<ClientRequest>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "nongeneric_bytes_input_output",
+        path: "tests/fixtures/execute_boundary/nongeneric_bytes_input_output.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/nongeneric_bytes_input_output.rs"),
+        probe: "bytes::Bytes",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "permit_qself_mint",
+        path: "tests/fixtures/execute_boundary/permit_qself_mint.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/permit_qself_mint.rs"),
+        probe: "<OperationEncodingPermit>::mint()",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "permit_constructor_derives",
+        path: "tests/fixtures/execute_boundary/permit_constructor_derives.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/permit_constructor_derives.rs"),
+        probe: "derive(Default, Clone, Copy)",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "permit_constructor_trait_impls",
+        path: "tests/fixtures/execute_boundary/permit_constructor_trait_impls.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/permit_constructor_trait_impls.rs"
+        ),
+        probe: "impl Default for OperationEncodingPermit",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "counterfeit_exception_types",
+        path: "tests/fixtures/execute_boundary/counterfeit_exception_types.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/counterfeit_exception_types.rs"),
+        probe: "with_ttlv",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "approved_batch_from_items_iterator",
+        path: "tests/fixtures/execute_boundary/approved_batch_from_items_iterator.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/approved_batch_from_items_iterator.rs"
+        ),
+        probe: "from_items(items: impl IntoIterator",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
         id: "client_raw_body_execute",
         path: "tests/fixtures/execute_boundary/client_raw_body_execute.rs",
         source: include_str!("../tests/fixtures/execute_boundary/client_raw_body_execute.rs"),
@@ -445,6 +513,14 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "public_writer",
     "raw_exchange_outside_execute",
     "raw_exchange_ufcs_outside_execute",
+    "macro_hidden_second_exchange",
+    "public_conversion_hooks",
+    "nongeneric_bytes_input_output",
+    "permit_qself_mint",
+    "permit_constructor_derives",
+    "permit_constructor_trait_impls",
+    "counterfeit_exception_types",
+    "approved_batch_from_items_iterator",
     "client_raw_body_execute",
     "public_client_transport_injection",
     "facade_transport_reexport",
@@ -1776,6 +1852,64 @@ fn low_level_exception_does_not_bypass_the_typed_client_boundary() {
 }
 
 #[test]
+fn standard_macros_cannot_hide_a_second_transport_exchange() {
+    assert_eq!(
+        candidate_check_fixture(fixture("macro_hidden_second_exchange")),
+        Err(CandidateRejection::BoundaryViolation),
+        "a standard macro must not hide an exchange call from the source audit"
+    );
+}
+
+#[test]
+fn public_signatures_reject_caller_defined_conversion_hooks() {
+    assert_eq!(
+        candidate_check_fixture(fixture("public_conversion_hooks")),
+        Err(CandidateRejection::BoundaryViolation),
+        "public generic conversion hooks must not accept caller-defined request conversions"
+    );
+}
+
+#[test]
+fn nongeneric_bytes_types_are_rejected_as_public_inputs_and_outputs() {
+    assert_eq!(
+        candidate_check_fixture(fixture("nongeneric_bytes_input_output")),
+        Err(CandidateRejection::BoundaryViolation),
+        "bytes::Bytes and bytes::BytesMut are owned raw byte containers even without type arguments"
+    );
+}
+
+#[test]
+fn permit_constructors_cannot_escape_the_single_mint_path() {
+    let accepted = accepted_ids_for_rejected_fixtures(&[
+        "permit_qself_mint",
+        "permit_constructor_derives",
+        "permit_constructor_trait_impls",
+    ]);
+    assert!(
+        accepted.is_empty(),
+        "accepted permit constructor bypasses: {accepted:?}"
+    );
+}
+
+#[test]
+fn exception_signatures_are_confined_to_the_execute_root_module() {
+    assert_eq!(
+        candidate_check_fixture(fixture("counterfeit_exception_types")),
+        Err(CandidateRejection::BoundaryViolation),
+        "same-named counterfeit types must not borrow the execute.rs API exceptions"
+    );
+}
+
+#[test]
+fn approved_batch_from_items_iterator_remains_allowed() {
+    assert_eq!(
+        candidate_check_fixture(fixture("approved_batch_from_items_iterator")),
+        Ok(()),
+        "the exact ClientBatch::from_items iterator input remains approved in execute.rs root"
+    );
+}
+
+#[test]
 fn ufcs_transport_exchange_call_outside_execute_is_rejected() {
     assert_eq!(
         candidate_check_fixture(fixture("raw_exchange_ufcs_outside_execute")),
@@ -1922,6 +2056,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "canonical_vec_macro"
                     | "exact_unique_batch_id_setter"
                     | "approved_extension_view_callback"
+                    | "approved_batch_from_items_iterator"
             )),
             ExpectedDecision::Reject => assert!(!matches!(
                 fixture.id,
