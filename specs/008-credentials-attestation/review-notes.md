@@ -656,3 +656,23 @@ Fresh Rust 1.94.0 verification:
 - `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
 - `cargo +1.94.0 fmt --all --check` — passed.
 - `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
+
+## T029 — release-base, coverage, and generated-output verification (2026-10-06)
+
+Fetched `origin/release/1.0.0` at `ae87b89d43957e4fc028e785dc181e69b0165dac`; the
+feature branch merge base matches that release revision. Rechecked the
+immutable OASIS source candidates, catalog validation, generated coverage
+report, TTLV tag allocations, and result mappings; all checks passed.
+
+Ran the complete workspace tests under Rust stable 1.99.0 with
+`cargo llvm-cov --workspace --all-features --locked --json` from a clean Linux
+filesystem copy. The coverage gate evaluated against the exact release-to-HEAD
+Rust diff and reported changed Rust 96.58%, TTLV/protocol 97.24%, transport/FFI
+100%, and workspace 96.75%, all above their required thresholds. The first
+local run from the Windows-mounted WSL worktree could not export a report
+because DrvFs marks Cargo's zero-byte `.cargo-artifact-lock` as executable;
+LLVM then treated it as an object file. The Linux-filesystem run completed and
+generated a valid report, so no CI workflow or coverage exclusion was needed.
+
+T029 remains open for the Linux/Windows/macOS pull-request CI matrix and
+terminal draft-PR creation/verification.

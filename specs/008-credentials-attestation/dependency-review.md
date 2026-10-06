@@ -1,7 +1,7 @@
 # Dependency Review: KMIPKIT-0008
 
-**Reviewed**: 2026-10-06  
-**Scope**: Test-only dependencies for deterministic TTLV and credential-model properties.  
+**Reviewed**: 2026-10-06
+**Scope**: Test-only dependencies for deterministic TTLV and credential-model properties.
 **Disposition**: No new dependency or Cargo manifest change is required.
 
 ## Existing dependency
