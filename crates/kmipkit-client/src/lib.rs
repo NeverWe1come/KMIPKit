@@ -28,4 +28,7 @@ mod execute_boundary_tests;
 #[allow(dead_code)]
 mod wire_encoder;
 
+#[cfg(test)]
+mod transport_contract_tests;
+
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};

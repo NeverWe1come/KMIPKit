@@ -9,11 +9,9 @@ description = "Test fixtures and helpers for KMIPKit"
 publish = false
 
 [dependencies]
-kmipkit-client.workspace = true
 kmipkit-protocol.workspace = true
 kmipkit-transport.workspace = true
 kmipkit-ttlv.workspace = true
-kmipkit.workspace = true
 
 [lints]
 workspace = true
