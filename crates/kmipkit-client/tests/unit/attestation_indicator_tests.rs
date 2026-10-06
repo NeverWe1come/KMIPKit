@@ -56,13 +56,12 @@ fn execute_advertises_attestation_without_authentication_or_credential_payload()
                 .children()
                 .iter()
                 .find(|field| field.tag().raw() == ATTESTATION_CAPABLE_INDICATOR)
-                .map(|field| {
+                .and_then(|field| {
                     field.with_value(|value| match value {
                         ValueView::Boolean(value) => Some(*value),
                         _ => None,
                     })
-                })
-                .flatten();
+                });
             let authentication_present = header
                 .children()
                 .iter()

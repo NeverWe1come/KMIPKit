@@ -77,7 +77,7 @@
 
 ### Implementation — Green
 
-- [ ] T023 [US3] [GREEN COMMIT] Add the Attestation Capable Indicator to the existing `build_request_message` in `crates/kmipkit-client/src/execute.rs`, derived from the public Attestation Credential constructor capability; do not add a writer, permit, Authentication selection, or Credential payload path (FR-008, SC-004).
+- [x] T023 [US3] [GREEN COMMIT] Add the Attestation Capable Indicator to the existing `build_request_message` in `crates/kmipkit-client/src/execute.rs`, derived from the public Attestation Credential constructor capability; do not add a writer, permit, Authentication selection, or Credential payload path (FR-008, SC-004).
 
 ### Refactor
 

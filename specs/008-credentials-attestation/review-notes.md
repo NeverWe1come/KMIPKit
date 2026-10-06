@@ -212,6 +212,25 @@ Fresh Rust 1.94.0 verification:
 - `cargo +1.94.0 fmt --all --check` — passed.
 - `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
 
+## User Story 3 GREEN — advertise Attestation construction capability (2026-10-06)
+
+Added the Attestation Capable Indicator with value True to the existing
+request-header builder, after the asynchronous indicator and before later
+header options, matching the Request Header field order. The client advertises
+its shipped Attestation Credential construction capability on its existing
+execute path. It does not select Authentication or include Credential data.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-client attestation_indicator_tests` — passed:
+  1 test, including an actual fake-transport execution and captured TTLV
+  assertions for True, absent Authentication, and absent Credential payload.
+- `cargo +1.94.0 test -p kmipkit-client` — passed: 175 unit tests, 6 error
+  contract tests, and 3 doctests.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- Clippy first identified `map().flatten()` in the new test; replaced it with
+  `and_then()` and reran Clippy before the Green commit.
+
 ## User Story 2 REFACTOR — shared diagnostics and validation categories (2026-10-06)
 
 Moved credential tree Debug formatting and redacted Display text through

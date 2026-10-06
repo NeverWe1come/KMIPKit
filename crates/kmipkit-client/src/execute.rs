@@ -37,6 +37,7 @@ const BATCH_ITEM: u32 = 0x0042_000F;
 const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
 const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
+const ATTESTATION_CAPABLE_INDICATOR: u32 = 0x0042_00D3;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
@@ -1133,6 +1134,11 @@ fn build_request_message(
             Value::enumeration(indicator),
         )?;
     }
+    push(
+        &mut header,
+        ATTESTATION_CAPABLE_INDICATOR,
+        Value::boolean(true),
+    )?;
     if let Some(value) = options.batch_error_continuation.encoded {
         push(
             &mut header,
