@@ -263,6 +263,22 @@ Verification: `git diff --check` passed. Reviewed the four changed documents
 against `specs/008-credentials-attestation/spec.md`, `data-model.md`, and
 `quickstart.md`; no implementation or generated catalog output changed.
 
+## Contract verification — quickstart acceptance scenarios (2026-10-06)
+
+Reviewed the derived contract tests against every Authentication, Credential
+variant, safety, and capability scenario in `quickstart.md`. Existing tests
+cover in-memory ordered Authentication/Credential values, all assigned and
+unknown variants, malformed schemas, exact TTLV preservation, synthetic
+secret sentinels and owner lifecycle, and the fake-execute capture that
+contains only the non-secret indicator. No fixture contains real credentials.
+Because these contracts were already added in the Red/Green tasks, no duplicate
+test module was introduced.
+
+Fresh Rust 1.94.0 verification: `cargo +1.94.0 test -p kmipkit-protocol -p
+kmipkit-client -p kmipkit-ttlv` — passed (exit code 0), including all credential
+contracts, the Attestation Indicator fake-transport test, all secret redaction
+and zeroization tests, and package doctests.
+
 ## User Story 2 REFACTOR — shared diagnostics and validation categories (2026-10-06)
 
 Moved credential tree Debug formatting and redacted Display text through
