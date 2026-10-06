@@ -93377,6 +93377,20 @@
   ],
   "policies": [
     {
+      "policy_id": "KMIPKIT-POLICY-BATCH-ERROR-CONTINUATION-ASSIGNED-OUTBOUND",
+      "summary": "Accept only OASIS-assigned Batch Error Continuation values for outbound requests in KMIPKIT-0007; preserve raw Enumeration values when decoding and do not claim the Table 435 extension allocation invalid.",
+      "provenance": "approved_product_decision",
+      "provenance_ref": {
+        "decision_id": "KMIPKIT-DEC-002"
+      },
+      "affected_element_kinds": [
+        "enumeration_value"
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.6-001-002"
+      ]
+    },
+    {
       "policy_id": "KMIPKIT-POLICY-EXTENSION-PRESERVATION",
       "summary": "Preserve unknown KMIP extension data losslessly and expose it without interpreting it as a standardized value.",
       "provenance": "AGENTS.md",
@@ -93420,20 +93434,6 @@
         "tag"
       ],
       "requirement_ids": []
-    },
-    {
-      "policy_id": "KMIPKIT-POLICY-BATCH-ERROR-CONTINUATION-ASSIGNED-OUTBOUND",
-      "summary": "Accept only OASIS-assigned Batch Error Continuation values for outbound requests in KMIPKIT-0007; preserve raw Enumeration values when decoding and do not claim the Table 435 extension allocation invalid.",
-      "provenance": "approved_product_decision",
-      "provenance_ref": {
-        "decision_id": "KMIPKIT-DEC-002"
-      },
-      "affected_element_kinds": [
-        "enumeration_value"
-      ],
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-9.6-001-002"
-      ]
     }
   ],
   "profiles": [

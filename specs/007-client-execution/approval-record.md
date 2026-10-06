@@ -29,7 +29,7 @@ implementation begins.
 | `data-model.md` | `131a837121129ec2f270f512b27412bed04c0bb9` | `DF6677F74E4233891013AA18784256D646B30727F6226C0492F2B5386D24B315` |
 | `docs/adr/0013-client-extension-registry-ownership.md` | `3001b6a258c1e08097d29fbfb8e5bbb8079fc921` | `C2B4A56F23208C33C4383B047B4CB46D029D9569A71C5DF9604A6426E5E31293` |
 | `docs/adr/0014-public-transport-exchange-contract.md` | `d60556e4fca642367eb3a6d6b66cf34ff1809b2a` | `88841DF7250E77A6660B8E0EF3A7E29741E64A494D455A549C23D7F2C06DD85C` |
-| `specification/catalog/kmip-2.1.json` | `900ba49c6a18a445d3f81626bec1154c31e3015e` | `6C5DD69BC923F6019A2F1A24F319893D26030AA11D6A0B7990263E116ED3B2EB` |
+| `specification/catalog/kmip-2.1.json` | `503e8494686305a48b2e6edb517f12bb695b1762` | `2952835570EF23A11B98F8B3C27B25D177EC1B7406331240BE0E269BD39D6F64` |
 
 These hashes identify the exact source artifacts that independent QA and
 security/design review must cover in the proposed PR. The current artifact
@@ -97,28 +97,31 @@ repeat review for the changed exact revision before completing T002.
 
 ## Independent review evidence
 
-- **QA/spec review: PASS** on the exact six artifact revisions listed above.
-  The reviewer confirmed their blob/SHA-256 pairs, found no blocking
-  consistency or traceability gap, and confirmed the prior OD-002 statements
-  are resolved or explicitly historical. The review also verified that fake
-  response-cap and low-level request-sentinel tests are assigned to T006/T010,
-  while concrete adapter allocation and cleanup tests remain assigned to each
-  adapter's specification. No implementation tests were run, and
-  reviewer-owned checklist markers were not changed.
-- **Security/design review: PASS** on the exact six artifact revisions listed
-  above. Two findings were resolved before this pass: the zeroization contract
-  now defines current-allocation coverage and prior-allocation/external-copy
+- **QA/spec review: PASS** on the prior six-artifact snapshot. The reviewer
+  confirmed its blob/SHA-256 pairs, found no blocking consistency or
+  traceability gap, and confirmed the prior OD-002 statements are resolved or
+  explicitly historical. It verified that fake response-cap and low-level
+  request-sentinel tests are assigned to T006/T010, while concrete adapter
+  allocation and cleanup tests remain assigned to each adapter's
+  specification. The catalog policy-order correction changes only the
+  catalog's ordering and exact hash; QA re-review of the current six hashes is
+  pending. No implementation tests were run, and reviewer-owned checklist
+  markers were not changed.
+- **Security/design review: PASS** on the prior six-artifact snapshot. Two
+  findings were resolved before that pass: the zeroization contract now
+  defines current-allocation coverage and prior-allocation/external-copy
   limits, with concrete adapter success/error tests; and T010 plus later
   adapter specifications own low-level request nonlogging, nonretention, and
   applicable temporary-copy cleanup tests. The public API guide now matches
   pinned `zeroize` 1.9.0 behavior for the full current `Vec` capacity and its
-  prior-reallocation limitation. This agent design review is not a qualified
-  human security audit. A separate Codex Security scan captured an earlier
+  prior-reallocation limitation. Security/design re-review of the current
+  catalog hash is pending. This agent design review is not a qualified human
+  security audit. A separate Codex Security scan captured an earlier
   snapshot and is not evidence for these artifact revisions.
 - Reviewer-owned checklist items remain unchecked. T002 remains unchecked
-  until the exact review/hash evidence is recorded and this specification PR
-  is merged into `release/1.0.0`. A qualified independent human security audit
-  remains required before 1.0.0.
+  until the re-reviews of the exact current hashes are recorded and this
+  specification PR is merged into `release/1.0.0`. A qualified independent
+  human security audit remains required before 1.0.0.
 
 ## Verification performed
 
