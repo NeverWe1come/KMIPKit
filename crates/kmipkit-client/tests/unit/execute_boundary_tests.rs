@@ -1137,11 +1137,12 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 .map(|segment| segment.ident.to_string())
                 .collect::<Vec<_>>();
             if segments.last().is_some_and(|segment| segment == "execute")
-                && segments
-                    .iter()
-                    .any(|segment| matches!(segment.as_str(), "Client" | "Self"))
+                && (path.qself.is_some()
+                    || segments
+                        .iter()
+                        .any(|segment| matches!(segment.as_str(), "Client" | "Self")))
             {
-                self.reject("Client::execute must not be called from production code");
+                self.reject("qualified execute calls must not bypass the boundary audit");
             }
             if segments.last().is_some_and(|segment| segment == "exchange") {
                 self.reject(
@@ -1275,11 +1276,12 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             .map(|segment| segment.ident.to_string())
             .collect::<Vec<_>>();
         if segments.last().is_some_and(|segment| segment == "execute")
-            && segments
-                .iter()
-                .any(|segment| matches!(segment.as_str(), "Client" | "Self"))
+            && (expression.qself.is_some()
+                || segments
+                    .iter()
+                    .any(|segment| matches!(segment.as_str(), "Client" | "Self")))
         {
-            self.reject("Client::execute must not be called or aliased from production code");
+            self.reject("qualified execute calls must not bypass the boundary audit");
         }
         if segments.last().is_some_and(|segment| segment == "exchange") {
             self.reject(format!(
