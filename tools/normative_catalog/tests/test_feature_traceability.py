@@ -148,6 +148,15 @@ class FeatureTraceabilityTests(unittest.TestCase):
             "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
             attestation_requirement["test_ids"],
         )
+        attestation_feature_requirement = by_id["KMIPKIT-0008-FR-008"]
+        self.assertIn(
+            "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
+            attestation_feature_requirement["test_ids"],
+        )
+        self.assertIn(
+            "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
+            attestation_feature_requirement["test_ids"],
+        )
 
         for row in rows:
             requirement_id = row["requirement_id"]
