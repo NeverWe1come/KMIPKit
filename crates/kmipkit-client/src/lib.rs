@@ -79,6 +79,10 @@ mod query_async_execution_tests;
 mod execute_boundary_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/attestation_indicator_tests.rs"]
+mod attestation_indicator_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/transport_contract_tests.rs"]
 mod transport_contract_tests;
 

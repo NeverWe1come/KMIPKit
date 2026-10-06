@@ -73,7 +73,7 @@
 
 ### Tests — Red
 
-- [ ] T022 [US3] [RED COMMIT] Add a failing fake-transport request-capture test in `crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs`, register the test module in `crates/kmipkit-client/src/lib.rs`, and assert the existing outbound header advertises True, Authentication stays absent, and no Credential payload is emitted. Retain protocol tests for absent/effective-false parsed headers (FR-008, SC-004; §9.3/Table 402).
+- [x] T022 [US3] [RED COMMIT] Add a failing fake-transport request-capture test in `crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs`, register the test module in `crates/kmipkit-client/src/lib.rs`, and assert the existing outbound header advertises True, Authentication stays absent, and no Credential payload is emitted. Retain protocol tests for absent/effective-false parsed headers (FR-008, SC-004; §9.3/Table 402).
 
 ### Implementation — Green
 

@@ -228,6 +228,19 @@ Fresh Rust 1.94.0 verification:
 - `cargo +1.94.0 fmt --all --check` — passed.
 - `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed without warnings.
 
+## User Story 3 RED — execute Attestation Capable Indicator (2026-10-06)
+
+Added a fake-transport `Client::execute` request-capture contract. It inspects
+the captured TTLV Request Header and requires Attestation Capable Indicator
+True, Authentication absence, and no Credential tag anywhere in the request.
+The response fixture completes Discover Versions so the assertion crosses the
+real execute exchange boundary without a network or credential payload.
+
+`cargo +1.94.0 fmt --all` passed. The focused command
+`cargo +1.94.0 test -p kmipkit-client attestation_indicator_tests` failed at
+the expected indicator assertion: the existing request builder omitted the
+field (`None`, expected `Some(true)`).
+
 ## User Story 2 RED — secret owner API (2026-10-06)
 
 Added public contract tests for redacted caller-owned text and byte wrappers,
