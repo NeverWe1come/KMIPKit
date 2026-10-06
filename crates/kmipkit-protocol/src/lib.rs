@@ -14,3 +14,6 @@ pub use message::{
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
+
+#[cfg(test)]
+mod discover_versions_tests;
