@@ -288,3 +288,19 @@ preservation traceability paths.
 fails with `E0432` for the missing public `CredentialValue` and `Nonce` APIs;
 five `E0282` diagnostics are inference cascades from those missing types. No
 production code was added.
+
+## User Story 2 RED — secret diagnostic redaction (2026-10-06)
+
+Added sentinel coverage in `credential_redaction.rs` for Username/Password,
+Device identifiers, OTP, hashed bytes, Ticket, Nonce ID/Value, and both
+Attestation evidence fields. The tests exercise typed values, generic
+Credential/Authentication wrappers, malformed-value errors, and a captured
+in-memory log sink built from the public Debug/Display formatting surface.
+The protocol crate currently has no production logger dependency or callsites;
+no logging dependency was added. Owned-memory lifecycle assertions remain
+deferred to T020 after its reviewed contract, as required by T016.
+
+`cargo +1.94.0 fmt --all --check` passed. The focused RED command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_redaction` fails
+only with `E0432` for the not-yet-implemented `CredentialValue` and `Nonce`
+public APIs. No production code was added.
