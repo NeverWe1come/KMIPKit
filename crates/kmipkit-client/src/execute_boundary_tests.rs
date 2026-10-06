@@ -82,6 +82,14 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "ttlv_cargo_alias_type",
+        path: "tests/fixtures/execute_boundary/ttlv_cargo_alias_type.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/ttlv_cargo_alias_type.rs"),
+        probe: "pub fn accept(value: ttlv::Item)",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "raw_body_input",
         path: "tests/fixtures/execute_boundary/raw_body_input.rs",
         source: include_str!("../tests/fixtures/execute_boundary/raw_body_input.rs"),
@@ -620,6 +628,7 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "canonical_vec_macro",
     "generic_item_input",
     "ttlv_extern_crate_alias",
+    "ttlv_cargo_alias_type",
     "raw_body_input",
     "public_structure_input",
     "public_structure_view_input",
@@ -2561,6 +2570,15 @@ fn extern_crate_alias_cannot_hide_a_generic_ttlv_type() {
         candidate_check_fixture(fixture("ttlv_extern_crate_alias")),
         Err(CandidateRejection::BoundaryViolation),
         "the syntactic boundary audit must not accept crate aliases that hide generic TTLV types"
+    );
+}
+
+#[test]
+fn cargo_dependency_alias_cannot_hide_a_generic_ttlv_type() {
+    assert_eq!(
+        candidate_check_fixture(fixture("ttlv_cargo_alias_type")),
+        Err(CandidateRejection::BoundaryViolation),
+        "the syntactic boundary audit must reject protected TTLV type names behind unknown crate aliases"
     );
 }
 
