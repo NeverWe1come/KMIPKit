@@ -56,7 +56,7 @@ public response-item view because generic message validation rejects those
 shapes first. This local Windows run does not replace the implementation
 branch's three-platform CI or three-platform coverage aggregation.
 
-T035 remains open for supported-platform CI and the exact three-platform coverage aggregation. T001 is complete as an authorization record only; no reviewer-owned checklist approval is claimed. T037 remains open for the sequential independent QA/security reviews.
+T035 remains open for supported-platform CI and the exact three-platform coverage aggregation. T001 is complete as an authorization record only; no reviewer-owned checklist approval is claimed. T037 is complete: independent QA re-review found no remaining Critical, Important, or P2 findings; the Codex Security diff scan `035c0478-7289-407f-bbb7-73aefd61e43d` covered `5c0cc5e4de73f8ba4d3583693a3d1a0c21dfa842..01dc2ecf6ac55fd39b95ad4e15ab4400149892af`, reported no findings, and had complete coverage. The initial Process Pending and zeroization-test findings were corrected with distinct Red/Green/Refactor commits. The scan does not replace the qualified human security review required before 1.0.
 
 ## Phase 0: Review and readiness gates
 
@@ -153,7 +153,7 @@ T035 remains open for supported-platform CI and the exact three-platform coverag
 - [x] T034 Complete the requirement-to-code-to-test trace matrix, including explicit source/catalog gaps; verify 100% traceability for all claims made by this feature (KMIPKIT-0009-FR-012).
 - [ ] T035 Run `cargo fmt --all --check`, workspace Clippy with `-D warnings`, workspace tests/docs, targeted protocol/client coverage, workspace coverage gates, immutable OASIS/catalog generation checks, dependency/security checks, and supported-platform CI.
 - [x] T036 Run Spec Kit convergence; add tasks for any remaining gaps and repeat implementation/convergence until no gaps remain.
-- [ ] T037 Obtain independent QA and security review and record findings/corrections before creating a draft implementation PR.
+- [x] T037 Obtain independent QA and security review and record findings/corrections before creating a draft implementation PR; final QA and Codex Security review evidence is recorded above.
 
 ## Dependencies and execution order
 
