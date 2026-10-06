@@ -442,6 +442,7 @@ impl ClientBatchResponse {
     }
 
     /// Iterates over the results in request order, independent of response order.
+    #[must_use]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = &ClientBatchItemResponse> + '_ {
         self.items.iter()
     }
@@ -466,7 +467,6 @@ impl fmt::Debug for ClientBatchResponse {
 ///
 /// See `docs/user-guide/en/client-execution.md` in the repository for current
 /// scope, limits, redaction, and transport boundaries.
-
 pub struct Client {
     transport: Box<dyn Transport>,
     #[cfg(test)]
