@@ -542,6 +542,8 @@ impl Client {
         drop(encoded);
 
         let response = transport_result.map_err(ClientError::transport)?;
+        let response_delivery_state =
+            RequestDeliveryState::PossiblySent.response_bytes_received(response.as_bytes().len());
         let response_message = decode_bounded_response(
             response.as_bytes(),
             limits,
@@ -558,7 +560,7 @@ impl Client {
                 ),
                 BoundedResponseError::Decode(error) => error,
             };
-            protocol_failure_at(protocol, RequestDeliveryState::ResponseStarted)
+            protocol_failure_at(protocol, response_delivery_state)
         })?;
         drop(response);
 
@@ -569,7 +571,7 @@ impl Client {
             #[cfg(test)]
             self.pending_owner_observer.as_ref(),
         )
-        .map_err(|error| protocol_failure_at(error, RequestDeliveryState::ResponseStarted))
+        .map_err(|error| protocol_failure_at(error, response_delivery_state))
     }
 
     #[cfg(test)]

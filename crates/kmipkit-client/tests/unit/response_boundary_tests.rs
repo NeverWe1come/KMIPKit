@@ -139,7 +139,10 @@ fn empty_successful_transport_response_preserves_possibly_sent_state() {
         .expect_err("an empty response cannot decode as a KMIP message");
 
     assert_eq!(exchange_count.get(), 1);
-    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::PossiblySent));
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::PossiblySent)
+    );
 }
 
 #[test]
