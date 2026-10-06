@@ -1,7 +1,7 @@
 
 # Data Model: KMIP 2.1 Client Asynchronous Operations
 
-All wire values use the existing generic TTLV model and source field order. Typed views validate known KMIP structure without discarding unknown enum values or extension subtrees. This document describes planned model boundaries; it does not authorize implementation before spec approval.
+All wire values use the existing generic TTLV model and source field order. Typed views validate known KMIP structure without discarding unknown enum values or extension subtrees. This document describes planned model boundaries. The direct human authorization recorded in the feature specification permits this task's autonomous implementation; reviewer-owned checklists and normative source/catalog gates remain open.
 
 ## Entities
 
@@ -32,7 +32,7 @@ All wire values use the existing generic TTLV model and source field order. Type
 - Request: one required Asynchronous Correlation Value.
 - Successful response: the echoed value and required Cancellation Result Enumeration.
 - Response mode: Cancel cannot itself be asynchronous. A Pending Cancel response is invalid even when the original request allowed Pending.
-- Known Cancellation Result raw values 1 and 2 receive typed views for Canceled and Unable to Cancel; unknown values remain available unchanged.
+- OASIS KMIP v2.1 §11.7, Table 438 assigns Cancellation Result values 1 `Canceled`, 2 `Unable to Cancel`, 3 `Completed`, 4 `Failed`, and 5 `Unavailable`; Table 437 describes these values. Each assigned value receives a typed view, while extension and future raw Enumeration values remain available unchanged.
 - Response/error association uses the existing batch item rules.
 
 ### Process Request and Outcome
@@ -68,6 +68,6 @@ Each arrow that sends a request is a distinct call and one transport exchange. N
 - Poll Pending permits the §6.1.38 no-payload exception while retaining the Pending correlation required by §8.6/Table 399.
 - Poll completion is not decoded as an unrelated operation's type.
 - Cancel echo must associate to its request; unknown cancellation enumeration values survive.
-- Process success payload contains no fields; error and Pending cases follow general response semantics.
+- Every non-Failure Process response, including Pending, carries an empty Response Payload Structure per §6.1.39/Table 279 and §8.6/Table 399; Failure has no payload under the general response shape.
 - Query filters and opaque response tree survive round trips; typed Table 286 semantics stay gated.
 - All decode paths use configured `CodecLimits` before allocation.

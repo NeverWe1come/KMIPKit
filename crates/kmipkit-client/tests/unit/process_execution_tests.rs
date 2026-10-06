@@ -1,0 +1,191 @@
+//! Client Process behavior derived from OASIS KMIP v2.1 §§6.1.39, 8.6, 9.2,
+//! and 11.3, Tables 278–280, 399, 401, and 432; these are not official vectors.
+//!
+//! Traceability: KMIPKIT-0009-FR-005, FR-008, FR-009, FR-010. The missing
+//! catalog requirement ID for Table 278 remains open under OD-002.
+
+use crate::ClientErrorCategory;
+use crate::asynchronous_execution_test_support::{client_for, request_contains};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, asynchronous_response_with_batch_id_bytes, test_item,
+    test_structure,
+};
+use kmipkit_protocol::ProcessRequest;
+use kmipkit_test_support::ExchangeScript;
+use kmipkit_ttlv::Value;
+use kmipkit_ttlv::codec::CodecLimits;
+
+const PROCESS: u32 = 0x0000_003A;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
+const CORRELATION: &[u8] = b"PROCESS_ASYNC_CORRELATION_SENTINEL";
+
+#[test]
+fn process_pending_is_caller_selected_and_performs_one_exchange() {
+    let response = asynchronous_response_bytes(
+        PROCESS,
+        2,
+        None,
+        Some(CORRELATION),
+        Some(test_structure([])),
+    );
+    let (mut client, fake, request) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let result = client
+        .execute_process(
+            ProcessRequest::new(CORRELATION),
+            Some(2),
+            &CodecLimits::defaults(),
+        )
+        .expect("the caller selected an Asynchronous Indicator that permits Pending");
+
+    assert!(result.is_pending());
+    assert_eq!(result.result().status().raw(), 2);
+    assert_eq!(
+        result.with_response_payload(|payload| payload.children().len()),
+        Some(0)
+    );
+    assert_eq!(
+        result.with_asynchronous_correlation_value(<[u8]>::to_vec),
+        Some(CORRELATION.to_vec())
+    );
+    assert!(request_contains(&request, CORRELATION));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn process_success_requires_the_empty_table_279_payload() {
+    let response = asynchronous_response_bytes(PROCESS, 0, None, None, Some(test_structure([])));
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let result = client
+        .execute_process(
+            ProcessRequest::new(CORRELATION),
+            None,
+            &CodecLimits::defaults(),
+        )
+        .expect("successful Process has an empty response payload");
+
+    assert!(!result.is_pending());
+    assert_eq!(result.result().status().raw(), 0);
+    assert_eq!(
+        result.with_response_payload(|payload| payload.children().len()),
+        Some(0)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn process_pending_with_nonempty_payload_is_rejected_after_one_exchange() {
+    // OASIS KMIP v2.1 §8.6/Table 399 defines the Pending response shape;
+    // §6.1.39/Table 279 defines the operation-specific empty payload.
+    let response = asynchronous_response_bytes(
+        PROCESS,
+        2,
+        None,
+        Some(CORRELATION),
+        Some(test_structure([test_item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"unexpected-pending-process-payload".to_vec()),
+        )])),
+    );
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .execute_process(
+            ProcessRequest::new(CORRELATION),
+            Some(2),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("a Pending Process response must follow Table 279's empty payload");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn process_rejects_pending_when_the_request_did_not_permit_it() {
+    let response = asynchronous_response_bytes(
+        PROCESS,
+        2,
+        None,
+        Some(CORRELATION),
+        Some(test_structure([])),
+    );
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let error = client
+        .execute_process(
+            ProcessRequest::new(CORRELATION),
+            None,
+            &CodecLimits::defaults(),
+        )
+        .expect_err("Pending requires a caller-selected permissive indicator");
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::ResponseStarted)
+    );
+}
+
+#[test]
+fn process_rejects_a_response_batch_id_that_the_request_did_not_supply() {
+    let response = asynchronous_response_with_batch_id_bytes(
+        PROCESS,
+        0,
+        None,
+        None,
+        Some(b"unexpected-id"),
+        Some(test_structure([])),
+    );
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .execute_process(
+            ProcessRequest::new(CORRELATION),
+            None,
+            &CodecLimits::defaults(),
+        )
+        .expect_err("single-item Process omitted its ID, so an echoed ID is unexpected");
+
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::ResponseStarted)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn process_rejects_an_unassigned_asynchronous_indicator_before_transport() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: Vec::new(),
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .execute_process(
+            ProcessRequest::new(CORRELATION),
+            Some(0),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("§9.2 and §11.3 reject unassigned Asynchronous Indicator values");
+
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}

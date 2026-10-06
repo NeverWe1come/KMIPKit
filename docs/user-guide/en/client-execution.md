@@ -57,8 +57,42 @@ and the response contains its required Asynchronous Correlation Value. The
 correlation value is opaque: KMIPKit preserves its bytes and exposes them only
 through an explicit borrowed accessor. It is redacted from formatted output,
 errors, and logs, and KMIPKit-owned storage is zeroized when the Pending value
-is dropped. Poll, Cancel, result processing, automatic waiting, and background
-work are not part of this slice.
+is dropped.
+
+## Explicit asynchronous operations
+
+`Client::execute_poll`, `Client::execute_cancel`,
+`Client::execute_process`, and `Client::execute_query_async_requests` each
+perform one explicit synchronous exchange. They never poll again, retry, wait,
+or schedule background work. A transport error retains the same delivery-state
+meaning described below; that state does not establish whether a retry is safe.
+
+The caller constructs a `PollRequest`, `CancelRequest`, or `ProcessRequest`
+with the exact bytes obtained from a pending outcome's borrowed correlation
+accessor. `execute_poll` returns Pending without issuing another request. Its
+successful terminal payload stays generic TTLV until the original operation's
+typed response model is available; terminal Failure exposes its result and
+reason without a payload. `execute_cancel` verifies that a successful response
+echoes the exact requested correlation bytes and exposes the assigned or
+unknown Cancellation Result. A Pending Cancel response is rejected under
+OASIS KMIP v2.1 §6.1.5, Tables 176–178, and §11.7, Tables 437–438.
+
+`execute_process` is a separate server operation. The caller selects whether
+the Process request permits an asynchronous result. Every non-Failure Process
+response, including Pending, carries the empty Response Payload required by
+OASIS KMIP v2.1 §8.6, Table 399, and defined by §6.1.39, Table 279. Failure
+has no payload under §8.6. A Pending outcome is returned to the caller;
+KMIPKit does not assert that a later Poll will complete. The §6.1.39 prose
+notes that Process may affect other batch items when Batch Order Option is
+true, its default. KMIPKit does not claim to control those server-side effects.
+
+`execute_query_async_requests` supports the optional correlation-value and
+operation filters from OASIS KMIP v2.1 §6.1.41, Table 285. Its response payload
+is exposed as generic TTLV while `KMIPKIT-DISC-039` remains open. KMIPKit does
+not present a typed interpretation of the disputed Table 286 caption. The
+catalog gap for the required Process request field in Table 278 also remains
+open under `OD-002`; no generated catalog output or upstream OASIS source was
+changed.
 
 ## Resource limits
 
@@ -156,6 +190,7 @@ available today.
 
 - [Inspecting KMIP messages](message-model.md)
 - [Public API architecture](../../architecture/public-api.md)
+- [KMIP 2.1 asynchronous operations review quickstart](../../../specs/009-asynchronous-operations/quickstart.md)
 - [ADR-0002: KMIP 2.1 release scope](../../adr/0002-kmip-21-release-scope.md)
 - [ADR-0012: caller-requested wire encoding](../../adr/0012-caller-requested-wire-encoding-policy.md)
 - [ADR-0013: client extension registry ownership](../../adr/0013-client-extension-registry-ownership.md)

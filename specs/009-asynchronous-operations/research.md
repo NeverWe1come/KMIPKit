@@ -21,7 +21,7 @@
 ### Keep Process distinct and one-shot
 
 - **Decision**: Expose Process as its own operation and outcome. Request correlation comes from the explicit pending outcome. A caller makes one Process request; any later Poll or handling of a Pending Process response requires another explicit caller action.
-- **Evidence**: §6.1.39/Table 278 defines a dedicated Process request and Table 279 an empty response payload. Its prose says the server changes processing so the next Poll does not return Pending; this may affect other items when Batch Order Option is true (default). The clause does not state that Process itself cannot be returned asynchronously.
+- **Evidence**: §6.1.39/Table 278 defines a dedicated Process request and Table 279 has no Process response-payload members. §8.6/Table 399 requires a Response Payload for every non-Failure result, so a Pending Process response must carry that empty structure while Failure has no payload. The Process prose says the server changes processing so the next Poll does not return Pending; this may affect other items when Batch Order Option is true (default). The clause does not state that Process itself cannot be returned asynchronously.
 - **Alternatives rejected**: Treating Process as Poll or as a local wait helper would erase its server-side operation semantics. Assuming Process always completes synchronously is unsupported by the cited clause.
 
 ### Reject asynchronous Cancel responses

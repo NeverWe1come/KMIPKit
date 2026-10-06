@@ -6,7 +6,7 @@
 //! pinned Rust-AST audit; T017 wires that production audit into CI.
 //! The low-level caller-owned transport exception belongs to
 //! `kmipkit-transport`; client source may call `exchange` only from
-//! `Client::execute`.
+//! `Client::exchange_operation`, reached only from closed typed request entry points.
 //! The audit is syntactic: it walks the production module graph under `src`,
 //! accepts only `cfg(test)`/`cfg(not(test))`, and rejects unknown attributes,
 //! imported protected names, custom macros, and every macro outside its small
@@ -168,6 +168,26 @@ const FIXTURES: &[Fixture] = &[
         probe: "fn with_ttlv",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "approved_async_outcome_callbacks",
+        path: "tests/fixtures/execute_boundary/approved_async_outcome_callbacks.rs",
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/approved_async_outcome_callbacks.rs"
+        ),
+        probe: "fn with_asynchronous_correlation_value",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "async_outcome_callback_escape",
+        path: "tests/fixtures/execute_boundary/async_outcome_callback_escape.rs",
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/async_outcome_callback_escape.rs"
+        ),
+        probe: "pub fn correlation_bytes",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
     },
     Fixture {
         id: "owned_vec_bytes_input",
@@ -656,6 +676,8 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "public_value_view_input",
     "structure_view_wrong_callback",
     "approved_extension_view_callback",
+    "approved_async_outcome_callbacks",
+    "async_outcome_callback_escape",
     "owned_vec_bytes_input",
     "boxed_byte_slice_input",
     "fixed_array_bytes_input",
@@ -818,12 +840,15 @@ impl BoundaryAudit {
             is_exact_unique_batch_id_setter(execute_root_scope, impl_type, signature);
         let extension_view_callback =
             is_exact_extension_view_callback(execute_root_scope, impl_type, signature);
+        let async_outcome_callback =
+            is_exact_async_outcome_callback(execute_root_scope, impl_type, signature);
         let batch_from_items = is_exact_batch_from_items(execute_root_scope, impl_type, signature);
         let error_validation_source =
             is_exact_error_validation_source(error_root_scope, impl_type, signature);
         let batch_response_iterator =
             is_exact_batch_response_iterator(execute_root_scope, impl_type, signature);
-        let approved_generic_signature = extension_view_callback || error_validation_source;
+        let approved_generic_signature =
+            extension_view_callback || async_outcome_callback || error_validation_source;
         if has_public_type_or_const_generics(signature) && !approved_generic_signature {
             finder
                 .violations
@@ -834,7 +859,8 @@ impl BoundaryAudit {
         }
         for (index, argument) in signature.inputs.iter().enumerate() {
             if let syn::FnArg::Typed(argument) = argument {
-                if (unique_id_setter || extension_view_callback) && index == 1
+                if (unique_id_setter || extension_view_callback || async_outcome_callback)
+                    && index == 1
                     || batch_from_items && index == 0
                 {
                     continue;
@@ -1146,14 +1172,14 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             }
             if segments.last().is_some_and(|segment| segment == "exchange") {
                 self.reject(
-                    "transport exchange call target must use the canonical method call in Client::execute",
+                    "transport exchange call target must use the canonical method call in Client::exchange_operation",
                 );
             }
             if is_permit_mint(&segments) {
                 self.permit_calls += 1;
                 self.record_repeatable_sensitive_call();
                 if self.current_impl_type.as_deref() != Some("Client")
-                    || self.current_function.as_deref() != Some("execute")
+                    || self.current_function.as_deref() != Some("exchange_operation")
                 {
                     self.misplaced_permit_calls += 1;
                 }
@@ -1167,7 +1193,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                     self.reject("writer function called without its canonical private path");
                 }
                 if self.current_impl_type.as_deref() != Some("Client")
-                    || self.current_function.as_deref() != Some("execute")
+                    || self.current_function.as_deref() != Some("exchange_operation")
                 {
                     self.misplaced_writer_calls += 1;
                 }
@@ -1197,7 +1223,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 self.reject("writer method called through a noncanonical receiver");
             }
             if self.current_impl_type.as_deref() != Some("Client")
-                || self.current_function.as_deref() != Some("execute")
+                || self.current_function.as_deref() != Some("exchange_operation")
             {
                 self.misplaced_writer_calls += 1;
             }
@@ -1206,7 +1232,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             self.exchange_calls += 1;
             self.record_repeatable_sensitive_call();
             if self.current_impl_type.as_deref() != Some("Client")
-                || self.current_function.as_deref() != Some("execute")
+                || self.current_function.as_deref() != Some("exchange_operation")
                 || !is_client_transport_receiver(&call.receiver)
             {
                 self.misplaced_exchange_calls += 1;
@@ -1285,7 +1311,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
         }
         if segments.last().is_some_and(|segment| segment == "exchange") {
             self.reject(format!(
-                "transport exchange path must use the canonical method call in Client::execute: {segments:?}"
+                "transport exchange path must use the canonical method call in Client::exchange_operation: {segments:?}"
             ));
         }
         if (path_mentions_permit(&segments) || is_writer_target(&segments))
@@ -1552,6 +1578,163 @@ fn is_exact_extension_view_callback_type(ty: &Type) -> bool {
         && segment.ident == "FnOnce"
         && callback_input_is_structure_view
         && callback_output_is_result
+}
+
+fn is_exact_async_outcome_callback(
+    execute_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !execute_root_scope
+        || impl_type != Some("ClientOperationOutcome")
+        || !matches!(
+            signature.ident.to_string().as_str(),
+            "with_asynchronous_correlation_value" | "with_cancel_echo" | "with_response_payload"
+        )
+        || signature.generics.params.len() != 1
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 2
+    {
+        return false;
+    }
+
+    let generic_is_plain_result = matches!(
+        signature.generics.params.first(),
+        Some(syn::GenericParam::Type(parameter))
+            if parameter.ident == "R"
+                && parameter.attrs.is_empty()
+                && parameter.colon_token.is_none()
+                && parameter.bounds.is_empty()
+                && parameter.eq_token.is_none()
+                && parameter.default.is_none()
+    );
+    let mut inputs = signature.inputs.iter();
+    let receiver_is_shared_self = matches!(
+        inputs.next(),
+        Some(syn::FnArg::Receiver(receiver))
+            if receiver.reference.as_ref().is_some_and(|(_, lifetime)| lifetime.is_none())
+                && receiver.mutability.is_none()
+                && receiver.colon_token.is_none()
+                && receiver.attrs.is_empty()
+    );
+    let callback_is_exact = matches!(
+        inputs.next(),
+        Some(syn::FnArg::Typed(argument))
+            if matches!(argument.pat.as_ref(), syn::Pat::Ident(pattern)
+                if pattern.ident == "callback"
+                    && pattern.by_ref.is_none()
+                    && pattern.mutability.is_none()
+                    && pattern.subpat.is_none()
+                    && pattern.attrs.is_empty())
+                && argument.attrs.is_empty()
+                && is_exact_async_outcome_callback_type(
+                    &argument.ty,
+                    signature.ident == "with_response_payload",
+                )
+    );
+    let returns_option_of_result = matches!(
+        &signature.output,
+        syn::ReturnType::Type(_, output) if is_exact_option_generic_r(output)
+    );
+
+    generic_is_plain_result
+        && receiver_is_shared_self
+        && callback_is_exact
+        && returns_option_of_result
+}
+
+fn is_exact_async_outcome_callback_type(ty: &Type, payload: bool) -> bool {
+    let Type::ImplTrait(implementation_trait) = ty else {
+        return false;
+    };
+    if implementation_trait.bounds.len() != 1 {
+        return false;
+    }
+    let Some(syn::TypeParamBound::Trait(trait_bound)) = implementation_trait.bounds.first() else {
+        return false;
+    };
+    if !matches!(&trait_bound.modifier, syn::TraitBoundModifier::None)
+        || trait_bound.path.leading_colon.is_some()
+    {
+        return false;
+    }
+    let Some(lifetimes) = &trait_bound.lifetimes else {
+        return false;
+    };
+    let lifetime_is_plain_a = matches!(
+        (lifetimes.lifetimes.iter().next(), lifetimes.lifetimes.iter().nth(1)),
+        (Some(syn::GenericParam::Lifetime(parameter)), None)
+            if parameter.lifetime.ident == "a"
+                && parameter.attrs.is_empty()
+                && parameter.colon_token.is_none()
+                && parameter.bounds.is_empty()
+    );
+    let mut path_segments = trait_bound.path.segments.iter();
+    let Some(segment) = path_segments.next() else {
+        return false;
+    };
+    if path_segments.next().is_some() || segment.ident != "FnOnce" {
+        return false;
+    }
+    let syn::PathArguments::Parenthesized(arguments) = &segment.arguments else {
+        return false;
+    };
+    let mut callback_inputs = arguments.inputs.iter();
+    let Some(callback_input) = callback_inputs.next() else {
+        return false;
+    };
+    if callback_inputs.next().is_some() {
+        return false;
+    }
+    let callback_input_is_exact = if payload {
+        matches!(callback_input, Type::Path(path)
+            if path.qself.is_none()
+                && path.path.leading_colon.is_none()
+                && path.path.segments.len() == 1
+                && path.path.segments[0].ident == "StructureView"
+                && matches!(&path.path.segments[0].arguments,
+                    syn::PathArguments::AngleBracketed(arguments)
+                        if arguments.args.len() == 1
+                            && matches!(arguments.args.first(),
+                                Some(syn::GenericArgument::Lifetime(lifetime))
+                                    if lifetime.ident == "a")))
+    } else {
+        matches!(callback_input, Type::Reference(reference)
+            if reference.lifetime.as_ref().is_some_and(|lifetime| lifetime.ident == "a")
+                && reference.mutability.is_none()
+                && matches!(reference.elem.as_ref(), Type::Slice(slice)
+                    if is_u8(&slice.elem)))
+    };
+    let callback_output_is_result = matches!(
+        &arguments.output,
+        syn::ReturnType::Type(_, output) if is_plain_type_path(output, "R")
+    );
+
+    lifetime_is_plain_a && callback_input_is_exact && callback_output_is_result
+}
+
+fn is_exact_option_generic_r(ty: &Type) -> bool {
+    matches!(ty, Type::Path(path)
+        if path.qself.is_none()
+            && path.path.leading_colon.is_none()
+            && path.path.segments.len() == 1
+            && path.path.segments[0].ident == "Option"
+            && matches!(&path.path.segments[0].arguments,
+                syn::PathArguments::AngleBracketed(arguments)
+                    if arguments.args.len() == 1
+                        && matches!(arguments.args.first(),
+                            Some(syn::GenericArgument::Type(Type::Path(result)))
+                                if result.qself.is_none()
+                                    && result.path.leading_colon.is_none()
+                                    && result.path.segments.len() == 1
+                                    && result.path.segments[0].ident == "R"
+                                    && matches!(&result.path.segments[0].arguments,
+                                        syn::PathArguments::None))))
 }
 
 fn is_plain_type_path(ty: &Type, expected: &str) -> bool {
@@ -2329,7 +2512,7 @@ fn audit_source_at(source: &str, source_path: &Path) -> Result<BoundaryAudit, Ca
 }
 
 const CANONICAL_EXECUTE_EXCHANGE_FIXTURE: &str =
-    "impl Client { fn execute(&mut self) { self.transport.exchange(&[], 1); } }";
+    "impl Client { fn exchange_operation(&mut self) { self.transport.exchange(&[], 1); } }";
 
 fn candidate_check_fixture(fixture: &Fixture) -> Result<(), CandidateRejection> {
     if fixture.coverage == SourceCoverage::Uninspected {
@@ -2346,6 +2529,7 @@ fn candidate_check_fixture(fixture: &Fixture) -> Result<(), CandidateRejection> 
         fixture.id,
         "exact_unique_batch_id_setter"
             | "approved_extension_view_callback"
+            | "approved_async_outcome_callbacks"
             | "approved_batch_from_items_iterator"
             | "approved_batch_response_iter_output"
             | "counterfeit_exception_types"
@@ -2600,6 +2784,53 @@ fn supported_cfg(attribute: &Attribute) -> bool {
 }
 
 #[test]
+fn query_request_is_dropped_before_exchange_and_not_retained_by_the_client() {
+    let source_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/execute.rs");
+    let source = fs::read_to_string(source_path).expect("the client source is readable");
+    let syntax = syn::parse_file(&source).expect("the client source parses");
+    let body = syntax
+        .items
+        .iter()
+        .filter_map(|item| match item {
+            Item::Impl(implementation) => Some(implementation.items.iter()),
+            _ => None,
+        })
+        .flatten()
+        .find_map(|item| match item {
+            syn::ImplItem::Fn(function) if function.sig.ident == "execute_query_async_requests" => {
+                Some(&function.block)
+            }
+            _ => None,
+        })
+        .expect("the Query execution method exists");
+    let request_drop = body.stmts.iter().position(|statement| match statement {
+        syn::Stmt::Expr(Expr::Call(call), _) => {
+            let drops_request = matches!(
+                call.func.as_ref(),
+                Expr::Path(path)
+                    if path.path.segments.last().is_some_and(|segment| segment.ident == "drop")
+            );
+            drops_request
+                && call.args.len() == 1
+                && matches!(&call.args[0], Expr::Path(path) if path.path.is_ident("request"))
+        }
+        _ => false,
+    });
+    let exchange = body.stmts.iter().position(|statement| {
+        matches!(
+            statement,
+            syn::Stmt::Expr(Expr::MethodCall(call), _)
+                if call.method == "execute_async_request"
+        )
+    });
+
+    assert!(
+        matches!((request_drop, exchange), (Some(drop), Some(exchange)) if drop < exchange),
+        "the consumed Query request and filter values must be dropped before the client exchange"
+    );
+}
+
+#[test]
 fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_permit_pair() {
     let inventory = production_sources();
     assert!(
@@ -2683,6 +2914,7 @@ fn generic_item_and_raw_body_inputs_are_rejected() {
         "public_item_type_input",
         "public_value_view_input",
         "structure_view_wrong_callback",
+        "async_outcome_callback_escape",
         "owned_vec_bytes_input",
         "boxed_byte_slice_input",
         "fixed_array_bytes_input",
@@ -2722,7 +2954,7 @@ fn low_level_exception_does_not_bypass_the_typed_client_boundary() {
     assert_eq!(
         candidate_check_fixture(fixture("raw_exchange_outside_execute")),
         Err(CandidateRejection::BoundaryViolation),
-        "client source may exchange only from Client::execute"
+        "client source may exchange only from Client::exchange_operation"
     );
     let accepted = accepted_ids_for_rejected_fixtures(&[
         "raw_exchange_ufcs_outside_execute",
@@ -2906,11 +3138,11 @@ fn qself_transport_exchange_method_items_are_rejected() {
 }
 
 #[test]
-fn exactly_one_permit_and_writer_call_are_inside_execute() {
+fn exactly_one_permit_and_writer_call_are_inside_the_shared_exchange_operation() {
     assert_eq!(
         candidate_check_fixture(fixture("valid_execute")),
         Ok(()),
-        "one permit mint and one writer call inside Client::execute is allowed"
+        "one permit mint and one writer call inside Client::exchange_operation is allowed"
     );
     let accepted = accepted_ids_for_rejected_fixtures(&[
         "missing_permit",
@@ -2933,6 +3165,7 @@ fn canonical_macros_and_unique_batch_identifier_setter_remain_allowed() {
         "canonical_vec_macro",
         "exact_unique_batch_id_setter",
         "approved_extension_view_callback",
+        "approved_async_outcome_callbacks",
     ] {
         assert_eq!(
             candidate_check_fixture(fixture(id)),
@@ -3102,6 +3335,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "canonical_vec_macro"
                     | "exact_unique_batch_id_setter"
                     | "approved_extension_view_callback"
+                    | "approved_async_outcome_callbacks"
                     | "approved_batch_from_items_iterator"
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"
@@ -3113,6 +3347,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "canonical_vec_macro"
                     | "exact_unique_batch_id_setter"
                     | "approved_extension_view_callback"
+                    | "approved_async_outcome_callbacks"
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"
                     | "matches_guard_logical_not"

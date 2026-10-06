@@ -60,9 +60,45 @@ petición lo permite y la respuesta contiene el Asynchronous Correlation Value
 obligatorio. El valor de correlación es opaco: KMIPKit conserva sus bytes y
 solo los presta mediante un accesor explícito. Se redacta en el formato, los
 errores y los logs, y el almacenamiento propiedad de KMIPKit se pone a cero
-al destruir el valor Pending. Poll, Cancel, procesamiento del resultado,
-espera automática y tareas en segundo plano no forman parte de esta
-funcionalidad.
+al destruir el valor Pending.
+
+## Operaciones asíncronas explícitas
+
+`Client::execute_poll`, `Client::execute_cancel`,
+`Client::execute_process` y `Client::execute_query_async_requests` realizan,
+cada una, un único intercambio síncrono explícito. No vuelven a hacer Poll,
+reintentar, esperar ni programar tareas en segundo plano. Un error de transporte
+conserva el significado del estado de entrega descrito más abajo; ese estado
+no determina si es seguro reintentar.
+
+El llamador construye `PollRequest`, `CancelRequest` o `ProcessRequest` con los
+bytes exactos obtenidos mediante el acceso prestado al valor de correlación de
+un resultado Pending. `execute_poll` devuelve Pending sin enviar otra petición.
+El payload de una finalización correcta se conserva como TTLV genérico hasta
+que exista el modelo tipado de la operación original; una finalización con
+Failure expone el resultado y su razón sin payload. `execute_cancel` comprueba
+que una respuesta correcta repita exactamente los bytes de correlación
+solicitados y expone el valor Cancellation Result asignado o desconocido. Se
+rechaza una respuesta Cancel Pending conforme a OASIS KMIP v2.1 §6.1.5,
+Tablas 176–178, y §11.7, Tablas 437–438.
+
+`execute_process` es una operación de servidor independiente. El llamador
+selecciona si la petición Process permite una respuesta asíncrona. Cada
+respuesta Process distinta de Failure, incluida Pending, contiene el Response
+Payload vacío requerido por OASIS KMIP v2.1 §8.6, Tabla 399, y definido por
+§6.1.39, Tabla 279. Failure no lleva payload según §8.6. Si el resultado es
+Pending, se devuelve al llamador; KMIPKit no afirma que un Poll posterior vaya
+a completarse. El texto de §6.1.39 indica que Process puede afectar a otros
+elementos del lote cuando Batch Order Option es true, su valor predeterminado.
+KMIPKit no afirma controlar esos efectos del servidor.
+
+`execute_query_async_requests` admite los filtros opcionales de valor de
+correlación y operación de OASIS KMIP v2.1 §6.1.41, Tabla 285. Su payload de
+respuesta se expone como TTLV genérico mientras siga abierto
+`KMIPKIT-DISC-039`. KMIPKit no presenta una interpretación tipada del pie de
+tabla 286 en disputa. También sigue abierto bajo `OD-002` el hueco del
+catálogo para el campo obligatorio de la petición Process de la Tabla 278; no
+se modificaron el catálogo generado ni la fuente OASIS upstream.
 
 ## Límites de recursos
 
@@ -166,6 +202,7 @@ disponible actualmente.
 
 - [Inspeccionar mensajes KMIP](modelo-mensaje.md)
 - [Arquitectura de la API pública](../../architecture/public-api.md)
+- [Guía rápida de revisión para operaciones asíncronas KMIP 2.1](../../../specs/009-asynchronous-operations/quickstart.md)
 - [ADR-0002: alcance KMIP 2.1](../../adr/0002-kmip-21-release-scope.md)
 - [ADR-0012: codificación de bytes solicitada por el llamador](../../adr/0012-caller-requested-wire-encoding-policy.md)
 - [ADR-0013: propiedad del registro de extensiones del cliente](../../adr/0013-client-extension-registry-ownership.md)

@@ -86,8 +86,8 @@ provide stable public APIs for advanced integration.
 ### `kmipkit-client`
 
 - Implemented: synchronous execution for explicit typed Discover Versions batches through the private writer and test fake.
-- Implemented: request/response identity validation, bounded decoding, Pending outcomes, delivery state, and redacted errors.
-- No production Client constructor, live network backend, implicit discovery, automatic retry, or follow-up Poll/Cancel operation.
+- Implemented: one-exchange Poll, Cancel, Process, and Query Asynchronous Requests methods with operation-specific response validation, bounded decoding, delivery-state evidence, and redacted errors.
+- No production Client constructor or live network backend. Discovery remains explicit; retries, follow-up polling, failover, and background waits are never automatic.
 
 ### `kmipkit`
 
@@ -106,19 +106,18 @@ provide stable public APIs for advanced integration.
 
 ## Message flow
 
-1. The caller prepares a closed typed request batch; the current operation is
-   Discover Versions, requested explicitly.
+1. The caller explicitly prepares a typed Discover Versions batch or calls one
+   Poll, Cancel, Process, or Query Asynchronous Requests method.
 2. The client validates request options and builds one bounded TTLV message.
-3. The private writer is called only inside Client::execute, whose typed input
-   cannot be replaced by generic Items, raw message bytes, or caller-defined
-   conversions.
+3. The private writer encodes the typed operation; callers cannot replace it
+   with generic Items, raw message bytes, or caller-defined conversions.
 4. KMIPKIT-0007 passes the bounded request through the transport contract to a
    deterministic fake. No production TLS/HTTPS adapter or live-server path is
    currently available.
 5. The client applies the configured response-byte cap, decodes TTLV with the
-   same CodecLimits, and validates protocol and batch relationships.
-6. A batch returns typed per-item results or Pending outcomes. Results are
-   associated by Unique Batch Item ID and returned in request order. No automatic retry, failover, Poll, Cancel, or wait occurs.
+   same CodecLimits, and validates protocol, operation, and response relationships.
+6. The call returns a typed operation outcome or Pending state. The caller may
+   explicitly act again; the client does not retry, fail over, poll, or wait.
 
 ## Dependency rules
 

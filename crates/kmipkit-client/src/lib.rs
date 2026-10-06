@@ -55,6 +55,26 @@ mod execute_lifecycle_tests;
 mod execute_test_support;
 
 #[cfg(test)]
+#[path = "../tests/unit/asynchronous_execution_test_support.rs"]
+mod asynchronous_execution_test_support;
+
+#[cfg(test)]
+#[path = "../tests/unit/poll_execution_tests.rs"]
+mod poll_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/cancel_execution_tests.rs"]
+mod cancel_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/process_execution_tests.rs"]
+mod process_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/query_async_execution_tests.rs"]
+mod query_async_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/execute_boundary_tests.rs"]
 mod execute_boundary_tests;
 
@@ -65,5 +85,6 @@ mod transport_contract_tests;
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
-    ClientBatchResponse, ClientMessageExtension, ClientRequest, PendingOutcome,
+    ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
+    ClientRequest, PendingOutcome,
 };

@@ -596,6 +596,15 @@ fn validate_response_batch_item(
         .children()
         .iter()
         .any(|child| child.tag().raw() == ASYNCHRONOUS_CORRELATION_VALUE);
+    let operation = view
+        .children()
+        .iter()
+        .find(|child| child.tag().raw() == OPERATION)
+        .and_then(enumeration_value);
+    // §6.1.38 gives Poll's still-Pending response a specific no-payload shape;
+    // §8.6/Table 399 still requires its Asynchronous Correlation Value.
+    let poll_pending_without_payload =
+        is_pending && operation == Some(0x0000_001A) && !response_payload;
 
     if (is_success || is_pending) && result_message {
         return Err(error(
@@ -604,7 +613,9 @@ fn validate_response_batch_item(
             None,
         ));
     }
-    if is_failure == response_payload || (!is_failure && !response_payload) {
+    if (is_failure == response_payload || (!is_failure && !response_payload))
+        && !poll_pending_without_payload
+    {
         return Err(error(
             MessageValidationErrorKind::InvalidResult,
             Some(top_index),
