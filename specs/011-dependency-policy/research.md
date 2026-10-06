@@ -93,16 +93,18 @@ review before the exact pin is added to workflow code.
 
 1. **Lockfiles and target coverage**: run against both root and fuzz graphs;
    enable all features, include development dependencies in license and
-   duplicate checks, and represent every target triple used by the core CI
-   matrix. T001 records the exact target strings from the workflow.
+   duplicate checks, and leave cargo-deny's target graph unfiltered so all
+   resolved target-specific edges are checked. T001 records the core CI host
+   triple set; the policy command verifies its own runtime host against it.
 2. **Licenses**: use a finite SPDX allowlist and explicitly include dev
    dependencies; no wildcard or blanket
    permissive-license classifier. T001 inventories current graph evidence.
    Unknown or absent license data fails. Entries need exact reviewed evidence;
    project `Apache-2.0` metadata is not a third-party license approval.
-3. **Graph**: enable all declared features and include every target triple in
-   the core CI matrix; do not filter target-specific packages by the Linux
-   policy runner's host.
+3. **Graph**: enable all workspace-declared features and do not set
+   `graph.targets`; cargo-deny then includes every resolved target-specific
+   dependency edge rather than filtering to the policy runner host or only the
+   current CI matrix.
 4. **Advisories**: vulnerability advisories are errors; explicitly set
    `unsound = "all"`, `unmaintained = "all"`, and `yanked = "deny"`. An
    exception must be exact, documented, and expire within 90 days. Do not use

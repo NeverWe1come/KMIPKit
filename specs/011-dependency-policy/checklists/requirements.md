@@ -35,5 +35,6 @@
 
 - The exact license allowlist and tool version are evidence-driven implementation
   inputs and must be independently reviewed before enforcement is enabled.
-- This author checklist does not mean implementation is approved; the feature
-  remains Draft until the repository review flow accepts it.
+- The feature specification was approved by maintainer merge in PR #35;
+  implementation readiness is tracked separately in `approval-record.md` and
+  `tasks.md`.

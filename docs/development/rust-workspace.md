@@ -72,6 +72,23 @@ cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace --all-features
 ```
 
+Run the complete dependency-policy check from PowerShell at the repository
+root with the single command:
+
+```powershell
+pwsh -File .\scripts\Test-DependencyPolicy.ps1
+```
+
+It uses the reviewed `cargo-deny` 0.20.2 tool and checks both the root and fuzz
+workspaces, their committed lockfiles, all features, development dependencies,
+and every target-specific edge in their resolved graphs. Advisory checks run
+online and print separate RustSec database commit and timestamp evidence for
+each workspace. The command fails on policy violations, failed or
+cached-only advisory refresh, invalid path dependencies, missing or stale
+lockfiles, an unreviewed runner host, or absent evidence; it preserves both
+lockfiles. See the [dependency-policy guide](../security/dependency-policy.md)
+for exception review and license-evidence limitations.
+
 `cargo build` produces development artifacts under `target/`. The command
 `cargo doc --workspace --no-deps` builds crate documentation. The lockfile is
 committed so workspace dependency resolution remains reviewable and reproducible.

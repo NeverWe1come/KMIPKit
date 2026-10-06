@@ -204,6 +204,46 @@ jobs:
       - name: Enforce coverage thresholds
         run: python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base "${{ github.event.pull_request.base.sha }}" --merge "${{ github.sha }}"
 
+  dependency-policy:
+    name: Dependency policy / pull request
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ github.event.pull_request.head.repo.full_name == github.repository && fromJSON('["self-hosted","Linux","ARM64"]') || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout pull request merge commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Run root and fuzz dependency policy
+        shell: pwsh
+        run: ./scripts/Test-DependencyPolicy.ps1
+
+  scheduled-dependency-policy:
+    name: Dependency policy / active release schedule
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    env:
+      ACTIVE_RELEASE_REF: release/1.0.0
+    steps:
+      - name: Checkout configured active release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ env.ACTIVE_RELEASE_REF }}
+          persist-credentials: false
+
+      - name: Report active release ref
+        shell: bash
+        run: 'echo "Active release ref: $ACTIVE_RELEASE_REF"'
+
+      - name: Report scanned commit
+        shell: bash
+        run: 'echo "Scanned commit: $(git rev-parse HEAD)"'
+
+      - name: Run root and fuzz dependency policy
+        shell: pwsh
+        run: ./scripts/Test-DependencyPolicy.ps1
+
   branch-coverage:
     name: Informational branch coverage / nightly
     runs-on: [self-hosted, Linux, ARM64]

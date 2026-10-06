@@ -65,9 +65,10 @@ direct exact-version install avoids additional action code and permissions.
 
 ## Core CI target mapping (2026-10-05)
 
-The current workflow's OS labels and runner expression imply this target set;
-T001 must confirm each exact triple from `rustc -vV` on the corresponding
-runner before producing the checked-in policy configuration:
+The current workflow's OS labels and runner expression imply this candidate
+target set. The report distinguishes documented hosted-runner architectures
+from target triples directly printed by `rustc -vV`; the implementation must
+capture and validate the policy runner's actual host triple before enforcement:
 
 | CI runner path | Expected Rust target triple |
 |---|---|
@@ -83,10 +84,11 @@ not a permanent guarantee; implementation must fail its target inventory if a
 runner reports another triple and update the reviewed policy target set.
 
 The local diagnostic host reported `x86_64-pc-windows-msvc` from `rustc -vV`.
-The other triples above are the runner-derived expected values; this review did
-not execute on the hosted Linux/macOS or self-hosted Linux ARM64 runners. The
-implementation must capture `rustc -vV` on each runner and compare it with the
-checked-in target set before treating T001 as complete.
+The runner-derived values are candidate targets, not direct `rustc -vV`
+observations. The self-hosted Linux ARM64 runner's libc ABI remains unverified;
+the policy command must fail if the runtime host triple is not in the reviewed
+set, and its evidence must distinguish the observed runner target from the
+other matrix targets.
 
 ## Diagnostic dependency baseline (2026-10-05)
 
@@ -173,8 +175,142 @@ by FR-004.
 4. Keep this record scoped to the tool; new KMIPKit runtime dependencies
    continue to require their feature-specific dependency review.
 
+## T001 evidence refresh on the active release
+
+**Checkout**: `ee4c6aedcf2c7d8c27cb131faaf6daeaf2587c1e`, the current
+`origin/release/1.0.0` head on 2026-10-05. The dependency manifests, both
+lockfiles, and `.github/workflows/ci.yml` are byte-for-byte unchanged from
+the earlier baseline at `35a445f500d0ac0b55fe39cd95bf25984ea65216`.
+
+The candidate scans were repeated with cargo-deny 0.20.2 and separate new
+temporary `CARGO_HOME` directories for the root and fuzz workspaces. Each
+workspace used its own temporary report-only configuration, the five SPDX
+IDs already observed for that graph, and these exact command forms:
+
+```powershell
+cargo deny --manifest-path Cargo.toml --config <root-candidate-config> --workspace --all-features --locked check
+cargo deny --manifest-path fuzz/Cargo.toml --config <fuzz-candidate-config> --workspace --all-features --locked check
+```
+
+No `--offline` or `--frozen` flag was supplied. The initial per-workspace
+`CARGO_HOME` contained no advisory database; cargo-deny cloned the configured
+RustSec repository during each scan. The root check returned 0 with all four
+check families passing. The fuzz check returned 6, with the expected
+unlicensed first-party fuzz package and wildcard local path dependency; its
+advisories and sources checks passed. No advisory, source, ADR-0005 hard-ban,
+or duplicate-version finding was reported in either graph.
+
+| Workspace | RustSec remote | Database commit | Commit timestamp | Lockfile SHA-256 |
+|---|---|---|---|---|
+| Root | `https://github.com/RustSec/advisory-db` | `ef6173cbc5c50ec8166f9a5b28f07834144373ee` | `2026-10-03T10:14:03+02:00` | `08cbbb0bbfb0db6e567eec2db83d2b63788cc6ffada8531be0d50033a8ff0231` |
+| Fuzz | `https://github.com/RustSec/advisory-db` | `ef6173cbc5c50ec8166f9a5b28f07834144373ee` | `2026-10-03T10:14:03+02:00` | `ea34d89d36fa78841f0b1c63064726f09a353f62e68725cc7cdc99d32c6c7778` |
+
+The fetched database commit is older than the run date because the successful
+online refresh returned that repository head; the scan did not infer
+freshness from commit age. The pre-existing root and fuzz license inventories
+were compared as normalized package/version-to-SPDX sets with fresh
+`cargo deny list --format tsv` output. Both inventories matched exactly
+(root: 39 rows; fuzz: 12 rows). The manifests and lockfiles are unchanged:
+
+| File | SHA-256 |
+|---|---|
+| `Cargo.toml` | `a7e20915a799efe26f80d04c89c7b168dedb0d921ed580e606ad81f109dec8f4` |
+| `Cargo.lock` | `08cbbb0bbfb0db6e567eec2db83d2b63788cc6ffada8531be0d50033a8ff0231` |
+| `fuzz/Cargo.toml` | `6e40c35e20450f8256ac217ed950fb97120534df4d2ab73cae8256d79db4d0eb` |
+| `fuzz/Cargo.lock` | `ea34d89d36fa78841f0b1c63064726f09a353f62e68725cc7cdc99d32c6c7778` |
+
+Both full-feature metadata commands succeeded without a platform filter and
+resolved 43 packages/43 nodes for the root workspace and 13 packages/13 nodes
+for the fuzz workspace. The current CI runner host set is
+`x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu`,
+`x86_64-pc-windows-msvc`, and `aarch64-apple-darwin`; the evidence status for
+these values is detailed below. The candidate policy graph itself is now
+unfiltered, so the policy check covers all resolved target-specific edges,
+not only these four runner hosts.
+
+The latest available Actions job metadata is from [CI run 37354210003](https://github.com/NeverWe1come/KMIPKit/actions/runs/37354210003),
+commit `3aaa68d321f2478f1fd0e04a8238a25684d6ca71`. It records successful
+Linux job `111912375459` on `raspberry-home` with `Linux, ARM64` labels,
+Windows job `111912375503` with `windows-latest`, and macOS job `111912375382`
+with `macos-latest`. GitHub's current hosted
+runner reference maps `ubuntu-latest` to x64, `windows-latest` to x64, and
+`macos-latest` to arm64, including for private repositories
+([runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)).
+However, the runner logs were not accessible through the configured GitHub
+API credential: downloading a job log returned HTTP 403, `Must have admin
+rights to Repository`. No current workflow step prints `rustc -vV`, and there
+is no completed fork-PR run among the 88 Actions runs returned by the API.
+Therefore the hosted OS/architecture mapping is documented, but the exact
+`rustc -vV` output was not captured from the hosted runners. The self-hosted
+runner's Linux/ARM64 labels likewise do not prove its libc ABI. Keep the four
+triples as the candidate CI runner-host set and make the implementation print
+and validate `rustc -vV` at runtime; do not describe the self-hosted GNU target
+as directly observed until that output is available. This is an evidence
+limitation, not a dependency finding.
+
+One task wording defect was confirmed against `cargo deny --help`: cargo-deny
+0.20.2 has no `--disable-fetch` option. The intended online-refresh invariant
+is already met by omitting both supported offline switches, `--offline` and
+`--frozen`. T008 should avoid naming the nonexistent flag in its invocation
+contract.
+
+## T001 unfiltered target-graph and SPDX-expression refresh
+
+FR-001 includes target-specific packages represented by the lockfiles. The
+candidate checks were therefore repeated without a `[graph].targets` entry.
+The official cargo-deny configuration reference says its default graph
+includes every resolved crate, including target-specific dependencies; a
+target filter drops edges that do not match the listed triples
+([cargo-deny graph configuration](https://embarkstudios.github.io/cargo-deny/checks/cfg.html)).
+The exact report-only configurations and normalized license matrices derived
+from `cargo deny list --format tsv` are preserved in
+[`candidate-root-all-targets.toml`](evidence/candidate-root-all-targets.toml),
+[`candidate-fuzz-all-targets.toml`](evidence/candidate-fuzz-all-targets.toml),
+[`license-inventory-all-targets-root.tsv`](evidence/license-inventory-all-targets-root.tsv),
+and
+[`license-inventory-all-targets-fuzz.tsv`](evidence/license-inventory-all-targets-fuzz.tsv).
+
+With this unfiltered graph, root again returned 0 with all four check families
+passing. Fuzz again returned 6, and the only findings were the two expected
+FR-013 items: missing license metadata on `kmipkit-ttlv-fuzz@0.0.0` and the
+wildcard `kmipkit-ttlv` path requirement. Advisory, source, architecture-ban,
+and duplicate checks passed for both workspaces. The all-target inventories
+contain 40 root package rows and 13 fuzz package rows. Their license-ID
+unions are `Apache-2.0`, `LGPL-2.1-or-later`, `MIT`, `Unicode-3.0`, and
+`Unlicense` for root; fuzz has `Apache-2.0`, `LGPL-2.1-or-later`, `MIT`, and
+`NCSA`. Cargo-deny's `Unlicensed` output for the first-party fuzz package is
+a missing-metadata sentinel, not an SPDX identifier.
+
+The full Cargo SPDX expressions explain how the policy handles the IDs:
+
+| Package | Exact `Cargo.toml` expression | Candidate disposition |
+|---|---|---|
+| `unicode-ident@1.0.26` | `(MIT OR Apache-2.0) AND Unicode-3.0` | The candidate root allowlist covers both sides of the `AND`. |
+| `libfuzzer-sys@0.4.12` | `(MIT OR Apache-2.0) AND NCSA` | The candidate fuzz allowlist covers both sides of the `AND`. |
+| `r-efi@6.0.0` | `MIT OR Apache-2.0 OR LGPL-2.1-or-later` | The unfiltered graph includes this UEFI-only edge. The check passes through the allowed MIT/Apache alternatives; the candidate does not globally allow LGPL. |
+
+Cargo's expression fields preserve these `AND`/`OR` relationships; the TSV
+matrices list per-package identifiers for review, use `-` for an absent
+identifier, and do not replace the complete expression. The earlier target-filtered files
+`license-inventory-root.tsv` and `license-inventory-fuzz.tsv` remain as
+historical evidence; the all-target normalized matrices are authoritative for
+this refresh. `equivalent`, `hashbrown`, and `indexmap` also occur in Cargo
+metadata's package catalog, but their optional dependency edges are inactive
+in the current workspace feature graph, so cargo-deny does not include them
+in its active graph report. Their presence is not represented as an active
+dependency finding.
+
 ## Sources
 
+- [SPDX Apache-2.0](https://spdx.org/licenses/Apache-2.0.html)
+- [SPDX MIT](https://spdx.org/licenses/MIT.html)
+- [SPDX Unicode-3.0](https://spdx.org/licenses/Unicode-3.0.html)
+- [SPDX Unlicense](https://spdx.org/licenses/Unlicense.html)
+- [SPDX NCSA](https://spdx.org/licenses/NCSA.html)
+- [SPDX LGPL-2.1-or-later](https://spdx.org/licenses/LGPL-2.1-or-later.html)
+- [Cargo manifest license-expression fields](https://doc.rust-lang.org/cargo/reference/manifest.html#the-license-and-license-file-fields)
+- [Cargo-deny graph configuration](https://embarkstudios.github.io/cargo-deny/checks/cfg.html)
+- [GitHub-hosted runner architectures](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
 - [cargo-deny 0.20.2 release](https://github.com/EmbarkStudios/cargo-deny/releases/tag/0.20.2)
 - [Tagged cargo-deny manifest](https://github.com/EmbarkStudios/cargo-deny/blob/bca0dde53651ee946720e4540b5ce2610bec8f06/Cargo.toml)
 - [Tagged cargo-deny lockfile](https://github.com/EmbarkStudios/cargo-deny/blob/bca0dde53651ee946720e4540b5ce2610bec8f06/Cargo.lock)
