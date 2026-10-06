@@ -2846,6 +2846,27 @@ fn complete_execute_audit_requires_exactly_one_canonical_exchange() {
 }
 
 #[test]
+fn complete_execute_audit_rejects_repeated_or_recursive_exchange_control_flow() {
+    let repeated = "impl Client { fn execute(&mut self) { loop { self.transport.exchange(&[], 1); } } }";
+    assert!(
+        matches!(
+            audit_source(repeated),
+            Err(CandidateRejection::BoundaryViolation)
+        ),
+        "a single exchange AST node inside a loop can still run more than once"
+    );
+
+    let recursive = "impl Client { fn execute(&mut self) { if true { self.execute(); } self.transport.exchange(&[], 1); } }";
+    assert!(
+        matches!(
+            audit_source(recursive),
+            Err(CandidateRejection::BoundaryViolation)
+        ),
+        "recursive execute can perform another exchange through one counted callsite"
+    );
+}
+
+#[test]
 fn aliases_macros_includes_generated_and_cfg_sources_cannot_bypass_the_audit() {
     let accepted = accepted_ids_for_rejected_fixtures(&[
         "writer_alias",
