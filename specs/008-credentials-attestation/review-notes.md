@@ -453,6 +453,38 @@ Windows Git/Python. Rust compilation and Linux coverage ran in Ubuntu. No
 repository worktree metadata was changed to work around this host-specific
 tooling boundary.
 
+## T028 independent QA findings and traceability correction (2026-10-06)
+
+QA reviewed `c031f01952979a98c7e0e8036b318246d9cae8a3` against base
+`ae87b89d43957e4fc028e785dc181e69b0165dac` without editing files or running
+tests. It found eight `test_ids` references that did not name executable test
+functions and reported that all 29 applicable CSV rows were still `planned`,
+so SC-005 was not demonstrated. The findings were reproduced locally.
+
+Added `FeatureTraceabilityTests.test_credentials_and_attestation_traceability_rows_are_complete`
+first. The focused unittest failed on the eight invalid references and the
+unverified Device uniqueness status. Then corrected the CSV references,
+including the actual zeroization test path, and set requirement states from
+the completed evidence: verified for implemented/tested scope, scoped-verified
+for the caller-owned Device uniqueness obligation, deferred for Timestamp
+monotonicity under OD-003, and server-only for the §9.4 server duty. Re-running
+the focused unittest passed. The new check now validates every KMIPKIT-0008
+test reference, source/code path, feature requirement ID, OASIS requirement
+ID, and the three explicit dispositions.
+
+QA also confirmed the Attestation Capable Indicator is asserted through the
+existing fake-transport `Client::execute` path and found no production
+credential-send callsite. It identified cross-language API parity as an
+unmet 1.0.0 release gate: KMIPKIT-0008 exposes the protocol models in Rust
+only. This is already scheduled in roadmap Phases 3–4 and remains outside this
+feature's approved implementation scope. Updated `docs/roadmap.md` to require
+the versioned public API manifest and equivalent Rust, C, Java, and Python
+capabilities before claiming 1.0 API completeness. The release remains gated
+until those separate approved API/bindings specifications are complete.
+
+QA's re-review of the traceability correction and the independent security
+review remain pending. Windows/macOS CI also remains T029 work.
+
 The focused command
 `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types`
 failed at the expected assertion that an invalid value be rejected.

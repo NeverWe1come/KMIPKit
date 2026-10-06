@@ -59,6 +59,13 @@ stabilized.
 - Batch builder and per-item outcomes.
 - Secret result types and lifecycle controls.
 - Structured diagnostics.
+- **1.0.0 release gate:** approve a versioned public API manifest covering
+  every in-scope client-initiated operation and generic TTLV, then generate
+  and verify equivalent Rust, C, Java, and Python capabilities. The Rust
+  Credential and Authentication models in KMIPKIT-0008 are the protocol core
+  only; they do not satisfy this cross-language parity gate. Assign the
+  manifest and language surfaces to their own approved API/bindings
+  specifications before claiming 1.0 API completeness.
 
 ## Phase 4: Java and Python
 
