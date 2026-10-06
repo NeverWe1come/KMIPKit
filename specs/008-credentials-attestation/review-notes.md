@@ -117,3 +117,23 @@ zeroization constraints, the existing-writer/non-secret-indicator boundary,
 caller-owned Device uniqueness, and no added production dependency. No tests
 were run because this was a design review. Final implementation security review
 remains T028 and the independent qualified review remains required before 1.0.
+
+## Dependency and traceability gates (2026-10-06)
+
+The independent dependency reviewer examined `dependency-review.md` and the
+resolved QuickCheck 1.1.0 test graph at `bbc2d83`. The review found no need for
+a new direct dependency or Cargo manifest/lockfile change. Its corrections are
+recorded in that review: include target-specific `r-efi 6.0.0`, distinguish
+QuickCheck from its existing `rand`/`getrandom` transitive dependencies, and
+limit fixed-seed reproducibility claims because `SmallRng` is not portable
+across platforms or releases. The reviewed graph stays test-only.
+
+T006's CSV was checked against `specification/catalog/kmip-2.1.json`: all 11
+catalog requirements assigned to KMIPKIT-0008 are present with their exact
+`source_clause_ids` and requirement IDs; the existing 0006 default-indicator
+requirement is separately mapped; server-only and deferred rows remain
+classified; project policies cite KMIPKit sources, not OASIS. Nonce byte
+preservation is a separate project-policy row rather than being attributed to
+the Attestation Credential requirement. A 31-row uniqueness/schema/catalog
+consistency check passed. Executable paths are assigned now and become
+verified evidence only after their respective tests are implemented.

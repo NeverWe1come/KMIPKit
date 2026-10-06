@@ -17,8 +17,8 @@
 
 **Purpose**: Establish safe Rust model and test conventions after all Phase 1 gates pass.
 
-- [ ] T005 Add a dependency review before introducing any new test dependency in `specs/008-credentials-attestation/dependency-review.md`; include license, maintenance/security history, MSRV, platforms, transitive footprint, and alternatives; obtain independent review before editing Cargo manifests.
-- [ ] T006 Add traceability to `specification/compliance/requirements/KMIPKIT-0008.csv`: map every in-scope OASIS requirement to exact source clause/catalog IDs, code paths, and executable test paths; record project policies separately with their canonical decision/source and tests. Do not attribute project policies to OASIS. Explicitly exclude server duties and retain resolved OD dispositions.
+- [x] T005 Review the existing test dependency before deciding whether KMIPKIT-0008 needs another one. The independent review confirmed QuickCheck 1.1.0 is already pinned, no direct dependency or manifest change is needed, and the test plan must account for its transitive `rand`/`getrandom` graph and non-portable `SmallRng` sequences. Evidence and references are in `dependency-review.md`.
+- [x] T006 Add traceability to `specification/compliance/requirements/KMIPKIT-0008.csv`: all 11 catalog requirements assigned to KMIPKIT-0008 are present with exact clause IDs, scopes, implementation locations, and planned executable test paths; the existing 0006 Attestation Capable Indicator default is linked separately; server-only duties and deferred timestamp policy are classified; project policies, including exact Nonce byte preservation, are identified separately from OASIS rows.
 - [ ] T007 Add the credential module skeleton in `crates/kmipkit-protocol/src/credential/mod.rs` and public exports in `crates/kmipkit-protocol/src/lib.rs`; keep `#![forbid(unsafe_code)]` and add no production writer or transport path.
 
 ## Phase 3: User Story 1 — Build a typed Authentication value (P1)
