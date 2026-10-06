@@ -1,8 +1,8 @@
 # KMIPKIT-0007 delegated authorization and gate evidence
 
 **Recorded**: 2026-10-06
-**Feature branch**: `feature/KMIPKIT-0007-readiness-evidence`
-**Release base**: `d4582e2bedd159f14d66205dae0219248eb9e7fc` (`origin/release/1.0.0`)
+**Feature branch**: `feature/KMIPKIT-0007-spec-corrections`
+**Release base**: `a65cb3cba30d32297548ee95896f57c4beecdd01` (`release/1.0.0`, PR #38 merge)
 
 ## Authorization and exact-scope acceptance
 
@@ -20,7 +20,7 @@ complete. Agent security/design review is not a qualified human security
 audit. The 0007 specification PR must be merged into `release/1.0.0` before
 implementation begins.
 
-## Exact artifact revisions
+## Superseded PR #38 artifact revisions
 
 | Artifact | Git blob | SHA-256 |
 |---|---|---|
@@ -31,19 +31,42 @@ implementation begins.
 | `docs/adr/0014-public-transport-exchange-contract.md` | `d60556e4fca642367eb3a6d6b66cf34ff1809b2a` | `88841DF7250E77A6660B8E0EF3A7E29741E64A494D455A549C23D7F2C06DD85C` |
 | `specification/catalog/kmip-2.1.json` | `503e8494686305a48b2e6edb517f12bb695b1762` | `2952835570EF23A11B98F8B3C27B25D177EC1B7406331240BE0E269BD39D6F64` |
 
-These hashes identify the exact source artifacts that independent QA and
-security/design review must cover in the proposed PR. The current artifact
-revisions incorporate review findings about response allocation limits and
-request-copy test coverage; the review evidence below remains pending for
-these exact hashes. If any hashed file changes, recalculate its hashes and
-repeat review for the changed exact revision before completing T002.
+These hashes identify the specification revision merged by PR #38, not the
+corrected artifact revision in the current specification-correction PR. The
+prior QA and security/design reviews below are historical evidence for this
+superseded revision only. T002 is reopened; a new exact-artifact hash table
+and independent QA and security/design reviews must cover the correction PR
+before T002 is complete. The correction PR must merge into `release/1.0.0`
+before implementation resumes.
+
+## Correction PR artifact revisions
+
+| Artifact | Git blob | SHA-256 |
+|---|---|---|
+| `spec.md` | `415ccbab9ce84538b27c5742e9a66273f32200c3` | `844A64032DE6FD2827F49F36CDF7A42A867612DBE2F475918A380C4EAB019A3E` |
+| `plan.md` | `440dd65a9d1f55c7da6b5a7224f2744f9a3ad949` | `6D62576EF40C69EBE74C8EDD1F4BC4F524431761DCA150AF842B34D231AE53DE` |
+| `tasks.md` | `16c8a133e03f3e7ccc32c7a444acf02189f32dca` | `9DE8A96EE37B09798D71EF09BF80EB33CB356CA507B17D3C99F7AB2BD0816E4E` |
+| `checklists/requirements.md` | `770febcab20753054e6ebe28257758e422a12a4c` | `3256CBCB66F7901F76B7BC246DC986D3690C44F7A91B7E5B3263470810EA517B` |
+| `contracts/client-execution.md` | `79a29f92bce0788569c477fa59439349b90dcb7b` | `43DF941A7320CE7704519E4B3F8C89D6CA8437A410215DB08DDE59DE5E6E7E8E` |
+| `data-model.md` | `ec86f451ac44a0d264ce20779fc195047b26fb33` | `051728AF4F5FC19CDB653495B6BD1F3E9346078C8F59EDB5B6DA7DC6DB502051` |
+| `quickstart.md` | `b638899d6c5790ce94069045a9006c8df9a42942` | `3F8AA73064D744F96FEBFB814E67293897A36D82503707D1E1A697BDCD207A5A` |
+| `research.md` | `2a6c8f780a671b92f8dd304734c6795b6b1ccf96` | `0E117396224647302C05D6C4CF34DC742B809630D2D367319DB39F6071918057` |
+| `docs/adr/0013-client-extension-registry-ownership.md` | `3001b6a258c1e08097d29fbfb8e5bbb8079fc921` | `C2B4A56F23208C33C4383B047B4CB46D029D9569A71C5DF9604A6426E5E31293` |
+| `docs/adr/0014-public-transport-exchange-contract.md` | `d60556e4fca642367eb3a6d6b66cf34ff1809b2a` | `88841DF7250E77A6660B8E0EF3A7E29741E64A494D455A549C23D7F2C06DD85C` |
+| `specification/catalog/kmip-2.1.json` | `503e8494686305a48b2e6edb517f12bb695b1762` | `2952835570EF23A11B98F8B3C27B25D177EC1B7406331240BE0E269BD39D6F64` |
+
+The independent reviewers must inspect the full correction PR, including this
+approval record. The table pins the substantive spec, plan, task, contract,
+checklist, research, and unchanged normative context. After each correction
+to a tabled artifact, recompute its Git blob and SHA-256 and rerun both
+reviews against the updated exact revision.
 
 ## T001 source and dependency evidence
 
-- The active release base is PR #37's merge commit
-  `d4582e2bedd159f14d66205dae0219248eb9e7fc`. PRs #30, #31, #32, and #37
-  are merged; the 0005/0006 specs and ADR-0011/ADR-0012 are accepted on that
-  base. The current dependency API and status audit is recorded in
+- PR #38 merged the original 0007 spec at
+  `a65cb3cba30d32297548ee95896f57c4beecdd01`. PRs #30, #31, #32, #37, and
+  #38 are merged; the 0005/0006 specs and ADR-0011/ADR-0012 are accepted on
+  the current base. The current dependency API and status audit is recorded in
   [`research.md`](research.md).
 - OASIS Specification v2.1 source SHA-256 is
   `8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf`.
@@ -97,7 +120,8 @@ repeat review for the changed exact revision before completing T002.
 
 ## Independent review evidence
 
-- **QA/spec review: PASS** on the exact six artifact revisions listed above.
+- **Historical QA/spec review: PASS** on the exact six superseded PR #38
+  artifact revisions listed above.
   The reviewer confirmed all current blob/SHA-256 pairs, found no blocking
   consistency or traceability gap, and confirmed the prior OD-002 statements
   are resolved or explicitly historical. It verified that fake response-cap
@@ -107,7 +131,7 @@ repeat review for the changed exact revision before completing T002.
   position, normative link, and generated report consistency. No
   implementation tests were run, and reviewer-owned checklist markers were
   not changed.
-- **Security/design review: PASS** on the exact six artifact revisions listed
+- **Historical security/design review: PASS** on the exact six superseded PR #38 artifact revisions listed
   above. The reviewer confirmed the catalog reorder changes no policy content
   and preserves links to `KMIPKIT-REQ-SPEC-9.6-001-002`, `KMIPKIT-DISC-043`,
   and `KMIPKIT-DEC-002`. Earlier findings were resolved: the zeroization
@@ -118,20 +142,37 @@ repeat review for the changed exact revision before completing T002.
   pinned `zeroize` 1.9.0 behavior. This agent design review is not a qualified
   human security audit. A separate Codex Security scan captured an earlier
   snapshot and is not evidence for these artifact revisions.
-- Reviewer-owned checklist items remain unchecked. T002 remains unchecked
-  until the exact review/hash evidence is recorded and this specification PR
-  is merged into `release/1.0.0`. A qualified independent human security audit
-  remains required before 1.0.0.
+- **Correction-PR QA/spec review: PASS** against all 11 exact artifact pairs
+  in the correction table. The independent reviewer checked Table 212
+  repeatability, C2S/S2C direction and 1.0/1.1 scope, private Red candidate
+  seams, client-boundary decoder and limits checks, constructor usability,
+  test-support dependency acyclicity, task ordering, and requirement coverage.
+  It also confirmed T010 pins the transport's `zeroize` edge to the reviewed
+  workspace version/features and updates the existing lockfile entry without
+  adding a package node. Earlier findings about the Table 212 locator, the
+  wrong S2C response mapping,
+  and T010/T012 task ownership were corrected and rechecked. No blocking QA
+  findings remain; no implementation tests were run as part of this spec
+  review.
+- **Correction-PR security/design review: PASS** against all 11 exact artifact
+  pairs in the correction table. The reviewer found no blocking security or
+  design issue in the zeroization contract, public low-level transport
+  boundary, response constructor, decoder/limits seams, fail-closed AST audit
+  plan, or dependency graph. This agent review is not a qualified human
+  security audit.
+- Reviewer-owned checklist markers remain unchecked. T002 remains unchecked
+  until these reviews are recorded and the correction PR merges into
+  `release/1.0.0`. A qualified independent human security audit remains a
+  release gate before 1.0.0; it does not block this autonomous specification
+  and implementation work.
 
 ## Verification performed
 
-- `git diff --check` passed.
-- `python tools/normative_catalog/validate.py` passed.
-- `python tools/normative_catalog/report.py --check --repo-root
-  C:\Users\ramp1953\.codex\worktrees\kmipkit-0007-t001-audit\KMIPKit`
-  passed.
-- `python tools/normative_catalog/audit_sources.py --base-sha d4582e2bedd159f14d66205dae0219248eb9e7fc --check` passed (1,411 candidates).
-- `python tools/normative_catalog/check_immutable_sources.py --base-sha d4582e2bedd159f14d66205dae0219248eb9e7fc` passed.
-- `python -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -q` passed: 167 tests, 7 skipped. This includes the deterministic policy-order regression that initially failed in the PR's macOS and Windows jobs and passed after the catalog reorder.
+- `git diff --check` passed on the correction branch.
+- `python tools/normative_catalog/validate.py --repo-root .` passed: `sources=4`, `clauses=1411`, `records=4024`.
+- `python tools/normative_catalog/report.py --repo-root C:\Users\ramp1953\.codex\worktrees\kmipkit-0007-spec-corrections\KMIPKit --check` passed.
+- `python tools/normative_catalog/audit_sources.py --base-sha a65cb3cba30d32297548ee95896f57c4beecdd01 --check` passed (1,411 candidates).
+- `python tools/normative_catalog/check_immutable_sources.py --base-sha a65cb3cba30d32297548ee95896f57c4beecdd01` passed.
+- `python -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -q` passed: 167 tests, 7 skipped.
 - No implementation tests were run; this PR updates specification, governance,
   and catalog documentation only.

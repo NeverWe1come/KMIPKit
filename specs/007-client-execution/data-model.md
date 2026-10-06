@@ -6,16 +6,16 @@
 
 ### DiscoverVersionsRequest
 
-- Operation: Discover Versions (`KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS`).
+- Operation: client-to-server Discover Versions (`KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS`; OASIS §6.1.16).
 - Protocol version list: KMIPKit 1.0 sends exactly `(2, 1)` in decreasing preference order.
 - Request payload: typed protocol-version values; no generic TTLV or caller-supplied bytes.
 - Shared batch metadata: unique item ID when the batch has more than one item; IDs are pairwise distinct per the KMIPKIT-0006 project invariant.
 
 ### DiscoverVersionsResponse
 
-- Operation: Discover Versions (`KMIPKIT-ELEM-OP-S2C-DISCOVER-VERSIONS`).
+- Operation: response to the client-to-server Discover Versions operation (`KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS`; OASIS §6.1.16). This is not the separate server-to-client operation in §6.2.1.
 - Result: the existing KMIPKIT-0003 typed result contract.
-- Payload: ordered list of server-supported versions; an empty list remains a valid Discover Versions result.
+- Payload: ordered list of server-supported versions; an empty list remains valid. Preserve repeated equal offered versions and received order because §6.1.16 Table 212 permits repeated Protocol Version fields and states no uniqueness rule; reject versions outside the offered intersection or malformed values.
 - Correlation: response item Operation and ID are checked against the originating request. A supplied request ID must be echoed.
 
 ## ClientBatch
@@ -53,7 +53,7 @@ An error preserves the greatest observed state. A successful exchange returns it
 
 ## Low-Level Transport Response
 
-- `TransportResponse` owns successful raw response bytes in zeroizing storage, exposes only a borrowed byte view, and redacts its `Debug` output.
+- `TransportResponse::new(Vec<u8>)` is the documented public constructor for downstream `Transport` implementers; it moves response bytes into zeroizing-owned storage. `as_bytes(&self) -> &[u8]` exposes only a borrowed byte view, and `Debug` is redacted.
 - Dropping `TransportResponse` zeroizes the initialized byte range in its current owned allocation before release. Spare/uninitialized capacity, earlier allocations released by reallocation unless cleared before release, caller-created copies, and TLS/operating-system/third-party transport-library copies are outside this guarantee.
 - Before an error is returned, every KMIPKit-owned partial or temporary response allocation has its initialized byte range zeroized; `TransportError` carries no raw bytes and has redacted formatting. Concrete adapters must prevent response-buffer reallocation after storing response bytes or clear each previous/temporary allocation before release, with tests proving the chosen strategy on success and error paths.
 - The low-level request boundary must not log or retain caller bytes beyond exchange and must zeroize initialized bytes in KMIPKit-owned temporary request copies before release, including any prior allocation released as a copy grows. Each concrete adapter specification requires applicable tests for request nonlogging, nonretention, and temporary-copy cleanup, and documents external-library-copy limitations.

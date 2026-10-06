@@ -29,6 +29,7 @@
 
 - The complete message must be structurally valid under the 0005 decoder and 0006 model.
 - Protocol Version is exactly 2.1 under ADR-0002.
+- Discover Versions response versions are preserved in received order, including repeated equal offered versions. §6.1.16 Table 212 marks the Protocol Version response field repeatable and states no uniqueness rule; reject only malformed entries or versions outside the offered intersection.
 - Response operation and item identities must match the request. Multi-item response order may vary and IDs drive association. A supplied ID is echoed; single-item requests may omit the ID.
 - Pending is accepted only if the request option permits it under known semantics and the response contains the required Asynchronous Correlation Value from the accepted 0006 model. Preserve its opaque bytes unchanged through the `Client::execute` result for later explicit operations. Unknown extension-range indicator values do not grant Pending permission without an explicit registry policy. Under `KMIPKIT-DEC-002`, outbound Batch Error Continuation accepts assigned values only for this slice; generic decoding preserves all raw Enumeration values. This project policy does not claim that Table 435's extension allocation is invalid under OASIS. The separate `KMIPKIT-DISC-001` remains open for Continue/Undo execution effects.
 - Treat the Asynchronous Correlation Value as capability-like sensitive metadata: expose it only through an explicit borrowed accessor, redact it from formatted output, errors, and logs, and retain KMIPKit-owned bytes in zeroizing storage until drop without an ordinary unzeroized duplicate.
@@ -39,10 +40,13 @@
 
 Expose only safe typed cause categories and delivery state through `ClientError`/`TransportError`. If an error-source chain is exposed, every link must be a safe typed KMIPKit error; do not retain or display arbitrary original transport/library error text, which may carry untrusted or sensitive payloads.
 
-`TransportResponse` is the only direct low-level raw-response return type. Its
-`Debug` output is redacted, and it zeroizes the initialized byte range in its
-current owned allocation on drop. The high-level client borrows the response
-bytes only to decode the message model and never returns the raw body.
+`TransportResponse` is the only direct low-level raw-response return type.
+External transport implementers construct it with the documented public
+`TransportResponse::new(Vec<u8>)`, which moves the vector into zeroizing-owned
+storage; `as_bytes(&self) -> &[u8]` provides a borrowed view. Its `Debug`
+output is redacted, and it zeroizes the initialized byte range in its current
+owned allocation on drop. The high-level client borrows the response bytes
+only to decode the message model and never returns the raw body.
 
 ## Boundaries
 

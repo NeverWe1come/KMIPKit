@@ -7,7 +7,7 @@ This developer walkthrough records the intended test path; it is not a user-faci
 1. A `#[cfg(test)]` unit test inside `kmipkit-client` explicitly constructs a typed Discover Versions request and calls `Client::execute(&mut self, batch: ClientBatch, limits: &CodecLimits) -> Result<ClientBatchResponse, ClientError>` through a private test-only client factory. It imports the deterministic fake from the unpublished `kmipkit-test-support` dev-dependency; external integration tests cannot access the private factory.
 2. Execute validates the `(2, 1)` request header, supported-version list, IDs, options, the caller-supplied optional Time Stamp, and configured limits.
 3. The private writer returns a zeroizing request owner under the execute-owned permit.
-4. The unpublished deterministic fake transport observes the borrowed request bytes through partial-write completion and returns a bounded `TransportResponse`.
+4. The unpublished deterministic fake transport observes the borrowed request bytes through partial-write completion and returns a bounded `TransportResponse`, constructed through `TransportResponse::new(Vec<u8>)`; external implementers can use the same public constructor, and callers read successful bytes only through `as_bytes()`.
 5. Execute checks response length before decode, validates the 2.1 header and response association, then returns the typed result.
 6. The request owner is dropped and zeroizes its initialized bytes after the exchange returns.
 
