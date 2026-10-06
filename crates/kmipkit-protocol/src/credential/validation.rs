@@ -7,6 +7,93 @@ use super::{CredentialType, CredentialValidationError, CredentialValidationError
 const CREDENTIAL_TYPE: u32 = 0x0042_0024;
 const CREDENTIAL_VALUE: u32 = 0x0042_0025;
 
+/// The KMIP TTLV Item Type required by a known credential member.
+#[derive(Clone, Copy)]
+pub(super) enum FieldKind {
+    /// A KMIP Text String.
+    TextString,
+    /// A KMIP Structure.
+    Structure,
+    /// A KMIP Enumeration.
+    Enumeration,
+    /// A KMIP Byte String.
+    ByteString,
+}
+
+/// A known member in one of the KMIP 2.1 credential tables.
+#[derive(Clone, Copy)]
+pub(super) struct FieldRule {
+    pub(super) tag: u32,
+    pub(super) kind: FieldKind,
+    pub(super) required: bool,
+}
+
+/// Checks singleton cardinality, required members, and Item Types for a schema.
+///
+/// Unknown members are intentionally ignored here and remain in the owned TTLV
+/// tree. Their order and payloads are therefore preserved by the typed wrapper.
+pub(super) fn validate_fields(
+    view: &StructureView<'_>,
+    rules: &[FieldRule],
+    at_least_one: &[u32],
+) -> Result<(), CredentialValidationError> {
+    let mut seen = vec![false; rules.len()];
+    let mut group_member_seen = false;
+    let mut last_known_member_index = None;
+
+    for field in view.children() {
+        let Some((rule_index, rule)) = rules
+            .iter()
+            .enumerate()
+            .find(|(_, rule)| rule.tag == field.tag().raw())
+        else {
+            continue;
+        };
+
+        if seen[rule_index] {
+            return Err(CredentialValidationError::new(
+                CredentialValidationErrorKind::DuplicateField,
+            ));
+        }
+        if last_known_member_index.is_some_and(|last| rule_index < last) {
+            return Err(CredentialValidationError::new(
+                CredentialValidationErrorKind::FieldOutOfOrder,
+            ));
+        }
+        seen[rule_index] = true;
+        last_known_member_index = Some(rule_index);
+        group_member_seen |= at_least_one.contains(&rule.tag);
+
+        let matches_kind = field.with_value(|value| {
+            matches!(
+                (rule.kind, value),
+                (FieldKind::TextString, ValueView::TextString(_))
+                    | (FieldKind::Structure, ValueView::Structure(_))
+                    | (FieldKind::Enumeration, ValueView::Enumeration(_))
+                    | (FieldKind::ByteString, ValueView::ByteString(_))
+            )
+        });
+        if !matches_kind {
+            return Err(CredentialValidationError::new(
+                CredentialValidationErrorKind::WrongFieldType,
+            ));
+        }
+    }
+
+    if rules
+        .iter()
+        .zip(seen.iter())
+        .any(|(rule, was_seen)| rule.required && !was_seen)
+        || (!at_least_one.is_empty() && !group_member_seen)
+    {
+        return Err(CredentialValidationError::new(
+            CredentialValidationErrorKind::MissingField,
+        ));
+    }
+
+    Ok(())
+}
+
 /// Validates the ordered outer fields shared by standalone and nested Credentials.
 ///
 /// Unknown children remain permitted and are retained by the owning generic

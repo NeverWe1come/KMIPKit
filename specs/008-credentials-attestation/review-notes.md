@@ -304,3 +304,34 @@ deferred to T020 after its reviewed contract, as required by T016.
 `cargo +1.94.0 test -p kmipkit-protocol --test credential_redaction` fails
 only with `E0432` for the not-yet-implemented `CredentialValue` and `Nonce`
 public APIs. No production code was added.
+
+## User Story 2 RED — canonical variant member order (2026-10-06)
+
+Added a derived KMIPKIT-0008-FR-004 case requiring known members to follow
+their Table 411, 412, and 414 order. The case covers Username/Password,
+Device, and OTP inputs in reversed or displaced order. Unknown members remain
+outside the typed order comparison and are retained in the original tree.
+
+`cargo +1.94.0 fmt --all` passed. The focused RED command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract known_credential_members_reject_noncanonical_table_order`
+failed at the assertion because the typed parser accepted noncanonical member
+order. This confirms the test exercises the missing behavior.
+
+## User Story 2 GREEN — Username, Device, OTP, Ticket, and opaque values (2026-10-06)
+
+Added typed wrappers for Username and Password, Device, OTP, Ticket,
+Extensions, and unknown values. The shared validator now checks singleton
+members, required members, Item Types, the resolved one-of-four Device
+identifier rule, and known member order from Tables 411, 412, 414, and 416.
+The wrappers retain the complete original TTLV trees, including unknown
+members and their order; Debug and Display expose only variant metadata.
+Hashed Password, Attestation, and Nonce wrappers are present only to stabilize
+the common public enum surface and remain subject to T018/T019 validation.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract -- --skip hashed_password --skip nonce --skip attestation` — passed: 13 tests; five deferred Hashed Password, Attestation, and Nonce tests were filtered.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_roundtrip` — passed: 4 tests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.

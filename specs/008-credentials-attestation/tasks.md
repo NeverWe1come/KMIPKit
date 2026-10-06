@@ -56,7 +56,7 @@
 
 ### Implementation — Green
 
-- [ ] T017 [US2] [GREEN COMMIT] Implement Username and Password, Device, OTP, Ticket, and opaque Extensions value types and table-derived structural validation in `crates/kmipkit-protocol/src/credential/variants.rs` (FR-003–FR-005, FR-011).
+- [x] T017 [US2] [GREEN COMMIT] Implement Username and Password, Device, OTP, Ticket, and opaque Extensions value types and table-derived structural validation in `crates/kmipkit-protocol/src/credential/variants.rs` (FR-003–FR-005, FR-011).
 - [ ] T018 [US2] [GREEN COMMIT] Implement caller-supplied Hashed Password bytes/timestamp, raw algorithm preservation, and non-cryptographic effective SHA-256 default in `crates/kmipkit-protocol/src/credential/hashed_password.rs` (FR-007).
 - [ ] T019 [US2] [GREEN COMMIT] Implement Attestation Credential and server-sourced Nonce types with raw field preservation in `crates/kmipkit-protocol/src/credential/attestation.rs` and `nonce.rs` (FR-006).
 - [ ] T020 [US2] [GREEN COMMIT] Implement redacted secret wrappers and KMIPKit-owned zeroization using the reviewed ownership contract in `crates/kmipkit-protocol/src/credential/secret.rs`; add no production credential encode/send callsite in this feature (FR-010, FR-012).

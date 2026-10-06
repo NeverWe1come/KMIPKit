@@ -11,13 +11,24 @@
 //! never credential payloads. These in-memory models do not select
 //! Authentication for a request or send secret-bearing data.
 
+mod attestation;
 mod authentication;
 mod conversion;
+mod hashed_password;
+mod nonce;
 mod validation;
 mod value;
+mod variants;
 
+pub use attestation::AttestationCredential;
 pub use authentication::{Authentication, CredentialView};
+pub use hashed_password::HashedPasswordCredential;
+pub use nonce::Nonce;
 pub use value::{Credential, CredentialType};
+pub use variants::{
+    CredentialValue, DeviceCredential, OneTimePasswordCredential, OpaqueTtlv, TicketCredential,
+    UsernameAndPasswordCredential,
+};
 
 use std::error::Error;
 use std::fmt;
