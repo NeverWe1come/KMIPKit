@@ -1078,6 +1078,14 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
         visit::visit_item_use(self, item_use);
     }
 
+    fn visit_item_extern_crate(&mut self, item: &'ast syn::ItemExternCrate) {
+        self.check_attributes(&item.attrs);
+        if !is_test_cfg(&item.attrs) && item.rename.is_some() {
+            self.reject("extern crate aliases are not resolved by the boundary audit");
+        }
+        visit::visit_item_extern_crate(self, item);
+    }
+
     fn visit_expr_call(&mut self, call: &'ast ExprCall) {
         if let Expr::Path(path) = call.func.as_ref() {
             let segments = path
