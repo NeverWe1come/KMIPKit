@@ -1,8 +1,8 @@
 # Feature Specification: KMIP 2.1 Typed Client Execution
 
-**Feature Branch**: `feature/KMIPKIT-0007-spec-corrections`
+**Feature Branch**: `feature/KMIPKIT-0007-implementation`
 **Created**: 2026-10-05
-**Status**: Draft — delegated maintainer authorization is recorded in `approval-record.md`; the corrected specification PR and its independent review must be complete before implementation.
+**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.
 **Input**: KMIPKit roadmap: establish the synchronous request/response execution path, response validation, delivery reporting, and first typed client operation.
 
 ## Scope and normative sources
