@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -104,6 +108,11 @@ class CiSummaryTests(unittest.TestCase):
                 "branch-coverage": "failure",
             },
         )
+        needs["scheduled-dependency-policy"]["outputs"] = {
+            "release_ref": "release/1.0.0",
+            "scanned_commit": "b" * 40,
+        }
+        needs["branch-coverage"]["outputs"] = {"summary_status": "failed"}
         markdown, exit_code = summary_module.build_summary(
             event_name="schedule",
             context=self.context(),
@@ -115,7 +124,34 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("Scheduled dependency policy", markdown)
         self.assertIn("Branch coverage", markdown)
         self.assertIn("informational", markdown.lower())
+        self.assertIn("Attempt failed", markdown)
+        self.assertIn("Release scan:", markdown)
+        self.assertIn("release/1.0.0", markdown)
         self.assertIn("Not applicable", markdown)
+
+    def test_schedule_without_branch_coverage_status_does_not_claim_it_passed(self) -> None:
+        summary_module = self.require_summary()
+        needs = self.pull_request_needs(
+            **{
+                "core": "skipped",
+                "script-contracts": "skipped",
+                "normative-inventory": "skipped",
+                "coverage": "skipped",
+                "coverage-gate": "skipped",
+                "dependency-policy": "skipped",
+                "scheduled-dependency-policy": "success",
+                "branch-coverage": "success",
+            }
+        )
+        markdown, exit_code = summary_module.build_summary(
+            event_name="schedule",
+            context=self.context(),
+            needs=needs,
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertIn("Unavailable — informational", markdown)
+        self.assertNotIn("Attempt completed", markdown)
 
     def test_untrusted_ref_is_escaped_before_markdown_rendering(self) -> None:
         summary_module = self.require_summary()
@@ -127,7 +163,31 @@ class CiSummaryTests(unittest.TestCase):
         )
 
         self.assertNotIn("|oops", markdown)
-        self.assertNotIn("Injected heading", markdown)
+        self.assertNotIn("\nInjected heading", markdown)
+
+    def test_main_writes_summary_even_when_required_checks_fail(self) -> None:
+        summary_module = self.require_summary()
+        needs = self.pull_request_needs(core="failure")
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "step-summary.md"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(output),
+                "CI_NEEDS_JSON": json.dumps(needs),
+                "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_REPOSITORY": "NeverWe1come/KMIPKit",
+                "GITHUB_REF": "refs/pull/42/merge",
+                "GITHUB_SHA": "a" * 40,
+                "GITHUB_RUN_ID": "123456789",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "GITHUB_SERVER_URL": "https://github.com",
+            }
+            with mock.patch.dict(os.environ, environment, clear=False):
+                exit_code = summary_module.main()
+
+            self.assertEqual(1, exit_code)
+            markdown = output.read_text(encoding="utf-8")
+            self.assertIn("CI result: FAIL", markdown)
+            self.assertIn("Core matrix", markdown)
 
 
 if __name__ == "__main__":

@@ -184,6 +184,12 @@ integrated into that default branch. The schedule then checks out the
 configured release ref and reports the scanned commit with root and fuzz
 RustSec evidence separately.
 
+## CI run summaries
+
+Every pull-request and scheduled run includes a final **CI summary / at a glance** job. The workflow run Summary shows whether required checks passed, the event, ref, commit, run link, and outcomes grouped by the checks that apply to that event. Checks belonging to the other event type are marked not applicable. Failed, cancelled, or missing required checks remain failures in the final summary.
+
+The coverage gate adds its own job Summary with measured percentages and thresholds, an explicit reason when coverage is unavailable and no threshold is claimed, or a failure diagnostic. Scheduled branch coverage is called out as informational and does not affect the required result. Detailed matrix rows and logs remain in each job. These summaries only present existing workflow results; they do not change the jobs, runner routing, or thresholds.
+
 ## CI levels
 
 ### Every PR
@@ -191,7 +197,8 @@ RustSec evidence separately.
 - Formatting and linting.
 - MSRV and stable Rust tests.
 - Linux, Windows, and macOS tests.
-- Coverage and traceability.
+- Coverage and traceability, including the coverage gate summary.
+- Final at-a-glance run summary with relevant job-group outcomes.
 - Documentation with warnings denied.
 - Affected ABI and adapter tests.
 - Dependency, advisory, source, and license policy.

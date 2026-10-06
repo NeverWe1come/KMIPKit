@@ -21,6 +21,8 @@
 | FR-010 | T008, T011, T019, T020 |
 | FR-011 | T005, T020, T021 |
 | FR-012 | T009, T011 |
+| FR-013 | T040, T041 |
+| FR-014 | T043, T044, T045, T046, T047 |
 | SC-001 | T010, T011 |
 | SC-002 | T010, T011 |
 | SC-003 | T013, T014, T015 |
@@ -29,6 +31,8 @@
 | SC-006 | T008, T009, T011 |
 | SC-007 | T020, T021, T025 |
 | SC-008 | T008, T009, T011 |
+| SC-009 | T040, T041, T042 |
+| SC-010 | T043, T044, T045, T046, T047 |
 
 ## Phase 1: Setup
 
@@ -113,6 +117,17 @@
 - [x] T040 Add a workflow contract requiring same-repository Linux PR jobs and scheduled branch coverage to use the self-hosted ARM64 runner, while fork PRs and Windows/macOS jobs remain hosted. RED evidence: commit `c820eaa`; `python -m unittest scripts.tests.test_workflow -v` failed the new routing contract for all five pull-request jobs and the scheduled job.
 - [x] T041 [US1] Route trusted Linux workflow jobs to the self-hosted ARM64 runner, preserve GitHub-hosted fallback for fork PRs and Windows/macOS, and update the approved requirements and testing guide. GREEN evidence: focused workflow contracts passed 8 tests; full Python script suite passed 48 tests with 3 Windows symlink-permission skips; `pwsh -File scripts/tests/Test-Wsl.ps1` passed; `git diff --check` passed.
 - [x] T042 Run workflow contract and repository validation checks, record GREEN/REFACTOR results, update task evidence, and prepare the draft PR against `release/1.0.0`. REFACTOR contract tests passed (8); full Python suite passed (48, 3 Windows symlink-permission skips); WSL contracts passed (8); `git diff --check` passed. Draft PR: #17.
+
+## Phase 9: At-a-glance GitHub run summaries
+
+**Purpose**: Make the outcome of existing CI checks easy to understand in the GitHub run Summary without changing what executes.
+
+- [x] T043 [US4] Add failing contracts for pull-request and schedule summaries, event-inapplicable rows, required failure propagation, informational branch coverage, coverage metrics/diagnostics, and workflow wiring. RED evidence: commit `65fff76`; the new summary contracts failed because the renderer and final job did not exist.
+- [x] T044 [US4] Implement the event-aware run summary renderer and append measured, unavailable, or failed coverage details to the coverage gate job Summary. GREEN evidence: script suite passed 156 tests (25 environment/tool skips); summary and coverage gate regressions passed.
+- [x] T045 [US4] Update the approved feature specification, plan, data model, research, quickstart, and testing guide with FR-014/SC-010 and the presentation-only behavior.
+- [x] T046 [US4] Run the complete Python, normative catalog, PowerShell, Rust, workflow, and diff checks; review summary correctness and evidence before requesting review. Evidence: Python script suite 156 passed (25 skipped because the pinned cargo-deny binary or Windows symlink privileges were unavailable); normative catalog suite 169 passed (7 Windows symlink skips); catalog validate/report/generated checks passed; PowerShell WSL suite passed 8 contracts; `pwsh -File scripts/Test-Wsl.ps1` passed; Rust 1.94.0 fmt, Clippy, and rustdoc passed; `git diff --check` passed. Workflow syntax was reviewed through workflow contract tests; standalone actionlint/YAML parser was not installed.
+- [ ] T047 [US4] Refactor the summary implementation without changing its output contract; rerun relevant checks and record separate Refactor evidence.
+- [ ] T048 [US4] Push the feature branch and prepare the draft PR against `release/1.0.0` with rationale, verification, risks, and Red/Green/Refactor evidence.
 
 ## Dependencies
 

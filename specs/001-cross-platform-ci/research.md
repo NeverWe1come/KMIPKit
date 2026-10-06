@@ -32,6 +32,16 @@ Sources: [LLVM `llvm-cov export`](https://www.llvm.org/docs/CommandGuide/llvm-co
 
 The cargo-llvm-cov documentation also confirms support for the Windows MSVC runner target used by GitHub-hosted Windows runners. Source files under `src/` are not omitted based only on test-like names because Rust path attributes can select them as production modules.
 
+## Decision: Add an event-aware final run summary
+
+**Decision**: Add one final workflow job that depends on every existing job and runs with an always condition. It writes event, ref, commit and run context plus check-group results to GitHub's run Summary. It marks checks for the other event type not applicable. Required failures, cancellations, missing results, and unexpected skips keep the summary job failed. The coverage gate writes its own measured metrics, unavailable reason, or failure diagnostic to its job Summary. Scheduled branch coverage remains explicitly informational.
+
+**Rationale**: GitHub renders Markdown written through `GITHUB_STEP_SUMMARY` in the workflow run UI. Job summaries are the native, credential-free way to show a concise overview while preserving detailed logs in their source jobs. The final job reads the workflow dependency results and existing outputs; it does not query the API or alter the validation graph.
+
+**Alternatives considered**: A third-party summary action or API comment was rejected because the native summary file is sufficient and requires no extra action, token scope, or network request. Changes to the job matrix or validation scope were rejected because the requirement concerns presentation only.
+
+Sources: [GitHub workflow commands and job summaries](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions), [GitHub job dependencies and always conditions](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-jobs).
+
 ## Decision: Use PowerShell 7.3+ and direct WSL argv
 
 **Decision**: Provide `pwsh -File scripts/Test-Wsl.ps1 [-Distribution <name>]`. Select exactly one installed Ubuntu distribution unless explicitly named; require WSL2; convert the repository path using `wslpath`; pass it as the working directory through `wsl.exe --cd`; call `wsl.exe` with `--exec` and argument arrays; propagate native exit status.
@@ -54,4 +64,4 @@ The official Git tag refs were resolved with `git ls-remote` on 2026-10-04:
 
 ## Unresolved research
 
-No design-critical questions remain. Before implementation, tests will verify the pinned coverage tool's actual JSON schema against checked-in fixtures and, where the environment permits, a generated report. CI validation will fail closed on schema drift.
+No design-critical questions remain. The summary format is repository-owned Markdown and the event result contract is covered by Python unit tests. Before implementation, tests will verify the pinned coverage tool's actual JSON schema against checked-in fixtures and, where the environment permits, a generated report. CI validation will fail closed on schema drift.

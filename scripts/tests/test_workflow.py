@@ -201,7 +201,8 @@ class WorkflowContractTests(unittest.TestCase):
             (scalar for _, scalar in self.inline_run_scalars(job) if "Active release ref:" in scalar),
             None,
         )
-        self.assertEqual('echo "Active release ref: $ACTIVE_RELEASE_REF"', active_ref_run.strip("'"))
+        self.assertIn('echo "Active release ref: $ACTIVE_RELEASE_REF"', active_ref_run.strip("'"))
+        self.assertIn('"release_ref=$ACTIVE_RELEASE_REF" >> "$GITHUB_OUTPUT"', active_ref_run)
         self.assertIn("$ACTIVE_RELEASE_REF", job)
         runner = self.require_policy_runner()
         output = job + "\n" + runner
@@ -270,14 +271,22 @@ class WorkflowContractTests(unittest.TestCase):
                 self.assertRegex(job, rf"(?m)^      - {re.escape(dependency)}$")
         self.assertIn("scripts/ci_summary.py", job)
         self.assertIn("${{ toJSON(needs) }}", job)
-        self.assertIn("GITHUB_STEP_SUMMARY", job)
-        self.assert_pi_runner_with_hosted_fallback(job, "|| fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')")
+        summary_script = (REPOSITORY_ROOT / "scripts" / "ci_summary.py").read_text(encoding="utf-8")
+        self.assertIn("GITHUB_STEP_SUMMARY", summary_script)
+        self.assertIn("github.event_name == 'schedule'", job)
+        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", job)
+        self.assertIn("fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')", job)
+        self.assertIn("|| 'ubuntu-latest'", job)
 
     def test_coverage_gate_adds_its_result_and_metrics_to_the_job_summary(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "coverage-gate")
         self.assertIn("--summary-file", job)
         self.assertIn("$GITHUB_STEP_SUMMARY", job)
+        self.assertIn("Summarize failed platform collection", job)
+        self.assertIn("if: always() && needs.coverage.result != 'success'", job)
+        self.assertIn("Summarize skipped coverage aggregation", job)
+        self.assertIn("steps.enforce.outcome == 'skipped'", job)
 
 
 if __name__ == "__main__":
