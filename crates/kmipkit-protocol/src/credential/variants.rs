@@ -5,10 +5,12 @@ use std::fmt;
 use kmipkit_ttlv::{Structure, StructureView};
 
 use super::{
-    CredentialType, CredentialValidationError, CredentialValidationErrorKind, validation,
+    CredentialType, CredentialValidationError, validation,
     validation::{FieldKind, FieldRule},
 };
-use super::{attestation::AttestationCredential, hashed_password::HashedPasswordCredential};
+use super::{
+    attestation::AttestationCredential, hashed_password::HashedPasswordCredential, secret,
+};
 
 const USERNAME: u32 = 0x0042_0099;
 const PASSWORD: u32 = 0x0042_00A1;
@@ -68,16 +70,16 @@ macro_rules! impl_tree_value {
 
         impl fmt::Debug for $type {
             fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter
-                    .debug_struct($label)
-                    .field("field_count", &self.tree.view().children().len())
-                    .finish_non_exhaustive()
+                secret::format_debug_struct(formatter, $label, |debug| {
+                    debug.field("field_count", &self.tree.view().children().len());
+                    Ok(())
+                })
             }
         }
 
         impl fmt::Display for $type {
             fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                write!(formatter, "KMIP {} (redacted)", $label)
+                secret::format_redacted_display(formatter, $label)
             }
         }
     };
@@ -199,11 +201,12 @@ impl fmt::Debug for CredentialValue {
             Self::Extensions(value) => ("Extensions", value.tree.view().children().len()),
             Self::Unknown { value, .. } => ("Unknown", value.tree.view().children().len()),
         };
-        formatter
-            .debug_struct("CredentialValue")
-            .field("variant", &variant)
-            .field("field_count", &field_count)
-            .finish_non_exhaustive()
+        secret::format_debug_struct(formatter, "CredentialValue", |debug| {
+            debug
+                .field("variant", &variant)
+                .field("field_count", &field_count);
+            Ok(())
+        })
     }
 }
 
@@ -320,9 +323,7 @@ fn validate_ticket(tree: &Structure) -> Result<(), CredentialValidationError> {
             kmipkit_ttlv::ValueView::Structure(ticket) => {
                 validation::validate_fields(&ticket, TICKET_INNER_RULES, &[])
             }
-            _ => Err(CredentialValidationError::new(
-                CredentialValidationErrorKind::WrongFieldType,
-            )),
+            _ => Err(validation::wrong_field_type_error()),
         });
         result?;
     }

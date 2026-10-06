@@ -212,6 +212,22 @@ Fresh Rust 1.94.0 verification:
 - `cargo +1.94.0 fmt --all --check` — passed.
 - `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
 
+## User Story 2 REFACTOR — shared diagnostics and validation categories (2026-10-06)
+
+Moved credential tree Debug formatting and redacted Display text through
+shared helpers in `credential/secret.rs`. Common payload-free validation
+categories are now created by `credential/validation.rs`, and Authentication,
+Credential Value, Attestation, Hashed Password, Nonce, and variant wrappers
+reuse those helpers. Existing diagnostic strings, error categories, and all
+parsing behavior remain unchanged.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 62 unit tests, 18 credential contract tests, 2 redaction tests, 4 credential round-trip tests, 2 secret-owner tests, 56 other integration tests, and 2 doctests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed without warnings.
+
 ## User Story 2 RED — secret owner API (2026-10-06)
 
 Added public contract tests for redacted caller-owned text and byte wrappers,

@@ -4,10 +4,8 @@ use std::fmt;
 
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
-use super::{
-    Credential, CredentialType, CredentialValidationError, CredentialValidationErrorKind,
-    validation,
-};
+use super::secret;
+use super::{Credential, CredentialType, CredentialValidationError, validation};
 
 const CREDENTIAL: u32 = 0x0042_0023;
 
@@ -31,14 +29,12 @@ impl Authentication {
     ///
     /// # Errors
     ///
-    /// Returns [`CredentialValidationErrorKind::EmptyAuthentication`] when
+    /// Returns [`crate::CredentialValidationErrorKind::EmptyAuthentication`] when
     /// `credentials` is empty, or a sanitized model error if an internally
     /// defined TTLV field cannot be represented.
     pub fn new(credentials: Vec<Credential>) -> Result<Self, CredentialValidationError> {
         if credentials.is_empty() {
-            return Err(CredentialValidationError::new(
-                CredentialValidationErrorKind::EmptyAuthentication,
-            ));
+            return Err(validation::empty_authentication_error());
         }
 
         let credential_tag = checked_credential_tag()?;
@@ -87,9 +83,7 @@ impl Authentication {
                 _ => None,
             });
             let Some(credential_type) = credential_type else {
-                return Err(CredentialValidationError::new(
-                    CredentialValidationErrorKind::WrongFieldType,
-                ));
+                return Err(validation::wrong_field_type_error());
             };
 
             credentials.push(CredentialIndex {
@@ -99,9 +93,7 @@ impl Authentication {
         }
 
         if credentials.is_empty() {
-            return Err(CredentialValidationError::new(
-                CredentialValidationErrorKind::EmptyAuthentication,
-            ));
+            return Err(validation::empty_authentication_error());
         }
 
         Ok(Self { tree, credentials })
@@ -169,10 +161,10 @@ impl CredentialView<'_> {
 
 impl fmt::Debug for Authentication {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("Authentication")
-            .field("credential_count", &self.credentials.len())
-            .finish_non_exhaustive()
+        secret::format_debug_struct(formatter, "Authentication", |debug| {
+            debug.field("credential_count", &self.credentials.len());
+            Ok(())
+        })
     }
 }
 
@@ -188,10 +180,10 @@ impl fmt::Display for Authentication {
 
 impl fmt::Debug for CredentialView<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("CredentialView")
-            .field("credential_type", &self.credential_type)
-            .finish_non_exhaustive()
+        secret::format_debug_struct(formatter, "CredentialView", |debug| {
+            debug.field("credential_type", &self.credential_type);
+            Ok(())
+        })
     }
 }
 
@@ -202,5 +194,5 @@ fn checked_credential_tag() -> Result<Tag, CredentialValidationError> {
 }
 
 fn invalid_ttlv_structure() -> CredentialValidationError {
-    CredentialValidationError::new(CredentialValidationErrorKind::InvalidTtlvStructure)
+    validation::invalid_ttlv_structure_error()
 }

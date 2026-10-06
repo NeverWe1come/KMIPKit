@@ -5,7 +5,7 @@ use std::fmt;
 use kmipkit_ttlv::{Structure, StructureView, ValueView};
 
 use super::validation::{FieldKind, FieldRule};
-use super::{CredentialValidationError, CredentialValidationErrorKind, nonce::Nonce, validation};
+use super::{CredentialValidationError, nonce::Nonce, secret, validation};
 
 const NONCE: u32 = 0x0042_00C8;
 const ATTESTATION_TYPE: u32 = 0x0042_00C7;
@@ -82,9 +82,7 @@ fn validate_nonce(tree: &Structure) -> Result<(), CredentialValidationError> {
         }
         field.with_value(|value| match value {
             ValueView::Structure(nonce) => Nonce::validate_view(&nonce),
-            _ => Err(CredentialValidationError::new(
-                CredentialValidationErrorKind::WrongFieldType,
-            )),
+            _ => Err(validation::wrong_field_type_error()),
         })?;
     }
     Ok(())
@@ -92,15 +90,15 @@ fn validate_nonce(tree: &Structure) -> Result<(), CredentialValidationError> {
 
 impl fmt::Debug for AttestationCredential {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("AttestationCredential")
-            .field("field_count", &self.field_count())
-            .finish_non_exhaustive()
+        secret::format_debug_struct(formatter, "AttestationCredential", |debug| {
+            debug.field("field_count", &self.field_count());
+            Ok(())
+        })
     }
 }
 
 impl fmt::Display for AttestationCredential {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("KMIP Attestation Credential (redacted)")
+        secret::format_redacted_display(formatter, "Attestation Credential")
     }
 }

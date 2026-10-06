@@ -30,6 +30,30 @@ pub(super) struct FieldRule {
     pub(super) required: bool,
 }
 
+pub(super) fn duplicate_field_error() -> CredentialValidationError {
+    CredentialValidationError::new(CredentialValidationErrorKind::DuplicateField)
+}
+
+pub(super) fn missing_field_error() -> CredentialValidationError {
+    CredentialValidationError::new(CredentialValidationErrorKind::MissingField)
+}
+
+pub(super) fn wrong_field_type_error() -> CredentialValidationError {
+    CredentialValidationError::new(CredentialValidationErrorKind::WrongFieldType)
+}
+
+pub(super) fn field_out_of_order_error() -> CredentialValidationError {
+    CredentialValidationError::new(CredentialValidationErrorKind::FieldOutOfOrder)
+}
+
+pub(super) fn empty_authentication_error() -> CredentialValidationError {
+    CredentialValidationError::new(CredentialValidationErrorKind::EmptyAuthentication)
+}
+
+pub(super) fn invalid_ttlv_structure_error() -> CredentialValidationError {
+    CredentialValidationError::new(CredentialValidationErrorKind::InvalidTtlvStructure)
+}
+
 /// Checks singleton cardinality, required members, and Item Types for a schema.
 ///
 /// Unknown members are intentionally ignored here and remain in the owned TTLV
@@ -53,14 +77,10 @@ pub(super) fn validate_fields(
         };
 
         if seen[rule_index] {
-            return Err(CredentialValidationError::new(
-                CredentialValidationErrorKind::DuplicateField,
-            ));
+            return Err(duplicate_field_error());
         }
         if last_known_member_index.is_some_and(|last| rule_index < last) {
-            return Err(CredentialValidationError::new(
-                CredentialValidationErrorKind::FieldOutOfOrder,
-            ));
+            return Err(field_out_of_order_error());
         }
         seen[rule_index] = true;
         last_known_member_index = Some(rule_index);
@@ -77,9 +97,7 @@ pub(super) fn validate_fields(
             )
         });
         if !matches_kind {
-            return Err(CredentialValidationError::new(
-                CredentialValidationErrorKind::WrongFieldType,
-            ));
+            return Err(wrong_field_type_error());
         }
     }
 
@@ -89,9 +107,7 @@ pub(super) fn validate_fields(
         .any(|(rule, was_seen)| rule.required && !was_seen)
         || (!at_least_one.is_empty() && !group_member_seen)
     {
-        return Err(CredentialValidationError::new(
-            CredentialValidationErrorKind::MissingField,
-        ));
+        return Err(missing_field_error());
     }
 
     Ok(())
@@ -111,43 +127,31 @@ pub(super) fn credential_type_from_view(
         match field.tag().raw() {
             CREDENTIAL_TYPE => {
                 if credential_type.is_some() {
-                    return Err(CredentialValidationError::new(
-                        CredentialValidationErrorKind::DuplicateField,
-                    ));
+                    return Err(duplicate_field_error());
                 }
                 if credential_value_seen {
-                    return Err(CredentialValidationError::new(
-                        CredentialValidationErrorKind::FieldOutOfOrder,
-                    ));
+                    return Err(field_out_of_order_error());
                 }
                 let raw = field.with_value(|value| match value {
                     ValueView::Enumeration(raw) => Some(*raw),
                     _ => None,
                 });
                 let Some(raw) = raw else {
-                    return Err(CredentialValidationError::new(
-                        CredentialValidationErrorKind::WrongFieldType,
-                    ));
+                    return Err(wrong_field_type_error());
                 };
                 credential_type = Some(CredentialType::from_raw(raw));
             }
             CREDENTIAL_VALUE => {
                 if credential_value_seen {
-                    return Err(CredentialValidationError::new(
-                        CredentialValidationErrorKind::DuplicateField,
-                    ));
+                    return Err(duplicate_field_error());
                 }
                 if credential_type.is_none() {
-                    return Err(CredentialValidationError::new(
-                        CredentialValidationErrorKind::FieldOutOfOrder,
-                    ));
+                    return Err(field_out_of_order_error());
                 }
                 let is_structure =
                     field.with_value(|value| matches!(value, ValueView::Structure(_)));
                 if !is_structure {
-                    return Err(CredentialValidationError::new(
-                        CredentialValidationErrorKind::WrongFieldType,
-                    ));
+                    return Err(wrong_field_type_error());
                 }
                 credential_value_seen = true;
             }
@@ -156,14 +160,10 @@ pub(super) fn credential_type_from_view(
     }
 
     let Some(credential_type) = credential_type else {
-        return Err(CredentialValidationError::new(
-            CredentialValidationErrorKind::MissingField,
-        ));
+        return Err(missing_field_error());
     };
     if !credential_value_seen {
-        return Err(CredentialValidationError::new(
-            CredentialValidationErrorKind::MissingField,
-        ));
+        return Err(missing_field_error());
     }
     Ok(credential_type)
 }

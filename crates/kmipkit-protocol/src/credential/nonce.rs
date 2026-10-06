@@ -4,6 +4,7 @@ use std::fmt;
 
 use kmipkit_ttlv::{Structure, StructureView};
 
+use super::secret;
 use super::validation::{FieldKind, FieldRule};
 use super::{CredentialValidationError, validation};
 
@@ -60,15 +61,15 @@ impl Nonce {
 
 impl fmt::Debug for Nonce {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("Nonce")
-            .field("field_count", &self.tree.view().children().len())
-            .finish_non_exhaustive()
+        secret::format_debug_struct(formatter, "Nonce", |debug| {
+            debug.field("field_count", &self.tree.view().children().len());
+            Ok(())
+        })
     }
 }
 
 impl fmt::Display for Nonce {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("KMIP Attestation Nonce (redacted)")
+        secret::format_redacted_display(formatter, "Attestation Nonce")
     }
 }

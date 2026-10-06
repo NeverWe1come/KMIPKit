@@ -5,7 +5,7 @@ use std::fmt;
 use kmipkit_ttlv::{Structure, StructureView, ValueView};
 
 use super::validation::{FieldKind, FieldRule};
-use super::{CredentialValidationError, validation};
+use super::{CredentialValidationError, secret, validation};
 
 const USERNAME: u32 = 0x0042_0099;
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
@@ -92,15 +92,15 @@ impl HashedPasswordCredential {
 
 impl fmt::Debug for HashedPasswordCredential {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("HashedPasswordCredential")
-            .field("field_count", &self.field_count())
-            .finish_non_exhaustive()
+        secret::format_debug_struct(formatter, "HashedPasswordCredential", |debug| {
+            debug.field("field_count", &self.field_count());
+            Ok(())
+        })
     }
 }
 
 impl fmt::Display for HashedPasswordCredential {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("KMIP Hashed Password Credential (redacted)")
+        secret::format_redacted_display(formatter, "Hashed Password Credential")
     }
 }

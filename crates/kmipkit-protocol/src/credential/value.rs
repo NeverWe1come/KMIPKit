@@ -98,11 +98,12 @@ impl Credential {
 
 impl fmt::Debug for Credential {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("Credential")
-            .field("credential_type", &self.credential_type)
-            .field("field_count", &self.tree.view().children().len())
-            .finish_non_exhaustive()
+        super::secret::format_debug_struct(formatter, "Credential", |debug| {
+            debug
+                .field("credential_type", &self.credential_type)
+                .field("field_count", &self.tree.view().children().len());
+            Ok(())
+        })
     }
 }
 

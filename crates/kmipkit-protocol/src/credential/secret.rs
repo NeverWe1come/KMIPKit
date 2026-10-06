@@ -13,6 +13,23 @@ pub struct SecretBytes(Secret<Vec<u8>>);
 
 struct Secret<T: Zeroize>(T);
 
+pub(super) fn format_debug_struct(
+    formatter: &mut fmt::Formatter<'_>,
+    name: &str,
+    fields: impl FnOnce(&mut fmt::DebugStruct<'_, '_>) -> fmt::Result,
+) -> fmt::Result {
+    let mut debug = formatter.debug_struct(name);
+    fields(&mut debug)?;
+    debug.finish_non_exhaustive()
+}
+
+pub(super) fn format_redacted_display(
+    formatter: &mut fmt::Formatter<'_>,
+    name: &str,
+) -> fmt::Result {
+    write!(formatter, "KMIP {name} (redacted)")
+}
+
 impl<T: Zeroize> Drop for Secret<T> {
     fn drop(&mut self) {
         self.0.zeroize();

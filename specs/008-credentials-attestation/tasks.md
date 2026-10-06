@@ -63,7 +63,7 @@
 
 ### Refactor
 
-- [ ] T021 [US2] [REFACTOR COMMIT] Consolidate common secret-safe formatting and validation errors across every variant in `crates/kmipkit-protocol/src/credential/secret.rs` and `validation.rs` while preserving all Red/Green behavior (FR-010, FR-014).
+- [x] T021 [US2] [REFACTOR COMMIT] Consolidate common secret-safe formatting and validation errors across every variant in `crates/kmipkit-protocol/src/credential/secret.rs` and `validation.rs` while preserving all Red/Green behavior (FR-010, FR-014).
 
 ## Phase 5: User Story 3 — Report attestation construction capability (P1)
 
