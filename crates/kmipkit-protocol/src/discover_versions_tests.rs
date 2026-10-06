@@ -1,6 +1,7 @@
 //! Derived tests for the KMIP 2.1 Discover Versions operation.
 //!
-//! The cases trace to `KMIPKIT-REQ-SPEC-6.1.16-001-001/-002/-004` and
+//! The cases trace to `KMIPKIT-REQ-SPEC-6.1.16-001-001`,
+//! `KMIPKIT-REQ-SPEC-6.1.16-001-002`, `KMIPKIT-REQ-SPEC-6.1.16-004`, and
 //! `KMIPKIT-0007-FR-002`: OASIS KMIP Specification v2.1 §6.1.16, Tables
 //! 211–213. Table 211 describes the client preference list, Table 212 allows
 //! repeated response Protocol Version fields and defines their server
