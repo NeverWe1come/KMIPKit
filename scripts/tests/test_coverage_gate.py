@@ -653,6 +653,64 @@ trait Example { fn declaration(&self); }
             with self.assertRaises(GATE.InlineTestModuleError):
                 GATE.scan_production_sources(root)
 
+    def test_cfg_test_module_with_path_into_excluded_test_tree_passes_preflight(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            (source_dir / "lib.rs").write_text(
+                'pub fn production() {}\n'
+                '#[cfg(test)]\n'
+                '#[path = "../tests/unit/private_tests.rs"]\n'
+                'mod private_tests;\n',
+                encoding="utf-8",
+            )
+            test_source = root / "crates" / "sample" / "tests" / "unit" / "private_tests.rs"
+            test_source.parent.mkdir(parents=True)
+            test_source.write_text("#[test] fn checks_private_behavior() {}\n", encoding="utf-8")
+
+            scan = GATE.scan_production_sources(root)
+
+        self.assertTrue(scan.eligible)
+        self.assertTrue(scan.complete)
+        self.assertEqual({"crates/sample/src/lib.rs"}, scan.eligible_files)
+
+    def test_cfg_test_module_path_into_production_source_fails_preflight(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            (source_dir / "lib.rs").write_text(
+                '#[cfg(test)]\n#[path = "private_tests.rs"]\nmod private_tests;\n',
+                encoding="utf-8",
+            )
+            (source_dir / "private_tests.rs").write_text(
+                "#[test] fn checks_private_behavior() {}\n", encoding="utf-8"
+            )
+
+            with self.assertRaises(GATE.InlineTestModuleError):
+                GATE.scan_production_sources(root)
+
+    def test_cfg_test_module_with_excluded_path_and_inline_body_fails_preflight(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            test_dir = root / "crates" / "sample" / "tests"
+            test_dir.mkdir()
+            (test_dir / "private_tests.rs").write_text("", encoding="utf-8")
+            (source_dir / "lib.rs").write_text(
+                '#[cfg(test)]\n#[path = "../tests/private_tests.rs"]\n'
+                'mod private_tests { fn inline() {} }\n',
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(GATE.InlineTestModuleError):
+                GATE.scan_production_sources(root)
+
     def test_repository_production_preflight_excludes_message_validation_unit_tests(self) -> None:
         self.require_gate()
         scan = GATE.scan_production_sources(REPOSITORY_ROOT)
