@@ -2985,6 +2985,25 @@ fn complete_execute_audit_rejects_repeated_or_recursive_exchange_control_flow() 
 }
 
 #[test]
+fn complete_execute_audit_rejects_recursive_calls_inside_allowed_macros() {
+    let macro_calls = [
+        "impl Client { fn execute(&mut self) { let _ = vec![self.execute()]; self.transport.exchange(&[], 1); } }",
+        "impl Client { fn execute(&mut self) { let _ = matches!(true, _ if self.execute()); self.transport.exchange(&[], 1); } }",
+        "impl Client { fn execute(&mut self) { let _ = write!(std::io::sink(), \"{}\", self.execute()); self.transport.exchange(&[], 1); } }",
+    ];
+
+    for source in macro_calls {
+        assert!(
+            matches!(
+                audit_source(source),
+                Err(CandidateRejection::BoundaryViolation)
+            ),
+            "recursive execute calls inside supported macro expressions must be audited: {source}"
+        );
+    }
+}
+
+#[test]
 fn aliases_macros_includes_generated_and_cfg_sources_cannot_bypass_the_audit() {
     let accepted = accepted_ids_for_rejected_fixtures(&[
         "writer_alias",
