@@ -5,8 +5,8 @@ use std::fmt;
 use kmipkit_ttlv::{Structure, StructureView};
 
 use crate::asynchronous::{
-    AsynchronousOperationError, SecretBytes, correlation_tag, is_pending, item, operation_result,
-    structure,
+    AsynchronousOperationError, SecretBytes, correlation_tag, is_failure, is_pending, item,
+    operation_result, structure,
 };
 use crate::{KmipOperationResult, ProtocolError, ResponseBatchItemView};
 
@@ -81,7 +81,7 @@ impl<'a> ProcessResponse<'a> {
         {
             return Err(AsynchronousOperationError::MissingAsynchronousCorrelationValue);
         }
-        if result.status().known_name() != Some("Operation Failed") {
+        if !is_failure(result.status()) {
             let members = item
                 .with_response_payload(|payload| payload.children().len())
                 .ok_or(AsynchronousOperationError::MissingResponsePayload)?;

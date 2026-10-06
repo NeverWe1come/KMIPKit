@@ -78,12 +78,13 @@ unknown Cancellation Result. A Pending Cancel response is rejected under
 OASIS KMIP v2.1 §6.1.5, Tables 176–178, and §11.7, Tables 437–438.
 
 `execute_process` is a separate server operation. The caller selects whether
-the Process request permits an asynchronous result. A successful Process
-response has the empty payload specified by OASIS KMIP v2.1 §6.1.39, Tables
-278–280. A Pending outcome is returned to the caller; KMIPKit does not assert
-that a later Poll will complete. The §6.1.39 prose notes that Process may
-affect other batch items when Batch Order Option is true, its default; KMIPKit
-does not claim to control those server-side effects.
+the Process request permits an asynchronous result. Every non-Failure Process
+response, including Pending, carries the empty Response Payload required by
+OASIS KMIP v2.1 §8.6, Table 399, and defined by §6.1.39, Table 279. Failure
+has no payload under §8.6. A Pending outcome is returned to the caller;
+KMIPKit does not assert that a later Poll will complete. The §6.1.39 prose
+notes that Process may affect other batch items when Batch Order Option is
+true, its default. KMIPKit does not claim to control those server-side effects.
 
 `execute_query_async_requests` supports the optional correlation-value and
 operation filters from OASIS KMIP v2.1 §6.1.41, Table 285. Its response payload

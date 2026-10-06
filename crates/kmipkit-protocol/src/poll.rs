@@ -5,8 +5,8 @@ use std::fmt;
 use kmipkit_ttlv::Structure;
 
 use crate::asynchronous::{
-    AsynchronousOperationError, SecretBytes, correlation_tag, is_pending, item, operation_result,
-    structure,
+    AsynchronousOperationError, SecretBytes, correlation_tag, is_failure, is_pending, item,
+    operation_result, structure,
 };
 use crate::{KmipOperationResult, ProtocolError, ResponseBatchItemView};
 
@@ -151,8 +151,4 @@ impl fmt::Debug for PollResponse<'_> {
             )
             .finish()
     }
-}
-
-fn is_failure(status: crate::ResultStatus) -> bool {
-    status.known_name() == Some("Operation Failed")
 }

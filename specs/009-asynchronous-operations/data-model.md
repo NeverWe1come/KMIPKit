@@ -1,7 +1,7 @@
 
 # Data Model: KMIP 2.1 Client Asynchronous Operations
 
-All wire values use the existing generic TTLV model and source field order. Typed views validate known KMIP structure without discarding unknown enum values or extension subtrees. This document describes planned model boundaries; it does not authorize implementation before spec approval.
+All wire values use the existing generic TTLV model and source field order. Typed views validate known KMIP structure without discarding unknown enum values or extension subtrees. This document describes planned model boundaries. The direct human authorization recorded in the feature specification permits this task's autonomous implementation; reviewer-owned checklists and normative source/catalog gates remain open.
 
 ## Entities
 
@@ -68,6 +68,6 @@ Each arrow that sends a request is a distinct call and one transport exchange. N
 - Poll Pending permits the §6.1.38 no-payload exception while retaining the Pending correlation required by §8.6/Table 399.
 - Poll completion is not decoded as an unrelated operation's type.
 - Cancel echo must associate to its request; unknown cancellation enumeration values survive.
-- Process success payload contains no fields; error and Pending cases follow general response semantics.
+- Every non-Failure Process response, including Pending, carries an empty Response Payload Structure per §6.1.39/Table 279 and §8.6/Table 399; Failure has no payload under the general response shape.
 - Query filters and opaque response tree survive round trips; typed Table 286 semantics stay gated.
 - All decode paths use configured `CodecLimits` before allocation.

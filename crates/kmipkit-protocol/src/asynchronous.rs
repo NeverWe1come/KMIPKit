@@ -144,6 +144,10 @@ pub(crate) const fn is_success(status: ResultStatus) -> bool {
     status.raw() == SUCCESS
 }
 
+pub(crate) fn is_failure(status: ResultStatus) -> bool {
+    status.known_name() == Some("Operation Failed")
+}
+
 pub(crate) const fn is_pending(status: ResultStatus) -> bool {
     status.raw() == OPERATION_PENDING
 }

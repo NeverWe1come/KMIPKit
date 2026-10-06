@@ -43,6 +43,19 @@ Green), `5a0220d` (client Red), `fc3c295` (client Green), and `b1a3986`
   dependency-policy check passed. The dependency-policy check verified
   cargo-deny 0.20.2 and unchanged root/fuzz lockfile hashes.
 
+**Review-fix verification** (2026-10-06, native Windows worktree, Rust 1.94):
+`cargo +1.94.0 fmt --all --check`, workspace Clippy with `-D warnings`,
+`cargo +1.94.0 test --workspace --all-features`, and
+`cargo +1.94.0 doc --workspace --all-features --no-deps` passed. The workspace
+run included 174 client unit tests, 61 protocol unit tests, integration tests,
+and doctests. `cargo llvm-cov -p kmipkit-protocol --all-features --summary-only`
+reported 96.12% protocol line coverage and 95.40% for changed
+`process.rs` (97.10% regions); its uncovered Missing Pending Correlation Value
+and Missing Response Payload returns cannot be reached through the validated
+public response-item view because generic message validation rejects those
+shapes first. This local Windows run does not replace the implementation
+branch's three-platform CI or three-platform coverage aggregation.
+
 T035 remains open for supported-platform CI and the exact three-platform coverage aggregation. T001 is complete as an authorization record only; no reviewer-owned checklist approval is claimed. T037 remains open for the sequential independent QA/security reviews.
 
 ## Phase 0: Review and readiness gates
@@ -76,7 +89,7 @@ T035 remains open for supported-platform CI and the exact three-platform coverag
 - [x] T009 [US1] Add failing Poll payload field/order and exact binary correlation tests, including arbitrary-byte property cases within codec limits, in `crates/kmipkit-protocol/tests/unit/poll_tests.rs`; cite §§6.1.38/Table 276, 8.6/Table 399, 9.1/Table 400, and 9.19/Table 424 (KMIPKIT-0009-FR-001–KMIPKIT-0009-FR-003).
 - [x] T010 [US1] Add failing Poll Pending/no-payload, borrowed-only correlation access, no ordinary unzeroized duplicate, KMIPKit-owned zeroization-on-drop, completed-success generic payload, and terminal-Failure status/reason-without-payload tests in `crates/kmipkit-client/tests/unit/poll_execution_tests.rs`; cite §6.1.38/Table 276 and §8.6/Table 399, prove one exchange, and prove no auto-poll on Pending (KMIPKIT-0009-FR-002, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010).
 - [x] T011 [US1] Add failing Cancel request, echoed correlation, known/unknown Cancellation Result tests in `crates/kmipkit-protocol/tests/unit/cancel_tests.rs`; cite §6.1.5/Tables 176–178 and §11.7 (KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004).
-- [x] T012 [US1] Add failing Cancel fake-transport delivery, mismatch, Pending-response rejection even when the request permits async results, request/echo redaction and KMIPKit-owned temporary-copy zeroization, and no-retry tests in `crates/kmipkit-client/tests/unit/cancel_execution_tests.rs`; cite §6.1.5/Tables 176–178 (KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009).
+- [x] T012 [US1] Add failing Cancel fake-transport delivery, mismatch, Pending-response rejection even when the request permits async results, request/echo redaction and KMIPKit-owned temporary-copy zeroization, and no-retry tests in `crates/kmipkit-client/tests/unit/cancel_execution_tests.rs`; cite §6.1.5/Tables 176–178 (KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009). Follow-up QA tests observe the encoded request owner after Cancel success and exchange-error paths; they make no claim about the separate caller-owned capture buffer.
 
 ### Green — minimum implementation
 
@@ -94,7 +107,7 @@ T035 remains open for supported-platform CI and the exact three-platform coverag
 
 **Goal**: Caller explicitly sends Process and gets a result distinct from the original Pending operation.
 
-**Independent Test**: Verify required exact correlation, empty success payload, response association, Batch Order implications documented, and one exchange only.
+**Independent Test**: Verify required exact correlation, an empty payload on every non-Failure response (including Pending), no payload on Failure, response association, Batch Order implications documented, and one exchange only.
 
 ### Red — tests first
 
@@ -108,8 +121,8 @@ T035 remains open for supported-platform CI and the exact three-platform coverag
 
 ### Refactor
 
-- [x] T023 [US2] Verify empty Process response payload handling against general batch-result validation; document Batch Order Option's default behavior without claiming other items are controlled (KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-008).
-- [x] T024 [US2] Add negative response tests for unexpected Process payload, unrequested response batch IDs, and unpermitted asynchronous outcomes; cite §6.1.39/Tables 278–280 and §8.6/Table 399 (KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-010).
+- [x] T023 [US2] Verify that every non-Failure Process response payload is present and empty, including Pending, while Failure has no payload under §8.6/Table 399 and §6.1.39/Table 279; document Batch Order Option's default behavior without claiming other items are controlled (KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-008).
+- [x] T024 [US2] Add negative response tests for unexpected Process payload members on Success and Pending, unrequested response batch IDs, and unpermitted asynchronous outcomes; the Pending case is valid at the generic §8.6/Table 399 message boundary but rejected by the Process model under §6.1.39/Table 279, with one client exchange (KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-010).
 
 ## Phase 4: User Story 3 — Query outstanding asynchronous requests (Priority: P2)
 
@@ -121,7 +134,7 @@ T035 remains open for supported-platform CI and the exact three-platform coverag
 
 - [x] T025 [US3] Add failing Query request filter field/order/repetition and correlation-sentinel redaction tests in `crates/kmipkit-protocol/tests/unit/query_async_requests_tests.rs`; cite §6.1.41/Table 285 and §7.1/Table 352 (KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-009).
 - [x] T026 [US3] Add failing generic Query response round-trip tests in `crates/kmipkit-protocol/tests/unit/query_async_response_tests.rs`; assert no typed Table 286 mapping or conformance claim while DISC-039 is open (KMIPKIT-0009-FR-007).
-- [x] T027 [US3] Add failing Query one-exchange/response-association, caller-input non-retention, redaction, no ordinary unzeroized duplicate, and KMIPKit-owned filter-copy zeroization tests on success/error paths in `crates/kmipkit-client/tests/unit/query_async_execution_tests.rs`; cite §6.1.41/Tables 285–287 and §8.6/Table 399, without asserting a typed Table 286 schema (KMIPKIT-0009-FR-006–KMIPKIT-0009-FR-010).
+- [x] T027 [US3] Add failing Query one-exchange/response-association, caller-input non-retention, redaction, no ordinary unzeroized duplicate, and KMIPKit-owned filter-copy zeroization tests on success/error paths in `crates/kmipkit-client/tests/unit/query_async_execution_tests.rs`; cite §6.1.41/Tables 285–287 and §8.6/Table 399, without asserting a typed Table 286 schema (KMIPKIT-0009-FR-006–KMIPKIT-0009-FR-010). Follow-up tests use the existing observer specifically for the encoded request owner on success and exchange error; the Query model-drop AST test and separate caller-owned-buffer assertion cover the input lifetime boundary.
 
 ### Green — minimum implementation
 
@@ -144,7 +157,7 @@ T035 remains open for supported-platform CI and the exact three-platform coverag
 
 ## Dependencies and execution order
 
-- Phase 0 blocks all implementation tasks. Any unresolved approval or scope change returns to review before coding.
+- The direct human authorization recorded at T001 permits this implementation to proceed without further approval prompts. Scope changes and normative contradictions block only the affected behavior; reviewer-owned checklist items remain open until their owners review them.
 - Phase 1 is shared setup and precedes operation work.
 - User Stories 1–3 share the client request/response path and are intentionally sequential for one implementer. Protocol-only model tests can be isolated after shared tags/error conventions are agreed, but do not run parallel interface changes.
 - Within each story, Red tests precede Green implementation, then Refactor and documentation. Keep Red, Green, and Refactor commits distinct and DCO signed.
