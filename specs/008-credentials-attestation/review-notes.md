@@ -258,3 +258,18 @@ paths were updated for the corresponding normative and project requirements.
 the intentionally missing public `CredentialValue` API (`E0432`). Rust also
 reports two `E0282` inference cascades at the TTLV assertions which depend on
 that unavailable type; no production code was added.
+
+## User Story 2 RED — Hashed Password (2026-10-06)
+
+Added derived §9.11/Table 415 cases for required Username, Date Time Extended
+Timestamp, and hashed bytes; wrong Item Types; omitted, explicit, and unknown
+Hashing Algorithm values; effective SHA-256 without materializing the omitted
+field; and exact timestamp/hash-byte round trips. No timestamp monotonicity
+assertion or test was added under OD-003. Updated OASIS and FR-007 traceability
+to the new test paths.
+
+`cargo +1.94.0 fmt --all --check` passed. The focused command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types`
+fails with `E0432` for the not-yet-implemented `CredentialValue`; four
+`E0282` inference cascades also depend on that missing API type. No production
+code was added.

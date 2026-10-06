@@ -27,10 +27,13 @@ const MACHINE_IDENTIFIER: u32 = 0x0042_00A9;
 const MEDIA_IDENTIFIER: u32 = 0x0042_00AA;
 const NETWORK_IDENTIFIER: u32 = 0x0042_00AB;
 const DEVICE_SERIAL_NUMBER: u32 = 0x0042_00B0;
+const HASHING_ALGORITHM: u32 = 0x0042_0038;
+const TIME_STAMP: u32 = 0x0042_0092;
 const TICKET: u32 = 0x0042_0149;
 const TICKET_TYPE: u32 = 0x0042_014A;
 const TICKET_VALUE: u32 = 0x0042_014B;
 const ONE_TIME_PASSWORD: u32 = 0x0042_0156;
+const HASHED_PASSWORD: u32 = 0x0042_0157;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_HEADER: u32 = 0x0042_0077;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -449,4 +452,148 @@ fn generic_ttlv_retains_unvalidated_device_values() {
     assert_eq!(fields[0].tag().raw(), CREDENTIAL_TYPE);
     assert_eq!(fields[1].tag().raw(), CREDENTIAL_VALUE);
     assert!(credential_value(2, Structure::new()).is_err());
+}
+
+#[test]
+fn hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types() {
+    let valid = structure([
+        item(USERNAME, Value::text_string("alice".to_owned())),
+        item(TIME_STAMP, Value::date_time_extended(0x0102_0304_0506_0708)),
+        item(HASHED_PASSWORD, Value::byte_string(vec![0x00, 0x80, 0xFE])),
+    ]);
+    assert!(credential_value(5, valid).is_ok());
+
+    for invalid in [
+        structure([
+            item(TIME_STAMP, Value::date_time_extended(1)),
+            item(HASHED_PASSWORD, Value::byte_string(vec![0x01])),
+        ]),
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(HASHED_PASSWORD, Value::byte_string(vec![0x01])),
+        ]),
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(TIME_STAMP, Value::date_time_extended(1)),
+        ]),
+        structure([
+            item(USERNAME, Value::boolean(true)),
+            item(TIME_STAMP, Value::date_time_extended(1)),
+            item(HASHED_PASSWORD, Value::byte_string(vec![0x01])),
+        ]),
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(TIME_STAMP, Value::date_time(1)),
+            item(HASHED_PASSWORD, Value::byte_string(vec![0x01])),
+        ]),
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(TIME_STAMP, Value::date_time_extended(1)),
+            item(HASHED_PASSWORD, Value::text_string("hash".to_owned())),
+        ]),
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(TIME_STAMP, Value::date_time_extended(1)),
+            item(HASHING_ALGORITHM, Value::boolean(true)),
+            item(HASHED_PASSWORD, Value::byte_string(vec![0x01])),
+        ]),
+    ] {
+        assert!(credential_value(5, invalid).is_err());
+    }
+}
+
+#[test]
+fn hashed_password_omission_exposes_sha256_default_without_materializing_field() {
+    let timestamp = 0x1122_3344_5566_7788;
+    let secret_bytes = vec![0x00, 0x80, 0xFE, 0x7F];
+    let parsed = credential_value(
+        5,
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(TIME_STAMP, Value::date_time_extended(timestamp)),
+            item(HASHED_PASSWORD, Value::byte_string(secret_bytes.clone())),
+        ]),
+    )
+    .expect("required Hashed Password fields are present");
+    let CredentialValue::HashedPassword(typed) = parsed else {
+        panic!("Credential Type 5 must produce the Hashed Password variant");
+    };
+    assert_eq!(typed.hashing_algorithm_raw(), None);
+    assert_eq!(typed.effective_hashing_algorithm_raw(), 6);
+
+    let roundtrip = CredentialValue::HashedPassword(typed).into_ttlv();
+    let view = roundtrip.view();
+    let fields = view.children();
+    assert_eq!(
+        fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [USERNAME, TIME_STAMP, HASHED_PASSWORD]
+    );
+    let roundtrip_timestamp = fields[1].with_value(|value| match value {
+        ValueView::DateTimeExtended(value) => Some(*value),
+        _ => None,
+    });
+    let roundtrip_hash = fields[2].with_value(|value| match value {
+        ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+        _ => None,
+    });
+    assert_eq!(roundtrip_timestamp, Some(timestamp));
+    assert_eq!(roundtrip_hash, Some(secret_bytes));
+}
+
+#[test]
+fn hashed_password_preserves_explicit_and_unknown_algorithm_values() {
+    let timestamp = -0x0102_0304_0506_0708;
+    let secret_bytes = vec![0xFF, 0x00, 0x80, 0x01];
+    for algorithm in [1, 6, 0xF123_4567] {
+        let parsed = credential_value(
+            5,
+            structure([
+                item(USERNAME, Value::text_string("alice".to_owned())),
+                item(TIME_STAMP, Value::date_time_extended(timestamp)),
+                item(HASHING_ALGORITHM, Value::enumeration(algorithm)),
+                item(HASHED_PASSWORD, Value::byte_string(secret_bytes.clone())),
+            ]),
+        )
+        .expect("explicit assigned and unknown algorithms remain valid raw values");
+        let CredentialValue::HashedPassword(typed) = parsed else {
+            panic!("Credential Type 5 must produce the Hashed Password variant");
+        };
+        assert_eq!(typed.hashing_algorithm_raw(), Some(algorithm));
+        assert_eq!(typed.effective_hashing_algorithm_raw(), algorithm);
+
+        let roundtrip = CredentialValue::HashedPassword(typed).into_ttlv();
+        let view = roundtrip.view();
+        let fields = view.children();
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>(),
+            [USERNAME, TIME_STAMP, HASHING_ALGORITHM, HASHED_PASSWORD]
+        );
+        assert_eq!(
+            fields[2].with_value(|value| match value {
+                ValueView::Enumeration(raw) => Some(*raw),
+                _ => None,
+            }),
+            Some(algorithm)
+        );
+        assert_eq!(
+            fields[1].with_value(|value| match value {
+                ValueView::DateTimeExtended(raw) => Some(*raw),
+                _ => None,
+            }),
+            Some(timestamp)
+        );
+        assert_eq!(
+            fields[3].with_value(|value| match value {
+                ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+                _ => None,
+            }),
+            Some(secret_bytes.clone())
+        );
+    }
 }
