@@ -259,6 +259,14 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "unbounded_public_type_parameter",
+        path: "tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs"),
+        probe: "pub fn execute<T>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "nongeneric_bytes_input_output",
         path: "tests/fixtures/execute_boundary/nongeneric_bytes_input_output.rs",
         source: include_str!("../tests/fixtures/execute_boundary/nongeneric_bytes_input_output.rs"),
@@ -515,6 +523,7 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "raw_exchange_ufcs_outside_execute",
     "macro_hidden_second_exchange",
     "public_conversion_hooks",
+    "unbounded_public_type_parameter",
     "nongeneric_bytes_input_output",
     "permit_qself_mint",
     "permit_constructor_derives",
@@ -1866,6 +1875,15 @@ fn public_signatures_reject_caller_defined_conversion_hooks() {
         candidate_check_fixture(fixture("public_conversion_hooks")),
         Err(CandidateRejection::BoundaryViolation),
         "public generic conversion hooks must not accept caller-defined request conversions"
+    );
+}
+
+#[test]
+fn public_signatures_reject_unbounded_type_parameters() {
+    assert_eq!(
+        candidate_check_fixture(fixture("unbounded_public_type_parameter")),
+        Err(CandidateRejection::BoundaryViolation),
+        "an unbounded public type parameter can bypass the closed request boundary"
     );
 }
 
