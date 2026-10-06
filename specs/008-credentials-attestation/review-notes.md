@@ -241,3 +241,20 @@ Fresh Rust 1.94.0 verification:
   — passed.
 - `cargo +1.94.0 fmt --all --check` — passed.
 - `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
+
+## User Story 2 RED — Username, OTP, Ticket, and Device schemas (2026-10-06)
+
+Added derived table-based cases in `credential_contract.rs` for Username and
+Password (§9.11/Table 411), Device (§9.11/Table 412), One Time Password
+(§9.11/Table 414), and nested Ticket (§7.39 and §9.11/Table 416). The Device
+cases cover all six Text String members, each of the four named identifier
+members including present-empty text, wrong Item Types, and rejection when
+only Password or Device Identifier is present. A separate case retains a
+generic Device tree without applying the typed one-of-four rule. Traceability
+paths were updated for the corresponding normative and project requirements.
+
+`cargo +1.94.0 fmt --all --check` passed. The focused RED command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract` fails at
+the intentionally missing public `CredentialValue` API (`E0432`). Rust also
+reports two `E0282` inference cascades at the TTLV assertions which depend on
+that unavailable type; no production code was added.
