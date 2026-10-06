@@ -6,8 +6,8 @@
 
 use kmipkit_ttlv::ValueView;
 
-use crate::ProcessRequest;
 use crate::async_operation_fixtures::ASYNCHRONOUS_CORRELATION_VALUE;
+use crate::{AsynchronousOperationError, ProcessRequest};
 
 #[test]
 fn process_request_contains_only_the_required_exact_correlation_field() {
@@ -100,4 +100,53 @@ fn process_pending_exposes_a_borrowed_new_correlation_value() {
         process.with_asynchronous_correlation_value(<[u8]>::to_vec),
         Some(correlation.to_vec())
     );
+    assert_eq!(process.payload_member_count(), Some(0));
+    assert_eq!(
+        process.with_response_payload(|payload| payload.children().len()),
+        Some(0)
+    );
+    assert!(!format!("{process:?}").contains("00, 255, 128"));
+}
+
+#[test]
+fn process_failure_has_no_payload_or_correlation_value() {
+    use crate::ProcessResponse;
+    use crate::async_operation_fixtures::{PROCESS, response_message};
+
+    let message = response_message(PROCESS, 1, Some(1), None, None);
+    let item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+    let process = ProcessResponse::try_from_response_item(item)
+        .expect("Process failure uses the general Failure response shape");
+
+    assert!(!process.is_pending());
+    assert_eq!(process.payload_member_count(), None);
+    assert_eq!(
+        process.with_response_payload(|payload| payload.children().len()),
+        None
+    );
+    assert_eq!(
+        process.with_asynchronous_correlation_value(<[u8]>::len),
+        None
+    );
+    assert!(format!("{process:?}").contains("[REDACTED]"));
+}
+
+#[test]
+fn process_rejects_a_response_for_a_different_operation() {
+    use crate::ProcessResponse;
+    use crate::async_operation_fixtures::{POLL, response_message};
+
+    let message = response_message(POLL, 1, Some(1), None, None);
+    let item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+
+    assert!(matches!(
+        ProcessResponse::try_from_response_item(item),
+        Err(AsynchronousOperationError::UnexpectedOperation)
+    ));
 }

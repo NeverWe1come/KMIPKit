@@ -38,6 +38,10 @@ mod discover_versions_tests;
 mod async_operation_fixtures;
 
 #[cfg(test)]
+#[path = "../tests/unit/asynchronous_tests.rs"]
+mod asynchronous_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/poll_tests.rs"]
 mod poll_tests;
 

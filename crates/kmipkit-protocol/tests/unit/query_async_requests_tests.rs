@@ -6,10 +6,10 @@
 
 use kmipkit_ttlv::ValueView;
 
-use crate::QueryAsyncRequestsRequest;
 use crate::async_operation_fixtures::{
     ASYNCHRONOUS_CORRELATION_VALUE, ASYNCHRONOUS_CORRELATION_VALUES, OPERATION, OPERATIONS,
 };
+use crate::{AsynchronousOperationError, QueryAsyncRequestsRequest};
 
 #[test]
 fn query_filters_preserve_absence_order_repetition_and_arbitrary_bytes() {
@@ -92,6 +92,27 @@ fn query_preserves_present_but_empty_filter_structures() {
 }
 
 #[test]
+fn query_encodes_each_optional_filter_independently() {
+    let correlations = QueryAsyncRequestsRequest::new().with_correlation_values([b"corr".to_vec()]);
+    let correlation_payload = correlations
+        .to_ttlv_payload()
+        .expect("Table 285 permits only the correlation filter");
+    let correlation_view = correlation_payload.view();
+    let fields = correlation_view.children();
+    assert_eq!(fields.len(), 1);
+    assert_eq!(fields[0].tag().raw(), ASYNCHRONOUS_CORRELATION_VALUES);
+
+    let operations = QueryAsyncRequestsRequest::new().with_operations([0x1a]);
+    let operation_payload = operations
+        .to_ttlv_payload()
+        .expect("Table 285 permits only the Operation filter");
+    let operation_view = operation_payload.view();
+    let fields = operation_view.children();
+    assert_eq!(fields.len(), 1);
+    assert_eq!(fields[0].tag().raw(), OPERATIONS);
+}
+
+#[test]
 fn query_response_remains_an_opaque_generic_ttlv_structure() {
     use crate::QueryAsyncRequestsResponse;
     use crate::async_operation_fixtures::{
@@ -126,4 +147,33 @@ fn query_response_remains_an_opaque_generic_ttlv_structure() {
         query.with_response_payload(|payload| payload.children().len()),
         Some(2)
     );
+}
+
+#[test]
+fn query_response_keeps_failure_shape_generic_and_rejects_other_operations() {
+    use crate::QueryAsyncRequestsResponse;
+    use crate::async_operation_fixtures::{POLL, QUERY_ASYNCHRONOUS_REQUESTS, response_message};
+
+    let failure = response_message(QUERY_ASYNCHRONOUS_REQUESTS, 1, Some(1), None, None);
+    let item = failure
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+    let query = QueryAsyncRequestsResponse::try_from_response_item(item)
+        .expect("Query Failure follows the general response shape");
+    assert_eq!(
+        query.with_response_payload(|payload| payload.children().len()),
+        None
+    );
+    assert!(format!("{query:?}").contains("has_response_payload: false"));
+
+    let other_operation = response_message(POLL, 1, Some(1), None, None);
+    let other_response_item = other_operation
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+    assert!(matches!(
+        QueryAsyncRequestsResponse::try_from_response_item(other_response_item),
+        Err(AsynchronousOperationError::UnexpectedOperation)
+    ));
 }

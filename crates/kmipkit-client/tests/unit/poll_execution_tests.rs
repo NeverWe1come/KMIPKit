@@ -1,5 +1,5 @@
-//! Client Poll behavior derived from OASIS KMIP v2.1 §6.1.38, Table 276, and
-//! §8.6, Table 399; these are not official conformance vectors.
+//! Client Poll behavior derived from OASIS KMIP v2.1 §§6.1.38, 8.6, 9.13, and
+//! 9.16, Tables 276, 399, and 421; these are not official conformance vectors.
 //!
 //! Traceability: KMIPKIT-0009-FR-002, FR-003, FR-008, FR-009, FR-010.
 
@@ -10,10 +10,13 @@ use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::ClientErrorCategory;
+use crate::ClientOperation;
 use crate::asynchronous_execution_test_support::{
     client_for, client_for_with_response_observer, request_contains,
 };
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    ResponseItemFixture, asynchronous_response_bytes, response_bytes, test_item, test_structure,
+};
 
 const POLL: u32 = 0x0000_001A;
 const CORRELATION: &[u8] = b"POLL_ASYNC_CORRELATION_SENTINEL";
@@ -34,6 +37,7 @@ fn pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copi
     let outcome = result.expect("§6.1.38 allows the original operation to remain Pending");
 
     assert_eq!(outcome.result().status().raw(), 2);
+    assert_eq!(outcome.operation(), ClientOperation::Poll);
     assert!(outcome.is_pending());
     assert_eq!(
         outcome.with_asynchronous_correlation_value(<[u8]>::to_vec),
@@ -43,6 +47,8 @@ fn pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copi
         outcome.with_response_payload(|payload| payload.children().len()),
         None
     );
+    assert_eq!(outcome.with_cancel_echo(<[u8]>::len), None);
+    assert_eq!(outcome.cancellation_result(), None);
     assert_eq!(shared_fake.borrow().exchange_count(), 1);
     assert!(request_contains(&captured_request, CORRELATION));
     assert!(!format!("{outcome:?}").contains("POLL_ASYNC_CORRELATION"));
@@ -108,5 +114,65 @@ fn failed_poll_preserves_delivery_state_and_does_not_retry() {
         error.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
     );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn poll_rejects_a_response_using_a_protocol_version_outside_kmip_21() {
+    let mut fixture = ResponseItemFixture::success(None);
+    fixture.operation = POLL;
+    let response = response_bytes((2, 0), &[fixture]);
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .execute_poll(PollRequest::new(CORRELATION), &CodecLimits::defaults())
+        .expect_err("the client implements only the negotiated KMIP 2.1 version");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn poll_rejects_an_unrecognized_critical_message_extension() {
+    let mut fixture = ResponseItemFixture::success(None);
+    fixture.operation = POLL;
+    fixture.extension_criticality = Some(true);
+    let response = response_bytes((2, 1), &[fixture]);
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .execute_poll(PollRequest::new(CORRELATION), &CodecLimits::defaults())
+        .expect_err("§9.13 requires rejecting an unrecognized critical extension");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn poll_accepts_an_unrecognized_noncritical_message_extension() {
+    let mut fixture = ResponseItemFixture::success(None);
+    fixture.operation = POLL;
+    fixture.extension_criticality = Some(false);
+    let response = response_bytes((2, 1), &[fixture]);
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let outcome = client
+        .execute_poll(PollRequest::new(CORRELATION), &CodecLimits::defaults())
+        .expect("§9.13 permits processing an unrecognized noncritical extension as absent");
+
+    assert_eq!(outcome.operation(), ClientOperation::Poll);
     assert_eq!(fake.borrow().exchange_count(), 1);
 }

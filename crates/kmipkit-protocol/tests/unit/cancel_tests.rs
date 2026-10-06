@@ -6,7 +6,7 @@
 use kmipkit_ttlv::ValueView;
 
 use crate::async_operation_fixtures::{ASYNCHRONOUS_CORRELATION_VALUE, item};
-use crate::{CancelRequest, CancellationResult};
+use crate::{AsynchronousOperationError, CancelRequest, CancellationResult};
 
 #[test]
 fn cancel_request_preserves_exact_correlation_bytes_in_table_order() {
@@ -151,4 +151,103 @@ fn cancel_rejects_repeated_table_177_singleton_fields() {
         .expect("one response item exists");
 
     assert!(CancelResponse::try_from_response_item(item).is_err());
+}
+
+#[test]
+fn cancel_rejects_a_response_for_a_different_operation() {
+    use crate::CancelResponse;
+    use crate::async_operation_fixtures::{POLL, response_message};
+
+    let message = response_message(POLL, 1, Some(1), None, None);
+    let response_item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+
+    assert!(matches!(
+        CancelResponse::try_from_response_item(response_item),
+        Err(AsynchronousOperationError::UnexpectedOperation)
+    ));
+}
+
+#[test]
+fn cancel_failure_has_no_cancellation_result_or_echo() {
+    use crate::CancelResponse;
+    use crate::async_operation_fixtures::{CANCEL, response_message};
+
+    let message = response_message(CANCEL, 1, Some(1), None, None);
+    let item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+    let cancel = CancelResponse::try_from_response_item(item)
+        .expect("a synchronous Cancel failure uses the general Failure shape");
+
+    assert_eq!(cancel.result().status().raw(), 1);
+    assert_eq!(cancel.cancellation_result(), None);
+    assert_eq!(
+        cancel.with_asynchronous_correlation_value(<[u8]>::len),
+        None
+    );
+}
+
+#[test]
+fn cancel_rejects_duplicate_or_mistyped_cancellation_results_and_reversed_fields() {
+    use crate::CancelResponse;
+    use crate::async_operation_fixtures::{
+        CANCEL, CANCELLATION_RESULT, response_message, structure,
+    };
+    use kmipkit_ttlv::Value;
+
+    let duplicate_result = structure([
+        item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"corr".to_vec()),
+        ),
+        item(CANCELLATION_RESULT, Value::enumeration(1)),
+        item(CANCELLATION_RESULT, Value::enumeration(2)),
+    ]);
+    let message = response_message(CANCEL, 0, None, None, Some(duplicate_result));
+    let response_item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+    assert!(matches!(
+        CancelResponse::try_from_response_item(response_item),
+        Err(AsynchronousOperationError::MalformedResponsePayload)
+    ));
+
+    let mistyped_result = structure([
+        item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"corr".to_vec()),
+        ),
+        item(CANCELLATION_RESULT, Value::integer(1)),
+    ]);
+    let message = response_message(CANCEL, 0, None, None, Some(mistyped_result));
+    let response_item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+    assert!(matches!(
+        CancelResponse::try_from_response_item(response_item),
+        Err(AsynchronousOperationError::MalformedResponsePayload)
+    ));
+
+    let reversed_fields = structure([
+        item(CANCELLATION_RESULT, Value::enumeration(1)),
+        item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"corr".to_vec()),
+        ),
+    ]);
+    let message = response_message(CANCEL, 0, None, None, Some(reversed_fields));
+    let response_item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+    assert!(matches!(
+        CancelResponse::try_from_response_item(response_item),
+        Err(AsynchronousOperationError::MalformedResponsePayload)
+    ));
 }

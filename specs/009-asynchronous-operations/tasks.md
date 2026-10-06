@@ -7,14 +7,47 @@
 **Implementation record**: The Spec Kit prerequisite check passed with
 `SPECIFY_FEATURE_DIRECTORY=specs/009-asynchronous-operations`. At the time of
 implementation, the reviewer-owned checklists still had 20 requirements, 16
-protocol-review, and 8 readiness items unchecked. Autonomous implementation
-was explicitly authorized; those checklist files remain unchanged and their
-review status is not represented as complete here.
+protocol-review, and 8 readiness items unchecked. Autonomous continuation was
+explicitly authorized, but T001 remains formally open for human review; the
+checklist files remain unchanged and their review status is not represented as
+complete here.
 
-**Focused verification** (2026-10-06, WSL Ubuntu-26.04, Rust 1.94):
-`cargo +1.94.0 fmt --all --check`,
-`cargo +1.94.0 test -p kmipkit-client -p kmipkit-protocol`, and
-`cargo +1.94.0 clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings` passed. The full workspace, coverage, immutable-source/catalog, dependency/security, and platform CI checks remain open under T035.
+The distinct TDD commits are `94864d4` (protocol Red), `191d489` (protocol
+Green), `5a0220d` (client Red), `fc3c295` (client Green), and `b1a3986`
+(Refactor).
+
+**Local verification** (2026-10-06, WSL Ubuntu-26.04, Rust 1.94):
+
+- `cargo +1.94.0 fmt --all --check`, workspace Clippy with `-D warnings`,
+  `cargo +1.94.0 test --workspace --all-features`, and workspace rustdoc with
+  `RUSTDOCFLAGS=-D warnings` passed. The final focused client/protocol fmt,
+  Clippy, and all-feature test rerun also passed (168 client unit tests, 60
+  protocol unit tests, integration tests, and doctests).
+- `cargo +1.94.0 llvm-cov --workspace --all-features` passed. LLVM line
+  summaries measured 4,417/4,607 workspace lines (95.88%), 2,554/2,646
+  TTLV/protocol lines (96.52%), and 88/88 transport/FFI lines (100%). The five
+  asynchronous protocol model files each exceed 95% whole-file line coverage.
+- A single-platform changed-line diagnostic measured 693/711 executable or
+  summary-only changed lines (97.47%), with zero summary-only residual on
+  changed source files; `execute.rs` was 292/300 (97.33%), and each changed
+  asynchronous protocol source was at least 95.71%. This is local evidence,
+  not the required three-platform CI gate. The unmodified local parser also
+  reports an LLVM function-region/file-segment mismatch at unchanged
+  `kmipkit-ttlv/src/item.rs:14`; the diagnostic excluded only that
+  non-changed-source mismatch.
+- `scripts/tests` ran 156 tests (25 cargo-deny fixture tests skipped because
+  `CARGO_DENY` was not configured). The normative catalog suite passed 169
+  tests with 7 platform-dependent skips after correcting stale KMIPKIT-0007
+  test references. `scripts/tests/Test-Wsl.ps1` passed all 8 tests.
+- Immutable OASIS source validation, the 1,411-candidate source audit,
+  catalog validation (4 sources, 1,411 clauses, 4,024 records), coverage
+  report verification, generated TTLV tag/result checks, and the PowerShell
+  dependency-policy check passed. The dependency-policy check verified
+  cargo-deny 0.20.2 and unchanged root/fuzz lockfile hashes.
+
+T035 remains open for supported-platform CI and the exact three-platform
+coverage aggregation. T001 remains review-open, and T037 remains open for the
+sequential independent QA/security reviews.
 
 ## Phase 0: Review and readiness gates
 

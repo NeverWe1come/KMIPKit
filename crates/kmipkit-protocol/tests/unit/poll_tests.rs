@@ -9,7 +9,7 @@ use quickcheck::{Arbitrary, Gen, QuickCheck};
 use crate::async_operation_fixtures::{
     ASYNCHRONOUS_CORRELATION_VALUE, POLL, item, response_message, structure,
 };
-use crate::{PollRequest, PollResponse};
+use crate::{AsynchronousOperationError, PollRequest, PollResponse};
 
 const PROPERTY_SEED: u64 = 0x4b4d_4950_4b49_5439;
 
@@ -153,4 +153,20 @@ fn poll_failure_exposes_reason_without_an_operation_payload() {
         Some(1)
     );
     assert_eq!(poll.with_response_payload(|_| ()), None);
+}
+
+#[test]
+fn poll_rejects_a_response_for_a_different_operation() {
+    use crate::async_operation_fixtures::{PROCESS, response_message};
+
+    let message = response_message(PROCESS, 1, Some(1), None, None);
+    let item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+
+    assert!(matches!(
+        PollResponse::try_from_response_item(item),
+        Err(AsynchronousOperationError::UnexpectedOperation)
+    ));
 }

@@ -1,9 +1,10 @@
-//! Client Process behavior derived from OASIS KMIP v2.1 §6.1.39, Tables 278–280,
-//! and §8.6, Table 399; these are not official conformance vectors.
+//! Client Process behavior derived from OASIS KMIP v2.1 §§6.1.39, 8.6, 9.2,
+//! and 11.3, Tables 278–280, 399, 401, and 432; these are not official vectors.
 //!
 //! Traceability: KMIPKIT-0009-FR-005, FR-008, FR-009, FR-010. The missing
 //! catalog requirement ID for Table 278 remains open under OD-002.
 
+use crate::ClientErrorCategory;
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
 use crate::execute_test_support::{
     asynchronous_response_bytes, asynchronous_response_with_batch_id_bytes, test_structure,
@@ -130,4 +131,27 @@ fn process_rejects_a_response_batch_id_that_the_request_did_not_supply() {
         Some(kmipkit_transport::RequestDeliveryState::ResponseStarted)
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn process_rejects_an_unassigned_asynchronous_indicator_before_transport() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: Vec::new(),
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .execute_process(
+            ProcessRequest::new(CORRELATION),
+            Some(0),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("§9.2 and §11.3 reject unassigned Asynchronous Indicator values");
+
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
 }

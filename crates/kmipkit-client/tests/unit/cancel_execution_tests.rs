@@ -9,9 +9,9 @@ use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 
-use crate::ClientErrorCategory;
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::{ClientErrorCategory, ClientOperation};
 
 const CANCEL: u32 = 0x0000_0019;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
@@ -98,5 +98,24 @@ fn cancel_rejects_pending_even_with_a_valid_general_pending_shape() {
         .expect_err("§6.1.5 states that Cancel responses are not asynchronous");
 
     assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn cancel_failure_does_not_expose_an_echo_or_cancellation_result() {
+    let response = asynchronous_response_bytes(CANCEL, 1, Some(1), None, None);
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let outcome = client
+        .execute_cancel(CancelRequest::new(CORRELATION), &CodecLimits::defaults())
+        .expect("a synchronous Cancel failure follows the general Failure shape");
+
+    assert_eq!(outcome.operation(), ClientOperation::Cancel);
+    assert_eq!(outcome.result().status().raw(), 1);
+    assert_eq!(outcome.cancellation_result(), None);
+    assert_eq!(outcome.with_cancel_echo(<[u8]>::len), None);
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
