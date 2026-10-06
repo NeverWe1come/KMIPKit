@@ -12,6 +12,7 @@
 //! `KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE`, and ADR-0014.
 
 use std::cell::Cell;
+use std::error::Error;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -22,6 +23,7 @@ use zeroize::Zeroize;
 const TEST_RESPONSE_CAP: usize = 8;
 const RESPONSE_DEBUG_SENTINEL: &[u8] = b"KMIP_RESPONSE_DEBUG_SENTINEL";
 const PARTIAL_RESPONSE_SENTINEL: &str = "KMIP_PARTIAL_RESPONSE_SENTINEL";
+const PARTIAL_RESPONSE_PREFIX: &str = "KMIP_PARTIAL_";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum CandidateTransportFailure {
@@ -140,13 +142,33 @@ fn candidate_decode_response<T>(
 }
 
 #[derive(Debug)]
+struct CandidatePartialReadSourceError {
+    diagnostic: &'static str,
+}
+
+impl fmt::Display for CandidatePartialReadSourceError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.diagnostic)
+    }
+}
+
+impl Error for CandidatePartialReadSourceError {}
+
+#[derive(Debug)]
 struct CandidatePartialReadError {
     diagnostic: &'static str,
+    source_error: CandidatePartialReadSourceError,
 }
 
 impl fmt::Display for CandidatePartialReadError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str(self.diagnostic)
+    }
+}
+
+impl Error for CandidatePartialReadError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        Some(&self.source_error)
     }
 }
 
@@ -162,6 +184,9 @@ fn candidate_partial_read_failure(
 
     CandidatePartialReadError {
         diagnostic: PARTIAL_RESPONSE_SENTINEL,
+        source_error: CandidatePartialReadSourceError {
+            diagnostic: PARTIAL_RESPONSE_PREFIX,
+        },
     }
 }
 
@@ -281,15 +306,69 @@ fn response_wrapper_debug_redacts_initialized_response_bytes() {
 }
 
 #[test]
-fn partial_read_error_debug_and_display_redact_response_contents() {
+fn response_wrapper_debug_redacts_truncated_initialized_byte_prefix() {
+    let response = CandidateTransportResponse::new(RESPONSE_DEBUG_SENTINEL.to_vec());
+    let rendered = format!("{response:?}");
+    let prefix = &RESPONSE_DEBUG_SENTINEL[.."KMIP_RESP".len()];
+    let prefix_text = std::str::from_utf8(prefix).expect("the diagnostic prefix is valid UTF-8");
+    let prefix_byte_values = prefix
+        .iter()
+        .map(u8::to_string)
+        .collect::<Vec<_>>()
+        .join(", ");
+    let prefix_bytes_debug = format!("[{prefix_byte_values}");
+
+    assert!(!rendered.contains(prefix_text));
+    assert!(!rendered.contains(&prefix_bytes_debug));
+}
+
+#[test]
+fn partial_read_error_debug_and_display_redact_body_and_prefix() {
     let observer = InitializedBytesZeroizationObserver::default();
     let error =
         candidate_partial_read_failure(PARTIAL_RESPONSE_SENTINEL.as_bytes().to_vec(), observer);
     let rendered_debug = format!("{error:?}");
     let rendered_display = error.to_string();
 
-    assert!(!rendered_debug.contains(PARTIAL_RESPONSE_SENTINEL));
-    assert!(!rendered_display.contains(PARTIAL_RESPONSE_SENTINEL));
+    let debug_leaks_body = rendered_debug.contains(PARTIAL_RESPONSE_SENTINEL);
+    let debug_leaks_prefix = rendered_debug.contains(PARTIAL_RESPONSE_PREFIX);
+    let display_leaks_body = rendered_display.contains(PARTIAL_RESPONSE_SENTINEL);
+    let display_leaks_prefix = rendered_display.contains(PARTIAL_RESPONSE_PREFIX);
+
+    assert!(
+        !debug_leaks_body && !debug_leaks_prefix && !display_leaks_body && !display_leaks_prefix,
+        "leak checks: error Debug body={debug_leaks_body}, prefix={debug_leaks_prefix}; error Display body={display_leaks_body}, prefix={display_leaks_prefix}"
+    );
+}
+
+#[test]
+fn partial_read_error_source_chain_redacts_body_and_prefix() {
+    let observer = InitializedBytesZeroizationObserver::default();
+    let error =
+        candidate_partial_read_failure(PARTIAL_RESPONSE_SENTINEL.as_bytes().to_vec(), observer);
+    let mut source = error.source();
+    let mut source_count = 0;
+    let mut source_chain_leaks_body = false;
+    let mut source_chain_leaks_prefix = false;
+
+    while let Some(source_error) = source {
+        let rendered_debug = format!("{source_error:?}");
+        let rendered_display = source_error.to_string();
+
+        source_chain_leaks_body |= rendered_debug.contains(PARTIAL_RESPONSE_SENTINEL)
+            || rendered_display.contains(PARTIAL_RESPONSE_SENTINEL);
+        source_chain_leaks_prefix |= rendered_debug.contains(PARTIAL_RESPONSE_PREFIX)
+            || rendered_display.contains(PARTIAL_RESPONSE_PREFIX);
+
+        source_count += 1;
+        source = source_error.source();
+    }
+
+    assert_eq!(source_count, 1);
+    assert!(
+        !source_chain_leaks_body && !source_chain_leaks_prefix,
+        "leak checks: exposed error source chain body={source_chain_leaks_body}, prefix={source_chain_leaks_prefix}"
+    );
 }
 
 #[test]
