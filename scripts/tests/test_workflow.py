@@ -252,6 +252,33 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(exception_review=required):
                 self.assertIn(required, normalized_policy_guide)
 
+    def test_run_summary_waits_for_all_jobs_and_runs_after_failures(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "run-summary")
+        self.assertRegex(job, r"(?m)^    if: always\(\)$")
+        for dependency in (
+            "core",
+            "script-contracts",
+            "normative-inventory",
+            "coverage",
+            "coverage-gate",
+            "dependency-policy",
+            "scheduled-dependency-policy",
+            "branch-coverage",
+        ):
+            with self.subTest(dependency=dependency):
+                self.assertRegex(job, rf"(?m)^      - {re.escape(dependency)}$")
+        self.assertIn("scripts/ci_summary.py", job)
+        self.assertIn("${{ toJSON(needs) }}", job)
+        self.assertIn("GITHUB_STEP_SUMMARY", job)
+        self.assert_pi_runner_with_hosted_fallback(job, "|| fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')")
+
+    def test_coverage_gate_adds_its_result_and_metrics_to_the_job_summary(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "coverage-gate")
+        self.assertIn("--summary-file", job)
+        self.assertIn("$GITHUB_STEP_SUMMARY", job)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

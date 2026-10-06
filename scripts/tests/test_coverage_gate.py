@@ -900,6 +900,72 @@ trait Example { fn declaration(&self); }
             with self.assertRaises(GATE.CoverageDataError):
                 GATE._load_platform_artifacts(reports, REPOSITORY_ROOT)
 
+    def test_aggregate_writes_unavailable_state_to_the_job_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reports = root / "reports"
+            for platform in ("ubuntu", "windows", "macos"):
+                artifact = reports / f"coverage-{platform}"
+                artifact.mkdir(parents=True)
+                (artifact / "coverage-status.json").write_text(
+                    '{"reason":"no production function bodies","status":"unavailable"}', encoding="utf-8"
+                )
+            summary = root / "summary.md"
+
+            exit_code = GATE.main(
+                [
+                    "aggregate",
+                    "--workspace",
+                    str(REPOSITORY_ROOT),
+                    "--report-dir",
+                    str(reports),
+                    "--base",
+                    "0" * 40,
+                    "--merge",
+                    "1" * 40,
+                    "--summary-file",
+                    str(summary),
+                ]
+            )
+
+            self.assertEqual(0, exit_code)
+            markdown = summary.read_text(encoding="utf-8")
+            self.assertIn("Coverage gate", markdown)
+            self.assertIn("UNAVAILABLE", markdown)
+            self.assertIn("no production function bodies", markdown)
+            self.assertNotIn("PASS", markdown)
+
+    def test_aggregate_writes_failure_diagnostic_to_the_job_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reports = root / "reports"
+            reports.mkdir()
+            summary = root / "summary.md"
+
+            exit_code = GATE.main(
+                [
+                    "aggregate",
+                    "--workspace",
+                    str(REPOSITORY_ROOT),
+                    "--report-dir",
+                    str(reports),
+                    "--base",
+                    "0" * 40,
+                    "--merge",
+                    "1" * 40,
+                    "--summary-file",
+                    str(summary),
+                ]
+            )
+
+            self.assertEqual(1, exit_code)
+            markdown = summary.read_text(encoding="utf-8")
+            self.assertIn("Coverage gate", markdown)
+            self.assertIn("FAIL", markdown)
+            self.assertIn("Required coverage artifact is missing", markdown)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
