@@ -2,7 +2,7 @@
 
 **Input**: Design documents in `specs/008-credentials-attestation/`.<br>
 **Prerequisites**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/rust-credentials.md`, and `quickstart.md`.<br>
-**Scope**: All implementation tasks remain blocked until T001–T004 are evidenced. This branch is documentation-only; it does not implement credential handling.
+**Scope**: T001–T004 are complete. The remaining tasks implement and verify KMIPKIT-0008; no credential functionality is complete until those implementation and review tasks pass.
 
 ## Phase 1: Approval and dependency gates
 

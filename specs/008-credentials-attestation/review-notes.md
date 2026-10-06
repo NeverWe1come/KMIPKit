@@ -102,6 +102,18 @@ The delegated authorization in `approval-record.md` was applied to this
 revision. T004 is complete, the checklist is checked, and `spec.md` is approved
 for implementation. The QA reviewer identified trailing whitespace on
 `approval-record.md:3`; it was removed in the gate-record update. Run
-`git diff --check origin/release/1.0.0...HEAD` after committing to verify this
-hygiene correction. Independent security design review remains the next gate
-before code.
+`git diff --check origin/release/1.0.0...HEAD` passed after the cleanup in
+commit `f1afc67910509603f4ec60906ca4655de1bbd818`. The independent security
+design review is recorded below.
+
+## Independent security design review
+
+The independent security reviewer examined exact HEAD
+`f1afc67910509603f4ec60906ca4655de1bbd818` against release base
+`ae87b89d43957e4fc028e785dc181e69b0165dac` before implementation. Result:
+PASS, with no blocking security design issue or required specification/task
+change. The review confirmed in-memory credential scope, redaction and
+zeroization constraints, the existing-writer/non-secret-indicator boundary,
+caller-owned Device uniqueness, and no added production dependency. No tests
+were run because this was a design review. Final implementation security review
+remains T028 and the independent qualified review remains required before 1.0.
