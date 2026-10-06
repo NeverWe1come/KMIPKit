@@ -153,7 +153,7 @@ impl CredentialValue {
                 )))
             }
             5 => Ok(Self::HashedPassword(
-                HashedPasswordCredential::from_unvalidated_tree(tree),
+                HashedPasswordCredential::try_from_ttlv(tree)?,
             )),
             6 => {
                 validate(&tree, TICKET_RULES, &[])?;

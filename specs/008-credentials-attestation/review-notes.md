@@ -242,6 +242,35 @@ Fresh Rust 1.94.0 verification:
 - `cargo +1.94.0 fmt --all --check` — passed.
 - `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
 
+## User Story 2 RED — Hashed Password validation (2026-10-06)
+
+Re-ran the existing derived §9.11/Table 415 malformed-member contract after
+the public Credential Value enum compiled. It failed because the raw wrapper
+accepted a missing required member, confirming that the earlier compile-time
+RED was not the only guard needed before behavior was implemented.
+
+The focused command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types`
+failed at the expected assertion that an invalid value be rejected.
+
+## User Story 2 GREEN — Hashed Password (2026-10-06)
+
+Implemented Table 415 validation for required Username, Date Time Extended
+Timestamp, and Hashed Password Byte String, plus optional Hashing Algorithm
+Enumeration. The shared validator rejects duplicate and noncanonical known
+members while retaining unknown children. Omitted algorithm remains absent
+and reports effective SHA-256 (`6`); explicitly assigned and unknown raw
+algorithm values, caller timestamps, and hashed bytes remain unchanged. No
+hash calculation or timestamp monotonicity behavior was added.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_omission_exposes_sha256_default_without_materializing_field` — passed.
+- `cargo +1.94.0 test -p kmipkit-protocol --test credential_contract hashed_password_preserves_explicit_and_unknown_algorithm_values` — passed.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+
 ## User Story 2 RED — Username, OTP, Ticket, and Device schemas (2026-10-06)
 
 Added derived table-based cases in `credential_contract.rs` for Username and

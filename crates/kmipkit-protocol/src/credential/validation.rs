@@ -18,6 +18,8 @@ pub(super) enum FieldKind {
     Enumeration,
     /// A KMIP Byte String.
     ByteString,
+    /// A KMIP Date Time Extended value.
+    DateTimeExtended,
 }
 
 /// A known member in one of the KMIP 2.1 credential tables.
@@ -71,6 +73,7 @@ pub(super) fn validate_fields(
                     | (FieldKind::Structure, ValueView::Structure(_))
                     | (FieldKind::Enumeration, ValueView::Enumeration(_))
                     | (FieldKind::ByteString, ValueView::ByteString(_))
+                    | (FieldKind::DateTimeExtended, ValueView::DateTimeExtended(_))
             )
         });
         if !matches_kind {
