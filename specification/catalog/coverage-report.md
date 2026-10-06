@@ -25,7 +25,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Profiles | 35 |
 | Test cases | 203 |
 | Open discrepancies | 41 |
-| Project policies | 3 |
+| Project policies | 4 |
 
 ### Elements by kind
 
@@ -3242,6 +3242,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 
 | Policy | Provenance | Summary |
 | --- | --- | --- |
+| KMIPKIT-POLICY-BATCH-ERROR-CONTINUATION-ASSIGNED-OUTBOUND | approved\_product\_decision | Accept only OASIS-assigned Batch Error Continuation values for outbound requests in KMIPKIT-0007; preserve raw Enumeration values when decoding and do not claim the Table 435 extension allocation invalid. |
 | KMIPKIT-POLICY-EXTENSION-PRESERVATION | AGENTS.md | Preserve unknown KMIP extension data losslessly and expose it without interpreting it as a standardized value. |
 | KMIPKIT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION | AGENTS.md | Preserve unknown or future tags, enumeration values, and bitmask bits without assigning them standardized KMIP semantics. |
 | KMIPKIT-POLICY-VENDOR-VALUE-PRESERVATION | AGENTS.md | Preserve vendor-defined values distinctly from OASIS-assigned, reserved, unused, and unknown-to-KMIPKit values. |
