@@ -5,8 +5,8 @@ use std::fmt;
 use kmipkit_ttlv::{Structure, StructureView};
 
 use crate::asynchronous::{
-    AsynchronousOperationError, SecretBytes, correlation_tag, is_pending, is_success, item,
-    operation_result, structure,
+    AsynchronousOperationError, SecretBytes, correlation_tag, is_pending, item, operation_result,
+    structure,
 };
 use crate::{KmipOperationResult, ProtocolError, ResponseBatchItemView};
 
@@ -50,8 +50,9 @@ impl fmt::Debug for ProcessRequest {
     }
 }
 
-/// A Process operation result. The successful Process payload is required to
-/// be empty by §6.1.39, Table 279; response data stays borrowed from the source.
+/// A Process operation result. Every non-Failure response carries an empty
+/// Response Payload Structure per §6.1.39, Table 279, and §8.6, Table 399;
+/// response data stays borrowed from the source.
 pub struct ProcessResponse<'a> {
     item: ResponseBatchItemView<'a>,
     result: KmipOperationResult,
@@ -67,7 +68,8 @@ impl<'a> ProcessResponse<'a> {
     /// # Errors
     ///
     /// Returns [`AsynchronousOperationError`] for a wrong operation, missing
-    /// Pending correlation value, or a nonempty successful payload.
+    /// Pending correlation value, a missing required non-Failure payload, or a
+    /// nonempty non-Failure payload.
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'a>,
     ) -> Result<Self, AsynchronousOperationError> {
@@ -79,7 +81,7 @@ impl<'a> ProcessResponse<'a> {
         {
             return Err(AsynchronousOperationError::MissingAsynchronousCorrelationValue);
         }
-        if is_success(result.status()) {
+        if result.status().known_name() != Some("Operation Failed") {
             let members = item
                 .with_response_payload(|payload| payload.children().len())
                 .ok_or(AsynchronousOperationError::MissingResponsePayload)?;
