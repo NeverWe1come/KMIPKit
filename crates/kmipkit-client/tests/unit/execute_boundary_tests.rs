@@ -52,7 +52,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "valid_execute",
         path: "tests/fixtures/execute_boundary/valid_execute.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/valid_execute.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/valid_execute.rs"),
         probe: "OperationEncodingPermit::mint()",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Accept,
@@ -60,7 +60,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "canonical_vec_macro",
         path: "tests/fixtures/execute_boundary/canonical_vec_macro.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/canonical_vec_macro.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/canonical_vec_macro.rs"),
         probe: "vec![0u8]",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Accept,
@@ -68,7 +68,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "generic_item_input",
         path: "tests/fixtures/execute_boundary/generic_item_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/generic_item_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/generic_item_input.rs"),
         probe: "kmipkit_ttlv::Item",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -76,7 +76,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "ttlv_extern_crate_alias",
         path: "tests/fixtures/execute_boundary/ttlv_extern_crate_alias.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/ttlv_extern_crate_alias.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/ttlv_extern_crate_alias.rs"),
         probe: "pub fn accept(value: tt::Item)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -84,7 +84,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "ttlv_cargo_alias_type",
         path: "tests/fixtures/execute_boundary/ttlv_cargo_alias_type.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/ttlv_cargo_alias_type.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/ttlv_cargo_alias_type.rs"),
         probe: "pub fn accept(value: ttlv::Item)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -92,7 +92,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "raw_body_input",
         path: "tests/fixtures/execute_boundary/raw_body_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/raw_body_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/raw_body_input.rs"),
         probe: "body: &[u8]",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -100,7 +100,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_structure_input",
         path: "tests/fixtures/execute_boundary/public_structure_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_structure_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/public_structure_input.rs"),
         probe: "kmipkit_ttlv::Structure",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -108,7 +108,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_structure_view_input",
         path: "tests/fixtures/execute_boundary/public_structure_view_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_structure_view_input.rs"),
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/public_structure_view_input.rs"
+        ),
         probe: "StructureView<'_>",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -116,7 +118,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_structure_view_output",
         path: "tests/fixtures/execute_boundary/public_structure_view_output.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_structure_view_output.rs"),
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/public_structure_view_output.rs"
+        ),
         probe: "-> kmipkit_ttlv::StructureView<'static>",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -124,7 +128,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_tag_input",
         path: "tests/fixtures/execute_boundary/public_tag_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_tag_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/public_tag_input.rs"),
         probe: "kmipkit_ttlv::Tag",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -132,7 +136,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_item_type_input",
         path: "tests/fixtures/execute_boundary/public_item_type_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_item_type_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/public_item_type_input.rs"),
         probe: "kmipkit_ttlv::ItemType",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -140,7 +144,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_value_view_input",
         path: "tests/fixtures/execute_boundary/public_value_view_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_value_view_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/public_value_view_input.rs"),
         probe: "kmipkit_ttlv::ValueView",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -148,7 +152,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "structure_view_wrong_callback",
         path: "tests/fixtures/execute_boundary/structure_view_wrong_callback.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/structure_view_wrong_callback.rs"),
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/structure_view_wrong_callback.rs"
+        ),
         probe: "fn with_view",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -157,7 +163,7 @@ const FIXTURES: &[Fixture] = &[
         id: "approved_extension_view_callback",
         path: "tests/fixtures/execute_boundary/approved_extension_view_callback.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/approved_extension_view_callback.rs"
+            "../../tests/fixtures/execute_boundary/approved_extension_view_callback.rs"
         ),
         probe: "fn with_ttlv",
         coverage: SourceCoverage::CandidateInspected,
@@ -166,7 +172,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "owned_vec_bytes_input",
         path: "tests/fixtures/execute_boundary/owned_vec_bytes_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/owned_vec_bytes_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/owned_vec_bytes_input.rs"),
         probe: "body: Vec<u8>",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -174,7 +180,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "boxed_byte_slice_input",
         path: "tests/fixtures/execute_boundary/boxed_byte_slice_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/boxed_byte_slice_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/boxed_byte_slice_input.rs"),
         probe: "Box<[u8]>",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -182,7 +188,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "fixed_array_bytes_input",
         path: "tests/fixtures/execute_boundary/fixed_array_bytes_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/fixed_array_bytes_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/fixed_array_bytes_input.rs"),
         probe: "body: [u8; 32]",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -190,7 +196,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "exact_unique_batch_id_setter",
         path: "tests/fixtures/execute_boundary/exact_unique_batch_id_setter.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/exact_unique_batch_id_setter.rs"),
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/exact_unique_batch_id_setter.rs"
+        ),
         probe: "with_unique_batch_item_id",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Accept,
@@ -198,7 +206,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "other_owned_bytes_setter",
         path: "tests/fixtures/execute_boundary/other_owned_bytes_setter.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/other_owned_bytes_setter.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/other_owned_bytes_setter.rs"),
         probe: "with_bytes",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -206,7 +214,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_enum_input",
         path: "tests/fixtures/execute_boundary/public_enum_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_enum_input.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/public_enum_input.rs"),
         probe: "pub enum RequestInput",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -214,7 +222,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_type_alias",
         path: "tests/fixtures/execute_boundary/public_type_alias.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_type_alias.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/public_type_alias.rs"),
         probe: "pub type RequestInput",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -222,7 +230,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "item_reexport_alias",
         path: "tests/fixtures/execute_boundary/item_reexport_alias.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/item_reexport_alias.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/item_reexport_alias.rs"),
         probe: "Item as RequestInput",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -230,7 +238,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_trait_transport_input",
         path: "tests/fixtures/execute_boundary/public_trait_transport_input.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_trait_transport_input.rs"),
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/public_trait_transport_input.rs"
+        ),
         probe: "trait TransportFactory",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -238,7 +248,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_writer",
         path: "tests/fixtures/execute_boundary/public_writer.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_writer.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/public_writer.rs"),
         probe: "pub fn encode",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -246,7 +256,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "raw_exchange_outside_execute",
         path: "tests/fixtures/execute_boundary/raw_exchange_outside_execute.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/raw_exchange_outside_execute.rs"),
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/raw_exchange_outside_execute.rs"
+        ),
         probe: "transport.exchange(request, max_response_bytes)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -255,7 +267,7 @@ const FIXTURES: &[Fixture] = &[
         id: "raw_exchange_ufcs_outside_execute",
         path: "tests/fixtures/execute_boundary/raw_exchange_ufcs_outside_execute.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/raw_exchange_ufcs_outside_execute.rs"
+            "../../tests/fixtures/execute_boundary/raw_exchange_ufcs_outside_execute.rs"
         ),
         probe: "Transport::exchange(&mut self.transport, request, max_response_bytes)",
         coverage: SourceCoverage::CandidateInspected,
@@ -264,7 +276,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "qself_exchange_method_item",
         path: "tests/fixtures/execute_boundary/qself_exchange_method_item.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/qself_exchange_method_item.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/qself_exchange_method_item.rs"),
         probe: "<dyn Transport>::exchange",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -272,7 +284,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "macro_hidden_second_exchange",
         path: "tests/fixtures/execute_boundary/macro_hidden_second_exchange.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/macro_hidden_second_exchange.rs"),
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/macro_hidden_second_exchange.rs"
+        ),
         probe: "vec![self.transport.exchange(&[], 1)]",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -281,7 +295,7 @@ const FIXTURES: &[Fixture] = &[
         id: "nested_macro_in_whitelisted_macro",
         path: "tests/fixtures/execute_boundary/nested_macro_in_whitelisted_macro.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/nested_macro_in_whitelisted_macro.rs"
+            "../../tests/fixtures/execute_boundary/nested_macro_in_whitelisted_macro.rs"
         ),
         probe: "matches!(hidden!(), _)",
         coverage: SourceCoverage::CandidateInspected,
@@ -290,7 +304,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "matches_guard_logical_not",
         path: "tests/fixtures/execute_boundary/matches_guard_logical_not.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/matches_guard_logical_not.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/matches_guard_logical_not.rs"),
         probe: "matches!(value, Some(item) if !(item == 0))",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Accept,
@@ -298,7 +312,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "public_conversion_hooks",
         path: "tests/fixtures/execute_boundary/public_conversion_hooks.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/public_conversion_hooks.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/public_conversion_hooks.rs"),
         probe: "T: Into<ClientRequest>",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -307,7 +321,7 @@ const FIXTURES: &[Fixture] = &[
         id: "client_request_conversion_trait_impls",
         path: "tests/fixtures/execute_boundary/client_request_conversion_trait_impls.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/client_request_conversion_trait_impls.rs"
+            "../../tests/fixtures/execute_boundary/client_request_conversion_trait_impls.rs"
         ),
         probe: "impl From<Vec<u8>> for ClientRequest",
         coverage: SourceCoverage::CandidateInspected,
@@ -317,7 +331,7 @@ const FIXTURES: &[Fixture] = &[
         id: "client_batch_conversion_trait_impl",
         path: "tests/fixtures/execute_boundary/client_batch_conversion_trait_impl.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/client_batch_conversion_trait_impl.rs"
+            "../../tests/fixtures/execute_boundary/client_batch_conversion_trait_impl.rs"
         ),
         probe: "impl From<Vec<u8>> for ClientBatch",
         coverage: SourceCoverage::CandidateInspected,
@@ -327,7 +341,7 @@ const FIXTURES: &[Fixture] = &[
         id: "client_batch_item_conversion_trait_impl",
         path: "tests/fixtures/execute_boundary/client_batch_item_conversion_trait_impl.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/client_batch_item_conversion_trait_impl.rs"
+            "../../tests/fixtures/execute_boundary/client_batch_item_conversion_trait_impl.rs"
         ),
         probe: "impl TryFrom<Structure> for ClientBatchItem",
         coverage: SourceCoverage::CandidateInspected,
@@ -337,7 +351,7 @@ const FIXTURES: &[Fixture] = &[
         id: "client_batch_trait_argument_conversion_impl",
         path: "tests/fixtures/execute_boundary/client_batch_trait_argument_conversion_impl.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/client_batch_trait_argument_conversion_impl.rs"
+            "../../tests/fixtures/execute_boundary/client_batch_trait_argument_conversion_impl.rs"
         ),
         probe: "impl Into<ClientBatch> for CallerInput",
         coverage: SourceCoverage::CandidateInspected,
@@ -347,7 +361,7 @@ const FIXTURES: &[Fixture] = &[
         id: "public_impl_trait_conversion_input",
         path: "tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs"
+            "../../tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs"
         ),
         probe: "request: impl Into<ClientRequest>",
         coverage: SourceCoverage::CandidateInspected,
@@ -357,7 +371,7 @@ const FIXTURES: &[Fixture] = &[
         id: "approved_error_validation_source",
         path: "tests/fixtures/execute_boundary/approved_error_validation_source.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/approved_error_validation_source.rs"
+            "../../tests/fixtures/execute_boundary/approved_error_validation_source.rs"
         ),
         probe: "pub fn validation<E>",
         coverage: SourceCoverage::CandidateInspected,
@@ -367,7 +381,7 @@ const FIXTURES: &[Fixture] = &[
         id: "approved_batch_response_iter_output",
         path: "tests/fixtures/execute_boundary/approved_batch_response_iter_output.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/approved_batch_response_iter_output.rs"
+            "../../tests/fixtures/execute_boundary/approved_batch_response_iter_output.rs"
         ),
         probe: "impl ExactSizeIterator<Item = &ClientBatchItemResponse>",
         coverage: SourceCoverage::CandidateInspected,
@@ -377,7 +391,7 @@ const FIXTURES: &[Fixture] = &[
         id: "unbounded_public_type_parameter",
         path: "tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs"
+            "../../tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs"
         ),
         probe: "pub fn execute<T>",
         coverage: SourceCoverage::CandidateInspected,
@@ -386,7 +400,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "nongeneric_bytes_input_output",
         path: "tests/fixtures/execute_boundary/nongeneric_bytes_input_output.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/nongeneric_bytes_input_output.rs"),
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/nongeneric_bytes_input_output.rs"
+        ),
         probe: "bytes::Bytes",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -394,7 +410,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "permit_qself_mint",
         path: "tests/fixtures/execute_boundary/permit_qself_mint.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/permit_qself_mint.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/permit_qself_mint.rs"),
         probe: "<OperationEncodingPermit>::mint()",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -402,7 +418,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "permit_constructor_derives",
         path: "tests/fixtures/execute_boundary/permit_constructor_derives.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/permit_constructor_derives.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/permit_constructor_derives.rs"),
         probe: "derive(Default, Clone, Copy)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -411,7 +427,7 @@ const FIXTURES: &[Fixture] = &[
         id: "permit_constructor_qualified_derives",
         path: "tests/fixtures/execute_boundary/permit_constructor_qualified_derives.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/permit_constructor_qualified_derives.rs"
+            "../../tests/fixtures/execute_boundary/permit_constructor_qualified_derives.rs"
         ),
         probe: "derive(core::default::Default, core::clone::Clone)",
         coverage: SourceCoverage::CandidateInspected,
@@ -421,7 +437,7 @@ const FIXTURES: &[Fixture] = &[
         id: "permit_constructor_trait_impls",
         path: "tests/fixtures/execute_boundary/permit_constructor_trait_impls.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/permit_constructor_trait_impls.rs"
+            "../../tests/fixtures/execute_boundary/permit_constructor_trait_impls.rs"
         ),
         probe: "impl Default for OperationEncodingPermit",
         coverage: SourceCoverage::CandidateInspected,
@@ -430,7 +446,9 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "counterfeit_exception_types",
         path: "tests/fixtures/execute_boundary/counterfeit_exception_types.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/counterfeit_exception_types.rs"),
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/counterfeit_exception_types.rs"
+        ),
         probe: "with_ttlv",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -439,7 +457,7 @@ const FIXTURES: &[Fixture] = &[
         id: "approved_batch_from_items_iterator",
         path: "tests/fixtures/execute_boundary/approved_batch_from_items_iterator.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/approved_batch_from_items_iterator.rs"
+            "../../tests/fixtures/execute_boundary/approved_batch_from_items_iterator.rs"
         ),
         probe: "from_items(items: impl IntoIterator",
         coverage: SourceCoverage::CandidateInspected,
@@ -448,7 +466,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "client_raw_body_execute",
         path: "tests/fixtures/execute_boundary/client_raw_body_execute.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/client_raw_body_execute.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/client_raw_body_execute.rs"),
         probe: "self.transport.exchange(caller_body)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -457,7 +475,7 @@ const FIXTURES: &[Fixture] = &[
         id: "public_client_transport_injection",
         path: "tests/fixtures/execute_boundary/public_client_transport_injection.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/public_client_transport_injection.rs"
+            "../../tests/fixtures/execute_boundary/public_client_transport_injection.rs"
         ),
         probe: "pub fn with_transport<T: Transport>",
         coverage: SourceCoverage::CandidateInspected,
@@ -466,7 +484,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "facade_transport_reexport",
         path: "tests/fixtures/execute_boundary/facade_transport_reexport.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/facade_transport_reexport.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/facade_transport_reexport.rs"),
         probe: "pub use kmipkit_transport::Transport",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -474,7 +492,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "missing_permit",
         path: "tests/fixtures/execute_boundary/missing_permit.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/missing_permit.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/missing_permit.rs"),
         probe: "self.writer.encode(request)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -482,7 +500,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "duplicate_permit",
         path: "tests/fixtures/execute_boundary/duplicate_permit.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/duplicate_permit.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/duplicate_permit.rs"),
         probe: "let second = OperationEncodingPermit::mint()",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -490,7 +508,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "permit_outside_execute",
         path: "tests/fixtures/execute_boundary/permit_outside_execute.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/permit_outside_execute.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/permit_outside_execute.rs"),
         probe: "fn prepare_permit()",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -498,7 +516,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "duplicate_writer",
         path: "tests/fixtures/execute_boundary/duplicate_writer.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/duplicate_writer.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/duplicate_writer.rs"),
         probe: "self.writer.encode(request, permit);\n        self.writer.encode",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -506,7 +524,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "writer_outside_execute",
         path: "tests/fixtures/execute_boundary/writer_outside_execute.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/writer_outside_execute.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/writer_outside_execute.rs"),
         probe: "fn submit",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -514,7 +532,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "writer_alias",
         path: "tests/fixtures/execute_boundary/writer_alias.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/writer_alias.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/writer_alias.rs"),
         probe: "as renamed_encode",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -522,7 +540,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "writer_reexport",
         path: "tests/fixtures/execute_boundary/writer_reexport.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/writer_reexport.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/writer_reexport.rs"),
         probe: "pub use crate::private_wire_writer::encode",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -530,7 +548,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "macro_token_tree",
         path: "tests/fixtures/execute_boundary/macro_token_tree.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/macro_token_tree.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/macro_token_tree.rs"),
         probe: "macro_rules! hidden_writer_call",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -538,7 +556,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "qualified_custom_vec_macro",
         path: "tests/fixtures/execute_boundary/qualified_custom_vec_macro.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/qualified_custom_vec_macro.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/qualified_custom_vec_macro.rs"),
         probe: "untrusted::vec![0u8]",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -547,7 +565,7 @@ const FIXTURES: &[Fixture] = &[
         id: "glob_writer_import_with_direct_permit",
         path: "tests/fixtures/execute_boundary/glob_writer_import_with_direct_permit.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/glob_writer_import_with_direct_permit.rs"
+            "../../tests/fixtures/execute_boundary/glob_writer_import_with_direct_permit.rs"
         ),
         probe: "use crate::private_wire_writer::*",
         coverage: SourceCoverage::CandidateInspected,
@@ -557,7 +575,7 @@ const FIXTURES: &[Fixture] = &[
         id: "permit_mint_and_helper_struct_literals",
         path: "tests/fixtures/execute_boundary/permit_mint_and_helper_struct_literals.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/permit_mint_and_helper_struct_literals.rs"
+            "../../tests/fixtures/execute_boundary/permit_mint_and_helper_struct_literals.rs"
         ),
         probe: "fn helper() -> Self",
         coverage: SourceCoverage::CandidateInspected,
@@ -566,7 +584,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "include_bypass",
         path: "tests/fixtures/execute_boundary/include_bypass.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/include_bypass.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/include_bypass.rs"),
         probe: "include!(\"included_writer.rs\")",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -574,7 +592,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "included_writer_source",
         path: "tests/fixtures/execute_boundary/included_writer.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/included_writer.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/included_writer.rs"),
         probe: "private_wire_writer::encode",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -582,7 +600,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "generated_source",
         path: "tests/fixtures/execute_boundary/generated_source.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/generated_source.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/generated_source.rs"),
         probe: "OUT_DIR",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -590,7 +608,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "conditional_compilation",
         path: "tests/fixtures/execute_boundary/conditional_compilation.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/conditional_compilation.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/conditional_compilation.rs"),
         probe: "#[cfg(any(",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -598,7 +616,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "log_request_time_stamp",
         path: "tests/fixtures/execute_boundary/log_request_time_stamp.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/log_request_time_stamp.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/log_request_time_stamp.rs"),
         probe: "request_time_stamp = ?request_time_stamp",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
@@ -607,7 +625,7 @@ const FIXTURES: &[Fixture] = &[
         id: "log_asynchronous_correlation_value",
         path: "tests/fixtures/execute_boundary/log_asynchronous_correlation_value.rs",
         source: include_str!(
-            "../tests/fixtures/execute_boundary/log_asynchronous_correlation_value.rs"
+            "../../tests/fixtures/execute_boundary/log_asynchronous_correlation_value.rs"
         ),
         probe: "asynchronous_correlation_value = ?value",
         coverage: SourceCoverage::CandidateInspected,
@@ -616,7 +634,7 @@ const FIXTURES: &[Fixture] = &[
     Fixture {
         id: "uninspected_construct",
         path: "tests/fixtures/execute_boundary/uninspected_construct.rs",
-        source: include_str!("../tests/fixtures/execute_boundary/uninspected_construct.rs"),
+        source: include_str!("../../tests/fixtures/execute_boundary/uninspected_construct.rs"),
         probe: "opaque_compiler_construct!",
         coverage: SourceCoverage::Uninspected,
         expected: ExpectedDecision::Reject,

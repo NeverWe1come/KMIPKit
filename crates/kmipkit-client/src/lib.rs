@@ -27,30 +27,39 @@ mod error;
 mod execute;
 
 #[cfg(test)]
+#[path = "../tests/unit/execution_tests.rs"]
 mod execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/option_tests.rs"]
 mod option_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/response_boundary_tests.rs"]
 mod response_boundary_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/request_time_stamp_tests.rs"]
 mod request_time_stamp_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/codec_limits_identity_tests.rs"]
 mod codec_limits_identity_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/execute_lifecycle_tests.rs"]
 mod execute_lifecycle_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/execute_test_support.rs"]
 mod execute_test_support;
 
 #[cfg(test)]
+#[path = "../tests/unit/execute_boundary_tests.rs"]
 mod execute_boundary_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/transport_contract_tests.rs"]
 mod transport_contract_tests;
 
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};

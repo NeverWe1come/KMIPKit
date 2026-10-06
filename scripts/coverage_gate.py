@@ -209,15 +209,65 @@ def is_coverage_source_path(path: str | Path) -> bool:
     return _is_rust_source_tree_path(normalized)
 
 
-def _inline_test_attribute(source: str) -> bool:
+def _excluded_test_module(
+    source: str,
+    masked: str,
+    source_path: Path,
+    workspace_root: Path,
+    attributes: list[tuple[int, int]],
+    module_index: int,
+) -> bool:
+    """Return whether a test-only module points to an existing excluded test file."""
+    path_attributes = [
+        (start, end)
+        for start, end in attributes
+        if re.fullmatch(
+            r'\s*#\s*\[\s*path\s*=\s*"([^"\\]*)"\s*\]\s*',
+            source[start:end],
+        )
+    ]
+    if len(path_attributes) != 1:
+        return False
+
+    path_attribute = source[slice(*path_attributes[0])]
+    path_match = re.fullmatch(
+        r'\s*#\s*\[\s*path\s*=\s*"([^"\\]*)"\s*\]\s*', path_attribute
+    )
+    if path_match is None:
+        return False
+
+    module_match = re.match(
+        r"(?:pub(?:\s*\([^)]*\))?\s+)?mod\s+[A-Za-z_]\w*\s*;",
+        masked[module_index:],
+    )
+    if module_match is None:
+        return False
+
+    source_parts = source_path.relative_to(workspace_root).parts
+    if len(source_parts) < 4 or source_parts[:1] != ("crates",) or source_parts[2] != "src":
+        return False
+    crate_root = workspace_root.joinpath(*source_parts[:2])
+    tests_root = crate_root / "tests"
+    try:
+        resolved_tests_root = tests_root.resolve(strict=True)
+        resolved_test_file = (source_path.parent / path_match.group(1)).resolve(strict=True)
+        resolved_test_file.relative_to(resolved_tests_root)
+    except (OSError, ValueError):
+        return False
+    return resolved_test_file.is_file()
+
+
+def _inline_test_attribute(source: str, source_path: Path, workspace_root: Path) -> bool:
     masked = _mask_rust_non_code(source)
     for match in re.finditer(r"#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]", masked):
         index = match.end()
+        attributes: list[tuple[int, int]] = []
         while True:
             while index < len(masked) and masked[index].isspace():
                 index += 1
             if not masked.startswith("#[", index):
                 break
+            attribute_start = index
             bracket_start = index + 1
             depth = 0
             while bracket_start < len(masked):
@@ -233,12 +283,15 @@ def _inline_test_attribute(source: str) -> bool:
             else:
                 index = len(masked)
                 break
+            attributes.append((attribute_start, index))
         while index < len(masked) and masked[index].isspace():
             index += 1
         visibility = re.match(r"pub(?:\s*\([^)]*\))?\s+", masked[index:])
         if visibility:
             index += visibility.end()
         if re.match(r"mod\b", masked[index:]):
+            if _excluded_test_module(source, masked, source_path, workspace_root, attributes, index):
+                continue
             return True
     return False
 
@@ -310,7 +363,7 @@ def scan_production_sources(workspace_root: str | Path) -> SourceScanResult:
             eligible_files.add(relative)
             scan_errors.append(f"source could not be read completely: {source_path}: {error}")
             continue
-        if _inline_test_attribute(source):
+        if _inline_test_attribute(source, source_path, root):
             raise InlineTestModuleError(
                 f"Inline #[cfg(test)] module found in production source {source_path}; move tests to an excluded test path."
             )

@@ -20,4 +20,5 @@ pub use result::{
 };
 
 #[cfg(test)]
+#[path = "../tests/unit/discover_versions_tests.rs"]
 mod discover_versions_tests;
