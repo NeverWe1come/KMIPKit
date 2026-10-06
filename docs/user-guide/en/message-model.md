@@ -41,8 +41,8 @@ or retry automatically.
 
 Message validation covers common message and batch structure. It does not
 validate operation-specific payloads, choose cryptographic parameters, encode
-TTLV bytes, or contact a KMIP server. The client execution API and operation
-models are documented by their own feature guides as they become available.
-
+TTLV bytes, or contact a KMIP server. The current typed execution foundation
+and its limits are described in the [client execution guide](client-execution.md).
+It has no production client constructor or live network backend.
 For the public API boundary, see the
 [architecture reference](../../architecture/public-api.md#kmip-message-model).

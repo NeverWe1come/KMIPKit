@@ -458,9 +458,15 @@ impl fmt::Debug for ClientBatchResponse {
 
 /// Synchronous typed KMIP client execution foundation.
 ///
-/// This feature intentionally defines no production constructor. An approved
-/// transport-configuration feature supplies one without accepting arbitrary
-/// caller-implemented transports.
+/// The only admitted operation in this feature is an explicit Discover
+/// Versions request. This feature intentionally defines no production
+/// constructor or live network backend. A separately approved
+/// transport-configuration feature supplies construction from validated
+/// configuration without accepting arbitrary caller-implemented transports.
+///
+/// See `docs/user-guide/en/client-execution.md` in the repository for current
+/// scope, limits, redaction, and transport boundaries.
+
 pub struct Client {
     transport: Box<dyn Transport>,
     #[cfg(test)]

@@ -35,8 +35,8 @@ idioms, resources, exceptions, and types; they do not reimplement KMIP.
 crates/
   kmipkit-ttlv/          Public generic tree and bounded decoder
   kmipkit-protocol/      KMIP models, validation, catalog output
-  kmipkit-transport/     Raw TLS and HTTPS transport implementations
-  kmipkit-client/        Synchronous orchestration, lifecycle, private uncalled writer
+  kmipkit-transport/     Public exchange contract; production adapters planned
+  kmipkit-client/        Synchronous typed execution; no production constructor
   kmipkit/               Supported Rust facade and high-level API
   kmipkit-ffi/           C ABI; the only crate allowed to contain unsafe
   kmipkit-test-support/  Fakes, fixtures, and test PKI; not published
@@ -79,20 +79,15 @@ provide stable public APIs for advanced integration.
 
 ### `kmipkit-transport`
 
-- Synchronous message transport trait.
-- `TcpStream + rustls` raw TLS.
-- `reqwest::blocking + rustls` HTTPS.
-- Timeouts, delivery state, connection invalidation, and redacted events.
-- No operation-specific decisions.
+- Implemented: public bounded synchronous byte-exchange contract, delivery-state errors, and zeroizing response wrapper.
+- Not implemented: production raw TLS or HTTPS adapters.
+- No KMIP operation-specific decisions.
 
 ### `kmipkit-client`
 
-- Client lifecycle and one reusable serialized connection.
-- Request header construction and response correlation.
-- Implemented: private outbound TTLV writer and zeroizing owner, with unit-test-only callers and no production callsite. The first client feature/spec owns the execute-owned permit and sole production callsite; its candidate PR must include the owner-through-transport integration test, and CI must pass it before merge, enablement, or release. Until then, the release branch must contain no production callsite or secret-bearing send. Execute must accept only closed typed requests, not generic Items/raw bodies/caller-implemented conversion traits; no general-purpose or public encoder.
-- Batch execution and per-item outcomes.
-- Pending operation handles and explicit polling/cancellation.
-- No automatic retry, failover, or capability discovery.
+- Implemented: synchronous execution for explicit typed Discover Versions batches through the private writer and test fake.
+- Implemented: request/response identity validation, bounded decoding, Pending outcomes, delivery state, and redacted errors.
+- No production Client constructor, live network backend, implicit discovery, automatic retry, or follow-up Poll/Cancel operation.
 
 ### `kmipkit`
 
@@ -111,16 +106,19 @@ provide stable public APIs for advanced integration.
 
 ## Message flow
 
-1. A high level builder creates a typed request.
-2. Protocol validation applies invariant rules and any explicitly selected
-   profile.
-3. The request converts to generic TTLV; under accepted ADR-0012, a future production callsite to the implemented private writer requires an internal permit minted only by `Client::execute`, and execute receives only a closed typed request variant. KMIPKIT-0005 has no production callsite; the first client feature/spec owns the execute API, permit, sole writer callsite/mint site, and exact-one audit. No public `encode(&Item)` API, raw-body input, or caller-implementable conversion route is authorized. The first-client feature PR must contain both the sole production callsite and its owner-through-transport integration test. CI must run and pass that test against the candidate callsite before merge, enablement, or release; until then, the release branch must contain no production callsite or secret-bearing send.
-4. The selected transport sends one complete bounded message.
-5. The decoder validates TTLV before typed conversion.
-6. The client validates version, correlation, batch count, and operation
-   relationships.
-7. A single operation returns a typed result, pending handle, or detailed KMIP
-   error. A batch returns all per-item outcomes.
+1. The caller prepares a closed typed request batch; the current operation is
+   Discover Versions, requested explicitly.
+2. The client validates request options and builds one bounded TTLV message.
+3. The private writer is called only inside Client::execute, whose typed input
+   cannot be replaced by generic Items, raw message bytes, or caller-defined
+   conversions.
+4. KMIPKIT-0007 passes the bounded request through the transport contract to a
+   deterministic fake. No production TLS/HTTPS adapter or live-server path is
+   currently available.
+5. The client applies the configured response-byte cap, decodes TTLV with the
+   same CodecLimits, and validates protocol and batch relationships.
+6. A batch returns typed per-item results or Pending outcomes. Results are
+   associated by Unique Batch Item ID and returned in request order. No automatic retry, failover, Poll, Cancel, or wait occurs.
 
 ## Dependency rules
 

@@ -4,64 +4,45 @@
 
 ### High level
 
-Every client initiated operation in the 1.0 scope receives an idiomatic
-builder. Builders hide message structure and fill mechanical fields while
-requiring security-sensitive choices explicitly.
+The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
+not implement the general builder surface. This feature adds one typed
+Discover Versions request variant and the synchronous batch execution
+contract. It also has no production client constructor, so there is no
+application-ready network call in this slice. See the
+[client execution guide](../user-guide/en/client-execution.md) for the current
+boundary and the runnable typed batch-preparation example in client crate
+rustdoc.
 
-Illustrative Rust API:
 
-```rust,ignore
-let result = client
-    .create_symmetric_key()
-    .name("database-encryption")
-    .algorithm(SymmetricAlgorithm::Aes)
-    .length_bits(256)
-    .usage(CryptographicUsage::ENCRYPT | CryptographicUsage::DECRYPT)
-    .execute()?;
-```
+### Low-level transport
 
-The exact signature is established by its approved implementation
-specification. This example describes intent, not existing code.
-
-`kmipkit-transport` is also a public reusable Rust crate under ADR-0003. Its
-low-level bounded exchange contract is a documented crate API under ADR-0014;
-the top-level facade does not re-export it, and `kmipkit-client` does not
-accept arbitrary caller-implemented transports.
-
-This low-level API intentionally accepts caller-supplied request bytes and
-returns a `TransportResponse` containing raw response bytes. It is a narrow
-exception to ADR-0012 Decision 4 for direct transport users and is outside
-`Client::execute`'s typed validation and request-owner guarantee. Direct
-callers own their request bytes and successful response wrapper. On drop, the
-wrapper zeroizes the initialized byte range in its current owned allocation;
-partial/error cleanup zeroizes initialized bytes in each current
-KMIPKit-owned response allocation before release. Spare or uninitialized
-capacity, earlier allocations released by reallocation unless cleared first,
-caller-created copies, and TLS/operating-system/third-party transport-library
-copies are outside that guarantee. Transport code must not log or retain
-request data and must zeroize KMIPKit-owned temporary copies before release,
-including any prior allocation released as a copy grows.
-Each concrete adapter specification must require request nonlogging,
-nonretention, and temporary-copy cleanup tests as applicable, and response
-tests that prove either no reallocation after response bytes are stored or
-cleanup of every prior/temporary allocation on success and error paths. The
-transport does not encode or validate KMIP operations. The high-level client
-always decodes the wrapper and never returns raw bodies; see
-[ADR-0014](../adr/0014-public-transport-exchange-contract.md) for the exact
-contract and limits.
+kmipkit-transport is a public reusable Rust crate under ADR-0003. ADR-0014
+defines its documented bounded byte-exchange contract. It is not re-exported
+by the kmipkit facade and cannot be injected into the typed client. Direct
+callers supply and own request bytes; this API does not encode or validate
+KMIP messages and does not provide the typed client's request-owner guarantee.
+On success, `TransportResponse` lends bytes through a borrowed view, redacts
+`Debug` output, and zeroizes initialized bytes in its current owned allocation
+on drop. Partial and error cleanup limits, including allocation growth and
+external copies, are defined by ADR-0014. No production TLS/HTTPS backend is
+available in KMIPKIT-0007.
 
 ### Typed protocol
 
-Each operation has a distinct request and response type. Applications can
-control headers, attributes, credentials, parameters, batch IDs, and
-extensions. `Client::execute(request)` returns the complete typed outcome.
-Its approved API must take a closed set of concrete typed KMIP requests: it
-cannot accept the public generic `Item` tree, raw KMIP body bytes, or a
-caller-implementable conversion trait as an alternate route to wire encoding.
-The exact variants, signature, and per-call limit configuration belong to the
-first client feature specification. This restriction applies to the supported
-high-level client API; the separately documented low-level `kmipkit-transport`
-exchange API is an explicit caller-owned raw-byte exception under ADR-0014.
+KMIPKIT-0007 provides synchronous `Client::execute` over an ordered `ClientBatch`
+with a closed typed request set. The initial and only request variant is
+Discover Versions. The API does not accept generic Item values, raw message
+bytes, or caller-implemented conversions. Discover Versions is an explicit
+operation and is never a hidden preflight. Per-call `CodecLimits` bound request
+encoding and response decoding and supply the transport response-byte cap.
+
+The feature defines no production Client constructor or live backend. A
+separately approved TLS/HTTPS feature will construct clients from validated
+transport configuration without arbitrary transport injection. The public
+low-level kmipkit-transport exchange contract remains a separate direct
+caller-byte API under ADR-0014. See the
+[client execution guide](../user-guide/en/client-execution.md) and
+[ADR-0014](../adr/0014-public-transport-exchange-contract.md).
 
 ### Generic TTLV
 
@@ -74,33 +55,17 @@ values, bitmask bits, and exact Big Integer Item Value octets. The tree has
 KMIPKit's 64-level Structure limit.
 
 The generic TTLV layer does not establish wire or protocol validity. It does
-not store original framing, encoded lengths, or padding bytes, and it does not
+not store original framing, encoded lengths, or padding bytes, and does not
 validate schema-specific field order, cardinality, required fields, or
-operation semantics. The KMIP 2.1 message layer validates the Request/Response
+operation semantics. The KMIP 2.1 message layer validates Request/Response
 Message envelopes, common headers, batch items, result relationships, and
-Message Extension shapes while retaining the source tree. It leaves operation
-payload contents generic. The public `kmipkit-ttlv` codec surface provides the
-bounded decoder for framing, exact wire lengths, endianness, padding, and
-configured resource limits; it exposes no byte-producing encoder. KMIPKIT-0005
-implements and tests a private writer, but adds no `Client::execute`, permit
-type/constructor, or production callsite.
-The first client feature/spec owns the execute API, its private permit type and
-constructor, the sole production mint/callsite, and an exact-one audit. That
-execute path must accept only a closed typed request input. The delegated
-approval of ADR-0012, the feature specification, and the enforceable
-permit/request boundary is recorded in
-`specs/005-ttlv-wire-codec/approval-record.md`. KMIPKIT-0005 still adds no
-production callsite. The first client feature PR must include the sole
-production callsite and its owner-through-transport
-integration test together. CI must pass that test against the candidate
-callsite before merge, enablement, or release; until then, the release branch
-must have neither the callsite nor a secret-bearing send. Schema validation
-for known KMIP Structures and operation rules belongs
-in the protocol/client layer before transmission. There is no public
-`encode(&Item)` API, and the decoder does not retain original bytes for
-re-emission. See the
-[generic value-model specification](../../specs/004-generic-ttlv-model/spec.md)
-for the model's exact scope and constraints.
+Message Extension shapes while retaining the source tree. It leaves
+operation payload contents generic. The public `kmipkit-ttlv` codec surface
+provides the bounded decoder and no byte-producing encoder. KMIPKIT-0007 owns
+the private writer and sole production callsite within the typed
+Client::execute path; callers cannot submit generic TTLV through that path.
+See the [generic value-model specification](../../specs/004-generic-ttlv-model/spec.md)
+and [client execution guide](../user-guide/en/client-execution.md).
 
 ### KMIP message model
 
@@ -169,15 +134,14 @@ call itself.
 
 ## Protocol asynchronous outcome
 
-```text
-OperationOutcome<T>
-  Completed(T)
-  Pending(PendingOperation<T>)
-```
-
-`PendingOperation` exposes its correlation value, explicit poll and cancel,
-result processing, and an optional blocking `wait` helper with configured
-interval and deadline. No background task or implicit wait is started.
+The 1.0 target includes explicit follow-up operations for KMIP asynchronous
+results. KMIPKIT-0007 represents a Pending item as
+`ClientBatchOutcome::Pending(PendingOutcome)`, preserving the opaque
+Asynchronous Correlation Value behind an explicit borrowed accessor. Its
+formatted output is redacted and KMIPKit-owned storage is zeroized when the
+Pending value is dropped. Poll, Cancel, result processing, automatic waiting,
+and background execution are not implemented by this foundation; see the
+[client execution guide](../user-guide/en/client-execution.md).
 
 ## Secrets
 
@@ -197,8 +161,8 @@ backing allocation, including spare capacity, and then sets its length to
 zero. `String::zeroize` delegates to its backing vector and has the same
 current-allocation behavior. Neither can guarantee that copies left in an
 earlier allocation by reallocation were cleared. The private outbound owner
-implemented by KMIPKIT-0005 currently documents a narrower guarantee: its
-initialized encoded byte range is zeroized before deallocation/owner drop.
+used by KMIPKIT-0007 documents a narrower guarantee: its initialized encoded
+byte range is zeroized after the synchronous exchange and before owner drop.
 Although the pinned `Vec::zeroize` implementation also clears that owner's
 current spare capacity, that extra behavior is not part of the documented
 KMIPKit guarantee. This is not a guarantee that every process copy of a value
@@ -207,36 +171,13 @@ copies deliberately made from borrowed views, temporary stack or register
 copies, and copies retained by Java, Python, or another runtime are outside
 this Rust model's guarantee.
 
-The current policy in `AGENTS.md` §8 prohibits serialization of credentials,
-private keys, secret key material, OTPs, tickets, and raw KMIP bodies. KMIPKIT-0005
-FR-013 and accepted ADR-0012 define a narrow policy for temporary outbound
-TTLV generated solely for a caller-requested typed operation. KMIPKIT-0005 may
-implement and test a private encoder, but it adds no permit or production
-callsite. The first client feature/spec owns the closed typed `Client::execute`
-API, its execute-owned permit type/private constructor and sole production
-mint/callsite, plus the exact-one audit. Bytes must be held in a private
-zeroizing KMIPKit-owned buffer through the transport write; before owner
-deallocation/drop, zeroize the initialized encoded byte range. Spare or
-uninitialized `Vec` capacity is outside the guarantee unless explicitly
-initialized and its cleanup is verified. The accepted policy has no
-public `encode(&Item)` API. The delegated approval of ADR-0012, the KMIPKIT-0005
-feature specification, and the enforceable private boundary is recorded in
-`specs/005-ttlv-wire-codec/approval-record.md`. The first client feature PR must include its sole production
-callsite and owner-through-transport integration test together. CI must pass
-the test against the candidate callsite before merge, enablement, or release.
-Until then, the release branch must have neither the callsite nor a secret-bearing send. If review rejects that
-boundary or it cannot be enforced, do not implement a production secret-bearing
-request path. The policy does not authorize diagnostics, general-purpose
-serialization, logging, formatting, error inclusion, persistence, or raw-body
-handling through the high-level client. ADR-0014 narrowly authorizes direct
-low-level transport users to receive a `TransportResponse`; drop zeroizes the
-initialized byte range in its current allocation, and error cleanup zeroizes
-initialized bytes in each current KMIPKit-owned partial allocation. Spare
-capacity, prior allocations not cleared before reallocation, and external
-TLS/transport-library copies are outside this guarantee. Concrete adapters
-must test their allocation-growth cleanup on success and error paths. The
-typed client always decodes the wrapper. ADR-0011 addresses received Reserved Tags and
-does not authorize wire encoding.
+The KMIPKIT-0007 execute path uses its private zeroizing request owner only for
+a caller-requested typed operation. Initialized encoded bytes are zeroized
+when that owner is dropped after exchange; broader copy and allocation limits
+are defined by [ADR-0012](../adr/0012-caller-requested-wire-encoding-policy.md).
+The separate low-level raw-byte exchange exception and its response-wrapper
+limits are defined by [ADR-0014](../adr/0014-public-transport-exchange-contract.md). The typed client
+always decodes the response wrapper and does not expose raw bodies.
 
 ## Errors
 

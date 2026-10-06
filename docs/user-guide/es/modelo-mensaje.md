@@ -43,9 +43,9 @@ Poll, Cancel, espera ni reintentos automáticos.
 
 La validación cubre la estructura común del mensaje y del lote. No valida los
 payloads específicos de cada operación, no elige parámetros criptográficos,
-no codifica bytes TTLV ni se conecta a un servidor KMIP. La ejecución del
-cliente y los modelos de operaciones se documentarán en sus propias guías
-cuando estén disponibles.
-
+no codifica bytes TTLV ni se conecta a un servidor KMIP. La base actual de
+ejecución tipada y sus límites se describen en la
+[guía de ejecución del cliente](ejecucion-cliente.md). No dispone de
+constructor de producción ni backend de red activo.
 Consulta la [referencia de arquitectura](../../architecture/public-api.md#kmip-message-model)
 para conocer el límite de la API pública.

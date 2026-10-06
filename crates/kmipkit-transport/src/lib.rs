@@ -1,4 +1,16 @@
-//! Raw TLS and HTTPS transport implementations for `KMIPKit`.
+//! Public low-level synchronous byte-exchange contract for `KMIPKit`.
+//!
+//! This crate currently provides the [`Transport`] contract, delivery-aware
+//! errors, and the zeroizing [`TransportResponse`] wrapper. It does not yet
+//! provide a production TLS or HTTPS adapter. Direct callers supply and own
+//! request bytes; this API does not encode or validate KMIP messages and does
+//! not provide the typed client's request-owner guarantee. The top-level
+//! `kmipkit` facade does not re-export this crate, and callers cannot inject a
+//! custom implementation into `kmipkit-client::Client`.
+//!
+//! See the repository decision at
+//! `docs/adr/0014-public-transport-exchange-contract.md` for the exact
+//! ownership, response-limit, and cleanup contract.
 #![forbid(unsafe_code)]
 
 mod error;
