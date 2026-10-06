@@ -1,3 +1,9 @@
+//! Lifecycle tests for response fixtures owned by the deterministic fake.
+//! These are test-support project-policy tests, not OASIS conformance vectors.
+//!
+//! Traceability: `KMIPKIT-0007-FR-013`, `-SC-009`; ADR-0014; OASIS KMIP v2.1
+//! §9.12, Table 417 for bounded fake exchange behavior.
+
 use kmipkit_test_support::{ExchangeScript, ResponseDropObserver, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport};
 
@@ -52,4 +58,26 @@ fn dropping_an_unconsumed_script_zeroizes_its_response_fixture() {
     drop(transport);
 
     assert!(observer.initialized_bytes_were_zeroized());
+}
+
+#[test]
+fn exhausted_script_fails_closed_without_a_second_exchange() {
+    let mut transport = ScriptedTransport::new(ExchangeScript::FailBeforeWrite);
+    let first = transport
+        .exchange(b"request", usize::MAX)
+        .expect_err("the configured failure is returned");
+    let second = transport
+        .exchange(b"request", usize::MAX)
+        .expect_err("an exhausted script does not synthesize a response");
+
+    assert_eq!(first.delivery_state(), RequestDeliveryState::NotSent);
+    assert_eq!(second.delivery_state(), RequestDeliveryState::NotSent);
+}
+
+#[test]
+fn dropping_unconsumed_write_failure_scripts_is_safe() {
+    drop(ScriptedTransport::new(ExchangeScript::FailBeforeWrite));
+    drop(ScriptedTransport::new(
+        ExchangeScript::FailAfterPartialWrite { written_bytes: 2 },
+    ));
 }

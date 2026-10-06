@@ -1284,3 +1284,7 @@ pub(super) use validate_pending_states as validate_pending_states_for_test;
 
 #[cfg(test)]
 pub(super) use validate_unknown_extension as validate_unknown_extension_for_test;
+
+#[cfg(test)]
+#[path = "../tests/unit/execute_private_error_tests.rs"]
+mod private_error_tests;

@@ -77,6 +77,83 @@ fn discover_versions_batch(asynchronous_indicator: Option<u32>) -> ClientBatch {
 }
 
 #[test]
+fn public_batch_and_result_accessors_preserve_order_and_redact_identifiers() {
+    let id = b"PUBLIC_BATCH_ID_SENTINEL".to_vec();
+    let first = ClientBatchItem::new(ClientRequest::discover_versions())
+        .with_unique_batch_item_id(id.clone());
+    let second = ClientBatchItem::new(ClientRequest::discover_versions());
+    assert!(matches!(
+        first.request(),
+        ClientRequest::DiscoverVersions(_)
+    ));
+    assert_eq!(first.unique_batch_item_id(), Some(id.as_slice()));
+    assert_eq!(second.unique_batch_item_id(), None);
+    assert!(!format!("{first:?}").contains("PUBLIC_BATCH_ID_SENTINEL"));
+
+    let mut request = ClientBatch::from_items([first]);
+    request.push(second);
+    let request = request
+        .with_request_time_stamp(1_700_000_000)
+        .with_batch_order_option(true);
+    assert_eq!(request.items().len(), 2);
+    assert_eq!(request.request_time_stamp(), Some(1_700_000_000));
+    assert!(format!("{request:?}").contains("item_count: 2"));
+    assert!(!format!("{request:?}").contains("PUBLIC_BATCH_ID_SENTINEL"));
+    assert_eq!(request.to_string(), "ClientBatch (2 items)");
+
+    let mut extension = ResponseItemFixture::success(Some(&id));
+    extension.extension_criticality = Some(false);
+    let response = response_bytes((2, 1), &[extension]);
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+    let result = client
+        .execute(
+            ClientBatch::new(
+                ClientBatchItem::new(ClientRequest::discover_versions())
+                    .with_unique_batch_item_id(id.clone()),
+            ),
+            &CodecLimits::defaults(),
+        )
+        .expect("the fixture is a valid completed response with a non-critical extension");
+
+    assert_eq!(result.len(), 1);
+    assert!(!result.is_empty());
+    assert!(result.get(1).is_none());
+    let mut results = result.iter();
+    let item = results.next().expect("one associated response exists");
+    assert_eq!(item.unique_batch_item_id(), Some(id.as_slice()));
+    assert_eq!(item.extensions().len(), 1);
+    assert!(!format!("{item:?}").contains("PUBLIC_BATCH_ID_SENTINEL"));
+    assert!(format!("{item:?}").contains("extension_count: 1"));
+    assert_eq!(results.len(), 0);
+    assert!(!format!("{result:?}").contains("PUBLIC_BATCH_ID_SENTINEL"));
+    assert!(format!("{result:?}").contains("item_count: 1"));
+    assert_eq!(
+        item.extensions()[0].with_ttlv(|view| view.children().len()),
+        3
+    );
+    assert_eq!(
+        format!("{:?}", item.extensions()[0]),
+        "ClientMessageExtension([REDACTED])"
+    );
+
+    let outcome = item.outcome();
+    assert!(matches!(
+        outcome,
+        crate::execute::ClientBatchOutcome::Completed(_)
+    ));
+    assert_eq!(outcome.asynchronous_correlation_value(), None);
+    assert_eq!(outcome.response().result().status().raw(), 0);
+    assert!(format!("{outcome:?}").starts_with("Completed("));
+    assert!(outcome.to_string().starts_with("Completed("));
+}
+
+#[test]
 fn invalid_batch_and_option_inputs_are_rejected_before_exchange() {
     let item = || ClientBatchItem::new(ClientRequest::discover_versions());
     let with_ids = || {
@@ -114,6 +191,18 @@ fn invalid_batch_and_option_inputs_are_rejected_before_exchange() {
 
         assert_eq!(error.category(), ClientErrorCategory::Validation);
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(
+            error
+                .cause_category()
+                .map(|cause| cause.to_string())
+                .as_deref(),
+            Some("invalid input")
+        );
+        assert_eq!(
+            error.source().map(ToString::to_string).as_deref(),
+            Some("invalid input")
+        );
+        assert!(error.to_string().contains("client validation failure"));
         assert_eq!(fake.borrow().exchange_count(), 0);
         assert_eq!(fake.borrow().write_call_count(), 0);
     }
@@ -143,6 +232,9 @@ fn present_empty_pending_correlation_value_is_preserved() {
     let outcome = result.get(0).expect("one result").outcome();
 
     assert_eq!(outcome.asynchronous_correlation_value(), Some(&[][..]));
+    assert_eq!(outcome.response().result().status().raw(), 2);
+    assert!(format!("{outcome:?}").starts_with("Pending("));
+    assert!(outcome.to_string().starts_with("Pending("));
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
@@ -361,6 +453,32 @@ fn unsupported_response_version_is_rejected_after_the_response_starts() {
         error.delivery_state(),
         Some(RequestDeliveryState::ResponseStarted)
     );
+}
+
+#[test]
+fn unoffered_typed_discover_versions_result_is_rejected_with_delivery_evidence() {
+    let response = response_bytes(
+        (2, 1),
+        &[ResponseItemFixture::success(None).with_supported_version((3, 0))],
+    );
+    let (mut client, _, _) = client_for(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(discover_versions_batch(None), &CodecLimits::defaults())
+        .expect_err("the result cannot advertise a version not included in the request");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert!(error.to_string().contains("invalid protocol value"));
 }
 
 #[test]

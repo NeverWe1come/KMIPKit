@@ -26,6 +26,7 @@ const RESULT_STATUS: u32 = 0x0042_007F;
 const RESULT_REASON: u32 = 0x0042_007E;
 const RESULT_MESSAGE: u32 = 0x0042_007D;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+const EXTENSION_PAYLOAD_TAG: u32 = 0x0042_0173;
 const TIME_STAMP: u32 = 0x0042_0092;
 const BATCH_COUNT: u32 = 0x0042_000D;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
@@ -248,6 +249,19 @@ fn response_rejects_a_protocol_version_component_with_the_wrong_type() {
 }
 
 #[test]
+fn response_rejects_a_minor_component_with_the_wrong_type() {
+    let message = malformed_version([
+        item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        item(PROTOCOL_VERSION_MINOR, Value::text_string("1".to_owned())),
+    ]);
+
+    assert_eq!(
+        decode_response(&message).unwrap_err(),
+        DiscoverVersionsError::MalformedProtocolVersion
+    );
+}
+
+#[test]
 fn response_rejects_a_different_operation() {
     let message = response_for_operation(
         0x0000_001F,
@@ -270,6 +284,47 @@ fn response_rejects_repeated_protocol_version_components() {
         item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
         item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
     ]);
+
+    assert_eq!(
+        decode_response(&message).unwrap_err(),
+        DiscoverVersionsError::MalformedProtocolVersion
+    );
+}
+
+#[test]
+fn response_rejects_a_repeated_minor_component() {
+    let message = malformed_version([
+        item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+        item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+    ]);
+
+    assert_eq!(
+        decode_response(&message).unwrap_err(),
+        DiscoverVersionsError::MalformedProtocolVersion
+    );
+}
+
+#[test]
+fn response_ignores_unknown_protocol_version_components() {
+    let message = malformed_version([
+        item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        item(EXTENSION_PAYLOAD_TAG, Value::integer(7)),
+        item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+    ]);
+
+    assert_eq!(
+        decode_response(&message)
+            .expect("unknown generic fields do not replace known Protocol Version fields")
+            .supported_versions(),
+        Some(&[KMIP_2_1][..])
+    );
+}
+
+#[test]
+fn response_rejects_protocol_version_field_with_a_non_structure_value() {
+    let payload = structure([item(PROTOCOL_VERSION, Value::text_string("2.1".to_owned()))]);
+    let message = response(0, None, None, Some(payload));
 
     assert_eq!(
         decode_response(&message).unwrap_err(),

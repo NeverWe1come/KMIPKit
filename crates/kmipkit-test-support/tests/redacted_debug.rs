@@ -1,3 +1,9 @@
+//! Debug-redaction tests for the deterministic test-only transport fake.
+//! These do not establish production adapter behavior or OASIS conformance.
+//!
+//! Traceability: `KMIPKIT-0007-FR-013`, `-SC-009`; ADR-0014; OASIS KMIP v2.1
+//! §9.12, Table 417 for the fake's bounded response behavior.
+
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 
 const SUCCESS_SENTINEL: &[u8] = b"KMIPKIT_TEST_SUPPORT_SUCCESS_BODY_SENTINEL";
@@ -37,4 +43,17 @@ fn scripted_transport_debug_redacts_response_bytes_in_its_script() {
     let debug = format!("{transport:?}");
     let raw_bytes = format!("{:?}", SUCCESS_SENTINEL.to_vec());
     assert!(!debug.contains(&raw_bytes));
+}
+
+#[test]
+fn failure_script_debug_exposes_only_safe_progress_metadata() {
+    assert_eq!(
+        format!("{:?}", ExchangeScript::FailBeforeWrite),
+        "FailBeforeWrite"
+    );
+
+    let script = ExchangeScript::FailAfterPartialWrite { written_bytes: 3 };
+    let debug = format!("{script:?}");
+    assert!(debug.contains("written_bytes: 3"));
+    assert!(!debug.contains("SENTINEL"));
 }
