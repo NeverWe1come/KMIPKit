@@ -1,7 +1,7 @@
 # Implementation Plan: KMIP 2.1 Typed Client Execution
 
-**Branch**: `feature/KMIPKIT-0007-spec-corrections` | **Date**: 2026-10-06 | **Spec**: [`spec.md`](spec.md)
-**Status**: Draft pending independent review and merge of this corrected specification PR. Delegated maintainer authorization and decisions are recorded in [`approval-record.md`](approval-record.md); implementation cannot start until the corrected artifact revision is merged.
+**Branch**: `feature/KMIPKIT-0007-implementation` | **Date**: 2026-10-06 | **Spec**: [`spec.md`](spec.md)
+**Status**: Approved for implementation — correction PR #39 was independently reviewed and merged into `release/1.0.0`; delegated authorization and exact-artifact evidence are recorded in [`approval-record.md`](approval-record.md).
 
 ## Summary
 
@@ -30,7 +30,7 @@ Create the first synchronous typed Rust client path over KMIPKIT-0005's strict T
 | Transport safety | Fake transport exercises bounded reads and partial writes; production backends are separate. No retry/failover. | Ensure delivery state reflects actual send/receive progress. |
 | Compatibility and scope | Rust-only, TTLV, KMIP 2.1, client-initiated operations. | No bindings or other encodings added. |
 
-**Gate outcome**: The 0005/0006 dependencies and ADR-0011/0012 are accepted and merged. ADR-0013/0014 record the delegated decisions needed for this design. Implementation remains blocked until the corrected 0007 specification revision has independent QA and security/design review and its PR is merged.
+**Gate outcome**: The 0005/0006 dependencies and ADR-0011/0012 are accepted and merged. ADR-0013/0014 record the delegated decisions needed for this design. The corrected 0007 revision passed independent QA and security/design review and merged as PR #39 before implementation began.
 
 ## Proposed Architecture
 

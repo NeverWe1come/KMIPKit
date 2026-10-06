@@ -51,7 +51,7 @@ fn usize_limit_to_u128(value: usize) -> u128 {
     u128::from(u64::try_from(value).unwrap_or(u64::MAX))
 }
 
-enum EncodeError {
+pub(super) enum EncodeError {
     EmptyBigInteger,
     LimitExceeded,
     ItemLengthOverflow,
@@ -355,7 +355,7 @@ fn check_plan_inner(
     Ok(())
 }
 
-struct EncodedOwner {
+pub(super) struct EncodedOwner {
     bytes: Zeroizing<Vec<u8>>,
     #[cfg(test)]
     drop_observer: Option<tests::ZeroizationObserver>,
@@ -371,13 +371,13 @@ impl EncodedOwner {
     }
 
     /// Borrows the initialized output bytes immutably for an internal caller.
-    fn as_bytes(&self) -> &[u8] {
+    pub(super) fn as_bytes(&self) -> &[u8] {
         self.bytes.as_slice()
     }
 
     #[cfg(test)]
     fn with_observer(bytes: Vec<u8>) -> (Self, tests::ZeroizationObserver) {
-        let observer = tests::ZeroizationObserver::new();
+        let observer = tests::ZeroizationObserver::new(Some(bytes.len()));
         (
             Self {
                 bytes: Zeroizing::new(bytes),
@@ -385,6 +385,14 @@ impl EncodedOwner {
             },
             observer,
         )
+    }
+
+    #[cfg(test)]
+    fn with_drop_observer(bytes: Vec<u8>, observer: tests::ZeroizationObserver) -> Self {
+        Self {
+            bytes: Zeroizing::new(bytes),
+            drop_observer: Some(observer),
+        }
     }
 }
 
@@ -398,6 +406,7 @@ impl Drop for EncodedOwner {
     }
 }
 
+#[cfg(test)]
 fn encode_item(item: &Item) -> Result<EncodedOwner, EncodeError> {
     let limits = CodecLimits::defaults();
     #[cfg(test)]
@@ -411,6 +420,42 @@ fn encode_item(item: &Item) -> Result<EncodedOwner, EncodeError> {
     )
 }
 
+/// Writes a request selected by the parent execute module and authorized by
+/// its private operation permit.
+pub(super) fn encode_for_execute(
+    item: &Item,
+    limits: &CodecLimits,
+    _permit: super::OperationEncodingPermit,
+    #[cfg(test)] limits_observer: Option<&super::LimitsIdentityObserver>,
+    #[cfg(test)] observer: &tests::EncodingObserver,
+    #[cfg(test)] drop_observer: Option<tests::ZeroizationObserver>,
+) -> Result<EncodedOwner, EncodeError> {
+    #[cfg(test)]
+    if let Some(observer) = limits_observer {
+        observer.record_encode(limits);
+    }
+    encode_item_inner(
+        item,
+        limits,
+        #[cfg(test)]
+        observer,
+        #[cfg(test)]
+        None,
+        #[cfg(test)]
+        drop_observer,
+    )
+}
+
+#[cfg(test)]
+pub(super) fn encode_item_for_test(
+    item: &Item,
+    limits: &CodecLimits,
+) -> Result<EncodedOwner, EncodeError> {
+    let observer = tests::EncodingObserver::default();
+    encode_item_with_limits(item, limits, &observer)
+}
+
+#[cfg(test)]
 fn encode_item_with_limits(
     item: &Item,
     limits: &CodecLimits,
@@ -423,6 +468,8 @@ fn encode_item_with_limits(
         observer,
         #[cfg(test)]
         None,
+        #[cfg(test)]
+        None,
     )
 }
 
@@ -433,7 +480,7 @@ fn encode_item_with_identity_observer(
     copy_observer: &tests::EncodingObserver,
     limits_observer: &tests::LimitsIdentityObserver<'_>,
 ) -> Result<EncodedOwner, EncodeError> {
-    encode_item_inner(item, limits, copy_observer, Some(limits_observer))
+    encode_item_inner(item, limits, copy_observer, Some(limits_observer), None)
 }
 
 fn encode_item_inner(
@@ -441,6 +488,7 @@ fn encode_item_inner(
     limits: &CodecLimits,
     #[cfg(test)] copy_observer: &tests::EncodingObserver,
     #[cfg(test)] limits_observer: Option<&tests::LimitsIdentityObserver<'_>>,
+    #[cfg(test)] drop_observer: Option<tests::ZeroizationObserver>,
 ) -> Result<EncodedOwner, EncodeError> {
     // Keep the failure-atomic sequence explicit: measure the full tree, apply
     // all resource limits and U32 Item Length checks, reserve once, then write.
@@ -453,6 +501,11 @@ fn encode_item_inner(
     )?;
     let capacity = usize::try_from(plan.encoded_bytes).map_err(|_| EncodeError::SizeOverflow)?;
 
+    #[cfg(test)]
+    if let Some(observer) = &drop_observer {
+        observer.expect_initialized_len(capacity);
+    }
+
     let output = reserve_output_buffer(
         capacity,
         #[cfg(test)]
@@ -461,6 +514,13 @@ fn encode_item_inner(
 
     // Own and zeroize the reserved allocation before writing starts. If an
     // invariant is ever violated during writing, Drop still clears the bytes.
+    #[cfg(test)]
+    let mut owner = if let Some(observer) = drop_observer {
+        EncodedOwner::with_drop_observer(output, observer)
+    } else {
+        EncodedOwner::new(output)
+    };
+    #[cfg(not(test))]
     let mut owner = EncodedOwner::new(output);
     {
         let mut writer = Writer {
@@ -698,5 +758,12 @@ fn shared_payload_copy(output: &mut Vec<u8>, payload: &[u8]) {
     output.extend_from_slice(payload);
 }
 
+#[cfg(test)]
 #[path = "../tests/support/wire_encoder_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+pub(super) use tests::EncodingObserver;
+
+#[cfg(test)]
+pub(crate) use tests::ZeroizationObserver;

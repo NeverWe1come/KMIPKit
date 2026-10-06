@@ -69,10 +69,13 @@ name = "kmipkit-client"
 version = "0.1.0"
 dependencies = [
  "kmipkit-protocol",
+ "kmipkit-test-support",
  "kmipkit-transport",
  "kmipkit-ttlv",
+ "quickcheck",
  "serde",
  "static_assertions",
+ "syn",
  "zeroize",
 ]
 
@@ -95,16 +98,18 @@ dependencies = [
 name = "kmipkit-test-support"
 version = "0.1.0"
 dependencies = [
- "kmipkit",
- "kmipkit-client",
  "kmipkit-protocol",
  "kmipkit-transport",
  "kmipkit-ttlv",
+ "zeroize",
 ]
 
 [[package]]
 name = "kmipkit-transport"
 version = "0.1.0"
+dependencies = [
+ "zeroize",
+]
 
 [[package]]
 name = "kmipkit-ttlv"

@@ -1,6 +1,15 @@
 # Transport and security architecture
 
-## Supported transports
+This document describes the intended 1.0 transport profile, not current
+backend availability. KMIPKIT-0007 provides the public low-level exchange
+contract and an internal test fake only; no production TLS/HTTPS adapter or
+usable network-client constructor is available yet. A separately approved
+transport feature will provide construction from validated configuration and
+must not expose arbitrary transport injection. See the
+[client execution guide](../user-guide/en/client-execution.md) for the
+implemented boundary.
+
+## Target 1.0 transports
 
 ### Raw TLS
 

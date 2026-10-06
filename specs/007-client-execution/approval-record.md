@@ -1,8 +1,8 @@
 # KMIPKIT-0007 delegated authorization and gate evidence
 
 **Recorded**: 2026-10-06
-**Feature branch**: `feature/KMIPKIT-0007-spec-corrections`
-**Release base**: `a65cb3cba30d32297548ee95896f57c4beecdd01` (`release/1.0.0`, PR #38 merge)
+**Feature branch**: `feature/KMIPKIT-0007-implementation`
+**Release base**: `5194c48de5c5154f69ed32472f44fbdcfbcca625` (`release/1.0.0`, PR #39 merge)
 
 ## Authorization and exact-scope acceptance
 
@@ -14,11 +14,15 @@ manual.” This delegates authorization for the bounded project decisions in
 this specification and ADR-0013/ADR-0014.
 
 This record does not claim that the maintainer personally inspected or
-line-reviewed this exact artifact. Independent review evidence is listed
-below and must cover the exact hashes recorded here before T002 is marked
-complete. Agent security/design review is not a qualified human security
-audit. The 0007 specification PR must be merged into `release/1.0.0` before
-implementation begins.
+line-reviewed this exact artifact. The correction-PR reviews below cover the
+pre-merge artifact hashes in the correction table. After PR #39 merged, the
+specification, plan, and task status fields were updated to record the
+implementation state; those post-merge revisions are pinned separately in
+"T002 completion and CI evidence" and their final T002 wording received
+focused QA and security/design re-review. T002 is complete only after the
+correction PR merge and those reviews. Agent security/design review is not a
+qualified human security audit. The 0007 specification PR merged into
+`release/1.0.0` before implementation began.
 
 ## Superseded PR #38 artifact revisions
 
@@ -31,13 +35,10 @@ implementation begins.
 | `docs/adr/0014-public-transport-exchange-contract.md` | `d60556e4fca642367eb3a6d6b66cf34ff1809b2a` | `88841DF7250E77A6660B8E0EF3A7E29741E64A494D455A549C23D7F2C06DD85C` |
 | `specification/catalog/kmip-2.1.json` | `503e8494686305a48b2e6edb517f12bb695b1762` | `2952835570EF23A11B98F8B3C27B25D177EC1B7406331240BE0E269BD39D6F64` |
 
-These hashes identify the specification revision merged by PR #38, not the
-corrected artifact revision in the current specification-correction PR. The
-prior QA and security/design reviews below are historical evidence for this
-superseded revision only. T002 is reopened; a new exact-artifact hash table
-and independent QA and security/design reviews must cover the correction PR
-before T002 is complete. The correction PR must merge into `release/1.0.0`
-before implementation resumes.
+These hashes identify the original specification revision merged by PR #38;
+the correction table below identifies the exact revision accepted by PR #39.
+The earlier QA and security/design reviews below are historical evidence for
+the superseded revision only.
 
 ## Correction PR artifact revisions
 
@@ -55,17 +56,19 @@ before implementation resumes.
 | `docs/adr/0014-public-transport-exchange-contract.md` | `d60556e4fca642367eb3a6d6b66cf34ff1809b2a` | `88841DF7250E77A6660B8E0EF3A7E29741E64A494D455A549C23D7F2C06DD85C` |
 | `specification/catalog/kmip-2.1.json` | `503e8494686305a48b2e6edb517f12bb695b1762` | `2952835570EF23A11B98F8B3C27B25D177EC1B7406331240BE0E269BD39D6F64` |
 
-The independent reviewers must inspect the full correction PR, including this
-approval record. The table pins the substantive spec, plan, task, contract,
-checklist, research, and unchanged normative context. After each correction
-to a tabled artifact, recompute its Git blob and SHA-256 and rerun both
-reviews against the updated exact revision.
+The table pins the substantive spec, plan, task, contract, checklist,
+research, and unchanged normative context reviewed for PR #39. Both reviewers
+inspected the full correction change, including its approval evidence. Any
+subsequent substantive correction to these artifacts requires refreshed
+hashes and reviews; task completion markers are implementation status, not
+changes to approved requirements.
 
 ## T001 source and dependency evidence
 
 - PR #38 merged the original 0007 spec at
-  `a65cb3cba30d32297548ee95896f57c4beecdd01`. PRs #30, #31, #32, #37, and
-  #38 are merged; the 0005/0006 specs and ADR-0011/ADR-0012 are accepted on
+  `a65cb3cba30d32297548ee95896f57c4beecdd01`; correction PR #39 merged at
+  `5194c48de5c5154f69ed32472f44fbdcfbcca625`. PRs #30, #31, #32, #37, #38,
+  and #39 are merged; the 0005/0006 specs and ADR-0011/ADR-0012 are accepted on
   the current base. The current dependency API and status audit is recorded in
   [`research.md`](research.md).
 - OASIS Specification v2.1 source SHA-256 is
@@ -160,11 +163,37 @@ reviews against the updated exact revision.
   boundary, response constructor, decoder/limits seams, fail-closed AST audit
   plan, or dependency graph. This agent review is not a qualified human
   security audit.
-- Reviewer-owned checklist markers remain unchecked. T002 remains unchecked
-  until these reviews are recorded and the correction PR merges into
-  `release/1.0.0`. A qualified independent human security audit remains a
-  release gate before 1.0.0; it does not block this autonomous specification
-  and implementation work.
+- Reviewer-owned checklist markers remain unchanged and unchecked. T002 is
+  complete because delegated authorization, both exact-artifact reviews, and
+  the correction PR merge are recorded. A qualified independent human
+  security audit remains a release gate before 1.0.0; it does not block this
+  bounded specification and implementation work.
+
+## T002 completion and CI evidence
+
+- Post-merge status-only revision, reviewed after PR #39:
+
+  | Artifact | Git blob | SHA-256 |
+  |---|---|---|
+  | `specs/007-client-execution/spec.md` | `4098ea0c84d19db941a9190b9f5faf48a20d9f59` | `B04BC98FD88E60F783DE9E3FFB40E64039E8A93D68E351557AE1125C6D0946AA` |
+  | `specs/007-client-execution/plan.md` | `3f07e043e064256206a16b488fa0804d6ded9b0d` | `C45F5CB1595C1E41D3EC396C0FA5A99D60117082D38FBA81ECEA8514CA96B4ED` |
+  | `specs/007-client-execution/tasks.md` | `50caa363565791856c46b8d1be2c5eb6f60b840c` | `143E7C63559E8F17A4DC8EAF4888327B895B6FA6E6BD18E5D7D4A61E58E934EC` |
+- Focused QA re-review: PASS. The final T002 wording records gate evidence only, leaves T010 implementation unchecked, and does not claim implementation or later checklist evidence.
+- Focused security/design re-review: PASS after clarifying that T010 is assigned to implement and verify the dependency edge in a future Green commit; T002 explicitly does not claim that implementation is complete.
+- These post-merge edits record branch/status state only. They do not change approved protocol behavior or scope, and no implementation tests were run as part of this gate update.
+
+- Correction PR #39 passed independent QA/spec and security/design reviews
+  against all 11 artifact/hash pairs above and was squash-merged to
+  `release/1.0.0` at `5194c48de5c5154f69ed32472f44fbdcfbcca625` on 2026-10-06.
+- GitHub Actions run `37424374937` completed all 17 check runs: 15 passed and
+  two informational/nightly checks were skipped by their event filters. This
+  includes Linux, Windows, and macOS Rust checks, the three-platform coverage
+  gate, script contracts, dependency policy, and normative inventory.
+- The release branch had no configured branch-protection resource when
+  checked. Merge readiness was verified directly from the PR and check-run
+  API before merge; no branch-protection enforcement is claimed.
+- This records the approval and merge state transition without changing the
+  reviewed protocol behavior or scope.
 
 ## Verification performed
 
@@ -176,3 +205,4 @@ reviews against the updated exact revision.
 - `python -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -q` passed: 167 tests, 7 skipped.
 - No implementation tests were run; this PR updates specification, governance,
   and catalog documentation only.
+- PR #39 CI run `37424374937` passed all required checks before merge.

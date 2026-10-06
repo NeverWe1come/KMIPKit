@@ -1,18 +1,20 @@
 # KMIPKit threat model
 
 Status: implementation snapshot and design baseline
-Scope: KMIPKit 1.0 architecture, including the KMIPKIT-0005 TTLV codec implementation
-Last reviewed: 2026-10-05
+Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV and KMIPKIT-0007 client execution
+Last reviewed: 2026-10-06
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
 current executable controls from planned components. The repository includes
-the `kmipkit-ttlv` in-memory value model and public bounded decoder, plus a
-private client TTLV writer with no production callsite. Protocol operations,
-transports, FFI, and language bindings remain design scope unless their source
-and tests establish otherwise. Scenarios below remain hypotheses and security
-requirements unless a control is explicitly tied to executable evidence. The
-model must be revised as each executable boundary is introduced.
-
+the kmipkit-ttlv in-memory value model and public bounded decoder, the typed
+KMIPKIT-0007 execution path, and the public low-level exchange contract. The
+client supports explicit Discover Versions execution through a deterministic
+test fake but has no production constructor or live TLS/HTTPS backend.
+Additional protocol operations, production transports, FFI, and language
+bindings remain design scope unless their source and tests establish
+otherwise. Scenarios below remain hypotheses and security requirements unless
+a control is explicitly tied to executable evidence. The model must be
+revised as each executable boundary is introduced.
 Independent architecture mapping and a source-level security diff review were
 completed for KMIPKIT-0005 on 2026-10-05. A qualified human security review
 remains a release requirement before 1.0.
@@ -57,19 +59,19 @@ flowchart LR
 
 ### Components and evidence
 
-The generic TTLV value model, public bounded decoder, and private outbound
-writer are implemented. The writer has no production callsite or transport
-handoff. Other product component rows describe design scope, although some
-crates expose partial result, error, or delivery-state types. CI validation is
-implemented, while package publication remains planned.
-
+The generic TTLV value model, bounded public decoder, typed client execution
+foundation, and low-level transport contract are implemented. KMIPKIT-0007
+provides a test fake but no production Client constructor or live TLS/HTTPS
+backend. Other product component rows describe target design unless marked
+implemented; CI validation is implemented while package publication remains
+planned.
 | Component | Responsibility | Security relevance | Evidence |
 |---|---|---|---|
 | Generic TTLV value model (implemented) | Construct and inspect typed in-memory values; preserve ordered Structures; check tag allocation and depth | Payload redaction and zeroization, bounded nesting, tag allocation; this model does not establish wire validity | `crates/kmipkit-ttlv/src/lib.rs:1-11`; `docs/architecture/public-api.md:34-49` |
 | Public TTLV decoder (implemented) | Decode one bounded untrusted item into the public generic tree | Memory and CPU bounds, malformed-input rejection, unknown value preservation, no raw-byte retention | `crates/kmipkit-ttlv/src/codec/decoder.rs:29-162`; `crates/kmipkit-ttlv/src/codec/mod.rs:18-24,181-209` |
-| Private client outbound writer (implemented; no production callsite) | Measure and encode a generic Item for private, test-only use; the first client feature/spec connects the writer to a closed typed request submitted through `Client::execute` | Preflight limits and Item Length before allocation; zeroizing owner; future execute-owned permit and sole writer callsite; no generic Item/raw-body/caller-implemented conversion input at the future public execution boundary; no general-purpose encoder | `crates/kmipkit-client/src/wire_encoder.rs:345-375,439-474`; `crates/kmipkit-client/src/lib.rs:6-10`; ADR-0012 and `specs/005-ttlv-wire-codec/contracts/rust-ttlv-codec.md` |
-| Protocol and client | Validate requests and correlate responses | Prevent semantic confusion, wrong-result delivery, and implicit retry | `docs/architecture/overview.md:71-94` |
-| Raw TLS and HTTPS transports | Authenticate peers and carry messages | Server identity, client identity, confidentiality, framing, delivery state | `docs/architecture/transport-security.md:3-65` |
+| Private client outbound writer (implemented; 0007 execute callsite) | Encodes only the closed typed request set through Client::execute; no general-purpose or public encoder | Execute-owned permit, one writer callsite, request owner through synchronous exchange, zeroization on drop, redacted diagnostics; this slice has no secret-bearing request operation | crates/kmipkit-client/src/wire_encoder.rs; crates/kmipkit-client/src/execute.rs; ADR-0012; specs/007-client-execution |
+| Protocol and client | Validate requests and correlate responses | Prevent semantic confusion, wrong-result delivery, and implicit retry | docs/architecture/overview.md |
+| Raw TLS and HTTPS transports (planned; not implemented) | Authenticate peers and carry messages | Server identity, client identity, confidentiality, framing, delivery state | docs/architecture/transport-security.md |
 | C ABI | Expose native functionality to foreign runtimes | Pointer validity, ownership, panic containment, stable layouts | `docs/architecture/ffi-and-bindings.md:3-33` |
 | Java and Python adapters | Offer idiomatic APIs and load native code | Native package integrity, secret copies, lifecycle and concurrency | `docs/architecture/ffi-and-bindings.md:46-81` |
 | Extension registry | Interpret optional vendor data | Untrusted schemas, semantic ambiguity, denial of service | `docs/architecture/extensions.md:18-59` |
@@ -81,7 +83,7 @@ implemented, while package publication remains planned.
 |---|---|---|---|---|---|---|
 | KMIP connection | Server endpoint and HTTPS path | Immutable client configuration; request cannot silently replace it | One explicit endpoint; `/kmip` is only the default HTTPS path | Caller, transport, configured server | URL validation, HTTPS-only policy, no redirects, no automatic alternative endpoint | Designed in `docs/architecture/transport-security.md:14-21,45-52`; implementation pending |
 | TLS authentication | Trust roots, server name, client certificate, private key, CRLs | Explicit caller values; platform trust only by explicit selection | Caller-provided memory or file reference; secrets must not enter logs | Caller and rustls transport | TLS 1.3, chain/validity/name verification, mTLS, no insecure switch | Designed in `docs/architecture/transport-security.md:23-43`; secure file permissions remain a caller duty |
-| KMIP authentication | Message credentials, OTPs, and tickets | Client defaults may be replaced per request or batch | Secret-bearing native values with the shortest practical lifetime | Caller, private client writer (currently no production callsite), authenticated KMIP server in a future client execution path | Secret types, redaction, and zeroization of initialized encoded bytes before owner deallocation; spare/uninitialized `Vec` capacity is outside the guarantee unless initialized and cleanup verified. Candidate client feature PR must include the sole callsite and owner-through-transport integration test; CI must pass it before merge, enablement, or release. Until then, release has no production callsite or secret-bearing send. | Designed in `docs/architecture/transport-security.md:80-92`; foreign-runtime copies and uninitialized capacity cannot be assumed cleared |
+| KMIP authentication | Message credentials, OTPs, and tickets | Client defaults may be replaced per request or batch | No secret-bearing operation in KMIPKIT-0007; later typed operations must use explicit secret types | Caller, test-only typed execution path, authenticated KMIP server after approved transport exists | Redaction and initialized-byte zeroization are implemented for the typed execution lifecycle; a future secret-bearing operation requires its own owner-through-transport test before enablement | KMIPKIT-0007 uses Discover Versions only; foreign-runtime copies and external transport copies remain outside current evidence |
 | Native bindings | Rust-owned handles and result buffers | ABI version and structure size are checked at entry | Opaque handles; matching KMIPKit release functions own deallocation | C, JNI, CFFI callers | Fixed-width ABI, explicit lengths, panic containment, dedicated free functions | Designed in `docs/architecture/ffi-and-bindings.md:3-24`; implementation and sanitizer evidence pending |
 | Native package loading | Platform binary bundled with Java or Python package | Bundled binary first; explicit administrator path may override | Package-adjacent binary or private atomic extraction directory | Language runtime and current user | Package hash verification and ABI check; no runtime download | Designed in `docs/architecture/ffi-and-bindings.md:73-81`; exact extraction permissions and anti-swap procedure remain to be specified |
 | Vendor extensions | Data-only definitions in an immutable client registry | Explicit registration during client construction | Parsed, size-bounded in-memory schema | Caller, core validator, KMIP peer | Duplicate rejection, deterministic registration, core invariants cannot be disabled | Designed in `docs/architecture/extensions.md:18-59`; manifest format and complexity limits remain to be specified |

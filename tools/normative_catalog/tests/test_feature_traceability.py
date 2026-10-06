@@ -16,6 +16,22 @@ CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
 FEATURE_SPEC = "KMIPKIT-0003"
 MESSAGE_MODEL_FEATURE_SPEC = "KMIPKIT-0006"
 MESSAGE_MODEL_REQUIREMENTS_PATH = ROOT / "specification/compliance/requirements/KMIPKIT-0006.csv"
+CLIENT_EXECUTION_FEATURE_SPEC = "KMIPKIT-0007"
+CLIENT_EXECUTION_SPEC_PATH = ROOT / "specs/007-client-execution/spec.md"
+CLIENT_EXECUTION_REQUIREMENTS_PATH = (
+    ROOT / "specification/compliance/requirements/KMIPKIT-0007.csv"
+)
+CLIENT_EXECUTION_OWNED_REQUIREMENT_IDS = {
+    "KMIPKIT-REQ-SPEC-8-003-001",
+    "KMIPKIT-REQ-SPEC-9.12-001-002",
+    "KMIPKIT-REQ-SPEC-9.12-001-003",
+    "KMIPKIT-REQ-SPEC-9.13-001-004",
+    "KMIPKIT-REQ-SPEC-9.13-001-005",
+    "KMIPKIT-REQ-SPEC-9.20-001-002",
+    "KMIPKIT-REQ-SPEC-9.21-001-002",
+    "KMIPKIT-REQ-SPEC-9.6-001-002",
+}
+CLIENT_EXECUTION_DEFERRED_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-9.20-001-002"
 RESULT_ELEMENT_IDS = {
     "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON",
     "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
@@ -458,6 +474,150 @@ class MessageModelTraceabilityTests(unittest.TestCase):
             for token in forbidden:
                 with self.subTest(path=path.name, token=token):
                     self.assertNotIn(token, source)
+
+
+class ClientExecutionTraceabilityTests(unittest.TestCase):
+    def test_client_execution_csv_covers_oasis_project_and_policy_records(self) -> None:
+        self.assertTrue(CLIENT_EXECUTION_REQUIREMENTS_PATH.is_file())
+        with CLIENT_EXECUTION_REQUIREMENTS_PATH.open(
+            encoding="utf-8", newline=""
+        ) as stream:
+            rows = list(csv.DictReader(stream))
+
+        expected_header = [
+            "requirement_id",
+            "requirement_kind",
+            "source_document",
+            "source_section",
+            "normative_level",
+            "scope",
+            "statement",
+            "implementation_location",
+            "test_ids",
+            "status",
+        ]
+        self.assertTrue(rows)
+        self.assertEqual(list(rows[0]), expected_header)
+        by_id = {row["requirement_id"]: row for row in rows}
+        self.assertEqual(len(rows), len(by_id))
+
+        oasis_requirement_ids = CLIENT_EXECUTION_OWNED_REQUIREMENT_IDS
+        actual_oasis_ids = {
+            row["requirement_id"]
+            for row in rows
+            if row["requirement_kind"] == "OASIS normative"
+        }
+        self.assertEqual(actual_oasis_ids, oasis_requirement_ids)
+
+        specification = CLIENT_EXECUTION_SPEC_PATH.read_text(encoding="utf-8")
+        expected_feature_ids = set(
+            re.findall(r"KMIPKIT-0007-(?:FR|SC)-\d{3}", specification)
+        )
+        actual_feature_ids = {
+            row["requirement_id"]
+            for row in rows
+            if row["requirement_id"].startswith("KMIPKIT-0007-FR-")
+            or row["requirement_id"].startswith("KMIPKIT-0007-SC-")
+        }
+        self.assertEqual(actual_feature_ids, expected_feature_ids)
+
+        policy_record_ids = {
+            "KMIPKIT-POLICY-BATCH-ERROR-CONTINUATION-ASSIGNED-OUTBOUND",
+            "KMIPKIT-POLICY-EXTENSION-PRESERVATION",
+            "KMIPKIT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION",
+        }
+        discrepancy_and_decision_ids = {
+            "KMIPKIT-DISC-001",
+            "KMIPKIT-DISC-022",
+            "KMIPKIT-DISC-043",
+            "KMIPKIT-DEC-002",
+        }
+        for requirement_id in policy_record_ids:
+            with self.subTest(policy_id=requirement_id):
+                row = by_id[requirement_id]
+                self.assertEqual(row["requirement_kind"], "KMIPKit project policy")
+                self.assertEqual(row["normative_level"], "project policy")
+        for record_id in discrepancy_and_decision_ids:
+            with self.subTest(record_id=record_id):
+                self.assertIn(record_id, by_id)
+                self.assertNotEqual(by_id[record_id]["requirement_kind"], "OASIS normative")
+
+        for row in rows:
+            requirement_id = row["requirement_id"]
+            with self.subTest(requirement_id=requirement_id):
+                self.assertTrue(row["source_document"])
+                self.assertTrue(row["source_section"])
+                if row["requirement_kind"] == "OASIS normative":
+                    self.assertIn(
+                        "not an official oasis test case", row["statement"].lower()
+                    )
+                implementation_refs = row["implementation_location"].split("; ")
+                test_refs = row["test_ids"].split("; ")
+                for reference in filter(None, implementation_refs):
+                    self.assertTrue((ROOT / reference).is_file(), reference)
+                for reference in filter(None, test_refs):
+                    self.assertTrue(
+                        FeatureTraceabilityTests._is_executable_test_ref(reference),
+                        reference,
+                    )
+                if row["status"] == "verified":
+                    self.assertTrue(row["implementation_location"], requirement_id)
+                    self.assertTrue(row["test_ids"], requirement_id)
+
+        countdown = by_id[CLIENT_EXECUTION_DEFERRED_REQUIREMENT_ID]
+        self.assertEqual(countdown["status"], "deferred")
+        self.assertIn("OD-004", countdown["statement"])
+        self.assertIn("countdown-derived", countdown["statement"])
+        self.assertEqual(countdown["test_ids"], "")
+
+    def test_client_execution_catalog_references_match_only_0007_owned_records(self) -> None:
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        owned_records = {
+            record["requirement_id"]: record
+            for record in catalog["requirements"]
+            if record.get("feature_spec") == CLIENT_EXECUTION_FEATURE_SPEC
+        }
+        self.assertEqual(set(owned_records), CLIENT_EXECUTION_OWNED_REQUIREMENT_IDS)
+        with CLIENT_EXECUTION_REQUIREMENTS_PATH.open(
+            encoding="utf-8", newline=""
+        ) as stream:
+            rows = {
+                row["requirement_id"]: row for row in csv.DictReader(stream)
+            }
+
+        for requirement_id, record in owned_records.items():
+            with self.subTest(requirement_id=requirement_id):
+                row = rows[requirement_id]
+                source_ref = record["source_refs"][0]
+                self.assertIn(source_ref["source_id"], row["source_document"])
+                self.assertTrue(
+                    row["source_section"].startswith(f"§{source_ref['section']}")
+                )
+                self.assertEqual(record["test_case_ids"], [])
+                if requirement_id == CLIENT_EXECUTION_DEFERRED_REQUIREMENT_ID:
+                    self.assertEqual(record["status"], "deferred")
+                    self.assertEqual(record["implementation_refs"], [])
+                    self.assertEqual(record["verification_refs"], [])
+                    self.assertIn("OD-004", record["review_note"])
+                    self.assertIn("countdown-derived", record["review_note"])
+                    self.assertEqual(row["status"], "deferred")
+                    continue
+
+                self.assertEqual(record["status"], "verified")
+                self.assertTrue(record["implementation_refs"])
+                self.assertTrue(record["verification_refs"])
+                self.assertEqual(row["status"], "verified")
+                row_implementation = set(row["implementation_location"].split("; "))
+                row_verification = set(row["test_ids"].split("; "))
+                self.assertEqual(set(record["implementation_refs"]), row_implementation)
+                self.assertEqual(set(record["verification_refs"]), row_verification)
+                for reference in record["implementation_refs"]:
+                    self.assertTrue((ROOT / reference).is_file(), reference)
+                for reference in record["verification_refs"]:
+                    self.assertTrue(
+                        FeatureTraceabilityTests._is_executable_test_ref(reference),
+                        reference,
+                    )
 
 if __name__ == "__main__":
     unittest.main()
