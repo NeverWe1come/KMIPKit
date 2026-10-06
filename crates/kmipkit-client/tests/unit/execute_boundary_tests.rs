@@ -1316,8 +1316,8 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 .collect::<Vec<_>>()
                 .join("::");
             self.reject(format!("unsupported macro: {path}"));
-        } else if allowed_macro_contains_nested_invocation(macro_call) {
-            self.reject("nested macro invocation appears in an allowed macro token tree");
+        } else if allowed_macro_contains_forbidden_content(macro_call) {
+            self.reject("nested macro or execute invocation appears in an allowed macro token tree");
         }
         if contains_protected_macro_tokens(&tokens) {
             self.reject("protected boundary tokens appear in opaque macro input");
@@ -2238,17 +2238,36 @@ impl Parse for VecMacroInput {
 }
 
 #[derive(Default)]
-struct NestedMacroFinder {
-    found: bool,
+struct MacroBoundaryFinder {
+    forbidden_content_found: bool,
 }
 
-impl<'ast> Visit<'ast> for NestedMacroFinder {
+impl<'ast> Visit<'ast> for MacroBoundaryFinder {
     fn visit_macro(&mut self, _macro_call: &'ast Macro) {
-        self.found = true;
+        self.forbidden_content_found = true;
+    }
+
+    fn visit_expr_method_call(&mut self, call: &'ast ExprMethodCall) {
+        if call.method == "execute" {
+            self.forbidden_content_found = true;
+        }
+        visit::visit_expr_method_call(self, call);
+    }
+
+    fn visit_expr_path(&mut self, expression: &'ast syn::ExprPath) {
+        if expression
+            .path
+            .segments
+            .last()
+            .is_some_and(|segment| segment.ident == "execute")
+        {
+            self.forbidden_content_found = true;
+        }
+        visit::visit_expr_path(self, expression);
     }
 }
 
-fn allowed_macro_contains_nested_invocation(macro_call: &Macro) -> bool {
+fn allowed_macro_contains_forbidden_content(macro_call: &Macro) -> bool {
     let Some(name) = macro_call
         .path
         .segments
@@ -2260,21 +2279,21 @@ fn allowed_macro_contains_nested_invocation(macro_call: &Macro) -> bool {
     match name.as_str() {
         "matches" => {
             syn::parse2::<MatchesMacroInput>(macro_call.tokens.clone()).map_or(true, |input| {
-                let mut finder = NestedMacroFinder::default();
+                let mut finder = MacroBoundaryFinder::default();
                 finder.visit_expr(&input.expression);
                 finder.visit_pat(&input.pattern);
                 if let Some(guard) = &input.guard {
                     finder.visit_expr(guard);
                 }
-                finder.found
+                finder.forbidden_content_found
             })
         }
         "vec" => syn::parse2::<VecMacroInput>(macro_call.tokens.clone()).map_or(true, |input| {
-            let mut finder = NestedMacroFinder::default();
+            let mut finder = MacroBoundaryFinder::default();
             for expression in &input.expressions {
                 finder.visit_expr(expression);
             }
-            finder.found
+            finder.forbidden_content_found
         }),
         "write" => {
             let parser = syn::punctuated::Punctuated::<Expr, syn::Token![,]>::parse_terminated;
@@ -2284,11 +2303,11 @@ fn allowed_macro_contains_nested_invocation(macro_call: &Macro) -> bool {
                     if expressions.len() < 2 {
                         return true;
                     }
-                    let mut finder = NestedMacroFinder::default();
+                    let mut finder = MacroBoundaryFinder::default();
                     for expression in &expressions {
                         finder.visit_expr(expression);
                     }
-                    finder.found
+                    finder.forbidden_content_found
                 },
             )
         }
