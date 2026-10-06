@@ -676,3 +676,12 @@ generated a valid report, so no CI workflow or coverage exclusion was needed.
 
 T029 remains open for the Linux/Windows/macOS pull-request CI matrix and
 terminal draft-PR creation/verification.
+
+The first run of draft PR #45 exposed stable-Clippy diagnostics on macOS and
+Windows: a message-free `#[must_use]` on the iterator accessor triggered
+`double_must_use`, while MSRV Clippy requires a must-use annotation. Kept the
+annotation with an explicit message so both toolchains accept it, and changed
+one equality assertion to `assert_eq!` for stable's `manual_assert_eq` lint.
+After these corrections, local formatting and workspace Clippy passed on both
+Rust 1.94 and stable 1.99, and the complete stable workspace test suite passed.
+The PR CI matrix is rerunning on the updated commit.

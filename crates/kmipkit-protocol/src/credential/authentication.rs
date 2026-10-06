@@ -100,7 +100,7 @@ impl Authentication {
     }
 
     /// Returns Credential entries in source order as callback-scoped views.
-    #[must_use]
+    #[must_use = "iterate over the credential views to inspect them"]
     pub fn credentials(&self) -> impl ExactSizeIterator<Item = CredentialView<'_>> + '_ {
         self.credentials.iter().map(|entry| CredentialView {
             authentication: self,

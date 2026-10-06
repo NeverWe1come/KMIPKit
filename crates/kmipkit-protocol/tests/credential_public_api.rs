@@ -140,7 +140,7 @@ fn credential_and_authentication_public_views_preserve_order_and_redact() {
         [raw_type, second_type]
     );
     for view in authentication.credentials() {
-        assert!(view.with_ttlv(|tree| tree.children().len()) == Some(2));
+        assert_eq!(view.with_ttlv(|tree| tree.children().len()), Some(2));
         let diagnostics = format!("{view:?}");
         assert!(!diagnostics.contains(SECRET_SENTINEL));
     }
