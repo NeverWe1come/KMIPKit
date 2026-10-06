@@ -277,3 +277,50 @@ fn model_error(error: ModelError) -> ProtocolError {
         error,
     )
 }
+
+#[cfg(test)]
+mod result_error_tests {
+    use std::error::Error;
+
+    use crate::{ResultStatus, ResultValidationError};
+
+    use super::{DiscoverVersionsError, KmipOperationResult};
+
+    // Deliberately incomplete T009 correction candidate: it reproduces the
+    // current mapping that drops the safe ResultValidationError cause.
+    fn candidate_invalid_result_error(_cause: ResultValidationError) -> DiscoverVersionsError {
+        DiscoverVersionsError::InvalidOperationResult
+    }
+
+    #[test]
+    fn invalid_operation_result_error_retains_its_typed_validation_cause() {
+        let missing_failure_reason =
+            KmipOperationResult::new(ResultStatus::from_raw(1), None, None)
+                .expect_err("Failure without a reason violates the existing result model");
+        let success_with_reason = KmipOperationResult::new(
+            ResultStatus::from_raw(0),
+            Some(crate::ResultReason::from_raw(1)),
+            None,
+        )
+        .expect_err("Success with a reason violates the existing result model");
+
+        for (cause, expected) in [
+            (
+                missing_failure_reason,
+                ResultValidationError::FailureRequiresReason,
+            ),
+            (
+                success_with_reason,
+                ResultValidationError::SuccessForbidsReason,
+            ),
+        ] {
+            let error = candidate_invalid_result_error(cause);
+            let source = Error::source(&error)
+                .expect("typed Discover Versions errors retain safe result-validation causes");
+            assert_eq!(
+                source.downcast_ref::<ResultValidationError>(),
+                Some(&expected)
+            );
+        }
+    }
+}
