@@ -97,31 +97,31 @@ repeat review for the changed exact revision before completing T002.
 
 ## Independent review evidence
 
-- **QA/spec review: PASS** on the prior six-artifact snapshot. The reviewer
-  confirmed its blob/SHA-256 pairs, found no blocking consistency or
-  traceability gap, and confirmed the prior OD-002 statements are resolved or
-  explicitly historical. It verified that fake response-cap and low-level
-  request-sentinel tests are assigned to T006/T010, while concrete adapter
-  allocation and cleanup tests remain assigned to each adapter's
-  specification. The catalog policy-order correction changes only the
-  catalog's ordering and exact hash; QA re-review of the current six hashes is
-  pending. No implementation tests were run, and reviewer-owned checklist
-  markers were not changed.
-- **Security/design review: PASS** on the prior six-artifact snapshot. Two
-  findings were resolved before that pass: the zeroization contract now
-  defines current-allocation coverage and prior-allocation/external-copy
-  limits, with concrete adapter success/error tests; and T010 plus later
+- **QA/spec review: PASS** on the exact six artifact revisions listed above.
+  The reviewer confirmed all current blob/SHA-256 pairs, found no blocking
+  consistency or traceability gap, and confirmed the prior OD-002 statements
+  are resolved or explicitly historical. It verified that fake response-cap
+  and low-level request-sentinel tests are assigned to T006/T010, while
+  concrete adapter allocation and cleanup tests remain assigned to each
+  adapter's specification. It also confirmed the new policy's sorted
+  position, normative link, and generated report consistency. No
+  implementation tests were run, and reviewer-owned checklist markers were
+  not changed.
+- **Security/design review: PASS** on the exact six artifact revisions listed
+  above. The reviewer confirmed the catalog reorder changes no policy content
+  and preserves links to `KMIPKIT-REQ-SPEC-9.6-001-002`, `KMIPKIT-DISC-043`,
+  and `KMIPKIT-DEC-002`. Earlier findings were resolved: the zeroization
+  contract defines current-allocation coverage and prior-allocation/external-
+  copy limits with concrete adapter success/error tests; T010 and later
   adapter specifications own low-level request nonlogging, nonretention, and
-  applicable temporary-copy cleanup tests. The public API guide now matches
-  pinned `zeroize` 1.9.0 behavior for the full current `Vec` capacity and its
-  prior-reallocation limitation. Security/design re-review of the current
-  catalog hash is pending. This agent design review is not a qualified human
-  security audit. A separate Codex Security scan captured an earlier
+  applicable temporary-copy cleanup tests; and the public API guide matches
+  pinned `zeroize` 1.9.0 behavior. This agent design review is not a qualified
+  human security audit. A separate Codex Security scan captured an earlier
   snapshot and is not evidence for these artifact revisions.
 - Reviewer-owned checklist items remain unchecked. T002 remains unchecked
-  until the re-reviews of the exact current hashes are recorded and this
-  specification PR is merged into `release/1.0.0`. A qualified independent
-  human security audit remains required before 1.0.0.
+  until the exact review/hash evidence is recorded and this specification PR
+  is merged into `release/1.0.0`. A qualified independent human security audit
+  remains required before 1.0.0.
 
 ## Verification performed
 
@@ -132,5 +132,6 @@ repeat review for the changed exact revision before completing T002.
   passed.
 - `python tools/normative_catalog/audit_sources.py --base-sha d4582e2bedd159f14d66205dae0219248eb9e7fc --check` passed (1,411 candidates).
 - `python tools/normative_catalog/check_immutable_sources.py --base-sha d4582e2bedd159f14d66205dae0219248eb9e7fc` passed.
+- `python -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -q` passed: 167 tests, 7 skipped. This includes the deterministic policy-order regression that initially failed in the PR's macOS and Windows jobs and passed after the catalog reorder.
 - No implementation tests were run; this PR updates specification, governance,
   and catalog documentation only.
