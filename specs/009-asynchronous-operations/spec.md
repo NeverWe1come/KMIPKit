@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0009-asynchronous-operations-spec`
 **Created**: 2026-10-06
-**Status**: Draft — implementation is gated on review and approval of this specification. The typed Query Asynchronous Requests response mapping remains gated by open `KMIPKIT-DISC-039`; until that source conflict is resolved, its response is exposed losslessly through generic TTLV only.
+**Status**: Draft. Direct human instruction for this implementation task explicitly authorizes autonomous implementation without further approval requests. This records implementation authorization only; it does not claim that this specification or reviewer-owned checklists were reviewed or approved. The typed Query Asynchronous Requests response mapping remains gated by open `KMIPKIT-DISC-039`; until that source conflict is resolved, its response is exposed losslessly through generic TTLV.
 **Input**: Roadmap item `KMIPKIT-0009-asynchronous-operations`.
 
 ## Scope and normative sources
@@ -169,4 +169,4 @@ A caller can construct Query Asynchronous Requests with zero or more correlation
 
 ## Implementation gates
 
-Before code is written, review this exact specification and its checklist against the accepted KMIPKIT-0006 and merged KMIPKIT-0007 contracts, pinned source, `KMIPKIT-DISC-039`, and the Process catalog traceability gap. Confirm that the public API can express generic original-operation Poll completion without casting it to the currently implemented Discover Versions model, and that explicit follow-up does not add an implicit retry or another request boundary. Implementation requires strict Red, Green, Refactor commits and the project-required tests, coverage, source immutability, and security checks. No decision in this draft authorizes implementation or closes the open catalog/source gates.
+The human instruction authorizing this implementation task permits autonomous implementation without further approval prompts. It does not claim formal approval of this draft specification or its reviewer-owned checklists; their owners retain review responsibility, and their unchecked items remain open. The accepted KMIPKIT-0006/0007 contracts, pinned source, `KMIPKIT-DISC-039`, and the Process catalog traceability gap were checked before implementation. Implementation requires strict Red, Green, Refactor commits and the project-required tests, coverage, source immutability, and security checks. This authorization closes none of the open catalog/source gates.

@@ -28,9 +28,9 @@ Add typed Poll, Cancel, Process, and Query Asynchronous Requests operation model
 | II. Test first and evidence based conformance | Future implementation tasks explicitly order Red, Green, Refactor commits. Derived tests will not be mislabeled official vectors. No conformance/profile claim is authorized by this plan. |
 | III. One core, explicit language boundaries | This specification is Rust protocol/client only. C/Java/Python parity remains assigned to binding work. |
 | IV. Secure defaults and lossless protocol handling | Exact opaque correlation bytes, redacted diagnostics, zeroizing owners, configured decode limits, and no retry are mandatory. |
-| V. Human governed, reviewable changes | This is a draft. No implementation starts until this exact spec and readiness checklist are approved. Only a human may approve or merge the eventual PR. |
+| V. Human governed, reviewable changes | This draft and reviewer-owned checklists retain their review status; the direct human instruction authorizes autonomous implementation for this task without further approval prompts. Only a human may approve or merge the eventual PR. |
 
-**Gate result**: No constitution exception is proposed. Approval and OD-001/OD-002 review remain open. `KMIPKIT-DISC-039` blocks typed Query response mapping and a complete conformance claim, but does not block generic response preservation or Poll/Cancel/Process models.
+**Gate result**: No constitution exception is proposed. The direct human instruction authorizes autonomous implementation without further approval prompts, but does not claim formal approval of this draft plan or reviewer-owned checklists. Approval and OD-001/OD-002 review remain open. `KMIPKIT-DISC-039` blocks typed Query response mapping and a complete conformance claim, but does not block generic response preservation or Poll/Cancel/Process models.
 
 ## Design
 
@@ -97,7 +97,7 @@ crates/
 
 ## Test and implementation sequence
 
-1. **Gate**: reviewer approves this exact spec, protocol checklist, source citations, 0006/0007 contracts, and the explicit DISC-039/Process catalog dispositions.
+1. **Authorization record**: the direct human instruction authorizes autonomous implementation without further approval prompts. This does not represent reviewer approval of the spec or reviewer-owned checklists; their review status remains open. The source and catalog dispositions remain explicit and unchanged.
 2. **Red**: add derived table-driven and malformed-input tests first; add exact-byte and fake-transport lifecycle tests; commit these failing tests separately with DCO sign-off.
 3. **Green**: implement the minimal typed model and one-shot client execution to satisfy only those tests; commit separately.
 4. **Refactor**: consolidate duplicated response parsing, preserve module boundaries, document public APIs and update traceability/tests; commit separately.
