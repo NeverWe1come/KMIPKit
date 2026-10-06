@@ -139,6 +139,16 @@ class FeatureTraceabilityTests(unittest.TestCase):
         }
         self.assertEqual(actual_oasis_ids, expected_oasis_ids)
 
+        attestation_requirement = by_id["KMIPKIT-REQ-SPEC-9.3-001-001"]
+        self.assertIn(
+            "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
+            attestation_requirement["test_ids"],
+        )
+        self.assertIn(
+            "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
+            attestation_requirement["test_ids"],
+        )
+
         for row in rows:
             requirement_id = row["requirement_id"]
             with self.subTest(requirement_id=requirement_id):
