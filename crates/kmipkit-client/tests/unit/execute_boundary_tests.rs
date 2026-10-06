@@ -2962,6 +2962,24 @@ fn complete_execute_audit_rejects_repeated_or_recursive_exchange_control_flow() 
         ),
         "recursive execute can perform another exchange through one counted callsite"
     );
+
+    let qualified = "impl Client { fn execute(&mut self) { if true { <Client>::execute(self); } self.transport.exchange(&[], 1); } }";
+    assert!(
+        matches!(
+            audit_source(qualified),
+            Err(CandidateRejection::BoundaryViolation)
+        ),
+        "qualified Client::execute calls must not bypass the recursion audit"
+    );
+
+    let self_qualified = "impl Client { fn execute(&mut self) { if true { <Self>::execute(self); } self.transport.exchange(&[], 1); } }";
+    assert!(
+        matches!(
+            audit_source(self_qualified),
+            Err(CandidateRejection::BoundaryViolation)
+        ),
+        "qualified Self::execute calls must not bypass the recursion audit"
+    );
 }
 
 #[test]
