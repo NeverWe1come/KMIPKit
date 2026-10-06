@@ -30,7 +30,7 @@
 ### Tests — Red
 
 - [x] T008 [US1] [RED COMMIT] Add Authentication absence/present-empty, repeat/order, and server-duty non-enforcement contract tests in `crates/kmipkit-protocol/tests/credential_contract.rs` (FR-001, FR-002; §9.4/Table 403). The focused Rust 1.94 test command fails at compile time exactly because the public `Authentication` and `Credential` APIs do not exist yet; evidence is recorded in `review-notes.md`.
-- [ ] T009 [US1] [RED COMMIT] Add failing generic-tree conversion/property tests for all seven Credential Type values, unknown raw values, Extensions, unknown children, and stable field order in `crates/kmipkit-protocol/tests/credential_roundtrip.rs` (FR-003, FR-004, FR-011, SC-002; §9.11/Tables 410–416, §11.11/Table 442).
+- [x] T009 [US1] [RED COMMIT] Add generic-tree conversion/property tests for all seven Credential Type values, unknown raw values, Extensions, unknown children, and stable field order in `crates/kmipkit-protocol/tests/credential_roundtrip.rs` (FR-003, FR-004, FR-011, SC-002; §9.11/Tables 410–416, §11.11/Table 442). The focused Rust 1.94 command fails only because the public `Credential` API is not implemented yet; evidence is recorded in `review-notes.md`.
 
 ### Implementation — Green
 

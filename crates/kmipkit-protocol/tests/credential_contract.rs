@@ -88,6 +88,11 @@ fn authentication_rejects_present_empty_credentials() {
 }
 
 #[test]
+fn authentication_constructor_rejects_empty_list() {
+    assert!(Authentication::new(Vec::new()).is_err());
+}
+
+#[test]
 fn authentication_preserves_nonempty_credential_order() {
     let authentication = structure([
         item(
@@ -104,7 +109,6 @@ fn authentication_preserves_nonempty_credential_order() {
         .expect("repeated Credential structures remain in source order");
     let raw_types: Vec<_> = parsed
         .credentials()
-        .iter()
         .map(Credential::credential_type_raw)
         .collect();
 

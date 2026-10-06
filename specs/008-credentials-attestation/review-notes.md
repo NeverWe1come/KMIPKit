@@ -151,3 +151,15 @@ failed with `E0432` for the intentionally not-yet-implemented public imports
 `Authentication` and `Credential`; no other compiler errors were reported.
 This compile-level failure records the missing public API required by the test.
 No production code has been added.
+
+## User Story 1 RED — generic Credential round-trip (2026-10-06)
+
+Added `crates/kmipkit-protocol/tests/credential_roundtrip.rs`. Fixed cases
+cover all six assigned values and the Extensions range, an unknown raw type,
+unknown children, and exact source-order/value preservation. A bounded,
+seeded QuickCheck property varies unknown raw type bits and opaque payload
+bytes; its custom `Debug` output reports only type bits and payload length.
+`cargo +1.94.0 fmt --all --check` passed. The focused command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_roundtrip` failed
+with only `E0432` for the intentionally not-yet-implemented public `Credential`
+API. No production code has been added.
