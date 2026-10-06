@@ -71,8 +71,9 @@ impl RequestOwner {
 
 impl Drop for RequestOwner {
     fn drop(&mut self) {
-        self.encoded.zeroize();
-        self.observation.record_initialized_range(&self.encoded);
+        self.encoded.as_mut_slice().zeroize();
+        self.observation
+            .record_initialized_range(self.encoded.as_slice());
     }
 }
 
@@ -529,8 +530,15 @@ fn request_owner_remains_live_until_exchange_returns_then_zeroizes_before_free()
         CleanupObservation::default(),
     );
 
-    assert!(result.is_ok());
-    assert!(!observations(&client).owner_was_dropped_at_return.get());
-    assert!(request_observation.dropped.get());
-    assert!(request_observation.initialized_range_was_zero.get());
+    let execute_succeeded = result.is_ok();
+    let owner_remained_live = !observations(&client).owner_was_dropped_at_return.get();
+    let cleanup_was_observed = request_observation.dropped.get();
+    let initialized_request_bytes_were_zero = request_observation.initialized_range_was_zero.get();
+    assert!(
+        execute_succeeded
+            && owner_remained_live
+            && cleanup_was_observed
+            && initialized_request_bytes_were_zero,
+        "request-owner checks: execute={execute_succeeded}, live_through_exchange={owner_remained_live}, cleanup_observed={cleanup_was_observed}, initialized_range_zero={initialized_request_bytes_were_zero}"
+    );
 }
