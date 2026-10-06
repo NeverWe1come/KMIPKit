@@ -22,7 +22,7 @@
 - [x] CHK010 Does the SHA-256 default preserve the optional wire-field absence while exposing an unambiguous effective value?
 - [x] CHK011 Does the Attestation Credential require Nonce and Attestation Type and at least one evidence field, while accurately describing whether both are allowed?
 - [x] CHK012 Does the Nonce contract identify the server as source and require exact ID/value preservation?
-- [x] CHK013 Is the Attestation Capable Indicator emitted by the existing execute header builder from the public API capability, with no new writer, Authentication selection, Credential payload, evidence-generation, or server-acceptance claim?
+- [x] CHK013 Is the Attestation Capable Indicator emitted by every existing synchronous and asynchronous client Request Header builder from the public API capability, with no new writer, Authentication selection, Credential payload, evidence-generation, or server-acceptance claim?
 - [x] CHK014 Is OTP's lowercase “may” wording correctly resolved as informative (`KMIPKIT-CLAUSE-SPEC-9.11-008`, no requirement ID), with no library-wide replay/single-use state or normative client enforcement, and kept distinct from KMIPKIT-0007 OD-006?
 
 ## Security, interfaces, and scope
