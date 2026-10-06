@@ -212,6 +212,62 @@ Fresh Rust 1.94.0 verification:
 - `cargo +1.94.0 fmt --all --check` — passed.
 - `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
 
+## T028 — asynchronous Attestation Capable Indicator correction (2026-10-06)
+
+Independent security review found that KMIP 2.1 §9.3 was marked verified from
+the synchronous `Client::execute` test while the public asynchronous
+Poll/Cancel/Process/Query paths shared a separate Request Header builder that
+omitted the indicator. The pinned source requires True when the client can
+create an Attestation Credential and defines absence as False. The corrected
+FR-008 now covers all client-generated synchronous and asynchronous Request
+Headers. `build_async_request_message` emits the non-secret True indicator
+after the optional Asynchronous Indicator and before Batch Count, preserving
+the canonical Table 400 order and existing writer/permit boundary. Fake-
+transport tests cover synchronous execution and asynchronous Poll; both assert
+True and no Authentication or Credential payload. No secret-bearing send
+path was added.
+
+Red/Green/Refactor evidence:
+
+- RED commit `3c323a405810c9bcc65cd0639ef63ca4438e3ede` added the async Poll
+  capture test. `cargo +1.94.0 test -p kmipkit-client --lib
+  async_follow_up_request_advertises_attestation_capability` failed as
+  expected: the captured indicator was `None`, expected `Some(true)`. The same
+  commit made the traceability test require both synchronous and async
+  evidence on the OASIS requirement row.
+- GREEN commit `03403070fbffe4cc9d24d263a77f2c083e1647a9` updated the async
+  builder, FR-008 scope, product documentation, and OASIS traceability. The
+  first full client run exposed that insertion before Asynchronous Indicator
+  violated field order; the field was moved after it before committing Green.
+- REFACTOR commit `ff79c225eac202c7454887cce0096b2b78224d7b` shares test
+  inspection helpers and checks that both requests contain no Authentication
+  or Credential fields.
+- Traceability RED commit `68608f0c593e1a9592526a92079edab4b100373b` made the
+  CSV test require both test IDs on project FR-008. The focused test failed
+  because the FR row still linked only the synchronous test.
+- Traceability GREEN commit `b3e0dab7e861e42b5288c00b46e57b05a358dee3`
+  corrected the FR-008 CSV row and checklist CHK013. The focused
+  `FeatureTraceabilityTests.test_credentials_and_attestation_traceability_rows_are_complete`
+  test passed.
+
+Verification at `b3e0dab7e861e42b5288c00b46e57b05a358dee3`:
+
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 test -p kmipkit-client --all-features --locked` — passed:
+  176 client unit tests, 6 error-contract tests, and all 3 doctests.
+- `cargo +1.94.0 clippy -p kmipkit-client --all-targets --all-features
+  --locked -- -D warnings` — passed.
+- `python -B -m unittest
+  tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_credentials_and_attestation_traceability_rows_are_complete`
+  — passed.
+- `python -B -m unittest discover -s tools/normative_catalog/tests -p
+  test_*.py` — passed: 170 tests, 7 platform skips.
+- `python -B tools/normative_catalog/validate.py --repo-root .` — passed:
+  4 sources, 1,411 clauses, 4,024 records.
+- `git diff --check` — passed.
+
+Independent QA re-review passed with no findings at `b3e0dab7e861e42b5288c00b46e57b05a358dee3` against base `ae87b89d43957e4fc028e785dc181e69b0165dac`. It verified the OASIS and FR-008 CSV links, checklist, regression test, and async header order. Independent security re-review at the same revision found no reportable findings; it confirmed all async calls use the shared builder and no Authentication or Credential transmission, secrecy, lifecycle, FFI, unsafe-code, or dependency regression. Platform matrix CI, final generated-output checks, and updated coverage measurement remain T029 work.
+
 ## User Story 3 GREEN — advertise Attestation construction capability (2026-10-06)
 
 Added the Attestation Capable Indicator with value True to the existing
