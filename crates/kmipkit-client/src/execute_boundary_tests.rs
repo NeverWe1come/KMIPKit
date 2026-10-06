@@ -69,7 +69,7 @@ const FIXTURES: &[Fixture] = &[
         id: "raw_exchange_outside_execute",
         path: "tests/fixtures/execute_boundary/raw_exchange_outside_execute.rs",
         source: include_str!("../tests/fixtures/execute_boundary/raw_exchange_outside_execute.rs"),
-        probe: "transport.exchange(caller_owned_request)",
+        probe: "transport.exchange(request, max_response_bytes)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Accept,
     },
