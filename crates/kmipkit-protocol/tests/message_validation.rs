@@ -1,5 +1,5 @@
-//! OASIS KMIP Specification v2.1: §§8.3, 8.6, 9.1–9.2, 9.9–9.10, 9.13,
-//! 9.19, 9.21; Tables 396, 399, 400, 408–409, and 418.
+//! OASIS KMIP Specification v2.1: §§6.1.38, 8.3, 8.6, 9.1–9.2, 9.9–9.10,
+//! 9.13, 9.19, 9.21; Tables 276, 396, 399, 400, 408–409, and 418.
 //!
 //! Traceability: KMIPKIT-0006-FR-004, FR-008, FR-010, FR-011, FR-014, FR-020,
 //! FR-021; SC-002, SC-003, SC-004, SC-006.
@@ -102,6 +102,28 @@ fn response(id: &[u8]) -> Structure {
     ])
 }
 
+fn pending_poll_response(correlation_value: &[u8]) -> Structure {
+    let header = structure([
+        item(PROTOCOL_VERSION, version()),
+        item(TIME_STAMP, Value::date_time(1)),
+        item(BATCH_COUNT, Value::integer(1)),
+    ]);
+    structure([
+        item(RESPONSE_HEADER, Value::structure(header)),
+        item(
+            BATCH_ITEM,
+            Value::structure(structure([
+                item(OPERATION, Value::enumeration(0x0000_001A)),
+                item(RESULT_STATUS, Value::enumeration(2)),
+                item(
+                    ASYNCHRONOUS_CORRELATION_VALUE,
+                    Value::byte_string(correlation_value.to_vec()),
+                ),
+            ])),
+        ),
+    ])
+}
+
 fn message_extension(vendor: &str, criticality: bool) -> Structure {
     structure([
         item(VENDOR_IDENTIFICATION, Value::text_string(vendor.to_owned())),
@@ -155,6 +177,27 @@ fn response_batch_item_preserves_the_exact_echoed_id() {
             .expect("the response has one item")
             .with_unique_batch_item_id(<[u8]>::to_vec),
         Some(id.to_vec())
+    );
+}
+
+#[test]
+fn poll_pending_response_uses_the_section_6_1_38_no_payload_exception() {
+    let response = ResponseMessage::try_from_ttlv(pending_poll_response(&[0x00, 0xff, 0x80]));
+
+    assert!(
+        response.is_ok(),
+        "§6.1.38 Poll Pending has no Response Payload"
+    );
+    let message = response.expect("the Poll-specific Pending shape is valid");
+    let item = message
+        .batch_items()
+        .next()
+        .expect("one response item exists");
+    assert_eq!(item.result_status(), Some(ResultStatus::from_raw(2)));
+    assert_eq!(item.with_response_payload(|_| ()), None);
+    assert_eq!(
+        item.with_asynchronous_correlation_value(<[u8]>::to_vec),
+        Some(vec![0x00, 0xff, 0x80])
     );
 }
 

@@ -22,3 +22,23 @@ pub use result::{
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
 mod discover_versions_tests;
+
+#[cfg(test)]
+#[path = "../tests/support/async_operation_fixtures.rs"]
+mod async_operation_fixtures;
+
+#[cfg(test)]
+#[path = "../tests/unit/poll_tests.rs"]
+mod poll_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/cancel_tests.rs"]
+mod cancel_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/process_tests.rs"]
+mod process_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/query_async_requests_tests.rs"]
+mod query_async_requests_tests;
