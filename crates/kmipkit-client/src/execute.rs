@@ -6,9 +6,10 @@ use std::fmt;
 
 use kmipkit_protocol::{
     DiscoverVersionsRequest, DiscoverVersionsResponse, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ProtocolVersion, RequestMessage, ResponseMessage, ResultStatus,
+    ProtocolErrorKind, ProtocolVersion, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus,
 };
-use kmipkit_transport::Transport;
+use kmipkit_transport::{RequestDeliveryState, Transport};
 use kmipkit_ttlv::codec::{CodecLimits, DecodeError, decode_with_limits};
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
 #[cfg(test)]
@@ -491,20 +492,18 @@ impl Client {
         batch: ClientBatch,
         limits: &CodecLimits,
     ) -> Result<ClientBatchResponse, ClientError> {
-        validate_batch(&batch).map_err(|error| {
+        let options = validate_batch(&batch).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
-                kmipkit_transport::RequestDeliveryState::NotSent,
+                RequestDeliveryState::NotSent,
                 error,
             )
         })?;
 
-        let request_message = build_request_message(&batch).map_err(|error| {
-            ClientError::protocol(error, kmipkit_transport::RequestDeliveryState::NotSent)
-        })?;
-        let request_item = root_message_item(request_message.into_ttlv()).map_err(|error| {
-            ClientError::protocol(error, kmipkit_transport::RequestDeliveryState::NotSent)
-        })?;
+        let request_message = build_request_message(&batch, &options)
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let request_item = root_message_item(request_message.into_ttlv())
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
         let permit = OperationEncodingPermit::mint();
 
         #[cfg(test)]
@@ -528,7 +527,7 @@ impl Client {
                 ProtocolCauseCategory::InvalidEncoding,
                 error,
             );
-            ClientError::protocol(protocol, kmipkit_transport::RequestDeliveryState::NotSent)
+            protocol_failure_at(protocol, RequestDeliveryState::NotSent)
         })?;
 
         let transport_result = self
@@ -553,25 +552,18 @@ impl Client {
                 ),
                 BoundedResponseError::Decode(error) => error,
             };
-            ClientError::protocol(
-                protocol,
-                kmipkit_transport::RequestDeliveryState::ResponseStarted,
-            )
+            protocol_failure_at(protocol, RequestDeliveryState::ResponseStarted)
         })?;
         drop(response);
 
         validate_response(
             &batch,
+            &options,
             response_message,
             #[cfg(test)]
             self.pending_owner_observer.as_ref(),
         )
-        .map_err(|error| {
-            ClientError::protocol(
-                error,
-                kmipkit_transport::RequestDeliveryState::ResponseStarted,
-            )
-        })
+        .map_err(|error| protocol_failure_at(error, RequestDeliveryState::ResponseStarted))
     }
 
     #[cfg(test)]
@@ -719,19 +711,13 @@ impl fmt::Display for BatchValidationError {
 
 impl Error for BatchValidationError {}
 
-pub(super) fn validate_batch(batch: &ClientBatch) -> Result<(), BatchValidationError> {
+pub(super) fn validate_batch(
+    batch: &ClientBatch,
+) -> Result<ValidatedBatchOptions, BatchValidationError> {
     if batch.items.is_empty() {
         return Err(BatchValidationError::EmptyBatch);
     }
-    if let Some(indicator) = batch.asynchronous_indicator {
-        validate_asynchronous_indicator(Some(indicator))
-            .map_err(|()| BatchValidationError::InvalidAsynchronousIndicator)?;
-    }
-    let continuation = validate_batch_error_continuation(
-        batch.items.len(),
-        &batch.batch_error_continuation_values,
-    )?;
-    let _ = continuation;
+    let options = validate_batch_options(batch)?;
 
     let mut identifiers = HashSet::new();
     for item in &batch.items {
@@ -743,7 +729,28 @@ pub(super) fn validate_batch(batch: &ClientBatch) -> Result<(), BatchValidationE
             _ => {}
         }
     }
-    Ok(())
+    Ok(options)
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(super) struct ValidatedBatchOptions {
+    asynchronous_indicator: Option<u32>,
+    batch_error_continuation: BatchErrorContinuation,
+}
+
+fn validate_batch_options(
+    batch: &ClientBatch,
+) -> Result<ValidatedBatchOptions, BatchValidationError> {
+    let asynchronous_indicator = validate_asynchronous_indicator(batch.asynchronous_indicator)
+        .map_err(|()| BatchValidationError::InvalidAsynchronousIndicator)?;
+    let batch_error_continuation = validate_batch_error_continuation(
+        batch.items.len(),
+        &batch.batch_error_continuation_values,
+    )?;
+    Ok(ValidatedBatchOptions {
+        asynchronous_indicator,
+        batch_error_continuation,
+    })
 }
 
 pub(super) fn validate_asynchronous_indicator(raw: Option<u32>) -> Result<Option<u32>, ()> {
@@ -785,18 +792,10 @@ pub(super) fn validate_batch_error_continuation(
     })
 }
 
-pub(super) fn build_request_message(batch: &ClientBatch) -> Result<RequestMessage, ProtocolError> {
-    let continuation = validate_batch_error_continuation(
-        batch.items.len(),
-        &batch.batch_error_continuation_values,
-    )
-    .map_err(|error| {
-        ProtocolError::new(
-            ProtocolErrorKind::InvalidValue,
-            ProtocolCauseCategory::InvalidValue,
-            error,
-        )
-    })?;
+fn build_request_message(
+    batch: &ClientBatch,
+    options: &ValidatedBatchOptions,
+) -> Result<RequestMessage, ProtocolError> {
     let mut version_fields = Structure::new();
     push(
         &mut version_fields,
@@ -829,7 +828,7 @@ pub(super) fn build_request_message(batch: &ClientBatch) -> Result<RequestMessag
             Value::enumeration(indicator),
         )?;
     }
-    if let Some(value) = continuation.encoded {
+    if let Some(value) = options.batch_error_continuation.encoded {
         push(
             &mut header,
             BATCH_ERROR_CONTINUATION_OPTION,
@@ -917,6 +916,22 @@ pub(super) struct BatchIdentity {
     pub(super) unique_batch_item_id: Option<Vec<u8>>,
 }
 
+impl BatchIdentity {
+    fn from_request(item: &ClientBatchItem) -> Self {
+        Self {
+            operation: item.request.operation(),
+            unique_batch_item_id: item.unique_batch_item_id.clone(),
+        }
+    }
+
+    fn from_response(item: &ResponseBatchItemView<'_>) -> Self {
+        Self {
+            operation: item.operation().unwrap_or_default(),
+            unique_batch_item_id: item.with_unique_batch_item_id(<[u8]>::to_vec),
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) enum ResponseAssociationError {
     ItemCountMismatch,
@@ -989,6 +1004,23 @@ pub(super) enum OutcomeValidationError {
     UnknownCriticalExtension,
 }
 
+impl From<ResponseAssociationError> for ProtocolError {
+    fn from(_error: ResponseAssociationError) -> Self {
+        protocol_error(ProtocolErrorKind::InvalidValue)
+    }
+}
+
+impl From<OutcomeValidationError> for ProtocolError {
+    fn from(error: OutcomeValidationError) -> Self {
+        let kind = match error {
+            OutcomeValidationError::PendingNotPermitted
+            | OutcomeValidationError::PendingCorrelationMissing => ProtocolErrorKind::InvalidValue,
+            OutcomeValidationError::UnknownCriticalExtension => ProtocolErrorKind::UnsupportedValue,
+        };
+        protocol_error(kind)
+    }
+}
+
 pub(super) fn validate_pending_states(
     asynchronous_indicator: Option<u32>,
     outcomes: &[PendingState],
@@ -1021,6 +1053,7 @@ pub(super) fn validate_unknown_extension(critical: bool) -> Result<(), OutcomeVa
 #[allow(clippy::needless_pass_by_value)]
 fn validate_response(
     request: &ClientBatch,
+    options: &ValidatedBatchOptions,
     response: ResponseMessage,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
 ) -> Result<ClientBatchResponse, ProtocolError> {
@@ -1031,21 +1064,14 @@ fn validate_response(
     let request_identities = request
         .items
         .iter()
-        .map(|item| BatchIdentity {
-            operation: item.request.operation(),
-            unique_batch_item_id: item.unique_batch_item_id.clone(),
-        })
+        .map(BatchIdentity::from_request)
         .collect::<Vec<_>>();
     let response_items = response.batch_items().collect::<Vec<_>>();
     let response_identities = response_items
         .iter()
-        .map(|item| BatchIdentity {
-            operation: item.operation().unwrap_or_default(),
-            unique_batch_item_id: item.with_unique_batch_item_id(<[u8]>::to_vec),
-        })
+        .map(BatchIdentity::from_response)
         .collect::<Vec<_>>();
-    let association = associate_batch_items(&request_identities, &response_identities)
-        .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue))?;
+    let association = associate_batch_items(&request_identities, &response_identities)?;
 
     let outcome_states = response_items
         .iter()
@@ -1054,8 +1080,7 @@ fn validate_response(
             has_correlation_value: item.with_asynchronous_correlation_value(|_| ()).is_some(),
         })
         .collect::<Vec<_>>();
-    validate_pending_states(request.asynchronous_indicator, &outcome_states)
-        .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue))?;
+    validate_pending_states(options.asynchronous_indicator, &outcome_states)?;
 
     let mut ordered = Vec::with_capacity(request.items.len());
     for (request_index, response_index) in association.into_iter().enumerate() {
@@ -1068,8 +1093,7 @@ fn validate_response(
             let critical = extension
                 .criticality_indicator()
                 .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
-            validate_unknown_extension(critical)
-                .map_err(|_| protocol_error(ProtocolErrorKind::UnsupportedValue))?;
+            validate_unknown_extension(critical).map_err(ProtocolError::from)?;
             let structure = extension
                 .with_ttlv(|view| copy_structure(&view))
                 .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))??;
@@ -1163,6 +1187,10 @@ pub(super) fn decode_bounded_response<T, E>(
     decoder(bytes, limits).map_err(BoundedResponseError::Decode)
 }
 
+fn protocol_failure_at(error: ProtocolError, delivery_state: RequestDeliveryState) -> ClientError {
+    ClientError::protocol(error, delivery_state)
+}
+
 fn decode_response_message(
     bytes: &[u8],
     limits: &CodecLimits,
@@ -1221,7 +1249,14 @@ pub(super) fn decode_request_message_for_test(
     request: &ClientBatch,
     _limits: &CodecLimits,
 ) -> Result<RequestMessage, ProtocolError> {
-    build_request_message(request)
+    let options = validate_batch_options(request).map_err(|error| {
+        ProtocolError::new(
+            ProtocolErrorKind::InvalidValue,
+            ProtocolCauseCategory::InvalidValue,
+            error,
+        )
+    })?;
+    build_request_message(request, &options)
 }
 
 #[cfg(test)]
