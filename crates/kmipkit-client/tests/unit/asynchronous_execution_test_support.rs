@@ -9,6 +9,10 @@ use zeroize::Zeroizing;
 
 use crate::execute::Client;
 
+type SharedFake = Rc<RefCell<ScriptedTransport>>;
+type CapturedRequest = Rc<RefCell<Option<Zeroizing<Vec<u8>>>>>;
+type ClientFixture = (Client, SharedFake, CapturedRequest);
+
 pub(crate) struct CapturingTransport {
     fake: Rc<RefCell<ScriptedTransport>>,
     request: Rc<RefCell<Option<Zeroizing<Vec<u8>>>>>,
@@ -25,13 +29,7 @@ impl Transport for CapturingTransport {
     }
 }
 
-pub(crate) fn client_for(
-    script: ExchangeScript,
-) -> (
-    Client,
-    Rc<RefCell<ScriptedTransport>>,
-    Rc<RefCell<Option<Zeroizing<Vec<u8>>>>>,
-) {
+pub(crate) fn client_for(script: ExchangeScript) -> ClientFixture {
     let fake = Rc::new(RefCell::new(ScriptedTransport::new(script)));
     let request = Rc::new(RefCell::new(None));
     let client = Client::for_test(CapturingTransport {
@@ -44,11 +42,7 @@ pub(crate) fn client_for(
 pub(crate) fn client_for_with_response_observer(
     script: ExchangeScript,
     observer: kmipkit_test_support::ResponseDropObserver,
-) -> (
-    Client,
-    Rc<RefCell<ScriptedTransport>>,
-    Rc<RefCell<Option<Zeroizing<Vec<u8>>>>>,
-) {
+) -> ClientFixture {
     let fake = Rc::new(RefCell::new(
         ScriptedTransport::new(script).with_response_drop_observer(observer),
     ));
@@ -60,10 +54,7 @@ pub(crate) fn client_for_with_response_observer(
     (client, fake, request)
 }
 
-pub(crate) fn request_contains(
-    request: &Rc<RefCell<Option<Zeroizing<Vec<u8>>>>>,
-    value: &[u8],
-) -> bool {
+pub(crate) fn request_contains(request: &CapturedRequest, value: &[u8]) -> bool {
     request
         .borrow()
         .as_ref()

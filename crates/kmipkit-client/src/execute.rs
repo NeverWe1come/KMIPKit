@@ -5,9 +5,11 @@ use std::error::Error;
 use std::fmt;
 
 use kmipkit_protocol::{
-    DiscoverVersionsRequest, DiscoverVersionsResponse, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ProtocolVersion, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus,
+    AsynchronousOperationError, CancelRequest, CancelResponse, CancellationResult,
+    DiscoverVersionsRequest, DiscoverVersionsResponse, PollRequest, PollResponse, ProcessRequest,
+    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, RequestMessage, ResponseBatchItemView,
+    ResponseMessage, ResultStatus,
 };
 use kmipkit_transport::{RequestDeliveryState, Transport};
 use kmipkit_ttlv::codec::{CodecLimits, DecodeError, decode_with_limits};
@@ -34,12 +36,17 @@ const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
 const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
 const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
+const CANCEL_OPERATION: u32 = 0x0000_0019;
+const POLL_OPERATION: u32 = 0x0000_001A;
+const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
+const PROCESS_OPERATION: u32 = 0x0000_003A;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -311,6 +318,121 @@ impl fmt::Debug for PendingOutcome {
     }
 }
 
+/// Identifies a client-initiated asynchronous operation handled by one
+/// `Client::execute_*` call.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ClientOperation {
+    /// Poll one previously Pending operation.
+    Poll,
+    /// Cancel one previously Pending operation.
+    Cancel,
+    /// Request processing-mode change for one Pending operation.
+    Process,
+    /// Query outstanding asynchronous requests with a generic response.
+    QueryAsyncRequests,
+}
+
+/// A completed or Pending asynchronous operation response owned by the client.
+///
+/// The complete response tree remains available through callback-scoped views.
+/// Correlation values stay inside that zeroizing generic tree and are never
+/// copied into an ordinary client-owned buffer.
+pub struct ClientOperationOutcome {
+    operation: ClientOperation,
+    result: kmipkit_protocol::KmipOperationResult,
+    response: ResponseMessage,
+    cancellation_result: Option<CancellationResult>,
+}
+
+impl ClientOperationOutcome {
+    /// Returns the operation that produced this outcome.
+    #[must_use]
+    pub const fn operation(&self) -> ClientOperation {
+        self.operation
+    }
+
+    /// Returns the exact operation result, including unknown status values.
+    #[must_use]
+    pub const fn result(&self) -> &kmipkit_protocol::KmipOperationResult {
+        &self.result
+    }
+
+    /// Returns whether the server reported Operation Pending.
+    #[must_use]
+    pub const fn is_pending(&self) -> bool {
+        self.result.status().raw() == RESULT_STATUS_PENDING
+    }
+
+    /// Lends a top-level Asynchronous Correlation Value to a callback.
+    pub fn with_asynchronous_correlation_value<R>(
+        &self,
+        callback: impl for<'a> FnOnce(&'a [u8]) -> R,
+    ) -> Option<R> {
+        self.response
+            .batch_items()
+            .next()?
+            .with_asynchronous_correlation_value(callback)
+    }
+
+    /// Lends the Cancel response's echoed Asynchronous Correlation Value to a
+    /// callback when the successful response contains it.
+    pub fn with_cancel_echo<R>(&self, callback: impl for<'a> FnOnce(&'a [u8]) -> R) -> Option<R> {
+        if self.operation != ClientOperation::Cancel || self.cancellation_result.is_none() {
+            return None;
+        }
+        self.response
+            .batch_items()
+            .next()?
+            .with_response_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == ASYNCHRONOUS_CORRELATION_VALUE)
+                    .and_then(|field| {
+                        field.with_value(|value| match value {
+                            ValueView::ByteString(bytes) => Some(callback(bytes)),
+                            _ => None,
+                        })
+                    })
+            })
+            .flatten()
+    }
+
+    /// Returns the known or preserved raw Cancellation Result on Cancel success.
+    #[must_use]
+    pub const fn cancellation_result(&self) -> Option<CancellationResult> {
+        self.cancellation_result
+    }
+
+    /// Lends the generic Response Payload to a callback.
+    pub fn with_response_payload<R>(
+        &self,
+        callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
+    ) -> Option<R> {
+        self.response
+            .batch_items()
+            .next()?
+            .with_response_payload(callback)
+    }
+}
+
+impl fmt::Debug for ClientOperationOutcome {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ClientOperationOutcome")
+            .field("operation", &self.operation)
+            .field("result", &self.result)
+            .field("cancellation_result", &self.cancellation_result)
+            .field(
+                "has_response_payload",
+                &self.with_response_payload(|_| ()).is_some(),
+            )
+            .field("correlation", &"[REDACTED]")
+            .finish_non_exhaustive()
+    }
+}
+
 /// A completed operation response or an explicitly resumable Pending result.
 #[non_exhaustive]
 pub enum ClientBatchOutcome {
@@ -508,6 +630,24 @@ impl Client {
 
         let request_message = build_request_message(&batch, &options)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let (response_message, response_delivery_state) =
+            self.exchange_operation(request_message, limits)?;
+
+        validate_response(
+            &batch,
+            &options,
+            response_message,
+            #[cfg(test)]
+            self.pending_owner_observer.as_ref(),
+        )
+        .map_err(|error| protocol_failure_at(error, response_delivery_state))
+    }
+
+    fn exchange_operation(
+        &mut self,
+        request_message: RequestMessage,
+        limits: &CodecLimits,
+    ) -> Result<(ResponseMessage, RequestDeliveryState), ClientError> {
         let request_item = root_message_item(request_message.into_ttlv())
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
         let permit = OperationEncodingPermit::mint();
@@ -563,15 +703,172 @@ impl Client {
             protocol_failure_at(protocol, response_delivery_state)
         })?;
         drop(response);
+        Ok((response_message, response_delivery_state))
+    }
 
-        validate_response(
-            &batch,
-            &options,
-            response_message,
-            #[cfg(test)]
-            self.pending_owner_observer.as_ref(),
+    /// Executes one explicit Poll request and returns the original operation's
+    /// state without polling again when it remains Pending.
+    ///
+    /// The request uses the exact correlation bytes in `request`. Poll itself
+    /// is not marked asynchronous; its Pending result describes the original
+    /// operation under OASIS KMIP v2.1 §6.1.38.
+    ///
+    /// The caller decides whether another Poll is appropriate:
+    ///
+    /// ```
+    /// use kmipkit_client::{Client, ClientError};
+    /// use kmipkit_protocol::PollRequest;
+    /// use kmipkit_ttlv::codec::CodecLimits;
+    ///
+    /// fn poll_once(
+    ///     client: &mut Client,
+    ///     correlation: &[u8],
+    /// ) -> Result<bool, ClientError> {
+    ///     let outcome = client.execute_poll(
+    ///         PollRequest::new(correlation),
+    ///         &CodecLimits::defaults(),
+    ///     )?;
+    ///     if outcome.is_pending() {
+    ///         let _ = outcome.with_asynchronous_correlation_value(|bytes| bytes.len());
+    ///     }
+    ///     Ok(outcome.is_pending())
+    /// }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// request delivery state when available.
+    pub fn execute_poll(
+        &mut self,
+        request: PollRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientOperationOutcome, ClientError> {
+        let payload = request
+            .to_ttlv_payload()
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        drop(request);
+        self.execute_async_request(
+            POLL_OPERATION,
+            payload,
+            ClientOperation::Poll,
+            None,
+            None,
+            limits,
         )
-        .map_err(|error| protocol_failure_at(error, response_delivery_state))
+    }
+
+    /// Executes one explicit Cancel request and verifies the successful response
+    /// echoes the exact correlation bytes supplied by the caller.
+    ///
+    /// Cancel is synchronous under OASIS KMIP v2.1 §6.1.5; a Pending response
+    /// is rejected even when the original operation was asynchronous.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// request delivery state when available.
+    pub fn execute_cancel(
+        &mut self,
+        request: CancelRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientOperationOutcome, ClientError> {
+        let correlation = request.asynchronous_correlation_value();
+        let payload = request
+            .to_ttlv_payload()
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let outcome = self.execute_async_request(
+            CANCEL_OPERATION,
+            payload,
+            ClientOperation::Cancel,
+            None,
+            Some(correlation),
+            limits,
+        )?;
+        drop(request);
+        Ok(outcome)
+    }
+
+    /// Executes one explicit Process request using the caller-selected
+    /// Asynchronous Indicator for the Process operation itself.
+    ///
+    /// A Pending Process outcome is returned directly; `KMIPKit` does not wait,
+    /// Poll, or claim that a later Poll will complete.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// request delivery state when available.
+    pub fn execute_process(
+        &mut self,
+        request: ProcessRequest,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+    ) -> Result<ClientOperationOutcome, ClientError> {
+        validate_follow_up_indicator(asynchronous_indicator)?;
+        let payload = request
+            .to_ttlv_payload()
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        drop(request);
+        self.execute_async_request(
+            PROCESS_OPERATION,
+            payload,
+            ClientOperation::Process,
+            asynchronous_indicator,
+            None,
+            limits,
+        )
+    }
+
+    /// Executes one Query Asynchronous Requests operation and exposes its
+    /// response payload generically while `KMIPKIT-DISC-039` remains unresolved.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// request delivery state when available.
+    pub fn execute_query_async_requests(
+        &mut self,
+        request: QueryAsyncRequestsRequest,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+    ) -> Result<ClientOperationOutcome, ClientError> {
+        validate_follow_up_indicator(asynchronous_indicator)?;
+        let payload = request
+            .to_ttlv_payload()
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        drop(request);
+        self.execute_async_request(
+            QUERY_ASYNCHRONOUS_REQUESTS_OPERATION,
+            payload,
+            ClientOperation::QueryAsyncRequests,
+            asynchronous_indicator,
+            None,
+            limits,
+        )
+    }
+
+    fn execute_async_request(
+        &mut self,
+        operation: u32,
+        payload: Structure,
+        kind: ClientOperation,
+        asynchronous_indicator: Option<u32>,
+        expected_cancel_correlation: Option<&[u8]>,
+        limits: &CodecLimits,
+    ) -> Result<ClientOperationOutcome, ClientError> {
+        let request_message =
+            build_async_request_message(operation, payload, asynchronous_indicator)
+                .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let (response, delivery_state) = self.exchange_operation(request_message, limits)?;
+        validate_async_response(
+            response,
+            operation,
+            kind,
+            asynchronous_indicator,
+            expected_cancel_correlation,
+        )
+        .map_err(|error| protocol_failure_at(error, delivery_state))
     }
 
     #[cfg(test)]
@@ -891,6 +1188,54 @@ fn build_request_message(
     })
 }
 
+fn build_async_request_message(
+    operation: u32,
+    payload: Structure,
+    asynchronous_indicator: Option<u32>,
+) -> Result<RequestMessage, ProtocolError> {
+    let version_fields = structure([
+        (PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        (PROTOCOL_VERSION_MINOR, Value::integer(1)),
+    ])?;
+    let mut header = Structure::new();
+    push(
+        &mut header,
+        PROTOCOL_VERSION,
+        Value::structure(version_fields),
+    )?;
+    if let Some(indicator) = asynchronous_indicator {
+        push(
+            &mut header,
+            ASYNCHRONOUS_INDICATOR,
+            Value::enumeration(indicator),
+        )?;
+    }
+    push(&mut header, BATCH_COUNT, Value::integer(1))?;
+
+    let mut batch_item = Structure::new();
+    push(&mut batch_item, OPERATION, Value::enumeration(operation))?;
+    push(&mut batch_item, REQUEST_PAYLOAD, Value::structure(payload))?;
+
+    let mut tree = Structure::new();
+    push(&mut tree, REQUEST_HEADER, Value::structure(header))?;
+    push(&mut tree, BATCH_ITEM, Value::structure(batch_item))?;
+    RequestMessage::try_from_ttlv(tree).map_err(|error| {
+        ProtocolError::new(
+            ProtocolErrorKind::MalformedMessage,
+            ProtocolCauseCategory::InvalidValue,
+            error,
+        )
+    })
+}
+
+fn structure(fields: impl IntoIterator<Item = (u32, Value)>) -> Result<Structure, ProtocolError> {
+    let mut structure = Structure::new();
+    for (raw_tag, value) in fields {
+        push(&mut structure, raw_tag, value)?;
+    }
+    Ok(structure)
+}
+
 fn root_message_item(tree: Structure) -> Result<Item, ProtocolError> {
     Item::new(checked_tag(MESSAGE)?, Value::structure(tree)).map_err(model_protocol_error)
 }
@@ -1141,6 +1486,125 @@ fn validate_response(
         });
     }
     Ok(ClientBatchResponse { items: ordered })
+}
+
+fn validate_follow_up_indicator(raw: Option<u32>) -> Result<(), ClientError> {
+    validate_asynchronous_indicator(raw)
+        .map(|_| ())
+        .map_err(|()| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                BatchValidationError::InvalidAsynchronousIndicator,
+            )
+        })
+}
+
+#[allow(clippy::needless_pass_by_value)]
+fn validate_async_response(
+    response: ResponseMessage,
+    operation: u32,
+    kind: ClientOperation,
+    asynchronous_indicator: Option<u32>,
+    expected_cancel_correlation: Option<&[u8]>,
+) -> Result<ClientOperationOutcome, ProtocolError> {
+    if !protocol_version_is_supported(response.header().protocol_version()) {
+        return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
+    }
+
+    let response_items = response.batch_items().collect::<Vec<_>>();
+    let requests = [BatchIdentity {
+        operation,
+        unique_batch_item_id: None,
+    }];
+    let response_identities = response_items
+        .iter()
+        .map(BatchIdentity::from_response)
+        .collect::<Vec<_>>();
+    let association = associate_batch_items(&requests, &response_identities)?;
+    let response_index = association
+        .first()
+        .copied()
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
+    let item = response_items
+        .get(response_index)
+        .copied()
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
+
+    for extension_index in 0..item.message_extension_count() {
+        let extension = item
+            .message_extension(extension_index)
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
+        let critical = extension
+            .criticality_indicator()
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
+        validate_unknown_extension(critical).map_err(ProtocolError::from)?;
+    }
+
+    let (result, cancellation_result) = match kind {
+        ClientOperation::Poll => {
+            let typed =
+                PollResponse::try_from_response_item(item).map_err(asynchronous_operation_error)?;
+            (typed.result().clone(), None)
+        }
+        ClientOperation::Cancel => {
+            let typed = CancelResponse::try_from_response_item(item)
+                .map_err(asynchronous_operation_error)?;
+            if typed.result().status().raw() == 0 {
+                let expected = expected_cancel_correlation
+                    .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?;
+                let echoes_request = typed
+                    .with_asynchronous_correlation_value(|echo| echo == expected)
+                    .unwrap_or(false);
+                if !echoes_request {
+                    return Err(protocol_error(ProtocolErrorKind::InvalidValue));
+                }
+            }
+            (typed.result().clone(), typed.cancellation_result())
+        }
+        ClientOperation::Process => {
+            let typed = ProcessResponse::try_from_response_item(item)
+                .map_err(asynchronous_operation_error)?;
+            (typed.result().clone(), None)
+        }
+        ClientOperation::QueryAsyncRequests => {
+            let typed = QueryAsyncRequestsResponse::try_from_response_item(item)
+                .map_err(asynchronous_operation_error)?;
+            (typed.result().clone(), None)
+        }
+    };
+
+    // Poll Pending reports the original operation's state and is explicitly
+    // permitted by §6.1.38 without making Poll itself asynchronous. Cancel's
+    // typed model rejects Pending. Process and Query use the caller's indicator.
+    if matches!(
+        kind,
+        ClientOperation::Process | ClientOperation::QueryAsyncRequests
+    ) {
+        validate_pending_states(
+            asynchronous_indicator,
+            &[PendingState {
+                pending: result.status().raw() == RESULT_STATUS_PENDING,
+                has_correlation_value: item.with_asynchronous_correlation_value(|_| ()).is_some(),
+            }],
+        )
+        .map_err(ProtocolError::from)?;
+    }
+
+    Ok(ClientOperationOutcome {
+        operation: kind,
+        result,
+        response,
+        cancellation_result,
+    })
+}
+
+fn asynchronous_operation_error(error: AsynchronousOperationError) -> ProtocolError {
+    ProtocolError::new(
+        ProtocolErrorKind::InvalidValue,
+        ProtocolCauseCategory::InvalidValue,
+        error,
+    )
 }
 
 fn protocol_error(kind: ProtocolErrorKind) -> ProtocolError {

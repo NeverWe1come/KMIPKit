@@ -74,6 +74,12 @@ impl CancelRequest {
         }
     }
 
+    /// Returns the exact borrowed correlation bytes used to build this request.
+    #[must_use]
+    pub fn asynchronous_correlation_value(&self) -> &[u8] {
+        self.asynchronous_correlation_value.as_slice()
+    }
+
     /// Builds the ordered Cancel Request Payload from §6.1.5, Table 176.
     ///
     /// # Errors

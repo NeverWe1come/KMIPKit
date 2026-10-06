@@ -17,7 +17,7 @@ use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_s
 
 const POLL: u32 = 0x0000_001A;
 const CORRELATION: &[u8] = b"POLL_ASYNC_CORRELATION_SENTINEL";
-const EXTENSION_TAG: u32 = 0x0042_0199;
+const EXTENSION_TAG: u32 = 0x0042_0012;
 
 #[test]
 fn pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies() {

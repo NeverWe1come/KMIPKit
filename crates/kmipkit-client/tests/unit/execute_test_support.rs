@@ -34,6 +34,24 @@ pub(crate) fn asynchronous_response_bytes(
     correlation_value: Option<&[u8]>,
     payload: Option<Structure>,
 ) -> Vec<u8> {
+    asynchronous_response_with_batch_id_bytes(
+        operation,
+        status,
+        reason,
+        correlation_value,
+        None,
+        payload,
+    )
+}
+
+pub(crate) fn asynchronous_response_with_batch_id_bytes(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    correlation_value: Option<&[u8]>,
+    unique_batch_item_id: Option<&[u8]>,
+    payload: Option<Structure>,
+) -> Vec<u8> {
     let response_version = structure([
         item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
         item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
@@ -44,6 +62,9 @@ pub(crate) fn asynchronous_response_bytes(
         item(BATCH_COUNT, Value::integer(1)),
     ]);
     let mut fields = vec![item(OPERATION, Value::enumeration(operation))];
+    if let Some(id) = unique_batch_item_id {
+        fields.push(item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(id.to_vec())));
+    }
     fields.push(item(RESULT_STATUS, Value::enumeration(status)));
     if let Some(reason) = reason {
         fields.push(item(RESULT_REASON, Value::enumeration(reason)));

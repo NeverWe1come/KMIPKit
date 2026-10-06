@@ -5,7 +5,9 @@
 //! catalog requirement ID for Table 278 remains open under OD-002.
 
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
-use crate::execute_test_support::{asynchronous_response_bytes, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, asynchronous_response_with_batch_id_bytes, test_structure,
+};
 use kmipkit_protocol::ProcessRequest;
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::codec::CodecLimits;
@@ -36,7 +38,10 @@ fn process_pending_is_caller_selected_and_performs_one_exchange() {
 
     assert!(result.is_pending());
     assert_eq!(result.result().status().raw(), 2);
-    assert_eq!(result.payload_member_count(), Some(0));
+    assert_eq!(
+        result.with_response_payload(|payload| payload.children().len()),
+        Some(0)
+    );
     assert_eq!(
         result.with_asynchronous_correlation_value(<[u8]>::to_vec),
         Some(CORRELATION.to_vec())
@@ -62,7 +67,10 @@ fn process_success_requires_the_empty_table_279_payload() {
 
     assert!(!result.is_pending());
     assert_eq!(result.result().status().raw(), 0);
-    assert_eq!(result.payload_member_count(), Some(0));
+    assert_eq!(
+        result.with_response_payload(|payload| payload.children().len()),
+        Some(0)
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
@@ -91,4 +99,35 @@ fn process_rejects_pending_when_the_request_did_not_permit_it() {
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::ResponseStarted)
     );
+}
+
+#[test]
+fn process_rejects_a_response_batch_id_that_the_request_did_not_supply() {
+    let response = asynchronous_response_with_batch_id_bytes(
+        PROCESS,
+        0,
+        None,
+        None,
+        Some(b"unexpected-id"),
+        Some(test_structure([])),
+    );
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .execute_process(
+            ProcessRequest::new(CORRELATION),
+            None,
+            &CodecLimits::defaults(),
+        )
+        .expect_err("single-item Process omitted its ID, so an echoed ID is unexpected");
+
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::ResponseStarted)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
 }

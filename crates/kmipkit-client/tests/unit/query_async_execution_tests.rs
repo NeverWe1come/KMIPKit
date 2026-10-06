@@ -6,8 +6,8 @@
 
 use kmipkit_protocol::QueryAsyncRequestsRequest;
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::{Value, ValueView};
 
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
@@ -15,7 +15,8 @@ use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_s
 const QUERY: u32 = 0x0000_0039;
 const ASYNCHRONOUS_CORRELATION_VALUES: u32 = 0x0042_0176;
 const CORRELATION: &[u8] = b"QUERY_ASYNC_CORRELATION_SENTINEL";
-const GENERIC_TAG: u32 = 0x0042_0199;
+const RESPONSE_SECRET: &[u8] = b"QUERY_RESPONSE_SECRET_SENTINEL";
+const GENERIC_TAG: u32 = 0x0042_0012;
 
 #[test]
 fn query_executes_once_and_exposes_generic_response_structure() {
@@ -27,6 +28,7 @@ fn query_executes_once_and_exposes_generic_response_structure() {
                 Value::byte_string(vec![0x00, 0xff, 0x80]),
             )])),
         ),
+        test_item(GENERIC_TAG, Value::byte_string(RESPONSE_SECRET.to_vec())),
         test_item(GENERIC_TAG, Value::enumeration(0xdead_beef)),
     ]);
     let response = asynchronous_response_bytes(QUERY, 0, None, None, Some(opaque_payload));
@@ -45,11 +47,31 @@ fn query_executes_once_and_exposes_generic_response_structure() {
 
     assert_eq!(result.result().status().raw(), 0);
     assert_eq!(
-        result.with_response_payload(|payload| payload.children().len()),
-        Some(2)
+        result.with_response_payload(|payload| {
+            payload
+                .children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>()
+        }),
+        Some(vec![
+            ASYNCHRONOUS_CORRELATION_VALUES,
+            GENERIC_TAG,
+            GENERIC_TAG,
+        ])
+    );
+    assert_eq!(
+        result.with_response_payload(|payload| {
+            payload.children()[1].with_value(|value| match value {
+                ValueView::ByteString(bytes) => bytes == RESPONSE_SECRET,
+                _ => false,
+            })
+        }),
+        Some(true)
     );
     assert!(request_contains(&captured, CORRELATION));
     assert_eq!(fake.borrow().exchange_count(), 1);
+    assert!(!format!("{result:?}").contains("QUERY_RESPONSE_SECRET"));
 }
 
 #[test]
@@ -58,7 +80,7 @@ fn query_preserves_delivery_evidence_without_retry() {
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 3 });
     let error = client
         .execute_query_async_requests(
-            QueryAsyncRequestsRequest::new(),
+            QueryAsyncRequestsRequest::new().with_correlation_values([CORRELATION.to_vec()]),
             None,
             &CodecLimits::defaults(),
         )
@@ -69,4 +91,6 @@ fn query_preserves_delivery_evidence_without_retry() {
         Some(kmipkit_transport::RequestDeliveryState::PossiblySent)
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
+    assert!(!error.to_string().contains("QUERY_ASYNC_CORRELATION"));
+    assert!(!format!("{error:?}").contains("QUERY_ASYNC_CORRELATION"));
 }

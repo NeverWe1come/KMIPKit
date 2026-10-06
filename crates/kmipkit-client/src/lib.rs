@@ -85,5 +85,6 @@ mod transport_contract_tests;
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
-    ClientBatchResponse, ClientMessageExtension, ClientRequest, PendingOutcome,
+    ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
+    ClientRequest, PendingOutcome,
 };
