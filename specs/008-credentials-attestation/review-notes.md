@@ -190,3 +190,14 @@ Verification on Rust 1.94.0:
 The first Clippy run found a missing non-exhaustive Debug marker and module
 inception; both were corrected, the module file was renamed to `value.rs`, and
 the five traceability paths were updated before the passing rerun.
+
+## User Story 1 RED — Authentication TTLV conversion (2026-10-06)
+
+Extended `credential_contract.rs` with a round-trip contract that requires
+`Authentication::into_ttlv` to preserve unknown Authentication children,
+repeated Credential order, and opaque extension bytes. Added the exact test
+path to the OASIS §9.4-002, FR-002, FR-011, and unknown-preservation traceability
+rows. `cargo +1.94.0 fmt --all --check` passed. The focused Rust 1.94 command
+`cargo +1.94.0 test -p kmipkit-protocol --test credential_contract authentication_roundtrip_preserves_unknown_fields_and_credential_order`
+fails only with `E0599` because `Authentication::into_ttlv` is the behavior
+under test and has not yet been implemented. No production code was added.

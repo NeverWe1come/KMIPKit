@@ -8,7 +8,7 @@
 //! KMIPKIT-REQ-SPEC-9.4-002; KMIPKIT-0008-FR-001, FR-002, FR-009; SC-001.
 
 use kmipkit_protocol::{Authentication, RequestMessage};
-use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
+use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
@@ -18,6 +18,7 @@ const BATCH_ITEM: u32 = 0x0042_000F;
 const CREDENTIAL: u32 = 0x0042_0023;
 const CREDENTIAL_TYPE: u32 = 0x0042_0024;
 const CREDENTIAL_VALUE: u32 = 0x0042_0025;
+const EXTENSION_CHILD: u32 = 0x0054_0003;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_HEADER: u32 = 0x0042_0077;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -113,6 +114,48 @@ fn authentication_preserves_nonempty_credential_order() {
         .collect();
 
     assert_eq!(raw_types, [0xF123_4567, 0xE234_5678]);
+}
+
+fn assert_authentication_tree_preserves_unknown_fields_and_order(roundtrip: Structure) {
+    let view = roundtrip.view();
+    let fields: &[Item] = view.children();
+    let tags: Vec<u32> = fields.iter().map(|field| field.tag().raw()).collect();
+    let extension_values: Vec<Vec<u8>> = fields
+        .iter()
+        .filter(|field| field.tag().raw() == EXTENSION_CHILD)
+        .map(|field| {
+            field.with_value(|value| match value {
+                ValueView::ByteString(bytes) => bytes.to_vec(),
+                _ => Vec::new(),
+            })
+        })
+        .collect();
+
+    assert_eq!(
+        tags,
+        [EXTENSION_CHILD, CREDENTIAL, CREDENTIAL, EXTENSION_CHILD]
+    );
+    assert_eq!(extension_values, [vec![0x80, 0x01], vec![0xFE, 0x02]]);
+}
+
+#[test]
+fn authentication_roundtrip_preserves_unknown_fields_and_credential_order() {
+    let source = structure([
+        item(EXTENSION_CHILD, Value::byte_string(vec![0x80, 0x01])),
+        item(
+            CREDENTIAL,
+            Value::structure(credential(0xF123_4567, 0x0054_0001)),
+        ),
+        item(
+            CREDENTIAL,
+            Value::structure(credential(0xE234_5678, 0x0054_0002)),
+        ),
+        item(EXTENSION_CHILD, Value::byte_string(vec![0xFE, 0x02])),
+    ]);
+    let parsed = Authentication::try_from_ttlv(source)
+        .expect("repeated Credentials and unknown Authentication fields are retained");
+
+    assert_authentication_tree_preserves_unknown_fields_and_order(parsed.into_ttlv());
 }
 
 #[test]
