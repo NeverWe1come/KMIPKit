@@ -243,6 +243,14 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "qself_exchange_method_item",
+        path: "tests/fixtures/execute_boundary/qself_exchange_method_item.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/qself_exchange_method_item.rs"),
+        probe: "<dyn Transport>::exchange",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "macro_hidden_second_exchange",
         path: "tests/fixtures/execute_boundary/macro_hidden_second_exchange.rs",
         source: include_str!("../tests/fixtures/execute_boundary/macro_hidden_second_exchange.rs"),
@@ -251,10 +259,30 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "nested_macro_in_whitelisted_macro",
+        path: "tests/fixtures/execute_boundary/nested_macro_in_whitelisted_macro.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/nested_macro_in_whitelisted_macro.rs"
+        ),
+        probe: "matches!(hidden!(), _)",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "public_conversion_hooks",
         path: "tests/fixtures/execute_boundary/public_conversion_hooks.rs",
         source: include_str!("../tests/fixtures/execute_boundary/public_conversion_hooks.rs"),
         probe: "T: Into<ClientRequest>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "client_request_conversion_trait_impls",
+        path: "tests/fixtures/execute_boundary/client_request_conversion_trait_impls.rs",
+        source: include_str!(
+            "../tests/fixtures/execute_boundary/client_request_conversion_trait_impls.rs"
+        ),
+        probe: "impl From<Vec<u8>> for ClientRequest",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
     },
@@ -563,8 +591,11 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "public_writer",
     "raw_exchange_outside_execute",
     "raw_exchange_ufcs_outside_execute",
+    "qself_exchange_method_item",
     "macro_hidden_second_exchange",
+    "nested_macro_in_whitelisted_macro",
     "public_conversion_hooks",
+    "client_request_conversion_trait_impls",
     "public_impl_trait_conversion_input",
     "approved_error_validation_source",
     "approved_batch_response_iter_output",
@@ -2331,11 +2362,29 @@ fn standard_macros_cannot_hide_a_second_transport_exchange() {
 }
 
 #[test]
+fn allowed_macro_tokens_cannot_contain_nested_macro_invocations() {
+    assert_eq!(
+        candidate_check_fixture(fixture("nested_macro_in_whitelisted_macro")),
+        Err(CandidateRejection::BoundaryViolation),
+        "a whitelisted macro must not hide an expansion-bearing nested macro"
+    );
+}
+
+#[test]
 fn public_signatures_reject_caller_defined_conversion_hooks() {
     assert_eq!(
         candidate_check_fixture(fixture("public_conversion_hooks")),
         Err(CandidateRejection::BoundaryViolation),
         "public generic conversion hooks must not accept caller-defined request conversions"
+    );
+}
+
+#[test]
+fn client_request_rejects_inbound_conversion_trait_implementations() {
+    assert_eq!(
+        candidate_check_fixture(fixture("client_request_conversion_trait_impls")),
+        Err(CandidateRejection::BoundaryViolation),
+        "From/TryFrom implementations must not add caller-defined ClientRequest conversions"
     );
 }
 
@@ -2422,6 +2471,15 @@ fn ufcs_transport_exchange_call_outside_execute_is_rejected() {
         candidate_check_fixture(fixture("raw_exchange_ufcs_outside_execute")),
         Err(CandidateRejection::BoundaryViolation),
         "UFCS must not bypass the canonical Client::execute exchange boundary"
+    );
+}
+
+#[test]
+fn qself_transport_exchange_method_items_are_rejected() {
+    assert_eq!(
+        candidate_check_fixture(fixture("qself_exchange_method_item")),
+        Err(CandidateRejection::BoundaryViolation),
+        "a single-segment qself exchange method item must not evade the sole callsite audit"
     );
 }
 
