@@ -726,6 +726,8 @@ struct BoundaryAudit {
     misplaced_writer_calls: usize,
     misplaced_exchange_calls: usize,
     exchange_calls: usize,
+    repeatable_execution_depth: usize,
+    sensitive_calls_in_repeatable_context: usize,
     permit_struct_constructions: usize,
     misplaced_permit_struct_constructions: usize,
     current_impl_type: Option<String>,
@@ -756,6 +758,15 @@ impl BoundaryAudit {
 
     fn reject(&mut self, reason: impl Into<String>) {
         self.rejection_reasons.push(reason.into());
+    }
+
+    fn record_repeatable_sensitive_call(&mut self) {
+        if self.repeatable_execution_depth > 0 {
+            self.sensitive_calls_in_repeatable_context += 1;
+            self.reject(
+                "writer, permit, or transport call appears in repeatable execution context",
+            );
+        }
     }
 
     fn is_rejected(&self) -> bool {
@@ -848,6 +859,7 @@ impl BoundaryAudit {
             || self.misplaced_permit_calls != 0
             || self.misplaced_writer_calls != 0
             || self.misplaced_exchange_calls != 0
+            || self.sensitive_calls_in_repeatable_context != 0
             || self.misplaced_permit_struct_constructions != 0
             || self.exchange_calls != 1
             || self.permit_calls != self.writer_calls
@@ -1062,6 +1074,9 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
 
     fn visit_item_use(&mut self, item_use: &'ast syn::ItemUse) {
         self.check_attributes(&item_use.attrs);
+        if use_tree_imports_client_execute(&item_use.tree) {
+            self.reject("execute function imports are not resolved by the boundary audit");
+        }
         if is_test_cfg(&item_use.attrs) {
             return;
         }
@@ -1121,6 +1136,13 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 .iter()
                 .map(|segment| segment.ident.to_string())
                 .collect::<Vec<_>>();
+            if segments.last().is_some_and(|segment| segment == "execute")
+                && segments
+                    .iter()
+                    .any(|segment| matches!(segment.as_str(), "Client" | "Self"))
+            {
+                self.reject("Client::execute must not be called from production code");
+            }
             if segments.last().is_some_and(|segment| segment == "exchange") {
                 self.reject(
                     "transport exchange call target must use the canonical method call in Client::execute",
@@ -1128,6 +1150,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             }
             if is_permit_mint(&segments) {
                 self.permit_calls += 1;
+                self.record_repeatable_sensitive_call();
                 if self.current_impl_type.as_deref() != Some("Client")
                     || self.current_function.as_deref() != Some("execute")
                 {
@@ -1138,6 +1161,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             }
             if is_writer_target(&segments) {
                 self.writer_calls += 1;
+                self.record_repeatable_sensitive_call();
                 if !is_writer_call(&segments) {
                     self.reject("writer function called without its canonical private path");
                 }
@@ -1159,11 +1183,15 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
 
     fn visit_expr_method_call(&mut self, call: &'ast ExprMethodCall) {
         let method = call.method.to_string();
+        if method == "execute" {
+            self.reject("execute method calls are not allowed in production client sources");
+        }
         if matches!(
             method.as_str(),
             "encode" | "encode_for_execute" | "encode_raw"
         ) {
             self.writer_calls += 1;
+            self.record_repeatable_sensitive_call();
             if !is_private_writer_receiver(&call.receiver) {
                 self.reject("writer method called through a noncanonical receiver");
             }
@@ -1175,6 +1203,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
         }
         if method == "exchange" {
             self.exchange_calls += 1;
+            self.record_repeatable_sensitive_call();
             if self.current_impl_type.as_deref() != Some("Client")
                 || self.current_function.as_deref() != Some("execute")
                 || !is_client_transport_receiver(&call.receiver)
@@ -1183,6 +1212,30 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             }
         }
         visit::visit_expr_method_call(self, call);
+    }
+
+    fn visit_expr_loop(&mut self, expression: &'ast syn::ExprLoop) {
+        self.repeatable_execution_depth += 1;
+        visit::visit_expr_loop(self, expression);
+        self.repeatable_execution_depth -= 1;
+    }
+
+    fn visit_expr_while(&mut self, expression: &'ast syn::ExprWhile) {
+        self.repeatable_execution_depth += 1;
+        visit::visit_expr_while(self, expression);
+        self.repeatable_execution_depth -= 1;
+    }
+
+    fn visit_expr_for_loop(&mut self, expression: &'ast syn::ExprForLoop) {
+        self.repeatable_execution_depth += 1;
+        visit::visit_expr_for_loop(self, expression);
+        self.repeatable_execution_depth -= 1;
+    }
+
+    fn visit_expr_closure(&mut self, expression: &'ast syn::ExprClosure) {
+        self.repeatable_execution_depth += 1;
+        visit::visit_expr_closure(self, expression);
+        self.repeatable_execution_depth -= 1;
     }
 
     fn visit_expr_struct(&mut self, expression: &'ast syn::ExprStruct) {
@@ -1221,6 +1274,13 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             .iter()
             .map(|segment| segment.ident.to_string())
             .collect::<Vec<_>>();
+        if segments.last().is_some_and(|segment| segment == "execute")
+            && segments
+                .iter()
+                .any(|segment| matches!(segment.as_str(), "Client" | "Self"))
+        {
+            self.reject("Client::execute must not be called or aliased from production code");
+        }
         if segments.last().is_some_and(|segment| segment == "exchange") {
             self.reject(format!(
                 "transport exchange path must use the canonical method call in Client::execute: {segments:?}"
@@ -2012,6 +2072,43 @@ fn use_tree_has_name(tree: &UseTree, expected: &str) -> bool {
             .any(|tree| use_tree_has_name(tree, expected)),
         UseTree::Glob(_) => false,
     }
+}
+
+fn use_tree_imports_client_execute(tree: &UseTree) -> bool {
+    fn visit(tree: &UseTree, prefix: &mut Vec<String>) -> bool {
+        match tree {
+            UseTree::Path(path) => {
+                prefix.push(path.ident.to_string());
+                let imported = visit(&path.tree, prefix);
+                prefix.pop();
+                imported
+            }
+            UseTree::Name(name) => {
+                prefix.push(name.ident.to_string());
+                let imported = prefix.len() >= 2
+                    && prefix.last().is_some_and(|segment| segment == "execute")
+                    && prefix[..prefix.len() - 1]
+                        .iter()
+                        .any(|segment| matches!(segment.as_str(), "Client" | "Self"));
+                prefix.pop();
+                imported
+            }
+            UseTree::Rename(rename) => {
+                prefix.push(rename.ident.to_string());
+                let imported = prefix.len() >= 2
+                    && prefix.last().is_some_and(|segment| segment == "execute")
+                    && prefix[..prefix.len() - 1]
+                        .iter()
+                        .any(|segment| matches!(segment.as_str(), "Client" | "Self"));
+                prefix.pop();
+                imported
+            }
+            UseTree::Group(group) => group.items.iter().any(|item| visit(item, prefix)),
+            UseTree::Glob(_) => false,
+        }
+    }
+
+    visit(tree, &mut Vec::new())
 }
 
 fn use_tree_has_rename(tree: &UseTree) -> bool {
@@ -2847,7 +2944,8 @@ fn complete_execute_audit_requires_exactly_one_canonical_exchange() {
 
 #[test]
 fn complete_execute_audit_rejects_repeated_or_recursive_exchange_control_flow() {
-    let repeated = "impl Client { fn execute(&mut self) { loop { self.transport.exchange(&[], 1); } } }";
+    let repeated =
+        "impl Client { fn execute(&mut self) { loop { self.transport.exchange(&[], 1); } } }";
     assert!(
         matches!(
             audit_source(repeated),
