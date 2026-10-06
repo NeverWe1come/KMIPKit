@@ -6,8 +6,8 @@
 
 use kmipkit_protocol::PollRequest;
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_ttlv::ValueView;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
+use kmipkit_ttlv::{Item, ValueView};
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatch, ClientBatchItem, ClientRequest};
@@ -43,46 +43,14 @@ fn execute_advertises_attestation_without_authentication_or_credential_payload()
     let message = decode(request.as_slice()).expect("the captured request is valid TTLV");
 
     assert_eq!(message.tag().raw(), MESSAGE);
-    message.with_value(|value| {
-        let ValueView::Structure(message) = value else {
-            panic!("the captured Message has a Structure value");
-        };
-        let header = message
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == REQUEST_HEADER)
-            .expect("the request contains one Request Header");
-        let (indicator, authentication_present) = header.with_value(|value| {
-            let ValueView::Structure(header) = value else {
-                panic!("the Request Header has a Structure value");
-            };
-            let indicator = header
-                .children()
-                .iter()
-                .find(|field| field.tag().raw() == ATTESTATION_CAPABLE_INDICATOR)
-                .and_then(|field| {
-                    field.with_value(|value| match value {
-                        ValueView::Boolean(value) => Some(*value),
-                        _ => None,
-                    })
-                });
-            let authentication_present = header
-                .children()
-                .iter()
-                .any(|field| field.tag().raw() == AUTHENTICATION);
-            (indicator, authentication_present)
-        });
+    let (indicator, authentication_present, credential_present) = request_indicators(&message);
 
-        assert_eq!(indicator, Some(true));
-        assert!(!authentication_present);
-        assert!(
-            !message
-                .children()
-                .iter()
-                .any(|field| item_tree_contains_tag(field, CREDENTIAL)),
-            "the request contains no Credential structure"
-        );
-    });
+    assert_eq!(indicator, Some(true));
+    assert!(!authentication_present);
+    assert!(
+        !credential_present,
+        "the request contains no Credential structure"
+    );
 }
 
 #[test]
@@ -106,20 +74,30 @@ fn async_follow_up_request_advertises_attestation_capability() {
         .expect("the fake transport captures the outbound request");
     let message = decode(request.as_slice()).expect("the captured request is valid TTLV");
 
-    let indicator = message.with_value(|value| {
+    let (indicator, authentication_present, credential_present) = request_indicators(&message);
+
+    assert_eq!(indicator, Some(true));
+    assert!(!authentication_present);
+    assert!(!credential_present);
+}
+
+fn request_indicators(message: &Item) -> (Option<bool>, bool, bool) {
+    message.with_value(|value| {
         let ValueView::Structure(message) = value else {
-            panic!("the captured Message has a Structure value");
+            return (None, false, false);
         };
-        let header = message
+        let Some(header) = message
             .children()
             .iter()
             .find(|field| field.tag().raw() == REQUEST_HEADER)
-            .expect("the request contains one Request Header");
-        header.with_value(|value| {
+        else {
+            return (None, false, false);
+        };
+        let (indicator, authentication_present) = header.with_value(|value| {
             let ValueView::Structure(header) = value else {
-                panic!("the Request Header has a Structure value");
+                return (None, false);
             };
-            header
+            let indicator = header
                 .children()
                 .iter()
                 .find(|field| field.tag().raw() == ATTESTATION_CAPABLE_INDICATOR)
@@ -128,11 +106,19 @@ fn async_follow_up_request_advertises_attestation_capability() {
                         ValueView::Boolean(value) => Some(*value),
                         _ => None,
                     })
-                })
-        })
-    });
-
-    assert_eq!(indicator, Some(true));
+                });
+            let authentication_present = header
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == AUTHENTICATION);
+            (indicator, authentication_present)
+        });
+        let credential_present = message
+            .children()
+            .iter()
+            .any(|field| item_tree_contains_tag(field, CREDENTIAL));
+        (indicator, authentication_present, credential_present)
+    })
 }
 
 fn item_tree_contains_tag(item: &kmipkit_ttlv::Item, target: u32) -> bool {
