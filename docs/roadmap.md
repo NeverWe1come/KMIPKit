@@ -24,15 +24,14 @@ Parallel feature development must wait until this phase is accepted.
 - Transport abstraction and deterministic fake transport.
 - Raw TLS and HTTPS vertical skeleton with mTLS.
 - Synchronous request/response client skeleton.
-- `KMIPKIT-0007-client-execution`: paired response validation; mixed synchronous/asynchronous response handling under `KMIPKIT-REQ-SPEC-8-003-002`; outbound Asynchronous Indicator validation under Table 432; outbound Batch Error Continuation assigned-value acceptance and rejection of values outside the assigned-plus-extension ranges under Table 435, with extension-range acceptance/rejection gated by `KMIPKIT-0007-OD-001` source/catalog-owner disposition; `KMIPKIT-REQ-SPEC-9.12-001-002` response-size enforcement and `KMIPKIT-REQ-SPEC-9.12-001-003` large-response recommendation; and ADR-0002's KMIP 2.1-only request/response version enforcement, documented as the §9.16 scope exception `KMIPKIT-DISC-022`. Acceptance tests cover a deterministic fake-transport batch containing completed and Pending items, accepting Pending only when the request indicator permits asynchronous results; a property check accepting protocol-version pairs iff they equal `(2, 1)`, plus representative non-2.1 mismatches and signed-32-bit boundary cases; assigned and extension-range Asynchronous Indicator acceptance, assigned Batch Error Continuation acceptance, rejection of values outside each assigned-plus-extension set, and deferred Batch Error Continuation extension-range tests after OD-001 disposition; exact/over-limit response-size boundaries; and configured limits for operations likely to return large responses. The set of operations likely to return large responses awaits the Phase 2 operation inventory.
+- `KMIPKIT-0007-client-execution`: paired response validation; mixed synchronous/asynchronous response handling under `KMIPKIT-REQ-SPEC-8-003-002`; outbound Asynchronous Indicator validation under Table 432; assigned outbound Batch Error Continuation values under §9.6 and Table 435; response-size enforcement and large-response policy under `KMIPKIT-REQ-SPEC-9.12-001-002/-003`; and ADR-0002's KMIP 2.1-only request/response version enforcement, documented as the §9.16 scope exception `KMIPKIT-DISC-022`. `KMIPKIT-DISC-043` records the §9.6/Table 435 value-range discrepancy separately from `KMIPKIT-DISC-001`; delegated decision `KMIPKIT-DEC-002` accepts assigned values for the initial client while raw Enumeration values remain preserved. Acceptance tests cover a deterministic fake-transport batch containing completed and Pending items, accepting Pending only when the request indicator permits asynchronous results; a property check accepting protocol-version pairs iff they equal `(2, 1)`, plus representative non-2.1 mismatches and signed-32-bit boundary cases; assigned and extension-range Asynchronous Indicator acceptance, assigned Batch Error Continuation acceptance, rejection of Batch Error Continuation extension-range outbound values under the project policy, raw-value preservation, exact/over-limit response-size boundaries, and configured limits for operations likely to return large responses. The set of operations likely to return large responses awaits the Phase 2 operation inventory.
 - Minimal stable C ABI vertical slice.
 - Coverage, conformance, compatibility, and supply-chain CI gates.
 - `KMIPKIT-0011-dependency-policy-gates`: finite reviewed Cargo license/source
   policy, advisory checks for both root and fuzz workspaces, exact expiring
-  exceptions, and pull-request/scheduled CI. The approved specification has an
-  implementation with CI, traceability, tests, and prior reviews verified in
-  its feature branch; review and integration into `release/1.0.0` are pending.
-  Release signing, SBOM, provenance, and branch protection remain separate.
+  exceptions, and pull-request/scheduled CI. The approved specification and
+  implementation were merged by PR #37 at `d4582e2`; release signing, SBOM,
+  provenance, and branch protection remain separate.
 
 ## Phase 2: typed KMIP protocol
 
@@ -43,6 +42,10 @@ Parallel feature development must wait until this phase is accepted.
 - All client initiated request and response types.
 - Profile-specific validation.
 - KMIP protocol asynchronous outcome model.
+- `KMIPKIT-0012-vendor-extension-registry`: immutable per-client registry,
+  typed validated extension values, and generated Rust/C/Java/Python adapters.
+  It implements ADR-0007's 1.0 extension commitment; dynamic executable
+  plugins remain deferred. Complete it before public API parity is frozen.
 - Official and derived conformance fixtures.
 
 Work is split into independent vertical specifications after shared models have

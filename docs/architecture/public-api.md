@@ -23,6 +23,33 @@ let result = client
 The exact signature is established by its approved implementation
 specification. This example describes intent, not existing code.
 
+`kmipkit-transport` is also a public reusable Rust crate under ADR-0003. Its
+low-level bounded exchange contract is a documented crate API under ADR-0014;
+the top-level facade does not re-export it, and `kmipkit-client` does not
+accept arbitrary caller-implemented transports.
+
+This low-level API intentionally accepts caller-supplied request bytes and
+returns a `TransportResponse` containing raw response bytes. It is a narrow
+exception to ADR-0012 Decision 4 for direct transport users and is outside
+`Client::execute`'s typed validation and request-owner guarantee. Direct
+callers own their request bytes and successful response wrapper. On drop, the
+wrapper zeroizes the initialized byte range in its current owned allocation;
+partial/error cleanup zeroizes initialized bytes in each current
+KMIPKit-owned response allocation before release. Spare or uninitialized
+capacity, earlier allocations released by reallocation unless cleared first,
+caller-created copies, and TLS/operating-system/third-party transport-library
+copies are outside that guarantee. Transport code must not log or retain
+request data and must zeroize KMIPKit-owned temporary copies before release,
+including any prior allocation released as a copy grows.
+Each concrete adapter specification must require request nonlogging,
+nonretention, and temporary-copy cleanup tests as applicable, and response
+tests that prove either no reallocation after response bytes are stored or
+cleanup of every prior/temporary allocation on success and error paths. The
+transport does not encode or validate KMIP operations. The high-level client
+always decodes the wrapper and never returns raw bodies; see
+[ADR-0014](../adr/0014-public-transport-exchange-contract.md) for the exact
+contract and limits.
+
 ### Typed protocol
 
 Each operation has a distinct request and response type. Applications can
@@ -32,7 +59,9 @@ Its approved API must take a closed set of concrete typed KMIP requests: it
 cannot accept the public generic `Item` tree, raw KMIP body bytes, or a
 caller-implementable conversion trait as an alternate route to wire encoding.
 The exact variants, signature, and per-call limit configuration belong to the
-first client feature specification.
+first client feature specification. This restriction applies to the supported
+high-level client API; the separately documented low-level `kmipkit-transport`
+exchange API is an explicit caller-owned raw-byte exception under ADR-0014.
 
 ### Generic TTLV
 
@@ -163,18 +192,20 @@ zeroized recursively. The dependency is locked to `zeroize` 1.9.0 with only
 its `alloc` feature enabled; see the [dependency review](../../specs/004-generic-ttlv-model/dependency-review.md)
 and the [pinned 1.9.0 source](https://docs.rs/crate/zeroize/1.9.0/source/src/lib.rs).
 
-In that version, `Vec::zeroize` clears its initialized elements and sets the
-length to zero; it does not guarantee wiping spare or otherwise uninitialized
-allocation capacity. `String::zeroize` delegates to its initialized backing
-vector contents. For the private outbound owner implemented by KMIPKIT-0005,
-the guarantee is limited to zeroizing the initialized encoded byte range
-before deallocation/owner drop.
-Spare capacity is outside the guarantee unless explicitly initialized and its
-cleanup is verified. This is not a guarantee that every process copy of a
-value has been erased. Caller-side copies, buffers left by reallocations before
-ownership transfer, copies deliberately made from borrowed views, temporary
-stack or register copies, and copies retained by Java, Python, or another
-runtime are outside this Rust model's guarantee.
+In that version, `Vec::zeroize` zeroizes the entire capacity of its current
+backing allocation, including spare capacity, and then sets its length to
+zero. `String::zeroize` delegates to its backing vector and has the same
+current-allocation behavior. Neither can guarantee that copies left in an
+earlier allocation by reallocation were cleared. The private outbound owner
+implemented by KMIPKIT-0005 currently documents a narrower guarantee: its
+initialized encoded byte range is zeroized before deallocation/owner drop.
+Although the pinned `Vec::zeroize` implementation also clears that owner's
+current spare capacity, that extra behavior is not part of the documented
+KMIPKit guarantee. This is not a guarantee that every process copy of a value
+has been erased. Caller-side copies, buffers left by earlier reallocations,
+copies deliberately made from borrowed views, temporary stack or register
+copies, and copies retained by Java, Python, or another runtime are outside
+this Rust model's guarantee.
 
 The current policy in `AGENTS.md` §8 prohibits serialization of credentials,
 private keys, secret key material, OTPs, tickets, and raw KMIP bodies. KMIPKIT-0005
@@ -196,9 +227,16 @@ the test against the candidate callsite before merge, enablement, or release.
 Until then, the release branch must have neither the callsite nor a secret-bearing send. If review rejects that
 boundary or it cannot be enforced, do not implement a production secret-bearing
 request path. The policy does not authorize diagnostics, general-purpose
-serialization, logging, formatting, error inclusion, persistence, or arbitrary
-inbound raw-byte retention or re-emission. ADR-0011 addresses received Reserved
-Tags and does not authorize wire encoding.
+serialization, logging, formatting, error inclusion, persistence, or raw-body
+handling through the high-level client. ADR-0014 narrowly authorizes direct
+low-level transport users to receive a `TransportResponse`; drop zeroizes the
+initialized byte range in its current allocation, and error cleanup zeroizes
+initialized bytes in each current KMIPKit-owned partial allocation. Spare
+capacity, prior allocations not cleared before reallocation, and external
+TLS/transport-library copies are outside this guarantee. Concrete adapters
+must test their allocation-growth cleanup on success and error paths. The
+typed client always decodes the wrapper. ADR-0011 addresses received Reserved Tags and
+does not authorize wire encoding.
 
 ## Errors
 

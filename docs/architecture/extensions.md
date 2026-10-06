@@ -15,6 +15,12 @@ building vendor policy into the core.
 - Offer a generic TTLV escape hatch.
 - Avoid bundled vendor-specific semantic knowledge.
 
+The common typed execution path implements unknown-extension criticality and
+preservation first. KMIPKIT-0012 owns the immutable per-client registry,
+validated typed extension values, and generated Rust, C, Java, and Python
+adapters before the 1.0 API is frozen; this keeps the 1.0 commitments above
+without adding vendor schema handling to the initial Discover Versions slice.
+
 ## Extension registry
 
 Registries belong to an individual immutable client configuration. There is no

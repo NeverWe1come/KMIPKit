@@ -93377,6 +93377,20 @@
   ],
   "policies": [
     {
+      "policy_id": "KMIPKIT-POLICY-BATCH-ERROR-CONTINUATION-ASSIGNED-OUTBOUND",
+      "summary": "Accept only OASIS-assigned Batch Error Continuation values for outbound requests in KMIPKIT-0007; preserve raw Enumeration values when decoding and do not claim the Table 435 extension allocation invalid.",
+      "provenance": "approved_product_decision",
+      "provenance_ref": {
+        "decision_id": "KMIPKIT-DEC-002"
+      },
+      "affected_element_kinds": [
+        "enumeration_value"
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.6-001-002"
+      ]
+    },
+    {
       "policy_id": "KMIPKIT-POLICY-EXTENSION-PRESERVATION",
       "summary": "Preserve unknown KMIP extension data losslessly and expose it without interpreting it as a standardized value.",
       "provenance": "AGENTS.md",
@@ -103632,6 +103646,45 @@
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-043",
+      "summary": "Batch Error Continuation outbound value range",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.6"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.5"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "normative_conflict",
+      "alternatives": [
+        "Apply §9.6's SHALL literally and permit only the three assigned values Undo, Stop, and Continue in outbound requests.",
+        "Treat Table 435's Extensions allocation as permitting additional outbound values despite §9.6's three-value SHALL."
+      ],
+      "affected_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.6-001-002"
+      ],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001",
+        "KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-EXTENSIONS-8XXXXXXX",
+        "KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-STOP-00000002",
+        "KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-UNDO-00000003",
+        "KMIPKIT-ELEM-ENUMERATION-BATCH-ERROR-CONTINUATION-OPTION",
+        "KMIPKIT-ELEM-OPTION-BATCH-ERROR-CONTINUATION-OPTION"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [
+        "KMIPKIT-POLICY-BATCH-ERROR-CONTINUATION-ASSIGNED-OUTBOUND"
+      ],
+      "downstream_impact": "The 1.0 client needs a defined outbound value policy; generic decoding continues to preserve all raw Enumeration values. The project decision selects assigned-only emission without asserting that OASIS invalidates its extension allocation.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-002",
+      "erratum_source_refs": []
     }
   ],
   "decisions": [
@@ -103653,6 +103706,34 @@
       "approval_evidence": "Direct maintainer instruction on 2026-10-05 authorized autonomous execution of the KMIPKIT-0005 plan without further approval or manual intervention. The selected project policy and delegated approval are documented in docs/adr/0011-reserved-tag-decoding-policy.md and specs/005-ttlv-wire-codec/approval-record.md.",
       "approved_at": "2026-10-05",
       "consequence": "Reserved Tags received from the wire fail decoding before generic Item construction; the OASIS registry classification and ADR-0010 precedence rule remain unchanged.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-002",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.6"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.5"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.6-001-002"
+      ],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-043"
+      ],
+      "policy_ids": [
+        "KMIPKIT-POLICY-BATCH-ERROR-CONTINUATION-ASSIGNED-OUTBOUND"
+      ],
+      "interpretation": "KMIPKit 1.0 outbound policy for the initial typed client accepts only the assigned Batch Error Continuation values Undo, Stop, and Continue. Generic decoding preserves every raw Enumeration value. This conservative project behavior follows §9.6's literal three-value SHALL while preserving Table 435's Extensions allocation in the catalog; it does not assert that OASIS makes extension-range values invalid. The separate KMIPKIT-DISC-001 concerning Continue/Undo execution effects remains open and is not affected.",
+      "approver": "KMIPKit maintainer under delegated authorization",
+      "approval_evidence": "The maintainer directly authorized autonomous execution of the complete KMIPKit plan without further approval requests or manual intervention. This specific disposition and its limits are recorded in docs/adr/0013-client-extension-registry-ownership.md and specs/007-client-execution/approval-record.md.",
+      "approved_at": "2026-10-06",
+      "consequence": "The initial client sends assigned values only; vendor extension-range values remain preservable as raw data but are not emitted by KMIPKIT-0007. A later registered extension feature or an authoritative OASIS clarification may propose a reviewed policy change. No Continue/Undo execution or rollback behavior is inferred.",
       "status": "accepted"
     }
   ]

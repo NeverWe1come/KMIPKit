@@ -25,6 +25,8 @@ one and links both directions.
 - [ADR-0010: Tag allocation precedence for generic TTLV](0010-tag-allocation-precedence.md)
 - [ADR-0011: Reject received Reserved TTLV Tags](0011-reserved-tag-decoding-policy.md) (Accepted)
 - [ADR-0012: Conditional caller-requested TTLV wire encoding](0012-caller-requested-wire-encoding-policy.md) (Accepted)
+- [ADR-0013: Client extension registry ownership](0013-client-extension-registry-ownership.md) (Accepted)
+- [ADR-0014: Public low-level transport exchange contract](0014-public-transport-exchange-contract.md) (Accepted)
 
 ## Template
 
