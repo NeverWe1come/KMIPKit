@@ -22,7 +22,7 @@
 
 - [ ] T006 Add pinned-source-derived TTLV fixture builders for asynchronous operations in `crates/kmipkit-protocol/tests/support/async_operation_fixtures.rs`; cite exact OASIS clause/table IDs in fixture docs (KMIPKIT-0009-FR-001–KMIPKIT-0009-FR-007).
 - [ ] T007 Add stable feature requirement IDs and exact OASIS source citations to protocol/client test headers and this feature's traceability table; do not edit generated catalog output (KMIPKIT-0009-FR-012).
-- [ ] T008 Add malformed/unknown-value test matrix for required fields, wrong types, repeated/unknown values, and configured decode limits in protocol test support (KMIPKIT-0009-FR-001–KMIPKIT-0009-FR-007).
+- [ ] T008 Add malformed/unknown-value test matrix for required fields, wrong types, repeated/unknown values, and configured decode limits in protocol test support; derived cases cite §§6.1.5, 6.1.38, 6.1.39, and 6.1.41, Tables 176–178, 276–280, and 285–287 (KMIPKIT-0009-FR-001–KMIPKIT-0009-FR-007).
 
 ## Phase 2: User Story 1 — Continue or inspect one pending operation (Priority: P1)
 
@@ -32,10 +32,10 @@
 
 ### Red — tests first
 
-- [ ] T009 [US1] Add failing Poll payload field/order and exact binary correlation tests in `crates/kmipkit-protocol/tests/unit/poll_tests.rs`; cite §§6.1.38/Table 276, 8.6/Table 399, 9.1/Table 400, and 9.19/Table 424 (KMIPKIT-0009-FR-001–KMIPKIT-0009-FR-003).
-- [ ] T010 [US1] Add failing Poll Pending/no-payload and completed-original-generic-payload tests in `crates/kmipkit-client/tests/unit/poll_execution_tests.rs`; prove one exchange and no auto-poll on Pending (KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-010).
+- [ ] T009 [US1] Add failing Poll payload field/order and exact binary correlation tests, including arbitrary-byte property cases within codec limits, in `crates/kmipkit-protocol/tests/unit/poll_tests.rs`; cite §§6.1.38/Table 276, 8.6/Table 399, 9.1/Table 400, and 9.19/Table 424 (KMIPKIT-0009-FR-001–KMIPKIT-0009-FR-003).
+- [ ] T010 [US1] Add failing Poll Pending/no-payload, borrowed-only correlation access, no ordinary unzeroized duplicate, KMIPKit-owned zeroization-on-drop, completed-success generic payload, and terminal-Failure status/reason-without-payload tests in `crates/kmipkit-client/tests/unit/poll_execution_tests.rs`; cite §6.1.38/Table 276 and §8.6/Table 399, prove one exchange, and prove no auto-poll on Pending (KMIPKIT-0009-FR-002, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010).
 - [ ] T011 [US1] Add failing Cancel request, echoed correlation, known/unknown Cancellation Result tests in `crates/kmipkit-protocol/tests/unit/cancel_tests.rs`; cite §6.1.5/Tables 176–178 and §11.7 (KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004).
-- [ ] T012 [US1] Add failing Cancel fake-transport delivery, mismatch, redaction, and no-retry tests in `crates/kmipkit-client/tests/unit/cancel_execution_tests.rs` (KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009).
+- [ ] T012 [US1] Add failing Cancel fake-transport delivery, mismatch, Pending-response rejection even when the request permits async results, request/echo redaction and KMIPKit-owned temporary-copy zeroization, and no-retry tests in `crates/kmipkit-client/tests/unit/cancel_execution_tests.rs`; cite §6.1.5/Tables 176–178 (KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009).
 
 ### Green — minimum implementation
 
@@ -47,7 +47,7 @@
 ### Refactor
 
 - [ ] T017 [US1] Remove duplicated parsing/encoding without weakening operation-specific Pending rules; document public types and preserve unknown TTLV (KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-010).
-- [ ] T018 [US1] Add property tests for arbitrary correlation bytes within codec limits and verify zeroization/redaction with the existing lifecycle test support (KMIPKIT-0009-FR-002, KMIPKIT-0009-FR-009).
+- [ ] T018 [US1] Refactor shared correlation-byte test fixtures after Red coverage is established; preserve the arbitrary-byte properties from T009 and borrowed-accessor, no-duplicate, redaction, and zeroization assertions from T010/T012 (KMIPKIT-0009-FR-002, KMIPKIT-0009-FR-009).
 
 ## Phase 3: User Story 2 — Request server processing (Priority: P1)
 
@@ -58,7 +58,7 @@
 ### Red — tests first
 
 - [ ] T019 [US2] Add failing Process field/order, empty response payload, and error/result tests in `crates/kmipkit-protocol/tests/unit/process_tests.rs`; cite §6.1.39/Tables 278–280 (KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-005).
-- [ ] T020 [US2] Add failing Process execution tests in `crates/kmipkit-client/tests/unit/process_execution_tests.rs`, including caller-selected Pending handling, independent delivery state, and one exchange (KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009).
+- [ ] T020 [US2] Add failing Process execution tests in `crates/kmipkit-client/tests/unit/process_execution_tests.rs`, including caller-selected Pending handling, independent delivery state, and one exchange; cite §6.1.39/Tables 278–280 and §8.6/Table 399 (KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009).
 
 ### Green — minimum implementation
 
@@ -68,7 +68,7 @@
 ### Refactor
 
 - [ ] T023 [US2] Verify empty Process response payload handling against general batch-result validation; document Batch Order Option's default behavior without claiming other items are controlled (KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-008).
-- [ ] T024 [US2] Add negative response tests for unexpected Process payload, mismatched batch IDs, and unpermitted asynchronous outcomes (KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-010).
+- [ ] T024 [US2] Add negative response tests for unexpected Process payload, mismatched batch IDs, and unpermitted asynchronous outcomes; cite §6.1.39/Tables 278–280 and §8.6/Table 399 (KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-010).
 
 ## Phase 4: User Story 3 — Query outstanding asynchronous requests (Priority: P2)
 
@@ -78,9 +78,9 @@
 
 ### Red — tests first
 
-- [ ] T025 [US3] Add failing Query request filter field/order/repetition tests in `crates/kmipkit-protocol/tests/unit/query_async_requests_tests.rs`; cite §6.1.41/Table 285 and §7.1/Table 352 (KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006).
+- [ ] T025 [US3] Add failing Query request filter field/order/repetition and correlation-sentinel redaction tests in `crates/kmipkit-protocol/tests/unit/query_async_requests_tests.rs`; cite §6.1.41/Table 285 and §7.1/Table 352 (KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-009).
 - [ ] T026 [US3] Add failing generic Query response round-trip tests in `crates/kmipkit-protocol/tests/unit/query_async_response_tests.rs`; assert no typed Table 286 mapping or conformance claim while DISC-039 is open (KMIPKIT-0009-FR-007).
-- [ ] T027 [US3] Add failing Query one-exchange/response-association tests in `crates/kmipkit-client/tests/unit/query_async_execution_tests.rs` (KMIPKIT-0009-FR-006–KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-010).
+- [ ] T027 [US3] Add failing Query one-exchange/response-association, caller-input non-retention, redaction, no ordinary unzeroized duplicate, and KMIPKit-owned filter-copy zeroization tests on success/error paths in `crates/kmipkit-client/tests/unit/query_async_execution_tests.rs`; cite §6.1.41/Tables 285–287 and §8.6/Table 399, without asserting a typed Table 286 schema (KMIPKIT-0009-FR-006–KMIPKIT-0009-FR-010).
 
 ### Green — minimum implementation
 
@@ -89,7 +89,7 @@
 
 ### Refactor
 
-- [ ] T030 [US3] Confirm unknown operation values, repeated filters, extensions, and response subtrees remain lossless under configured codec limits (KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007).
+- [ ] T030 [US3] Refactor Query filter and response fixtures after Red coverage is established; preserve lossless unknown/repeated-value and codec-limit assertions from T025/T026 and caller-input lifetime/redaction/zeroization assertions from T027 (KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-009).
 - [ ] T031 [US3] Update research/traceability only if reviewed evidence changes; a typed response mapping requires an approved scope change and resolved discrepancy record (KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-012).
 
 ## Phase 5: Cross-cutting quality and review
