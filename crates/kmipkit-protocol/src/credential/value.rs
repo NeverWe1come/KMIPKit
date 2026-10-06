@@ -2,12 +2,9 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, StructureView, ValueView};
+use kmipkit_ttlv::{Structure, StructureView};
 
-use super::{CredentialValidationError, CredentialValidationErrorKind};
-
-const CREDENTIAL_TYPE: u32 = 0x0042_0024;
-const CREDENTIAL_VALUE: u32 = 0x0042_0025;
+use super::{CredentialValidationError, validation};
 
 /// A Credential Type, retaining standardized, extension-range, and future values.
 #[non_exhaustive]
@@ -70,7 +67,7 @@ pub struct Credential {
 
 impl Credential {
     pub(super) fn from_tree(tree: Structure) -> Result<Self, CredentialValidationError> {
-        let credential_type = Self::credential_type_from_view(&tree.view())?;
+        let credential_type = validation::credential_type_from_view(&tree.view())?;
         Ok(Self {
             tree,
             credential_type,
@@ -96,73 +93,6 @@ impl Credential {
 
     pub(super) fn into_tree(self) -> Structure {
         self.tree
-    }
-
-    pub(super) fn credential_type_from_view(
-        view: &StructureView<'_>,
-    ) -> Result<CredentialType, CredentialValidationError> {
-        let mut credential_type = None;
-        let mut credential_value_seen = false;
-
-        for field in view.children() {
-            match field.tag().raw() {
-                CREDENTIAL_TYPE => {
-                    if credential_type.is_some() {
-                        return Err(CredentialValidationError::new(
-                            CredentialValidationErrorKind::DuplicateField,
-                        ));
-                    }
-                    if credential_value_seen {
-                        return Err(CredentialValidationError::new(
-                            CredentialValidationErrorKind::FieldOutOfOrder,
-                        ));
-                    }
-                    let raw = field.with_value(|value| match value {
-                        ValueView::Enumeration(raw) => Some(*raw),
-                        _ => None,
-                    });
-                    let Some(raw) = raw else {
-                        return Err(CredentialValidationError::new(
-                            CredentialValidationErrorKind::WrongFieldType,
-                        ));
-                    };
-                    credential_type = Some(CredentialType::from_raw(raw));
-                }
-                CREDENTIAL_VALUE => {
-                    if credential_value_seen {
-                        return Err(CredentialValidationError::new(
-                            CredentialValidationErrorKind::DuplicateField,
-                        ));
-                    }
-                    if credential_type.is_none() {
-                        return Err(CredentialValidationError::new(
-                            CredentialValidationErrorKind::FieldOutOfOrder,
-                        ));
-                    }
-                    let is_structure =
-                        field.with_value(|value| matches!(value, ValueView::Structure(_)));
-                    if !is_structure {
-                        return Err(CredentialValidationError::new(
-                            CredentialValidationErrorKind::WrongFieldType,
-                        ));
-                    }
-                    credential_value_seen = true;
-                }
-                _ => {}
-            }
-        }
-
-        let Some(credential_type) = credential_type else {
-            return Err(CredentialValidationError::new(
-                CredentialValidationErrorKind::MissingField,
-            ));
-        };
-        if !credential_value_seen {
-            return Err(CredentialValidationError::new(
-                CredentialValidationErrorKind::MissingField,
-            ));
-        }
-        Ok(credential_type)
     }
 }
 

@@ -4,7 +4,10 @@ use std::fmt;
 
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
-use super::{Credential, CredentialType, CredentialValidationError, CredentialValidationErrorKind};
+use super::{
+    Credential, CredentialType, CredentialValidationError, CredentialValidationErrorKind,
+    validation,
+};
 
 const CREDENTIAL: u32 = 0x0042_0023;
 
@@ -79,7 +82,7 @@ impl Authentication {
 
             let credential_type = field.with_value(|value| match value {
                 ValueView::Structure(credential) => {
-                    Some(Credential::credential_type_from_view(&credential))
+                    Some(validation::credential_type_from_view(&credential))
                 }
                 _ => None,
             });

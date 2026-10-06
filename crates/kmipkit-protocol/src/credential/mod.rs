@@ -1,7 +1,19 @@
 //! Lossless typed KMIP Credential and Authentication values.
+//!
+//! These values retain their original ordered TTLV trees. The typed wrappers
+//! validate only the fields their constructors own; they do not interpret
+//! unknown children or claim that a remote server will accept a Credential.
+//! `Credential::try_from_ttlv` validates the outer Credential Type and
+//! Credential Value fields, while `Authentication::try_from_ttlv` requires
+//! one or more structurally valid Credential entries. Variant-specific field
+//! validation belongs to the corresponding typed Credential constructors.
+//! Diagnostic formatting reports metadata and validation categories only,
+//! never credential payloads. These in-memory models do not select
+//! Authentication for a request or send secret-bearing data.
 
 mod authentication;
 mod conversion;
+mod validation;
 mod value;
 
 pub use authentication::{Authentication, CredentialView};

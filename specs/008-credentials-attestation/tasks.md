@@ -39,7 +39,7 @@
 
 ### Refactor
 
-- [ ] T012 [US1] [REFACTOR COMMIT] Extract common ordered-structure validation and document public Authentication/Credential contracts in `crates/kmipkit-protocol/src/credential/validation.rs` and `crates/kmipkit-protocol/src/credential/mod.rs` (FR-014).
+- [x] T012 [US1] [REFACTOR COMMIT] Extract common ordered-structure validation and document public Authentication/Credential contracts in `crates/kmipkit-protocol/src/credential/validation.rs` and `crates/kmipkit-protocol/src/credential/mod.rs` (FR-014).
 
 ## Phase 4: User Story 2 — Construct credential variants safely (P1)
 

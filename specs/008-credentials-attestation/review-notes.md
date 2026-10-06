@@ -222,3 +222,22 @@ Fresh Rust 1.94.0 verification:
   integration tests, and 2 doctests.
 - `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`
   — passed.
+
+## User Story 1 REFACTOR — shared validation and public contract (2026-10-06)
+
+Moved the outer Credential ordering, cardinality, and Item Type checks into
+`credential/validation.rs`; both standalone Credential conversion and
+Authentication parsing now call the same validator. Expanded the module-level
+public contract to distinguish outer shape validation from future
+variant-specific validation, state the unknown-child preservation behavior,
+and document that these models neither assert server satisfaction nor send
+credentials. Behavior is unchanged from the Green implementation.
+
+Fresh Rust 1.94.0 verification:
+
+- `cargo +1.94.0 test -p kmipkit-protocol` — passed: 61 unit tests, 10
+  credential tests, 56 other integration tests, and 2 doctests.
+- `cargo +1.94.0 clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`
+  — passed.
+- `cargo +1.94.0 fmt --all --check` — passed.
+- `cargo +1.94.0 doc -p kmipkit-protocol --no-deps` — passed.
