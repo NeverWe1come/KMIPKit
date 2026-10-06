@@ -54,8 +54,9 @@ unique. KMIPKit does not define the comparison scope or check actual
 uniqueness. Password and Device Identifier fields do not
 replace this requirement; their presence does not imply non-empty text.
 
-The existing Request Header builder emits `Attestation Capable Indicator =
-True` because the Rust API can construct an Attestation Credential. This
+Synchronous and asynchronous Request Header builders emit
+`Attestation Capable Indicator = True` because the Rust API can construct an
+Attestation Credential. This
 advertises construction capability only: it does not generate or verify
 attestation evidence, submit a Credential, or predict server acceptance. There
 is no per-request override. The value appears in the captured fake-transport

@@ -36,9 +36,9 @@ See [research.md](research.md). Open decisions concern the disputed source class
 
 ## Proposed architecture
 
-Production code is limited to credential models in `crates/kmipkit-protocol` and one focused change to the existing private Request Header builder in `crates/kmipkit-client/src/execute.rs`. Add focused credential modules for the Authentication envelope, common Credential discriminator/value, per-variant schemas, and Nonce. Reuse `kmipkit-ttlv` owned structures and validation patterns. Use the existing workspace `zeroize` pin for KMIPKit-owned secret wrappers, after implementation review confirms the ownership and drop contract. Keep code safe Rust and preserve generic ordered subtrees for unknown values and fields. The header change reuses the existing permit/writer path and adds no Credential payload.
+Production code is limited to credential models in `crates/kmipkit-protocol` and focused changes to the existing synchronous and asynchronous private Request Header builders in `crates/kmipkit-client/src/execute.rs`. Add focused credential modules for the Authentication envelope, common Credential discriminator/value, per-variant schemas, and Nonce. Reuse `kmipkit-ttlv` owned structures and validation patterns. Use the existing workspace `zeroize` pin for KMIPKit-owned secret wrappers, after implementation review confirms the ownership and drop contract. Keep code safe Rust and preserve generic ordered subtrees for unknown values and fields. The header changes reuse the existing permit/writer path and add no Credential payload.
 
-Typed constructors validate source-established required fields and resolved project policy. Conversion from a generic tree retains unknown values and ordered children. Authentication remains a standalone in-memory value in this feature: there is no Client/ClientBatch Authentication selection or credential-send callsite. The existing `Client::execute` builder emits Attestation Capable Indicator=True because the released credential model can construct the structure. Do not add a writer, permit, or second request/transport path. A generated public API manifest or cross-language binding is not changed here; public API and bindings work follows the complete protocol inventory.
+Typed constructors validate source-established required fields and resolved project policy. Conversion from a generic tree retains unknown values and ordered children. Authentication remains a standalone in-memory value in this feature: there is no Client/ClientBatch Authentication selection or credential-send callsite. Synchronous and asynchronous client request builders emit Attestation Capable Indicator=True because the released credential model can construct the structure. Do not add a writer, permit, or second request/transport path. A generated public API manifest or cross-language binding is not changed here; public API and bindings work follows the complete protocol inventory.
 
 ## Project structure
 
@@ -68,7 +68,7 @@ specification/compliance/requirements/KMIPKIT-0008.csv
 specs/008-credentials-attestation/
 ```
 
-**Structure decision**: Focused credential models live under `kmipkit-protocol`, following accepted protocol-model patterns. The Attestation Capable Indicator is added to the already existing `Client::execute` message builder in `kmipkit-client`; the protocol header view remains read-only. Exact source paths and integration points were verified against the accepted 0006/0007 tree. This does not add Authentication selection to `Client` or `ClientBatch`.
+**Structure decision**: Focused credential models live under `kmipkit-protocol`, following accepted protocol-model patterns. The Attestation Capable Indicator is added to the already existing synchronous and asynchronous message builders in `kmipkit-client`; the protocol header view remains read-only. Exact source paths and integration points were verified against the accepted 0006/0007/0009 tree. This does not add Authentication selection to `Client` or `ClientBatch`.
 
 ## Implementation sequence
 

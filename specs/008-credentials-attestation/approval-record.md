@@ -21,6 +21,19 @@ the independent security review required before 1.0, or authorization to
 approve or merge the resulting pull request. Repository governance continues
 to reserve PR approval and merge actions to a human.
 
+## Autonomous conformance correction
+
+On 2026-10-06, independent security review found that the asynchronous
+follow-up Request Header builder omitted Attestation Capable Indicator even
+though the shipped client can construct Attestation Credentials. OASIS KMIP
+2.1 §9.3 requires True for that capability and defines omission as False. The
+project owner had directly instructed the agent to complete the plan
+autonomously without manual approval requests. Under that instruction, the
+feature requirement is clarified to cover all existing synchronous and
+asynchronous Request Header builders. The correction adds no new transport,
+writer, permit, Authentication selection, Credential payload, or secret
+transmission path. Red and Green evidence remains in separate commits.
+
 ## Conditions before implementation
 
 - Rebase the feature branch on the active `release/1.0.0` tip and record its

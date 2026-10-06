@@ -1222,6 +1222,11 @@ fn build_async_request_message(
             Value::enumeration(indicator),
         )?;
     }
+    push(
+        &mut header,
+        ATTESTATION_CAPABLE_INDICATOR,
+        Value::boolean(true),
+    )?;
     push(&mut header, BATCH_COUNT, Value::integer(1))?;
 
     let mut batch_item = Structure::new();

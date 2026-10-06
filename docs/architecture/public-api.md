@@ -58,9 +58,10 @@ scope nor checks actual uniqueness.
 
 These values are in-memory protocol models. KMIPKIT-0008 does not add
 Authentication or Credential data to the request payload or introduce a
-secret-bearing request path. The existing execute header advertises
-`Attestation Capable Indicator = True` because the public API can construct
-Attestation Credentials. That bit reports construction capability only; it
+secret-bearing request path. Every synchronous and asynchronous client
+Request Header advertises `Attestation Capable Indicator = True` because the
+public API can construct Attestation Credentials. That bit reports
+construction capability only; it
 does not claim to generate or verify evidence, submit a Credential, or predict
 server acceptance. Callers cannot override it per request.
 

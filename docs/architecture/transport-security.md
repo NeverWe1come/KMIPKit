@@ -102,8 +102,9 @@ Identifier. The caller must supply one or a combination that is actually
 unique; KMIPKit does not infer a uniqueness comparison scope or check actual
 uniqueness. Generic TTLV can retain a Device tree without typed validation.
 
-The request builder emits `Attestation Capable Indicator = True` because the
-public API can construct an Attestation Credential. This advertises
+The synchronous and asynchronous request builders emit
+`Attestation Capable Indicator = True` because the public API can construct
+an Attestation Credential. This advertises
 construction capability only; it neither sends Authentication or Credential
 payloads nor generates/verifies evidence or predicts server acceptance. There
 is no request-level override.

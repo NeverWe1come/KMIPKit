@@ -55,10 +55,10 @@ comparación ni comprueba la unicidad. Los campos Password y Device Identifier
 no sustituyen ese requisito; su presencia
 tampoco exige que el texto no esté vacío.
 
-El constructor existente de la cabecera Request emite `Attestation Capable
-Indicator = True` porque la API de Rust puede construir una Credential
-Attestation. Esto anuncia únicamente capacidad de construcción: no genera ni
-verifica evidencia de atestación, no envía una Credential ni predice si el
+Los constructores síncronos y asíncronos de la cabecera Request emiten
+`Attestation Capable Indicator = True` porque la API de Rust puede construir
+una Credential Attestation. Esto anuncia únicamente capacidad de construcción:
+no genera ni verifica evidencia de atestación, no envía una Credential ni predice si el
 servidor la aceptará. No existe una opción para cambiarlo en cada petición. El
 valor se observa en el intercambio capturado con el transporte de prueba; esta
 funcionalidad aún no ofrece un constructor de cliente de producción ni un

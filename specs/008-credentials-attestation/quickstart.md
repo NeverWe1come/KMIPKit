@@ -1,6 +1,6 @@
 # KMIPKIT-0008 Test Scenarios
 
-These are acceptance scenarios for the implementation. Credential and Authentication values remain in-memory and are not sent by this feature. The only execute-path change is the non-secret Attestation Capable Indicator in the existing Request Header builder; OD-004 continues to prohibit a new Credential writer or secret-bearing send path.
+These are acceptance scenarios for the implementation. Credential and Authentication values remain in-memory and are not sent by this feature. The request-header changes only set the non-secret Attestation Capable Indicator in the existing synchronous and asynchronous builders; OD-004 continues to prohibit a new Credential writer or secret-bearing send path.
 
 ## Authentication
 
