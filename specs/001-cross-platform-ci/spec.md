@@ -74,6 +74,23 @@ As a maintainer, I need the validation workflow to make coverage collection and 
 7. **Given** the pull request changes no executable Rust lines, **When** the changed-code threshold is evaluated, **Then** it reports `not applicable` and does not claim a passing percentage; applicable workspace and crate thresholds still run.
 8. **Given** the repository has no executable production Rust function bodies, **When** per-platform coverage collection runs, **Then** each platform emits an explicit `unavailable` status artifact and aggregation reports unavailable; if executable production code exists, an absent LLVM report fails.
 
+### User Story 4 - Read a CI run at a glance (Priority: P1)
+
+As a maintainer, I need each CI run to show its overall result and the outcome of relevant check groups in the run Summary so that I can tell quickly whether the change is healthy and where attention is needed.
+
+**Why this priority**: The workflows already execute the required checks; a concise, trustworthy run-level status makes their outcome easier to review without changing validation scope.
+
+**Independent Test**: Exercise successful, failed, cancelled, and scheduled job-result inputs and verify the generated Markdown summary, its exit status, and the coverage-gate details.
+
+**Acceptance Scenarios**:
+
+1. **Given** a pull-request or scheduled CI run, **When** its jobs finish, **Then** the GitHub run Summary shows the overall required-check result, event, ref, commit, run link, and each relevant check-group outcome.
+2. **Given** checks that do not apply to the event, **When** the Summary is rendered, **Then** they are marked not applicable rather than failed or passed.
+3. **Given** one or more required checks fail, are cancelled, or are missing, **When** the workflow reaches its final summary, **Then** the Summary is still written and the final check remains failed.
+4. **Given** coverage is measured, unavailable, or fails, **When** the coverage gate completes, **Then** its job Summary shows measured percentages and thresholds, the reason no threshold was claimed, or a useful failure diagnostic.
+5. **Given** scheduled branch coverage fails or is unavailable, **When** the scheduled Summary is rendered, **Then** it is identified as informational and does not change the required overall result.
+6. **Given** the run-level reporting is added, **When** the workflow executes, **Then** its existing triggers, validation jobs, platform matrix, runner routing, and thresholds remain unchanged, and it adds no secrets, API calls, or third-party actions.
+
 ---
 
 ### Edge Cases
@@ -84,6 +101,8 @@ As a maintainer, I need the validation workflow to make coverage collection and 
 - A workflow is triggered by an untrusted fork pull request.
 - A coverage command finds no instrumented tests or partial coverage data.
 - A pull request changes no executable Rust lines, or the initial workspace contains no executable Rust function bodies.
+- A required CI job fails, is cancelled, is skipped unexpectedly, or does not provide a result before the final Summary runs.
+- A scheduled informational branch-coverage attempt fails while the scheduled dependency-policy check passes.
 
 ## Requirements *(mandatory)*
 
@@ -102,6 +121,7 @@ As a maintainer, I need the validation workflow to make coverage collection and 
 - **FR-011**: When eligible production source exists, CI MUST attempt branch coverage in a separate informational nightly-toolchain job and MUST NOT gate pull-request success on its percentage or on that job's tool availability. Branch coverage MUST NOT become a required gate until its reliability is proven and a separately reviewed change promotes it.
 - **FR-012**: Every externally sourced GitHub Actions `uses` reference in the workflow MUST be pinned to a full commit SHA; a comment MUST identify the corresponding upstream release or version.
 - **FR-013**: Linux jobs for pull requests whose head repository is the current repository MUST use the repository's self-hosted Linux ARM64 runner. Linux jobs for fork pull requests MUST use GitHub-hosted runners. Windows and macOS matrix jobs MUST remain GitHub-hosted. The scheduled informational branch-coverage job MUST use the self-hosted Linux ARM64 runner.
+- **FR-014**: Every pull-request and scheduled CI run MUST write a concise final GitHub run Summary containing the overall required-check result, event context (ref, commit, and run link), and relevant check-group results. The final summary job MUST run after upstream jobs even when they fail; missing, failed, or cancelled required groups MUST keep the summary job failing. Checks inapplicable to the triggering event MUST be labeled not applicable. Coverage gate summaries MUST report measured percentages and thresholds, an explicit unavailable reason without claiming a threshold, or a useful failure diagnostic. Scheduled branch coverage MUST be presented as informational and MUST NOT affect the required overall result. This reporting MUST NOT change existing triggers, checks, execution matrix, runner routing, coverage thresholds, permissions, or credential use, and MUST NOT add credentials, API calls, or third-party workflow actions.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -122,6 +142,7 @@ As a maintainer, I need the validation workflow to make coverage collection and 
 - **SC-007**: When eligible production source exists, a separate informational job attempts a branch-coverage report; neither branch percentage nor nightly tool availability can fail a pull request before a separately reviewed gate change.
 - **SC-008**: All externally sourced workflow actions are pinned to full commit SHAs, and fork-controlled steps run without secrets, write permissions, or unnecessary repository tokens.
 - **SC-009**: Same-repository Linux pull-request jobs and scheduled branch coverage run on the self-hosted ARM64 runner; fork pull requests use GitHub-hosted Linux, and Windows/macOS jobs continue to report their actual hosted platforms.
+- **SC-010**: Every pull-request and scheduled run presents a final at-a-glance Summary with required group outcomes, relevant event and commit context, and a truthful overall result; the Summary remains available after required failures, and coverage details distinguish measured, unavailable, and failed outcomes.
 
 ## Assumptions
 

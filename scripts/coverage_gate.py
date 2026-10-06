@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from bisect import bisect_left, bisect_right
+import html
 import json
 import os
 import re
@@ -908,8 +909,9 @@ def _evaluate_coverage(workspace: Path, reports: Mapping[str, Mapping[str, Mappi
         total = len(changed_executable) + summary_only
         if not meets_threshold(covered, total, 95):
             raise CoverageDataError(f"Changed Rust code coverage {covered}/{total} is below 95%.")
+        percentage = covered * 100 / total
         results.append(
-            f"Changed Rust coverage: {covered}/{total} including {summary_only} summary-only line(s) as uncovered (95% minimum)."
+            f"Changed Rust coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered (95% minimum)."
         )
     else:
         changed_sources = {source for source in changed if source in merged}
@@ -940,8 +942,9 @@ def _evaluate_coverage(workspace: Path, reports: Mapping[str, Mapping[str, Mappi
             total = len(group_lines) + summary_only
             if not meets_threshold(covered, total, threshold):
                 raise CoverageDataError(f"{label} coverage {covered}/{total} is below {threshold}%.")
+            percentage = covered * 100 / total
             results.append(
-                f"{label} coverage: {covered}/{total} including {summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
+                f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
             )
 
     covered = sum(count > 0 for count in all_lines.values())
@@ -949,7 +952,10 @@ def _evaluate_coverage(workspace: Path, reports: Mapping[str, Mapping[str, Mappi
     total = len(all_lines) + summary_only
     if not meets_threshold(covered, total, 90):
         raise CoverageDataError(f"Workspace coverage {covered}/{total} is below 90%.")
-    results.append(f"Workspace coverage: {covered}/{total} including {summary_only} summary-only line(s) as uncovered (90% minimum).")
+    percentage = covered * 100 / total
+    results.append(
+        f"Workspace coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered (90% minimum)."
+    )
     return results
 
 
@@ -983,11 +989,37 @@ def _command_aggregate(args: argparse.Namespace) -> int:
     workspace = Path(args.workspace).resolve()
     reports = _load_platform_artifacts(Path(args.report_dir), workspace)
     if reports.get("status") == "unavailable":
+        _append_coverage_summary(
+            args.summary_file,
+            "unavailable",
+            ["All three platforms verified that no production function bodies exist; no threshold is claimed."],
+        )
         return 0
     diff = _run_git_diff(workspace, args.base, args.merge)
-    for result in _evaluate_coverage(workspace, reports, diff):
+    results = _evaluate_coverage(workspace, reports, diff)
+    for result in results:
         print(result)
+    _append_coverage_summary(args.summary_file, "passed", results)
     return 0
+
+
+def _append_coverage_summary(summary_file: str | None, status: str, details: Iterable[str]) -> None:
+    if not summary_file:
+        return
+    headings = {
+        "passed": "✅ PASS — coverage thresholds met",
+        "unavailable": "⚪ UNAVAILABLE — no coverage threshold claimed",
+        "failed": "❌ FAIL — coverage gate failed",
+    }
+    heading = headings.get(status, "❓ Coverage gate status unknown")
+    lines = ["### Coverage gate", "", f"**Result:** {heading}", ""]
+    for detail in details:
+        safe_detail = " ".join(str(detail).split())
+        safe_detail = html.escape(safe_detail, quote=False).replace("|", "&#124;").replace("`", "&#96;")
+        lines.append(f"- {safe_detail}")
+    lines.append("")
+    with Path(summary_file).open("a", encoding="utf-8", newline="\n") as summary:
+        summary.write("\n".join(lines))
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1011,6 +1043,7 @@ def build_parser() -> argparse.ArgumentParser:
     aggregate.add_argument("--report-dir", required=True)
     aggregate.add_argument("--base", required=True)
     aggregate.add_argument("--merge", required=True)
+    aggregate.add_argument("--summary-file")
     aggregate.set_defaults(handler=_command_aggregate)
     return parser
 
@@ -1021,6 +1054,11 @@ def main(argv: Iterable[str] | None = None) -> int:
     try:
         return args.handler(args)
     except (CoverageDataError, OSError) as error:
+        if getattr(args, "command", None) == "aggregate":
+            try:
+                _append_coverage_summary(getattr(args, "summary_file", None), "failed", [str(error)])
+            except OSError as summary_error:
+                print(f"coverage summary: {summary_error}", file=sys.stderr)
         print(f"coverage gate: {error}", file=sys.stderr)
         return 1
 

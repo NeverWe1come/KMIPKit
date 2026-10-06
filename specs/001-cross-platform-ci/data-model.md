@@ -14,6 +14,9 @@ This feature introduces workflow records only; it does not add application data.
 | check | Formatting, Clippy, tests, rustdoc, or coverage | Required check name in the workflow |
 | result | Passed, failed, or unavailable | `unavailable` only when no eligible executable production source exists |
 | report | Tool output or coverage artifact | Coverage JSON has required schema and belongs to the checked out repository |
+| run_summary | Markdown overview of event context and job-group outcomes | Written after all required jobs; failed, cancelled, or missing required outcomes remain failing; inapplicable groups are labeled |
+
+The final CI run summary is derived from the workflow `needs` result objects and existing job outputs. Pull-request and schedule events select only their applicable required checks. Branch coverage remains informational, and its status is excluded from the required pass count. A required job that is failed, cancelled, missing, or skipped unexpectedly cannot produce an overall passing summary.
 
 ## WSL Test Invocation
 
@@ -37,6 +40,7 @@ This feature introduces workflow records only; it does not add application data.
 | coverage_percent | Covered executable lines / executable lines | No production executable source => overall coverage unavailable; otherwise thresholds evaluated; no changed executable lines => changed-code metric is not applicable, never 100% |
 | threshold | Applicable policy | 95% changed and ttlv/protocol; 85% transport/FFI/bindings; 90% workspace |
 | branch_summary | Branch counts/coverage where emitted | Report only; never gates this feature |
+| coverage_summary | Measured percentages and thresholds, unavailable reason, or failure diagnostic | Written by the coverage gate; never claims a threshold when coverage is unavailable |
 
 ## State transitions
 

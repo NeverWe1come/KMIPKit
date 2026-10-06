@@ -900,6 +900,138 @@ trait Example { fn declaration(&self); }
             with self.assertRaises(GATE.CoverageDataError):
                 GATE._load_platform_artifacts(reports, REPOSITORY_ROOT)
 
+    def test_aggregate_writes_unavailable_state_to_the_job_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reports = root / "reports"
+            for platform in ("ubuntu", "windows", "macos"):
+                artifact = reports / f"coverage-{platform}"
+                artifact.mkdir(parents=True)
+                (artifact / "coverage-status.json").write_text(
+                    '{"reason":"no production function bodies","status":"unavailable"}', encoding="utf-8"
+                )
+            summary = root / "summary.md"
+
+            exit_code = GATE.main(
+                [
+                    "aggregate",
+                    "--workspace",
+                    str(REPOSITORY_ROOT),
+                    "--report-dir",
+                    str(reports),
+                    "--base",
+                    "0" * 40,
+                    "--merge",
+                    "1" * 40,
+                    "--summary-file",
+                    str(summary),
+                ]
+            )
+
+            self.assertEqual(0, exit_code)
+            markdown = summary.read_text(encoding="utf-8")
+            self.assertIn("Coverage gate", markdown)
+            self.assertIn("UNAVAILABLE", markdown)
+            self.assertIn("no production function bodies", markdown)
+            self.assertNotIn("PASS", markdown)
+
+    def test_aggregate_writes_measured_percentages_to_the_job_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("fn first() {}\n", encoding="utf-8")
+            commands = [
+                ["git", "init", "--quiet", str(root)],
+                ["git", "-C", str(root), "config", "user.name", "KMIPKit Test"],
+                ["git", "-C", str(root), "config", "user.email", "kmipkit-test@example.invalid"],
+                ["git", "-C", str(root), "add", "--all"],
+                ["git", "-C", str(root), "commit", "--quiet", "-m", "base"],
+            ]
+            for command in commands:
+                subprocess.run(command, check=True, capture_output=True, text=True)
+            base = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+            ).stdout.strip()
+            source.write_text("fn first() {}\nfn added() {}\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "--all"], check=True, capture_output=True, text=True)
+            subprocess.run(
+                ["git", "-C", str(root), "commit", "--quiet", "-m", "add function"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            merge = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+            ).stdout.strip()
+            reports = root / "reports"
+            for platform in ("ubuntu", "windows", "macos"):
+                artifact = reports / f"coverage-{platform}"
+                artifact.mkdir(parents=True)
+                (artifact / "coverage.json").write_text(
+                    llvm_document(
+                        [[1, 1, 1, 14, 1, 0, 0, 0], [2, 1, 2, 14, 1, 0, 0, 0]],
+                        "crates/kmipkit-ttlv/src/lib.rs",
+                    ),
+                    encoding="utf-8",
+                )
+            summary = root / "summary.md"
+
+            exit_code = GATE.main(
+                [
+                    "aggregate",
+                    "--workspace",
+                    str(root),
+                    "--report-dir",
+                    str(reports),
+                    "--base",
+                    base,
+                    "--merge",
+                    merge,
+                    "--summary-file",
+                    str(summary),
+                ]
+            )
+
+            self.assertEqual(0, exit_code)
+            markdown = summary.read_text(encoding="utf-8")
+            self.assertIn("PASS", markdown)
+            self.assertIn("Changed Rust coverage: 1/1 (100.00%)", markdown)
+            self.assertIn("TTLV/protocol coverage: 2/2 (100.00%)", markdown)
+            self.assertIn("Workspace coverage: 2/2 (100.00%)", markdown)
+
+    def test_aggregate_writes_failure_diagnostic_to_the_job_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reports = root / "reports"
+            reports.mkdir()
+            summary = root / "summary.md"
+
+            exit_code = GATE.main(
+                [
+                    "aggregate",
+                    "--workspace",
+                    str(REPOSITORY_ROOT),
+                    "--report-dir",
+                    str(reports),
+                    "--base",
+                    "0" * 40,
+                    "--merge",
+                    "1" * 40,
+                    "--summary-file",
+                    str(summary),
+                ]
+            )
+
+            self.assertEqual(1, exit_code)
+            markdown = summary.read_text(encoding="utf-8")
+            self.assertIn("Coverage gate", markdown)
+            self.assertIn("FAIL", markdown)
+            self.assertIn("Required coverage artifact is missing", markdown)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

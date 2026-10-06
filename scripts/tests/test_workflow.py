@@ -201,7 +201,8 @@ class WorkflowContractTests(unittest.TestCase):
             (scalar for _, scalar in self.inline_run_scalars(job) if "Active release ref:" in scalar),
             None,
         )
-        self.assertEqual('echo "Active release ref: $ACTIVE_RELEASE_REF"', active_ref_run.strip("'"))
+        self.assertIn('echo "Active release ref: $ACTIVE_RELEASE_REF"', active_ref_run.strip("'"))
+        self.assertIn('"release_ref=$ACTIVE_RELEASE_REF" >> "$GITHUB_OUTPUT"', active_ref_run)
         self.assertIn("$ACTIVE_RELEASE_REF", job)
         runner = self.require_policy_runner()
         output = job + "\n" + runner
@@ -251,6 +252,41 @@ class WorkflowContractTests(unittest.TestCase):
         ):
             with self.subTest(exception_review=required):
                 self.assertIn(required, normalized_policy_guide)
+
+    def test_run_summary_waits_for_all_jobs_and_runs_after_failures(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "run-summary")
+        self.assertRegex(job, r"(?m)^    if: always\(\)$")
+        for dependency in (
+            "core",
+            "script-contracts",
+            "normative-inventory",
+            "coverage",
+            "coverage-gate",
+            "dependency-policy",
+            "scheduled-dependency-policy",
+            "branch-coverage",
+        ):
+            with self.subTest(dependency=dependency):
+                self.assertRegex(job, rf"(?m)^      - {re.escape(dependency)}$")
+        self.assertIn("scripts/ci_summary.py", job)
+        self.assertIn("${{ toJSON(needs) }}", job)
+        summary_script = (REPOSITORY_ROOT / "scripts" / "ci_summary.py").read_text(encoding="utf-8")
+        self.assertIn("GITHUB_STEP_SUMMARY", summary_script)
+        self.assertIn("github.event_name == 'schedule'", job)
+        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", job)
+        self.assertIn("fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')", job)
+        self.assertIn("|| 'ubuntu-latest'", job)
+
+    def test_coverage_gate_adds_its_result_and_metrics_to_the_job_summary(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "coverage-gate")
+        self.assertIn("--summary-file", job)
+        self.assertIn("$GITHUB_STEP_SUMMARY", job)
+        self.assertIn("Summarize failed platform collection", job)
+        self.assertIn("if: always() && needs.coverage.result != 'success'", job)
+        self.assertIn("Summarize skipped coverage aggregation", job)
+        self.assertIn("steps.enforce.outcome == 'skipped'", job)
 
 
 if __name__ == "__main__":
