@@ -259,6 +259,14 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "public_impl_trait_conversion_input",
+        path: "tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/public_impl_trait_conversion_input.rs"),
+        probe: "request: impl Into<ClientRequest>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "unbounded_public_type_parameter",
         path: "tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs",
         source: include_str!("../tests/fixtures/execute_boundary/unbounded_public_type_parameter.rs"),
@@ -287,6 +295,14 @@ const FIXTURES: &[Fixture] = &[
         path: "tests/fixtures/execute_boundary/permit_constructor_derives.rs",
         source: include_str!("../tests/fixtures/execute_boundary/permit_constructor_derives.rs"),
         probe: "derive(Default, Clone, Copy)",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "permit_constructor_qualified_derives",
+        path: "tests/fixtures/execute_boundary/permit_constructor_qualified_derives.rs",
+        source: include_str!("../tests/fixtures/execute_boundary/permit_constructor_qualified_derives.rs"),
+        probe: "derive(core::default::Default, core::clone::Clone)",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
     },
@@ -523,10 +539,12 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "raw_exchange_ufcs_outside_execute",
     "macro_hidden_second_exchange",
     "public_conversion_hooks",
+    "public_impl_trait_conversion_input",
     "unbounded_public_type_parameter",
     "nongeneric_bytes_input_output",
     "permit_qself_mint",
     "permit_constructor_derives",
+    "permit_constructor_qualified_derives",
     "permit_constructor_trait_impls",
     "counterfeit_exception_types",
     "approved_batch_from_items_iterator",
@@ -1879,6 +1897,15 @@ fn public_signatures_reject_caller_defined_conversion_hooks() {
 }
 
 #[test]
+fn public_signatures_reject_impl_trait_conversion_inputs() {
+    assert_eq!(
+        candidate_check_fixture(fixture("public_impl_trait_conversion_input")),
+        Err(CandidateRejection::BoundaryViolation),
+        "caller-controlled input impl Trait hooks must stay outside the closed request API"
+    );
+}
+
+#[test]
 fn public_signatures_reject_unbounded_type_parameters() {
     assert_eq!(
         candidate_check_fixture(fixture("unbounded_public_type_parameter")),
@@ -1901,6 +1928,7 @@ fn permit_constructors_cannot_escape_the_single_mint_path() {
     let accepted = accepted_ids_for_rejected_fixtures(&[
         "permit_qself_mint",
         "permit_constructor_derives",
+        "permit_constructor_qualified_derives",
         "permit_constructor_trait_impls",
     ]);
     assert!(
