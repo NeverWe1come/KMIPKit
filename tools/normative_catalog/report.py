@@ -393,6 +393,36 @@ def _profile_requirement_coverage(
     return rows, runtime_availability
 
 
+def _profile_applicability_blockers(profile: dict[str, Any]) -> list[str]:
+    """Return only role and applicability blockers for a profile."""
+    blockers: list[str] = []
+    if profile.get("role") != "client":
+        blockers.append("profile is not a client profile")
+    applicability = profile.get("applicability")
+    if applicability == "conditional":
+        blockers.append("conditional profile requires explicit satisfied configuration")
+    elif applicability != "client_1_0":
+        blockers.append("profile is outside the KMIPKit 1.0 client scope")
+    return blockers
+
+
+def _effective_catalog_evidence_state(
+    catalog_state: str,
+    blockers: list[str],
+) -> tuple[str, list[str]]:
+    """Reconcile only the catalog evidence lifecycle against current blockers."""
+    unique_blockers = sorted(set(blockers))
+    if unique_blockers and catalog_state == "evidence_complete":
+        effective_state = "evidence_incomplete"
+        unique_blockers.append("catalog claim_state evidence_complete is stale")
+    elif not unique_blockers and catalog_state != "evidence_complete":
+        effective_state = catalog_state
+        unique_blockers.append("catalog claim_state requires a human-reviewed update")
+    else:
+        effective_state = catalog_state
+    return effective_state, sorted(set(unique_blockers))
+
+
 def evaluate_profile_readiness(
     catalog: dict[str, Any],
     profile_id: str,
@@ -444,13 +474,7 @@ def evaluate_profile_readiness(
         except (ImportError, OSError, TypeError, ValueError):
             blockers.append("current verification manifest is invalid or does not match this run")
 
-    if profile.get("role") != "client":
-        blockers.append("profile is not a client profile")
-    applicability = profile.get("applicability")
-    if applicability == "conditional":
-        blockers.append("conditional profile requires explicit satisfied configuration")
-    elif applicability != "client_1_0":
-        blockers.append("profile is outside the KMIPKit 1.0 client scope")
+    blockers.extend(_profile_applicability_blockers(profile))
 
     requirement_rows, runtime_by_profile = _profile_requirement_coverage(
         catalog,
@@ -556,16 +580,8 @@ def evaluate_profile_readiness(
     if not runtime_available:
         blockers.append("runtime profile validation is unavailable")
 
-    unique_blockers = sorted(set(blockers))
     catalog_state = str(profile.get("claim_state", "not_claimed"))
-    if unique_blockers and catalog_state == "evidence_complete":
-        effective_state = "evidence_incomplete"
-        unique_blockers.append("catalog claim_state evidence_complete is stale")
-    elif not unique_blockers and catalog_state != "evidence_complete":
-        effective_state = catalog_state
-        unique_blockers.append("catalog claim_state requires a human-reviewed update")
-    else:
-        effective_state = catalog_state
+    effective_state, unique_blockers = _effective_catalog_evidence_state(catalog_state, blockers)
     return {
         "profile_id": profile_id,
         "target_selected": selected,
