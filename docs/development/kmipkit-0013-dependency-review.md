@@ -197,9 +197,9 @@ T003 remains unchecked.
 ## Dependency disposition and license policy approval
 
 The maintainer requested a concrete way to clear the remaining dependency
-gate. The duplicate-version disposition below remains a review proposal; the
-license allowlist decision is recorded as approved below. The current
-specification pins Hickory 0.26.3 and `rustls-native-certs` 0.8.4;
+gate. The approved license allowlist and exact duplicate dispositions are
+recorded below. The current specification pins Hickory 0.26.3 and
+`rustls-native-certs` 0.8.4;
 their Apple-target transitive constraints require `core-foundation` 0.9.4 and
 0.10.1 respectively. The two `syn` major versions are also reachable through
 Hickory's current proc-macro graph. `syn` 2 is required transitively by
@@ -209,15 +209,25 @@ test-only `syn` dependency does not eliminate it. The patched `zerovec`
 patched `zerovec-derive` 0.11.5 also declares `syn` 3. Keep the patched
 versions; the earlier lockfile-only alignment used vulnerable releases.
 
-**Recommended dependency decision:** Retain the approved dependency pins and
-request four exact, expiring duplicate exceptions: `core-foundation` 0.9.4
-and 0.10.1, and `syn` 2.0.119 and 3.0.6. Each record needs an independent
-human reviewer, a dated durable approval reference, a responsible owner,
-mitigation, and an expiry within 90 days. The mitigation should track a
-published Hickory release that removes the Apple version split and upstream
-macro dependencies that remove the `syn` split, while preserving patched
-`zerovec` versions. An alternative version or DNS design requires review of
-the accepted KMIPKIT-0013 specification and platform-trust contract.
+**Approved duplicate decision (2026-10-07):** The maintainer authorized four
+exact exceptions for the currently required versions, each limited to the
+crates.io source and expiring on 2026-12-31 (within 90 days). The review and
+approval are recorded by `@NeverWe1come` in PR #50. `KMIPKit maintainers` own
+removal or renewal before expiry.
+
+| Exception | Exact scope | Current dependency path |
+|---|---|---|
+| `KMIPKIT-0011-EX-001` | `core-foundation@0.9.4` | Hickory 0.26.3 → `system-configuration` 0.7.0 |
+| `KMIPKIT-0011-EX-002` | `core-foundation@0.10.1` | `rustls-native-certs` 0.8.4 → `security-framework` 3.7.0 |
+| `KMIPKIT-0011-EX-003` | `syn@2.0.119` | JNI macros, `serde_derive`, and test dependencies |
+| `KMIPKIT-0011-EX-004` | `syn@3.0.6` | Hickory/ICU derive chain, including patched `zerovec-derive` 0.11.6 |
+
+No global duplicate allowance or `skip-tree` entry was added. Reassess these
+exact scopes when the dependency graph changes and remove them when upstream
+constraints converge. Preserve `zerovec` 0.11.8 and `zerovec-derive` 0.11.6
+or later patched releases; do not align the `syn` versions by downgrading to
+the vulnerable releases described above. Changing the accepted resolver or
+platform-trust dependency design still requires review of KMIPKIT-0013.
 
 **Approved license decision (2026-10-07):** The KMIPKit maintainer
 (@NeverWe1come) reviewed the locked package license evidence and the standard
@@ -252,8 +262,14 @@ the native library and others that are not compiled:
 | `subtle@2.6.1` | `LICENSE` | `d1fc1bc0d155df60b2e7705b6b2ae02a05c96f948e1cec6e2fb86360b09f346b` |
 | `untrusted@0.9.0` | `LICENSE.txt` | `7abd9b6960dcf7d4d0a48606a5b71bfe37d472db68d70637f3a58a56785f1621` |
 
-The license allowlist decision above is approved. The four duplicate-version
-exceptions remain proposals and still require their own independent human
-review before registration. Run the official policy command and CI after this
-configuration change; T003 remains incomplete until the dependency review is
-complete.
+The license allowlist decision and the four exact duplicate exceptions above
+are approved and synchronized with the machine-readable register and
+`.cargo/deny.toml`. T003 remains incomplete until its full dependency,
+native-build, MSRV, and supported-target review is complete.
+
+**Policy verification (2026-10-07):** `./scripts/Test-DependencyPolicy.ps1`
+passed on `x86_64-pc-windows-msvc` with cargo-deny 0.20.2. Both root and fuzz
+workspace checks refreshed RustSec to commit
+`f246cde705ecb3a6b421d6d5462c6d88f317db5f`; the runner validated all four
+exception IDs and confirmed that `Cargo.lock` and `fuzz/Cargo.lock` were
+unchanged.
