@@ -575,6 +575,26 @@ class CoverageReportTests(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertNotIn(marker, report)
 
+    def test_report_redacts_the_complete_quoted_multword_secret_value(self) -> None:
+        catalog = report_catalog()
+        secret_suffix_marker = "report-secret-suffix-sentinel-184"
+        catalog["discrepancies"] = [
+            {
+                "discrepancy_id": "KMIPKIT-DISC-REPORT-QUOTED-SECRET",
+                "state": "open",
+                "summary": f'diagnostic credential="alpha {secret_suffix_marker}"',
+                "source_refs": [],
+                "affected_requirement_ids": [],
+                "affected_element_ids": [],
+                "affected_profile_ids": [],
+                "affected_policy_ids": [],
+            }
+        ]
+
+        report = render_report(catalog)
+
+        self.assertNotIn(secret_suffix_marker, report)
+
     def test_full_catalog_report_reconciles_tags_ranges_and_profile_cases(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         report = render_report(catalog)
