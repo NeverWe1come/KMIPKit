@@ -356,7 +356,11 @@ class CoverageReportTests(unittest.TestCase):
             }
         ]
 
-        report = render_report(catalog, typed_rule_mappings=[])
+        report = render_report(
+            catalog,
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE-CLIENT"},
+            typed_rule_mappings=[],
+        )
 
         self.assertIn("## Profile requirement rule coverage", report)
         self.assertIn("KMIPKIT-PROFILE-BASELINE-CLIENT", report)
@@ -365,7 +369,8 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("RequiredBehavior", report)
         self.assertIn("No typed rule mapping", report)
         self.assertIn("No category-appropriate rule test", report)
-        self.assertIn("evidence_incomplete", report)
+        self.assertIn("| selected | false | evidence\\_incomplete |", report)
+        self.assertIn(r"evidence\_incomplete", report)
         self.assertIn("No public claim", report)
 
     def test_profile_requirement_coverage_links_typed_rule_to_category_test(self) -> None:
@@ -400,7 +405,7 @@ class CoverageReportTests(unittest.TestCase):
 
         self.assertIn("Typed rule mapping: present", report)
         self.assertIn("Category test reference: present", report)
-        self.assertIn("profile_validation::required_rule_enforces_clause", report)
+        self.assertIn(r"profile\_validation::required\_rule\_enforces\_clause", report)
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", report)
         self.assertIn("current pass/fail is not evaluated", report)
 
@@ -418,8 +423,9 @@ class CoverageReportTests(unittest.TestCase):
         )
 
         self.assertEqual(typed_rule_mappings, [])
+        profile_state_section = report.split("## Profile states\n", 1)[1]
         baseline_row = next(
-            line for line in report.splitlines()
+            line for line in profile_state_section.splitlines()
             if line.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
         )
         self.assertIn("| selected | false |", baseline_row)
