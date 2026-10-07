@@ -151,11 +151,12 @@ That candidate resolves both platform dependencies through
 that dependency pair. It does not remove the workspace's `syn` 2/3 duplicate,
 which remains reachable through Hickory's macro and ICU/IDNA dependency graph.
 The candidate also changes the security-framework major version from 3 to 2
-and downgrades the explicitly selected native-certificate loader. KMIPKIT-0013
-pins `rustls-native-certs` 0.8.4 in its accepted spec and TLS contract, so this
-alternative is not compatible with the approved dependency set without a
-specification review. The probe ran in a temporary project; it did not modify
-the repository manifests or lockfile.
+and downgrades the explicitly selected native-certificate loader. The accepted
+KMIPKIT-0013 platform-trust table selects `rustls-native-certs` 0.8.4, and
+research decision D5 records the same version; this alternative therefore
+requires a specification review before replacing the approved selection. The
+probe ran in a temporary project; it did not modify the repository manifests
+or lockfile.
 
 An attempted lockfile-only alignment pinned compatible releases of
 `async-trait`, `displaydoc`, `futures-util`, `thiserror`, `tokio-macros`, and
