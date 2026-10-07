@@ -391,8 +391,7 @@
           "required": [
             "name",
             "kind",
-            "type",
-            "ownership"
+            "type"
           ],
           "properties": {
             "name": {
