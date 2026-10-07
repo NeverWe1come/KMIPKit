@@ -4,7 +4,8 @@ use std::fmt::Write as _;
 use super::{
     ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker, ProfileValidationError,
     ProfileValidationErrorCode, ProfileValidationSelection, RuleConstraint, RuleTestEvidence,
-    RuleTestKind, TypedRuleMapping, validate_mapping, validate_selection_with_registry,
+    RuleTestKind, TypedRuleMapping, reconcile_effective_state, validate_mapping,
+    validate_selection_with_registry,
 };
 use crate::profiles_generated::{
     GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
@@ -558,6 +559,26 @@ fn readiness_blocks_conditional_out_of_scope_and_dependent_profiles() {
             profile_id: "KMIPKIT-PROFILE-BASELINE-CLIENT"
         }
     ));
+}
+
+#[test]
+fn readiness_reconciles_catalog_states_with_blockers() {
+    let mut stale = vec![ProfileReadinessBlocker::RuntimeValidationUnavailable];
+    assert_eq!(
+        "evidence_incomplete",
+        reconcile_effective_state("evidence_complete", &mut stale)
+    );
+    assert!(stale.contains(&ProfileReadinessBlocker::StaleCatalogEvidenceState));
+
+    let mut review_required = Vec::new();
+    assert_eq!(
+        "not_claimed",
+        reconcile_effective_state("not_claimed", &mut review_required)
+    );
+    assert_eq!(
+        vec![ProfileReadinessBlocker::CatalogEvidenceReviewRequired],
+        review_required
+    );
 }
 
 #[test]
