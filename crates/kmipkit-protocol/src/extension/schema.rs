@@ -556,6 +556,19 @@ pub(crate) const fn checked_usize_counter_add(left: usize, right: usize) -> Opti
     left.checked_add(right)
 }
 
+fn add_bounded_registry_counter(
+    total: &mut u64,
+    increment: u64,
+    maximum: u64,
+) -> Result<(), ProtocolError> {
+    let next = total
+        .checked_add(increment)
+        .filter(|count| *count <= maximum)
+        .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+    *total = next;
+    Ok(())
+}
+
 /// Checked addition shared by bounded registry counters.
 #[cfg(test)]
 pub(crate) const fn checked_u64_counter_add(left: u64, right: u64) -> Option<u64> {
@@ -708,11 +721,7 @@ impl ExtensionSchema {
         #[cfg(test)]
         REGISTRY_LIMIT_SCHEMA_VISITS.with(|visits| visits.set(visits.get() + 1));
 
-        let next_schema_nodes = schema_nodes
-            .checked_add(1)
-            .filter(|count| *count <= maximum_schema_nodes)
-            .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
-        *schema_nodes = next_schema_nodes;
+        add_bounded_registry_counter(schema_nodes, 1, maximum_schema_nodes)?;
 
         let configured_depth = u64::try_from(depth)
             .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
@@ -737,11 +746,11 @@ impl ExtensionSchema {
             let node_constraint_members = per_rule_members
                 .checked_add(order_member_count)
                 .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
-            let next_constraint_members = constraint_members
-                .checked_add(node_constraint_members)
-                .filter(|count| *count <= maximum_constraint_members)
-                .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
-            *constraint_members = next_constraint_members;
+            add_bounded_registry_counter(
+                constraint_members,
+                node_constraint_members,
+                maximum_constraint_members,
+            )?;
             if child_count > limits.max_child_rules_per_structure()
                 || order_member_count > limits.max_constraint_members_per_rule()
             {
@@ -760,11 +769,11 @@ impl ExtensionSchema {
                 )?;
             }
         } else {
-            let next_constraint_members = constraint_members
-                .checked_add(per_rule_members)
-                .filter(|count| *count <= maximum_constraint_members)
-                .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
-            *constraint_members = next_constraint_members;
+            add_bounded_registry_counter(
+                constraint_members,
+                per_rule_members,
+                maximum_constraint_members,
+            )?;
         }
         Ok(())
     }
