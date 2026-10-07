@@ -28,6 +28,26 @@ the endpoint and configuration, creates the worker, and opens no socket. Key
 files are read once; a constructed configuration stores parsed material, not
 the source path.
 
+`TransportConfig` contains no client extension registry or registry-provenance
+state. It configures transport behavior only.
+
+### Production typed `Client`
+
+The production typed client retains two distinct immutable configuration
+owners: the KMIPKIT-0012 `ClientConfiguration`, which owns that client's
+extension registry snapshot, and the validated transport configuration used to
+construct its production adapter and worker. Constructing a production
+transport does not replace, copy into, or mutate the `ClientConfiguration`.
+
+Before constructing an outgoing KMIP `RequestMessage`, encoding it, or calling
+the adapter, `Client::execute` checks the private registry provenance of every
+attached `ClientMessageExtension` against the registry owned by the retained
+`ClientConfiguration`. A mismatch returns sanitized `InvalidInput` with
+`DeliveryState::NotSent`; no outgoing KMIP request is constructed or encoded,
+and the adapter is not invoked. A same-client extension passes this check and
+uses the existing typed request, encoding, and exchange path without changing
+its wire representation.
+
 ### `SecretInput`
 
 Owned PEM or DER bytes or parsed key material used during configuration.

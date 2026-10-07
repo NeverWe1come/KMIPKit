@@ -52,22 +52,44 @@ As a KMIP application developer, I can send TTLV as an HTTPS request to a config
 
 ### User Story 4 - Execute a typed KMIP request using production configuration (Priority: P2)
 
-As a KMIP application developer, I can construct the existing synchronous typed client from approved transport configuration and execute its existing typed request API without supplying a custom transport or raw KMIP bytes.
+As a KMIP application developer, I can construct the existing synchronous typed client from its
+immutable KMIPKIT-0012 client configuration and validated transport configuration, then execute
+its existing typed request API without supplying a custom transport or raw KMIP bytes.
 
 **Why this priority**: A production transport is useful only when it connects to the existing typed client without weakening its validated request boundary.
 
-**Independent Test**: Construct the client over each transport using an ephemeral peer, execute the currently supported typed request through the public Rust API, and inspect the exact wire exchange and typed result.
+**Independent Test**: Construct the client over each transport using an ephemeral peer, execute the
+currently supported typed request through the public Rust API, and inspect the exact wire exchange
+and typed result. Also validate an extension with one immutable `ClientConfiguration`, attach it to a
+request for a production client retaining a different configuration, and verify rejection before
+request construction, encoding, or exchange; repeat with the same configuration and verify the
+existing valid wire behavior.
 
 **Acceptance Scenarios**:
 
-1. **Given** valid transport configuration, **When** an application constructs the typed client, **Then** the constructor owns the selected production adapter and does not accept a caller-implemented `Transport`.
+1. **Given** an existing immutable KMIPKIT-0012 `ClientConfiguration` and valid transport
+   configuration, **When** an application constructs the typed client, **Then** the client retains
+   the two configurations separately, owns the selected production adapter, and does not accept a
+   caller-implemented `Transport`.
 2. **Given** the current closed typed request set, **When** an application executes a request, **Then** the client encodes and validates it using its configured `CodecLimits`, passes exactly the response-byte limit to the adapter, decodes the bounded response, and returns a typed result without exposing raw response bytes.
 3. **Given** a failed exchange, **When** the next distinct operation is executed, **Then** the client may establish a new connection but never retries the failed KMIP request or automatically selects an alternate endpoint.
+4. **Given** a production client retaining immutable `ClientConfiguration` A separately from its
+   transport configuration, **When** a request carries a `ClientMessageExtension` whose private
+   registry provenance belongs to configuration B, **Then** execution returns sanitized
+   `InvalidInput` with `NotSent` before constructing the outgoing KMIP request, encoding it, or
+   invoking the adapter.
+5. **Given** a request carrying a `ClientMessageExtension` validated by the same immutable
+   `ClientConfiguration` retained by the production client, **When** the request is executed,
+   **Then** it follows the existing typed encoding and exchange path and preserves its valid Message
+   Extension wire representation.
 
 ## Scope and Exclusions
 
 - This feature adds production raw TTLV over TLS 1.3 and TTLV over HTTPS/HTTP 1.1, both with mutual TLS.
 - The client is synchronous and owns one configured endpoint and its transport. Calls on one client are serialized.
+- The production client retains the immutable KMIPKIT-0012 `ClientConfiguration` separately from
+  transport configuration. Transport configuration does not contain or replace the extension
+  registry.
 - The typed client may expose only the request variants already implemented in the approved client API. This feature does not add KMIP operation schemas or server-initiated behavior.
 - The low-level `kmipkit-transport::Transport::exchange` remains a direct caller-byte API and performs no KMIP encoding or schema validation. The typed client and top-level facade do not accept raw request bytes or arbitrary transport injection.
 - This feature does not claim conformance to the complete HTTPS Client KMIP 2.1 Profile or any other profile. It implements selected HTTPS Client transport clauses needed for KMIPKit's HTTP/1.1 + TTLV scope; profile claims remain governed by KMIPKIT-0010 and complete profile evidence.
@@ -95,6 +117,16 @@ As a KMIP application developer, I can construct the existing synchronous typed 
 - **FR-015**: Every KMIPKit-owned request copy MUST be bounded to the configured request limit, not retained past synchronous exchange, not logged, and zeroized before release. Every successful response MUST be returned in `TransportResponse`; each initialized partial response allocation MUST be zeroized on errors. Response accumulation MUST not reallocate after storing response bytes unless every prior/temporary allocation is zeroized before release. Bytes retained by Hyper, rustls, the OS, or another dependency are external copies and MUST be covered by the documented third-party-copy limitation. [ADR-0014]
 - **FR-016**: The raw-TLS and HTTPS adapters MUST be available to the synchronous typed client and to direct Rust users only through documented, bounded APIs. The top-level `kmipkit` facade MUST NOT re-export the low-level `Transport` trait or raw-byte exchange entry point.
 - **FR-017**: Each production adapter MUST reject a caller request larger than its configured `max_request_bytes` before DNS, connection, or request transmission. The default MUST be 16 MiB; callers MAY configure a different positive limit. The typed client MUST reject encoded requests larger than the effective `CodecLimits::max_message_bytes()` and MUST NOT submit an oversized request to a transport.
+- **FR-018**: The production client MUST retain the immutable KMIPKIT-0012 `ClientConfiguration`
+  separately from the validated transport configuration; the transport configuration MUST NOT
+  contain or replace that client's extension registry. Before constructing an outgoing KMIP
+  `RequestMessage`, encoding it, or invoking the adapter, `Client::execute` MUST compare the private
+  registry provenance of every attached `ClientMessageExtension` with the registry owned by the
+  retained `ClientConfiguration`. A mismatch MUST return sanitized `InvalidInput` with
+  `DeliveryState::NotSent`, without constructing or encoding the outgoing KMIP request and without
+  invoking the adapter. An extension validated by the same retained configuration MUST continue
+  through the existing typed request, encoding, and exchange path unchanged.
+  [KMIPKIT-0012-FR-001; ADR-0013; KMIPKIT-0012 verification record]
 
 ### Normative Requirement Traceability
 
@@ -137,7 +169,12 @@ The exact upstream source is `specification/oasis/kmip-2.1/upstream/kmip-profile
 - **SC-004**: HTTPS capture tests prove the exact method, target URI, required headers, and unchanged body; redirect, proxy, compression, non-200, malformed header/body, unsolicited response on a reused connection, and response-cap cases each fail without retry or cross-exchange response attribution.
 - **SC-005**: Tests demonstrate the 10s/30s/30s/60s defaults, per-client and per-exchange overrides for typed and direct production-adapter calls, unbounded configuration, queue-time deadline expiry, no post-`NotSent` dispatch, `PossiblySent` after dispatch commit even when only HTTP headers are emitted, partial-body `PossiblySent`, monotonic first-response-byte `ResponseStarted`, and timeout/response-observation race ordering.
 - **SC-006**: Tests with secret sentinels find no private-key bytes, request bytes, response bytes, credentials, or underlying untrusted error text in `Debug`, `Display`, logs, or public error chains; tests inspect initialized KMIPKit-owned allocations on success and every error path.
-- **SC-007**: The public typed-client integration suite executes every currently supported typed request through both production adapters, verifies exact bounded transport calls and typed decoded results, and proves no request is automatically retried.
+- **SC-007**: The public typed-client integration suite executes every currently supported typed
+  request through both production adapters, verifies exact bounded transport calls and typed
+  decoded results, and proves no request is automatically retried. It rejects an extension carrying
+  another client's registry provenance as sanitized `InvalidInput`/`NotSent` before request
+  construction/encoding/exchange and proves a same-client extension retains its valid wire
+  representation.
 - **SC-008**: Formatting, Clippy, unit, negative, integration, documentation, dependency-policy, and platform CI checks required by the repository pass; transport/changed-code/workspace line coverage reaches at least 85%/95%/90% respectively, and requirement traceability reaches 100%.
 
 ## Clarification Record

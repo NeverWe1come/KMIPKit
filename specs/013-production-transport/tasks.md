@@ -100,11 +100,35 @@ description: "Implementation tasks for production TLS and HTTPS transports"
 
 **Story goal**: Construct the existing closed typed client from validated KMIPKit configuration and preserve encode/limit/decode boundaries.
 
-**Independent test**: Execute every currently supported typed request through each production adapter and return only a typed decoded result.
+**Independent test**: Execute every currently supported typed request through each production adapter
+and return only a typed decoded result; verify cross-client extension-provenance rejection and
+same-client extension preservation through the public Rust API.
 
 - [ ] T046 [US4] **Red**: Add public API integration tests in `crates/kmipkit-client/tests/production_client.rs` for validated raw TLS/HTTPS construction, no arbitrary transport injection, sync execution inside an existing runtime, options-bearing variants for every current typed operation method, direct-adapter byte exchange overrides, timeout override precedence on both paths, and exact request/response delivery; record expected failures in a Red commit.
-- [ ] T047 [US4] **Green**: Add shared public `RequestOptions`, the production constructor, concrete direct-adapter `exchange_with_options` methods, adapter selection, and options-bearing variants corresponding to every current public typed operation method in `crates/kmipkit-client/src/lib.rs` and `crates/kmipkit-transport/src/`; prove T046 passes in a separate Green commit.
-- [ ] T048 [US4] **Refactor**: Refactor constructor ownership and ensure calls serialize through the private worker without exposing raw transport types in `crates/kmipkit-client/src/lib.rs`; rerun T046 and record a distinct Refactor commit.
+- [ ] T046a [US4] **Red**: Add a focused execution-boundary unit test in
+  `crates/kmipkit-client/src/execute.rs` proving registry provenance is checked before outgoing
+  `RequestMessage` construction, codec invocation, and adapter handoff. Add public Rust integration
+  tests in `crates/kmipkit-client/tests/production_client.rs`:
+  `production_client_rejects_foreign_registry_extension_as_invalid_input_not_sent` validates with
+  `ClientConfiguration` A, attaches that extension to a request for a production client retaining
+  configuration B, and asserts sanitized `InvalidInput`/`NotSent` with no exchange observed at an
+  ephemeral peer; `production_client_accepts_extension_from_its_own_configuration` executes an
+  extension validated by the production client's retained configuration and asserts a typed
+  response plus the expected unchanged Message Extension wire representation. Assert error
+  formatting does not reveal registry identity or extension payload data. Record expected failures
+  in a separate Red commit before T047.
+- [ ] T047 [US4] **Green**: Add shared public `RequestOptions`, the production constructor, concrete
+  direct-adapter `exchange_with_options` methods, adapter selection, and options-bearing variants
+  corresponding to every current public typed operation method in `crates/kmipkit-client/src/lib.rs`
+  and `crates/kmipkit-transport/src/`. Retain the immutable KMIPKIT-0012 `ClientConfiguration`
+  separately from transport configuration; before constructing an outgoing `RequestMessage`,
+  encoding, or adapter invocation, reject attached extensions whose private registry provenance does
+  not match that client's registry as sanitized `InvalidInput`/`NotSent`, while preserving same-client
+  execution and wire behavior. Prove T046 and T046a pass in a separate Green commit.
+- [ ] T048 [US4] **Refactor**: Refactor constructor ownership and ensure calls serialize through the
+  private worker without exposing raw transport types in `crates/kmipkit-client/src/lib.rs`; preserve
+  separate configuration ownership and both extension-provenance outcomes, rerun T046 and T046a,
+  and record a distinct Refactor commit.
 - [ ] T049 [US4] **Red**: Add tests in `crates/kmipkit-client/tests/production_client.rs` for direct `max_request_bytes` rejection before connect, typed encoded-request rejection at `CodecLimits::max_message_bytes()`, exact response cap, pre-decode returned-length check, typed response validation, and absence of raw response exposure; record expected failures in a Red commit.
 - [ ] T050 [US4] **Green**: Connect existing encode/execute/decode flow to the production adapters and exact limits in `crates/kmipkit-client/src/lib.rs`; prove T049 passes in a separate Green commit.
 - [ ] T051 [US4] **Refactor**: Refactor error conversion and typed decode ownership while preserving `TransportResponse` cleanup in `crates/kmipkit-client/src/lib.rs`; rerun T049 and record a distinct Refactor commit.
@@ -116,7 +140,10 @@ description: "Implementation tasks for production TLS and HTTPS transports"
 **Purpose**: Close documentation, traceability, security, coverage, reproducibility, and review gates.
 
 - [ ] T052 Record final implementation evidence in accepted ADR-0015 and update `docs/security/threat-model.md` with the worker, resolver limits, `SSL_CERT_FILE` trust override, parser limits, delivery/timeout races, raw-vs-HTTPS connection lifecycle, one-hour session-resumption trust snapshot, memory-copy boundaries, and new controls. The canonical connection-model and TLS-policy amendments are made at T001 before code starts.
-- [ ] T053 Add complete stable requirement-to-source/spec/code/test links for every KMIPKIT-0013 functional requirement and applicable OASIS requirement in `specification/compliance/requirements/KMIPKIT-0013.csv`.
+- [ ] T053 Add complete stable requirement-to-source/spec/code/test links for every KMIPKIT-0013
+  functional requirement and applicable OASIS requirement in
+  `specification/compliance/requirements/KMIPKIT-0013.csv`, including FR-018's KMIPKIT-0012/ADR-0013
+  source links and the T046a provenance tests.
 - [ ] T054 Document Rust API behavior, trust configuration, timeout states, limitations, and executable examples in `docs/user-guide/en/` and `docs/user-guide/es/`; test examples in Rust.
 - [ ] T055 Run catalog/traceability checks and verify all eight selected §5.3.1 requirements have behavior/test links without an unsupported profile claim; record evidence in `specs/013-production-transport/tasks.md`.
 - [ ] T056 Run `cargo fmt --all --check`, strict workspace Clippy, focused tests, full workspace tests, docs tests, and repository dependency/security automation; fix every failure and record exact command results.
@@ -145,7 +172,7 @@ There are no parallel code implementation tasks while the shared worker, TLS, re
 
 | Requirement | Task coverage |
 |---|---|
-| FR-001, FR-016: typed-client boundary and public transport surface | T046–T051 |
+| FR-001, FR-016, FR-018: typed-client boundary, public transport surface, and KMIPKIT-0012 registry binding | T046, T046a, T047–T051 |
 | FR-002, FR-003, FR-006: TLS, trust, mTLS, resumption, 0-RTT/keylog | T018–T020, T025–T027, T052–T055 |
 | FR-004, FR-005: key inputs, zeroization, redaction | T018–T023, T054, T059 |
 | FR-007: raw TTLV/TLS frame | T025–T033 |
@@ -153,7 +180,7 @@ There are no parallel code implementation tasks while the shared worker, TLS, re
 | FR-011, FR-012: deadlines, queueing, request options, and delivery state | T006–T014, T031–T033, T040–T045, T046–T048 |
 | FR-013: one endpoint, invalidation, no retry/failover | T006–T014, T031–T033, T040–T045 |
 | FR-014, FR-015, FR-017: request/response limits and memory cleanup | T015–T025, T028–T031, T034, T037–T039, T049–T051, T054 |
-| SC-001–SC-008 | T018–T062, with final evidence at T055–T060 |
+| SC-001–SC-008 | T018–T062, with final evidence at T055–T060; SC-007 also includes T046a |
 | Normative traceability | T053, T055 |
 
 ## Implementation Strategy

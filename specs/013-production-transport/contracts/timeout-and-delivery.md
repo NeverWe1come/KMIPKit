@@ -50,9 +50,18 @@ Hyper.
 
 | Event | Returned state |
 |---|---|
-| Local validation, DNS, TCP, TLS, queue, or other failure before request-dispatch commit | `NotSent` |
+| Local validation (including extension-registry provenance mismatch), DNS, TCP, TLS, queue, or other failure before request-dispatch commit | `NotSent` |
 | Request-dispatch commit occurred; no response byte read, including HTTPS headers sent without a TTLV body | `PossiblySent` (conservative; commit does not prove any request byte reached TLS or the peer) |
 | At least one decrypted HTTP response or raw TTLV response byte read, followed by any failure | `ResponseStarted` |
+
+The typed client retains the immutable KMIPKIT-0012 `ClientConfiguration`
+separately from transport configuration. Before constructing the outgoing
+KMIP `RequestMessage`, encoding, or adapter invocation, it compares the
+private registry provenance of every attached `ClientMessageExtension` with
+the registry owned by that retained configuration. A mismatch is sanitized as
+`InvalidInput` with `NotSent`; it produces no outgoing request message, no
+encoded request, and no adapter call. An extension validated by the retained
+configuration continues through the existing typed request and encoding path.
 
 For HTTPS, the dispatch commit occurs after `SendRequest::ready()` succeeds
 and immediately before the request is handed to Hyper; it does not require

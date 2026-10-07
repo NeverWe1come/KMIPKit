@@ -84,7 +84,14 @@ docs/adr/0005-transport-and-tls.md
 
 The implementation must adapt this module split to existing crate conventions during task generation; modules stay internal unless their documented contract is explicitly public.
 
-**Structure Decision**: Extend the existing `kmipkit-transport` and `kmipkit-client` crates in the Cargo workspace. Keep public transport configuration and documented low-level exchange in `kmipkit-transport`; keep TLS parser/runtime helpers private; construct the existing typed client only from validated project-owned adapters.
+**Structure Decision**: Extend the existing `kmipkit-transport` and `kmipkit-client` crates in the
+Cargo workspace. Keep public transport configuration and documented low-level exchange in
+`kmipkit-transport`; keep TLS parser/runtime helpers private; construct the existing typed client
+only from validated project-owned adapters. The production client retains the immutable
+KMIPKIT-0012 `ClientConfiguration` separately from transport configuration. The extension registry
+remains owned by that client configuration and is not folded into `TransportConfig`; before
+building or encoding an outgoing KMIP request, the client checks each attached extension's private
+registry provenance against its retained configuration.
 
 ## Phase 0: Research Decisions
 

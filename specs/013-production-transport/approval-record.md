@@ -40,20 +40,23 @@ and accepted `docs/adr/0015-asynchronous-transport-worker.md`.
 
 ## Independent design reviews
 
-- **QA/specification review: PASS.** The reviewer checked the requirement/task
+- **Original QA/specification review: PASS.** The reviewer checked the requirement/task
   map and final design corrections. Findings about buffer-cleanup task mapping,
   the missing HTTPS `Host` tests, IPv6 `Host` serialization, and rebuilt-client
-  trust-cache behavior were incorporated. The final check confirmed FR-001–
-  FR-017 coverage, all eight success criteria linked to planned verification,
-  and no remaining material QA gaps. ADR-0015 and canonical updates were
-  checked for consistency; no acceptance language remains pending.
-- **Security/design review: PASS.** The reviewer checked DNS bounds, HTTPS
+  trust-cache behavior were incorporated. The original final check confirmed
+  FR-001–FR-017 coverage and all eight success criteria linked to planned
+  verification; it did not include the later-discovered registry binding
+  requirement recorded below. ADR-0015 and canonical updates were checked for
+  consistency; no ADR acceptance language remained pending at that review.
+- **Original security/design review: PASS.** The reviewer checked DNS bounds, HTTPS
   `Host`, session-resumption trust lifetime, request/response delivery races,
   `SendRequest::ready()` ordering, and the canonical security policy. The DNS
   limit is scoped to each multiplexed upstream connection; the resumed-session
   trust snapshot is bounded to one hour; and full handshakes perform chain,
   validity, hostname, and configured CRL checks. The reviewer confirmed there
-  are no remaining material security or specification contradictions.
+  were no material security or specification contradictions in the reviewed
+  transport design; the later registry binding clarification is recorded
+  below.
 
 Both reviews are independent of the implementer's analysis, but neither is a
 human PR approval or the required qualified human security audit. Reviewer-
@@ -62,13 +65,39 @@ evidence exists.
 
 ## Cross-artifact analysis and implementation gate
 
-The final Spec Kit cross-artifact analysis found 17 functional requirements
+The initial Spec Kit cross-artifact analysis found 17 functional requirements
 with task coverage, all eight buildable success criteria assigned to
-verification/evidence tasks, and 62 ordered tasks (`T001`–`T062`). The
+verification/evidence tasks, and 62 ordered tasks (`T001`–`T062`). Its
 initially identified consistency and coverage findings were fixed before
-acceptance. No critical design-analysis issue remains. T001 records this gate
-and the canonical updates; code and dependency-manifest changes remain gated
-by dependency review and the Red/Green/Refactor tasks.
+acceptance. A later independent QA follow-up identified the KMIPKIT-0012
+registry-to-production-client binding gap; the amendment and its coverage are
+recorded below. T001 records the original gate and canonical updates; code and
+dependency-manifest changes remain gated by dependency review and the
+Red/Green/Refactor tasks.
 
 No implementation tests were run during this specification review. The pinned
 OASIS upstream source copies remain unchanged.
+
+## Cross-specification QA follow-up: client registry binding
+
+The 2026-10-07 “registry provenance seal” section of
+`specs/012-vendor-extension-registry/verification.md` records that each
+registry-validated outbound value carries private provenance for the immutable
+registry that validated it. It identifies the remaining
+KMIPKIT-0013 responsibility: the production client must retain its
+`ClientConfiguration`, compare attached extension provenance at the beginning
+of execution, reject a mismatch as sanitized `InvalidInput`/`NotSent` before
+request construction, and cover the behavior with a public client test.
+
+This accepted KMIPKIT-0013 contract clarification adds FR-018, expands SC-007
+and User Story 4, specifies separate ownership of `ClientConfiguration` and
+transport configuration in the plan/data model, and records the corresponding
+delivery-state rule. T046a is the Red public Rust integration task; T047 and
+T048 include its Green and Refactor evidence. The same-configuration case is
+required to preserve the existing valid extension encoding and execution path.
+`TransportConfig` remains transport-only and gains no registry field. The
+task coverage map links FR-018 and SC-007 to these tests. The revised package
+contains 18 functional requirements and 63 task entries. Existing FR/SC
+identifiers and T001–T062 identifiers remain stable; T046a is the only added
+task identifier. No transport behavior is added by this clarification, and
+no code or tests were run for this documentation update.

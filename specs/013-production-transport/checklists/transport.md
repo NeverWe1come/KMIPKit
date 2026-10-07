@@ -38,6 +38,10 @@
 - [ ] CHK024 Can an unsolicited HTTP response on a reused connection be proven unable to satisfy a later KMIP exchange?
 - [ ] CHK025 Does response-byte observation have explicit precedence when it races timeout finalization?
 - [ ] CHK026 Are the full-handshake certificate checks and one-hour TLS resumption trust snapshot consistent across spec, plan, data model, contracts, and tasks?
+- [ ] CHK027 Does the production client retain the immutable KMIPKIT-0012 `ClientConfiguration`
+  separately from transport configuration, reject a foreign-registry extension before request
+  construction/encoding/exchange as sanitized `InvalidInput`/`NotSent`, and preserve same-client
+  behavior in a public Rust integration test?
 
 ## Normative Scope
 
