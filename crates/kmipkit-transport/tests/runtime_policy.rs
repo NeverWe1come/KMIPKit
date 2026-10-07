@@ -38,13 +38,14 @@ fn runtime_client_configuration_disables_key_logging_and_early_data() {
 }
 
 #[test]
-fn runtime_client_configuration_rejects_a_tls12_only_peer() {
+fn runtime_client_configuration_negotiates_tls13_with_a_local_peer() {
     let pki = EphemeralPki::generate().expect("ephemeral test certificates are generated");
     let listener = LoopbackTcpListener::bind()
         .expect("the TLS peer binds only to an ephemeral loopback address");
     let address = listener.local_addr();
-    let server_config = tls12_server_config(&pki);
-    let server = thread::spawn(move || run_tls_server(listener.into_inner(), server_config));
+    let server_config = tls13_server_config(&pki);
+    let local_listener = listener.into_inner();
+    let server = thread::spawn(move || run_tls_server(&local_listener, server_config));
 
     let mut roots = RootCertStore::empty();
     roots
@@ -52,10 +53,11 @@ fn runtime_client_configuration_rejects_a_tls12_only_peer() {
             pki.authority_certificate_der().to_vec(),
         ))
         .expect("the ephemeral test root is valid");
-    let client_config = tls_policy::client_config_builder()
+    let mut client_config = tls_policy::client_config_builder()
         .expect("the TLS 1.3 AWS-LC builder is valid")
         .with_root_certificates(roots)
         .with_no_client_auth();
+    tls_policy::apply_client_safety_policy(&mut client_config);
     let mut client = ClientConnection::new(
         Arc::new(client_config),
         ServerName::try_from("server.kmipkit.test")
@@ -69,22 +71,24 @@ fn runtime_client_configuration_rejects_a_tls12_only_peer() {
     let client_result = drive_client_handshake(&mut client, &mut stream);
     drop(stream);
 
-    assert!(client_result.is_err(), "TLS 1.2 must not be negotiated");
-    assert!(!server.join().expect("local TLS server thread completes"));
+    assert!(client_result.is_ok(), "the local TLS 1.3 peer is accepted");
+    assert_eq!(
+        client.protocol_version(),
+        Some(rustls::ProtocolVersion::TLSv1_3)
+    );
+    assert!(server.join().expect("local TLS server thread completes"));
 }
 
-fn tls12_server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
+fn tls13_server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
     let identity = pki.server_identity();
     let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
     let builder = ServerConfig::builder_with_provider(provider)
-        .with_protocol_versions(&[&rustls::version::TLS12])
-        .expect("TLS 1.2 is available in the test-only server policy");
+        .with_protocol_versions(&[&rustls::version::TLS13])
+        .expect("TLS 1.3 is available in the test-only server policy");
     let config = builder
         .with_no_client_auth()
         .with_single_cert(
-            vec![CertificateDer::from(
-                identity.certificate_der().to_vec(),
-            )],
+            vec![CertificateDer::from(identity.certificate_der().to_vec())],
             PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(
                 identity.private_key_der().to_vec(),
             )),
@@ -93,7 +97,7 @@ fn tls12_server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
     Arc::new(config)
 }
 
-fn run_tls_server(listener: TcpListener, config: Arc<ServerConfig>) -> bool {
+fn run_tls_server(listener: &TcpListener, config: Arc<ServerConfig>) -> bool {
     let Ok((mut stream, _)) = listener.accept() else {
         return false;
     };

@@ -49,7 +49,7 @@ fn local_dns_fixture_answers_only_for_configured_loopback_names() {
 
     let unknown = query_dns(fixture.local_addr(), "outside.kmipkit.test", 1)
         .expect("the unknown local name receives a negative DNS answer");
-    assert!(unknown.is_empty());
+    assert_eq!(unknown, Vec::<u8>::new());
 }
 
 #[test]
@@ -64,7 +64,9 @@ fn query_dns(server: SocketAddr, hostname: &str, record_type: u16) -> io::Result
     let socket = UdpSocket::bind((Ipv4Addr::LOCALHOST, 0))?;
     socket.set_read_timeout(Some(Duration::from_secs(2)))?;
 
-    let mut query = vec![0x4b, 0x4d, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut query = vec![
+        0x4b, 0x4d, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    ];
     for label in hostname.split('.') {
         let label_bytes = label.as_bytes();
         query.push(u8::try_from(label_bytes.len()).expect("DNS labels fit in one length byte"));

@@ -8,7 +8,9 @@ fn transport_feature_graph_uses_http1_and_aws_lc_without_proxy_or_compression() 
         .args([
             "tree",
             "--manifest-path",
-            manifest.to_str().expect("workspace manifest path is Unicode"),
+            manifest
+                .to_str()
+                .expect("workspace manifest path is Unicode"),
             "--locked",
             "--offline",
             "--all-targets",
