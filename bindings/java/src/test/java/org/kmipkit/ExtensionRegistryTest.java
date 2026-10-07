@@ -17,6 +17,7 @@ import java.util.function.ToLongFunction;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.ClientConfiguration;
+import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ClientRequestMessageExtension;
 import org.kmipkit.extensions.Compatibility;
@@ -30,6 +31,7 @@ import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.ExtensionSchema;
 import org.kmipkit.extensions.InvalidExtensionSchemaException;
 import org.kmipkit.extensions.RegisteredExtensionValue;
+import org.kmipkit.extensions.TtlvPath;
 import org.kmipkit.ResourceLimitException;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
@@ -136,6 +138,7 @@ final class ExtensionRegistryTest {
         assertEquals(12, cases.size());
 
         for (int index = 0; index < cases.size(); index++) {
+            final int limitIndex = index;
             LimitCase limit = cases.get(index);
             assertEquals(limit.defaultValue(), limit.readValue().applyAsLong(defaults), limit.name());
 
@@ -153,7 +156,7 @@ final class ExtensionRegistryTest {
             }
 
             assertThrows(ResourceLimitException.class,
-                    () -> limitsWithOverride(index, limit.hardMaximum() + 1),
+                    () -> limitsWithOverride(limitIndex, limit.hardMaximum() + 1),
                     limit.name() + " rejects values above its hard maximum");
         }
     }
@@ -251,12 +254,30 @@ final class ExtensionRegistryTest {
         assertNotNull(critical);
     }
 
-    // The registry-slice manifest declares ClientBatchItem.withExtension, but
-    // it does not declare a ClientBatchItem constructor, operation builder,
-    // request encoder, or encoded-request accessor. T044's repeated outbound
-    // order and wire-criticality assertions cannot be executable in this slice
-    // without adding an unapproved public API. The available contract preserves
-    // each explicit criticality choice in ClientRequestMessageExtension.create.
+    @Test
+    void discoverVersionsBatchItemPreservesRepeatedExtensionOrderIdentityAndCriticality() throws Exception {
+        ExtensionDefinition alpha = alphaDefinition();
+        ExtensionDefinition beta = definition("beta", "beta-v1", TtlvItemType.TextString);
+        ClientExtensionRegistry registry = registry(List.of(alpha, beta), defaults());
+        RegisteredExtensionValue alphaValue = registry.validateExtensionValue(
+                identity(ALPHA_NAME), alphaPayload("alpha-payload"), CODEC_LIMITS);
+        RegisteredExtensionValue betaValue = registry.validateExtensionValue(
+                identity("beta"), payloadWithMarker("beta-v1", "beta-payload"), CODEC_LIMITS);
+
+        ClientRequestMessageExtension nonCritical = ClientRequestMessageExtension.create(alphaValue, false);
+        ClientRequestMessageExtension critical = ClientRequestMessageExtension.create(betaValue, true);
+        ClientBatchItem item = ClientBatchItem.discoverVersions()
+                .withExtension(nonCritical)
+                .withExtension(critical);
+
+        assertEquals(2, item.extensionCount());
+        assertEquals(identity(ALPHA_NAME), item.extensionIdentityAt(0));
+        assertFalse(item.extensionCriticalityIndicatorAt(0));
+        assertEquals(identity("beta"), item.extensionIdentityAt(1));
+        assertTrue(item.extensionCriticalityIndicatorAt(1));
+        assertThrows(InvalidInputException.class, () -> item.extensionIdentityAt(2));
+        assertThrows(InvalidInputException.class, () -> item.extensionCriticalityIndicatorAt(2));
+    }
 
     private static ExtensionDefinition alphaDefinition() throws Exception {
         return definition(ALPHA_NAME, ALPHA_MARKER, TtlvItemType.TextString);

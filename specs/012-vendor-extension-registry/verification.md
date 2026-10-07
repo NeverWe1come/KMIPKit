@@ -503,3 +503,22 @@ identity-field getter; do not infer an identity by scanning payload
 discriminators. The JNI bridge and its runtime lifecycle remain
 unimplemented/in progress under T050 pending an approved identity-getter
 contract.
+
+## 2026-10-07 — Java batch inspection API Red stage
+
+The manifest now includes identity field getters and the Discover Versions
+`ClientBatchItem` constructor plus extension count, identity-at, and
+criticality-at inspection. Added an executable Java test that appends two
+extensions, checks caller order and both explicit criticality values, checks
+copied native identity fields, and rejects out-of-range inspection.
+
+Red evidence:
+
+- `mvn -f bindings/java/pom.xml -DskipTests test-compile` — expected failure:
+  8 javac errors because `ClientBatchItem.discoverVersions`,
+  `extensionCount`, `extensionIdentityAt`, and
+  `extensionCriticalityIndicatorAt` are not implemented yet.
+- Dependency review: `docs/security/dependency-policy.md` governs Cargo and
+  defines no Java/Maven dependency allowlist. No Java runtime dependency is
+  planned; the bridge uses JDK JNI headers and the installed Visual Studio
+  compiler.
