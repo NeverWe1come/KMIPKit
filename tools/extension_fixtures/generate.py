@@ -613,14 +613,11 @@ def _generate_rust(manifest: dict[str, Any], definitions: tuple[Definition, ...]
 
 def render(api: Any, corpus: Any) -> dict[Path, str]:
     manifest, definitions, cases = _parse_inputs(api, corpus)
-    renderers = {"c": _generate_c, "java": _generate_java}
-    outputs: dict[Path, str] = {}
-    for path, language in OUTPUTS.items():
-        if language == "rust":
-            outputs[path] = _generate_rust(manifest, definitions, cases)
-        else:
-            outputs[path] = renderers[language](manifest, definitions, cases)
-    return outputs
+    renderers = {"c": _generate_c, "java": _generate_java, "rust": _generate_rust}
+    return {
+        path: renderers[language](manifest, definitions, cases)
+        for path, language in OUTPUTS.items()
+    }
 
 
 def _read(path: Path) -> Any:
