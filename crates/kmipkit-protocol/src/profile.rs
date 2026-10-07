@@ -265,6 +265,24 @@ pub struct ProfileReadiness {
     blockers: Vec<ProfileReadinessBlocker>,
 }
 
+fn reconcile_effective_state(
+    catalog_state: &str,
+    blockers: &mut Vec<ProfileReadinessBlocker>,
+) -> String {
+    let effective_state = if catalog_state == "evidence_complete" && !blockers.is_empty() {
+        blockers.push(ProfileReadinessBlocker::StaleCatalogEvidenceState);
+        "evidence_incomplete"
+    } else if catalog_state != "evidence_complete" && blockers.is_empty() {
+        blockers.push(ProfileReadinessBlocker::CatalogEvidenceReviewRequired);
+        catalog_state
+    } else {
+        catalog_state
+    };
+    blockers.sort();
+    blockers.dedup();
+    effective_state.to_owned()
+}
+
 impl ProfileReadiness {
     /// Evaluates local evidence records against a generated client profile.
     ///
@@ -348,26 +366,13 @@ impl ProfileReadiness {
         );
         blockers.push(ProfileReadinessBlocker::VerificationManifestUnavailable);
 
-        blockers.sort();
-        blockers.dedup();
-        let catalog_state = profile.claim_state;
-        let effective_state = if catalog_state == "evidence_complete" && !blockers.is_empty() {
-            blockers.push(ProfileReadinessBlocker::StaleCatalogEvidenceState);
-            "evidence_incomplete"
-        } else if catalog_state != "evidence_complete" && blockers.is_empty() {
-            blockers.push(ProfileReadinessBlocker::CatalogEvidenceReviewRequired);
-            catalog_state
-        } else {
-            catalog_state
-        };
-        blockers.sort();
-        blockers.dedup();
+        let effective_state = reconcile_effective_state(profile.claim_state, &mut blockers);
 
         Some(Self {
             profile_id: profile_id.to_owned(),
             target_selected: profile.selected_target,
             runtime_validation_available,
-            effective_state: effective_state.to_owned(),
+            effective_state,
             requirement_records_complete,
             blockers,
         })
