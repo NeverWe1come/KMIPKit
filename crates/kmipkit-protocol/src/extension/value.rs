@@ -9,7 +9,8 @@ use crate::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 
 use super::definition::{ExtensionDefinition, ExtensionIdentity};
 use super::schema::{
-    Cardinality, CompiledOrderEdge, ExtensionSchema, SchemaKind, checked_usize_counter_add,
+    Cardinality, CompiledOrderEdge, CompiledOrderEdges, ExtensionSchema, SchemaKind,
+    checked_usize_counter_add,
 };
 
 #[cfg(test)]
@@ -334,21 +335,25 @@ fn check_order_edge(
 }
 
 fn validate_order_edges(
-    order_edges: &[CompiledOrderEdge],
+    order_edges: &CompiledOrderEdges,
     present_rule_indices: &[usize],
     occurrences: &HashMap<usize, ChildOccurrences>,
     path: &mut Vec<kmipkit_ttlv::Tag>,
     metrics: &mut ValidationMetrics,
 ) -> Result<(), ProtocolError> {
-    let pair_work_bound =
-        order_pair_search_work_bound(order_edges.len(), present_rule_indices.len())?;
+    let pair_count = present_rule_indices
+        .len()
+        .checked_mul(present_rule_indices.len().saturating_sub(1))
+        .and_then(|count| count.checked_div(2))
+        .ok_or_else(resource_limit)?;
+    let pair_search_count = pair_count.checked_mul(2).ok_or_else(resource_limit)?;
     let mut checks = 0_usize;
     let mut work = 0_usize;
     let mut first_invalid_edge: Option<usize> = None;
 
     // Search present pairs for sparse structures; scan the compiled edge list
-    // only when the binary-search comparison bound is smaller.
-    if pair_work_bound < order_edges.len() {
+    // when that requires fewer bounded operations.
+    if pair_search_count < order_edges.len() {
         for before_position in 0..present_rule_indices.len() {
             let before_index = *present_rule_indices
                 .get(before_position)
@@ -358,9 +363,8 @@ fn validate_order_edges(
                     .get(after_position)
                     .ok_or_else(|| invalid_schema(path))?;
                 for (before, after) in [(before_index, after_index), (after_index, before_index)] {
-                    let (edge_position, comparisons) = find_order_edge(order_edges, before, after);
-                    work =
-                        checked_usize_counter_add(work, comparisons).ok_or_else(resource_limit)?;
+                    work = checked_usize_counter_add(work, 1).ok_or_else(resource_limit)?;
+                    let edge_position = order_edges.position(before, after);
                     if let Some(edge_position) = edge_position {
                         let edge = order_edges
                             .get(edge_position)
@@ -402,46 +406,6 @@ fn validate_order_edges(
 
     record_order_edge_work(metrics, work)?;
     record_order_edge_checks(metrics, checks)
-}
-
-fn order_pair_search_work_bound(
-    edge_count: usize,
-    present_rule_count: usize,
-) -> Result<usize, ProtocolError> {
-    let pair_count = present_rule_count
-        .checked_mul(present_rule_count.saturating_sub(1))
-        .and_then(|count| count.checked_div(2))
-        .ok_or_else(resource_limit)?;
-    let directed_search_count = pair_count.checked_mul(2).ok_or_else(resource_limit)?;
-    let maximum_search_comparisons =
-        usize::try_from(usize::BITS - edge_count.leading_zeros()).map_err(|_| resource_limit())?;
-    directed_search_count
-        .checked_mul(maximum_search_comparisons)
-        .ok_or_else(resource_limit)
-}
-
-fn find_order_edge(
-    order_edges: &[CompiledOrderEdge],
-    before_index: usize,
-    after_index: usize,
-) -> (Option<usize>, usize) {
-    let expected = (before_index, after_index);
-    let mut low = 0_usize;
-    let mut high = order_edges.len();
-    let mut comparisons = 0_usize;
-    while low < high {
-        let middle = low + (high - low) / 2;
-        let Some(edge) = order_edges.get(middle) else {
-            return (None, comparisons);
-        };
-        comparisons += 1;
-        match (edge.before_index, edge.after_index).cmp(&expected) {
-            std::cmp::Ordering::Less => low = middle + 1,
-            std::cmp::Ordering::Equal => return (Some(middle), comparisons),
-            std::cmp::Ordering::Greater => high = middle,
-        }
-    }
-    (None, comparisons)
 }
 
 fn validate_scalar(

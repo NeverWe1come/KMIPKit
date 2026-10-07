@@ -1,5 +1,8 @@
 //! Immutable, data-only schemas for vendor TTLV values.
 
+use std::collections::HashMap;
+use std::fmt;
+
 use kmipkit_ttlv::{ItemType, Tag};
 
 use crate::{ProtocolError, ProtocolErrorKind};
@@ -33,10 +36,40 @@ pub(crate) struct CompiledOrderEdge {
     pub(crate) after_tag: Tag,
 }
 
+#[derive(Clone, Eq, PartialEq)]
+pub(crate) struct CompiledOrderEdges {
+    edges: Vec<CompiledOrderEdge>,
+    edge_index: HashMap<(usize, usize), usize>,
+}
+
+impl fmt::Debug for CompiledOrderEdges {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&self.edges, formatter)
+    }
+}
+
+impl CompiledOrderEdges {
+    pub(crate) const fn len(&self) -> usize {
+        self.edges.len()
+    }
+
+    pub(crate) fn iter(&self) -> std::slice::Iter<'_, CompiledOrderEdge> {
+        self.edges.iter()
+    }
+
+    pub(crate) fn get(&self, index: usize) -> Option<&CompiledOrderEdge> {
+        self.edges.get(index)
+    }
+
+    pub(crate) fn position(&self, before_index: usize, after_index: usize) -> Option<usize> {
+        self.edge_index.get(&(before_index, after_index)).copied()
+    }
+}
+
 struct CompiledStructure {
     child_tag_index: Vec<usize>,
     required_child_indices: Vec<usize>,
-    order_edges: Vec<CompiledOrderEdge>,
+    order_edges: CompiledOrderEdges,
 }
 
 /// The child cardinality declared for one Structure rule.
@@ -336,7 +369,7 @@ pub(crate) enum SchemaKind {
         /// Required child-rule indexes in their original declaration order.
         required_child_indices: Vec<usize>,
         /// Unique, acyclic order edges resolved to child-rule indexes.
-        order_edges: Vec<CompiledOrderEdge>,
+        order_edges: CompiledOrderEdges,
         preserve_undeclared_children: bool,
     },
 }
@@ -396,10 +429,22 @@ fn compile_structure(
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
     validate_order_acyclic(children.len(), &order_edges)?;
+
+    let mut edge_index = HashMap::new();
+    edge_index
+        .try_reserve(order_edges.len())
+        .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+    for (index, edge) in order_edges.iter().enumerate() {
+        edge_index.insert((edge.before_index, edge.after_index), index);
+    }
+
     Ok(CompiledStructure {
         child_tag_index,
         required_child_indices,
-        order_edges,
+        order_edges: CompiledOrderEdges {
+            edges: order_edges,
+            edge_index,
+        },
     })
 }
 
