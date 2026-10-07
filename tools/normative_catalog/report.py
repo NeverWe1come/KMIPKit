@@ -100,6 +100,12 @@ def _count_by(records: list[dict[str, Any]], field: str) -> list[tuple[str, int]
     return sorted(counts.items())
 
 
+def _profile_target_state(profile_id: Any, selected_profile_ids: set[str] | None) -> str:
+    if selected_profile_ids is None:
+        return "not evaluated"
+    return "selected" if profile_id in selected_profile_ids else "not selected"
+
+
 def _clause_section_rows(clauses: list[dict[str, Any]]) -> list[tuple[str, str, int, str]]:
     grouped: dict[tuple[str, str], dict[str, int]] = defaultdict(dict)
     for clause in clauses:
@@ -291,13 +297,7 @@ def render_report(catalog: dict[str, Any], *, selected_profile_ids: set[str] | N
         ),
         [(
             row.get("profile_id"), row.get("name"), row.get("role"), row.get("applicability"),
-            (
-                "not evaluated"
-                if selected_profile_ids is None
-                else "selected"
-                if row.get("profile_id") in selected_profile_ids
-                else "not selected"
-            ),
+            _profile_target_state(row.get("profile_id"), selected_profile_ids),
             row.get("claim_state"), _source_reference(row),
             profile_values(row, "source_clause_ids"), profile_values(row, "requirement_ids"),
             profile_values(row, "element_ids"), profile_values(row, "dependency_profile_ids"),
