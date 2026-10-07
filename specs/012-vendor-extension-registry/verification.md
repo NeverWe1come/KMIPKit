@@ -855,6 +855,7 @@ The Python adapter's Extension Information test expectation was also corrected t
 
 ## 2026-10-07 — targeted Rust coverage tests (Green; T060 remains open)
 
+- Green development commit: `1ad6080` (`test(coverage): add targeted protocol coverage`).
 - Added behavior assertions for deep TTLV value cloning and child-order
   preservation; definition compatibility and safe error-category display;
   schema-only mismatch preservation and codec-limit propagation; a scalar
@@ -883,3 +884,14 @@ The Python adapter's Extension Information test expectation was also corrected t
   artifacts.
 - `cargo +1.94 fmt --all --check` passed. No production behavior, thresholds,
   generated output, or coverage exclusions changed. T060 and T061 remain open.
+
+## 2026-10-07 — coverage-test fixture Refactor
+
+- Refactor evidence: consolidated the repeated
+  malformed-response header setup in `message_validation.rs` into
+  `response_tree_with_header_fields`; the fixture still contains the same
+  valid response batch item, and no production behavior changed.
+- Rust 1.94.1: `cargo +1.94 test -p kmipkit-protocol --test
+  message_validation` passed (15 tests); `cargo +1.94 fmt --all --check` and
+  `git diff --check` passed. Coverage totals are unchanged from the Green
+  report, and T060/T061 remain open.

@@ -435,23 +435,10 @@ fn required_message_fields_reject_wrong_ttlv_types_at_each_validation_layer() {
         MessageValidationErrorKind::WrongItemType
     );
 
-    let wrong_response_timestamp = structure([
-        item(
-            RESPONSE_HEADER,
-            Value::structure(structure([
-                item(PROTOCOL_VERSION, version()),
-                item(TIME_STAMP, Value::integer(1)),
-                item(BATCH_COUNT, Value::integer(1)),
-            ])),
-        ),
-        item(
-            BATCH_ITEM,
-            Value::structure(structure([
-                item(RESULT_STATUS, Value::enumeration(0)),
-                item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
-            ])),
-        ),
-    ]);
+    let wrong_response_timestamp = response_tree_with_header_fields(
+        item(TIME_STAMP, Value::integer(1)),
+        item(BATCH_COUNT, Value::integer(1)),
+    );
     assert_eq!(
         ResponseMessage::try_from_ttlv(wrong_response_timestamp)
             .expect_err("Time Stamp is a Date-Time")
@@ -459,23 +446,10 @@ fn required_message_fields_reject_wrong_ttlv_types_at_each_validation_layer() {
         MessageValidationErrorKind::WrongItemType
     );
 
-    let wrong_response_count = structure([
-        item(
-            RESPONSE_HEADER,
-            Value::structure(structure([
-                item(PROTOCOL_VERSION, version()),
-                item(TIME_STAMP, Value::date_time(1)),
-                item(BATCH_COUNT, Value::enumeration(1)),
-            ])),
-        ),
-        item(
-            BATCH_ITEM,
-            Value::structure(structure([
-                item(RESULT_STATUS, Value::enumeration(0)),
-                item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
-            ])),
-        ),
-    ]);
+    let wrong_response_count = response_tree_with_header_fields(
+        item(TIME_STAMP, Value::date_time(1)),
+        item(BATCH_COUNT, Value::enumeration(1)),
+    );
     assert_eq!(
         ResponseMessage::try_from_ttlv(wrong_response_count)
             .expect_err("Batch Count is an Integer")
@@ -562,6 +536,18 @@ fn response_tree_with_batch_items(
             .map(|batch_item| item(BATCH_ITEM, Value::structure(batch_item))),
     );
     structure(message)
+}
+
+fn response_tree_with_header_fields(time_stamp: Item, batch_count: Item) -> Structure {
+    let header = structure([item(PROTOCOL_VERSION, version()), time_stamp, batch_count]);
+    let success_batch_item = structure([
+        item(RESULT_STATUS, Value::enumeration(0)),
+        item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+    ]);
+    structure([
+        item(RESPONSE_HEADER, Value::structure(header)),
+        item(BATCH_ITEM, Value::structure(success_batch_item)),
+    ])
 }
 
 #[test]
