@@ -20,7 +20,7 @@ use std::time::{Duration, Instant};
 use tokio::runtime::{Builder, Runtime};
 use tokio::sync::{mpsc as async_mpsc, watch};
 
-use crate::RequestDeliveryState;
+use crate::{RequestDeliveryState, TransportError, TransportResponse};
 
 const QUEUED: u8 = 0;
 const PREPARING: u8 = 1;
@@ -35,6 +35,19 @@ const DROP_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
 type BoxedCommand = Box<dyn WorkerCommand>;
 pub(crate) type WorkerTask = Box<dyn FnOnce() + Send + 'static>;
 type CommandFuture = Pin<Box<dyn Future<Output = ()> + Send + 'static>>;
+pub(crate) type OperationFuture =
+    Pin<Box<dyn Future<Output = Result<TransportResponse, TransportError>> + Send + 'static>>;
+pub(crate) type WorkerOperation =
+    Box<dyn FnOnce(ExchangeControl) -> OperationFuture + Send + 'static>;
+
+/// Erases an operation future before it enters the worker command queue.
+pub(crate) fn boxed_operation<F, Fut>(operation: F) -> WorkerOperation
+where
+    F: FnOnce(ExchangeControl) -> Fut + Send + 'static,
+    Fut: Future<Output = Result<TransportResponse, TransportError>> + Send + 'static,
+{
+    Box::new(move |control| Box::pin(operation(control)))
+}
 
 /// Failure to start the private runtime thread, without exposing OS error text.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -57,8 +70,8 @@ impl fmt::Display for WorkerStartError {
 impl Error for WorkerStartError {}
 
 /// A lifecycle error with delivery evidence and no dependency-provided text.
-#[derive(PartialEq, Eq)]
-pub(crate) enum WorkerError<E> {
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum WorkerError {
     /// The exchange expired before it could be accepted or dispatched.
     Deadline(RequestDeliveryState),
     /// Worker shutdown canceled the exchange.
@@ -68,21 +81,21 @@ pub(crate) enum WorkerError<E> {
     /// The exchange operation failed after retaining the current delivery state.
     Operation {
         delivery_state: RequestDeliveryState,
-        source: E,
+        source: TransportError,
     },
 }
 
-impl<E> WorkerError<E> {
+impl WorkerError {
     /// Returns the strongest delivery evidence represented by this error.
-    pub(crate) const fn delivery_state(&self) -> RequestDeliveryState {
+    pub(crate) const fn delivery_state(self) -> RequestDeliveryState {
         match self {
-            Self::Deadline(state) | Self::Closed(state) | Self::Stopped(state) => *state,
-            Self::Operation { delivery_state, .. } => *delivery_state,
+            Self::Deadline(state) | Self::Closed(state) | Self::Stopped(state) => state,
+            Self::Operation { delivery_state, .. } => delivery_state,
         }
     }
 
     /// Extracts the operation error without formatting it.
-    pub(crate) fn into_operation_source(self) -> Option<E> {
+    pub(crate) fn into_operation_source(self) -> Option<TransportError> {
         match self {
             Self::Operation { source, .. } => Some(source),
             Self::Deadline(_) | Self::Closed(_) | Self::Stopped(_) => None,
@@ -90,7 +103,7 @@ impl<E> WorkerError<E> {
     }
 }
 
-impl<E> fmt::Debug for WorkerError<E> {
+impl fmt::Debug for WorkerError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Deadline(state) => formatter.debug_tuple("Deadline").field(state).finish(),
@@ -105,7 +118,7 @@ impl<E> fmt::Debug for WorkerError<E> {
     }
 }
 
-impl<E> fmt::Display for WorkerError<E> {
+impl fmt::Display for WorkerError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Deadline(state) => write!(formatter, "exchange deadline elapsed ({state:?})"),
@@ -118,7 +131,14 @@ impl<E> fmt::Display for WorkerError<E> {
     }
 }
 
-impl<E: 'static> Error for WorkerError<E> {}
+impl Error for WorkerError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::Operation { source, .. } => Some(source),
+            Self::Deadline(_) | Self::Closed(_) | Self::Stopped(_) => None,
+        }
+    }
+}
 
 /// Atomic cancellation/dispatch gate shared by a caller and its worker command.
 #[derive(Clone)]
@@ -188,12 +208,17 @@ impl ExchangeControl {
 
     /// Finalizes a completed operation; returns false if cancellation already won.
     fn finish(&self) -> (bool, RequestDeliveryState) {
+        self.finish_after_load(|| {})
+    }
+
+    fn finish_after_load(&self, mut after_load: impl FnMut()) -> (bool, RequestDeliveryState) {
         loop {
             let current = self.state.load(Ordering::Acquire);
             if is_final(current) {
                 return (false, delivery_for_state(current));
             }
             let finalized = final_state(current).unwrap_or(FINALIZED_NOT_SENT);
+            after_load();
             if self
                 .state
                 .compare_exchange(current, finalized, Ordering::AcqRel, Ordering::Acquire)
@@ -238,14 +263,28 @@ fn delivery_for_state(state: u8) -> RequestDeliveryState {
     }
 }
 
+fn strongest_delivery(
+    control: RequestDeliveryState,
+    operation: RequestDeliveryState,
+) -> RequestDeliveryState {
+    match (control, operation) {
+        (RequestDeliveryState::ResponseStarted, _) | (_, RequestDeliveryState::ResponseStarted) => {
+            RequestDeliveryState::ResponseStarted
+        }
+        (RequestDeliveryState::PossiblySent, _) | (_, RequestDeliveryState::PossiblySent) => {
+            RequestDeliveryState::PossiblySent
+        }
+        _ => RequestDeliveryState::NotSent,
+    }
+}
+
 /// One per-client owner of the current-thread runtime and bounded exchange queue.
 pub(crate) struct ClientWorker {
     commands: async_mpsc::Sender<BoxedCommand>,
     shutdown: watch::Sender<bool>,
     queue_space: Arc<QueueSpace>,
     closed: AtomicBool,
-    completion: Arc<Completion>,
-    join: Mutex<Option<JoinHandle<()>>>,
+    thread: WorkerThread,
 }
 
 impl ClientWorker {
@@ -262,6 +301,15 @@ impl ClientWorker {
     pub(crate) fn start_with_spawner(
         spawner: impl FnOnce(WorkerTask) -> io::Result<JoinHandle<()>>,
     ) -> Result<Self, WorkerStartError> {
+        Self::start_with_factories(spawner, || {
+            Builder::new_current_thread().enable_all().build()
+        })
+    }
+
+    fn start_with_factories(
+        spawner: impl FnOnce(WorkerTask) -> io::Result<JoinHandle<()>>,
+        runtime_factory: impl FnOnce() -> io::Result<Runtime> + Send + 'static,
+    ) -> Result<Self, WorkerStartError> {
         let (command_sender, command_receiver) = async_mpsc::channel(COMMAND_CAPACITY);
         let (shutdown_sender, shutdown_receiver) = watch::channel(false);
         let (ready_sender, ready_receiver) = mpsc::sync_channel(1);
@@ -272,15 +320,13 @@ impl ClientWorker {
         let thread_queue_space = Arc::clone(&queue_space);
 
         let task = Box::new(move || {
-            let thread_result = catch_unwind(AssertUnwindSafe(|| {
-                let Ok(runtime) = Builder::new_current_thread().enable_all().build() else {
+            let runtime_result = catch_unwind(AssertUnwindSafe(|| {
+                let Ok(runtime) = runtime_factory() else {
                     let _ = ready_sender.send(Err(WorkerStartError::Runtime));
                     return;
                 };
 
-                if ready_sender.send(Ok(())).is_err() {
-                    return;
-                }
+                let _ = ready_sender.send(Ok(()));
 
                 run_runtime(
                     runtime,
@@ -289,7 +335,10 @@ impl ClientWorker {
                     runtime_queue_space,
                 );
             }));
-            drop(thread_result);
+            if let Err(panic_payload) = runtime_result {
+                // Panic payloads can contain operation state; discard without formatting.
+                drop(panic_payload);
+            }
             thread_queue_space.notify_slot_available();
             thread_completion.mark_finished();
         });
@@ -301,8 +350,7 @@ impl ClientWorker {
                 shutdown: shutdown_sender,
                 queue_space,
                 closed: AtomicBool::new(false),
-                completion,
-                join: Mutex::new(Some(join)),
+                thread: WorkerThread::new(join, completion),
             }),
             Ok(Err(error)) => {
                 let _ = join.join();
@@ -316,23 +364,21 @@ impl ClientWorker {
     }
 
     /// Submits one synchronous operation and waits until its absolute deadline.
-    pub(crate) fn exchange<T, E, F, Fut>(
+    pub(crate) fn exchange<F, Fut>(
         &self,
         deadline: Option<Instant>,
         operation: F,
-    ) -> Result<T, WorkerError<E>>
+    ) -> Result<TransportResponse, WorkerError>
     where
-        T: Send + 'static,
-        E: Send + 'static,
         F: FnOnce(ExchangeControl) -> Fut + Send + 'static,
-        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        Fut: Future<Output = Result<TransportResponse, TransportError>> + Send + 'static,
     {
         let control = ExchangeControl::new();
         let (result_sender, result_receiver) = mpsc::sync_channel(1);
         let command: BoxedCommand = Box::new(ExchangeCommand {
             deadline,
             control: control.clone(),
-            operation: Some(operation),
+            operation: boxed_operation(operation),
             result: result_sender,
         });
 
@@ -350,25 +396,15 @@ impl ClientWorker {
         self.shutdown.send_replace(true);
         self.queue_space.notify_slot_available();
 
-        if !self.completion.wait(timeout) {
-            return Err(WorkerShutdownError::TimedOut);
-        }
-
-        let mut join = lock_unpoisoned(&self.join);
-        if let Some(handle) = join.take()
-            && handle.join().is_err()
-        {
-            return Err(WorkerShutdownError::Panicked);
-        }
-        Ok(())
+        self.thread.wait_and_join(timeout)
     }
 
-    fn enqueue<E>(
+    fn enqueue(
         &self,
         mut command: BoxedCommand,
         control: &ExchangeControl,
         deadline: Option<Instant>,
-    ) -> Result<(), WorkerError<E>> {
+    ) -> Result<(), WorkerError> {
         loop {
             if self.closed.load(Ordering::Acquire) {
                 return Err(WorkerError::Closed(control.cancel()));
@@ -405,55 +441,42 @@ impl Drop for ClientWorker {
 trait WorkerCommand: Send {
     fn run(self: Box<Self>, shutdown: watch::Receiver<bool>) -> CommandFuture;
 
-    fn reject(self: Box<Self>, error: CommandRejection);
+    fn reject_closed(self: Box<Self>);
 }
 
-enum CommandRejection {
-    Closed,
-}
-
-struct ExchangeCommand<F, T, E> {
+struct ExchangeCommand {
     deadline: Option<Instant>,
     control: ExchangeControl,
-    operation: Option<F>,
-    result: SyncSender<Result<T, WorkerError<E>>>,
+    operation: WorkerOperation,
+    result: SyncSender<Result<TransportResponse, WorkerError>>,
 }
 
-impl<F, Fut, T, E> WorkerCommand for ExchangeCommand<F, T, E>
-where
-    F: FnOnce(ExchangeControl) -> Fut + Send + 'static,
-    Fut: Future<Output = Result<T, E>> + Send + 'static,
-    T: Send + 'static,
-    E: Send + 'static,
-{
-    fn run(mut self: Box<Self>, mut shutdown: watch::Receiver<bool>) -> CommandFuture {
+impl WorkerCommand for ExchangeCommand {
+    fn run(self: Box<Self>, mut shutdown: watch::Receiver<bool>) -> CommandFuture {
+        let ExchangeCommand {
+            deadline,
+            control,
+            operation,
+            result,
+        } = *self;
         Box::pin(async move {
             if *shutdown.borrow() {
-                self.reject(CommandRejection::Closed);
+                let state = control.cancel();
+                let _ = result.send(Err(WorkerError::Closed(state)));
                 return;
             }
-            if self
-                .deadline
-                .is_some_and(|deadline| Instant::now() >= deadline)
-            {
-                let state = self.control.cancel();
-                let _ = self.result.send(Err(WorkerError::Deadline(state)));
+            if deadline.is_some_and(|limit| Instant::now() >= limit) {
+                let state = control.cancel();
+                let _ = result.send(Err(WorkerError::Deadline(state)));
                 return;
             }
-            if !self.control.begin() {
-                let state = self.control.delivery_state();
-                let _ = self.result.send(Err(WorkerError::Deadline(state)));
+            if !control.begin() {
+                let state = control.delivery_state();
+                let _ = result.send(Err(WorkerError::Deadline(state)));
                 return;
             }
 
-            let Some(operation) = self.operation.take() else {
-                let state = self.control.cancel();
-                let _ = self.result.send(Err(WorkerError::Stopped(state)));
-                return;
-            };
-            let control = self.control.clone();
-            let mut canceled = self.control.subscribe_cancel();
-            let result_sender = self.result;
+            let mut canceled = control.subscribe_cancel();
             let operation_future = operation(control.clone());
             tokio::pin!(operation_future);
 
@@ -462,74 +485,90 @@ where
                 changed = shutdown.changed() => {
                     let _ = changed;
                     let state = control.cancel();
-                    let _ = result_sender.send(Err(WorkerError::Closed(state)));
+                    let _ = result.send(Err(WorkerError::Closed(state)));
                 }
                 changed = canceled.changed() => {
                     let _ = changed;
                     let state = control.delivery_state();
-                    let _ = result_sender.send(Err(WorkerError::Deadline(state)));
+                    let _ = result.send(Err(WorkerError::Deadline(state)));
                 }
-                () = wait_until(self.deadline) => {
+                () = wait_until(deadline) => {
                     let state = control.cancel();
-                    let _ = result_sender.send(Err(WorkerError::Deadline(state)));
+                    let _ = result.send(Err(WorkerError::Deadline(state)));
                 }
-                result = &mut operation_future => {
-                    let (completed, delivery_state) = control.finish();
-                    if completed {
-                        let result = result.map_err(|source| WorkerError::Operation {
-                            delivery_state,
-                            source,
-                        });
-                        let _ = result_sender.send(result);
+                operation_result = &mut operation_future => {
+                    if *shutdown.borrow() {
+                        let state = control.cancel();
+                        let _ = result.send(Err(WorkerError::Closed(state)));
                     } else {
-                        let _ = result_sender.send(Err(WorkerError::Deadline(delivery_state)));
+                        let (completed, delivery_state) = control.finish();
+                        if completed {
+                            let outcome = operation_result.map_err(|source| {
+                                WorkerError::Operation {
+                                    delivery_state: strongest_delivery(
+                                        delivery_state,
+                                        source.delivery_state(),
+                                    ),
+                                    source,
+                                }
+                            });
+                            let _ = result.send(outcome);
+                        } else {
+                            let _ = result.send(Err(WorkerError::Deadline(delivery_state)));
+                        }
                     }
                 }
             }
         })
     }
 
-    fn reject(self: Box<Self>, rejection: CommandRejection) {
+    fn reject_closed(self: Box<Self>) {
         let state = self.control.cancel();
-        let error = match rejection {
-            CommandRejection::Closed => WorkerError::Closed(state),
-        };
-        let _ = self.result.send(Err(error));
+        let _ = self.result.send(Err(WorkerError::Closed(state)));
     }
 }
 
 fn run_runtime(
     runtime: Runtime,
+    commands: async_mpsc::Receiver<BoxedCommand>,
+    shutdown: watch::Receiver<bool>,
+    queue_space: Arc<QueueSpace>,
+) {
+    runtime.block_on(runtime_loop(commands, shutdown, queue_space));
+    drop(runtime);
+}
+
+async fn runtime_loop(
     mut commands: async_mpsc::Receiver<BoxedCommand>,
     mut shutdown: watch::Receiver<bool>,
     queue_space: Arc<QueueSpace>,
 ) {
-    runtime.block_on(async move {
-        loop {
-            let command = tokio::select! {
-                biased;
-                changed = shutdown.changed() => {
-                    let _ = changed;
-                    break;
-                }
-                command = commands.recv() => match command {
-                    Some(command) => command,
-                    None => break,
-                }
-            };
-            queue_space.notify_slot_available();
-            command.run(shutdown.clone()).await;
-            if *shutdown.borrow() {
+    loop {
+        if *shutdown.borrow() {
+            break;
+        }
+        let command = tokio::select! {
+            biased;
+            changed = shutdown.changed() => {
+                let _ = changed;
                 break;
             }
+            command = commands.recv() => match command {
+                Some(command) => command,
+                None => break,
+            }
+        };
+        queue_space.notify_slot_available();
+        command.run(shutdown.clone()).await;
+        if *shutdown.borrow() {
+            break;
         }
+    }
 
-        while let Ok(command) = commands.try_recv() {
-            command.reject(CommandRejection::Closed);
-            queue_space.notify_slot_available();
-        }
-    });
-    drop(runtime);
+    while let Ok(command) = commands.try_recv() {
+        command.reject_closed();
+        queue_space.notify_slot_available();
+    }
 }
 
 async fn wait_until(deadline: Option<Instant>) {
@@ -544,10 +583,10 @@ enum ReceiveFailure {
     Disconnected,
 }
 
-fn receive_result<T, E>(
-    receiver: Receiver<Result<T, WorkerError<E>>>,
+fn receive_result(
+    receiver: Receiver<Result<TransportResponse, WorkerError>>,
     deadline: Option<Instant>,
-) -> Result<Result<T, WorkerError<E>>, ReceiveFailure> {
+) -> Result<Result<TransportResponse, WorkerError>, ReceiveFailure> {
     let result = match deadline {
         Some(deadline) => {
             let remaining = deadline.saturating_duration_since(Instant::now());
@@ -609,6 +648,35 @@ impl QueueSpace {
 struct Completion {
     finished: Mutex<bool>,
     changed: Condvar,
+}
+
+/// Owns the worker's completion signal and join handle as one lifecycle unit.
+struct WorkerThread {
+    completion: Arc<Completion>,
+    join: Mutex<Option<JoinHandle<()>>>,
+}
+
+impl WorkerThread {
+    fn new(join: JoinHandle<()>, completion: Arc<Completion>) -> Self {
+        Self {
+            completion,
+            join: Mutex::new(Some(join)),
+        }
+    }
+
+    fn wait_and_join(&self, timeout: Duration) -> Result<(), WorkerShutdownError> {
+        if !self.completion.wait(timeout) {
+            return Err(WorkerShutdownError::TimedOut);
+        }
+
+        let mut join = lock_unpoisoned(&self.join);
+        if let Some(handle) = join.take()
+            && handle.join().is_err()
+        {
+            return Err(WorkerShutdownError::Panicked);
+        }
+        Ok(())
+    }
 }
 
 impl Completion {
@@ -688,3 +756,7 @@ impl fmt::Display for WorkerShutdownError {
 }
 
 impl Error for WorkerShutdownError {}
+
+#[cfg(test)]
+#[path = "../tests/worker.rs"]
+mod tests;

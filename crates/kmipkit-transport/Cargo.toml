@@ -6,6 +6,9 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Secure KMIP transports for KMIPKit"
+# Compile worker lifecycle tests inside the private module so they can verify
+# its state machine without turning those tests into a public integration API.
+autotests = false
 
 [dependencies]
 bytes.workspace = true
@@ -16,6 +19,22 @@ rustls-native-certs.workspace = true
 tokio.workspace = true
 tokio-rustls.workspace = true
 zeroize.workspace = true
+
+[[test]]
+name = "delivery_state"
+path = "tests/delivery_state.rs"
+
+[[test]]
+name = "dependency_policy"
+path = "tests/dependency_policy.rs"
+
+[[test]]
+name = "public_contract"
+path = "tests/public_contract.rs"
+
+[[test]]
+name = "runtime_policy"
+path = "tests/runtime_policy.rs"
 
 [dev-dependencies]
 kmipkit-test-support = { workspace = true, default-features = false, features = ["fixtures"] }
