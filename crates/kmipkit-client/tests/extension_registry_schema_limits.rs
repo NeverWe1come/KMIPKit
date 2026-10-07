@@ -6,7 +6,7 @@
 //! limits for vendor payloads.
 
 use kmipkit_client::{ClientError, extension_registry};
-use kmipkit_protocol::{ProtocolErrorKind, extension};
+use kmipkit_protocol::{ProtocolError, ProtocolErrorKind, extension};
 use kmipkit_ttlv::{ItemType, RawTag, Tag, Value};
 
 const TAG_BASE: u32 = 0x0054_0000;
@@ -34,23 +34,27 @@ fn discriminator() -> extension::Discriminator {
 
 fn definition(
     name: &str,
-    mut payload_rules: Vec<extension::ExtensionChildRule>,
+    payload_rules: Vec<extension::ExtensionChildRule>,
     order: Vec<extension::ExtensionOrderConstraint>,
 ) -> extension::ExtensionDefinition {
-    let mut children = vec![
-        extension::required(
-            tag(DISCRIMINATOR_TAG),
-            extension::scalar(ItemType::TextString).expect("Text String is supported"),
-        )
-        .expect("the discriminator child rule is valid"),
-    ];
-    children.append(&mut payload_rules);
-    let schema = extension::structure(children, order, false)
+    let schema = schema_with_payload_rules(payload_rules, order)
         .expect("schema limit fixture is structurally valid");
     let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
         .expect("the fixture supports this workspace version");
     extension::extension_definition(identity(name), compatibility, discriminator(), schema)
         .expect("the discriminator is declared by the root schema")
+}
+
+fn schema_with_payload_rules(
+    mut payload_rules: Vec<extension::ExtensionChildRule>,
+    order: Vec<extension::ExtensionOrderConstraint>,
+) -> Result<extension::ExtensionSchema, ProtocolError> {
+    let mut children = vec![extension::required(
+        tag(DISCRIMINATOR_TAG),
+        extension::scalar(ItemType::TextString).expect("Text String is supported"),
+    )?];
+    children.append(&mut payload_rules);
+    extension::structure(children, order, false)
 }
 
 fn limits(
@@ -431,11 +435,11 @@ fn hard_aggregate_constraint_boundary_accepts_exact_total_and_rejects_one_over()
     let exact = definition("hard-constraints-exact", build_rules(1_696), Vec::new());
     assert!(extension_registry::client_extension_registry(vec![exact], hard_limits).is_ok());
 
-    let over = definition("hard-constraints-over", build_rules(1_697), Vec::new());
-    client_error_kind(extension_registry::client_extension_registry(
-        vec![over],
-        hard_limits,
-    ));
+    let result = schema_with_payload_rules(build_rules(1_697), Vec::new());
+    let Err(error) = result else {
+        panic!("schema construction rejects more than 100,000 constraint members");
+    };
+    assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
 }
 
 #[test]
@@ -444,11 +448,11 @@ fn hard_aggregate_schema_node_boundary_accepts_exact_total_and_rejects_one_over(
     let exact = definition_with_schema_node_total_and_groups("hard-nodes-exact", 100_000, 25);
     assert!(extension_registry::client_extension_registry(vec![exact], hard_limits).is_ok());
 
-    let over = definition_with_schema_node_total_and_groups("hard-nodes-over", 100_001, 25);
-    client_error_kind(extension_registry::client_extension_registry(
-        vec![over],
-        hard_limits,
-    ));
+    let result = schema_with_schema_node_total_and_groups(100_001, 25);
+    let Err(error) = result else {
+        panic!("schema construction rejects more than 100,000 nodes");
+    };
+    assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
 }
 
 fn definition_with_schema_node_total(
@@ -463,6 +467,18 @@ fn definition_with_schema_node_total_and_groups(
     total_nodes: usize,
     group_count: u32,
 ) -> extension::ExtensionDefinition {
+    let schema = schema_with_schema_node_total_and_groups(total_nodes, group_count)
+        .expect("schema fixture fits the construction hard limit");
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+        .expect("the fixture supports this workspace version");
+    extension::extension_definition(identity(name), compatibility, discriminator(), schema)
+        .expect("the discriminator is declared by the root schema")
+}
+
+fn schema_with_schema_node_total_and_groups(
+    total_nodes: usize,
+    group_count: u32,
+) -> Result<extension::ExtensionSchema, ProtocolError> {
     // The root and discriminator scalar, plus each nested group Structure,
     // account for `2 + group_count` schema nodes; the rest are leaf nodes.
     let leaves = total_nodes - 2 - group_count as usize;
@@ -477,14 +493,10 @@ fn definition_with_schema_node_total_and_groups(
                 required_integer(offset)
             })
             .collect();
-        let nested = extension::structure(nested_children, Vec::new(), false)
-            .expect("nested fixture width remains below the hard maximum");
-        payload_rules.push(
-            extension::required(tag(2_000 + group), nested)
-                .expect("nested group payload rule is valid"),
-        );
+        let nested = extension::structure(nested_children, Vec::new(), false)?;
+        payload_rules.push(extension::required(tag(2_000 + group), nested)?);
     }
-    definition(name, payload_rules, Vec::new())
+    schema_with_payload_rules(payload_rules, Vec::new())
 }
 
 #[test]

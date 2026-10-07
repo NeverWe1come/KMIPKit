@@ -167,7 +167,7 @@ Every functional requirement and buildable success criterion has at least one pl
 | KMIPKIT-0012-FR-007 | T004, T031, T036 |
 | KMIPKIT-0012-FR-008 | T032, T037 |
 | KMIPKIT-0012-FR-009 | T012, T019 |
-| KMIPKIT-0012-FR-010 | T004, T043-T055 |
+| KMIPKIT-0012-FR-010 | T004, T043-T055, T068 |
 | KMIPKIT-0012-FR-011 | T020-T021, T027-T028, T033, T038, T043-T045 |
 | KMIPKIT-0012-FR-012 | T004, T009, T014, T017-T018, T024, T027, T030-T031, T035, T043-T046, T048, T050-T051, T056, T065 |
 | KMIPKIT-0012-FR-013 | T029, T041, T058 |
@@ -200,3 +200,8 @@ Every functional requirement and buildable success criterion has at least one pl
 ## Phase 7: Convergence
 
 - [x] T065 Bound recursive schema preflight by the remaining aggregate schema-node and constraint-member budgets, stop at the first exceeded budget, and preserve Red, Green, and Refactor evidence in distinct commits per KMIPKIT-0012-FR-012, KMIPKIT-0012-SC-007, and the plan's pre-allocation limit decision (partial).
+
+- [x] T066 [FR-012] Share immutable schema nodes across clones, cache checked depth/node/constraint totals, and reject aggregate schema construction above hard maxima before compiling indexes; preserve Red/Green/Refactor evidence in `crates/kmipkit-protocol/tests/extension_schema_clone_handle_size.rs`.
+- [x] T067 [FR-011] Clear KMIPKit-owned Java TTLV factory byte-array copies after synchronous JNI success or failure and document JVM copy limits in English and Spanish; preserve Red/Green/Refactor evidence in `bindings/java/src/test/java/org/kmipkit/ttlv/TtlvValueSecretCopyTest.java`.
+- [x] T068 [FR-010] Reject malformed UTF-16 Java metadata before native-handle transfer so invalid input preserves caller ownership; cover unpaired surrogates through the Java adapter and document the behavior in both user guides.
+- [x] T069 Harden the extension fixture generator against symlink and reparse-point output paths, preflight all destinations, and use safe atomic writes; cover a Windows directory junction and ordinary output behavior.

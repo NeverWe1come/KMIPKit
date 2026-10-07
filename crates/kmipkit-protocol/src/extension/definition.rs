@@ -408,8 +408,8 @@ pub fn accounting(
         text_bytes,
         maximum_text_field_bytes,
         discriminator_bytes: definition.discriminator.scalar_byte_len(),
-        schema_nodes: definition.schema.node_count()?,
-        constraint_members: definition.schema.constraint_member_count()?,
+        schema_nodes: definition.schema.node_count(),
+        constraint_members: definition.schema.constraint_member_count(),
         discriminator_path_depth: definition.discriminator.path.tags.len(),
     })
 }

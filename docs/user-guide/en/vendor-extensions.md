@@ -107,13 +107,15 @@ Items. Registry defaults and hard maxima are:
 Limits can be lowered or raised up to their hard maximum. Registry construction
 checks aggregate counts before cloning or reserving. A runtime budget failure
 returns a redacted resource-limit error without a partial typed result.
+Java metadata strings must contain well-formed UTF-16; a rejected description
+does not transfer or close the original `ExtensionInformation` value.
 
 KMIPKit redacts extension payloads from errors and default formatting. Its
 owned encoded request buffer is zeroized when sending finishes, whether the
-write succeeds or fails. Java and Python callers can create runtime-managed
-copies of strings or bytes; their runtimes do not provide KMIPKit with a
-deterministic way to zeroize every such copy. Do not put secrets in debug
-output or logs.
+write succeeds or fails. KMIPKit clears its temporary Java byte-array copies
+after synchronous native calls. The JVM, callers, and Python runtime may still
+create managed copies that KMIPKit cannot deterministically overwrite. Do not
+put secrets in debug output or logs.
 
 ## Compatibility boundary
 

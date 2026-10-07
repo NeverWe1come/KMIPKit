@@ -252,6 +252,16 @@ final class ExtensionRegistryTest {
     }
 
     @Test
+    void invalidUtf16DescriptionDoesNotTransferNativeOwner() throws Exception {
+        ExtensionInformation information = ExtensionInformation.create("alpha");
+
+        assertThrows(InvalidInputException.class,
+                () -> ExtensionInformation.with_description(information, String.valueOf((char) 0xD800)));
+
+        assertEquals(1, ExtensionInformation.toTtlv(information).view().itemCount());
+    }
+
+    @Test
     void extensionTextLimitCountsUtf8BytesAtTheExactBoundary() {
         String maximumUtf8Text = "🔐".repeat(1_024);
         ExtensionIdentity accepted = ExtensionIdentity.create(VENDOR, maximumUtf8Text, "1");

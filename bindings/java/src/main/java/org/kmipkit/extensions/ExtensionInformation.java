@@ -50,6 +50,15 @@ public final class ExtensionInformation {
                 information.handle.transfer(), parentStructureTag));
     }
 
+    /**
+     * Returns an Extension Information value with the supplied description.
+     *
+     * @param information the value to extend
+     * @param description the non-empty description text
+     * @return the updated value
+     * @throws org.kmipkit.InvalidInputException if the description is empty or contains invalid UTF-16
+     * @throws org.kmipkit.ResourceLimitException if the description exceeds the text limit
+     */
     public static ExtensionInformation with_description(ExtensionInformation information, String description) {
         requireText(description);
         NativeExtensionRegistry.ensureLoaded();

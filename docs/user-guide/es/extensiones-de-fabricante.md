@@ -111,6 +111,9 @@ Los límites se pueden reducir o elevar hasta el máximo. La construcción del
 registro comprueba los contadores agregados antes de copiar o reservar
 memoria. Si se agota un presupuesto en tiempo de ejecución, se devuelve un
 error redactado de límite de recursos y ningún resultado tipado parcial.
+Las cadenas de metadatos de Java deben tener UTF-16 bien formado; si se rechaza
+una descripción, el valor original de `ExtensionInformation` sigue siendo
+utilizable y conserva su propiedad nativa.
 
 KMIPKit redacta los payloads de extensión en errores y representaciones
 predeterminadas. El buffer de petición codificado que posee KMIPKit se

@@ -1004,3 +1004,87 @@ The Python adapter's Extension Information test expectation was also corrected t
   80.21% region coverage. This is a single-platform summary, not the repository
   aggregate: the 90% workspace gate merges Linux, Windows, and macOS reports.
   T060 and T061 remain open pending the aggregate CI result.
+
+## 2026-10-07 — security remediation for schema clones and Java byte copies
+
+- The independent diff scan `49ad7ef4-80d1-489d-8625-9c849c642ab4` reported
+  two findings: repeated deep clones of caller-composed extension schemas in
+  the C ABI before aggregate schema-budget enforcement, and Java factory
+  temporaries that retained KMIPKit-owned secret bytes after synchronous JNI
+  calls. This entry records the remediation; a fresh diff scan is still
+  required for the final branch head.
+- Red evidence is separated into commits: `501e476` adds the pointer-sized
+  schema-clone regression; `7b33026` adds aggregate node/constraint hard-limit
+  regressions; `5dc9276` adds Java temporary-copy success/failure probes. The
+  Rust tests failed before the shared immutable schema/preflight fix, and the
+  Java test failed before the zeroizing JNI-copy helper existed.
+- Green evidence: `96cc464` changes `ExtensionSchema` to a shared immutable
+  handle, caches checked depth/node/constraint counts, and rejects aggregate
+  construction limits before compiling indexes; `30c5e44` clears KMIPKit-owned
+  temporary Java byte arrays in `finally` after synchronous JNI success or
+  failure. Caller arrays remain unchanged, and documentation describes the
+  JVM-copy boundary. Signed Green commit `4c8b2df` handles Java copies.
+- Refactor evidence: signed commit `d77b7fd` simplifies cached metric access,
+  makes the new Java helper test direct instead of reflective, applies strict
+  Clippy `let-else` style to the boundary tests, and updates English/Spanish
+  guidance, FR-011/FR-012 traceability, and tasks T066/T067. Its SSH signature
+  was verified with the loaded ED25519 key.
+- Final local checks on Windows, Rust 1.94.1: `cargo +1.94 fmt --all --check`,
+  `cargo +1.94 clippy --workspace --all-targets --all-features -- -D warnings`,
+  and `cargo +1.94 test --workspace --all-features` passed. The first Clippy
+  pass identified four `manual_let_else` test lints; those were corrected and
+  the complete Clippy command passed afterward. The workspace test command
+  exited 0, including the schema hard-boundary and clone-handle regressions.
+- `cargo +1.94 llvm-cov --workspace --all-features --summary-only` exited 0
+  with 77.80% Windows line coverage (76.27% functions; 80.30% regions). On
+  this exact Windows report, all 111/111 changed executable Rust lines and
+  all 12/12 changed executable Java lines were covered. The local Rust FFI
+  report does not include the Linux-only C-consumer coverage feature, and a
+  single-platform total does not establish the required three-platform 90%
+  workspace gate; T060 remains open for the aggregate CI result.
+- `mvn -f bindings/java/pom.xml verify` passed all 29 Java tests, the runnable
+  vendor-extension example, and the configured JaCoCo coverage check.
+  `PYTHONPATH=bindings/python/src bindings/python/.venv/Scripts/python.exe -m
+  pytest -q bindings/python/tests` passed all 25 tests. The Python API manifest
+  check verified all six generated files. Python, C-consumer, FFI-sanitizer,
+  fuzz, dependency-policy, and supported-platform coverage for the corrected
+  head remain subject to the fresh pull-request CI run; T061 remains open.
+
+## 2026-10-07 — JNI ownership and fixture-writer security fixes
+
+- The independent diff scan `70e5c9a7-b2a1-47ce-8a0c-d7edf8dd29a0` found two
+  low-severity issues: malformed UTF-16 could orphan a transferred Java
+  native handle, and the extension fixture writer could follow a symlink or
+  reparse point outside the checkout. The additional Rust/TTLV review found
+  no new candidate. A separate unbounded coverage-XML candidate was suppressed
+  because the pull request controls the producer and the read-only aggregator
+  crosses no privilege or secret boundary.
+- Red commit `fc5850f` adds both regression tests. The Java case failed because
+  the invalid-description call consumed the original native handle; the
+  generator case failed because a Windows directory junction redirected the
+  write outside the checkout. The file-symlink variant is skipped on this
+  Windows host because creating file symlinks requires an unavailable
+  privilege.
+- Green commit `819f827` rejects unpaired UTF-16 surrogates before Java handle
+  transfer and adds resolved-root, symlink/reparse-point checks with atomic
+  output writes to the fixture generator. The 16-test fixture module passed
+  (one platform-limited skip), and the focused Java ownership regression passed.
+- Refactor commit `512979f` isolates the preflighted multi-output write path.
+  After refactor, the fixture module passed again (16 tests, one platform-limited
+  skip), `mvn -f bindings/java/pom.xml test` passed all 30 Java tests and the
+  runnable example, `python -m py_compile` passed for the generator and test
+  module, and `git diff --check` passed. The full supported-platform CI and a
+  fresh security scan of the updated diff are still pending; T060/T061 remain
+  open.
+- Final local contracts also passed: script tests (199 passed, 26 expected
+  cargo-deny skips), normative catalog tests (170 passed, 7 platform skips),
+  API manifest tests (51 passed, 3 platform skips), both generator `--check`
+  commands, and `mvn -f bindings/java/pom.xml verify` (30 tests, the runnable
+  example, and JaCoCo coverage gate).
+
+## 2026-10-07 — final security review and CI coverage-tool follow-up
+
+- Fresh diff scan `a8989cb5-601a-443e-9d79-3e696a2cbf3b` reviewed the Java/JNI invalid-UTF-16 ownership guard, fixture-generator path checks, atomic writes, FFI coverage collector, related tests, and documentation in `5482c34..6e6172f`. It completed with zero candidates and zero findings; both previously reported low-severity issues were fixed by the tested regressions.
+- The remote CI/tooling commits `897f44b` and `96dee30` were merged into this branch as `05c23b7`. A second complete diff scan, `6ce18f02-921b-4339-ba4f-c162bc948a85`, reviewed the exact `6e6172f..05c23b7` range across the workflow, FFI coverage collector, and workflow contracts. It completed with zero candidates and zero findings.
+- After that integration, `git diff --check 6e6172f..HEAD` passed and the complete script-contract suite passed: 199 tests, with 26 expected skips because pinned `cargo-deny` is not installed on this Windows host.
+- T060/T061 remain open until the updated PR head passes its fresh GitHub Actions matrix and aggregate coverage gate. The WSL run of `bash scripts/collect_ffi_coverage.sh /home/ramp1953/kmipkit-0012-ffi-coverage-report` with an isolated `CARGO_TARGET_DIR` exited 0: the C consumer test passed all 13 groups and the report recorded 92.14% line, 88.19% function, and 86.54% region coverage. An initial run reused Windows-generated trybuild metadata under `target` and failed during coverage export; isolating the Linux target directory removed that environment collision.

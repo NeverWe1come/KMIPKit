@@ -2,9 +2,15 @@ package org.kmipkit.ttlv;
 
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
+
+import java.util.Arrays;
+import java.util.function.Function;
 import org.kmipkit.internal.NativeHandle;
 
-/** An owned generic TTLV value. Byte inputs are copied by the native adapter. */
+/**
+ * An owned generic TTLV value. KMIPKit clears its temporary Java byte-array
+ * copies after native calls; copies internal to the JVM remain outside its control.
+ */
 public final class TtlvValue {
     private final NativeHandle handle;
 
@@ -42,20 +48,32 @@ public final class TtlvValue {
 
     public static TtlvValue BigInteger(byte[] value, CodecLimits limits) {
         requireWithinMessageLimit(value, limits);
-        return new TtlvValue(NativeExtensionRegistry.ttlvValueBigInteger(
-                value.clone(), NativeExtensionRegistry.codecLimitValues(limits)));
+        long[] nativeLimits = NativeExtensionRegistry.codecLimitValues(limits);
+        return withZeroizedCopy(value, copy -> new TtlvValue(
+                NativeExtensionRegistry.ttlvValueBigInteger(copy, nativeLimits)));
     }
 
     public static TtlvValue TextString(byte[] value, CodecLimits limits) {
         requireWithinMessageLimit(value, limits);
-        return new TtlvValue(NativeExtensionRegistry.ttlvValueTextString(
-                value.clone(), NativeExtensionRegistry.codecLimitValues(limits)));
+        long[] nativeLimits = NativeExtensionRegistry.codecLimitValues(limits);
+        return withZeroizedCopy(value, copy -> new TtlvValue(
+                NativeExtensionRegistry.ttlvValueTextString(copy, nativeLimits)));
     }
 
     public static TtlvValue ByteString(byte[] value, CodecLimits limits) {
         requireWithinMessageLimit(value, limits);
-        return new TtlvValue(NativeExtensionRegistry.ttlvValueByteString(
-                value.clone(), NativeExtensionRegistry.codecLimitValues(limits)));
+        long[] nativeLimits = NativeExtensionRegistry.codecLimitValues(limits);
+        return withZeroizedCopy(value, copy -> new TtlvValue(
+                NativeExtensionRegistry.ttlvValueByteString(copy, nativeLimits)));
+    }
+
+    static <T> T withZeroizedCopy(byte[] value, Function<byte[], T> nativeCall) {
+        byte[] copy = value.clone();
+        try {
+            return nativeCall.apply(copy);
+        } finally {
+            Arrays.fill(copy, (byte) 0);
+        }
     }
 
     private static void requireWithinMessageLimit(byte[] value, CodecLimits limits) {

@@ -5,10 +5,15 @@ from __future__ import annotations
 import json
 import copy
 import importlib.util
+import io
+import os
 import subprocess
 import sys
+import tempfile
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
+from unittest.mock import patch
 from typing import Any
 
 from jsonschema import Draft202012Validator
@@ -154,6 +159,7 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
         self.assertNotRegex(rust, r"\b0x[0-9A-Fa-f]{5,}\b")
         self.assertNotRegex(rust, r"\b\d{5,}\b")
         self.assertEqual(_GENERATOR._rust_integer_literal(-1_234_567_890), "-1_234_567_890")
+
 
     def test_generated_adapter_fixtures_keep_criticality_and_outbound_order(self) -> None:
         api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
@@ -463,6 +469,77 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
                     {adapter: expected for adapter in ADAPTERS},
                     "all adapters must agree on fixed algorithm work outcomes",
                 )
+
+
+class ExtensionFixtureGeneratorPathSafetyTests(unittest.TestCase):
+    @staticmethod
+    def run_generator(root: Path, outputs: dict[Path, str]) -> tuple[int, str]:
+        errors = io.StringIO()
+        with (
+            patch.object(_GENERATOR, "ROOT", root),
+            patch.object(_GENERATOR, "MANIFEST", root / "manifest.json"),
+            patch.object(_GENERATOR, "CORPUS", root / "corpus.json"),
+            patch.object(_GENERATOR, "_read", return_value={}),
+            patch.object(_GENERATOR, "render", return_value=outputs),
+            redirect_stderr(errors),
+        ):
+            result = _GENERATOR.main([])
+        return result, errors.getvalue()
+
+    def test_write_mode_rejects_symlinked_output_without_modifying_target(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "checkout"
+            outside = Path(temporary) / "outside.txt"
+            root.mkdir()
+            outside.write_text("preserve", encoding="utf-8")
+            output = root / "generated.txt"
+            try:
+                output.symlink_to(outside)
+            except (NotImplementedError, OSError) as error:
+                self.skipTest(f"file symlinks are unavailable: {error}")
+
+            result, error_output = self.run_generator(root, {output: "overwrite"})
+
+            self.assertEqual(result, 2, error_output)
+            self.assertEqual(outside.read_text(encoding="utf-8"), "preserve")
+
+    def test_write_mode_rejects_linked_parent_without_creating_external_output(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "checkout"
+            outside = Path(temporary) / "outside"
+            root.mkdir()
+            outside.mkdir()
+            parent = root / "generated"
+            try:
+                if os.name == "nt":
+                    linked = subprocess.run(
+                        ["cmd.exe", "/d", "/c", "mklink", "/J", str(parent), str(outside)],
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                    )
+                    if linked.returncode != 0:
+                        self.skipTest("directory junctions are unavailable")
+                else:
+                    parent.symlink_to(outside, target_is_directory=True)
+            except (NotImplementedError, OSError) as error:
+                self.skipTest(f"directory links are unavailable: {error}")
+
+            result, error_output = self.run_generator(root, {parent / "generated.txt": "outside"})
+
+            self.assertEqual(result, 2, error_output)
+            self.assertFalse((outside / "generated.txt").exists())
+
+    def test_write_mode_creates_regular_output_inside_checkout(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "checkout"
+            root.mkdir()
+            output = root / "nested" / "generated.txt"
+
+            result, error_output = self.run_generator(root, {output: "generated"})
+
+            self.assertEqual(result, 0, error_output)
+            self.assertEqual(output.read_text(encoding="utf-8"), "generated")
 
 
 if __name__ == "__main__":
