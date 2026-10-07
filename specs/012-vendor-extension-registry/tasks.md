@@ -23,7 +23,7 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 - [x] T005 Implement the Python 3.12 standard-library manifest generator and deterministic check mode in tools/api_manifest/generate.py
 - [x] T006 Run generator tests and check mode, preserve the passing evidence, and commit the generator Green stage in tools/api_manifest/tests/test_generate.py and tools/api_manifest/generate.py
 - [x] T007 Refactor the generator without output changes, rerun tests and check mode, and commit the generator Refactor stage in tools/api_manifest/generate.py
-- [ ] T008 [P] Add shared valid, invalid, multiply-matching, unknown, and secret-bearing extension fixtures plus their schema and stable outcome encoding in tests/fixtures/extensions/; the multiply-matching payload contains two distinct discriminator paths and passes both definitions' schemas
+- [x] T008 [P] Add shared valid, invalid, multiply-matching, unknown, and secret-bearing extension fixtures plus their schema and stable outcome encoding in tests/fixtures/extensions/; the multiply-matching payload contains two distinct discriminator paths and passes both definitions' schemas
 
 ## Phase 2: Foundational protocol and registry contracts
 

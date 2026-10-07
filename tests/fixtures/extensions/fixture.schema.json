@@ -1,0 +1,331 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KMIPKit shared extension fixture corpus",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "formatVersion", "outcomeEncoding", "definitions", "cases"],
+  "properties": {
+    "format": {
+      "const": "kmipkit-extension-fixtures"
+    },
+    "formatVersion": {
+      "const": 1
+    },
+    "outcomeEncoding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "outcomeCodes",
+        "matchedDefinitionIdsOrder",
+        "genericPayloadRepresentation",
+        "arrayOrder"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "outcomeCodes": {
+          "const": [
+            "recognized",
+            "unrecognized.schema_invalid",
+            "unrecognized.ambiguous",
+            "unrecognized.no_match",
+            "outbound.validated"
+          ]
+        },
+        "matchedDefinitionIdsOrder": {
+          "const": "lexicographic-ascending"
+        },
+        "genericPayloadRepresentation": {
+          "const": "normalized-ttlv-v1"
+        },
+        "arrayOrder": {
+          "const": "significant-and-preserved"
+        }
+      }
+    },
+    "definitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/definition"
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/fixtureCase"
+      }
+    }
+  },
+  "$defs": {
+    "tag": {
+      "type": "string",
+      "pattern": "^0x[0-9A-F]{6}$"
+    },
+    "scalarValue": {
+      "type": ["string", "integer", "boolean"]
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tag", "type"],
+      "properties": {
+        "tag": {
+          "$ref": "#/$defs/tag"
+        },
+        "type": {
+          "enum": [
+            "Structure",
+            "Integer",
+            "LongInteger",
+            "BigInteger",
+            "Enumeration",
+            "Boolean",
+            "TextString",
+            "ByteString",
+            "DateTime",
+            "Interval",
+            "DateTimeExtended"
+          ]
+        },
+        "value": {
+          "$ref": "#/$defs/scalarValue"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Structure"
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "required": ["children"],
+            "not": {
+              "required": ["value"]
+            }
+          },
+          "else": {
+            "required": ["value"],
+            "not": {
+              "required": ["children"]
+            }
+          }
+        }
+      ]
+    },
+    "extensionValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "children"],
+      "properties": {
+        "type": {
+          "const": "Structure"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      }
+    },
+    "definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "vendorIdentification",
+        "extensionName",
+        "extensionVersion",
+        "discriminator",
+        "payloadSchema"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vendorIdentification": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.]+$"
+        },
+        "extensionName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "extensionVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "discriminator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "itemType", "value"],
+          "properties": {
+            "path": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/tag"
+              }
+            },
+            "itemType": {
+              "enum": [
+                "Integer",
+                "LongInteger",
+                "BigInteger",
+                "Enumeration",
+                "Boolean",
+                "TextString",
+                "ByteString",
+                "DateTime",
+                "Interval",
+                "DateTimeExtended"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/scalarValue"
+            }
+          }
+        },
+        "payloadSchema": {
+          "type": "object"
+        }
+      }
+    },
+    "fixtureCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "extension", "expected"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "valid-recognized",
+            "invalid-schema",
+            "multiply-matching",
+            "unknown-preserved",
+            "synthetic-secret-bearing"
+          ]
+        },
+        "extension": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["vendorIdentification", "criticalityIndicator", "payload"],
+          "properties": {
+            "vendorIdentification": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.]+$"
+            },
+            "criticalityIndicator": {
+              "type": "boolean"
+            },
+            "payload": {
+              "$ref": "#/$defs/extensionValue"
+            }
+          }
+        },
+        "secretSentinel": {
+          "type": "string",
+          "pattern": "^SYNTHETIC-ONLY-.+$"
+        },
+        "expected": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "outcomeCode",
+            "matchedDefinitionIds",
+            "typedValueAvailable",
+            "genericPayloadPreserved",
+            "preservedPayload",
+            "diagnostics"
+          ],
+          "properties": {
+            "outcomeCode": {
+              "enum": [
+                "recognized",
+                "unrecognized.schema_invalid",
+                "unrecognized.ambiguous",
+                "unrecognized.no_match"
+              ]
+            },
+            "matchedDefinitionIds": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "typedValueAvailable": {
+              "type": "boolean"
+            },
+            "genericPayloadPreserved": {
+              "const": true
+            },
+            "preservedPayload": {
+              "$ref": "#/$defs/extensionValue"
+            },
+            "diagnostics": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["redacted", "containsPayloadValues"],
+              "properties": {
+                "redacted": {
+                  "const": true
+                },
+                "containsPayloadValues": {
+                  "const": false
+                }
+              }
+            },
+            "outboundRequest": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["outcomeCode", "attachments"],
+              "properties": {
+                "outcomeCode": {
+                  "const": "outbound.validated"
+                },
+                "attachments": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["fixtureId", "criticalityIndicator"],
+                    "properties": {
+                      "fixtureId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "criticalityIndicator": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
