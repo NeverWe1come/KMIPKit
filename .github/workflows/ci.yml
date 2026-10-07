@@ -290,25 +290,12 @@ jobs:
       - name: Install stable Rust
         run: rustup toolchain install stable --profile minimal
 
+      - name: Install matching LLVM coverage tools
+        if: matrix.platform == 'ubuntu'
+        run: rustup component add llvm-tools-preview --toolchain stable
+
       - name: Install pinned coverage tool
         run: cargo install cargo-llvm-cov --version 0.9.1 --locked
-
-      - name: Install LLVM 20.1.8 for Linux FFI coverage export
-        if: matrix.platform == 'ubuntu'
-        uses: KyleMayes/install-llvm-action@ebc0426251bc40c7cd31162802432c68818ab8f0 # KyleMayes/install-llvm-action v2.0.9
-        with:
-          version: '20.1.8'
-          directory: ${{ runner.temp }}/llvm-20
-
-      - name: Add versioned LLVM coverage tool names
-        if: matrix.platform == 'ubuntu'
-        shell: bash
-        run: |
-          mkdir -p "$RUNNER_TEMP/llvm-20-tools"
-          for tool in llvm-cov; do
-            ln -s "$LLVM_PATH/bin/$tool" "$RUNNER_TEMP/llvm-20-tools/${tool}-20"
-          done
-          echo "$RUNNER_TEMP/llvm-20-tools" >> "$GITHUB_PATH"
 
       - name: Check production source eligibility
         id: source
