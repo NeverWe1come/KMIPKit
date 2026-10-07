@@ -31,7 +31,24 @@ unknown values, malformed structures, trailing/incomplete frames, and limits.
 
 Generate bounded valid TTLV values and assert encode/decode properties. Use
 shrinking to retain minimal failures. Property tests begin in the foundation;
-coverage-guided fuzzing follows later.
+coverage-guided fuzzing complements them for parser and extension-schema
+validation.
+
+### Extension schema fuzzing
+
+The `extension_schema` libFuzzer target decodes at most 4 KiB of input with a
+64-Structure and 512-Item limit, then validates any decoded root Structure
+against a fixed nested extension schema. Schema mismatches are expected; a
+panic, partial value, or limit bypass is not. Run it with the repository's
+nightly toolchain and `cargo-fuzz` installed:
+
+```text
+cargo +nightly fuzz run extension_schema -- -max_len=4096 -timeout=5
+```
+
+For a bounded local smoke campaign, add `-runs=1000`. Keep minimized crashes
+under `fuzz/artifacts/extension_schema/` for triage, and promote any regression
+input into a deterministic protocol test before fixing it.
 
 ### Client tests
 

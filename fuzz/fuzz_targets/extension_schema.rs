@@ -1,6 +1,8 @@
 #![no_main]
 #![forbid(unsafe_code)]
 
+use std::sync::OnceLock;
+
 use kmipkit_protocol::extension::{
     self, ExtensionDefinition, ExtensionOrderConstraint, ExtensionSchema,
 };
@@ -15,6 +17,7 @@ const NESTED_STRUCTURE_TAG: u32 = 0x0054_0010;
 const DISCRIMINATOR_TAG: u32 = 0x0054_0011;
 const INTEGER_TAG: u32 = 0x0054_0012;
 const ENUMERATION_TAG: u32 = 0x0054_0013;
+static DEFINITION: OnceLock<ExtensionDefinition> = OnceLock::new();
 
 fn tag(raw: u32) -> Option<Tag> {
     RawTag::new(raw).ok()?.try_checked().ok()
@@ -28,10 +31,10 @@ fn schema() -> Option<ExtensionSchema> {
     .ok()?;
     let integer = extension::optional(
         tag(INTEGER_TAG)?,
-        extension::with_unsigned_range(
+        extension::with_signed_range(
             extension::scalar(ItemType::Integer).ok()?,
             0,
-            i32::MAX as u64,
+            i64::from(i32::MAX),
         )
         .ok()?,
     )
@@ -93,9 +96,9 @@ fuzz_target!(|data: &[u8]| {
         return;
     }
 
-    let Some(definition) = definition() else {
-        return;
-    };
+    let definition = DEFINITION.get_or_init(|| {
+        definition().expect("the fixed fuzz schema and registry metadata are valid")
+    });
     let Ok(limits) = CodecLimits::new(MAX_INPUT_BYTES, MAX_STRUCTURE_DEPTH, MAX_ITEMS) else {
         return;
     };
@@ -111,5 +114,5 @@ fuzz_target!(|data: &[u8]| {
 
     // Schema failures are expected. The target asserts robustness: arbitrary,
     // bounded TTLV input must not panic, over-allocate, or produce partial state.
-    let _ = extension::validate(&definition, payload, &limits);
+    let _ = extension::validate(definition, payload, &limits);
 });
