@@ -95,6 +95,15 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(contents, r"(?ms)^  branch-coverage:.*?continue-on-error:\s*true")
         self.assertIn("--branch --json --summary-only", contents)
 
+    def test_script_contract_job_checks_public_api_generated_outputs(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        self.assertIn(
+            "tools/api_manifest/generate.py --check",
+            job,
+            "Every supported pull-request platform must reject stale generated API outputs.",
+        )
+
     def test_linux_jobs_route_to_pi_only_for_same_repository_pull_requests(self) -> None:
         contents = self.require_workflow()
 
