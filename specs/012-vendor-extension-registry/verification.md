@@ -1049,3 +1049,35 @@ The Python adapter's Extension Information test expectation was also corrected t
   check verified all six generated files. Python, C-consumer, FFI-sanitizer,
   fuzz, dependency-policy, and supported-platform coverage for the corrected
   head remain subject to the fresh pull-request CI run; T061 remains open.
+
+## 2026-10-07 — JNI ownership and fixture-writer security fixes
+
+- The independent diff scan `70e5c9a7-b2a1-47ce-8a0c-d7edf8dd29a0` found two
+  low-severity issues: malformed UTF-16 could orphan a transferred Java
+  native handle, and the extension fixture writer could follow a symlink or
+  reparse point outside the checkout. The additional Rust/TTLV review found
+  no new candidate. A separate unbounded coverage-XML candidate was suppressed
+  because the pull request controls the producer and the read-only aggregator
+  crosses no privilege or secret boundary.
+- Red commit `fc5850f` adds both regression tests. The Java case failed because
+  the invalid-description call consumed the original native handle; the
+  generator case failed because a Windows directory junction redirected the
+  write outside the checkout. The file-symlink variant is skipped on this
+  Windows host because creating file symlinks requires an unavailable
+  privilege.
+- Green commit `819f827` rejects unpaired UTF-16 surrogates before Java handle
+  transfer and adds resolved-root, symlink/reparse-point checks with atomic
+  output writes to the fixture generator. The 16-test fixture module passed
+  (one platform-limited skip), and the focused Java ownership regression passed.
+- Refactor commit `512979f` isolates the preflighted multi-output write path.
+  After refactor, the fixture module passed again (16 tests, one platform-limited
+  skip), `mvn -f bindings/java/pom.xml test` passed all 30 Java tests and the
+  runnable example, `python -m py_compile` passed for the generator and test
+  module, and `git diff --check` passed. The full supported-platform CI and a
+  fresh security scan of the updated diff are still pending; T060/T061 remain
+  open.
+- Final local contracts also passed: script tests (199 passed, 26 expected
+  cargo-deny skips), normative catalog tests (170 passed, 7 platform skips),
+  API manifest tests (51 passed, 3 platform skips), both generator `--check`
+  commands, and `mvn -f bindings/java/pom.xml verify` (30 tests, the runnable
+  example, and JaCoCo coverage gate).

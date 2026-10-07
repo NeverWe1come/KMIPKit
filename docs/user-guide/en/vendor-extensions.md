@@ -107,6 +107,8 @@ Items. Registry defaults and hard maxima are:
 Limits can be lowered or raised up to their hard maximum. Registry construction
 checks aggregate counts before cloning or reserving. A runtime budget failure
 returns a redacted resource-limit error without a partial typed result.
+Java metadata strings must contain well-formed UTF-16; a rejected description
+does not transfer or close the original `ExtensionInformation` value.
 
 KMIPKit redacts extension payloads from errors and default formatting. Its
 owned encoded request buffer is zeroized when sending finishes, whether the
