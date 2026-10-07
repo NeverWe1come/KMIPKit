@@ -126,6 +126,38 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
         )
 
+    def test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "ffi-sanitizer")
+        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        self.assertIn("runs-on: ubuntu-latest", job)
+
+        for required in (
+            "rustup toolchain install nightly --profile minimal --component rust-src",
+            "RUSTFLAGS: -Zsanitizer=address",
+            "CFLAGS: -fsanitize=address -fno-omit-frame-pointer",
+            "ASAN_OPTIONS: detect_leaks=1:halt_on_error=1",
+            "cargo +nightly test --locked --target x86_64-unknown-linux-gnu -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage",
+            "-fsanitize=address,undefined -fno-omit-frame-pointer",
+            "bindings/java/native/tests/zeroizing_bytes_test.cpp",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+
+    def test_fuzz_smoke_job_runs_the_bounded_extension_schema_target(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "fuzz-smoke")
+        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        self.assertIn("runs-on: ubuntu-latest", job)
+
+        for required in (
+            "rustup toolchain install nightly --profile minimal",
+            "cargo +nightly install cargo-fuzz --version 0.13.2 --locked",
+            "cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+
     def test_linux_jobs_route_to_pi_only_for_same_repository_pull_requests(self) -> None:
         contents = self.require_workflow()
 
