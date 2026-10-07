@@ -24,7 +24,7 @@ Add typed KMIP 2.1 Create, Create Key Pair, and Create Split Key requests and re
 
 **Performance Goals**: No additional serialization pass or unbounded allocation; existing 16 MiB/depth-64/100,000-item defaults remain authoritative.
 
-**Constraints**: All outbound model checks precede encoding; no implicit cryptographic parameters; no automatic retry or polling; no raw-body errors or logs; redact AttributeEntry values from public Debug/error context; preserve unknown generic values; send the §9.12 peer response limit for batches containing Create Split Key while enforcing the local byte cap; coverage gates and 100% requirement traceability apply.
+**Constraints**: All outbound model checks precede encoding; no implicit cryptographic parameters; no automatic retry or polling; no raw-body errors or logs; redact AttributeEntry values from public Debug/error context; preserve unknown generic values and their tags; require caller-supplied Prime Field Size for Polynomial Sharing Prime Field; send the §9.12 peer response limit for batches containing Create Split Key while enforcing the local byte cap; coverage gates and 100% requirement traceability apply.
 **Scale/Scope**: Three client-initiated operations and their operation payloads, limited to TTLV and Rust APIs in this feature.
 
 ## Constitution Check

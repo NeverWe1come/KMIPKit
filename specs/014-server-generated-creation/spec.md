@@ -19,7 +19,7 @@ This specification adds typed support for three server-generated object creation
 
 Shared message and result behavior follows OASIS KMIP Specification v2.1 §§8.1–8.6, 9.1–9.2, 9.5–9.9, 9.12–9.13, 9.16, and 9.19–9.21 and their applicable tables. Payload structures and field types follow §§7.1–7.2 and the operation tables above. The immutable local OASIS copy and checked-in catalog are authoritative; the Usage Guide is informative.
 
-The catalog currently links these operation elements and selected normative requirements but does not assign these operations to an implementation feature. This feature assigns only the three operations above and does not claim full 1.0 operation coverage. The pinned OASIS KMIP Test Cases work product lists `TC-CREATE-SD-1-21` (§2.12), which exercises Create for a Secret Data object; this is applicable to Create but does not cover its full table-defined scope. The linked XML is not included in the repository's pinned `upstream/` files. Task T001 records the case and pins a local test fixture with source provenance outside `upstream/`; no direct Create Key Pair or Create Split Key cases appear in the work product. Table-derived tests remain labeled separately from official OASIS test-case evidence.
+The catalog currently links these operation elements and selected normative requirements but does not assign these operations to an implementation feature. This feature assigns only the three operations above and does not claim full 1.0 operation coverage. The pinned OASIS KMIP Test Cases work product lists `TC-CREATE-SD-1-21` (§2.12), whose XML contains a Create request followed by a Get request for a Secret Data object. This feature uses only the Create batch item; Get remains out of scope, so its executable fixture is a clearly labeled Create-only derivation and MUST NOT be reported as passing the complete official test case. The linked XML is not included in the repository's pinned `upstream/` files. Task T001 records the composite case and pins its byte-identical XML source with provenance outside `upstream/`; no direct Create Key Pair or Create Split Key cases appear in the work product. Other table-derived tests remain labeled separately from official OASIS test-case evidence.
 
 ### Normative requirements carried by this feature
 
@@ -27,6 +27,7 @@ The catalog currently links these operation elements and selected normative requ
 - KMIPKIT-REQ-SPEC-6.1.9-001-002: MAY supply differing attributes through Private Key Attributes and Public Key Attributes.
 - KMIPKIT-REQ-SPEC-6.1.9-006 and KMIPKIT-REQ-SPEC-6.1.9-007: SHALL use identical values for the attributes identified by Table 191 across the private and public keys.
 - KMIPKIT-REQ-SPEC-6.1.10-001: MAY identify an existing cryptographic object to split by including its Unique Identifier.
+- KMIPKIT-REQ-SPEC-2.8-003: MUST include Prime Field Size when Split Key Method is Polynomial Sharing Prime Field, as required by §2.8 and §6.1.10 Table 193.
 
 Table-required fields, optionality, cardinality, and operation-specific errors are binding requirements even where the catalog represents them as table structure rather than as a separate SHALL/MUST record. The implementation change must map every applicable catalog clause, requirement, and protocol element to a stable feature requirement, implementation location, and executable test.
 
@@ -48,7 +49,7 @@ A caller explicitly requests the server to create one object of a selected KMIP 
 
 **Why this priority**: Create is the smallest server-generated object request and exercises the operation path without returning key material.
 
-**Independent Test**: A deterministic fake transport exercises the locally pinned `TC-CREATE-SD-1-21` request/response fixture for Secret Data and a separate table-derived case verifies other Table 186–188 fields, typed results, and one-exchange behavior.
+**Independent Test**: A deterministic fake transport exercises a Create-only TTLV fixture derived from the first batch item of the locally pinned `TC-CREATE-SD-1-21` XML. The second Get item is out of scope and is not executed or counted as full official-case coverage. A separate table-derived case verifies other Table 186–188 fields, typed results, and one-exchange behavior.
 
 **Acceptance Scenarios**:
 
@@ -73,6 +74,7 @@ For each Table 191 attribute, the server applies Private Key Attributes and Publ
 2. Given any Table 191 attribute, when the request is validated, then the key-specific value takes precedence over the Common Attributes value for that key; if both effective values are absent the caller selection remains absent; if only one is present the request is rejected; equal effective values are accepted even when both key-specific overrides differ from Common Attributes; differing effective values are rejected.
 3. Given a successful response, when decoded, then both required Unique Identifiers retain their private/public meaning.
 4. Given unsupported cryptographic parameters or a server policy rejection, when returned as a KMIP result, then no replacement parameters are selected.
+5. Given an operation failure, when processed, then the KMIP Result Reason required by §6.1.9.1 Table 192 is preserved by the shared result model.
 
 ### User Story 3 — Create split-key parts (Priority: P2)
 
@@ -86,14 +88,15 @@ A caller explicitly requests a split-key operation using the method, part count,
 
 1. Given a split-key request with an existing Unique Identifier, when encoded, then that exact value is sent; when omitted, the client does not invent one.
 2. Given a successful response with repeated Unique Identifier fields, when decoded, then every identifier and its wire order are preserved.
-3. Given invalid thresholds, unsupported methods, or a missing input object, when the server returns an operation error, then that result is preserved without retry or local cryptographic fallback.
+3. Given invalid thresholds, unsupported methods, or a missing input object, when the server returns an operation error, then that result, including the Table 195 Result Reason, is preserved without retry or local cryptographic fallback.
 4. Given supplied attributes that disagree with an identified input key, when processing follows §6.1.10, then the model does not claim the supplied values override that key's attributes.
 5. Given a request that may return the repeated identifiers from Table 194, when executed, then the request advertises a Maximum Response Size no greater than the client's configured local response-byte limit; an exact-limit response is accepted and a response one byte over the local limit is rejected before decoder entry even if the peer ignores the advertised value.
+6. Given Split Key Method Polynomial Sharing Prime Field, when the request is validated, then Prime Field Size is required and remains the caller's explicit value; other method-specific presence follows Table 193 without KMIPKit inventing a value.
 
 ### Edge Cases
 
 - Omitted optional fields remain distinct from present-empty collections where the tables permit both.
-- Duplicate, unknown, or extension values are not silently collapsed by generic TTLV handling; typed validation rejects only conditions required by the normative tables or accepted policy.
+- Duplicate, unknown, or extension values are not silently collapsed by generic TTLV handling; typed AttributeEntry retains the Attribute Value item's full tag and value, including unknown/vendor tags. Typed validation rejects only conditions required by the normative tables or accepted policy.
 - Missing, malformed, or wrong-type response fields are rejected before returning typed success.
 - A successful KMIP status without the table-required payload is a protocol error; a Failure status is not treated as successful creation.
 - Create Split Key response identifiers are repeated values. The response requires at least one and may repeat; no uniqueness rule is invented beyond the pinned text.
@@ -113,9 +116,12 @@ A caller explicitly requests a split-key operation using the method, part count,
 - **KMIPKIT-0014-FR-007**: All three operations MUST use the existing typed request path and common batch association/validation rules, perform at most one transport exchange per invocation, and preserve delivery state and redacted errors.
 - **KMIPKIT-0014-FR-008**: The operations MUST honor the asynchronous indicator rules. For a permitted Pending response with its required correlation value, the client MUST preserve the originating operation identity and exact KMIP result in an operation-agnostic Pending outcome. It MUST NOT model Pending as a Discover Versions result, automatically Poll, Process, retry, or claim completion.
 - **KMIPKIT-0014-FR-009**: KMIPKit-owned request/response buffers MUST retain existing zeroization behavior. Public Debug output and error context for operation models MUST redact AttributeEntry values; Debug, Display, errors, logs, and diagnostics MUST NOT reveal private key material, raw KMIP bodies, or secret-bearing values.
-- **KMIPKIT-0014-FR-010**: Every applicable requirement and table field MUST link the pinned OASIS section/table, a stable feature requirement, implementation location, and executable test. Task T001 MUST record applicable official OASIS Test Case IDs. The applicable `TC-CREATE-SD-1-21` case MUST have a locally pinned fixture and executable evidence; table-derived tests MUST be labeled separately and MUST NOT be represented as official vectors.
+- **KMIPKIT-0014-FR-010**: Every applicable requirement and table field MUST link the pinned OASIS section/table, a stable feature requirement, implementation location, and executable test. Task T001 MUST record applicable official OASIS Test Case IDs and pin the byte-identical `TC-CREATE-SD-1-21` source XML. The Create batch item may have a separately labeled Create-only TTLV derivation with executable evidence; because the official case also contains an out-of-scope Get item, KMIPKit MUST NOT claim the complete official test case passes. Table-derived tests MUST be labeled separately and MUST NOT be represented as official vectors.
 - **KMIPKIT-0014-FR-011**: The change MUST NOT edit pinned OASIS copies or generated files manually, claim profile support or certification, broaden the 1.0 boundary, or add non-TTLV encodings, server-initiated operations, language bindings, or local cryptographic algorithms.
 - **KMIPKIT-0014-FR-012**: Create Split Key responses may contain a repeated list of Unique Identifiers (Table 194), so each request batch containing Create Split Key MUST include the §9.12 Maximum Response Size field. Set it to the smaller of the configured local response-byte limit and the largest KMIP Integer value; never advertise a size greater than the local limit. This is KMIPKit's application of the §9.12 recommendation for potentially large replies. The client MUST independently enforce its local response limit and reject an over-limit response before TTLV decoder entry even if the peer ignores the advertised value.
+- **KMIPKIT-0014-FR-013**: Create Key Pair operation failures MUST preserve the Result Reasons defined by §6.1.9.1 Table 192 through the shared KMIP result contract.
+- **KMIPKIT-0014-FR-014**: An AttributeEntry MUST retain the Attribute Name as an exact Text String and the complete Attribute Value as a generic TTLV `Item`, including both its tag and typed value. Unknown and vendor attribute names and tags MUST remain representable and round-trip without tag synthesis or narrowing; validation for recognized attributes MUST follow the applicable catalog and operation rules. AttributeSet MUST preserve repeated entries and wire order.
+- **KMIPKIT-0014-FR-015**: For Create Split Key, when Split Key Method is Polynomial Sharing Prime Field, Prime Field Size MUST be present, as required by KMIPKIT-REQ-SPEC-2.8-003 and §6.1.10 Table 193. KMIPKit MUST NOT choose or synthesize Prime Field Size.
 
 ### Key Entities
 

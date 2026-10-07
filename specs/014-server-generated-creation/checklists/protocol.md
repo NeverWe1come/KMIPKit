@@ -10,9 +10,11 @@
 ## Completeness
 
 - [ ] CHK001 Are all Table 186-187 fields represented with exact type, requiredness, and cardinality? [Spec section 6.1.8]
-- [ ] CHK002 Are all Table 189-190 request/response fields and Table 192 errors covered? [Spec section 6.1.9]
+- [ ] CHK002 Are all Table 189-190 request/response fields and every Table 192 Result Reason covered? [Spec section 6.1.9]
 - [ ] CHK003 Are the four Table 191 attributes named, and are Common fallback and key-specific overrides resolved using §6.1.9 precedence before comparing the effective Private/Public values? [Spec section 6.1.9]
 - [ ] CHK004 Are all Table 193 fields, repeated Table 194 identifiers, and Table 195 errors covered? [Spec section 6.1.10]
+- [ ] CHK013 Is Prime Field Size required when Split Key Method is Polynomial Sharing Prime Field, and covered by `KMIPKIT-REQ-SPEC-2.8-003` positive and non-required cases? [Spec §§2.8 and 6.1.10]
+- [ ] CHK014 Does AttributeEntry preserve the tag and typed value of unknown/vendor Attribute Value items through a round trip? [Spec §7.2 Table 150]
 - [ ] CHK005 Are applicable shared message, batch, result, asynchronous, and delivery-state clauses identified? [Spec sections 7-9]
 
 ## Clarity and consistency

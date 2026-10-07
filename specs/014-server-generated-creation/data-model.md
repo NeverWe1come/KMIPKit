@@ -6,7 +6,7 @@ An extensible KMIP Object Type value. Known assigned values receive named Rust c
 
 ## AttributeEntry and AttributeSet
 
-An AttributeEntry models one Table 150 Attribute Structure with `name: String` for the required Attribute Name Text String and `value: Value` for the required Attribute Value. The value TTLV type is determined by the named attribute; it is not the Attribute Name field. Names and values unknown to KMIPKit remain representable without enum narrowing. AttributeSet is an ordered sequence, not a map: repeated attributes and their order survive encoding and decoding. It distinguishes absent optional attribute structures from present-empty structures where the operation table permits both. The typed operation wrapper, not an arbitrary Item conversion trait, owns encoding.
+An AttributeEntry models one Table 150 Attribute Structure with `name: String` for the required Attribute Name Text String and `value: Item` for the Attribute Value item. `Item` retains both the KMIP tag and typed TTLV value, which is necessary because the value type and wire tag are associated with the named attribute. Unknown and vendor names and tags remain representable without enum narrowing or synthesizing a tag from a name. Outbound validation continues to follow the assigned-value and registered-extension policy; this feature does not widen it. AttributeSet is an ordered sequence, not a map: repeated attributes and their order survive encoding and decoding. It distinguishes absent optional attribute structures from present-empty structures where the operation table permits both. The typed operation wrapper, not an arbitrary Item conversion trait, owns encoding.
 
 ## CreateRequest and CreateResponse
 
@@ -18,7 +18,7 @@ CreateKeyPairRequest keeps Common Attributes, Private Key Attributes, Public Key
 
 ## CreateSplitKeyRequest and CreateSplitKeyResponse
 
-CreateSplitKeyRequest contains all Table 193 inputs, including split method, part count, threshold, optional input Unique Identifier, attributes, and protection/storage masks. CreateSplitKeyResponse contains one or more ordered Unique Identifiers from repeated Table 194 fields.
+CreateSplitKeyRequest contains all Table 193 inputs, including split method, part count, threshold, optional input Unique Identifier, attributes, and protection/storage masks. Prime Field Size is required when Split Key Method is Polynomial Sharing Prime Field (KMIPKIT-REQ-SPEC-2.8-003). It is supplied explicitly by the caller and never selected by KMIPKit. CreateSplitKeyResponse contains one or more ordered Unique Identifiers from repeated Table 194 fields.
 
 Because Table 194 permits a repeated response identifier list, any ClientBatch containing CreateSplitKey is potentially large. The execute path sets the peer-visible Maximum Response Size to the smaller of its configured local response-byte limit and `i32::MAX`; the local response cap remains independently enforced.
 

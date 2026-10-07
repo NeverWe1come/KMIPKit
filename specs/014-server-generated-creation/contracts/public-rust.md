@@ -6,7 +6,7 @@
 - CreateKeyPairRequest keeps Common Attributes, Private Key Attributes, and Public Key Attributes separate and exposes every Table 189 field.
 - CreateSplitKeyRequest exposes every Table 193 field and the optional source Unique Identifier.
 - Each request has one closed ClientRequest variant and can be placed in an ordered ClientBatch. No API accepts raw bytes or caller-defined payload conversion.
-- AttributeEntry encodes as the Table 150 `Attribute` Structure: its required `Attribute Name` is preserved as an exact Text String, and its required `Attribute Value` is a generic TTLV Value whose wire type follows that attribute. Unknown names and values remain representable; known-name helpers do not restrict the stored string. AttributeSet preserves repeated entries and wire order.
+- AttributeEntry encodes as the Table 150 `Attribute` Structure: its required `Attribute Name` is preserved as an exact Text String, and its required `Attribute Value` is a generic TTLV `Item` retaining both the wire tag and typed value. Unknown/vendor names and tags remain representable without synthesizing a tag from a name; outbound validation continues to follow assigned-value and registered-extension policy. AttributeSet preserves repeated entries and wire order.
 - AttributeEntry's public Debug output and diagnostic context redact its TTLV value; value bytes are never formatted as contents.
 
 ## Client entry points and outcomes
