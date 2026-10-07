@@ -1001,5 +1001,6 @@ The Python adapter's Extension Information test expectation was also corrected t
 
 - Windows Rust 1.94: `cargo +1.94 llvm-cov --workspace --all-features
   --summary-only` exited successfully, with 77.74% line, 76.27% function, and
-  80.21% region coverage. The line total remains below the 90% workspace gate;
-  T060 and T061 therefore remain open.
+  80.21% region coverage. This is a single-platform summary, not the repository
+  aggregate: the 90% workspace gate merges Linux, Windows, and macOS reports.
+  T060 and T061 remain open pending the aggregate CI result.
