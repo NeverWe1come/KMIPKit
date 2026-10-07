@@ -18,6 +18,7 @@ struct ValidationMetrics {
     schema_tag_comparisons_per_item: Vec<usize>,
     enum_comparisons_per_item: Vec<usize>,
     order_edge_checks_per_structure: Vec<usize>,
+    order_edge_work_per_structure: Vec<usize>,
     occurrence_entries_per_structure: Vec<usize>,
 }
 
@@ -346,6 +347,7 @@ fn validate_order_edges(
         .ok_or_else(resource_limit)?;
     let pair_search_count = pair_count.checked_mul(2).ok_or_else(resource_limit)?;
     let mut checks = 0_usize;
+    let mut work = 0_usize;
     let mut first_invalid_edge: Option<usize> = None;
 
     // Search present pairs for sparse structures; scan the compiled edge list
@@ -360,7 +362,10 @@ fn validate_order_edges(
                     .get(after_position)
                     .ok_or_else(|| invalid_schema(path))?;
                 for (before, after) in [(before_index, after_index), (after_index, before_index)] {
-                    if let Some(edge_position) = find_order_edge(order_edges, before, after) {
+                    let (edge_position, comparisons) = find_order_edge(order_edges, before, after);
+                    work =
+                        checked_usize_counter_add(work, comparisons).ok_or_else(resource_limit)?;
+                    if let Some(edge_position) = edge_position {
                         let edge = order_edges
                             .get(edge_position)
                             .ok_or_else(|| invalid_schema(path))?;
@@ -377,6 +382,7 @@ fn validate_order_edges(
         }
     } else {
         for (edge_position, edge) in order_edges.iter().enumerate() {
+            work = checked_usize_counter_add(work, 1).ok_or_else(resource_limit)?;
             if occurrences.contains_key(&edge.before_index)
                 && occurrences.contains_key(&edge.after_index)
             {
@@ -398,6 +404,7 @@ fn validate_order_edges(
         return Err(invalid_schema(path));
     }
 
+    record_order_edge_work(metrics, work)?;
     record_order_edge_checks(metrics, checks)
 }
 
@@ -405,12 +412,24 @@ fn find_order_edge(
     order_edges: &[CompiledOrderEdge],
     before_index: usize,
     after_index: usize,
-) -> Option<usize> {
-    order_edges
-        .binary_search_by_key(&(before_index, after_index), |edge| {
-            (edge.before_index, edge.after_index)
-        })
-        .ok()
+) -> (Option<usize>, usize) {
+    let expected = (before_index, after_index);
+    let mut low = 0_usize;
+    let mut high = order_edges.len();
+    let mut comparisons = 0_usize;
+    while low < high {
+        let middle = low + (high - low) / 2;
+        let Some(edge) = order_edges.get(middle) else {
+            return (None, comparisons);
+        };
+        comparisons += 1;
+        match (edge.before_index, edge.after_index).cmp(&expected) {
+            std::cmp::Ordering::Less => low = middle + 1,
+            std::cmp::Ordering::Equal => return (Some(middle), comparisons),
+            std::cmp::Ordering::Greater => high = middle,
+        }
+    }
+    (None, comparisons)
 }
 
 fn validate_scalar(
@@ -657,6 +676,19 @@ fn record_order_edge_checks(
 }
 
 #[cfg(test)]
+fn record_order_edge_work(
+    metrics: &mut ValidationMetrics,
+    work: usize,
+) -> Result<(), ProtocolError> {
+    metrics
+        .order_edge_work_per_structure
+        .try_reserve(1)
+        .map_err(|_| resource_limit())?;
+    metrics.order_edge_work_per_structure.push(work);
+    Ok(())
+}
+
+#[cfg(test)]
 fn record_occurrence_entries(
     metrics: &mut ValidationMetrics,
     entries: usize,
@@ -680,6 +712,13 @@ fn record_occurrence_entries(_: &mut ValidationMetrics, _: usize) -> Result<(), 
 #[inline]
 #[allow(clippy::unnecessary_wraps)] // Test metrics can fail while reserving their bounded traces.
 fn record_order_edge_checks(_: &mut ValidationMetrics, _: usize) -> Result<(), ProtocolError> {
+    Ok(())
+}
+
+#[cfg(not(test))]
+#[inline]
+#[allow(clippy::unnecessary_wraps)] // Test metrics can fail while reserving their bounded traces.
+fn record_order_edge_work(_: &mut ValidationMetrics, _: usize) -> Result<(), ProtocolError> {
     Ok(())
 }
 

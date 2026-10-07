@@ -111,3 +111,75 @@ fn many_empty_nested_structures_do_not_repeat_schema_width_work() {
         "only the two present root fields need occurrence tracking"
     );
 }
+
+#[test]
+fn sparse_nonempty_structures_bound_order_lookup_work_by_edge_count() {
+    let children = (0..CHILD_RULE_COUNT)
+        .map(|index| {
+            extension::optional(
+                tag(FIRST_NESTED_RULE_TAG_OFFSET + index),
+                extension::scalar(ItemType::Integer).expect("Integer is supported"),
+            )
+            .expect("optional child rule is valid")
+        })
+        .collect();
+    let order_edges = (0..CHILD_RULE_COUNT - 1)
+        .map(|index| {
+            extension::extension_order_constraint(
+                tag(FIRST_NESTED_RULE_TAG_OFFSET + index),
+                tag(FIRST_NESTED_RULE_TAG_OFFSET + index + 1),
+            )
+            .expect("adjacent child tags form a valid order edge")
+        })
+        .collect();
+    let nested_schema = extension::structure(children, order_edges, false)
+        .expect("default schema width and constraint limits accept this nested schema");
+    let root_schema = extension::structure(
+        vec![
+            extension::required(
+                tag(DISCRIMINATOR_TAG_OFFSET),
+                extension::scalar(ItemType::TextString).expect("Text String is supported"),
+            )
+            .expect("discriminator rule is valid"),
+            extension::repeated(tag(NESTED_STRUCTURE_TAG_OFFSET), nested_schema)
+                .expect("repeated nested Structure rule is valid"),
+        ],
+        Vec::new(),
+        false,
+    )
+    .expect("root schema is valid");
+    let identity = extension::extension_identity("example.vendor", "sparse-work", "1")
+        .expect("extension identity is valid");
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+        .expect("extension compatibility includes the client");
+    let path =
+        extension::ttlv_path(tag(DISCRIMINATOR_TAG_OFFSET)).expect("discriminator path is valid");
+    let discriminator = extension::discriminator(path, Value::text_string(DISCRIMINATOR.into()))
+        .expect("discriminator value is valid");
+    let definition =
+        extension::extension_definition(identity, compatibility, discriminator, root_schema)
+            .expect("extension definition is valid");
+
+    let mut nested_items = (0..32)
+        .step_by(2)
+        .map(|index| item(FIRST_NESTED_RULE_TAG_OFFSET + index, Value::integer(1)));
+    let nested_value = Value::structure(structure(nested_items.by_ref()));
+    let value = structure([
+        item(
+            DISCRIMINATOR_TAG_OFFSET,
+            Value::text_string(DISCRIMINATOR.into()),
+        ),
+        item(NESTED_STRUCTURE_TAG_OFFSET, nested_value),
+    ]);
+
+    let (_, metrics) = validate_with_metrics(&definition, value, &CodecLimits::defaults())
+        .expect("sparse declared children satisfy the schema");
+
+    assert!(
+        metrics
+            .order_edge_work_per_structure
+            .iter()
+            .all(|work| *work <= (CHILD_RULE_COUNT - 1) as usize),
+        "order lookup work should stay within one declared-edge pass per Structure"
+    );
+}
