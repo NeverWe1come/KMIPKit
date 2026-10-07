@@ -26,10 +26,7 @@ fn main() {
     cc::Build::new()
         .file(consumer_source)
         .include(consumer_header)
-        .define(
-            "main",
-            Some("kmipkit_extension_registry_c_consumer_main"),
-        )
+        .define("main", Some("kmipkit_extension_registry_c_consumer_main"))
         .flag_if_supported("-std=c11")
         .compile("kmipkit_extension_registry_c_consumer");
 }

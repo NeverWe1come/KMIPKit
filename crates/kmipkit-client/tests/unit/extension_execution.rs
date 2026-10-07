@@ -52,11 +52,7 @@ fn response_with_extension_for_operation(criticality: bool, operation: u32) -> V
     response_with_extension_vendor(criticality, operation, VENDOR.to_owned())
 }
 
-fn response_with_extension_vendor(
-    criticality: bool,
-    operation: u32,
-    vendor: String,
-) -> Vec<u8> {
+fn response_with_extension_vendor(criticality: bool, operation: u32, vendor: String) -> Vec<u8> {
     let mut extension_payload = Structure::new();
     extension_payload
         .try_push(test_item(

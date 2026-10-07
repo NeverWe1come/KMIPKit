@@ -5,9 +5,9 @@ use super::{
 };
 use crate::extension_registry_test_support::index_compilation_attempts;
 use kmipkit_protocol::extension;
+use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value};
-use kmipkit_transport::RequestDeliveryState;
 
 fn vendor_tag() -> Tag {
     RawTag::new(0x42_0001)
@@ -193,11 +193,9 @@ fn duplicate_identity_and_exact_discriminator_keys_are_rejected() {
 
 #[test]
 fn inspection_preserves_unrecognized_vendor_and_scalar_mismatches() {
-    let registry = client_extension_registry(
-        vec![definition("alpha", "alpha-v1")],
-        extension::defaults(),
-    )
-    .expect("the discriminator registry is valid");
+    let registry =
+        client_extension_registry(vec![definition("alpha", "alpha-v1")], extension::defaults())
+            .expect("the discriminator registry is valid");
 
     let wrong_vendor = inspect(
         &registry,
@@ -298,8 +296,8 @@ fn discriminator_index_selects_by_exact_scalar_after_fingerprinting() {
         .expect("the observed discriminator is valid TTLV");
 
     let matches = observed.with_value(|value| {
-        let fingerprint = extension::scalar_value_fingerprint(&value)
-            .expect("the observed value is a scalar");
+        let fingerprint =
+            extension::scalar_value_fingerprint(&value).expect("the observed value is a scalar");
         let candidates =
             discriminator_candidates(&registry, "example.vendor", &[vendor_tag()], fingerprint)
                 .expect("the exact path has a candidate bucket");
@@ -350,13 +348,8 @@ fn candidate_match_checks_the_full_vendor_path_and_scalar_tuple() {
             &[vendor_tag()],
             &value,
         );
-        let wrong_path = candidate_matches_discriminator(
-            &registry,
-            1,
-            "example.vendor",
-            &[wrong_path],
-            &value,
-        );
+        let wrong_path =
+            candidate_matches_discriminator(&registry, 1, "example.vendor", &[wrong_path], &value);
         let wrong_scalar_value = wrong_value.with_value(|wrong_value| {
             candidate_matches_discriminator(
                 &registry,

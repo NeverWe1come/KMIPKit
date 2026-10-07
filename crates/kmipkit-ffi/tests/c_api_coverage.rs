@@ -27,10 +27,7 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
         .expect("test executable name has no NUL byte");
     let fixture = CString::new(fixture.to_str().expect("fixture path is UTF-8"))
         .expect("fixture path has no NUL byte");
-    let mut arguments = [
-        executable.as_ptr().cast_mut(),
-        fixture.as_ptr().cast_mut(),
-    ];
+    let mut arguments = [executable.as_ptr().cast_mut(), fixture.as_ptr().cast_mut()];
     let mut limits = std::ptr::null_mut();
 
     // SAFETY: `limits` is a valid writable output slot and every C string and argument pointer

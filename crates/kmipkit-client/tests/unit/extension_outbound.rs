@@ -34,6 +34,8 @@ const TIME_STAMP_TAG: u32 = 0x0042_0092;
 const BATCH_COUNT_TAG: u32 = 0x0042_000D;
 const UNIQUE_BATCH_ITEM_ID_TAG: u32 = 0x0042_0093;
 const SECRET_SENTINEL: &[u8] = b"KMIPKIT_EXTENSION_SECRET_SENTINEL_73";
+const OPTIONAL_HEADER_CORRELATION: &str = "request-correlation-73";
+const OPTIONAL_HEADER_TIMESTAMP: i64 = 1_700_000_000;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CapturedExtension {
@@ -296,7 +298,9 @@ impl Transport for ObservingTransport {
         let captured = capture_extensions(request)
             .expect("the client emits a complete request with valid TTLV framing");
         self.captured.borrow_mut().extend(captured);
-        self.captured_request.borrow_mut().extend_from_slice(request);
+        self.captured_request
+            .borrow_mut()
+            .extend_from_slice(request);
         let result = self
             .inner
             .borrow_mut()
@@ -342,16 +346,12 @@ fn response_success() -> Vec<u8> {
 }
 
 fn item_value(children: &[Item], raw_tag: u32) -> Option<&Item> {
-    children
-        .iter()
-        .find(|item| item.tag().raw() == raw_tag)
+    children.iter().find(|item| item.tag().raw() == raw_tag)
 }
 
 #[test]
 fn execute_encodes_every_optional_batch_header_and_item_identifier() {
-    const CORRELATION: &str = "request-correlation-73";
     const ASYNC_CORRELATION: &[u8] = b"async-correlation-73";
-    const TIMESTAMP: i64 = 1_700_000_000;
     let observer = ZeroizationObserver::new(None);
     let mut fixture = client_for(
         ExchangeScript::Success {
@@ -373,11 +373,11 @@ fn execute_encodes_every_optional_batch_header_and_item_identifier() {
         ClientBatchItem::new(ClientRequest::discover_versions())
             .with_unique_batch_item_id(b"batch-b".to_vec()),
     ])
-    .with_client_correlation_value(CORRELATION.to_owned())
+    .with_client_correlation_value(OPTIONAL_HEADER_CORRELATION.to_owned())
     .with_asynchronous_indicator(2)
     .with_batch_error_continuation_option(1)
     .with_batch_order_option(true)
-    .with_request_time_stamp(TIMESTAMP);
+    .with_request_time_stamp(OPTIONAL_HEADER_TIMESTAMP);
 
     let response = fixture
         .client
@@ -388,71 +388,17 @@ fn execute_encodes_every_optional_batch_header_and_item_identifier() {
     assert_eq!(fixture.transport.borrow().exchange_count(), 1);
     let decoded = decode_with_limits(&fixture.captured_request.borrow(), &CodecLimits::defaults())
         .expect("captured request is valid TTLV");
+    assert_request_headers_and_items(&decoded);
+}
+
+fn assert_request_headers_and_items(decoded: &Item) {
     decoded.with_value(|root| {
         let ValueView::Structure(message) = root else {
             panic!("request message is a Structure");
         };
         let header =
             item_value(message.children(), REQUEST_HEADER_TAG).expect("request header exists");
-        header.with_value(|value| {
-            let ValueView::Structure(header) = value else {
-                panic!("request header is a Structure");
-            };
-            assert_eq!(
-                item_value(header.children(), CLIENT_CORRELATION_VALUE_TAG)
-                    .expect("client correlation is encoded")
-                    .with_value(|value| match value {
-                        ValueView::TextString(value) => value.to_owned(),
-                        _ => panic!("client correlation is a Text String"),
-                    }),
-                CORRELATION
-            );
-            assert_eq!(
-                item_value(header.children(), ASYNCHRONOUS_INDICATOR_TAG)
-                    .expect("asynchronous indicator is encoded")
-                    .with_value(|value| match value {
-                        ValueView::Enumeration(value) => *value,
-                        _ => panic!("asynchronous indicator is an Enumeration"),
-                    }),
-                2
-            );
-            assert_eq!(
-                item_value(header.children(), BATCH_ERROR_CONTINUATION_OPTION_TAG)
-                    .expect("batch error continuation is encoded")
-                    .with_value(|value| match value {
-                        ValueView::Enumeration(value) => *value,
-                        _ => panic!("batch error continuation is an Enumeration"),
-                    }),
-                1
-            );
-            assert_eq!(
-                item_value(header.children(), BATCH_ORDER_OPTION_TAG)
-                    .expect("batch order is encoded")
-                    .with_value(|value| match value {
-                        ValueView::Boolean(value) => *value,
-                        _ => panic!("batch order is Boolean"),
-                    }),
-                true
-            );
-            assert_eq!(
-                item_value(header.children(), TIME_STAMP_TAG)
-                    .expect("request timestamp is encoded")
-                    .with_value(|value| match value {
-                        ValueView::DateTime(value) => *value,
-                        _ => panic!("request timestamp is Date Time"),
-                    }),
-                TIMESTAMP
-            );
-            assert_eq!(
-                item_value(header.children(), BATCH_COUNT_TAG)
-                    .expect("batch count is encoded")
-                    .with_value(|value| match value {
-                        ValueView::Integer(value) => *value,
-                        _ => panic!("batch count is Integer"),
-                    }),
-                2
-            );
-        });
+        assert_header_options(header);
 
         let batch_item_ids = message
             .children()
@@ -473,6 +419,67 @@ fn execute_encodes_every_optional_batch_header_and_item_identifier() {
             })
             .collect::<Vec<_>>();
         assert_eq!(batch_item_ids, [b"batch-a".to_vec(), b"batch-b".to_vec()]);
+    });
+}
+
+fn assert_header_options(header_item: &Item) {
+    header_item.with_value(|value| {
+        let ValueView::Structure(header) = value else {
+            panic!("request header is a Structure");
+        };
+        assert_eq!(
+            item_value(header.children(), CLIENT_CORRELATION_VALUE_TAG)
+                .expect("client correlation is encoded")
+                .with_value(|value| match value {
+                    ValueView::TextString(value) => value.to_owned(),
+                    _ => panic!("client correlation is a Text String"),
+                }),
+            OPTIONAL_HEADER_CORRELATION
+        );
+        assert_eq!(
+            item_value(header.children(), ASYNCHRONOUS_INDICATOR_TAG)
+                .expect("asynchronous indicator is encoded")
+                .with_value(|value| match value {
+                    ValueView::Enumeration(value) => *value,
+                    _ => panic!("asynchronous indicator is an Enumeration"),
+                }),
+            2
+        );
+        assert_eq!(
+            item_value(header.children(), BATCH_ERROR_CONTINUATION_OPTION_TAG)
+                .expect("batch error continuation is encoded")
+                .with_value(|value| match value {
+                    ValueView::Enumeration(value) => *value,
+                    _ => panic!("batch error continuation is an Enumeration"),
+                }),
+            1
+        );
+        assert!(
+            item_value(header.children(), BATCH_ORDER_OPTION_TAG)
+                .expect("batch order is encoded")
+                .with_value(|value| match value {
+                    ValueView::Boolean(value) => *value,
+                    _ => panic!("batch order is Boolean"),
+                })
+        );
+        assert_eq!(
+            item_value(header.children(), TIME_STAMP_TAG)
+                .expect("request timestamp is encoded")
+                .with_value(|value| match value {
+                    ValueView::DateTime(value) => *value,
+                    _ => panic!("request timestamp is Date Time"),
+                }),
+            OPTIONAL_HEADER_TIMESTAMP
+        );
+        assert_eq!(
+            item_value(header.children(), BATCH_COUNT_TAG)
+                .expect("batch count is encoded")
+                .with_value(|value| match value {
+                    ValueView::Integer(value) => *value,
+                    _ => panic!("batch count is Integer"),
+                }),
+            2
+        );
     });
 }
 
@@ -505,10 +512,7 @@ fn execute_rejects_extension_validated_for_a_different_registry_before_exchange(
         .execute(ClientBatch::new(batch_item), &CodecLimits::defaults())
         .expect_err("a request extension must match the client's registered extension set");
 
-    assert_eq!(
-        error.category(),
-        crate::ClientErrorCategory::Validation
-    );
+    assert_eq!(error.category(), crate::ClientErrorCategory::Validation);
     assert_eq!(
         error.cause_category(),
         Some(crate::ClientCauseCategory::InvalidInput)

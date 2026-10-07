@@ -221,11 +221,9 @@ fn scalar_fingerprints_are_type_separated_and_structures_have_no_fingerprint() {
         .expect("TextString has a scalar fingerprint")
     );
 
-    let structure_item = kmipkit_ttlv::Item::new(
-        tag(2),
-        Value::structure(kmipkit_ttlv::Structure::new()),
-    )
-    .expect("the test Structure uses a valid extension tag");
+    let structure_item =
+        kmipkit_ttlv::Item::new(tag(2), Value::structure(kmipkit_ttlv::Structure::new()))
+            .expect("the test Structure uses a valid extension tag");
     assert_eq!(
         structure_item.with_value(|view| extension::scalar_value_fingerprint(&view)),
         None,
@@ -271,8 +269,7 @@ fn nested_discriminator_paths_match_only_the_declared_terminal_schema() {
     );
 
     let missing_path = extension::ttlv_path(tag(3)).expect("the path is non-empty");
-    let missing_discriminator =
-        valid_discriminator(Value::text_string("value".to_owned()));
+    let missing_discriminator = valid_discriminator(Value::text_string("value".to_owned()));
     assert_eq!(missing_discriminator.path().tags(), &[tag(1)]);
     assert_eq!(missing_path.tags(), &[tag(3)]);
     let scalar_schema = extension::structure(

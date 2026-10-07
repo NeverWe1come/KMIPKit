@@ -9,49 +9,10 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 const NESTED_TAG: u32 = 0x0054_0010;
 const DISCRIMINATOR_TAG: u32 = 0x0054_0011;
 const POLICY_TAG: u32 = 0x0054_0012;
+const VENDOR_IDENTIFIER: &str = "com.example";
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let vendor_identifier = "com.example";
-    let identity = extension::extension_identity(vendor_identifier, "key-policy", "1")?;
-    let compatibility = extension::compatibility(2, 1, 2, 1, "0.1.0", "0.1.0")?;
-
-    let discriminator_tag = tag(DISCRIMINATOR_TAG)?;
-    let nested_tag = tag(NESTED_TAG)?;
-    let discriminator_path =
-        extension::with_child_tag(extension::ttlv_path(nested_tag)?, discriminator_tag)?;
-    let discriminator = extension::discriminator(
-        discriminator_path,
-        Value::text_string("key-policy-v1".to_owned()),
-    )?;
-
-    let label_rule =
-        extension::required(discriminator_tag, extension::scalar(ItemType::TextString)?)?;
-    let policy_rule = extension::optional(
-        tag(POLICY_TAG)?,
-        extension::with_signed_range(
-            extension::scalar(ItemType::Integer)?,
-            0,
-            i64::from(i32::MAX),
-        )?,
-    )?;
-    let nested_schema = extension::structure(vec![label_rule, policy_rule], Vec::new(), false)?;
-    let root_schema = extension::structure(
-        vec![extension::required(nested_tag, nested_schema)?],
-        Vec::new(),
-        false,
-    )?;
-    let definition = extension::extension_definition(
-        identity.clone(),
-        compatibility,
-        discriminator,
-        root_schema,
-    )?;
-    let information = extension::extension_information("Key policy extension")?;
-    let definition = extension::with_information(definition, information)?;
-
-    let registry =
-        extension_registry::client_extension_registry(vec![definition], extension::defaults())?;
-    let configuration = client_extension::ClientConfiguration::new(registry);
+    let (configuration, identity, nested_tag, discriminator_tag) = build_client_configuration()?;
     let codec_limits = CodecLimits::defaults();
 
     let first_value = client_extension::validate_extension_value(
@@ -75,7 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // this example inspects local TTLV and does not exercise that transport path.
     let recognized = client_extension::inspect(
         configuration.extension_registry(),
-        vendor_identifier,
+        VENDOR_IDENTIFIER,
         payload("key-policy-v1", 7)?,
         &codec_limits,
     )?;
@@ -91,7 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let schema_invalid = client_extension::inspect(
         configuration.extension_registry(),
-        vendor_identifier,
+        VENDOR_IDENTIFIER,
         payload("key-policy-v1", -1)?,
         &codec_limits,
     )?;
@@ -128,6 +89,61 @@ fn main() -> Result<(), Box<dyn Error>> {
         "recognized a valid inbound extension, retained a schema-invalid payload generically, and attached two outbound uses in caller order"
     );
     Ok(())
+}
+
+fn build_client_configuration() -> Result<
+    (
+        client_extension::ClientConfiguration,
+        extension::ExtensionIdentity,
+        Tag,
+        Tag,
+    ),
+    Box<dyn Error>,
+> {
+    let identity = extension::extension_identity(VENDOR_IDENTIFIER, "key-policy", "1")?;
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.1.0", "0.1.0")?;
+    let discriminator_tag = tag(DISCRIMINATOR_TAG)?;
+    let nested_tag = tag(NESTED_TAG)?;
+    let discriminator_path =
+        extension::with_child_tag(extension::ttlv_path(nested_tag)?, discriminator_tag)?;
+    let discriminator = extension::discriminator(
+        discriminator_path,
+        Value::text_string("key-policy-v1".to_owned()),
+    )?;
+
+    let label_rule =
+        extension::required(discriminator_tag, extension::scalar(ItemType::TextString)?)?;
+    let policy_rule = extension::optional(
+        tag(POLICY_TAG)?,
+        extension::with_signed_range(
+            extension::scalar(ItemType::Integer)?,
+            0,
+            i64::from(i32::MAX),
+        )?,
+    )?;
+    let nested_schema = extension::structure(vec![label_rule, policy_rule], Vec::new(), false)?;
+    let root_schema = extension::structure(
+        vec![extension::required(nested_tag, nested_schema)?],
+        Vec::new(),
+        false,
+    )?;
+    let definition = extension::extension_definition(
+        identity.clone(),
+        compatibility,
+        discriminator,
+        root_schema,
+    )?;
+    let information = extension::extension_information("Key policy extension")?;
+    let definition = extension::with_information(definition, information)?;
+    let registry =
+        extension_registry::client_extension_registry(vec![definition], extension::defaults())?;
+
+    Ok((
+        client_extension::ClientConfiguration::new(registry),
+        identity,
+        nested_tag,
+        discriminator_tag,
+    ))
 }
 
 fn has_key_policy_payload(
