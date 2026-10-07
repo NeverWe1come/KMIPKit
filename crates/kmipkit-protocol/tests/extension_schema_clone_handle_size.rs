@@ -40,9 +40,8 @@ fn structure_construction_rejects_aggregate_nodes_above_the_hard_limit() {
         .collect();
 
     let result = extension::structure(outer_children, Vec::new(), false);
-    let error = match result {
-        Err(error) => error,
-        Ok(_) => panic!("the logical schema tree exceeds the 100,000-node hard limit"),
+    let Err(error) = result else {
+        panic!("the logical schema tree exceeds the 100,000-node hard limit");
     };
 
     assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
@@ -64,9 +63,8 @@ fn structure_construction_rejects_aggregate_constraints_above_the_hard_limit() {
         .collect();
 
     let result = extension::structure(children, Vec::new(), false);
-    let error = match result {
-        Err(error) => error,
-        Ok(_) => panic!("the repeated logical schema exceeds the 100,000-member hard limit"),
+    let Err(error) = result else {
+        panic!("the repeated logical schema exceeds the 100,000-member hard limit");
     };
 
     assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);

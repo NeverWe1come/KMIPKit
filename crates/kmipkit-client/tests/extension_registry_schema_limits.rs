@@ -436,9 +436,8 @@ fn hard_aggregate_constraint_boundary_accepts_exact_total_and_rejects_one_over()
     assert!(extension_registry::client_extension_registry(vec![exact], hard_limits).is_ok());
 
     let result = schema_with_payload_rules(build_rules(1_697), Vec::new());
-    let error = match result {
-        Err(error) => error,
-        Ok(_) => panic!("schema construction rejects more than 100,000 constraint members"),
+    let Err(error) = result else {
+        panic!("schema construction rejects more than 100,000 constraint members");
     };
     assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
 }
@@ -450,9 +449,8 @@ fn hard_aggregate_schema_node_boundary_accepts_exact_total_and_rejects_one_over(
     assert!(extension_registry::client_extension_registry(vec![exact], hard_limits).is_ok());
 
     let result = schema_with_schema_node_total_and_groups(100_001, 25);
-    let error = match result {
-        Err(error) => error,
-        Ok(_) => panic!("schema construction rejects more than 100,000 nodes"),
+    let Err(error) = result else {
+        panic!("schema construction rejects more than 100,000 nodes");
     };
     assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
 }

@@ -110,10 +110,10 @@ returns a redacted resource-limit error without a partial typed result.
 
 KMIPKit redacts extension payloads from errors and default formatting. Its
 owned encoded request buffer is zeroized when sending finishes, whether the
-write succeeds or fails. Java and Python callers can create runtime-managed
-copies of strings or bytes; their runtimes do not provide KMIPKit with a
-deterministic way to zeroize every such copy. Do not put secrets in debug
-output or logs.
+write succeeds or fails. KMIPKit clears its temporary Java byte-array copies
+after synchronous native calls. The JVM, callers, and Python runtime may still
+create managed copies that KMIPKit cannot deterministically overwrite. Do not
+put secrets in debug output or logs.
 
 ## Compatibility boundary
 

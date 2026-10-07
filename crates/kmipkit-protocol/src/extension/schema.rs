@@ -259,7 +259,7 @@ fn child_rule(
     schema: ExtensionSchema,
     cardinality: Cardinality,
 ) -> Result<ExtensionChildRule, ProtocolError> {
-    if schema.depth()? > MAX_SCHEMA_DEPTH {
+    if schema.depth() > MAX_SCHEMA_DEPTH {
         return Err(categorized_error(ProtocolErrorKind::ResourceLimit));
     }
     Ok(ExtensionChildRule {
@@ -712,18 +712,18 @@ impl ExtensionSchema {
         )
     }
 
-    fn depth(&self) -> Result<usize, ProtocolError> {
-        Ok(self.inner.depth)
+    fn depth(&self) -> usize {
+        self.inner.depth
     }
 
     /// Returns the number of schema nodes in this subtree.
-    pub(crate) fn node_count(&self) -> Result<usize, ProtocolError> {
-        Ok(self.inner.node_count)
+    pub(crate) fn node_count(&self) -> usize {
+        self.inner.node_count
     }
 
     /// Returns allowed-enumeration values and order edges across this subtree.
-    pub(crate) fn constraint_member_count(&self) -> Result<usize, ProtocolError> {
-        Ok(self.inner.constraint_member_count)
+    pub(crate) fn constraint_member_count(&self) -> usize {
+        self.inner.constraint_member_count
     }
 
     /// Checks the configurable registry limits before registry-owned indexes

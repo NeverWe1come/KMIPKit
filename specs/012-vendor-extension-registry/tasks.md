@@ -200,3 +200,6 @@ Every functional requirement and buildable success criterion has at least one pl
 ## Phase 7: Convergence
 
 - [x] T065 Bound recursive schema preflight by the remaining aggregate schema-node and constraint-member budgets, stop at the first exceeded budget, and preserve Red, Green, and Refactor evidence in distinct commits per KMIPKIT-0012-FR-012, KMIPKIT-0012-SC-007, and the plan's pre-allocation limit decision (partial).
+
+- [x] T066 [FR-012] Share immutable schema nodes across clones, cache checked depth/node/constraint totals, and reject aggregate schema construction above hard maxima before compiling indexes; preserve Red/Green/Refactor evidence in `crates/kmipkit-protocol/tests/extension_schema_clone_handle_size.rs`.
+- [x] T067 [FR-011] Clear KMIPKit-owned Java TTLV factory byte-array copies after synchronous JNI success or failure and document JVM copy limits in English and Spanish; preserve Red/Green/Refactor evidence in `bindings/java/src/test/java/org/kmipkit/ttlv/TtlvValueSecretCopyTest.java`.
