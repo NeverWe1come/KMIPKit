@@ -206,17 +206,8 @@ fn validate_structure(
             path.push(item.tag());
             return Err(invalid_schema(path));
         };
-        if !occurrences.contains_key(&index) {
-            occurrences.try_reserve(1).map_err(|_| resource_limit())?;
-            present_rule_indices
-                .try_reserve(1)
-                .map_err(|_| resource_limit())?;
-            occurrences.insert(index, ChildOccurrences::default());
-            present_rule_indices.push(index);
-        }
-        let occurrence = occurrences
-            .get_mut(&index)
-            .ok_or_else(|| invalid_schema(path))?;
+        let occurrence =
+            record_child_occurrence(&mut occurrences, &mut present_rule_indices, index, path)?;
         let rule = &rules[index];
         if rule.cardinality != Cardinality::Repeated && occurrence.count != 0 {
             path.push(rule.tag);
@@ -280,6 +271,25 @@ struct ChildOccurrences {
     last: Option<usize>,
 }
 
+fn record_child_occurrence<'a>(
+    occurrences: &'a mut HashMap<usize, ChildOccurrences>,
+    present_rule_indices: &mut Vec<usize>,
+    rule_index: usize,
+    path: &[kmipkit_ttlv::Tag],
+) -> Result<&'a mut ChildOccurrences, ProtocolError> {
+    if !occurrences.contains_key(&rule_index) {
+        occurrences.try_reserve(1).map_err(|_| resource_limit())?;
+        present_rule_indices
+            .try_reserve(1)
+            .map_err(|_| resource_limit())?;
+        occurrences.insert(rule_index, ChildOccurrences::default());
+        present_rule_indices.push(rule_index);
+    }
+    occurrences
+        .get_mut(&rule_index)
+        .ok_or_else(|| invalid_schema(path))
+}
+
 fn find_rule_index(
     rules: &[super::schema::ExtensionChildRule],
     child_tag_index: &[usize],
@@ -338,6 +348,8 @@ fn validate_order_edges(
     let mut checks = 0_usize;
     let mut first_invalid_edge: Option<usize> = None;
 
+    // Search present pairs for sparse structures; scan the compiled edge list
+    // when that is the smaller bounded candidate set.
     if pair_search_count < order_edges.len() {
         for before_position in 0..present_rule_indices.len() {
             let before_index = *present_rule_indices
@@ -348,11 +360,7 @@ fn validate_order_edges(
                     .get(after_position)
                     .ok_or_else(|| invalid_schema(path))?;
                 for (before, after) in [(before_index, after_index), (after_index, before_index)] {
-                    if let Ok(edge_position) = order_edges
-                        .binary_search_by_key(&(before, after), |edge| {
-                            (edge.before_index, edge.after_index)
-                        })
-                    {
+                    if let Some(edge_position) = find_order_edge(order_edges, before, after) {
                         let edge = order_edges
                             .get(edge_position)
                             .ok_or_else(|| invalid_schema(path))?;
@@ -391,6 +399,18 @@ fn validate_order_edges(
     }
 
     record_order_edge_checks(metrics, checks)
+}
+
+fn find_order_edge(
+    order_edges: &[CompiledOrderEdge],
+    before_index: usize,
+    after_index: usize,
+) -> Option<usize> {
+    order_edges
+        .binary_search_by_key(&(before_index, after_index), |edge| {
+            (edge.before_index, edge.after_index)
+        })
+        .ok()
 }
 
 fn validate_scalar(
