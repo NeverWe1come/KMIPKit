@@ -227,6 +227,15 @@ Root-inclusive payload-cap Red evidence:
   addition to the root when `CodecLimits` is raised. The hard recognition cap
   is 100,000 total TTLV items, including the root Structure.
 
+Recognition-bridge Red evidence:
+
+- `cargo test -p kmipkit-protocol --test extension_preservation schema_only_validation_does_not_claim_discriminator_recognition -- --nocapture`
+  — expected Red (exit 101): the public protocol surface still exposes only
+  `validate_for_recognition`/`RecognitionValidation::Validated`, whose names
+  can be mistaken for a complete discriminator recognition result. The new
+  test requires an explicitly schema-only outcome while confirming that full
+  `validate` continues to reject a discriminator mismatch.
+
 Red/Green evidence:
 
 - Red: `de93ace`; the provenance regression test failed to compile because the

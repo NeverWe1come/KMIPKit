@@ -2,7 +2,7 @@
 //!
 //! OASIS KMIP v2.1 §9.13, Table 418 defines the standard Message Extension
 //! fields and Vendor Extension subtree. Unknown vendor payload fields and
-//! forward-compatible enum/bitmask values are KMIPKit preservation policy
+//! forward-compatible enum/bitmask values are `KMIPKit` preservation policy
 //! (`KMIPKIT-0012-FR-007`, `KMIPKIT-0012-SC-003`), not new OASIS schema rules.
 //! TTLV decoding bounds follow KMIPKIT-0005-FR-004 and KMIPKIT-0012-FR-012.
 
@@ -299,6 +299,35 @@ fn repeated_discriminator_tag_is_a_non_match_without_a_typed_value() {
             .kind(),
         ProtocolErrorKind::InvalidSchema
     );
+}
+
+#[test]
+fn schema_only_validation_does_not_claim_discriminator_recognition() {
+    let mismatching = || {
+        structure([
+            item(
+                DISCRIMINATOR_TAG,
+                Value::text_string("different-vendor-value".into()),
+            ),
+            item(BEFORE_TAG, Value::integer(-7)),
+            item(BITMASK_TAG, Value::integer(3)),
+            item(AFTER_TAG, Value::boolean(true)),
+        ])
+    };
+
+    assert!(
+        extension::validate(&definition(), mismatching(), &CodecLimits::defaults()).is_err(),
+        "full validation still requires the definition's exact discriminator"
+    );
+    let outcome =
+        extension::validate_schema_only(&definition(), mismatching(), &CodecLimits::defaults())
+            .expect("schema-only validation checks its accurately named scope");
+
+    assert!(matches!(
+        outcome,
+        extension::SchemaValidationOutcome::SchemaValid(value)
+            if extension::validated_extension_value_identity(&value).name() == "preservation"
+    ));
 }
 
 #[test]
