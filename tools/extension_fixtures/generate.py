@@ -870,6 +870,12 @@ def _atomic_write(root: Path, destination: Path, contents: str) -> None:
                 pass
 
 
+def _write_outputs(root: Path, outputs: dict[Path, str]) -> None:
+    destinations = _preflight_outputs(root, outputs)
+    for path, contents in outputs.items():
+        _atomic_write(root, destinations[path], contents)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="fail if generated files are stale")
@@ -877,10 +883,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         outputs = render(_read(MANIFEST), _read(CORPUS))
         root = ROOT.resolve(strict=True)
-        destinations = _preflight_outputs(root, outputs)
         stale = []
-        for path, contents in outputs.items():
-            if args.check:
+        if args.check:
+            destinations = _preflight_outputs(root, outputs)
+            for path, contents in outputs.items():
                 try:
                     current = destinations[path].read_text(encoding="utf-8")
                 except (OSError, UnicodeError):
@@ -888,8 +894,8 @@ def main(argv: list[str] | None = None) -> int:
                     continue
                 if current != contents:
                     stale.append(path.relative_to(ROOT).as_posix())
-            else:
-                _atomic_write(root, destinations[path], contents)
+        else:
+            _write_outputs(root, outputs)
         if stale:
             print("stale extension fixture outputs: " + ", ".join(stale), file=sys.stderr)
             return 1
