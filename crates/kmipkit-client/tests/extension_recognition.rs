@@ -542,6 +542,62 @@ fn repeated_tag_search_stays_within_the_thirty_five_comparison_step_bound() {
 }
 
 #[test]
+fn worst_case_duplicate_tag_search_uses_exactly_thirty_five_comparisons() {
+    let make_registry = |maximum_comparisons| {
+        extension_registry::client_extension_registry(
+            vec![definition("alpha", &[FIRST_PATH_TAG], "alpha-v1", false)],
+            registry_limits(200_000, maximum_comparisons),
+        )
+        .expect("the configured comparison budget is within its hard maximum")
+    };
+    let make_payload = || {
+        let mut value = Structure::new();
+        for _ in 0..2 {
+            value
+                .try_push(
+                    Item::new(
+                        tag(FIRST_PATH_TAG),
+                        Value::text_string("alpha-v1".to_owned()),
+                    )
+                    .expect("the repeated discriminator item is valid"),
+                )
+                .expect("the repeated discriminator pair fits the payload");
+        }
+        for _ in 0..99_997 {
+            value
+                .try_push(
+                    Item::new(
+                        tag(SECOND_PATH_TAG),
+                        Value::text_string("greater".to_owned()),
+                    )
+                    .expect("the greater tag is valid"),
+                )
+                .expect("the greater-tag suffix remains within the structure bound");
+        }
+        value
+    };
+    let limits = CodecLimits::new(
+        CodecLimits::DEFAULT_MAX_MESSAGE_BYTES,
+        CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
+        CodecLimits::DEFAULT_MAX_ELEMENTS,
+    )
+    .expect("the raised element cap remains within TTLV bounds");
+
+    let at_limit = extension_registry::inspect(&make_registry(35), VENDOR, make_payload(), &limits)
+        .expect("the worst-case repeated-tag lookup uses exactly 35 comparisons");
+    assert_unrecognized(&at_limit);
+
+    let below_limit =
+        extension_registry::inspect(&make_registry(34), VENDOR, make_payload(), &limits)
+            .expect_err("a budget of 34 rejects the 35th tag comparison");
+    assert!(matches!(
+        below_limit,
+        ClientError::Protocol { ref error, .. }
+            if error.kind() == kmipkit_protocol::ProtocolErrorKind::ResourceLimit
+    ));
+}
+
+#[test]
 fn raised_codec_limit_cannot_raise_the_hard_payload_item_cap() {
     let registry = registry(vec![definition(
         "alpha",

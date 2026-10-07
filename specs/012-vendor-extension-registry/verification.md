@@ -32,6 +32,21 @@ Red/Green/Refactor commits:
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
 
+## 2026-10-07 — adversarial lookup comparison boundary
+
+Added a sorted payload with a repeated discriminator at the start followed by
+99,997 greater tags. This exercises 17 lower-bound comparisons, the equality
+check, and 17 upper-bound comparisons. The earlier all-equal fixture remains a
+separate 34-comparison boundary case.
+
+- Red mutation check: temporarily lowered `MAX_TAG_COMPARISONS_PER_STEP` from
+  35 to 34. `cargo test -p kmipkit-client --test extension_recognition
+  worst_case_duplicate_tag_search_uses_exactly_thirty_five_comparisons --
+  --nocapture` failed at the exact 35-comparison lookup with `ResourceLimit`.
+  The temporary implementation mutation was restored.
+- The new test passes with the approved bound of 35 and requires a registry
+  lookup budget of 34 to reject the same payload.
+
 ## 2026-10-07 — registered response recognition Red
 
 - `cargo test -p kmipkit-client --lib unit::extension_execution_tests::a_registered_critical_response_extension_is_accepted_by_typed_execution -- --nocapture`
