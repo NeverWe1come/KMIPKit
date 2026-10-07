@@ -485,6 +485,76 @@ class ExtensionRegistryTests(unittest.TestCase):
         finally:
             registry.close()
 
+    def test_discover_versions_batch_item_preserves_extension_identity_and_order(self) -> None:
+        limits = _codec_limits()
+        registry = registry_api.create_client_extension_registry(
+            [self.definitions["known.alpha"], self.definitions["ambiguous.beta"]],
+            registry_api.default_extension_registry_limits(),
+        )
+        item = None
+        identities = []
+        try:
+            alpha_identity = registry_api.extension_definition_identity(
+                self.definitions["known.alpha"]
+            )
+            beta_identity = registry_api.extension_definition_identity(
+                self.definitions["ambiguous.beta"]
+            )
+            identities.extend((alpha_identity, beta_identity))
+            alpha_value = registry_api.validate_extension_value(
+                registry,
+                alpha_identity,
+                _structure_from_fixture(
+                    self.fixtures["valid-recognized"]["extension"]["payload"]["children"]
+                ),
+                limits,
+            )
+            beta_value = registry_api.validate_extension_value(
+                registry,
+                beta_identity,
+                _structure_from_fixture(
+                    self.fixtures["multiply-matching"]["extension"]["payload"]["children"]
+                ),
+                limits,
+            )
+            non_critical = registry_api.create_client_request_message_extension(
+                alpha_value, False
+            )
+            critical = registry_api.create_client_request_message_extension(
+                beta_value, True
+            )
+
+            item = registry_api.client_batch_item_discover_versions()
+            item = registry_api.with_extension(item, non_critical)
+            item = registry_api.with_extension(item, critical)
+
+            self.assertEqual(registry_api.client_batch_item_extension_count(item), 2)
+            for index, expected in enumerate((alpha_identity, beta_identity)):
+                actual = registry_api.client_batch_item_extension_identity_at(item, index)
+                self.assertIsNotNone(actual)
+                identities.append(actual)
+                self.assertEqual(actual.vendor_identifier, expected.vendor_identifier)
+                self.assertEqual(actual.name, expected.name)
+                self.assertEqual(actual.version, expected.version)
+                self.assertEqual(
+                    registry_api.client_batch_item_extension_criticality_indicator_at(
+                        item, index
+                    ),
+                    index == 1,
+                )
+
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.client_batch_item_extension_identity_at(item, 2)
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.client_batch_item_extension_criticality_indicator_at(item, 2)
+        finally:
+            for identity in identities:
+                identity.close()
+            if item is not None:
+                item.close()
+            registry.close()
+            limits.close()
+
     def test_registry_construction_enforces_schema_and_metadata_limits(self) -> None:
         records, defaults = _limit_values(self.manifest)
         definition = self.definitions["known.alpha"]
