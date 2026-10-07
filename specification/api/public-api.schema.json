@@ -272,6 +272,72 @@
               ]
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "enumRepresentation": {
+                "properties": {
+                  "shape": {
+                    "const": "open-numeric"
+                  }
+                },
+                "required": [
+                  "shape"
+                ]
+              }
+            },
+            "required": [
+              "enumRepresentation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "c": {
+                "properties": {
+                  "unknownValuePolicy": {
+                    "const": "preserve-raw"
+                  }
+                },
+                "required": [
+                  "unknownValuePolicy"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "enumRepresentation": {
+                "properties": {
+                  "shape": {
+                    "const": "closed-numeric"
+                  }
+                },
+                "required": [
+                  "shape"
+                ]
+              }
+            },
+            "required": [
+              "enumRepresentation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "c": {
+                "properties": {
+                  "unknownValuePolicy": {
+                    "const": "reject-unsupported"
+                  }
+                },
+                "required": [
+                  "unknownValuePolicy"
+                ]
+              }
+            }
+          }
         }
       ]
     },
@@ -284,10 +350,18 @@
       ],
       "properties": {
         "shape": {
-          "const": "open-numeric"
+          "type": "string",
+          "enum": [
+            "open-numeric",
+            "closed-numeric"
+          ]
         },
         "unknownValuePolicy": {
-          "const": "preserve-raw"
+          "type": "string",
+          "enum": [
+            "preserve-raw",
+            "reject-unsupported"
+          ]
         },
         "values": {
           "type": "array",
@@ -295,12 +369,52 @@
           "items": {
             "$ref": "#/$defs/enumValue"
           },
-          "description": "Known symbolic names and numeric codes in deterministic declaration order. Each code fits the declared unsigned C storage type. The generator also checks that names and codes are individually unique. Unknown codes remain representable.",
+          "description": "Known symbolic names and numeric codes in deterministic declaration order. Each code fits the declared unsigned C storage type. The generator also checks that names and codes are individually unique. The shape and unknownValuePolicy jointly state whether unknown codes are preserved or rejected.",
           "uniqueItems": true
         }
       },
       "additionalProperties": false,
-      "description": "An open numeric enum with an explicit list of known values and raw preservation for unknown codes."
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "shape": {
+                "const": "open-numeric"
+              }
+            },
+            "required": [
+              "shape"
+            ]
+          },
+          "then": {
+            "properties": {
+              "unknownValuePolicy": {
+                "const": "preserve-raw"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "shape": {
+                "const": "closed-numeric"
+              }
+            },
+            "required": [
+              "shape"
+            ]
+          },
+          "then": {
+            "properties": {
+              "unknownValuePolicy": {
+                "const": "reject-unsupported"
+              }
+            }
+          }
+        }
+      ],
+      "description": "A numeric enum with an explicit list of known values and a policy matched to its open or closed shape."
     },
     "cType": {
       "type": "object",
@@ -347,7 +461,11 @@
           ]
         },
         "unknownValuePolicy": {
-          "const": "preserve-raw"
+          "type": "string",
+          "enum": [
+            "preserve-raw",
+            "reject-unsupported"
+          ]
         }
       },
       "allOf": [
