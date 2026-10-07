@@ -138,6 +138,62 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "approved_registry_inspect",
+        path: "tests/fixtures/execute_boundary/approved_registry_inspect.rs",
+        source: "pub fn inspect(registry: &ClientExtensionRegistry, vendor_identifier: &str, value: kmipkit_ttlv::Structure, codec_limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<ExtensionRecognition, ClientError> { loop {} }",
+        probe: "value: kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "registry_inspect_wrong_module",
+        path: "tests/fixtures/execute_boundary/registry_inspect_wrong_module.rs",
+        source: "pub fn inspect(registry: &ClientExtensionRegistry, vendor_identifier: &str, value: kmipkit_ttlv::Structure, codec_limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<ExtensionRecognition, ClientError> { loop {} }",
+        probe: "value: kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_inspect_wrong_argument",
+        path: "tests/fixtures/execute_boundary/registry_inspect_wrong_argument.rs",
+        source: "pub fn inspect(registry: &ClientExtensionRegistry, vendor_identifier: &str, payload: kmipkit_ttlv::Structure, codec_limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<ExtensionRecognition, ClientError> { loop {} }",
+        probe: "payload: kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_inspect_wrong_output",
+        path: "tests/fixtures/execute_boundary/registry_inspect_wrong_output.rs",
+        source: "pub fn inspect(registry: &ClientExtensionRegistry, vendor_identifier: &str, value: kmipkit_ttlv::Structure, codec_limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<kmipkit_ttlv::Structure, ClientError> { loop {} }",
+        probe: "Result<kmipkit_ttlv::Structure, ClientError>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "approved_registry_generic_accessor",
+        path: "tests/fixtures/execute_boundary/approved_registry_generic_accessor.rs",
+        source: "pub fn generic_value(recognition: &ExtensionRecognition) -> &kmipkit_ttlv::Structure { loop {} }",
+        probe: "-> &kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "registry_generic_accessor_wrong_input",
+        path: "tests/fixtures/execute_boundary/registry_generic_accessor_wrong_input.rs",
+        source: "pub fn generic_value(recognition: ExtensionRecognition) -> &kmipkit_ttlv::Structure { loop {} }",
+        probe: "recognition: ExtensionRecognition",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_generic_accessor_wrong_output",
+        path: "tests/fixtures/execute_boundary/registry_generic_accessor_wrong_output.rs",
+        source: "pub fn generic_value(recognition: &ExtensionRecognition) -> kmipkit_ttlv::Item { loop {} }",
+        probe: "-> kmipkit_ttlv::Item",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "public_structure_view_input",
         path: "tests/fixtures/execute_boundary/public_structure_view_input.rs",
         source: include_str!(
@@ -705,6 +761,13 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "registry_value_validation_wrong_module",
     "registry_value_validation_wrong_argument",
     "registry_value_validation_wrong_output",
+    "approved_registry_inspect",
+    "registry_inspect_wrong_module",
+    "registry_inspect_wrong_argument",
+    "registry_inspect_wrong_output",
+    "approved_registry_generic_accessor",
+    "registry_generic_accessor_wrong_input",
+    "registry_generic_accessor_wrong_output",
     "public_structure_view_input",
     "public_structure_view_output",
     "public_tag_input",
@@ -2677,7 +2740,16 @@ fn candidate_check_fixture(fixture: &Fixture) -> Result<(), CandidateRejection> 
         Path::new("execute.rs")
     } else if fixture.id == "approved_error_validation_source" {
         Path::new("error.rs")
-    } else if fixture.id == "approved_registry_value_validation" {
+    } else if matches!(
+        fixture.id,
+        "approved_registry_value_validation"
+            | "approved_registry_inspect"
+            | "registry_inspect_wrong_argument"
+            | "registry_inspect_wrong_output"
+            | "approved_registry_generic_accessor"
+            | "registry_generic_accessor_wrong_input"
+            | "registry_generic_accessor_wrong_output"
+    ) {
         Path::new("extension_registry.rs")
     } else {
         Path::new("fixture.rs")
@@ -3093,6 +3165,32 @@ fn registry_validation_generic_input_is_the_only_exact_exception() {
 }
 
 #[test]
+fn registry_inspection_and_generic_accessors_are_the_only_inbound_ttlv_surface() {
+    assert_eq!(
+        candidate_check_fixture(fixture("approved_registry_inspect")),
+        Ok(()),
+        "the client may accept a generic subtree only at its exact inspection boundary"
+    );
+    assert_eq!(
+        candidate_check_fixture(fixture("approved_registry_generic_accessor")),
+        Ok(()),
+        "the recognition result may expose its unchanged generic subtree by borrow"
+    );
+
+    let rejected = accepted_ids_for_rejected_fixtures(&[
+        "registry_inspect_wrong_module",
+        "registry_inspect_wrong_argument",
+        "registry_inspect_wrong_output",
+        "registry_generic_accessor_wrong_input",
+        "registry_generic_accessor_wrong_output",
+    ]);
+    assert!(
+        rejected.is_empty(),
+        "accepted non-exact inbound TTLV signatures: {rejected:?}"
+    );
+}
+
+#[test]
 fn extern_crate_alias_cannot_hide_a_generic_ttlv_type() {
     assert_eq!(
         candidate_check_fixture(fixture("ttlv_extern_crate_alias")),
@@ -3501,6 +3599,8 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"
                     | "approved_registry_value_validation"
+                    | "approved_registry_inspect"
+                    | "approved_registry_generic_accessor"
                     | "matches_guard_logical_not"
             )),
             ExpectedDecision::Reject => assert!(!matches!(
@@ -3512,6 +3612,8 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "approved_async_outcome_callbacks"
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"
+                    | "approved_registry_inspect"
+                    | "approved_registry_generic_accessor"
                     | "matches_guard_logical_not"
             )),
         }

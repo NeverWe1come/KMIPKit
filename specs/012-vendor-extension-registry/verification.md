@@ -203,6 +203,15 @@ Manifest ownership correction Red evidence:
   `Option<&ValidatedExtensionValue>`, so the manifest cannot yet describe the
   borrowed inspection accessor without pretending to return an owned payload.
 
+Exact inbound inspection boundary Red evidence:
+
+- `cargo test -p kmipkit-client --lib registry_inspection_and_generic_accessors_are_the_only_inbound_ttlv_surface -- --nocapture`
+  — expected Red (exit 101): the source inventory rejects the exact
+  `extension_registry::inspect` generic-Structure input because it has no
+  narrow signature allowlist yet. Negative fixtures also cover a different
+  module, renamed payload argument, wrong return type, and non-borrowed or
+  arbitrary generic-value accessor signatures.
+
 Red/Green evidence:
 
 - Red: `de93ace`; the provenance regression test failed to compile because the
