@@ -6,8 +6,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import stat
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -804,31 +807,98 @@ def _read(path: Path) -> Any:
         raise FixtureError(f"cannot read valid UTF-8 JSON from {path.relative_to(ROOT)}") from error
 
 
+def _is_reparse_point(path: Path) -> bool:
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return False
+    if stat.S_ISLNK(metadata.st_mode) or getattr(path, "is_junction", lambda: False)():
+        return True
+    return bool(getattr(metadata, "st_file_attributes", 0) & 0x400)
+
+
+def _safe_destination(root: Path, destination: Path) -> Path:
+    try:
+        relative = destination.relative_to(root)
+    except ValueError as error:
+        raise FixtureError("generated destination escapes the repository root") from error
+    if relative.is_absolute() or any(part in ("", ".", "..") for part in relative.parts):
+        raise FixtureError("generated destination is not a safe relative path")
+
+    current = root
+    for index, part in enumerate(relative.parts):
+        current = current / part
+        if _is_reparse_point(current):
+            raise FixtureError("generated destination traverses a symbolic link or reparse point")
+        if current.exists() and index < len(relative.parts) - 1 and not current.is_dir():
+            raise FixtureError("generated destination parent is not a directory")
+
+    try:
+        current.resolve(strict=False).relative_to(root)
+    except (OSError, ValueError) as error:
+        raise FixtureError("generated destination escapes the repository root") from error
+    if current.exists() and not current.is_file():
+        raise FixtureError("generated destination is not a regular file")
+    return current
+
+
+def _preflight_outputs(root: Path, outputs: dict[Path, str]) -> dict[Path, Path]:
+    return {path: _safe_destination(root, path) for path in outputs}
+
+
+def _atomic_write(root: Path, destination: Path, contents: str) -> None:
+    _safe_destination(root, destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    _safe_destination(root, destination)
+    temporary_name: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "wb", dir=destination.parent, prefix=".kmipkit-extension-fixture-", delete=False
+        ) as temporary:
+            temporary_name = temporary.name
+            temporary.write(contents.encode("utf-8"))
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        _safe_destination(root, destination)
+        os.replace(temporary_name, destination)
+        temporary_name = None
+    finally:
+        if temporary_name is not None:
+            try:
+                os.unlink(temporary_name)
+            except FileNotFoundError:
+                pass
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="fail if generated files are stale")
     args = parser.parse_args(argv)
     try:
         outputs = render(_read(MANIFEST), _read(CORPUS))
+        root = ROOT.resolve(strict=True)
+        destinations = _preflight_outputs(root, outputs)
         stale = []
         for path, contents in outputs.items():
             if args.check:
                 try:
-                    current = path.read_text(encoding="utf-8")
+                    current = destinations[path].read_text(encoding="utf-8")
                 except (OSError, UnicodeError):
                     stale.append(path.relative_to(ROOT).as_posix())
                     continue
                 if current != contents:
                     stale.append(path.relative_to(ROOT).as_posix())
             else:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(contents, encoding="utf-8", newline="\n")
+                _atomic_write(root, destinations[path], contents)
         if stale:
             print("stale extension fixture outputs: " + ", ".join(stale), file=sys.stderr)
             return 1
         return 0
     except FixtureError as error:
         print(f"extension fixture generation failed: {error}", file=sys.stderr)
+        return 2
+    except OSError:
+        print("extension fixture generation failed: repository I/O failed", file=sys.stderr)
         return 2
 
 
