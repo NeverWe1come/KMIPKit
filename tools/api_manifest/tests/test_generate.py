@@ -12,11 +12,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
 
 ROOT = Path(__file__).resolve().parents[3]
 GENERATOR = ROOT / "tools" / "api_manifest" / "generate.py"
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 SCHEMA = ROOT / "specification" / "api" / "public-api.schema.json"
+MINIMAL_FIXTURE = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "registry-manifest.json"
 GENERATED_OUTPUTS = (
     "crates/kmipkit-ffi/src/extension_registry_generated.rs",
     "bindings/c/include/kmipkit.h",
@@ -24,6 +27,28 @@ GENERATED_OUTPUTS = (
     "bindings/java/src/test/java/org/kmipkit/generated/ExtensionRegistryParityFixtures.java",
     "bindings/python/src/kmipkit/_generated/extension_registry.py",
     "tests/fixtures/extensions/generated/registry_parity.json",
+)
+GENERATED_OUTPUT_MAP = {
+    "rustFfi": GENERATED_OUTPUTS[0],
+    "cHeader": GENERATED_OUTPUTS[1],
+    "javaApi": GENERATED_OUTPUTS[2],
+    "javaParityTests": GENERATED_OUTPUTS[3],
+    "pythonApi": GENERATED_OUTPUTS[4],
+    "parityFixtures": GENERATED_OUTPUTS[5],
+}
+LIMIT_IDS = (
+    "maxDefinitions",
+    "maxSchemaNodes",
+    "maxChildRulesPerStructure",
+    "maxTextBytesPerField",
+    "maxRegistryTextBytes",
+    "maxDiscriminatorScalarBytes",
+    "maxTotalDiscriminatorScalarBytes",
+    "maxConstraintMembersPerRule",
+    "maxTotalConstraintMembers",
+    "maxPayloadIndexRecords",
+    "maxLookupComparisons",
+    "maxDepth",
 )
 SYMLINK_DENIAL_ERRNOS = {
     errno.EACCES,
@@ -40,6 +65,16 @@ def _create_repo(parent: Path) -> Path:
     api_dir = root / "specification" / "api"
     api_dir.mkdir(parents=True)
     shutil.copy2(MANIFEST, api_dir / MANIFEST.name)
+    shutil.copy2(SCHEMA, api_dir / SCHEMA.name)
+    return root
+
+
+def _create_fixture_repo(parent: Path) -> Path:
+    """Create an isolated repo root with the minimal valid T002 manifest."""
+    root = parent / "repo"
+    api_dir = root / "specification" / "api"
+    api_dir.mkdir(parents=True)
+    shutil.copy2(MINIMAL_FIXTURE, api_dir / "public-api.json")
     shutil.copy2(SCHEMA, api_dir / SCHEMA.name)
     return root
 
@@ -207,6 +242,237 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             )
             self.assertFalse(any(path.exists() for path in external_outputs))
             self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+
+
+class ManifestSchemaTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        cls.validator = Draft202012Validator(cls.schema)
+
+    def _load_fixture(self) -> dict[str, object]:
+        return json.loads(MINIMAL_FIXTURE.read_text(encoding="utf-8"))
+
+    def _assert_schema_rejects(
+        self,
+        manifest: dict[str, object],
+        validator_name: str | None,
+        expected_path: tuple[str | int, ...] | None = None,
+    ) -> None:
+        errors = list(self.validator.iter_errors(manifest))
+        self.assertTrue(errors, "expected the mutated manifest to fail schema validation")
+        if validator_name is not None:
+            self.assertTrue(
+                any(error.validator == validator_name for error in errors),
+                f"expected a {validator_name} schema error, got {[error.message for error in errors]}",
+            )
+        if expected_path is not None:
+            self.assertTrue(
+                any(tuple(error.absolute_path) == expected_path for error in errors),
+                f"expected a schema error at {expected_path}, got {[list(error.absolute_path) for error in errors]}",
+            )
+
+    def _run_generator(self, root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
+        self.assertTrue(
+            GENERATOR.is_file(),
+            "manifest generator CLI must be implemented before format validation can be exercised",
+        )
+        return subprocess.run(
+            [sys.executable, "-B", str(GENERATOR), *arguments],
+            cwd=root,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+
+    def _assert_cli_rejects_before_output(self, manifest: dict[str, object]) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_fixture_repo(Path(directory))
+            (root / "specification" / "api" / "public-api.json").write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+            result = self._run_generator(root, "--write")
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+
+    def test_schema_is_valid_draft_2020_12(self) -> None:
+        Draft202012Validator.check_schema(self.schema)
+
+    def test_minimal_registry_fixture_validates(self) -> None:
+        manifest = self._load_fixture()
+        errors = list(self.validator.iter_errors(manifest))
+        self.assertEqual(errors, [])
+        self.assertEqual(len(manifest["types"]), 1)
+        self.assertEqual(len(manifest["functions"]), 1)
+        self.assertEqual(len(manifest["errorCategories"]), 1)
+        self.assertEqual(tuple(limit["id"] for limit in manifest["limits"]), LIMIT_IDS)
+        self.assertEqual(manifest["generatedOutputs"], GENERATED_OUTPUT_MAP)
+
+    def test_schema_rejects_missing_required_root_property(self) -> None:
+        manifest = self._load_fixture()
+        del manifest["security"]
+
+        self._assert_schema_rejects(manifest, "required")
+
+    def test_schema_rejects_unknown_nested_property(self) -> None:
+        manifest = self._load_fixture()
+        manifest["types"][0]["rust"]["unexpectedModuleAlias"] = "wrong"
+
+        self._assert_schema_rejects(manifest, "additionalProperties")
+
+    def test_schema_rejects_mismatched_enum_shape_and_unknown_policy(self) -> None:
+        manifest = self._load_fixture()
+        declaration = manifest["types"][0]
+        declaration["kind"] = "enum"
+        declaration["c"] = {
+            "name": "kmipkit_minimal_type_t",
+            "kind": "enum",
+            "underlyingType": "uint8_t",
+            "unknownValuePolicy": "preserve-raw",
+        }
+        declaration["enumRepresentation"] = {
+            "shape": "closed-numeric",
+            "unknownValuePolicy": "preserve-raw",
+            "values": [{"name": "Known", "value": 1}],
+        }
+
+        self._assert_schema_rejects(manifest, "const")
+
+    def test_schema_rejects_invalid_rust_java_and_python_signatures(self) -> None:
+        mutations = (
+            ("Rust", "rust", "returnType", "Result<>"),
+            ("Java", "java", "returnType", "List<int>"),
+            ("Python", "python", "returnType", "list[]"),
+        )
+        for language_name, language, field, invalid_type in mutations:
+            with self.subTest(language=language_name):
+                manifest = self._load_fixture()
+                manifest["functions"][0][language][field] = invalid_type
+                self._assert_schema_rejects(
+                    manifest,
+                    None,
+                    ("functions", 0, language, field),
+                )
+
+    def test_schema_rejects_limit_values_outside_the_approved_profile(self) -> None:
+        manifest = self._load_fixture()
+        manifest["limits"][0]["hardMaximum"] = 1025
+
+        self._assert_schema_rejects(manifest, "const")
+
+    def test_semantic_reference_cases_pass_schema_validation(self) -> None:
+        cases: list[tuple[str, dict[str, object]]] = []
+
+        byte_span = self._load_fixture()
+        byte_span["functions"][0]["c"]["parameters"] = [
+            {
+                "name": "bytes",
+                "kind": "byte-span",
+                "type": "const uint8_t *",
+                "encoding": "octets",
+                "byteLengthParameter": "missing_length",
+                "byteLengthType": "uint64_t",
+                "lengthUnit": "bytes",
+                "limitCheck": "before-dereference",
+                "nulTerminatedScan": False,
+            },
+            {"name": "actual_length", "kind": "scalar", "type": "uint64_t"},
+            {"name": "out_value", "kind": "output", "type": "uint32_t *", "ownership": "none"},
+        ]
+        cases.append(("unresolved byte-span length", byte_span))
+
+        requirement = self._load_fixture()
+        requirement["functions"][0]["requirementIds"] = ["KMIPKIT-0012-FR-999"]
+        cases.append(("unresolved requirement ID", requirement))
+
+        category = self._load_fixture()
+        category["functions"][0]["c"]["errorCategories"] = ["unresolved_error"]
+        cases.append(("unresolved error category", category))
+
+        for label, manifest in cases:
+            with self.subTest(reference=label):
+                self.assertEqual(list(self.validator.iter_errors(manifest)), [])
+
+    def test_cli_rejects_format_invalid_manifests_before_writing_outputs(self) -> None:
+        mutations = (
+            ("missing required property", lambda value: value.pop("security")),
+            (
+                "nested unknown property",
+                lambda value: value["types"][0]["rust"].update({"unexpectedModuleAlias": "wrong"}),
+            ),
+            (
+                "enum shape policy mismatch",
+                lambda value: value["types"][0].update(
+                    {
+                        "kind": "enum",
+                        "c": {
+                            "name": "kmipkit_minimal_type_t",
+                            "kind": "enum",
+                            "underlyingType": "uint8_t",
+                            "unknownValuePolicy": "preserve-raw",
+                        },
+                        "enumRepresentation": {
+                            "shape": "closed-numeric",
+                            "unknownValuePolicy": "preserve-raw",
+                            "values": [{"name": "Known", "value": 1}],
+                        },
+                    }
+                ),
+            ),
+            (
+                "invalid Rust signature",
+                lambda value: value["functions"][0]["rust"].update({"returnType": "Result<>"}),
+            ),
+            (
+                "invalid Java signature",
+                lambda value: value["functions"][0]["java"].update({"returnType": "List<int>"}),
+            ),
+            (
+                "invalid Python signature",
+                lambda value: value["functions"][0]["python"].update({"returnType": "list[]"}),
+            ),
+            ("invalid limit", lambda value: value["limits"][0].update({"hardMaximum": 1025})),
+        )
+        for label, mutate in mutations:
+            with self.subTest(case=label):
+                manifest = self._load_fixture()
+                mutate(manifest)
+                self._assert_cli_rejects_before_output(manifest)
+
+    def test_cli_rejects_unresolved_byte_span_length_before_writing_outputs(self) -> None:
+        manifest = self._load_fixture()
+        manifest["functions"][0]["c"]["parameters"] = [
+            {
+                "name": "bytes",
+                "kind": "byte-span",
+                "type": "const uint8_t *",
+                "encoding": "octets",
+                "byteLengthParameter": "missing_length",
+                "byteLengthType": "uint64_t",
+                "lengthUnit": "bytes",
+                "limitCheck": "before-dereference",
+                "nulTerminatedScan": False,
+            },
+            {"name": "actual_length", "kind": "scalar", "type": "uint64_t"},
+            {"name": "out_value", "kind": "output", "type": "uint32_t *", "ownership": "none"},
+        ]
+
+        self._assert_cli_rejects_before_output(manifest)
+
+    def test_cli_rejects_unresolved_requirement_reference_before_writing_outputs(self) -> None:
+        manifest = self._load_fixture()
+        manifest["functions"][0]["requirementIds"] = ["KMIPKIT-0012-FR-999"]
+
+        self._assert_cli_rejects_before_output(manifest)
+
+    def test_cli_rejects_unresolved_error_reference_before_writing_outputs(self) -> None:
+        manifest = self._load_fixture()
+        manifest["functions"][0]["c"]["errorCategories"] = ["unresolved_error"]
+
+        self._assert_cli_rejects_before_output(manifest)
 
 
 if __name__ == "__main__":

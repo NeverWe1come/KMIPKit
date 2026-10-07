@@ -1,0 +1,267 @@
+{
+  "formatVersion": 1,
+  "scope": "registry-slice",
+  "requirementIds": [
+    "KMIPKIT-0012-FR-001"
+  ],
+  "types": [
+    {
+      "id": "MinimalType",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "MinimalType",
+        "owner": "protocol"
+      },
+      "c": {
+        "name": "kmipkit_minimal_type_t",
+        "kind": "fixed-width-value"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "MinimalType"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "MinimalType"
+      }
+    }
+  ],
+  "functions": [
+    {
+      "id": "minimal_identity_value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-001"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "minimal_identity_value",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "u32"
+          }
+        ],
+        "returnType": "u32"
+      },
+      "c": {
+        "symbol": "kmipkit_minimal_identity_value",
+        "parameters": [
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "uint32_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "MinimalApi",
+        "method": "identityValue",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "returnType": "long",
+        "jniSymbol": "Java_org_kmipkit_extensions_MinimalApi_identityValue",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "minimal_identity_value",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          }
+        ],
+        "returnType": "int",
+        "cffiSymbol": "kmipkit_minimal_identity_value",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    }
+  ],
+  "errorCategories": [
+    {
+      "id": "invalid_input",
+      "rustVariant": "InvalidInput",
+      "cCode": "KMIPKIT_ERROR_INVALID_INPUT",
+      "cValue": 1,
+      "javaException": "org.kmipkit.InvalidInputException",
+      "pythonException": "kmipkit.errors.InvalidInputError"
+    }
+  ],
+  "limits": [
+    {
+      "id": "maxDefinitions",
+      "rustField": "max_definitions",
+      "cField": "max_definitions",
+      "javaField": "maxDefinitions",
+      "pythonField": "max_definitions",
+      "default": 256,
+      "hardMaximum": 1024,
+      "unit": "definitions",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxSchemaNodes",
+      "rustField": "max_schema_nodes",
+      "cField": "max_schema_nodes",
+      "javaField": "maxSchemaNodes",
+      "pythonField": "max_schema_nodes",
+      "default": 16384,
+      "hardMaximum": 100000,
+      "unit": "schema-nodes",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxChildRulesPerStructure",
+      "rustField": "max_child_rules_per_structure",
+      "cField": "max_child_rules_per_structure",
+      "javaField": "maxChildRulesPerStructure",
+      "pythonField": "max_child_rules_per_structure",
+      "default": 256,
+      "hardMaximum": 4096,
+      "unit": "rules-per-structure",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxTextBytesPerField",
+      "rustField": "max_text_bytes_per_field",
+      "cField": "max_text_bytes_per_field",
+      "javaField": "maxTextBytesPerField",
+      "pythonField": "max_text_bytes_per_field",
+      "default": 4096,
+      "hardMaximum": 4096,
+      "unit": "bytes-per-text-field",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxRegistryTextBytes",
+      "rustField": "max_registry_text_bytes",
+      "cField": "max_registry_text_bytes",
+      "javaField": "maxRegistryTextBytes",
+      "pythonField": "max_registry_text_bytes",
+      "default": 1048576,
+      "hardMaximum": 16777216,
+      "unit": "aggregate-text-bytes",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxDiscriminatorScalarBytes",
+      "rustField": "max_discriminator_scalar_bytes",
+      "cField": "max_discriminator_scalar_bytes",
+      "javaField": "maxDiscriminatorScalarBytes",
+      "pythonField": "max_discriminator_scalar_bytes",
+      "default": 4096,
+      "hardMaximum": 4096,
+      "unit": "bytes-per-discriminator-scalar",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxTotalDiscriminatorScalarBytes",
+      "rustField": "max_total_discriminator_scalar_bytes",
+      "cField": "max_total_discriminator_scalar_bytes",
+      "javaField": "maxTotalDiscriminatorScalarBytes",
+      "pythonField": "max_total_discriminator_scalar_bytes",
+      "default": 1048576,
+      "hardMaximum": 16777216,
+      "unit": "aggregate-discriminator-bytes",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxConstraintMembersPerRule",
+      "rustField": "max_constraint_members_per_rule",
+      "cField": "max_constraint_members_per_rule",
+      "javaField": "maxConstraintMembersPerRule",
+      "pythonField": "max_constraint_members_per_rule",
+      "default": 256,
+      "hardMaximum": 4096,
+      "unit": "constraint-members-per-rule",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxTotalConstraintMembers",
+      "rustField": "max_total_constraint_members",
+      "cField": "max_total_constraint_members",
+      "javaField": "maxTotalConstraintMembers",
+      "pythonField": "max_total_constraint_members",
+      "default": 16384,
+      "hardMaximum": 100000,
+      "unit": "aggregate-constraint-members",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxPayloadIndexRecords",
+      "rustField": "max_payload_index_records",
+      "cField": "max_payload_index_records",
+      "javaField": "maxPayloadIndexRecords",
+      "pythonField": "max_payload_index_records",
+      "default": 200000,
+      "hardMaximum": 200000,
+      "unit": "payload-index-records",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxLookupComparisons",
+      "rustField": "max_lookup_comparisons",
+      "cField": "max_lookup_comparisons",
+      "javaField": "maxLookupComparisons",
+      "pythonField": "max_lookup_comparisons",
+      "default": 1048576,
+      "hardMaximum": 4194304,
+      "unit": "tag-comparisons",
+      "errorCategory": "resource_limit"
+    },
+    {
+      "id": "maxDepth",
+      "rustField": "max_depth",
+      "cField": "max_depth",
+      "javaField": "maxDepth",
+      "pythonField": "max_depth",
+      "default": 64,
+      "hardMaximum": 64,
+      "unit": "levels",
+      "errorCategory": "resource_limit"
+    }
+  ],
+  "security": {
+    "defaultDiagnostics": "redacted",
+    "zeroization": "KMIPKit-owned buffers are cleared when released.",
+    "runtimeCopies": {
+      "c": "Caller copies are outside library control.",
+      "java": "Runtime copies may outlive native owners.",
+      "python": "Python-managed objects are outside library control."
+    }
+  },
+  "generatedOutputs": {
+    "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs",
+    "cHeader": "bindings/c/include/kmipkit.h",
+    "javaApi": "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
+    "javaParityTests": "bindings/java/src/test/java/org/kmipkit/generated/ExtensionRegistryParityFixtures.java",
+    "pythonApi": "bindings/python/src/kmipkit/_generated/extension_registry.py",
+    "parityFixtures": "tests/fixtures/extensions/generated/registry_parity.json"
+  }
+}
