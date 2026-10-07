@@ -519,16 +519,20 @@ class DependencyExceptionTests(unittest.TestCase):
                 self.assertIn(f"dependency-{index:02d}@1.0.0", diagnostic)
 
     def test_malformed_license_evidence_fails_without_echoing_metadata(self) -> None:
-        raw_license = "LicenseRef-SENTINELSECRET00000000"
+        for raw_license in (
+            "LicenseRef-SENTINELSECRET00000000",
+            "MIT OR",
+            "(MIT) WITH Classpath-exception-2.0",
+        ):
+            with self.subTest(raw_license=raw_license):
+                with self.assertRaises(self.policy_error()) as context:
+                    self.validate(
+                        [],
+                        [finding("license", "private-crate", "1.0.0", license_expression=raw_license)],
+                    )
 
-        with self.assertRaises(self.policy_error()) as context:
-            self.validate(
-                [],
-                [finding("license", "private-crate", "1.0.0", license_expression=raw_license)],
-            )
-
-        self.assertIn("license expression is malformed", str(context.exception))
-        self.assertNotIn(raw_license, str(context.exception))
+                self.assertIn("license expression is malformed", str(context.exception))
+                self.assertNotIn(raw_license, str(context.exception))
 
     def test_cli_reports_findings_when_exception_register_is_empty(self) -> None:
         self.require_policy()
