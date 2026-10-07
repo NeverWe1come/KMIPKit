@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0012-vendor-extension-registry`
 **Created**: 2026-10-06
-**Status**: Draft. The maintainer authorized autonomous execution of the complete KMIPKit plan and waived further approval requests. This authorizes preparation of this specification and its review artifacts; it does not claim that this exact revision passed human review or may bypass human PR approval and merge.
+**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests. This authorizes the defined feature scope for implementation; it does not claim line-by-line human review of this revision or waive PR approval and merge rules.
 **Input**: Roadmap item `KMIPKIT-0012-vendor-extension-registry`, ADR-0007, ADR-0013, and `docs/architecture/extensions.md`.
 
 ## Scope and normative sources

@@ -33,6 +33,14 @@ Red/Green/Refactor commits:
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
 
+## Implementation authorization record
+
+The feature is approved for implementation under the maintainer's standing
+direct authorization to execute the full KMIPKit plan without further approval
+requests. This records authorization of the defined feature scope and does not
+claim a line-by-line human review of this specification revision. The draft PR
+and human-only approval/merge requirements remain in force.
+
 ## 2026-10-07 — CI fixture-generator rejection tests
 
 - Red: `aad390b` added a workflow contract requiring CI to run the extension
