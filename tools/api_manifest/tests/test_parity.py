@@ -33,6 +33,15 @@ LIMIT_IDS = (
     "maxDepth",
 )
 REQUIREMENT_IDS = tuple(f"KMIPKIT-0012-FR-{number:03}" for number in range(1, 15))
+JAVA_KEYWORDS = {
+    "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
+    "class", "const", "continue", "default", "do", "double", "else", "enum",
+    "extends", "final", "finally", "float", "for", "goto", "if", "implements",
+    "import", "instanceof", "int", "interface", "long", "native", "new", "package",
+    "private", "protected", "public", "return", "short", "static", "strictfp",
+    "super", "switch", "synchronized", "this", "throw", "throws", "transient", "try",
+    "void", "volatile", "while", "true", "false", "null",
+}
 
 
 class PublicApiParityTests(unittest.TestCase):
@@ -98,6 +107,13 @@ class PublicApiParityTests(unittest.TestCase):
         self.assertEqual(len(c_symbols), len(set(c_symbols)))
         self.assertEqual(len(jni_symbols), len(set(jni_symbols)))
         self.assertEqual(len(cffi_symbols), len(set(cffi_symbols)))
+
+    def test_java_method_names_are_legal_java_identifiers(self) -> None:
+        for function in self.manifest["functions"]:
+            method = function["java"]["method"]
+            with self.subTest(function=function["id"]):
+                self.assertTrue(method.isidentifier(), method)
+                self.assertNotIn(method, JAVA_KEYWORDS, method)
 
     def test_generated_destinations_and_parity_fixture_follow_manifest_order(self) -> None:
         self.assertEqual(list(self.manifest["generatedOutputs"]), list(GENERATED_OUTPUTS))
