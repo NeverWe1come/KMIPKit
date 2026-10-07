@@ -774,6 +774,9 @@ fn validate_mapping(
 
 #[cfg(test)]
 mod tests {
+    use std::fmt;
+    use std::fmt::Write as _;
+
     use super::{
         ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker, ProfileValidationError,
         ProfileValidationErrorCode, ProfileValidationSelection, RuleConstraint, RuleTestEvidence,
@@ -782,6 +785,14 @@ mod tests {
     use crate::profiles_generated::{
         GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
     };
+
+    struct RejectingWriter;
+
+    impl fmt::Write for RejectingWriter {
+        fn write_str(&mut self, _value: &str) -> fmt::Result {
+            Err(fmt::Error)
+        }
+    }
 
     static CONSTRAINTS_HTTPS: [RuleConstraint; 1] = [RuleConstraint {
         key: "transport",
@@ -972,9 +983,10 @@ mod tests {
             "TEST-REQ",
             GeneratedVerificationCategory::RequiredBehavior,
             RuleTestKind::PositiveBehavior,
-            &[],
+            &CONSTRAINTS_HTTPS,
         )];
         let selection = ProfileValidationSelection::new(["TEST-PROFILE"]);
+        assert_eq!(&["TEST-PROFILE".to_owned()], selection.profile_ids());
 
         let result =
             validate_selection_with_registry(&selection, &profiles, &requirements, &mappings)
@@ -1140,7 +1152,10 @@ mod tests {
         for (code, expected) in validation_codes {
             assert_eq!(expected, code.as_str());
         }
+    }
 
+    #[test]
+    fn readiness_blockers_have_stable_text_and_requirement_ids() {
         let blockers = [
             (
                 ProfileReadinessBlocker::MissingRequirementRecord {
@@ -1252,6 +1267,8 @@ mod tests {
             "profile validation failed: missing_rule_mapping; profile TEST-PROFILE; requirement TEST-REQ; source clause TEST-CLAUSE",
             requirement.to_string()
         );
+
+        assert!(write!(&mut RejectingWriter, "{code_only}").is_err());
     }
 
     #[test]
@@ -1289,6 +1306,101 @@ mod tests {
         assert_eq!("evidence_incomplete", readiness.effective_state());
         assert!(!readiness.published_claim());
         assert!(ProfileReadiness::evaluate("UNKNOWN-PROFILE", &[]).is_none());
+    }
+
+    #[test]
+    fn readiness_blocks_conditional_out_of_scope_and_dependent_profiles() {
+        let conditional = ProfileReadiness::evaluate("KMIPKIT-PROFILE-HTTPS-CLIENT", &[])
+            .expect("generated HTTPS Client resolves");
+        assert!(
+            conditional
+                .blockers()
+                .contains(&ProfileReadinessBlocker::ConditionalProfileUnsatisfied)
+        );
+
+        let unavailable = ProfileReadiness::evaluate("KMIPKIT-PROFILE-JSON-CLIENT", &[])
+            .expect("generated JSON Client resolves");
+        assert!(
+            unavailable
+                .blockers()
+                .contains(&ProfileReadinessBlocker::ProfileUnavailable)
+        );
+
+        let dependent = ProfileReadiness::evaluate("KMIPKIT-PROFILE-AES-XTS-CLIENT", &[])
+            .expect("generated AES-XTS Client resolves");
+        assert!(dependent.blockers().contains(
+            &ProfileReadinessBlocker::DependencyEvidenceIncomplete {
+                profile_id: "KMIPKIT-PROFILE-BASELINE-CLIENT"
+            }
+        ));
+    }
+
+    #[test]
+    fn selection_rejects_missing_catalog_metadata_and_skips_resolved_dependencies() {
+        let unknown_duplicate = validate_selection_with_registry(
+            &ProfileValidationSelection::new(["UNKNOWN", "UNKNOWN"]),
+            &[],
+            &[],
+            &[],
+        )
+        .expect_err("duplicate unknown identifiers are still duplicates");
+        assert_eq!(
+            ProfileValidationErrorCode::DuplicateProfile,
+            unknown_duplicate.code()
+        );
+        assert_eq!(None, unknown_duplicate.profile_id());
+
+        let unknown = validate_selection_with_registry(
+            &ProfileValidationSelection::new(["UNKNOWN"]),
+            &[],
+            &[],
+            &[],
+        )
+        .expect_err("unknown profiles do not resolve");
+        assert_eq!(ProfileValidationErrorCode::UnknownProfile, unknown.code());
+
+        let empty_requirements = [profile("EMPTY", &[], &[])];
+        let missing_list = validate_selection_with_registry(
+            &ProfileValidationSelection::new(["EMPTY"]),
+            &empty_requirements,
+            &[],
+            &[],
+        )
+        .expect_err("a selected profile must list applicable requirements");
+        assert_eq!(
+            ProfileValidationErrorCode::MissingRequirementMetadata,
+            missing_list.code()
+        );
+
+        let missing_record_profiles = [profile("MISSING-RECORD", &["TEST-REQ"], &[])];
+        let missing_record = validate_selection_with_registry(
+            &ProfileValidationSelection::new(["MISSING-RECORD"]),
+            &missing_record_profiles,
+            &[],
+            &[],
+        )
+        .expect_err("every profile requirement must resolve to metadata");
+        assert_eq!(
+            ProfileValidationErrorCode::MissingRequirementMetadata,
+            missing_record.code()
+        );
+
+        let shared_dependency_profiles = [
+            profile("SHARED", &[], &[]),
+            profile("ROOT-A", &[], &["SHARED"]),
+            profile("ROOT-B", &[], &["SHARED"]),
+        ];
+        let dependency_error = validate_selection_with_registry(
+            &ProfileValidationSelection::new(["ROOT-A", "ROOT-B"]),
+            &shared_dependency_profiles,
+            &[],
+            &[],
+        )
+        .expect_err("empty requirement metadata remains fail-closed after closure resolution");
+        assert_eq!(
+            ProfileValidationErrorCode::MissingRequirementMetadata,
+            dependency_error.code()
+        );
     }
 
     #[test]
