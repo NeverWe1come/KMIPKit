@@ -885,6 +885,18 @@ The Python adapter's Extension Information test expectation was also corrected t
 - `cargo +1.94 fmt --all --check` passed. No production behavior, thresholds,
   generated output, or coverage exclusions changed. T060 and T061 remain open.
 
+## 2026-10-07 — definition-accounting coverage follow-up
+
+- Added public-contract assertions for accounting totals with and without
+  optional Extension Information, including text bytes, maximum field size,
+  and discriminator bytes. `cargo +1.94 test -p kmipkit-protocol --test
+  extension_definition` passed (13 tests).
+- Repeated the clean Linux Rust 1.94 workspace coverage command after the
+  follow-up; all test binaries passed and line totals remain TTLV 737/750,
+  protocol 4006/4242, and workspace 8995/10169. The additional scenario
+  confirms the accounting behavior but does not cover a new production line.
+  No production behavior or gate configuration changed.
+
 ## 2026-10-07 — coverage-test fixture Refactor
 
 - Refactor evidence: consolidated the repeated

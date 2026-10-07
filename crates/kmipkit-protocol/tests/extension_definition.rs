@@ -359,6 +359,48 @@ fn cloned_definition_preserves_identity_compatibility_discriminator_and_informat
 }
 
 #[test]
+fn definition_accounting_counts_identity_and_optional_information_text() {
+    let make_definition = |with_optional_information| {
+        let identity = extension::extension_identity("v", "n", "1")?;
+        let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")?;
+        let schema = extension::structure(
+            vec![extension::required(
+                tag(1),
+                extension::scalar(ItemType::TextString)?,
+            )?],
+            Vec::new(),
+            false,
+        )?;
+        let definition = extension::extension_definition(
+            identity,
+            compatibility,
+            valid_discriminator(Value::text_string("match".to_owned())),
+            schema,
+        )?;
+        if with_optional_information {
+            let information =
+                extension::with_description(extension::extension_information("meta")?, "docs")?;
+            extension::with_information(definition, information)
+        } else {
+            Ok(definition)
+        }
+    };
+
+    let without_information =
+        extension::accounting(&make_definition(false).expect("the minimal definition is valid"))
+            .expect("minimal definition accounting fits");
+    assert_eq!(without_information.text_bytes, 3);
+    assert_eq!(without_information.maximum_text_field_bytes, 1);
+
+    let with_information =
+        extension::accounting(&make_definition(true).expect("the metadata definition is valid"))
+            .expect("metadata definition accounting fits");
+    assert_eq!(with_information.text_bytes, 11);
+    assert_eq!(with_information.maximum_text_field_bytes, 4);
+    assert_eq!(with_information.discriminator_bytes, 5);
+}
+
+#[test]
 fn registry_limit_values_allow_defaults_and_raises_but_reject_each_hard_maximum_plus_one() {
     let defaults = [
         256, 16_384, 256, 4_096, 1_048_576, 4_096, 1_048_576, 256, 16_384, 200_000, 1_048_576, 64,
