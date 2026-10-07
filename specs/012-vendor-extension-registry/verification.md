@@ -1081,3 +1081,10 @@ The Python adapter's Extension Information test expectation was also corrected t
   API manifest tests (51 passed, 3 platform skips), both generator `--check`
   commands, and `mvn -f bindings/java/pom.xml verify` (30 tests, the runnable
   example, and JaCoCo coverage gate).
+
+## 2026-10-07 — final security review and CI coverage-tool follow-up
+
+- Fresh diff scan `a8989cb5-601a-443e-9d79-3e696a2cbf3b` reviewed the Java/JNI invalid-UTF-16 ownership guard, fixture-generator path checks, atomic writes, FFI coverage collector, related tests, and documentation in `5482c34..6e6172f`. It completed with zero candidates and zero findings; both previously reported low-severity issues were fixed by the tested regressions.
+- The remote CI/tooling commits `897f44b` and `96dee30` were merged into this branch as `05c23b7`. A second complete diff scan, `6ce18f02-921b-4339-ba4f-c162bc948a85`, reviewed the exact `6e6172f..05c23b7` range across the workflow, FFI coverage collector, and workflow contracts. It completed with zero candidates and zero findings.
+- After that integration, `git diff --check 6e6172f..HEAD` passed and the complete script-contract suite passed: 199 tests, with 26 expected skips because pinned `cargo-deny` is not installed on this Windows host.
+- T060/T061 remain open until the updated PR head passes its fresh GitHub Actions matrix and aggregate coverage gate. The Linux FFI collector is being exercised in WSL against the same rustup-provided LLVM tools used by CI before the branch is pushed.
