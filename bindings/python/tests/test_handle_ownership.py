@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import threading
 import types
 import unittest
 from itertools import count
@@ -62,6 +63,53 @@ def _unload_adapter(package_name: str) -> None:
 
 
 class ConsumedHandleTests(unittest.TestCase):
+    def test_close_and_transfer_cannot_both_claim_the_native_handle(self) -> None:
+        handles, native, package_name = _load_adapter()
+        try:
+            native_handle = object()
+            pointer_read = threading.Event()
+            continue_transfer = threading.Event()
+            close_started = threading.Event()
+
+            class PausingProbeHandle(handles.NativeHandle):
+                _release_name = "release_handle"
+
+                def _pointer(self) -> Any:
+                    pointer = super()._pointer()
+                    pointer_read.set()
+                    if not continue_transfer.wait(timeout=2):
+                        raise AssertionError("transfer was not resumed")
+                    return pointer
+
+            source = PausingProbeHandle(native_handle)
+            transferred: list[object] = []
+
+            def take() -> None:
+                transferred.append(source._take()[0])
+
+            def close() -> None:
+                close_started.set()
+                source.close()
+
+            transfer_thread = threading.Thread(target=take)
+            close_thread = threading.Thread(target=close)
+            transfer_thread.start()
+            self.assertTrue(pointer_read.wait(timeout=2))
+            close_thread.start()
+            self.assertTrue(close_started.wait(timeout=2))
+            continue_transfer.set()
+            transfer_thread.join(timeout=2)
+            close_thread.join(timeout=2)
+
+            self.assertFalse(transfer_thread.is_alive())
+            self.assertFalse(close_thread.is_alive())
+            if transferred:
+                native.lib.release_handle(transferred[0])
+            source.close()
+            self.assertEqual(native.lib.releases, 1)
+        finally:
+            _unload_adapter(package_name)
+
     def test_close_after_native_consumes_handle_does_not_release_twice(self) -> None:
         handles, native, package_name = _load_adapter()
         try:
