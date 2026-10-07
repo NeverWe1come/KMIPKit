@@ -289,7 +289,7 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         self.assertIn('"llvm-profdata-${llvm_major}"', script)
         self.assertIn('"llvm-cov-${llvm_major}"', script)
         self.assertIn('--ignore-filename-regex="${ignored_source_regex}"', script)
-        self.assertIn('include/jni\\.h', script)
+        self.assertIn('include/(linux/)?jni(_md)?\\.h', script)
         self.assertNotIn('^/usr/lib/jvm/[^/]+/include/jni\\.h$', script)
         native_build = (REPOSITORY_ROOT / "bindings/java/native/build.sh").read_text(encoding="utf-8")
         self.assertIn("kmipkit_jni.cpp", native_build)
