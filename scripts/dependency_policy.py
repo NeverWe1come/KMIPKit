@@ -20,6 +20,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 CRATES_IO_SOURCE = "registry+https://github.com/rust-lang/crates.io-index"
 ADR_0005_BANNED_PACKAGES = frozenset({"native-tls", "openssl", "openssl-sys"})
 EXCEPTION_ID_PATTERN = re.compile(r"KMIPKIT-0011-EX-[0-9]{3,}")
+MAX_EXCEPTION_DIAGNOSTICS = 20
 PACKAGE_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 VERSION_PATTERN = re.compile(
     r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
@@ -941,6 +942,7 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
         normalized_findings.append(finding_copy)
 
     matched_entry_indexes: set[int] = set()
+    exception_diagnostics: list[str] = []
     for finding_item in normalized_findings:
         matches = [
             (index, entry)
@@ -948,16 +950,34 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
             if _finding_matches(entry, finding_item)
         ]
         if len(matches) != 1:
-            raise PolicyError(
-                f"unexcepted or ambiguously excepted {finding_item['kind']} finding for {finding_item['package']}"
+            match_status = (
+                "has no exact registered exception"
+                if not matches
+                else "matches multiple registered exceptions"
             )
+            exception_diagnostics.append(
+                f"{finding_item['kind']} finding "
+                f"{finding_item['package']}@{finding_item['version']} {match_status}"
+            )
+            continue
         index, entry = matches[0]
         if index in matched_entry_indexes:
-            raise PolicyError(f"exception {entry['id']} matches more than one finding")
+            exception_diagnostics.append(
+                f"exception {entry['id']} matches more than one finding "
+                f"({finding_item['kind']} {finding_item['package']}@{finding_item['version']})"
+            )
+            continue
         matched_entry_indexes.add(index)
-    if len(matched_entry_indexes) != len(entries):
-        orphaned = next(entry for index, entry in enumerate(entries) if index not in matched_entry_indexes)
-        raise PolicyError(f"exception {orphaned['id']} has no matching current finding")
+    for index, entry in enumerate(entries):
+        if index not in matched_entry_indexes:
+            exception_diagnostics.append(f"exception {entry['id']} has no matching current finding")
+    if exception_diagnostics:
+        visible_diagnostics = exception_diagnostics[:MAX_EXCEPTION_DIAGNOSTICS]
+        details = "; ".join(visible_diagnostics)
+        omitted = len(exception_diagnostics) - len(visible_diagnostics)
+        if omitted:
+            details += f"; and {omitted} additional exception validation finding(s)"
+        raise PolicyError(f"dependency exception validation failed: {details}")
     return sorted(entry["id"] for entry in entries)
 
 

@@ -81,6 +81,7 @@ function Invoke-CapturedCommand {
         [Parameter(Mandatory = $true)][string[]]$Arguments,
         [Parameter(Mandatory = $true)][string]$Operation,
         [string]$StdoutPath,
+        [switch]$SafePolicyDiagnostics,
         [switch]$CargoDenyDiagnostics,
         [switch]$AllowNonzero
     )
@@ -110,6 +111,15 @@ function Invoke-CapturedCommand {
             [System.IO.File]::WriteAllText($StdoutPath, $stdout, [System.Text.UTF8Encoding]::new($false))
         }
         if ($process.ExitCode -ne 0 -and -not $AllowNonzero) {
+            if ($SafePolicyDiagnostics) {
+                $policyReport = $stderr.Trim()
+                if (-not $policyReport) {
+                    $policyReport = $stdout.Trim()
+                }
+                if ($policyReport) {
+                    throw "$Operation failed with exit code $($process.ExitCode).`n$policyReport"
+                }
+            }
             if ($CargoDenyDiagnostics) {
                 $safeReport = Format-CargoDenyFailure -RawOutput ($stdout + "`n" + $stderr) `
                     -PythonExecutable $pythonExecutable -RootMetadata $rootMetadata -FuzzMetadata $fuzzMetadata
@@ -338,7 +348,7 @@ try {
         '--fuzz-metadata', $fuzzMetadata,
         '--baseline-deny-config', $baselineDenyConfig,
         '--findings', $findingsPath
-    ) -Operation 'dependency policy exact exception validation'
+    ) -Operation 'dependency policy exact exception validation' -SafePolicyDiagnostics
 
     foreach ($workspace in @(
         [pscustomobject]@{ Name = 'root'; Manifest = $rootManifest },
