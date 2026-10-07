@@ -185,8 +185,7 @@ handwritten Python modules remain in the 85 percent gate. Tests and example
 consumers live outside that package and are not measured as product code.
 Cross-platform adapter CI pins uv 0.12.23, installs CPython 3.12 through uv,
 and activates a clean virtual environment before installing this requirements
-set. This provides the same Python minor version on the self-hosted Debian
-ARM64 runner and GitHub-hosted platforms. The C consumer CI pins CMake 3.31.6
+set. This provides the same Python minor version across GitHub-hosted platforms. The C consumer CI pins CMake 3.31.6
 and Ninja 1.13.2 and selects Ninja explicitly on every platform, so the build
 does not depend on the runner image's default CMake generator.
 
