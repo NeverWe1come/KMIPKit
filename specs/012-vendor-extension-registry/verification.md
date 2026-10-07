@@ -763,3 +763,29 @@ The Python adapter's Extension Information test expectation was also corrected t
   secret-copy/zeroization limits. All example inputs are local non-secret data;
   none sends a KMIP request.
 - `git diff --check` — passed.
+
+## 2026-10-07 — independent acceptance and security review (T062–T063)
+
+- QA reviewed `5574a1b` read-only. It confirmed shared outbound fixtures
+  exercise two caller-ordered attachments with explicit `false`/`true`
+  criticality through Rust, C, Java, and Python. The public API audit found no
+  raw-body, arbitrary-Item, caller-conversion, or executable-plugin attachment
+  route; compile-fail fixtures cover these boundaries. It also confirmed that
+  FR-014 links the manifest, generators, shared corpus, outputs, tests, and CI.
+- The QA process finding is resolved by the standing direct user authorization
+  recorded in `spec.md` and above. It authorizes implementation without further
+  approval requests and explicitly does not waive PR approval or merge rules.
+- Security review of `be9efb1..5574a1b` found no reportable vulnerabilities.
+  It verified bounded runtime extension validation, redacted diagnostics,
+  JNI-owned scratch-buffer cleanup, read-only CI permissions, and the fixed
+  real-C-consumer sanitizer job. Its CI findings about omitted generator
+  rejection tests, dependency installation, and Windows Python selection were
+  fixed in `aad390b` through `a01a430` and verified by current-HEAD workflow
+  checks on Windows and macOS.
+- Residual review notes: the build-time fixture generator has no global
+  byte/depth/record ceilings; its inputs are version-controlled build fixtures,
+  not runtime or network input. Self-hosted runner isolation and cleanup are
+  configured outside the repository and were not established by this review.
+  A qualified human security review remains a separate 1.0.0 release gate.
+- T062 and T063 are complete on this evidence. Coverage thresholds and the full
+  current-HEAD platform CI remain open under T060 and T061.
