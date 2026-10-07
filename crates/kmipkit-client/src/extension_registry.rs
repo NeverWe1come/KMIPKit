@@ -23,6 +23,59 @@ struct IdentityIndex {
     by_fingerprint: HashMap<u64, Vec<usize>>,
 }
 
+struct RegistryIndexes {
+    identity: IdentityIndex,
+    metadata_order: Vec<usize>,
+    discriminator: DiscriminatorIndex,
+}
+
+impl RegistryIndexes {
+    fn compile(definitions: &[ExtensionDefinition]) -> Result<Self, ProtocolError> {
+        let definition_count = definitions.len();
+        let mut metadata_order = Vec::new();
+        metadata_order
+            .try_reserve_exact(definition_count)
+            .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        metadata_order.extend(0..definition_count);
+        metadata_order.sort_unstable_by(|left, right| {
+            compare_identity(
+                definitions[*left].identity_ref(),
+                definitions[*right].identity_ref(),
+            )
+        });
+        if metadata_order
+            .windows(2)
+            .any(|pair| definitions[pair[0]].identity_ref() == definitions[pair[1]].identity_ref())
+        {
+            return Err(registry_error(ProtocolErrorKind::DuplicateKey));
+        }
+
+        let mut identity = IdentityIndex::default();
+        identity
+            .by_fingerprint
+            .try_reserve(definition_count)
+            .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        for (index, definition) in definitions.iter().enumerate() {
+            index_identity(&mut identity, definitions, index, definition)?;
+        }
+
+        let mut discriminator = DiscriminatorIndex::default();
+        discriminator
+            .by_fingerprint
+            .try_reserve(definition_count)
+            .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        for (index, definition) in definitions.iter().enumerate() {
+            index_discriminator(&mut discriminator, definitions, index, definition)?;
+        }
+
+        Ok(Self {
+            identity,
+            metadata_order,
+            discriminator,
+        })
+    }
+}
+
 /// Immutable extension definitions and exact discriminator indexes for one client.
 ///
 /// This snapshot owns its definitions and indexes. It has no global state and
@@ -101,49 +154,13 @@ fn build_registry(
     limits: ExtensionRegistryLimits,
 ) -> Result<ClientExtensionRegistry, ProtocolError> {
     validate_totals(&definitions, &limits)?;
-
-    let definition_count = definitions.len();
-    let mut metadata_order = Vec::new();
-    metadata_order
-        .try_reserve_exact(definition_count)
-        .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
-    metadata_order.extend(0..definition_count);
-    metadata_order.sort_unstable_by(|left, right| {
-        compare_identity(
-            definitions[*left].identity_ref(),
-            definitions[*right].identity_ref(),
-        )
-    });
-    if metadata_order
-        .windows(2)
-        .any(|pair| definitions[pair[0]].identity_ref() == definitions[pair[1]].identity_ref())
-    {
-        return Err(registry_error(ProtocolErrorKind::DuplicateKey));
-    }
-
-    let mut identity_index = IdentityIndex::default();
-    identity_index
-        .by_fingerprint
-        .try_reserve(definition_count)
-        .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
-    for (index, definition) in definitions.iter().enumerate() {
-        index_identity(&mut identity_index, &definitions, index, definition)?;
-    }
-
-    let mut discriminator_index = DiscriminatorIndex::default();
-    discriminator_index
-        .by_fingerprint
-        .try_reserve(definition_count)
-        .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
-    for (index, definition) in definitions.iter().enumerate() {
-        index_discriminator(&mut discriminator_index, &definitions, index, definition)?;
-    }
+    let indexes = RegistryIndexes::compile(&definitions)?;
 
     Ok(ClientExtensionRegistry {
         definitions,
-        identity_index,
-        metadata_order,
-        discriminator_index,
+        identity_index: indexes.identity,
+        metadata_order: indexes.metadata_order,
+        discriminator_index: indexes.discriminator,
         limits,
     })
 }
