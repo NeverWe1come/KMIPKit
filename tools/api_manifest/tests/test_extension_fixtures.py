@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 from typing import Any
@@ -15,6 +17,19 @@ FIXTURE_DIRECTORY = ROOT / "tests" / "fixtures" / "extensions"
 FIXTURE_SCHEMA = FIXTURE_DIRECTORY / "fixture.schema.json"
 FIXTURE_CORPUS = FIXTURE_DIRECTORY / "cases.json"
 PUBLIC_API_MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+ADAPTER_FIXTURE_GENERATOR = ROOT / "tools" / "extension_fixtures" / "generate.py"
+GENERATED_C_FIXTURES = ROOT / "bindings" / "c" / "tests" / "extension_fixtures.generated.h"
+GENERATED_JAVA_FIXTURES = (
+    ROOT
+    / "bindings"
+    / "java"
+    / "src"
+    / "test"
+    / "java"
+    / "org"
+    / "kmipkit"
+    / "SharedExtensionFixtures.java"
+)
 ADAPTERS = ("rust", "c", "java", "python")
 
 
@@ -79,6 +94,26 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
                 Draft202012Validator.check_schema(definition["payloadSchema"])
             except Exception:
                 self.fail("definition payload schema is not valid Draft 2020-12 JSON Schema")
+
+    def test_generated_c_and_java_fixture_adapters_cover_the_shared_corpus(self) -> None:
+        self.assertTrue(ADAPTER_FIXTURE_GENERATOR.is_file(), "shared adapter fixture generator is missing")
+        result = subprocess.run(
+            [sys.executable, "-B", str(ADAPTER_FIXTURE_GENERATOR), "--check"],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+        corpus, _ = self.corpus_and_schema()
+        case_ids = [fixture["id"] for fixture in corpus["cases"]]
+        for generated_path in (GENERATED_C_FIXTURES, GENERATED_JAVA_FIXTURES):
+            self.assertTrue(generated_path.is_file(), f"generated adapter fixtures are missing: {generated_path}")
+            generated = generated_path.read_text(encoding="utf-8")
+            for case_id in case_ids:
+                with self.subTest(path=generated_path.name, fixture=case_id):
+                    self.assertIn(case_id, generated)
 
     def test_fixture_matrix_uses_stable_adapter_neutral_outcomes(self) -> None:
         corpus, schema = self.corpus_and_schema()
