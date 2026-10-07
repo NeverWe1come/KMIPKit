@@ -72,6 +72,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python.Source -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python.Source -B tools/api_manifest/generate.py --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run PowerShell contracts
         run: pwsh -File scripts/tests/Test-Wsl.ps1
