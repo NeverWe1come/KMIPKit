@@ -1,5 +1,6 @@
 //! Schema-validated extension values retaining their original generic tree.
 
+use std::collections::HashMap;
 use std::fmt;
 
 use kmipkit_ttlv::{Item, Structure, StructureView, ValueView, codec::CodecLimits};
@@ -185,18 +186,15 @@ fn validate_structure(
     let SchemaKind::Structure {
         children: rules,
         child_tag_index,
+        required_child_indices,
         order_edges,
         ..
     } = &schema.kind
     else {
         return Err(invalid_schema(path));
     };
-    let mut occurrences = Vec::new();
-    occurrences
-        .try_reserve_exact(rules.len())
-        .map_err(|_| resource_limit())?;
-    occurrences.resize(rules.len(), ChildOccurrences::default());
-    record_occurrence_entries(metrics, rules.len())?;
+    let mut occurrences = HashMap::<usize, ChildOccurrences>::new();
+    let mut present_rule_indices = Vec::new();
 
     for (position, item) in value.children().iter().enumerate() {
         let (index, comparisons) = find_rule_index(rules, child_tag_index, item.tag());
@@ -208,8 +206,16 @@ fn validate_structure(
             path.push(item.tag());
             return Err(invalid_schema(path));
         };
+        if !occurrences.contains_key(&index) {
+            occurrences.try_reserve(1).map_err(|_| resource_limit())?;
+            present_rule_indices
+                .try_reserve(1)
+                .map_err(|_| resource_limit())?;
+            occurrences.insert(index, ChildOccurrences::default());
+            present_rule_indices.push(index);
+        }
         let occurrence = occurrences
-            .get_mut(index)
+            .get_mut(&index)
             .ok_or_else(|| invalid_schema(path))?;
         let rule = &rules[index];
         if rule.cardinality != Cardinality::Repeated && occurrence.count != 0 {
@@ -227,21 +233,24 @@ fn validate_structure(
         path.pop();
     }
 
-    for (index, rule) in rules.iter().enumerate() {
-        if rule.cardinality == Cardinality::Required
-            && occurrences
-                .get(index)
-                .is_none_or(|occurrence| occurrence.count == 0)
-        {
+    present_rule_indices.sort_unstable();
+    record_occurrence_entries(metrics, present_rule_indices.len())?;
+
+    for index in required_child_indices {
+        let rule = rules.get(*index).ok_or_else(|| invalid_schema(path))?;
+        if !occurrences.contains_key(index) {
             path.push(rule.tag);
             return Err(invalid_schema(path));
         }
     }
 
-    for edge in order_edges {
-        check_order_edge(edge, &occurrences, path)?;
-    }
-    record_order_edge_checks(metrics, order_edges.len())?;
+    validate_order_edges(
+        order_edges,
+        &present_rule_indices,
+        &occurrences,
+        path,
+        metrics,
+    )?;
     Ok(())
 }
 
@@ -299,22 +308,89 @@ fn find_rule_index(
 
 fn check_order_edge(
     edge: &CompiledOrderEdge,
-    occurrences: &[ChildOccurrences],
-    path: &mut Vec<kmipkit_ttlv::Tag>,
-) -> Result<(), ProtocolError> {
+    occurrences: &HashMap<usize, ChildOccurrences>,
+    path: &[kmipkit_ttlv::Tag],
+) -> Result<bool, ProtocolError> {
     let before = occurrences
-        .get(edge.before_index)
+        .get(&edge.before_index)
         .copied()
         .ok_or_else(|| invalid_schema(path))?;
     let after = occurrences
-        .get(edge.after_index)
+        .get(&edge.after_index)
         .copied()
         .ok_or_else(|| invalid_schema(path))?;
-    if before.last.is_some() && after.first.is_some() && before.last >= after.first {
+    Ok(!(before.last.is_some() && after.first.is_some() && before.last >= after.first))
+}
+
+fn validate_order_edges(
+    order_edges: &[CompiledOrderEdge],
+    present_rule_indices: &[usize],
+    occurrences: &HashMap<usize, ChildOccurrences>,
+    path: &mut Vec<kmipkit_ttlv::Tag>,
+    metrics: &mut ValidationMetrics,
+) -> Result<(), ProtocolError> {
+    let pair_count = present_rule_indices
+        .len()
+        .checked_mul(present_rule_indices.len().saturating_sub(1))
+        .and_then(|count| count.checked_div(2))
+        .ok_or_else(resource_limit)?;
+    let pair_search_count = pair_count.checked_mul(2).ok_or_else(resource_limit)?;
+    let mut checks = 0_usize;
+    let mut first_invalid_edge: Option<usize> = None;
+
+    if pair_search_count < order_edges.len() {
+        for before_position in 0..present_rule_indices.len() {
+            let before_index = *present_rule_indices
+                .get(before_position)
+                .ok_or_else(|| invalid_schema(path))?;
+            for after_position in before_position + 1..present_rule_indices.len() {
+                let after_index = *present_rule_indices
+                    .get(after_position)
+                    .ok_or_else(|| invalid_schema(path))?;
+                for (before, after) in [(before_index, after_index), (after_index, before_index)] {
+                    if let Ok(edge_position) = order_edges
+                        .binary_search_by_key(&(before, after), |edge| {
+                            (edge.before_index, edge.after_index)
+                        })
+                    {
+                        let edge = order_edges
+                            .get(edge_position)
+                            .ok_or_else(|| invalid_schema(path))?;
+                        if !check_order_edge(edge, occurrences, path)? {
+                            first_invalid_edge = Some(
+                                first_invalid_edge
+                                    .map_or(edge_position, |first| first.min(edge_position)),
+                            );
+                        }
+                        checks = checked_usize_counter_add(checks, 1).ok_or_else(resource_limit)?;
+                    }
+                }
+            }
+        }
+    } else {
+        for (edge_position, edge) in order_edges.iter().enumerate() {
+            if occurrences.contains_key(&edge.before_index)
+                && occurrences.contains_key(&edge.after_index)
+            {
+                if !check_order_edge(edge, occurrences, path)? {
+                    first_invalid_edge = Some(
+                        first_invalid_edge.map_or(edge_position, |first| first.min(edge_position)),
+                    );
+                }
+                checks = checked_usize_counter_add(checks, 1).ok_or_else(resource_limit)?;
+            }
+        }
+    }
+
+    if let Some(edge_position) = first_invalid_edge {
+        let edge = order_edges
+            .get(edge_position)
+            .ok_or_else(|| invalid_schema(path))?;
         path.push(edge.after_tag);
         return Err(invalid_schema(path));
     }
-    Ok(())
+
+    record_order_edge_checks(metrics, checks)
 }
 
 fn validate_scalar(

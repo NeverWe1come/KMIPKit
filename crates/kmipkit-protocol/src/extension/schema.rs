@@ -33,6 +33,12 @@ pub(crate) struct CompiledOrderEdge {
     pub(crate) after_tag: Tag,
 }
 
+struct CompiledStructure {
+    child_tag_index: Vec<usize>,
+    required_child_indices: Vec<usize>,
+    order_edges: Vec<CompiledOrderEdge>,
+}
+
 /// The child cardinality declared for one Structure rule.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum Cardinality {
@@ -106,13 +112,14 @@ pub fn structure(
         }
     }
 
-    let (child_tag_index, order_edges) = compile_structure(&children, order_constraints)?;
+    let compiled = compile_structure(&children, order_constraints)?;
 
     Ok(ExtensionSchema {
         kind: SchemaKind::Structure {
             children,
-            child_tag_index,
-            order_edges,
+            child_tag_index: compiled.child_tag_index,
+            required_child_indices: compiled.required_child_indices,
+            order_edges: compiled.order_edges,
             preserve_undeclared_children,
         },
         minimum_length: None,
@@ -326,6 +333,8 @@ pub(crate) enum SchemaKind {
         children: Vec<ExtensionChildRule>,
         /// Child-rule indexes ordered by each rule's Tag.
         child_tag_index: Vec<usize>,
+        /// Required child-rule indexes in their original declaration order.
+        required_child_indices: Vec<usize>,
         /// Unique, acyclic order edges resolved to child-rule indexes.
         order_edges: Vec<CompiledOrderEdge>,
         preserve_undeclared_children: bool,
@@ -335,7 +344,7 @@ pub(crate) enum SchemaKind {
 fn compile_structure(
     children: &[ExtensionChildRule],
     constraints: Vec<ExtensionOrderConstraint>,
-) -> Result<(Vec<usize>, Vec<CompiledOrderEdge>), ProtocolError> {
+) -> Result<CompiledStructure, ProtocolError> {
     let mut child_tag_index = Vec::new();
     child_tag_index
         .try_reserve_exact(children.len())
@@ -348,6 +357,18 @@ fn compile_structure(
     {
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
+
+    let mut required_child_indices = Vec::new();
+    let required_count = children
+        .iter()
+        .filter(|child| child.cardinality == Cardinality::Required)
+        .count();
+    required_child_indices
+        .try_reserve_exact(required_count)
+        .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+    required_child_indices.extend(children.iter().enumerate().filter_map(|(index, child)| {
+        (child.cardinality == Cardinality::Required).then_some(index)
+    }));
 
     let mut order_edges = Vec::new();
     order_edges
@@ -375,7 +396,11 @@ fn compile_structure(
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
     validate_order_acyclic(children.len(), &order_edges)?;
-    Ok((child_tag_index, order_edges))
+    Ok(CompiledStructure {
+        child_tag_index,
+        required_child_indices,
+        order_edges,
+    })
 }
 
 fn resolve_child_index(
