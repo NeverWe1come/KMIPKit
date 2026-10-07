@@ -10,7 +10,7 @@
 
 ## Construction and validation
 
-Definitions and schemas use typed, fallible constructors. Constructor errors identify a stable category and structural rule/tag path, never an actual value or payload. The public API may validate a generic TTLV subtree against a definition, but only success returns the sealed ValidatedExtensionValue accepted by the typed client request boundary.
+Definitions and schemas use typed, fallible constructors. Constructor errors identify a stable category and structural rule/tag path, never an actual value or payload. The protocol API may validate a generic TTLV subtree against a definition, returning a sealed `ValidatedExtensionValue` for protocol-level inspection. That type alone is not request-admissible. The client registry API resolves an exact registered identity, validates the subtree against the stored definition, and returns a sealed client-owned `RegisteredExtensionValue`; only this registry-scoped type can be wrapped for an outbound typed request.
 
 The discriminator is an exact tag path and scalar type/value. Every path step must be unique in its containing Structure. An absent/repeated path, wrong type, or unequal value is not a match. Registry construction rejects duplicate `(vendor, discriminator path, scalar type, scalar value)` keys. Distinct keys may match the same payload when their separate paths and values are both present. Lookup collects exact discriminator matches before schema validation: zero matches or more than one match produces an unrecognized generic result; exactly one match is validated against its complete schema before a typed view is returned. Multiple matches never select by registration order. This bounds full schema validation to one candidate.
 
@@ -26,6 +26,6 @@ The discriminator is an exact tag path and scalar type/value. Every path step mu
 
 ## Integration
 
-Client execution attaches or validates an extension only through a closed typed request variant and a sealed ValidatedExtensionValue. Unknown critical/non-critical behavior remains in KMIPKIT-0007. No generic Item, raw body, transport implementation, or caller conversion trait is accepted as a request substitute.
+Client execution attaches an extension only through a closed typed request variant and a sealed `RegisteredExtensionValue` produced by exact-identity validation against the immutable client registry. A protocol-level `ValidatedExtensionValue` from a standalone definition is not request-admissible. Unknown critical/non-critical behavior remains in KMIPKIT-0007. No generic Item, raw body, transport implementation, or caller conversion trait is accepted as a request substitute.
 
 For outbound use, the caller must construct ClientRequestMessageExtension with an explicit Criticality Indicator Boolean and attach it to one typed ClientBatchItem. Encoding emits the standard Message Extension fields and validated payload through the existing private OperationEncodingPermit/zeroizing writer path. No criticality default or second writer callsite is added. This outbound type name preserves KMIPKIT-0007's existing inbound ClientMessageExtension type and its preserved-content semantics.

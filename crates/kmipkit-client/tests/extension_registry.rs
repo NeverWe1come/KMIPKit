@@ -6,7 +6,7 @@
 use kmipkit_client::extension_registry;
 use kmipkit_client::{ClientError, ClientErrorCategory};
 use kmipkit_protocol::extension;
-use kmipkit_ttlv::{Item, ItemType, RawTag, Tag, ValueView};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, ValueView};
 
 const VENDOR_IDENTIFIER: &str = "example.vendor";
 
@@ -714,4 +714,30 @@ fn registry_rejects_text_totals_over_the_hard_aggregate_limit() {
         definitions,
         limits,
     ));
+}
+
+#[test]
+fn registry_validation_rejects_unregistered_identity_without_disclosing_it() {
+    let registry = extension_registry::client_extension_registry(
+        vec![definition(&FIXTURES[0])],
+        extension::defaults(),
+    )
+    .expect("the known definition is registered");
+    let unregistered = extension::extension_identity("vendor.unregistered", "other", "1")
+        .expect("the unregistered identity is syntactically valid");
+
+    let error = extension_registry::validate_extension_value(
+        &registry,
+        unregistered,
+        Structure::new(),
+        &kmipkit_ttlv::codec::CodecLimits::defaults(),
+    )
+    .expect_err("unknown identities are rejected before schema validation");
+
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert!(!format!("{error}").contains("vendor.unregistered"));
 }

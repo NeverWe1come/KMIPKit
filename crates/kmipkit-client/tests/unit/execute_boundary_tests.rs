@@ -107,9 +107,9 @@ const FIXTURES: &[Fixture] = &[
     },
     Fixture {
         id: "approved_registry_value_validation",
-        path: "src/extension_registry.rs",
+        path: "tests/fixtures/execute_boundary/approved_registry_value_validation.rs",
         source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<RegisteredExtensionValue, ClientError> { loop {} }",
-        probe: "registry-scoped generic TTLV validation",
+        probe: "value: kmipkit_ttlv::Structure",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Accept,
     },
@@ -117,7 +117,7 @@ const FIXTURES: &[Fixture] = &[
         id: "registry_value_validation_wrong_module",
         path: "tests/fixtures/execute_boundary/registry_value_validation_wrong_module.rs",
         source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<RegisteredExtensionValue, ClientError> { loop {} }",
-        probe: "same generic input outside the registry module",
+        probe: "value: kmipkit_ttlv::Structure",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
     },
@@ -125,7 +125,7 @@ const FIXTURES: &[Fixture] = &[
         id: "registry_value_validation_wrong_argument",
         path: "tests/fixtures/execute_boundary/registry_value_validation_wrong_argument.rs",
         source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, payload: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<RegisteredExtensionValue, ClientError> { loop {} }",
-        probe: "renamed generic input",
+        probe: "payload: kmipkit_ttlv::Structure",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
     },
@@ -133,7 +133,7 @@ const FIXTURES: &[Fixture] = &[
         id: "registry_value_validation_wrong_output",
         path: "tests/fixtures/execute_boundary/registry_value_validation_wrong_output.rs",
         source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<kmipkit_ttlv::Item, ClientError> { loop {} }",
-        probe: "generic TTLV output",
+        probe: "kmipkit_ttlv::Item",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
     },
@@ -701,6 +701,10 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "ttlv_cargo_alias_type",
     "raw_body_input",
     "public_structure_input",
+    "approved_registry_value_validation",
+    "registry_value_validation_wrong_module",
+    "registry_value_validation_wrong_argument",
+    "registry_value_validation_wrong_output",
     "public_structure_view_input",
     "public_structure_view_output",
     "public_tag_input",
@@ -879,6 +883,11 @@ impl BoundaryAudit {
             is_exact_error_validation_source(error_root_scope, impl_type, signature);
         let batch_response_iterator =
             is_exact_batch_response_iterator(execute_root_scope, impl_type, signature);
+        let registry_value_validation = is_exact_registry_value_validation(
+            self.is_source_root(Path::new("extension_registry.rs")),
+            impl_type,
+            signature,
+        );
         let approved_generic_signature =
             extension_view_callback || async_outcome_callback || error_validation_source;
         if has_public_type_or_const_generics(signature) && !approved_generic_signature {
@@ -894,6 +903,7 @@ impl BoundaryAudit {
                 if (unique_id_setter || extension_view_callback || async_outcome_callback)
                     && index == 1
                     || batch_from_items && index == 0
+                    || registry_value_validation && index == 2
                 {
                     continue;
                 }
@@ -2033,6 +2043,104 @@ fn is_named_typed_argument(argument: &syn::PatType, expected_name: &str) -> bool
                 && pattern.mutability.is_none()
                 && pattern.subpat.is_none()
                 && pattern.attrs.is_empty())
+}
+
+fn is_exact_registry_value_validation(
+    registry_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !registry_root_scope
+        || impl_type.is_some()
+        || signature.ident != "validate_extension_value"
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 4
+        || !is_result_with_types(&signature.output, "RegisteredExtensionValue", "ClientError")
+    {
+        return false;
+    }
+
+    let mut inputs = signature.inputs.iter();
+    matches!(
+        (inputs.next(), inputs.next(), inputs.next(), inputs.next()),
+        (
+            Some(syn::FnArg::Typed(registry)),
+            Some(syn::FnArg::Typed(identity)),
+            Some(syn::FnArg::Typed(value)),
+            Some(syn::FnArg::Typed(limits)),
+        ) if is_named_typed_argument(registry, "registry")
+            && is_shared_reference_to(&registry.ty, &["ClientExtensionRegistry"])
+            && is_named_typed_argument(identity, "identity")
+            && is_path_type(&identity.ty, &["ExtensionIdentity"])
+            && is_named_typed_argument(value, "value")
+            && is_path_type(&value.ty, &["kmipkit_ttlv", "Structure"])
+            && is_named_typed_argument(limits, "limits")
+            && is_shared_reference_to(
+                &limits.ty,
+                &["kmipkit_ttlv", "codec", "CodecLimits"],
+            )
+    )
+}
+
+fn is_result_with_types(output: &syn::ReturnType, ok_type: &str, error_type: &str) -> bool {
+    let syn::ReturnType::Type(_, output) = output else {
+        return false;
+    };
+    let Type::Path(path) = output.as_ref() else {
+        return false;
+    };
+    if path.qself.is_some()
+        || path.path.leading_colon.is_some()
+        || path.path.segments.len() != 1
+        || path.path.segments[0].ident != "Result"
+    {
+        return false;
+    }
+    let syn::PathArguments::AngleBracketed(arguments) = &path.path.segments[0].arguments else {
+        return false;
+    };
+    if arguments.args.len() != 2 {
+        return false;
+    }
+    matches!(
+        (arguments.args.first(), arguments.args.last()),
+        (
+            Some(syn::GenericArgument::Type(ok)),
+            Some(syn::GenericArgument::Type(error)),
+        ) if is_path_type(ok, &[ok_type]) && is_path_type(error, &[error_type])
+    )
+}
+
+fn is_shared_reference_to(ty: &Type, expected_path: &[&str]) -> bool {
+    matches!(ty, Type::Reference(reference)
+        if reference.mutability.is_none()
+            && reference.lifetime.is_none()
+            && is_path_type(&reference.elem, expected_path))
+}
+
+fn is_path_type(ty: &Type, expected_path: &[&str]) -> bool {
+    let Type::Path(path) = ty else {
+        return false;
+    };
+    if path.qself.is_some()
+        || path.path.leading_colon.is_some()
+        || path.path.segments.len() != expected_path.len()
+    {
+        return false;
+    }
+    path.path
+        .segments
+        .iter()
+        .zip(expected_path)
+        .all(|(segment, expected)| {
+            segment.ident == *expected && matches!(segment.arguments, syn::PathArguments::None)
+        })
 }
 
 fn is_exact_batch_response_iterator(
@@ -3392,6 +3500,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "approved_batch_from_items_iterator"
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"
+                    | "approved_registry_value_validation"
                     | "matches_guard_logical_not"
             )),
             ExpectedDecision::Reject => assert!(!matches!(

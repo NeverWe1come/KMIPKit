@@ -18,13 +18,14 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 use zeroize::Zeroize;
 use zeroize::Zeroizing;
 
+use crate::extension_registry::ClientRequestMessageExtension;
 use crate::{ClientCauseCategory, ClientError};
 
 #[path = "wire_encoder.rs"]
 mod private_wire_writer;
 
 #[cfg(test)]
-#[path = "../tests/extension_outbound.rs"]
+#[path = "../tests/unit/extension_outbound.rs"]
 mod extension_outbound_tests;
 
 #[cfg(test)]
@@ -38,6 +39,7 @@ const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const BATCH_COUNT: u32 = 0x0042_000D;
 const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
 const BATCH_ITEM: u32 = 0x0042_000F;
+const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
 const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
@@ -95,6 +97,7 @@ impl ClientRequest {
 pub struct ClientBatchItem {
     request: ClientRequest,
     unique_batch_item_id: Option<Vec<u8>>,
+    message_extensions: Vec<ClientRequestMessageExtension>,
 }
 
 impl ClientBatchItem {
@@ -104,6 +107,7 @@ impl ClientBatchItem {
         Self {
             request,
             unique_batch_item_id: None,
+            message_extensions: Vec::new(),
         }
     }
 
@@ -111,6 +115,15 @@ impl ClientBatchItem {
     #[must_use]
     pub fn with_unique_batch_item_id(mut self, id: Vec<u8>) -> Self {
         self.unique_batch_item_id = Some(id);
+        self
+    }
+
+    /// Appends one schema-validated Message Extension with explicit criticality.
+    ///
+    /// Repeated calls preserve the order in which extensions are attached.
+    #[must_use]
+    pub fn with_extension(mut self, extension: ClientRequestMessageExtension) -> Self {
+        self.message_extensions.push(extension);
         self
     }
 
@@ -133,6 +146,7 @@ impl fmt::Debug for ClientBatchItem {
             .debug_struct("ClientBatchItem")
             .field("request", &self.request)
             .field("unique_batch_item_id", &self.unique_batch_item_id.is_some())
+            .field("message_extension_count", &self.message_extensions.len())
             .finish()
     }
 }
@@ -1192,6 +1206,13 @@ fn build_request_message(
             REQUEST_PAYLOAD,
             Value::structure(item.request.payload()?),
         )?;
+        for extension in &item.message_extensions {
+            push(
+                &mut batch_item,
+                MESSAGE_EXTENSION,
+                Value::structure(message_extension_structure(extension)?),
+            )?;
+        }
         push(&mut tree, BATCH_ITEM, Value::structure(batch_item))?;
     }
 
@@ -1202,6 +1223,25 @@ fn build_request_message(
             error,
         )
     })
+}
+
+fn message_extension_structure(
+    extension: &ClientRequestMessageExtension,
+) -> Result<Structure, ProtocolError> {
+    let validated = extension.value().value();
+    let identity = kmipkit_protocol::extension::validated_extension_value_identity(validated);
+    let payload = copy_structure(&kmipkit_protocol::extension::generic_value(validated).view())?;
+    structure([
+        (
+            0x0042_009D,
+            Value::text_string(identity.vendor_identifier().to_owned()),
+        ),
+        (
+            0x0042_0026,
+            Value::boolean(extension.criticality_indicator()),
+        ),
+        (0x0042_009C, Value::structure(payload)),
+    ])
 }
 
 fn build_async_request_message(

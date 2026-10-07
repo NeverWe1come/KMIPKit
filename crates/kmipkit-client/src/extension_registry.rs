@@ -7,16 +7,11 @@ use std::hash::{DefaultHasher, Hasher};
 
 use crate::ClientError;
 use kmipkit_protocol::extension::{
-    self, ExtensionDefinition, ExtensionIdentity, ExtensionRegistryLimits,
+    self, ExtensionDefinition, ExtensionIdentity, ExtensionRegistryLimits, ValidatedExtensionValue,
 };
 use kmipkit_protocol::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::{Tag, ValueView};
-
-#[cfg(test)]
-std::thread_local! {
-    static INDEX_COMPILATION_ATTEMPTS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
-}
 
 #[derive(Default)]
 struct DiscriminatorIndex {
@@ -37,7 +32,7 @@ struct RegistryIndexes {
 impl RegistryIndexes {
     fn compile(definitions: &[ExtensionDefinition]) -> Result<Self, ProtocolError> {
         #[cfg(test)]
-        INDEX_COMPILATION_ATTEMPTS.with(|attempts| attempts.set(attempts.get().saturating_add(1)));
+        crate::extension_registry_test_support::record_index_compilation_attempt();
 
         let definition_count = definitions.len();
         let mut metadata_order = Vec::new();
@@ -96,12 +91,80 @@ pub struct ClientExtensionRegistry {
     limits: ExtensionRegistryLimits,
 }
 
+/// An extension value validated against one exact definition in a client registry.
+///
+/// This client-owned seal distinguishes registry-validated request data from
+/// a `ValidatedExtensionValue` checked against an arbitrary standalone
+/// definition. Only [`validate_extension_value`] can create it.
+pub struct RegisteredExtensionValue {
+    value: ValidatedExtensionValue,
+}
+
+impl fmt::Debug for RegisteredExtensionValue {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("RegisteredExtensionValue([REDACTED])")
+    }
+}
+
+impl RegisteredExtensionValue {
+    pub(crate) const fn value(&self) -> &ValidatedExtensionValue {
+        &self.value
+    }
+}
+
 /// Immutable client configuration containing one owned extension registry.
 ///
 /// The production transport constructor can consume this configuration
 /// without rebuilding or sharing registry state between clients.
 pub struct ClientConfiguration {
     extension_registry: ClientExtensionRegistry,
+}
+
+/// A registry-validated extension and its caller-selected request criticality.
+///
+/// This sealed request-use value is the only extension type accepted by
+/// [`crate::ClientBatchItem::with_extension`]. It contains no caller-defined
+/// conversion, raw wire body, or executable behavior.
+pub struct ClientRequestMessageExtension {
+    value: RegisteredExtensionValue,
+    criticality_indicator: bool,
+}
+
+impl fmt::Debug for ClientRequestMessageExtension {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("ClientRequestMessageExtension([REDACTED])")
+    }
+}
+
+impl ClientRequestMessageExtension {
+    pub(crate) const fn value(&self) -> &RegisteredExtensionValue {
+        &self.value
+    }
+
+    pub(crate) const fn criticality_indicator(&self) -> bool {
+        self.criticality_indicator
+    }
+}
+
+/// Wraps a registry-validated extension for one request with explicit criticality.
+///
+/// The Boolean is required at each call site; `KMIPKit` does not select a
+/// criticality default. The wrapper accepts only a value produced by complete
+/// the exact registered definition's schema validation.
+///
+/// # Errors
+///
+/// This constructor currently has no error condition. Its fallible return
+/// type follows the reviewed cross-language public API contract.
+#[allow(clippy::unnecessary_wraps)] // Keep the fallible API contract shared with validating language bindings.
+pub fn client_request_message_extension(
+    value: RegisteredExtensionValue,
+    criticality_indicator: bool,
+) -> Result<ClientRequestMessageExtension, ClientError> {
+    Ok(ClientRequestMessageExtension {
+        value,
+        criticality_indicator,
+    })
 }
 
 impl ClientConfiguration {
@@ -204,6 +267,35 @@ pub fn definition_for_identity(
         let definition = registry.definitions.get(*index)?;
         (definition.identity_ref() == &identity).then_some(definition)
     })
+}
+
+/// Validates a generic extension Structure against an exact registered definition.
+///
+/// This is the only constructor for [`RegisteredExtensionValue`]. The returned
+/// value can enter a typed request only after matching the identity and complete
+/// schema of a definition in this immutable registry.
+///
+/// # Errors
+///
+/// Returns a redacted `ClientError::Validation` with `NotSent` delivery state
+/// when `identity` is absent. Returns a redacted protocol error when the
+/// payload violates that registered definition or exceeds `limits`.
+pub fn validate_extension_value(
+    registry: &ClientExtensionRegistry,
+    identity: ExtensionIdentity,
+    value: kmipkit_ttlv::Structure,
+    limits: &kmipkit_ttlv::codec::CodecLimits,
+) -> Result<RegisteredExtensionValue, ClientError> {
+    let Some(definition) = definition_for_identity(registry, identity) else {
+        return Err(ClientError::validation(
+            crate::ClientCauseCategory::InvalidInput,
+            RequestDeliveryState::NotSent,
+            UnregisteredExtension,
+        ));
+    };
+    let value = extension::validate(definition, value, limits)
+        .map_err(|error| ClientError::protocol(error, RequestDeliveryState::NotSent))?;
+    Ok(RegisteredExtensionValue { value })
 }
 
 /// Returns the candidate definition indexes for one discriminator fingerprint.
@@ -451,12 +543,23 @@ impl fmt::Display for RegistryConstructionFailure {
 
 impl Error for RegistryConstructionFailure {}
 
+#[derive(Debug)]
+struct UnregisteredExtension;
+
+impl fmt::Display for UnregisteredExtension {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("extension identity is not registered")
+    }
+}
+
+impl Error for UnregisteredExtension {}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        INDEX_COMPILATION_ATTEMPTS, candidate_matches_discriminator, client_extension_registry,
-        discriminator_candidates,
+        candidate_matches_discriminator, client_extension_registry, discriminator_candidates,
     };
+    use crate::extension_registry_test_support::index_compilation_attempts;
     use kmipkit_protocol::extension;
     use kmipkit_ttlv::{Item, ItemType, RawTag, Tag, Value};
 
@@ -505,10 +608,9 @@ mod tests {
         .expect("the test limit overrides remain under every hard maximum")
     }
 
-    #[test]
-    fn registry_limits_reject_before_compiling_or_reserving_indexes() {
+    fn limits_with_override(index: usize, value: u64) -> extension::ExtensionRegistryLimits {
         let defaults = extension::defaults();
-        let default_values = [
+        let mut overrides = [
             defaults.max_definitions(),
             defaults.max_schema_nodes(),
             defaults.max_child_rules_per_structure(),
@@ -522,130 +624,55 @@ mod tests {
             defaults.max_lookup_comparisons(),
             defaults.max_depth(),
         ];
+        overrides[index] = value;
+        limits_with_overrides(overrides)
+    }
+
+    #[test]
+    fn registry_limits_reject_before_compiling_or_reserving_indexes() {
         let invalid_cases = [
             (
                 vec![definition("count", "value")],
-                limits_with_overrides([
-                    0,
-                    default_values[1],
-                    default_values[2],
-                    default_values[3],
-                    default_values[4],
-                    default_values[5],
-                    default_values[6],
-                    default_values[7],
-                    default_values[8],
-                    default_values[9],
-                    default_values[10],
-                    default_values[11],
-                ]),
+                limits_with_override(0, 0),
             ),
             (
                 vec![definition("name-too-long", "value")],
-                limits_with_overrides([
-                    default_values[0],
-                    default_values[1],
-                    default_values[2],
-                    4,
-                    default_values[4],
-                    default_values[5],
-                    default_values[6],
-                    default_values[7],
-                    default_values[8],
-                    default_values[9],
-                    default_values[10],
-                    default_values[11],
-                ]),
+                limits_with_override(3, 4),
             ),
             (
                 vec![definition("aggregate-text", "value")],
-                limits_with_overrides([
-                    default_values[0],
-                    default_values[1],
-                    default_values[2],
-                    default_values[3],
-                    1,
-                    default_values[5],
-                    default_values[6],
-                    default_values[7],
-                    default_values[8],
-                    default_values[9],
-                    default_values[10],
-                    default_values[11],
-                ]),
+                limits_with_override(4, 1),
             ),
             (
                 vec![definition("scalar", "too-long")],
-                limits_with_overrides([
-                    default_values[0],
-                    default_values[1],
-                    default_values[2],
-                    default_values[3],
-                    default_values[4],
-                    3,
-                    default_values[6],
-                    default_values[7],
-                    default_values[8],
-                    default_values[9],
-                    default_values[10],
-                    default_values[11],
-                ]),
+                limits_with_override(5, 3),
             ),
             (
                 vec![definition("aggregate-scalar", "value")],
-                limits_with_overrides([
-                    default_values[0],
-                    default_values[1],
-                    default_values[2],
-                    default_values[3],
-                    default_values[4],
-                    default_values[5],
-                    3,
-                    default_values[7],
-                    default_values[8],
-                    default_values[9],
-                    default_values[10],
-                    default_values[11],
-                ]),
+                limits_with_override(6, 3),
             ),
             (
                 vec![definition("schema-node", "value")],
-                limits_with_overrides([
-                    default_values[0],
-                    1,
-                    default_values[2],
-                    default_values[3],
-                    default_values[4],
-                    default_values[5],
-                    default_values[6],
-                    default_values[7],
-                    default_values[8],
-                    default_values[9],
-                    default_values[10],
-                    default_values[11],
-                ]),
+                limits_with_override(1, 1),
             ),
         ];
 
-        let initial = INDEX_COMPILATION_ATTEMPTS.with(std::cell::Cell::get);
+        let initial = index_compilation_attempts();
         for (definitions, limits) in invalid_cases {
             assert!(
                 client_extension_registry(definitions, limits).is_err(),
                 "each over-limit registry is rejected"
             );
             assert_eq!(
-                INDEX_COMPILATION_ATTEMPTS.with(std::cell::Cell::get),
+                index_compilation_attempts(),
                 initial,
                 "rejected registry limits must be checked before index reservations"
             );
         }
 
-        client_extension_registry(vec![definition("valid", "value")], defaults)
+        client_extension_registry(vec![definition("valid", "value")], extension::defaults())
             .expect("a valid registry reaches index compilation");
-        assert_eq!(
-            INDEX_COMPILATION_ATTEMPTS.with(std::cell::Cell::get),
-            initial + 1
-        );
+        assert_eq!(index_compilation_attempts(), initial + 1);
     }
 
     #[test]

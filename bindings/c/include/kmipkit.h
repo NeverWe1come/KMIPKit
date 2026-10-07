@@ -41,6 +41,8 @@ typedef struct kmipkit_client_configuration_t kmipkit_client_configuration_t;
 
 typedef struct kmipkit_validated_extension_value_t kmipkit_validated_extension_value_t;
 
+typedef struct kmipkit_registered_extension_value_t kmipkit_registered_extension_value_t;
+
 typedef struct kmipkit_client_request_message_extension_t kmipkit_client_request_message_extension_t;
 
 typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
@@ -92,6 +94,7 @@ void kmipkit_extension_definition_release(kmipkit_extension_definition_t *handle
 void kmipkit_client_extension_registry_release(kmipkit_client_extension_registry_t *handle);
 void kmipkit_client_configuration_release(kmipkit_client_configuration_t *handle);
 void kmipkit_validated_extension_value_release(kmipkit_validated_extension_value_t *handle);
+void kmipkit_registered_extension_value_release(kmipkit_registered_extension_value_t *handle);
 void kmipkit_client_request_message_extension_release(kmipkit_client_request_message_extension_t *handle);
 void kmipkit_ttlv_structure_release(kmipkit_ttlv_structure_t *handle);
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
@@ -131,8 +134,10 @@ int32_t kmipkit_client_extension_registry_inspect(kmipkit_client_extension_regis
 int32_t kmipkit_client_extension_registry_definition_count(kmipkit_client_extension_registry_t * registry, uint64_t * out_count);
 /* KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_client_extension_registry_definition_at(kmipkit_client_extension_registry_t * registry, uint64_t index, kmipkit_extension_definition_t ** out_definition);
+/* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011, KMIPKIT-0012-FR-012 */
+int32_t kmipkit_client_extension_registry_validate(kmipkit_client_extension_registry_t * registry, kmipkit_extension_identity_t * identity, kmipkit_ttlv_structure_t * value, kmipkit_codec_limits_t * limits, kmipkit_registered_extension_value_t ** out_value);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
-int32_t kmipkit_client_request_message_extension_create(kmipkit_validated_extension_value_t * value, uint8_t criticality_indicator, kmipkit_client_request_message_extension_t ** out_extension);
+int32_t kmipkit_client_request_message_extension_create(kmipkit_registered_extension_value_t * value, uint8_t criticality_indicator, kmipkit_client_request_message_extension_t ** out_extension);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
 int32_t kmipkit_client_batch_item_with_extension(kmipkit_client_batch_item_t * item, kmipkit_client_request_message_extension_t * extension, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010 */

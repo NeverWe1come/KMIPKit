@@ -25,6 +25,10 @@
 mod error;
 pub mod extension_registry;
 
+#[cfg(test)]
+#[path = "../tests/unit/extension_registry_test_support.rs"]
+mod extension_registry_test_support;
+
 mod execute;
 
 #[cfg(test)]

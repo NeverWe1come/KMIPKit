@@ -49,6 +49,9 @@ pub struct kmipkit_client_configuration_t { _private: [u8; 0] }
 pub struct kmipkit_validated_extension_value_t { _private: [u8; 0] }
 
 #[repr(C)]
+pub struct kmipkit_registered_extension_value_t { _private: [u8; 0] }
+
+#[repr(C)]
 pub struct kmipkit_client_request_message_extension_t { _private: [u8; 0] }
 
 #[repr(C)]
@@ -114,6 +117,7 @@ unsafe extern "C" {
     pub fn kmipkit_client_extension_registry_release(handle: *mut kmipkit_client_extension_registry_t);
     pub fn kmipkit_client_configuration_release(handle: *mut kmipkit_client_configuration_t);
     pub fn kmipkit_validated_extension_value_release(handle: *mut kmipkit_validated_extension_value_t);
+    pub fn kmipkit_registered_extension_value_release(handle: *mut kmipkit_registered_extension_value_t);
     pub fn kmipkit_client_request_message_extension_release(handle: *mut kmipkit_client_request_message_extension_t);
     pub fn kmipkit_ttlv_structure_release(handle: *mut kmipkit_ttlv_structure_t);
     pub fn kmipkit_client_batch_item_release(handle: *mut kmipkit_client_batch_item_t);
@@ -146,8 +150,10 @@ unsafe extern "C" {
     pub fn kmipkit_client_extension_registry_definition_count(registry: *mut kmipkit_client_extension_registry_t, out_count: *mut u64) -> i32;
     // KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010
     pub fn kmipkit_client_extension_registry_definition_at(registry: *mut kmipkit_client_extension_registry_t, index: u64, out_definition: *mut *mut kmipkit_extension_definition_t) -> i32;
+    // KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011, KMIPKIT-0012-FR-012
+    pub fn kmipkit_client_extension_registry_validate(registry: *mut kmipkit_client_extension_registry_t, identity: *mut kmipkit_extension_identity_t, value: *mut kmipkit_ttlv_structure_t, limits: *mut kmipkit_codec_limits_t, out_value: *mut *mut kmipkit_registered_extension_value_t) -> i32;
     // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
-    pub fn kmipkit_client_request_message_extension_create(value: *mut kmipkit_validated_extension_value_t, criticality_indicator: u8, out_extension: *mut *mut kmipkit_client_request_message_extension_t) -> i32;
+    pub fn kmipkit_client_request_message_extension_create(value: *mut kmipkit_registered_extension_value_t, criticality_indicator: u8, out_extension: *mut *mut kmipkit_client_request_message_extension_t) -> i32;
     // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
     pub fn kmipkit_client_batch_item_with_extension(item: *mut kmipkit_client_batch_item_t, extension: *mut kmipkit_client_request_message_extension_t, out_item: *mut *mut kmipkit_client_batch_item_t) -> i32;
     // KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010

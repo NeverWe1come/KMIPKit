@@ -348,6 +348,36 @@
       }
     },
     {
+      "id": "RegisteredExtensionValue",
+      "kind": "sealed-value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry",
+        "name": "RegisteredExtensionValue",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_registered_extension_value_t",
+        "kind": "opaque-handle",
+        "handleKind": "registered_extension_value",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_registered_extension_value_release"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "RegisteredExtensionValue"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "RegisteredExtensionValue"
+      }
+    },
+    {
       "id": "ClientRequestMessageExtension",
       "kind": "sealed-value",
       "requirementIds": [
@@ -1851,6 +1881,139 @@
       "ordering": "not-applicable"
     },
     {
+      "id": "client_extension_registry_validate",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-002",
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry",
+        "name": "validate_extension_value",
+        "owner": "client",
+        "requestBoundary": "validates-generic-ttlv",
+        "parameters": [
+          {
+            "name": "registry",
+            "type": "&ClientExtensionRegistry"
+          },
+          {
+            "name": "identity",
+            "type": "ExtensionIdentity"
+          },
+          {
+            "name": "value",
+            "type": "Structure"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "Result<RegisteredExtensionValue, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_extension_registry_validate",
+        "parameters": [
+          {
+            "name": "registry",
+            "kind": "handle",
+            "type": "kmipkit_client_extension_registry_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "identity",
+            "kind": "handle",
+            "type": "kmipkit_extension_identity_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_registered_extension_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "invalid_schema",
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientExtensionRegistry",
+        "method": "validateExtensionValue",
+        "parameters": [
+          {
+            "name": "identity",
+            "type": "ExtensionIdentity"
+          },
+          {
+            "name": "value",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_extensions_ClientExtensionRegistry_validateExtensionValue",
+        "errorCategories": [
+          "invalid_input",
+          "invalid_schema",
+          "resource_limit"
+        ],
+        "returnType": "RegisteredExtensionValue"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "validate_extension_value",
+        "parameters": [
+          {
+            "name": "registry",
+            "type": "ClientExtensionRegistry"
+          },
+          {
+            "name": "identity",
+            "type": "ExtensionIdentity"
+          },
+          {
+            "name": "value",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_extension_registry_validate",
+        "errorCategories": [
+          "invalid_input",
+          "invalid_schema",
+          "resource_limit"
+        ],
+        "returnType": "RegisteredExtensionValue"
+      },
+      "ordering": "not-applicable"
+    },
+    {
       "id": "client_request_message_extension_create",
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
@@ -1865,7 +2028,7 @@
         "parameters": [
           {
             "name": "value",
-            "type": "ValidatedExtensionValue"
+            "type": "RegisteredExtensionValue"
           },
           {
             "name": "criticality_indicator",
@@ -1880,7 +2043,7 @@
           {
             "name": "value",
             "kind": "handle",
-            "type": "kmipkit_validated_extension_value_t *",
+            "type": "kmipkit_registered_extension_value_t *",
             "ownership": "consumed"
           },
           {
@@ -1908,7 +2071,7 @@
         "parameters": [
           {
             "name": "value",
-            "type": "ValidatedExtensionValue"
+            "type": "RegisteredExtensionValue"
           },
           {
             "name": "criticalityIndicator",
@@ -1927,7 +2090,7 @@
         "parameters": [
           {
             "name": "value",
-            "type": "ValidatedExtensionValue"
+            "type": "RegisteredExtensionValue"
           },
           {
             "name": "criticality_indicator",

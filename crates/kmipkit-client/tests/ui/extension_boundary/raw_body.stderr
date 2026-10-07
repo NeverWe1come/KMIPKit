@@ -1,5 +1,15 @@
-error[E0599]: no method named `with_extension` found for struct `ClientBatchItem` in the current scope
- --> tests/ui/extension_boundary/raw_body.rs:6:18
+error[E0308]: mismatched types
+ --> tests/ui/extension_boundary/raw_body.rs:6:33
   |
 6 |     let _ = item.with_extension(raw_body);
-  |                  ^^^^^^^^^^^^^^ method not found in `ClientBatchItem`
+  |                  -------------- ^^^^^^^^ expected `ClientRequestMessageExtension`, found `Vec<{integer}>`
+  |                  |
+  |                  arguments to this method are incorrect
+  |
+  = note: expected struct `ClientRequestMessageExtension`
+             found struct `Vec<{integer}>`
+note: method defined here
+ --> src/execute.rs
+  |
+  |     pub fn with_extension(mut self, extension: ClientRequestMessageExtension) -> Self {
+  |            ^^^^^^^^^^^^^^
