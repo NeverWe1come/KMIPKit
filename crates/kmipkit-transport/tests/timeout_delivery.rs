@@ -313,35 +313,45 @@ async fn each_wait_uses_the_earlier_phase_or_total_deadline() {
 
 #[tokio::test]
 async fn hyper_sender_readiness_timeout_is_not_sent_before_dispatch_commit() {
-    for (write_timeout, total_timeout, retry_after_driver_ready) in [
-        (SHORT_IO_TIMEOUT, Duration::from_secs(1), true),
-        (Duration::from_secs(1), SHORT_IO_TIMEOUT, false),
+    for (write_timeout, total_timeout) in [
+        (SHORT_IO_TIMEOUT, Duration::from_secs(1)),
+        (Duration::from_secs(1), SHORT_IO_TIMEOUT),
     ] {
-        let (inner, read_poll) = ScriptIo::manual_with_read_poll_notification();
-        let observed = inner.clone();
-        let control = ExchangeControl::new();
-        assert!(control.begin());
-        let total_deadline = Instant::now() + total_timeout;
+        let (client_io, mut server_io) = tokio::io::duplex(8 * 1024);
+        let primer_control = dispatched_control();
+        let target_control = ExchangeControl::new();
         let wrapped = deadline_io(
-            inner,
+            client_io,
             Some(Duration::from_secs(1)),
-            Some(write_timeout),
-            Some(total_deadline),
-            control.clone(),
+            Some(Duration::from_secs(5)),
+            Some(Instant::now() + Duration::from_secs(10)),
+            primer_control.clone(),
         );
         let (mut sender, driver) = http1::handshake::<_, TestBody>(wrapped)
             .await
-            .expect("Hyper HTTP/1 handshake succeeds over scripted I/O");
+            .expect("Hyper HTTP/1 handshake succeeds over the duplex stream");
+        let connection = tokio::spawn(driver);
+        let primer_response = sender.send_request(request(EmptyBody));
+        tokio::pin!(primer_response);
+        let request_headers = tokio::select! {
+            result = &mut primer_response => {
+                panic!("the primer response cannot arrive before the peer sends headers: {result:?}");
+            }
+            headers = read_http_headers(&mut server_io) => headers,
+        };
+        assert!(request_headers.starts_with(b"POST /kmip HTTP/1.1\r\n"));
+
+        assert!(target_control.begin());
+        let target_deadline = Instant::now() + total_timeout;
         let mut pending_request = Some(request(EmptyBody));
-        // T010 provides this private seam: it holds the request through
-        // readiness, commits this control only on readiness success, and
-        // calls Hyper's send_request only after that commit.
+        // T010's helper holds this second request at readiness, then commits
+        // the target control before calling Hyper's send_request.
         let first_attempt = timeout::send_request_when_ready(
             &mut sender,
             &mut pending_request,
-            &control,
+            &target_control,
             Some(write_timeout),
-            Some(total_deadline),
+            Some(target_deadline),
         )
         .await;
         let first_error = match first_attempt {
@@ -351,40 +361,57 @@ async fn hyper_sender_readiness_timeout_is_not_sent_before_dispatch_commit() {
 
         assert_eq!(first_error.kind(), io::ErrorKind::TimedOut);
         assert!(pending_request.is_some());
-        assert_eq!(control.delivery_state(), RequestDeliveryState::NotSent);
-        assert!(!control.commit_dispatch());
+        assert_eq!(
+            target_control.delivery_state(),
+            RequestDeliveryState::NotSent
+        );
+        assert!(!target_control.commit_dispatch());
 
-        if retry_after_driver_ready {
-            // Start the real driver only after this request has finalized as
-            // NotSent. Its first read poll proves it ran. Sender readiness
-            // can now succeed, but the same request and control must still
-            // fail before send_request.
-            let connection = tokio::spawn(driver);
-            read_poll
-                .await
-                .expect("the real Hyper driver reached the scripted read side");
-            let retry_deadline = Instant::now() + Duration::from_secs(1);
-            timeout::wait_for_sender_ready(
-                &mut sender,
-                Some(Duration::from_secs(1)),
-                Some(retry_deadline),
-            )
+        // Release the first request only after the second exchange timed out.
+        server_io
+            .write_all(b"HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n")
             .await
-            .expect("the real driver makes sender readiness available");
-            let retry_attempt = timeout::send_request_when_ready(
-                &mut sender,
-                &mut pending_request,
-                &control,
-                Some(Duration::from_secs(1)),
-                Some(retry_deadline),
-            )
-            .await;
-            assert!(retry_attempt.is_err());
-            assert!(pending_request.is_some());
-            connection.abort();
-            let _ = connection.await;
-        }
-        assert!(observed.written_bytes().is_empty());
+            .expect("the first response releases Hyper's sender");
+        let first_response = primer_response
+            .await
+            .expect("the first request future remains live while readiness waits");
+        drop(first_response);
+        assert_eq!(
+            primer_control.delivery_state(),
+            RequestDeliveryState::ResponseStarted
+        );
+
+        let retry_deadline = Instant::now() + Duration::from_secs(1);
+        timeout::wait_for_sender_ready(
+            &mut sender,
+            Some(Duration::from_secs(1)),
+            Some(retry_deadline),
+        )
+        .await
+        .expect("the first response makes the same sender ready");
+        let retry_attempt = timeout::send_request_when_ready(
+            &mut sender,
+            &mut pending_request,
+            &target_control,
+            Some(Duration::from_secs(1)),
+            Some(retry_deadline),
+        )
+        .await;
+        assert!(retry_attempt.is_err());
+        assert!(pending_request.is_some());
+        assert_eq!(
+            target_control.delivery_state(),
+            RequestDeliveryState::NotSent
+        );
+
+        let second_request =
+            tokio::time::timeout(Duration::from_secs(1), read_http_headers(&mut server_io)).await;
+        assert!(
+            second_request.is_err(),
+            "the timed-out request was not sent later"
+        );
+        connection.abort();
+        let _ = connection.await;
     }
 }
 
@@ -540,7 +567,7 @@ async fn hyper_partial_body_write_remains_possibly_sent() {
 }
 
 #[tokio::test]
-async fn response_headers_start_delivery_before_the_body_is_available() {
+async fn a_positive_wrapped_read_wins_before_timeout_finalization() {
     let (client_io, mut server_io) = tokio::io::duplex(8 * 1024);
     let control = ExchangeControl::new();
     assert!(control.begin());
@@ -588,15 +615,35 @@ async fn response_headers_start_delivery_before_the_body_is_available() {
 
     assert!(error.is_timeout());
     let finalizing_control = control.clone();
-    // T010's finalizer closes the read-observation gate, awaits cancellation
-    // and driver invalidation, then returns the stable delivery snapshot.
-    let final_delivery = timeout::finalize_timeout(&finalizing_control, async move {
-        server.abort();
-        connection.abort();
-        let _ = server.await;
-        let _ = connection.await;
-    })
-    .await;
+    let (cleanup_started_tx, cleanup_started_rx) = tokio::sync::oneshot::channel();
+    let (release_cleanup_tx, release_cleanup_rx) = tokio::sync::oneshot::channel();
+    // The response headers already passed through DeadlineIo as a positive
+    // read. T010's finalizer must preserve that winner and wait for real
+    // request/driver cleanup before returning its delivery snapshot.
+    let finalizer = tokio::spawn(async move {
+        timeout::finalize_timeout(&finalizing_control, async move {
+            let _ = cleanup_started_tx.send(());
+            let _ = release_cleanup_rx.await;
+            drop(response);
+            server.abort();
+            connection.abort();
+            let _ = server.await;
+            let _ = connection.await;
+        })
+        .await
+    });
+    cleanup_started_rx
+        .await
+        .expect("finalization closes the read gate before awaiting cleanup");
+    assert!(!finalizer.is_finished());
+    assert_eq!(
+        control.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    let _ = release_cleanup_tx.send(());
+    let final_delivery = finalizer
+        .await
+        .expect("the timeout finalizer does not panic");
     assert_eq!(final_delivery, RequestDeliveryState::ResponseStarted);
 }
 
@@ -626,76 +673,85 @@ async fn vectored_writes_are_subject_to_the_same_write_deadline() {
 }
 
 #[tokio::test]
-async fn first_wrapped_response_read_races_timeout_finalization() {
-    for _ in 0..16 {
-        let (client_io, mut server_io) = tokio::io::duplex(8 * 1024);
-        let control = ExchangeControl::new();
-        assert!(control.begin());
-        let wrapped = deadline_io(
-            client_io,
-            Some(Duration::from_secs(2)),
-            Some(Duration::from_secs(2)),
-            Some(Instant::now() + Duration::from_secs(3)),
-            control.clone(),
-        );
-        let (mut sender, driver) = http1::handshake::<_, TestBody>(wrapped)
-            .await
-            .expect("Hyper HTTP/1 handshake succeeds over the duplex stream");
-        let connection = tokio::spawn(driver);
-        timeout::wait_for_sender_ready(
-            &mut sender,
-            Some(Duration::from_secs(1)),
-            Some(Instant::now() + Duration::from_secs(2)),
-        )
+async fn a_late_positive_read_cannot_change_delivery_after_finalization_wins() {
+    let (inner, first_read_poll, first_write, late_positive_read) =
+        ScriptIo::automatic_with_exchange_notifications();
+    let control = ExchangeControl::new();
+    assert!(control.begin());
+    let wrapped = deadline_io(
+        inner.clone(),
+        Some(Duration::from_secs(2)),
+        Some(Duration::from_secs(2)),
+        Some(Instant::now() + Duration::from_secs(3)),
+        control.clone(),
+    );
+    let (mut sender, driver) = http1::handshake::<_, TestBody>(wrapped)
         .await
-        .expect("sender readiness succeeds before dispatch");
-        assert!(control.commit_dispatch());
+        .expect("Hyper HTTP/1 handshake succeeds over scripted I/O");
+    let connection = tokio::spawn(driver);
+    timeout::wait_for_sender_ready(
+        &mut sender,
+        Some(Duration::from_secs(1)),
+        Some(Instant::now() + Duration::from_secs(2)),
+    )
+    .await
+    .expect("sender readiness succeeds before dispatch");
+    assert!(control.commit_dispatch());
 
-        let response = tokio::spawn(async move {
-            if let Ok(mut response) = sender.send_request(request(EmptyBody)).await {
-                let _ = poll_fn(|cx| Pin::new(response.body_mut()).poll_frame(cx)).await;
-            }
-        });
-        let request_headers = read_http_headers(&mut server_io).await;
-        assert!(request_headers.starts_with(b"POST /kmip HTTP/1.1\r\n"));
+    let response = tokio::spawn(async move {
+        if let Ok(mut response) = sender.send_request(request(EmptyBody)).await {
+            let _ = poll_fn(|cx| Pin::new(response.body_mut()).poll_frame(cx)).await;
+        }
+    });
+    first_write
+        .await
+        .expect("the request reached the wrapped writer");
+    first_read_poll
+        .await
+        .expect("the real Hyper driver is waiting on the wrapped read side");
+    assert_eq!(control.delivery_state(), RequestDeliveryState::PossiblySent);
 
-        let start = Arc::new(tokio::sync::Barrier::new(3));
-        let response_start = Arc::clone(&start);
-        let response_writer = tokio::spawn(async move {
-            response_start.wait().await;
-            let _ = server_io
-                .write_all(b"HTTP/1.1 200 OK\r\ncontent-length: 4\r\n\r\nTTLV")
-                .await;
-        });
+    let finalizing_control = control.clone();
+    let (cleanup_started_tx, cleanup_started_rx) = tokio::sync::oneshot::channel();
+    let (release_cleanup_tx, release_cleanup_rx) = tokio::sync::oneshot::channel();
+    let finalizer = tokio::spawn(async move {
+        timeout::finalize_timeout(&finalizing_control, async move {
+            // finalize_timeout must close response observation before it polls
+            // this cancellation/driver-invalidation future.
+            let _ = cleanup_started_tx.send(());
+            let _ = release_cleanup_rx.await;
+            response.abort();
+            connection.abort();
+            let _ = response.await;
+            let _ = connection.await;
+        })
+        .await
+    });
+    cleanup_started_rx
+        .await
+        .expect("finalization closes response observation before cleanup");
+    assert!(!finalizer.is_finished());
 
-        let finalizer_start = Arc::clone(&start);
-        let finalizing_control = control.clone();
-        let finalizer = tokio::spawn(async move {
-            finalizer_start.wait().await;
-            tokio::task::yield_now().await;
-            timeout::finalize_timeout(&finalizing_control, async move {
-                response.abort();
-                connection.abort();
-                let _ = response.await;
-                let _ = connection.await;
-            })
-            .await
-        });
+    // Make a complete positive HTTP response available only after the gate is
+    // finalized. This deliberately exercises late-I/O suppression: it must
+    // not revise delivery evidence while cleanup still holds the finalizer.
+    inner.release_read(b"HTTP/1.1 200 OK\r\ncontent-length: 4\r\n\r\nTTLV".to_vec());
+    let late_read_was_polled = tokio::time::timeout(Duration::from_millis(100), late_positive_read)
+        .await
+        .is_ok();
+    assert_eq!(control.delivery_state(), RequestDeliveryState::PossiblySent);
+    assert!(!finalizer.is_finished());
+    assert!(
+        late_read_was_polled || inner.queued_read_bytes() > 0,
+        "the late response was either suppressed by the gate or observed by the wrapped reader"
+    );
 
-        start.wait().await;
-        response_writer
-            .await
-            .expect("the scripted HTTP peer does not panic");
-        let finalized_delivery = finalizer
-            .await
-            .expect("the timeout finalizer does not panic");
-
-        assert!(matches!(
-            finalized_delivery,
-            RequestDeliveryState::PossiblySent | RequestDeliveryState::ResponseStarted
-        ));
-        assert_eq!(control.delivery_state(), finalized_delivery);
-    }
+    let _ = release_cleanup_tx.send(());
+    let final_delivery = finalizer
+        .await
+        .expect("the timeout finalizer does not panic");
+    assert_eq!(final_delivery, RequestDeliveryState::PossiblySent);
+    assert_eq!(control.delivery_state(), RequestDeliveryState::PossiblySent);
 }
 
 async fn read_http_headers<R: AsyncRead + Unpin>(reader: &mut R) -> Vec<u8> {
@@ -788,11 +844,14 @@ struct ScriptState {
     vectored_write_calls: usize,
     waker: Option<Waker>,
     read_poll_notification: Option<tokio::sync::oneshot::Sender<()>>,
+    positive_read_notification: Option<tokio::sync::oneshot::Sender<()>>,
+    first_write_notification: Option<tokio::sync::oneshot::Sender<()>>,
 }
 
 #[derive(Clone, Copy)]
 enum WriteMode {
     Manual,
+    Automatic,
     FailImmediately,
     BlockAfterHeaders,
     FailAfterBodyBytes(usize),
@@ -803,14 +862,23 @@ impl ScriptIo {
         Self::new(WriteMode::Manual)
     }
 
-    fn manual_with_read_poll_notification() -> (Self, tokio::sync::oneshot::Receiver<()>) {
-        let (notification, observed) = tokio::sync::oneshot::channel();
-        let io = Self::manual();
-        io.state
-            .lock()
-            .expect("script state mutex is not poisoned")
-            .read_poll_notification = Some(notification);
-        (io, observed)
+    fn automatic_with_exchange_notifications() -> (
+        Self,
+        tokio::sync::oneshot::Receiver<()>,
+        tokio::sync::oneshot::Receiver<()>,
+        tokio::sync::oneshot::Receiver<()>,
+    ) {
+        let (read_poll_notification, first_read_poll) = tokio::sync::oneshot::channel();
+        let (first_write_notification, first_write) = tokio::sync::oneshot::channel();
+        let (positive_read_notification, positive_read) = tokio::sync::oneshot::channel();
+        let io = Self::new(WriteMode::Automatic);
+        {
+            let mut state = io.state.lock().expect("script state mutex is not poisoned");
+            state.read_poll_notification = Some(read_poll_notification);
+            state.first_write_notification = Some(first_write_notification);
+            state.positive_read_notification = Some(positive_read_notification);
+        }
+        (io, first_read_poll, first_write, positive_read)
     }
 
     fn failing_immediately() -> Self {
@@ -836,6 +904,8 @@ impl ScriptIo {
                 vectored_write_calls: 0,
                 waker: None,
                 read_poll_notification: None,
+                positive_read_notification: None,
+                first_write_notification: None,
             })),
         }
     }
@@ -865,6 +935,16 @@ impl ScriptIo {
             .lock()
             .expect("script state mutex is not poisoned")
             .vectored_write_calls
+    }
+
+    fn queued_read_bytes(&self) -> usize {
+        self.state
+            .lock()
+            .expect("script state mutex is not poisoned")
+            .read_chunks
+            .iter()
+            .map(Vec::len)
+            .sum()
     }
 
     fn update(&self, update: impl FnOnce(&mut ScriptState)) {
@@ -898,9 +978,18 @@ impl AsyncRead for ScriptIo {
         if let Some(mut chunk) = state.read_chunks.pop_front() {
             let read = chunk.len().min(buf.remaining());
             buf.put_slice(&chunk[..read]);
+            let positive_read_notification = if read > 0 {
+                state.positive_read_notification.take()
+            } else {
+                None
+            };
             if read < chunk.len() {
                 chunk.drain(..read);
                 state.read_chunks.push_front(chunk);
+            }
+            drop(state);
+            if let Some(notification) = positive_read_notification {
+                let _ = notification.send(());
             }
             Poll::Ready(Ok(()))
         } else {
@@ -926,6 +1015,8 @@ impl AsyncWrite for ScriptIo {
             .expect("script state mutex is not poisoned");
         if state.flush_permits > 0 {
             state.flush_permits -= 1;
+            Poll::Ready(Ok(()))
+        } else if matches!(state.write_mode, WriteMode::Automatic) {
             Poll::Ready(Ok(()))
         } else {
             state.waker = Some(cx.waker().clone());
@@ -976,6 +1067,7 @@ impl ScriptIo {
                 .write_permits
                 .pop_front()
                 .map(|limit| limit.min(bytes.len())),
+            WriteMode::Automatic => Some(bytes.len()),
             WriteMode::FailImmediately => {
                 return Poll::Ready(Err(io::Error::new(
                     io::ErrorKind::BrokenPipe,
@@ -1032,6 +1124,11 @@ impl ScriptIo {
             ))),
             Some(written) => {
                 state.written.extend_from_slice(&bytes[..written]);
+                let first_write_notification = state.first_write_notification.take();
+                drop(state);
+                if let Some(notification) = first_write_notification {
+                    let _ = notification.send(());
+                }
                 Poll::Ready(Ok(written))
             }
             None => {
