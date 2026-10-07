@@ -46,6 +46,19 @@ Red/Green/Refactor commits:
 - Refactor: clarified the CI coverage in `docs/development/testing.md`; no
   production behavior or generated output changed.
 
+## 2026-10-07 — reproducible fixture-test environment
+
+- Red: `16fca8c` added a workflow contract requiring a pinned Python 3.12
+  environment and installation of `tools/api_manifest/requirements-test.txt`.
+  It failed because the `script-contracts` job had no such setup or install.
+- Green: `4b5e5c0` sets up Python 3.12 with the pinned uv action and installs
+  the pinned `jsonschema` requirement before running the fixture tests. The
+  workflow contract suite passed (31 tests); the fixture test module passed
+  (13 tests).
+- Refactor: documented the reproducible CI test environment in
+  `docs/development/testing.md`; generated files and production code are
+  unchanged.
+
 ## 2026-10-07 — response integration Refactor
 
 Synchronous and asynchronous typed response paths now share

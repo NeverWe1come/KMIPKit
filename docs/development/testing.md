@@ -94,7 +94,8 @@ framing, forbidden redirect/compression behavior, and connection reuse.
   AddressSanitizer and runs the JNI zeroizing-owner test under AddressSanitizer
   and UndefinedBehaviorSanitizer in `ffi-sanitizer`.
 - Pull-request CI checks generated API and cross-adapter fixture outputs and
-  runs the extension fixture generator's rejection tests in `script-contracts`.
+  runs the extension fixture generator's rejection tests in `script-contracts`
+  using Python 3.12 and the pinned `tools/api_manifest/requirements-test.txt`.
 - Test Java from the packaged native JAR.
 - Test Python from the built wheel in a clean environment.
 - Run shared behavioral vectors through Rust, C, Java, and Python.
