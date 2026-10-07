@@ -19,7 +19,7 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 - [ ] T001 [P] Add failing manifest-generator unit tests for deterministic output, check mode, malformed manifests, unknown required fields, unsafe paths, and symlink destinations in tools/api_manifest/tests/test_generate.py
 - [ ] T002 Add failing manifest-format validation cases and a valid minimal registry fixture, capture the expected failing run, and commit the generator Red stage in tools/api_manifest/tests/test_generate.py and tools/api_manifest/tests/fixtures/registry-manifest.json
 - [x] T003 Define the versioned registry manifest format and JSON Schema in specification/api/public-api.schema.json
-- [ ] T004 Add the initial registry-only public API manifest with requirement IDs, language mappings, explicit ExtensionRegistryLimits defaults/hard maxima, ownership, redaction, and generated destinations in specification/api/public-api.json
+- [x] T004 Add the initial registry-only public API manifest with requirement IDs, language mappings, the generic TTLV construction/inspection surface, explicit ExtensionRegistryLimits defaults/hard maxima, ownership, redaction, and generated destinations in specification/api/public-api.json
 - [ ] T005 Implement the Python 3.12 standard-library manifest generator and deterministic check mode in tools/api_manifest/generate.py
 - [ ] T006 Run generator tests and check mode, preserve the passing evidence, and commit the generator Green stage in tools/api_manifest/tests/test_generate.py and tools/api_manifest/generate.py
 - [ ] T007 Refactor the generator without output changes, rerun tests and check mode, and commit the generator Refactor stage in tools/api_manifest/generate.py
@@ -72,7 +72,7 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 ### Tests for User Story 2
 
 - [ ] T030 [P] [US2] Write failing tests for exact discriminator lookup, missing/repeated/wrong-type paths, wide payloads with a last-child match, zero matches, full-schema rejection after a unique discriminator hit, registry rejection of duplicate keys, and an ambiguous payload with two distinct paths that each pass full schema validation; assert comparison bounds and no registration-order winner in crates/kmipkit-client/tests/extension_recognition.rs
-- [ ] T031 [P] [US2] Write failing property-based generic TTLV round-trip and preservation tests for unknown tags, enum values, bitmask bits, repeated fields, child order, duplicate-tag path non-matches, shared-index entry/comparison boundaries, repeated-enum and ordering-edge work bounds, TTLV byte/depth/element boundaries, and configured schema/registry limit boundaries in crates/kmipkit-protocol/tests/extension_preservation.rs
+- [ ] T031 [P] [US2] Write failing property-based generic TTLV round-trip and preservation tests for tags unknown to the extension schema but accepted by the KMIP allocation policy (including a vendor-extension tag), enum values, bitmask bits, repeated fields, child order, duplicate-tag path non-matches, shared-index entry/comparison boundaries, repeated-enum and ordering-edge work bounds, TTLV byte/depth/element boundaries, and configured schema/registry limit boundaries in crates/kmipkit-protocol/tests/extension_preservation.rs
 - [ ] T032 [P] [US2] Write failing fake-transport response tests proving critical rejection and non-critical preservation remain owned by KMIPKIT-0007 in crates/kmipkit-client/tests/extension_execution.rs
 - [ ] T033 [P] [US2] Write failing secret-redaction tests for schema errors, Debug, Display, and diagnostics in crates/kmipkit-protocol/tests/extension_redaction.rs
 - [ ] T034 Commit the User Story 2 test-only Red stage and preserve failing command evidence in crates/kmipkit-client/tests/extension_recognition.rs and crates/kmipkit-protocol/tests/extension_preservation.rs
@@ -96,9 +96,9 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 ### Tests for User Story 3
 
 - [ ] T042 [P] [US3] Write failing Rust manifest parity and generation-check tests for requirement IDs, ExtensionRegistryLimits fields/defaults/hard maxima, symbol ownership, destinations, and stable order in tools/api_manifest/tests/test_parity.py
-- [ ] T043 [P] [US3] Write failing C consumer tests using shared fixtures for registration, every ExtensionRegistryLimits field/boundary including raising only fields whose default is below hard maximum, typed-pointer/uint64_t-length rejection before any input access, and no unbounded NUL scans; test lookup/schema comparison limits, repeated outbound order/criticality, inbound typed inspection, subtree preservation, stable redacted errors, and explicit release semantics in bindings/c/tests/extension_registry.c and tests/fixtures/extensions/
-- [ ] T044 [P] [US3] Write failing Java 17 JNI tests using shared fixtures for registration, every ExtensionRegistryLimits field/boundary including raising only fields whose default is below hard maximum, lookup/schema comparison limits, repeated outbound order/criticality, inbound typed inspection, subtree preservation, metadata, lifecycle, and redaction in bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java and tests/fixtures/extensions/
-- [ ] T045 [P] [US3] Write failing Python 3.12 CFFI tests using shared fixtures for registration, every ExtensionRegistryLimits field/boundary including raising only fields whose default is below hard maximum, lookup/schema comparison limits, repeated outbound order/criticality, inbound typed inspection, subtree preservation, metadata, context-manager close, and redaction in bindings/python/tests/test_extension_registry.py and tests/fixtures/extensions/
+- [ ] T043 [P] [US3] Write failing C consumer tests using shared fixtures for registration, every ExtensionRegistryLimits field/boundary including raising only fields whose default is below hard maximum, typed-pointer/uint64_t-length rejection before any input access, and no unbounded NUL scans; test lookup/schema comparison limits, repeated outbound order/criticality, inbound typed inspection, preservation of tags unknown to the extension schema but accepted by KMIP allocation rules (including a vendor-extension tag), stable redacted errors, and explicit release semantics in bindings/c/tests/extension_registry.c and tests/fixtures/extensions/
+- [ ] T044 [P] [US3] Write failing Java 17 JNI tests using shared fixtures for registration, every ExtensionRegistryLimits field/boundary including raising only fields whose default is below hard maximum, lookup/schema comparison limits, repeated outbound order/criticality, inbound typed inspection, preservation of tags unknown to the extension schema but accepted by KMIP allocation rules (including a vendor-extension tag), metadata, lifecycle, and redaction in bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java and tests/fixtures/extensions/
+- [ ] T045 [P] [US3] Write failing Python 3.12 CFFI tests using shared fixtures for registration, every ExtensionRegistryLimits field/boundary including raising only fields whose default is below hard maximum, lookup/schema comparison limits, repeated outbound order/criticality, inbound typed inspection, preservation of tags unknown to the extension schema but accepted by KMIP allocation rules (including a vendor-extension tag), metadata, context-manager close, and redaction in bindings/python/tests/test_extension_registry.py and tests/fixtures/extensions/
 - [ ] T046 [P] [US3] Write failing parity-corpus checks requiring every shared fixture to declare normalized repeated outbound TTLV/order, inbound recognition and generic-preservation expectations, each default/lowered/hard/over-hard outcome and raised-default outcomes only where default < hard maximum, including identity/discriminator bytes, constraint members, payload-index records, lookup comparisons, per-item enum/schema comparisons and single-pass order-edge work, stable error category, and deterministic metadata for all four adapters in tools/api_manifest/tests/test_parity.py
 - [ ] T047 Commit the User Story 3 test-only Red stage and preserve native and binding test failure evidence in bindings/c/tests/extension_registry.c, bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java, and bindings/python/tests/test_extension_registry.py
 
@@ -162,14 +162,14 @@ Every functional requirement and buildable success criterion has at least one pl
 | KMIPKIT-0012-FR-002 | T012, T017, T022-T023 |
 | KMIPKIT-0012-FR-003 | T017, T024 |
 | KMIPKIT-0012-FR-004 | T012, T020, T023, T062 |
-| KMIPKIT-0012-FR-005 | T020, T025, T026 |
+| KMIPKIT-0012-FR-005 | T004, T020, T025, T026 |
 | KMIPKIT-0012-FR-006 | T030, T035 |
-| KMIPKIT-0012-FR-007 | T031, T036 |
+| KMIPKIT-0012-FR-007 | T004, T031, T036 |
 | KMIPKIT-0012-FR-008 | T032, T037 |
 | KMIPKIT-0012-FR-009 | T012, T019 |
-| KMIPKIT-0012-FR-010 | T043-T055 |
+| KMIPKIT-0012-FR-010 | T004, T043-T055 |
 | KMIPKIT-0012-FR-011 | T020-T021, T027-T028, T033, T038, T043-T045 |
-| KMIPKIT-0012-FR-012 | T009, T014, T017-T018, T024, T027, T030-T031, T035, T043-T046, T048, T050-T051, T056 |
+| KMIPKIT-0012-FR-012 | T004, T009, T014, T017-T018, T024, T027, T030-T031, T035, T043-T046, T048, T050-T051, T056 |
 | KMIPKIT-0012-FR-013 | T029, T041, T058 |
 | KMIPKIT-0012-FR-014 | T001-T008, T042, T049, T052, T059 |
 | KMIPKIT-0012-SC-001 | T043-T047, T053 |

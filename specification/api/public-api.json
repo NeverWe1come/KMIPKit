@@ -350,7 +350,10 @@
       "id": "TtlvStructure",
       "kind": "struct",
       "requirementIds": [
-        "KMIPKIT-0012-FR-007"
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
       ],
       "rust": {
         "module": "kmipkit_ttlv",
@@ -466,6 +469,8 @@
       "kind": "enum",
       "requirementIds": [
         "KMIPKIT-0012-FR-004",
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010"
       ],
       "rust": {
@@ -543,6 +548,7 @@
       "kind": "sealed-value",
       "requirementIds": [
         "KMIPKIT-0012-FR-002",
+        "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010"
       ],
@@ -594,6 +600,210 @@
       "python": {
         "module": "kmipkit.extensions",
         "name": "ExtensionRecognition"
+      }
+    },
+    {
+      "id": "RawTag",
+      "kind": "sealed-value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv",
+        "name": "RawTag",
+        "owner": "protocol"
+      },
+      "c": {
+        "name": "kmipkit_raw_tag_t",
+        "kind": "opaque-handle",
+        "handleKind": "raw_tag",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_raw_tag_release"
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "name": "RawTag"
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "name": "RawTag"
+      }
+    },
+    {
+      "id": "Tag",
+      "kind": "sealed-value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv",
+        "name": "Tag",
+        "owner": "protocol"
+      },
+      "c": {
+        "name": "kmipkit_tag_t",
+        "kind": "opaque-handle",
+        "handleKind": "tag",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_tag_release"
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "name": "Tag"
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "name": "Tag"
+      }
+    },
+    {
+      "id": "TtlvItem",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv",
+        "name": "Item",
+        "owner": "protocol"
+      },
+      "c": {
+        "name": "kmipkit_ttlv_item_t",
+        "kind": "opaque-handle",
+        "handleKind": "ttlv_item",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_ttlv_item_release"
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "name": "TtlvItem"
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "name": "TtlvItem"
+      }
+    },
+    {
+      "id": "CodecLimits",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::codec",
+        "name": "CodecLimits",
+        "owner": "protocol"
+      },
+      "c": {
+        "name": "kmipkit_codec_limits_t",
+        "kind": "opaque-handle",
+        "handleKind": "codec_limits",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_codec_limits_release"
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "name": "CodecLimits"
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "name": "CodecLimits"
+      }
+    },
+    {
+      "id": "TtlvStructureView",
+      "kind": "sealed-value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "TtlvStructureViewHandle",
+        "owner": "ffi"
+      },
+      "c": {
+        "name": "kmipkit_ttlv_structure_view_t",
+        "kind": "opaque-handle",
+        "handleKind": "ttlv_structure_view",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_ttlv_structure_view_release"
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "name": "TtlvStructureView"
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "name": "TtlvStructureView"
+      }
+    },
+    {
+      "id": "TtlvItemView",
+      "kind": "sealed-value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "TtlvItemViewHandle",
+        "owner": "ffi"
+      },
+      "c": {
+        "name": "kmipkit_ttlv_item_view_t",
+        "kind": "opaque-handle",
+        "handleKind": "ttlv_item_view",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_ttlv_item_view_release"
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "name": "TtlvItemView"
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "name": "TtlvItemView"
+      }
+    },
+    {
+      "id": "TtlvValueView",
+      "kind": "sealed-value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "TtlvValueViewHandle",
+        "owner": "ffi"
+      },
+      "c": {
+        "name": "kmipkit_ttlv_value_view_t",
+        "kind": "opaque-handle",
+        "handleKind": "ttlv_value_view",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_ttlv_value_view_release"
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "name": "TtlvValueView"
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "name": "TtlvValueView"
       }
     }
   ],
@@ -904,6 +1114,10 @@
           {
             "name": "value",
             "type": "Structure"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
           }
         ],
         "returnType": "Result<ValidatedExtensionValue, ProtocolError>"
@@ -929,6 +1143,12 @@
             "type": "kmipkit_validated_extension_value_t **",
             "ownership": "library-owned",
             "nullable": false
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
           }
         ],
         "returnType": "int32_t",
@@ -945,6 +1165,10 @@
           {
             "name": "value",
             "type": "TtlvStructure"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
           }
         ],
         "jniSymbol": "Java_org_kmipkit_extensions_ExtensionDefinition_validate",
@@ -965,6 +1189,10 @@
           {
             "name": "value",
             "type": "Structure"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
           }
         ],
         "cffiSymbol": "kmipkit_extension_definition_validate",
@@ -1138,6 +1366,7 @@
     {
       "id": "client_extension_registry_inspect",
       "requirementIds": [
+        "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-006",
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-008",
@@ -1161,6 +1390,10 @@
           {
             "name": "value",
             "type": "Structure"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
           }
         ],
         "returnType": "Result<ExtensionRecognition, ClientError>"
@@ -1202,6 +1435,12 @@
             "type": "kmipkit_extension_recognition_t **",
             "ownership": "library-owned",
             "nullable": false
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
           }
         ],
         "returnType": "int32_t",
@@ -1221,6 +1460,10 @@
           {
             "name": "value",
             "type": "TtlvStructure"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
           }
         ],
         "jniSymbol": "Java_org_kmipkit_extensions_ClientExtensionRegistry_inspect",
@@ -1244,6 +1487,10 @@
           {
             "name": "value",
             "type": "Structure"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
           }
         ],
         "cffiSymbol": "kmipkit_client_extension_registry_inspect",
@@ -1972,7 +2219,7 @@
           },
           {
             "name": "scalar_value",
-            "type": "TtlvValue"
+            "type": "Value"
           }
         ],
         "returnType": "Result<Discriminator, ProtocolError>"
@@ -2037,7 +2284,7 @@
           },
           {
             "name": "scalar_value",
-            "type": "TtlvValue"
+            "type": "Value"
           }
         ],
         "cffiSymbol": "kmipkit_extension_discriminator_create",
@@ -2064,7 +2311,7 @@
         "parameters": [
           {
             "name": "item_type",
-            "type": "TtlvItemType"
+            "type": "ItemType"
           }
         ],
         "returnType": "Result<ExtensionSchema, ProtocolError>"
@@ -2112,7 +2359,7 @@
         "parameters": [
           {
             "name": "item_type",
-            "type": "TtlvItemType"
+            "type": "ItemType"
           }
         ],
         "cffiSymbol": "kmipkit_extension_schema_scalar",
@@ -3917,7 +4164,7 @@
           },
           {
             "name": "type",
-            "type": "TtlvItemType"
+            "type": "ItemType"
           }
         ],
         "returnType": "Result<ExtensionInformation, ProtocolError>"
@@ -3981,7 +4228,7 @@
           },
           {
             "name": "type",
-            "type": "TtlvItemType"
+            "type": "ItemType"
           }
         ],
         "cffiSymbol": "kmipkit_extension_information_type",
@@ -4401,7 +4648,7 @@
             "type": "ExtensionInformation"
           }
         ],
-        "returnType": "Result<TtlvStructure, ProtocolError>"
+        "returnType": "Result<Structure, ProtocolError>"
       },
       "c": {
         "symbol": "kmipkit_extension_information_to_ttlv",
@@ -4454,7 +4701,7 @@
         "errorCategories": [
           "invalid_schema"
         ],
-        "returnType": "TtlvStructure"
+        "returnType": "Structure"
       },
       "ordering": "not-applicable"
     },
@@ -4932,7 +5179,7 @@
             "type": "ExtensionRecognition"
           }
         ],
-        "returnType": "TtlvStructure"
+        "returnType": "&Structure"
       },
       "c": {
         "symbol": "kmipkit_extension_recognition_generic_value",
@@ -4946,7 +5193,7 @@
           {
             "name": "out_value",
             "kind": "output",
-            "type": "kmipkit_ttlv_structure_t **",
+            "type": "kmipkit_ttlv_structure_view_t **",
             "ownership": "library-owned",
             "nullable": false
           }
@@ -4966,11 +5213,11 @@
         ],
         "jniSymbol": "Java_org_kmipkit_extensions_ExtensionRecognition_genericValue",
         "errorCategories": [],
-        "returnType": "TtlvStructure"
+        "returnType": "TtlvStructureView"
       },
       "python": {
         "module": "kmipkit.extensions",
-        "function": "generic_value",
+        "function": "extension_recognition_generic_value",
         "parameters": [
           {
             "name": "recognition",
@@ -4979,7 +5226,7 @@
         ],
         "cffiSymbol": "kmipkit_extension_recognition_generic_value",
         "errorCategories": [],
-        "returnType": "TtlvStructure"
+        "returnType": "TtlvStructureView"
       },
       "ordering": "not-applicable"
     },
@@ -5071,7 +5318,7 @@
             "type": "ValidatedExtensionValue"
           }
         ],
-        "returnType": "TtlvStructure"
+        "returnType": "&Structure"
       },
       "c": {
         "symbol": "kmipkit_validated_extension_value_generic_value",
@@ -5085,7 +5332,7 @@
           {
             "name": "out_structure",
             "kind": "output",
-            "type": "kmipkit_ttlv_structure_t **",
+            "type": "kmipkit_ttlv_structure_view_t **",
             "ownership": "library-owned",
             "nullable": false
           }
@@ -5105,11 +5352,11 @@
         ],
         "jniSymbol": "Java_org_kmipkit_extensions_ValidatedExtensionValue_genericValue",
         "errorCategories": [],
-        "returnType": "TtlvStructure"
+        "returnType": "TtlvStructureView"
       },
       "python": {
         "module": "kmipkit.extensions",
-        "function": "generic_value",
+        "function": "validated_extension_value_generic_value",
         "parameters": [
           {
             "name": "value",
@@ -5118,7 +5365,7 @@
         ],
         "cffiSymbol": "kmipkit_validated_extension_value_generic_value",
         "errorCategories": [],
-        "returnType": "TtlvStructure"
+        "returnType": "TtlvStructureView"
       },
       "ordering": "not-applicable"
     },
@@ -5130,9 +5377,9 @@
         "KMIPKIT-0012-FR-010"
       ],
       "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "value_at",
-        "owner": "protocol",
+        "module": "kmipkit_ffi::ttlv",
+        "name": "validated_extension_value_value_at",
+        "owner": "ffi",
         "requestBoundary": "not-applicable",
         "parameters": [
           {
@@ -5144,7 +5391,7 @@
             "type": "TtlvPath"
           }
         ],
-        "returnType": "TtlvValue"
+        "returnType": "Result<TtlvValueViewHandle, ProtocolError>"
       },
       "c": {
         "symbol": "kmipkit_validated_extension_value_value_at",
@@ -5164,13 +5411,15 @@
           {
             "name": "out_value",
             "kind": "output",
-            "type": "kmipkit_ttlv_value_t **",
+            "type": "kmipkit_ttlv_value_view_t **",
             "ownership": "library-owned",
             "nullable": false
           }
         ],
         "returnType": "int32_t",
-        "errorCategories": []
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "java": {
         "package": "org.kmipkit.extensions",
@@ -5187,8 +5436,10 @@
           }
         ],
         "jniSymbol": "Java_org_kmipkit_extensions_ValidatedExtensionValue_valueAt",
-        "errorCategories": [],
-        "returnType": "TtlvValue"
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "TtlvValueView"
       },
       "python": {
         "module": "kmipkit.extensions",
@@ -5204,8 +5455,3031 @@
           }
         ],
         "cffiSymbol": "kmipkit_validated_extension_value_value_at",
-        "errorCategories": [],
-        "returnType": "TtlvValue"
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "TtlvValueView"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_raw_tag_create",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::RawTag",
+        "name": "new",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "raw",
+            "type": "u32"
+          }
+        ],
+        "returnType": "Result<RawTag, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_raw_tag_create",
+        "parameters": [
+          {
+            "name": "raw",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "out_raw_tag",
+            "kind": "output",
+            "type": "kmipkit_raw_tag_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "RawTag",
+        "method": "fromRaw",
+        "parameters": [
+          {
+            "name": "raw",
+            "type": "int"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_RawTag_fromRaw",
+        "returnType": "RawTag",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "raw_tag_from_raw",
+        "parameters": [
+          {
+            "name": "raw",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_raw_tag_create",
+        "returnType": "RawTag",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_raw_tag_value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::RawTag",
+        "name": "raw",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "raw_tag",
+            "type": "&RawTag"
+          }
+        ],
+        "returnType": "u32"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_raw_tag_value",
+        "parameters": [
+          {
+            "name": "raw_tag",
+            "kind": "handle",
+            "type": "kmipkit_raw_tag_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_raw",
+            "kind": "output",
+            "type": "uint32_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "RawTag",
+        "method": "raw",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_RawTag_raw",
+        "returnType": "int",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "raw_tag_value",
+        "parameters": [
+          {
+            "name": "raw_tag",
+            "type": "RawTag"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_raw_tag_value",
+        "returnType": "int",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_raw_tag_try_checked",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::RawTag",
+        "name": "try_checked",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "raw_tag",
+            "type": "&RawTag"
+          }
+        ],
+        "returnType": "Result<Tag, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_raw_tag_try_checked",
+        "parameters": [
+          {
+            "name": "raw_tag",
+            "kind": "handle",
+            "type": "kmipkit_raw_tag_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_tag",
+            "kind": "output",
+            "type": "kmipkit_tag_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "RawTag",
+        "method": "checked",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_RawTag_checked",
+        "returnType": "Tag",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "raw_tag_try_checked",
+        "parameters": [
+          {
+            "name": "raw_tag",
+            "type": "RawTag"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_raw_tag_try_checked",
+        "returnType": "Tag",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_tag_value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Tag",
+        "name": "raw",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "&Tag"
+          }
+        ],
+        "returnType": "u32"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_tag_value",
+        "parameters": [
+          {
+            "name": "tag",
+            "kind": "handle",
+            "type": "kmipkit_tag_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_raw",
+            "kind": "output",
+            "type": "uint32_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "Tag",
+        "method": "raw",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_Tag_raw",
+        "returnType": "int",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "tag_value",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "Tag"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_tag_value",
+        "returnType": "int",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "codec_limits_defaults",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::codec::CodecLimits",
+        "name": "defaults",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "CodecLimits"
+      },
+      "c": {
+        "symbol": "kmipkit_codec_limits_defaults",
+        "parameters": [
+          {
+            "name": "out_limits",
+            "kind": "output",
+            "type": "kmipkit_codec_limits_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "CodecLimits",
+        "method": "defaults",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_CodecLimits_defaults",
+        "returnType": "CodecLimits",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "codec_limits_defaults",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_codec_limits_defaults",
+        "returnType": "CodecLimits",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "codec_limits_create",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::codec::CodecLimits",
+        "name": "new",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "max_message_bytes",
+            "type": "usize"
+          },
+          {
+            "name": "max_structure_depth",
+            "type": "usize"
+          },
+          {
+            "name": "max_elements",
+            "type": "usize"
+          }
+        ],
+        "returnType": "Result<CodecLimits, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_codec_limits_create",
+        "parameters": [
+          {
+            "name": "max_message_bytes",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "max_structure_depth",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "max_elements",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "out_limits",
+            "kind": "output",
+            "type": "kmipkit_codec_limits_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "CodecLimits",
+        "method": "create",
+        "parameters": [
+          {
+            "name": "maxMessageBytes",
+            "type": "long"
+          },
+          {
+            "name": "maxStructureDepth",
+            "type": "long"
+          },
+          {
+            "name": "maxElements",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_CodecLimits_create",
+        "returnType": "CodecLimits",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "codec_limits_create",
+        "parameters": [
+          {
+            "name": "max_message_bytes",
+            "type": "int"
+          },
+          {
+            "name": "max_structure_depth",
+            "type": "int"
+          },
+          {
+            "name": "max_elements",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_codec_limits_create",
+        "returnType": "CodecLimits",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "codec_limits_max_message_bytes",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::codec::CodecLimits",
+        "name": "max_message_bytes",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "usize"
+      },
+      "c": {
+        "symbol": "kmipkit_codec_limits_max_message_bytes",
+        "parameters": [
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "max_message_bytes",
+            "kind": "output",
+            "type": "uint64_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "CodecLimits",
+        "method": "maxMessageBytes",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_CodecLimits_maxMessageBytes",
+        "returnType": "long",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "codec_limits_max_message_bytes",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_codec_limits_max_message_bytes",
+        "returnType": "int",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "codec_limits_max_structure_depth",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::codec::CodecLimits",
+        "name": "max_structure_depth",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "usize"
+      },
+      "c": {
+        "symbol": "kmipkit_codec_limits_max_structure_depth",
+        "parameters": [
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "max_structure_depth",
+            "kind": "output",
+            "type": "uint64_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "CodecLimits",
+        "method": "maxStructureDepth",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_CodecLimits_maxStructureDepth",
+        "returnType": "long",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "codec_limits_max_structure_depth",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_codec_limits_max_structure_depth",
+        "returnType": "int",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "codec_limits_max_elements",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::codec::CodecLimits",
+        "name": "max_elements",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "usize"
+      },
+      "c": {
+        "symbol": "kmipkit_codec_limits_max_elements",
+        "parameters": [
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "max_elements",
+            "kind": "output",
+            "type": "uint64_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "CodecLimits",
+        "method": "maxElements",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_CodecLimits_maxElements",
+        "returnType": "long",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "codec_limits_max_elements",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_codec_limits_max_elements",
+        "returnType": "int",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_integer",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "integer",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "i32"
+          }
+        ],
+        "returnType": "Value"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_integer",
+        "parameters": [
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "int32_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "Integer",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_Integer",
+        "returnType": "TtlvValue",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_integer",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_integer",
+        "returnType": "Value",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_long_integer",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "long_integer",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "i64"
+          }
+        ],
+        "returnType": "Value"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_long_integer",
+        "parameters": [
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "int64_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "LongInteger",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_LongInteger",
+        "returnType": "TtlvValue",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_long_integer",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_long_integer",
+        "returnType": "Value",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_enumeration",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "enumeration",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "u32"
+          }
+        ],
+        "returnType": "Value"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_enumeration",
+        "parameters": [
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "Enumeration",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_Enumeration",
+        "returnType": "TtlvValue",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_enumeration",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_enumeration",
+        "returnType": "Value",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_boolean",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "boolean",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "bool"
+          }
+        ],
+        "returnType": "Value"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_boolean",
+        "parameters": [
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "Boolean",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "boolean"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_Boolean",
+        "returnType": "TtlvValue",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_boolean",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "bool"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_boolean",
+        "returnType": "Value",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_date_time",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "date_time",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "i64"
+          }
+        ],
+        "returnType": "Value"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_date_time",
+        "parameters": [
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "int64_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "DateTime",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_DateTime",
+        "returnType": "TtlvValue",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_date_time",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_date_time",
+        "returnType": "Value",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_interval",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "interval",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "u32"
+          }
+        ],
+        "returnType": "Value"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_interval",
+        "parameters": [
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "Interval",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_Interval",
+        "returnType": "TtlvValue",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_interval",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_interval",
+        "returnType": "Value",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_date_time_extended",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "date_time_extended",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "i64"
+          }
+        ],
+        "returnType": "Value"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_date_time_extended",
+        "parameters": [
+          {
+            "name": "value",
+            "kind": "scalar",
+            "type": "int64_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "DateTimeExtended",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_DateTimeExtended",
+        "returnType": "TtlvValue",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_date_time_extended",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_date_time_extended",
+        "returnType": "Value",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_big_integer",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "big_integer",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "Vec<u8>"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "Result<Value, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_big_integer",
+        "parameters": [
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "byte-span",
+            "type": "const uint8_t *",
+            "encoding": "octets",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "nulTerminatedScan": false,
+            "byteLengthParameter": "value_length",
+            "byteLengthType": "uint64_t"
+          },
+          {
+            "name": "value_length",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "BigInteger",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "byte[]"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_BigInteger",
+        "returnType": "TtlvValue",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_big_integer",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "bytes"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_big_integer",
+        "returnType": "Value",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_text_string",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "text_string",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "String"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "Result<Value, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_text_string",
+        "parameters": [
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "byte-span",
+            "type": "const uint8_t *",
+            "encoding": "utf-8",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "nulTerminatedScan": false,
+            "byteLengthParameter": "value_length",
+            "byteLengthType": "uint64_t"
+          },
+          {
+            "name": "value_length",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "TextString",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "byte[]"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_TextString",
+        "returnType": "TtlvValue",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_text_string",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "bytes"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_text_string",
+        "returnType": "Value",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_byte_string",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Value",
+        "name": "byte_string",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "Vec<u8>"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "Result<Value, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_byte_string",
+        "parameters": [
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "byte-span",
+            "type": "const uint8_t *",
+            "encoding": "octets",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "nulTerminatedScan": false,
+            "byteLengthParameter": "value_length",
+            "byteLengthType": "uint64_t"
+          },
+          {
+            "name": "value_length",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "ByteString",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "byte[]"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_ByteString",
+        "returnType": "TtlvValue",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_byte_string",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "bytes"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_byte_string",
+        "returnType": "Value",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_structure",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_structure",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "Structure"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "Result<Value, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_structure",
+        "parameters": [
+          {
+            "name": "structure",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "consumed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "structure",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_structure",
+        "returnType": "TtlvValue",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_structure",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "Structure"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_structure",
+        "returnType": "Value",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_structure_create",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Structure",
+        "name": "new",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "Structure"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_structure_create",
+        "parameters": [
+          {
+            "name": "out_structure",
+            "kind": "output",
+            "type": "kmipkit_ttlv_structure_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvStructure",
+        "method": "create",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvStructure_create",
+        "returnType": "TtlvStructure",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_structure_create",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_ttlv_structure_create",
+        "returnType": "Structure",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_item_create",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::Item",
+        "name": "new",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "Tag"
+          },
+          {
+            "name": "value",
+            "type": "Value"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "Result<Item, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_item_create",
+        "parameters": [
+          {
+            "name": "tag",
+            "kind": "handle",
+            "type": "kmipkit_tag_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "value",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_t *",
+            "ownership": "consumed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_ttlv_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvItem",
+        "method": "create",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "Tag"
+          },
+          {
+            "name": "value",
+            "type": "TtlvValue"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvItem_create",
+        "returnType": "TtlvItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_item_create",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "Tag"
+          },
+          {
+            "name": "value",
+            "type": "Value"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_item_create",
+        "returnType": "TtlvItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_structure_with_item",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "structure_with_item",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "Structure"
+          },
+          {
+            "name": "item",
+            "type": "Item"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "Result<Structure, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_structure_with_item",
+        "parameters": [
+          {
+            "name": "structure",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "consumed"
+          },
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "consumed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_structure",
+            "kind": "output",
+            "type": "kmipkit_ttlv_structure_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvStructure",
+        "method": "withItem",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvStructure_withItem",
+        "returnType": "TtlvStructure",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_structure_with_item",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "Structure"
+          },
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_structure_with_item",
+        "returnType": "Structure",
+        "errorCategories": [
+          "resource_limit"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_structure_view",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "structure_view",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "&Structure"
+          }
+        ],
+        "returnType": "TtlvStructureViewHandle"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_structure_view",
+        "parameters": [
+          {
+            "name": "structure",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_view",
+            "kind": "output",
+            "type": "kmipkit_ttlv_structure_view_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvStructure",
+        "method": "view",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvStructure_view",
+        "returnType": "TtlvStructureView",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_structure_view",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "Structure"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_structure_view",
+        "returnType": "TtlvStructureView",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_structure_view_item_count",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "structure_view_item_count",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvStructureViewHandle"
+          }
+        ],
+        "returnType": "u64"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_structure_view_item_count",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_count",
+            "kind": "output",
+            "type": "uint64_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvStructureView",
+        "method": "itemCount",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvStructureView_itemCount",
+        "returnType": "long",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_structure_view_item_count",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvStructureView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_structure_view_item_count",
+        "returnType": "int",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_structure_view_item_at",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "structure_view_item_at",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvStructureViewHandle"
+          },
+          {
+            "name": "index",
+            "type": "usize"
+          }
+        ],
+        "returnType": "Result<TtlvItemViewHandle, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_structure_view_item_at",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "index",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_ttlv_item_view_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvStructureView",
+        "method": "itemAt",
+        "parameters": [
+          {
+            "name": "index",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvStructureView_itemAt",
+        "returnType": "TtlvItemView",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_structure_view_item_at",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvStructureView"
+          },
+          {
+            "name": "index",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_structure_view_item_at",
+        "returnType": "TtlvItemView",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_item_view_tag",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "item_view_tag",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvItemViewHandle"
+          }
+        ],
+        "returnType": "Tag"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_item_view_tag",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_tag",
+            "kind": "output",
+            "type": "kmipkit_tag_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvItemView",
+        "method": "tag",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvItemView_tag",
+        "returnType": "Tag",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_item_view_tag",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvItemView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_item_view_tag",
+        "returnType": "Tag",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_item_view_type",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "item_view_type",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvItemViewHandle"
+          }
+        ],
+        "returnType": "ItemType"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_item_view_type",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item_type",
+            "kind": "output",
+            "type": "uint8_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvItemView",
+        "method": "itemType",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvItemView_itemType",
+        "returnType": "TtlvItemType",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_item_view_type",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvItemView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_item_view_type",
+        "returnType": "ItemType",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_item_view_value",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "item_view_value",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvItemViewHandle"
+          }
+        ],
+        "returnType": "TtlvValueViewHandle"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_item_view_value",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_view_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvItemView",
+        "method": "value",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvItemView_value",
+        "returnType": "TtlvValueView",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_item_view_value",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvItemView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_item_view_value",
+        "returnType": "TtlvValueView",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "&Value"
+          }
+        ],
+        "returnType": "TtlvValueViewHandle"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view",
+        "parameters": [
+          {
+            "name": "value",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_view",
+            "kind": "output",
+            "type": "kmipkit_ttlv_value_view_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValue",
+        "method": "view",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_view",
+        "returnType": "TtlvValueView",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "Value"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view",
+        "returnType": "TtlvValueView",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_type",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_type",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "ItemType"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_type",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item_type",
+            "kind": "output",
+            "type": "uint8_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": []
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "itemType",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_itemType",
+        "returnType": "TtlvItemType",
+        "errorCategories": []
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_type",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_type",
+        "returnType": "ItemType",
+        "errorCategories": []
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_structure",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_structure",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "Result<TtlvStructureViewHandle, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_structure",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_structure",
+            "kind": "output",
+            "type": "kmipkit_ttlv_structure_view_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "structure",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_structure",
+        "returnType": "TtlvStructureView",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_structure",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_structure",
+        "returnType": "TtlvStructureView",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_integer",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_integer",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "Result<i32, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_integer",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "int32_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "integer",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_integer",
+        "returnType": "int",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_integer",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_integer",
+        "returnType": "int",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_long_integer",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_long_integer",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "Result<i64, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_long_integer",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "int64_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "longInteger",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_longInteger",
+        "returnType": "long",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_long_integer",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_long_integer",
+        "returnType": "int",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_enumeration",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_enumeration",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "Result<u32, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_enumeration",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "uint32_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "enumeration",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_enumeration",
+        "returnType": "long",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_enumeration",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_enumeration",
+        "returnType": "int",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_boolean",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_boolean",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "Result<bool, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_boolean",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "uint8_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "boolean",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_boolean",
+        "returnType": "boolean",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_boolean",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_boolean",
+        "returnType": "bool",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_date_time",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_date_time",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "Result<i64, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_date_time",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "int64_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "dateTime",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_dateTime",
+        "returnType": "long",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_date_time",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_date_time",
+        "returnType": "int",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_interval",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_interval",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "Result<u32, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_interval",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "uint32_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "interval",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_interval",
+        "returnType": "long",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_interval",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_interval",
+        "returnType": "int",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_date_time_extended",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_date_time_extended",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "Result<i64, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_date_time_extended",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_value",
+            "kind": "output",
+            "type": "int64_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "dateTimeExtended",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_dateTimeExtended",
+        "returnType": "long",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_date_time_extended",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_date_time_extended",
+        "returnType": "int",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_byte_length",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_byte_length",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          }
+        ],
+        "returnType": "Result<u64, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_byte_length",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_length",
+            "kind": "output",
+            "type": "uint64_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "byteLength",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_byteLength",
+        "returnType": "long",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_byte_length",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_byte_length",
+        "returnType": "int",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "ttlv_value_view_byte_at",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "value_view_byte_at",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "&TtlvValueViewHandle"
+          },
+          {
+            "name": "index",
+            "type": "usize"
+          }
+        ],
+        "returnType": "Result<u8, ProtocolError>"
+      },
+      "c": {
+        "symbol": "kmipkit_ttlv_value_view_byte_at",
+        "parameters": [
+          {
+            "name": "view",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_view_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "index",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "out_byte",
+            "kind": "output",
+            "type": "uint8_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.ttlv",
+        "class": "TtlvValueView",
+        "method": "byteAt",
+        "parameters": [
+          {
+            "name": "index",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_byteAt",
+        "returnType": "short",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.ttlv",
+        "function": "ttlv_value_view_byte_at",
+        "parameters": [
+          {
+            "name": "view",
+            "type": "TtlvValueView"
+          },
+          {
+            "name": "index",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_ttlv_value_view_byte_at",
+        "returnType": "int",
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "ordering": "not-applicable"
     }
