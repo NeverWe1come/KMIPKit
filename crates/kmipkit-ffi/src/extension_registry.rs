@@ -294,20 +294,28 @@ mod view_ownership_tests {
     use super::*;
 
     fn byte_string_data(value: &Value) -> *const u8 {
-        value.with_value(|value| match value {
-            ValueView::ByteString(bytes) => bytes.as_ptr(),
-            _ => ptr::null(),
-        })
+        value
+            .with_value(|value| {
+                Ok::<*const u8, i32>(match value {
+                    ValueView::ByteString(bytes) => bytes.as_ptr(),
+                    _ => ptr::null(),
+                })
+            })
+            .unwrap()
     }
 
     fn value_view_byte_string_data(value: &HandleValue) -> *const u8 {
         let HandleValue::ValueView(value) = value else {
             return ptr::null();
         };
-        value.with_value(|value| match value {
-            ValueView::ByteString(bytes) => bytes.as_ptr(),
-            _ => ptr::null(),
-        })
+        value
+            .with_value(|value| {
+                Ok::<*const u8, i32>(match value {
+                    ValueView::ByteString(bytes) => bytes.as_ptr(),
+                    _ => ptr::null(),
+                })
+            })
+            .unwrap()
     }
 
     #[test]
@@ -323,10 +331,24 @@ mod view_ownership_tests {
         assert_eq!(kmipkit_ttlv_value_view(source, &mut view), SUCCESS);
         let view_handle = reference_handle(&view, Kind::ValueView).unwrap();
         let view_data = value_view_byte_string_data(&view_handle.value);
-        kmipkit_ttlv_value_view_release(view);
-        kmipkit_ttlv_value_release(source);
+        let shares_payload = view_data == source_data;
 
-        assert_eq!(view_data, source_data);
+        kmipkit_ttlv_value_release(source);
+        let mut length = 0;
+        let mut last_byte = 0;
+        assert_eq!(
+            kmipkit_ttlv_value_view_byte_length(view, &mut length),
+            SUCCESS
+        );
+        assert_eq!(length, 4);
+        assert_eq!(
+            kmipkit_ttlv_value_view_byte_at(view, 3, &mut last_byte),
+            SUCCESS
+        );
+        kmipkit_ttlv_value_view_release(view);
+
+        assert!(shares_payload);
+        assert_eq!(last_byte, 0x44);
     }
 
     #[test]
@@ -361,13 +383,43 @@ mod view_ownership_tests {
         );
         let value_handle = reference_handle(&value_view, Kind::ValueView).unwrap();
         let view_data = value_view_byte_string_data(&value_handle.value);
+        let shares_payload = view_data == source_data;
 
-        kmipkit_ttlv_value_view_release(value_view);
+        kmipkit_ttlv_structure_release(source);
         kmipkit_ttlv_item_view_release(item_view);
+        kmipkit_ttlv_structure_view_release(structure_view);
+        let mut last_byte = 0;
+        assert_eq!(
+            kmipkit_ttlv_value_view_byte_at(value_view, 2, &mut last_byte),
+            SUCCESS
+        );
+        kmipkit_ttlv_value_view_release(value_view);
+
+        assert!(shares_payload);
+        assert_eq!(last_byte, 0xC3);
+    }
+
+    #[test]
+    fn structure_view_rejects_an_out_of_range_item_index() {
+        let source = make_handle(
+            Kind::Structure,
+            HandleValue::Structure(Structure::new()),
+        );
+        let mut structure_view = ptr::null_mut();
+        let mut item_view = ptr::null_mut();
+
+        assert_eq!(
+            kmipkit_ttlv_structure_view(source, &mut structure_view),
+            SUCCESS
+        );
+        let status =
+            kmipkit_ttlv_structure_view_item_at(structure_view, 0, &mut item_view);
+
         kmipkit_ttlv_structure_view_release(structure_view);
         kmipkit_ttlv_structure_release(source);
 
-        assert_eq!(view_data, source_data);
+        assert_eq!(status, ERROR_INVALID_INPUT);
+        assert!(item_view.is_null());
     }
 }
 
