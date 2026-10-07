@@ -177,6 +177,9 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(job, r"(?ms)^    needs:\s*\n\s+- language-bindings$")
 
         for required in (
+            "KyleMayes/install-llvm-action@",
+            "version: '20.1.8'",
+            "ln -s \"$LLVM_PATH/bin/$tool\" \"$RUNNER_TEMP/llvm-20-tools/${tool}-20\"",
             "mvn --batch-mode --file bindings/java/pom.xml clean verify",
             "bindings/java/target/site/jacoco/jacoco.xml",
             "coverage-java/jacoco.xml",
@@ -202,6 +205,10 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(
             job,
             r"(?ms)^    needs:\s*\n\s+- coverage\s*\n\s+- adapter-coverage$",
+        )
+        self.assertIn(
+            "if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')",
+            job,
         )
         self.assertIn("needs.adapter-coverage.result", job)
         self.assertIn("pattern: coverage-*", job)
