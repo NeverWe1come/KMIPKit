@@ -946,26 +946,29 @@ class ExtensionRegistryTests(unittest.TestCase):
     def test_registry_definition_limit_precedes_iterating_input(self) -> None:
         class OversizedDefinitions(list[Any]):
             def __len__(self) -> int:
-                return 257
+                return 0
 
             def __iter__(self):
                 raise AssertionError("over-limit definitions were iterated")
 
         with self.assertRaises(errors.ResourceLimitError):
             registry_api.create_client_extension_registry(
-                OversizedDefinitions(), registry_api.default_extension_registry_limits()
+                OversizedDefinitions([None] * 257),
+                registry_api.default_extension_registry_limits(),
             )
 
     def test_schema_child_limit_precedes_iterating_input(self) -> None:
         class OversizedRules(list[Any]):
             def __len__(self) -> int:
-                return 4_097
+                return 0
 
             def __iter__(self):
                 raise AssertionError("over-limit schema rules were iterated")
 
         with self.assertRaises(errors.ResourceLimitError):
-            registry_api.structure_schema(OversizedRules(), [], False)
+            registry_api.structure_schema(OversizedRules([None] * 4_097), [], False)
+        with self.assertRaises(errors.ResourceLimitError):
+            registry_api.structure_schema([], OversizedRules([None] * 4_097), False)
 
 
 if __name__ == "__main__":

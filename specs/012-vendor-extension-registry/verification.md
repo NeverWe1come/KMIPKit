@@ -947,3 +947,18 @@ The Python adapter's Extension Information test expectation was also corrected t
   aggregate schema-node limit returned `ERROR_RESOURCE_LIMIT`.
 - These are expected Red outcomes; the production fix and Green evidence are
   not recorded in this commit.
+
+## 2026-10-07 — true-size and underreported-list probes (Red)
+
+- Strengthened the Python collection probes to contain 257 and 4,097 actual
+  list entries while overriding `__len__` to underreport and `__iter__` to
+  detect traversal. The same four focused Python cases still failed for the
+  expected preflight reasons before the fix:
+  `PYTHONPATH=bindings/python/src bindings/python/.venv/Scripts/python.exe -m
+  pytest -q bindings/python/tests/test_extension_registry.py -k precedes`.
+- Added a Java list whose advertised size is zero but whose iterator yields
+  more than the registry maximum. The focused test failed because registry
+  creation returned without enforcing the actual bounded iteration count:
+  `mvn -f bindings/java/pom.xml
+  -Dtest=ExtensionRegistryTest#registryDefinitionLimitBoundsAListThatUnderstatesItsSize
+  test`.

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.ToLongFunction;
@@ -542,6 +543,43 @@ final class ExtensionRegistryTest {
     }
 
     @Test
+    void registryDefinitionLimitBoundsAListThatUnderstatesItsSize() {
+        ExtensionRegistryLimits limits = ExtensionRegistryLimits.defaults();
+        List<ExtensionDefinition> definitions = new AbstractList<>() {
+            @Override
+            public ExtensionDefinition get(int index) {
+                throw new AssertionError("registry copied the list by index");
+            }
+
+            @Override
+            public int size() {
+                return 0;
+            }
+
+            @Override
+            public Iterator<ExtensionDefinition> iterator() {
+                return new Iterator<>() {
+                    private int remaining = Math.toIntExact(limits.maxDefinitions() + 1);
+
+                    @Override
+                    public boolean hasNext() {
+                        return remaining > 0;
+                    }
+
+                    @Override
+                    public ExtensionDefinition next() {
+                        remaining--;
+                        return null;
+                    }
+                };
+            }
+        };
+
+        assertThrows(ResourceLimitException.class,
+                () -> ClientExtensionRegistry.create(definitions, limits));
+    }
+
+    @Test
     void schemaChildLimitIsCheckedBeforeTraversingInputList() {
         List<ExtensionChildRule> children = new AbstractList<>() {
             @Override
@@ -557,6 +595,20 @@ final class ExtensionRegistryTest {
 
         assertThrows(ResourceLimitException.class,
                 () -> ExtensionSchema.structure(children, List.of(), true));
+
+        List<org.kmipkit.extensions.ExtensionOrderConstraint> constraints = new AbstractList<>() {
+            @Override
+            public org.kmipkit.extensions.ExtensionOrderConstraint get(int index) {
+                throw new AssertionError("over-limit order constraints were traversed");
+            }
+
+            @Override
+            public int size() {
+                return 4_097;
+            }
+        };
+        assertThrows(ResourceLimitException.class,
+                () -> ExtensionSchema.structure(List.of(), constraints, true));
     }
 
 }
