@@ -2,10 +2,13 @@ package org.kmipkit.extensions;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvStructure;
@@ -27,7 +30,7 @@ public final class ClientExtensionRegistry implements AutoCloseable {
 
     public static ClientExtensionRegistry create(
             List<ExtensionDefinition> definitions, ExtensionRegistryLimits limits) {
-        List<ExtensionDefinition> snapshot = List.copyOf(definitions);
+        List<ExtensionDefinition> snapshot = boundedSnapshot(definitions, limits.maxDefinitions());
         NativeExtensionRegistry.ensureLoaded();
         NativeHandle[] owners = snapshot.stream()
                 .map(ExtensionDefinition::nativeHandleOwner)
@@ -43,6 +46,7 @@ public final class ClientExtensionRegistry implements AutoCloseable {
     }
 
     public ExtensionRecognition inspect(String vendorIdentifier, TtlvStructure value, CodecLimits codecLimits) {
+        ExtensionText.requireWithinLimit(vendorIdentifier, "vendor identification");
         NativeExtensionRegistry.ensureLoaded();
         long recognition = NativeHandle.withNativeHandles(() ->
                 NativeExtensionRegistry.clientExtensionRegistryInspect(
@@ -57,6 +61,26 @@ public final class ClientExtensionRegistry implements AutoCloseable {
             NativeExtensionRegistry.clientExtensionRegistryDefinitionCount(registryHandle);
             return definitions.size();
         });
+    }
+
+    private static List<ExtensionDefinition> boundedSnapshot(
+            List<ExtensionDefinition> definitions, long maximum) {
+        int reportedSize = definitions.size();
+        if (reportedSize < 0) {
+            throw new org.kmipkit.InvalidInputException("extension definition list size is invalid");
+        }
+        if (reportedSize > maximum) {
+            throw new ResourceLimitException("extension definition count exceeds its configured limit");
+        }
+        List<ExtensionDefinition> snapshot = new ArrayList<>(reportedSize);
+        Iterator<ExtensionDefinition> iterator = definitions.iterator();
+        while (iterator.hasNext()) {
+            if (snapshot.size() >= maximum) {
+                throw new ResourceLimitException("extension definition count exceeds its configured limit");
+            }
+            snapshot.add(iterator.next());
+        }
+        return List.copyOf(snapshot);
     }
 
     public Optional<ExtensionDefinition> definitionAt(long index) {

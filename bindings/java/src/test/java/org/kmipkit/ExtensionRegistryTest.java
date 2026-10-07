@@ -252,6 +252,16 @@ final class ExtensionRegistryTest {
     }
 
     @Test
+    void extensionTextLimitCountsUtf8BytesAtTheExactBoundary() {
+        String maximumUtf8Text = "🔐".repeat(1_024);
+        ExtensionIdentity accepted = ExtensionIdentity.create(VENDOR, maximumUtf8Text, "1");
+        assertEquals(maximumUtf8Text, accepted.name());
+
+        assertThrows(ResourceLimitException.class,
+                () -> ExtensionIdentity.create(VENDOR, "🔐".repeat(1_025), "1"));
+    }
+
+    @Test
     void invalidSchemaErrorsAndValidatedValueFormattingRedactPayloadText() throws Exception {
         String secret = "secret-value-must-not-appear-in-diagnostics";
         ExtensionDefinition withRequiredNumericField = definitionWithExtraRequiredField();

@@ -484,6 +484,26 @@ fn input_span<'a>(data: *const u8, length: u64, maximum: u64) -> FfiResult<&'a [
     Ok(unsafe { std::slice::from_raw_parts(data, length) })
 }
 
+fn input_handle_pointers<'a, T>(
+    array: *mut *mut T,
+    count: u64,
+    maximum: u64,
+) -> FfiResult<&'a [*mut T]> {
+    if count > maximum {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    let count = usize::try_from(count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    if count == 0 {
+        return Ok(&[]);
+    }
+    if array.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: for nonzero `count`, the C caller must provide a readable array of that many handle
+    // pointers. The count is bounded before reading any array element.
+    Ok(unsafe { std::slice::from_raw_parts(array, count) })
+}
+
 fn input_handle_array<T, U>(
     array: *mut *mut T,
     count: u64,
@@ -491,22 +511,10 @@ fn input_handle_array<T, U>(
     kind: Kind,
     mut copy: impl FnMut(&Handle) -> FfiResult<U>,
 ) -> FfiResult<Vec<U>> {
-    if count > maximum {
-        return Err(ERROR_RESOURCE_LIMIT);
-    }
-    let count = usize::try_from(count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
-    if count == 0 {
-        return Ok(Vec::new());
-    }
-    if array.is_null() {
-        return Err(ERROR_INVALID_INPUT);
-    }
-    // SAFETY: for nonzero `count`, the C caller must provide a readable array of that many handle
-    // pointers. The count is bounded before reading any array element.
-    let pointers = unsafe { std::slice::from_raw_parts(array, count) };
+    let pointers = input_handle_pointers(array, count, maximum)?;
     let mut result = Vec::new();
     result
-        .try_reserve_exact(count)
+        .try_reserve_exact(pointers.len())
         .map_err(|_| ERROR_RESOURCE_LIMIT)?;
     for pointer in pointers {
         let handle = reference_handle(pointer, kind)?;
@@ -531,6 +539,36 @@ fn client_status(error: &kmipkit_client::ClientError) -> i32 {
         kmipkit_client::ClientError::Protocol { error, .. } => protocol_status(error),
         _ => ERROR_INVALID_INPUT,
     }
+}
+
+fn copy_registry_definitions(
+    pointers: &[*mut kmipkit_extension_definition_t],
+    limits: extension::ExtensionRegistryLimits,
+    mut copy: impl FnMut(&extension::ExtensionDefinition) -> FfiResult<extension::ExtensionDefinition>,
+) -> FfiResult<Vec<extension::ExtensionDefinition>> {
+    let count = u64::try_from(pointers.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let mut preflight = client_extension::RegistryDefinitionPreflight::new(count, limits)
+        .map_err(|error| protocol_status(&error))?;
+    for pointer in pointers {
+        let handle = reference_handle(pointer, Kind::Definition)?;
+        let definition = definition_from_handle(handle)?;
+        preflight
+            .add_definition(definition)
+            .map_err(|error| protocol_status(&error))?;
+    }
+    preflight
+        .finish()
+        .map_err(|error| protocol_status(&error))?;
+
+    let mut copied = Vec::new();
+    copied
+        .try_reserve_exact(pointers.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for pointer in pointers {
+        let handle = reference_handle(pointer, Kind::Definition)?;
+        copied.push(copy(definition_from_handle(handle)?)?);
+    }
+    Ok(copied)
 }
 
 fn model_status(error: kmipkit_ttlv::ModelError) -> i32 {
@@ -1422,19 +1460,16 @@ pub extern "C" fn kmipkit_client_extension_registry_create(
         max_lookup_comparisons,
         max_depth,
     ]));
-    let copied = try_ffi!(input_handle_array(
+    let pointers = try_ffi!(input_handle_pointers(
         definitions,
         definition_count,
         max_definitions,
-        Kind::Definition,
-        |handle| {
-            let definition = definition_from_handle(handle)?;
-            #[cfg(test)]
-            REGISTRY_DEFINITION_CLONE_COUNT.with(|count| count.set(count.get() + 1));
-            extension::clone_extension_definition(definition)
-                .map_err(|error| protocol_status(&error))
-        },
     ));
+    let copied = try_ffi!(copy_registry_definitions(pointers, limits, |definition| {
+        #[cfg(test)]
+        REGISTRY_DEFINITION_CLONE_COUNT.with(|count| count.set(count.get() + 1));
+        extension::clone_extension_definition(definition).map_err(|error| protocol_status(&error))
+    },));
     let registry = try_ffi!(
         client_extension::client_extension_registry(copied, limits)
             .map_err(|error| client_status(&error))

@@ -195,17 +195,43 @@ def _invoke_consuming(
             handle._release_ownership_lock()
 
 
-def _owned_bytes(value: str | bytes | bytearray | memoryview) -> tuple[bytes, Any]:
-    """Encode or copy variable-length input for the duration of one ABI call."""
+def _owned_bytes(
+    value: str | bytes | bytearray | memoryview, maximum: int = 4_096
+) -> tuple[bytes, Any]:
+    """Bound text or byte input before making ABI-owned copies."""
     if isinstance(value, str):
+        if str.__len__(value) > maximum:
+            errors.raise_for_status(6)
+        byte_length = 0
+        for character in str.__iter__(value):
+            codepoint = ord(character)
+            byte_length += (
+                1
+                if codepoint <= 0x7F
+                else 2
+                if codepoint <= 0x7FF
+                else 3
+                if codepoint <= 0xFFFF
+                else 4
+            )
+            if byte_length > maximum:
+                errors.raise_for_status(6)
         try:
-            raw = value.encode("utf-8")
+            raw = str.encode(value, "utf-8")
         except UnicodeEncodeError:
             raise errors.InvalidInputError() from None
     elif isinstance(value, (bytes, bytearray, memoryview)):
-        raw = bytes(value)
+        try:
+            view = memoryview(value)
+        except (TypeError, ValueError):
+            errors.raise_for_status(4)
+        if view.nbytes > maximum:
+            errors.raise_for_status(6)
+        raw = view.tobytes()
     else:
         errors.raise_for_status(4)
+    if len(raw) > maximum:
+        errors.raise_for_status(6)
     return raw, ffi.new("uint8_t[]", raw)
 
 

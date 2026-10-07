@@ -56,7 +56,7 @@ fn call_registry_create(
         200_000,
         4_194_304,
         64,
-        &mut registry,
+        &raw mut registry,
     );
     (status, registry)
 }

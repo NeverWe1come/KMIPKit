@@ -982,3 +982,10 @@ The Python adapter's Extension Information test expectation was also corrected t
   --all-features` passed, including both bounded-visit probes and the existing
   exact/over aggregate-boundary tests. T065 remains open for Refactor and final
   validation evidence.
+- The Java and Python allocation-boundary fixes also pass their adapter suites:
+  `mvn -f bindings/java/pom.xml test` (28 tests plus the runnable example) and
+  `PYTHONPATH=bindings/python/src bindings/python/.venv/Scripts/python.exe -m
+  pytest -q bindings/python/tests` (25 tests). Rust FFI tests ran in the
+  three-crate test command above.
+- Focused Clippy for protocol, client, and FFI, workspace formatting check, and
+  `git diff --check` pass after the test helper lint correction.

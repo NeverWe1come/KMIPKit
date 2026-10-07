@@ -60,6 +60,9 @@ _LIMIT_FIELDS = (
     "max_depth",
 )
 
+_MAX_TEXT_BYTES_PER_FIELD = 4_096
+_MAX_CHILD_RULES_PER_STRUCTURE = 4_096
+
 
 class ExtensionIdentity(NativeHandle):
     _release_name = "kmipkit_extension_identity_release"
@@ -303,7 +306,22 @@ def _make_handle(
 def _make_bytes(value: str) -> tuple[bytes, Any]:
     if not isinstance(value, str):
         errors.raise_for_status(4)
-    return _owned_bytes(value)
+    return _owned_bytes(value, _MAX_TEXT_BYTES_PER_FIELD)
+
+
+def _bounded_snapshot(values: object, maximum: int) -> tuple[Any, ...]:
+    """Snapshot a declared list or tuple only after checking its true size."""
+    if isinstance(values, list):
+        count = list.__len__(values)
+        if count > maximum:
+            errors.raise_for_status(6)
+        return tuple(list.__iter__(values))
+    if isinstance(values, tuple):
+        count = tuple.__len__(values)
+        if count > maximum:
+            errors.raise_for_status(6)
+        return tuple(tuple.__iter__(values))
+    errors.raise_for_status(4)
 
 
 def create_extension_identity(
@@ -404,20 +422,22 @@ def structure_schema(
 ) -> ExtensionSchema:
     if not isinstance(preserve_undeclared_children, bool):
         errors.raise_for_status(4)
+    child_snapshot = _bounded_snapshot(children, _MAX_CHILD_RULES_PER_STRUCTURE)
+    order_snapshot = _bounded_snapshot(order_constraints, _MAX_CHILD_RULES_PER_STRUCTURE)
     child_array = (
         ffi.NULL
-        if not children
+        if not child_snapshot
         else ffi.new(
             "kmipkit_extension_child_rule_t *[]",
-            [child._pointer() for child in children],
+            [child._pointer() for child in child_snapshot],
         )
     )
     order_array = (
         ffi.NULL
-        if not order_constraints
+        if not order_snapshot
         else ffi.new(
             "kmipkit_extension_order_constraint_t *[]",
-            [constraint._pointer() for constraint in order_constraints],
+            [constraint._pointer() for constraint in order_snapshot],
         )
     )
     handle = _make_handle(
@@ -425,13 +445,13 @@ def structure_schema(
         "kmipkit_extension_schema_structure",
         (
             child_array,
-            len(children),
+            len(child_snapshot),
             order_array,
-            len(order_constraints),
+            len(order_snapshot),
             int(preserve_undeclared_children),
         ),
     )
-    return ExtensionSchema(handle, owner=(tuple(children), tuple(order_constraints)))
+    return ExtensionSchema(handle, owner=(child_snapshot, order_snapshot))
 
 
 def _child_rule(
@@ -626,7 +646,21 @@ def create_client_extension_registry(
     definitions: list[ExtensionDefinition] | tuple[ExtensionDefinition, ...],
     limits: ExtensionRegistryLimits,
 ) -> ClientExtensionRegistry:
-    source = tuple(sorted(definitions, key=_identity_key))
+    if not isinstance(limits, ExtensionRegistryLimits):
+        errors.raise_for_status(4)
+    limit_values = tuple(getattr(limits, field) for field in _LIMIT_FIELDS)
+    if any(
+        not isinstance(value, int) or isinstance(value, bool) or value < 0
+        for value in limit_values
+    ):
+        errors.raise_for_status(4)
+    if any(value > 0xFFFF_FFFF_FFFF_FFFF for value in limit_values):
+        errors.raise_for_status(6)
+    errors.raise_for_status(
+        _invoke(lib.kmipkit_extension_registry_limits_validate, *limit_values)
+    )
+    bounded_definitions = _bounded_snapshot(definitions, limit_values[0])
+    source = tuple(sorted(bounded_definitions, key=_identity_key))
     definition_array = (
         ffi.NULL
         if not source
@@ -635,7 +669,6 @@ def create_client_extension_registry(
             [definition._pointer() for definition in source],
         )
     )
-    limit_values = tuple(getattr(limits, field) for field in _LIMIT_FIELDS)
     handle = _make_handle(
         "kmipkit_client_extension_registry_t",
         "kmipkit_client_extension_registry_create",

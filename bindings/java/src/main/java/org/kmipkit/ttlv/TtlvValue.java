@@ -1,6 +1,7 @@
 package org.kmipkit.ttlv;
 
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 
 /** An owned generic TTLV value. Byte inputs are copied by the native adapter. */
@@ -40,18 +41,28 @@ public final class TtlvValue {
     }
 
     public static TtlvValue BigInteger(byte[] value, CodecLimits limits) {
+        requireWithinMessageLimit(value, limits);
         return new TtlvValue(NativeExtensionRegistry.ttlvValueBigInteger(
                 value.clone(), NativeExtensionRegistry.codecLimitValues(limits)));
     }
 
     public static TtlvValue TextString(byte[] value, CodecLimits limits) {
+        requireWithinMessageLimit(value, limits);
         return new TtlvValue(NativeExtensionRegistry.ttlvValueTextString(
                 value.clone(), NativeExtensionRegistry.codecLimitValues(limits)));
     }
 
     public static TtlvValue ByteString(byte[] value, CodecLimits limits) {
+        requireWithinMessageLimit(value, limits);
         return new TtlvValue(NativeExtensionRegistry.ttlvValueByteString(
                 value.clone(), NativeExtensionRegistry.codecLimitValues(limits)));
+    }
+
+    private static void requireWithinMessageLimit(byte[] value, CodecLimits limits) {
+        long maximum = limits.maxMessageBytes();
+        if (value != null && value.length > maximum) {
+            throw new ResourceLimitException("byte input exceeds configured limits");
+        }
     }
 
     public static TtlvValue structure(TtlvStructure structure, CodecLimits limits) {

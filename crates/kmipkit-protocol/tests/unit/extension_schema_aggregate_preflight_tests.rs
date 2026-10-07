@@ -17,7 +17,7 @@ fn default_limits() -> ExtensionRegistryLimits {
 }
 
 fn visit_count() -> usize {
-    REGISTRY_LIMIT_SCHEMA_VISITS.with(|visits| visits.get())
+    REGISTRY_LIMIT_SCHEMA_VISITS.with(std::cell::Cell::get)
 }
 
 fn reset_visit_count() {

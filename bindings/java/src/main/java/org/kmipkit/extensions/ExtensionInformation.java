@@ -1,9 +1,6 @@
 package org.kmipkit.extensions;
 
-import java.nio.charset.StandardCharsets;
-
 import org.kmipkit.NativeExtensionRegistry;
-import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvStructure;
@@ -78,8 +75,6 @@ public final class ExtensionInformation {
         if (value == null || value.isEmpty()) {
             throw new org.kmipkit.InvalidInputException("extension metadata text is invalid");
         }
-        if (value.getBytes(StandardCharsets.UTF_8).length > 4_096) {
-            throw new ResourceLimitException("extension metadata text exceeds its per-field limit");
-        }
+        ExtensionText.requireWithinLimit(value, "extension metadata text");
     }
 }

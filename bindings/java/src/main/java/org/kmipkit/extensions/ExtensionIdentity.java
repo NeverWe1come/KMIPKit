@@ -1,12 +1,10 @@
 package org.kmipkit.extensions;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
-import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 
 /** Immutable local identity for one vendor extension definition. */
@@ -67,9 +65,7 @@ public final class ExtensionIdentity {
     }
 
     private static void requireTextLength(String value, String description) {
-        if (value.getBytes(StandardCharsets.UTF_8).length > 4_096) {
-            throw new ResourceLimitException(description + " exceeds its configured limit");
-        }
+        ExtensionText.requireWithinLimit(value, description);
     }
 
     long handle() {

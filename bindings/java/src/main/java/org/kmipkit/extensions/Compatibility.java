@@ -13,6 +13,8 @@ public final class Compatibility {
 
     public static Compatibility create(int kmipMinMajor, int kmipMinMinor,
             int kmipMaxMajor, int kmipMaxMinor, String kmipkitMinimum, String kmipkitMaximum) {
+        ExtensionText.requireWithinLimit(kmipkitMinimum, "KMIPKit minimum version");
+        ExtensionText.requireWithinLimit(kmipkitMaximum, "KMIPKit maximum version");
         NativeExtensionRegistry.ensureLoaded();
         return new Compatibility(NativeExtensionRegistry.compatibilityCreate(
                 kmipMinMajor, kmipMinMinor, kmipMaxMajor, kmipMaxMinor,

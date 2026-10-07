@@ -181,7 +181,13 @@ def ttlv_value_date_time_extended(value: int) -> Value:
 def _variable_value(symbol: str, value: bytes, limits: CodecLimits) -> Value:
     if not isinstance(value, (bytes, bytearray, memoryview)):
         errors.raise_for_status(4)
-    raw = bytes(value)
+    try:
+        view = memoryview(value)
+    except (TypeError, ValueError):
+        errors.raise_for_status(4)
+    if view.nbytes > codec_limits_max_message_bytes(limits):
+        errors.raise_for_status(6)
+    raw = view.tobytes()
     data = ffi.new("uint8_t[]", raw)
     handle = _new_handle(
         "kmipkit_ttlv_value_t", getattr(lib, symbol), limits._pointer(), data, len(raw)

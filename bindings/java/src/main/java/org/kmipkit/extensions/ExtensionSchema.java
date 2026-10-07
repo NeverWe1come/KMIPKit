@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvItemType;
 
@@ -22,6 +23,9 @@ public final class ExtensionSchema {
 
     public static ExtensionSchema structure(List<ExtensionChildRule> children,
             List<ExtensionOrderConstraint> orderConstraints, boolean preserveUndeclaredChildren) {
+        if (children.size() > 4_096 || orderConstraints.size() > 4_096) {
+            throw new ResourceLimitException("extension schema collection exceeds its hard maximum");
+        }
         NativeHandle[] owners = new NativeHandle[children.size() + orderConstraints.size()];
         for (int index = 0; index < children.size(); index++) {
             owners[index] = children.get(index).nativeHandleOwner();
