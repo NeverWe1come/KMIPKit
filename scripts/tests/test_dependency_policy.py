@@ -16,6 +16,9 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = REPOSITORY_ROOT / "scripts" / "dependency_policy.py"
+SAFE_LICENSE_IDENTIFIERS = frozenset(
+    {"Apache-2.0", "BSD-3-Clause", "ISC", "LLVM-exception", "MIT", "MIT-0"}
+)
 POLICY = None
 POLICY_LOAD_ERROR = None
 if POLICY_PATH.is_file():
@@ -453,7 +456,12 @@ class DependencyExceptionTests(unittest.TestCase):
 
     def validate(self, entries: list[dict], findings: list[dict]) -> None:
         policy = self.require_policy()
-        policy.validate_exceptions({"schema_version": 1, "exceptions": entries}, findings, today=date(2026, 1, 15))
+        policy.validate_exceptions(
+            {"schema_version": 1, "exceptions": entries},
+            findings,
+            today=date(2026, 1, 15),
+            known_license_identifiers=SAFE_LICENSE_IDENTIFIERS,
+        )
 
     def test_exception_validation_reports_all_unmatched_findings_and_versions(self) -> None:
         findings = [
@@ -521,8 +529,10 @@ class DependencyExceptionTests(unittest.TestCase):
     def test_malformed_license_evidence_fails_without_echoing_metadata(self) -> None:
         for raw_license in (
             "LicenseRef-SENTINELSECRET00000000",
+            "SENTINELSECRET00000000",
             "MIT OR",
             "(MIT) WITH Classpath-exception-2.0",
+            "MIT\u2028OR\u2028Apache-2.0",
         ):
             with self.subTest(raw_license=raw_license):
                 with self.assertRaises(self.policy_error()) as context:
@@ -531,7 +541,7 @@ class DependencyExceptionTests(unittest.TestCase):
                         [finding("license", "private-crate", "1.0.0", license_expression=raw_license)],
                     )
 
-                self.assertIn("license expression is malformed", str(context.exception))
+                self.assertIn("license=unavailable", str(context.exception))
                 self.assertNotIn(raw_license, str(context.exception))
 
     def test_cli_reports_findings_when_exception_register_is_empty(self) -> None:
@@ -556,10 +566,14 @@ class DependencyExceptionTests(unittest.TestCase):
             }
             root_metadata = root / "root.json"
             fuzz_metadata = root / "fuzz.json"
+            license_identifiers = root / "license-identifiers.json"
             exception_register = root / "exceptions.json"
             findings_path = root / "findings.json"
             root_metadata.write_text(json.dumps(metadata["root"]), encoding="utf-8")
             fuzz_metadata.write_text(json.dumps(metadata["fuzz"]), encoding="utf-8")
+            license_identifiers.write_text(
+                json.dumps(sorted(SAFE_LICENSE_IDENTIFIERS)), encoding="utf-8"
+            )
             exception_register.write_text(
                 json.dumps({"schema_version": 1, "exceptions": []}), encoding="utf-8"
             )
@@ -595,6 +609,8 @@ class DependencyExceptionTests(unittest.TestCase):
                     str(root_metadata),
                     "--fuzz-metadata",
                     str(fuzz_metadata),
+                    "--license-identifiers",
+                    str(license_identifiers),
                     "--deny-config",
                     str(REPOSITORY_ROOT / ".cargo" / "deny.toml"),
                     "--baseline-deny-config",
@@ -1176,6 +1192,16 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
         validation_call = contents[validation_start:validation_end]
         self.assertIn("-SafePolicyDiagnostics", validation_call)
 
+    def test_runner_builds_a_trusted_spdx_identifier_inventory_with_cargo_deny(self) -> None:
+        contents = self.require_runner()
+        for required in (
+            "'--layout', 'license'",
+            "--extract-cargo-deny-license-identifiers",
+            "--license-identifiers",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, contents)
+
     def test_runner_executes_negative_fixtures_with_the_verified_pinned_binary(self) -> None:
         contents = self.require_runner()
         self.assertIn("$env:CARGO_DENY = $denyExecutable", contents)
@@ -1226,7 +1252,7 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
             "fuzz": {"packages": [{"name": "unsafe-crate", "version": "1.2.3", "source": None}]},
         }
 
-        report = formatter(raw_output, metadata)
+        report = formatter(raw_output, metadata, SAFE_LICENSE_IDENTIFIERS)
 
         for expected in (
             "bad-license@2.3.4",
@@ -1310,10 +1336,56 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
             "fuzz": {"packages": []},
         }
 
-        report = formatter(raw_output, metadata)
+        report = formatter(raw_output, metadata, SAFE_LICENSE_IDENTIFIERS)
 
         self.assertIn("license=ISC AND (Apache-2.0 OR ISC)", report)
         self.assertNotIn("LicenseRef-SENTINELSECRET00000000", report)
+
+    def test_unverified_spdx_tokens_and_unicode_separators_are_suppressed(self) -> None:
+        formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
+        self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
+        for raw_license in ("SENTINELSECRET00000000", "MIT\u2028OR\u2028Apache-2.0"):
+            with self.subTest(raw_license=raw_license):
+                raw_output = (
+                    '{"type":"diagnostic","fields":{"severity":"error","code":"rejected",'
+                    '"graphs":[{"Krate":{"name":"licensed-crate","version":"4.2.0"}}]}}'
+                )
+                metadata = {
+                    "root": {
+                        "packages": [
+                            {"name": "licensed-crate", "version": "4.2.0", "license": raw_license}
+                        ]
+                    },
+                    "fuzz": {"packages": []},
+                }
+
+                report = formatter(raw_output, metadata, SAFE_LICENSE_IDENTIFIERS)
+
+                self.assertIn("license=unavailable", report)
+                self.assertNotIn(raw_license, report)
+                self.assertEqual(1, len(report.splitlines()))
+
+    def test_license_inventory_uses_only_identifiers_from_cargo_deny_list(self) -> None:
+        inventory_parser = getattr(POLICY, "parse_cargo_deny_license_inventory", None)
+        self.assertTrue(callable(inventory_parser), "cargo-deny license inventory parser must be implemented")
+        raw_inventory = json.dumps(
+            {
+                "licenses": [
+                    ["Apache-2.0", ["safe-crate 1.0.0 registry+https://example.invalid"]],
+                    [
+                        "Apache-2.0 WITH LLVM-exception",
+                        ["safe-crate 1.0.0 registry+https://example.invalid"],
+                    ],
+                    ["LicenseRef-SENTINELSECRET00000000", ["unsafe-crate 1.0.0 source"]],
+                ],
+                "unlicensed": ["SENTINELSECRET00000000"],
+            }
+        )
+
+        identifiers = inventory_parser(raw_inventory)
+
+        self.assertEqual({"Apache-2.0", "LLVM-exception"}, identifiers)
+        self.assertNotIn("SENTINELSECRET00000000", identifiers)
 
     def test_baseline_parser_carries_safe_license_metadata_into_findings(self) -> None:
         parser = getattr(POLICY, "parse_cargo_deny_findings", None)
@@ -1362,7 +1434,9 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
             "fuzz": {"packages": []},
         }
 
-        findings = parser(raw, metadata, "root", 4)
+        findings = parser(
+            raw, metadata, "root", 4, known_license_identifiers=SAFE_LICENSE_IDENTIFIERS
+        )
 
         self.assertEqual("ISC AND (Apache-2.0 OR ISC)", findings[0]["license_expression"])
 
