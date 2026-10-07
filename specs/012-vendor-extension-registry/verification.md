@@ -212,6 +212,14 @@ Exact inbound inspection boundary Red evidence:
   module, renamed payload argument, wrong return type, and non-borrowed or
   arbitrary generic-value accessor signatures.
 
+Registry-depth scope Red evidence:
+
+- `cargo test -p kmipkit-client --test extension_recognition registry_depth_limit_does_not_restrict_preserved_unknown_payload_subtrees -- --nocapture`
+  — expected Red (exit 101): a payload within `CodecLimits` but deeper than
+  the registry's schema/path depth is rejected as `ResourceLimit`. The
+  registry depth limit must bound registered schemas and discriminator paths;
+  payload nesting remains governed by `CodecLimits`.
+
 Red/Green evidence:
 
 - Red: `de93ace`; the provenance regression test failed to compile because the
