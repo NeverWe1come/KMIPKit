@@ -49,6 +49,18 @@ impl fmt::Debug for CompiledOrderEdges {
 }
 
 impl CompiledOrderEdges {
+    fn from_sorted(edges: Vec<CompiledOrderEdge>) -> Result<Self, ProtocolError> {
+        let mut edge_index = HashMap::new();
+        edge_index
+            .try_reserve(edges.len())
+            .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+        for (index, edge) in edges.iter().enumerate() {
+            edge_index.insert((edge.before_index, edge.after_index), index);
+        }
+
+        Ok(Self { edges, edge_index })
+    }
+
     pub(crate) const fn len(&self) -> usize {
         self.edges.len()
     }
@@ -430,21 +442,10 @@ fn compile_structure(
     }
     validate_order_acyclic(children.len(), &order_edges)?;
 
-    let mut edge_index = HashMap::new();
-    edge_index
-        .try_reserve(order_edges.len())
-        .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
-    for (index, edge) in order_edges.iter().enumerate() {
-        edge_index.insert((edge.before_index, edge.after_index), index);
-    }
-
     Ok(CompiledStructure {
         child_tag_index,
         required_child_indices,
-        order_edges: CompiledOrderEdges {
-            edges: order_edges,
-            edge_index,
-        },
+        order_edges: CompiledOrderEdges::from_sorted(order_edges)?,
     })
 }
 
