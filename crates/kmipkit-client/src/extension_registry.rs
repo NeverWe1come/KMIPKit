@@ -63,7 +63,9 @@ enum InspectionOutcome {
 
 // The detailed result is consumed by crate-internal contract tests; adapters
 // intentionally expose only the stable recognized/unrecognized surface.
-#[cfg_attr(not(test), allow(dead_code))]
+// Keep the private diagnostic fields available to tests without changing the
+// production source inventory's supported attribute set.
+#[allow(dead_code)]
 struct InspectionDetails {
     recognition: ExtensionRecognition,
     outcome: InspectionOutcome,
