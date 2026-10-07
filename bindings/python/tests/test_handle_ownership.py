@@ -49,6 +49,13 @@ def _load_adapter() -> tuple[types.ModuleType, types.ModuleType, str]:
             if self.fail_release:
                 raise RuntimeError("synthetic native cleanup failure")
 
+        def __getattr__(self, name: str) -> object:
+            if name.endswith("_release"):
+                return self.release_handle
+            if name.startswith("kmipkit_"):
+                return lambda *_arguments: 0
+            raise AttributeError(name)
+
     native = types.ModuleType(f"{package_name}._ffi")
     native.ffi = FakeFFI()
     native.lib = FakeLibrary()
@@ -71,7 +78,68 @@ def _unload_adapter(package_name: str) -> None:
             del sys.modules[module_name]
 
 
+def _load_ttlv_adapter(package_name: str) -> types.ModuleType:
+    ttlv_spec = importlib.util.spec_from_file_location(
+        f"{package_name}.ttlv", PACKAGE_PATH / "ttlv.py"
+    )
+    if ttlv_spec is None or ttlv_spec.loader is None:
+        raise AssertionError("could not load the Python TTLV adapter")
+    ttlv = importlib.util.module_from_spec(ttlv_spec)
+    sys.modules[ttlv_spec.name] = ttlv
+    ttlv_spec.loader.exec_module(ttlv)
+    return ttlv
+
+
 class ConsumedHandleTests(unittest.TestCase):
+    def test_native_view_call_pins_handle_until_cffi_returns(self) -> None:
+        handles, native, package_name = _load_adapter()
+        try:
+            ttlv = _load_ttlv_adapter(package_name)
+            view = ttlv.TtlvStructureView(object())
+            native_call_entered = threading.Event()
+            resume_native_call = threading.Event()
+            close_started = threading.Event()
+            close_completed = threading.Event()
+            call_errors: list[BaseException] = []
+
+            def pause_native_call(*_arguments: object) -> int:
+                native_call_entered.set()
+                if not resume_native_call.wait(timeout=2):
+                    raise AssertionError("native call was not resumed")
+                return 0
+
+            ttlv._scalar = pause_native_call
+
+            def inspect_view() -> None:
+                try:
+                    ttlv.ttlv_structure_view_item_count(view)
+                except BaseException as error:  # noqa: BLE001 - cross-thread assertion capture.
+                    call_errors.append(error)
+
+            def close_view() -> None:
+                close_started.set()
+                view.close()
+                close_completed.set()
+
+            call_thread = threading.Thread(target=inspect_view)
+            close_thread = threading.Thread(target=close_view)
+            call_thread.start()
+            self.assertTrue(native_call_entered.wait(timeout=2))
+            close_thread.start()
+            self.assertTrue(close_started.wait(timeout=2))
+            closed_while_in_flight = close_completed.wait(timeout=0.05)
+            resume_native_call.set()
+            call_thread.join(timeout=2)
+            close_thread.join(timeout=2)
+
+            self.assertFalse(closed_while_in_flight)
+            self.assertFalse(call_thread.is_alive())
+            self.assertFalse(close_thread.is_alive())
+            self.assertEqual(call_errors, [])
+            self.assertEqual(native.lib.releases, 1)
+        finally:
+            _unload_adapter(package_name)
+
     def test_handle_marshalling_rejects_invalid_inputs_and_preserves_null_array_rules(
         self,
     ) -> None:
