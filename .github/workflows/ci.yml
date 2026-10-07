@@ -77,17 +77,18 @@ jobs:
       - name: Run Python contracts
         shell: pwsh
         run: |
-          $python = Get-Command -Name 'python3' -ErrorAction SilentlyContinue
-          if (-not $python) { $python = Get-Command -Name 'python' -ErrorAction Stop }
-          & $python.Source -m unittest discover -s scripts/tests -p 'test_*.py' -v
+          $pythonRelativePath = if ($IsWindows) { 'Scripts/python.exe' } else { 'bin/python' }
+          $python = Join-Path $env:VIRTUAL_ENV $pythonRelativePath
+          if (-not (Test-Path -LiteralPath $python -PathType Leaf)) { throw 'The uv Python executable is missing.' }
+          & $python -m unittest discover -s scripts/tests -p 'test_*.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python.Source -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v
+          & $python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python.Source -B -m unittest discover -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v
+          & $python -B -m unittest discover -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python.Source -B tools/api_manifest/generate.py --check
+          & $python -B tools/api_manifest/generate.py --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python.Source -B tools/extension_fixtures/generate.py --check
+          & $python -B tools/extension_fixtures/generate.py --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run PowerShell contracts
