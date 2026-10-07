@@ -909,6 +909,16 @@ def _finding_matches(entry: dict[str, Any], item: dict[str, Any]) -> bool:
     return True
 
 
+def _format_exception_diagnostics(diagnostics: list[str]) -> str:
+    """Bound the exact-exception report so CI output stays concise."""
+    visible_diagnostics = diagnostics[:MAX_EXCEPTION_DIAGNOSTICS]
+    details = "; ".join(visible_diagnostics)
+    omitted = len(diagnostics) - len(visible_diagnostics)
+    if omitted:
+        details += f"; and {omitted} additional exception validation finding(s)"
+    return details
+
+
 def validate_exceptions(register: Any, findings: list[dict], *, today: date | None = None) -> list[str]:
     """Require a one-to-one exact match between current exceptions and findings."""
     current_date = today or date.today()
@@ -972,11 +982,7 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
         if index not in matched_entry_indexes:
             exception_diagnostics.append(f"exception {entry['id']} has no matching current finding")
     if exception_diagnostics:
-        visible_diagnostics = exception_diagnostics[:MAX_EXCEPTION_DIAGNOSTICS]
-        details = "; ".join(visible_diagnostics)
-        omitted = len(exception_diagnostics) - len(visible_diagnostics)
-        if omitted:
-            details += f"; and {omitted} additional exception validation finding(s)"
+        details = _format_exception_diagnostics(exception_diagnostics)
         raise PolicyError(f"dependency exception validation failed: {details}")
     return sorted(entry["id"] for entry in entries)
 
