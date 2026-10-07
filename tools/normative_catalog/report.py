@@ -91,15 +91,20 @@ def _escape_link_label(value: Any) -> str:
     return text
 
 
-def _safe_diagnostic_text(value: Any, fallback: str) -> str:
-    """Keep arbitrary evidence notes out of reports when they resemble secrets."""
-    if not isinstance(value, str):
-        return fallback
+def _redact_sensitive_values(value: str) -> str:
+    """Replace inline secret assignments and PEM keys before rendering diagnostics."""
     redacted = _PEM_PRIVATE_KEY.sub("[redacted]", value)
     return _SENSITIVE_ASSIGNMENT.sub(
         lambda match: f"{match.group('label')}{match.group('separator')}[redacted]",
         redacted,
     )
+
+
+def _safe_diagnostic_text(value: Any, fallback: str) -> str:
+    """Keep arbitrary evidence notes out of reports when they resemble secrets."""
+    if not isinstance(value, str):
+        return fallback
+    return _redact_sensitive_values(value)
 
 
 def _table(headers: tuple[str, ...], rows: list[tuple[Any, ...]]) -> list[str]:
