@@ -30,7 +30,7 @@ Record one row per distinct signed development commit. Keep Red, Green, and Refa
 
 | Phase | Commit | Command | Result |
 |---|---|---|---|
-| Red | Pending | Pending | Pending |
+| Red — initial closure and literal-encoding test slice | Pending at record time | `python -m unittest tools.normative_catalog.tests.test_generate_profiles` | Expected failure: `ModuleNotFoundError` because `tools.normative_catalog.generate_profiles` does not exist yet. Three behavior tests were discovered in the new test module; full T003 remains in progress. |
 | Green | Pending | Pending | Pending |
 | Refactor | Pending | Pending | Pending |
 
