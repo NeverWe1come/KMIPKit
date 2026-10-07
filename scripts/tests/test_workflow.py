@@ -141,7 +141,7 @@ class WorkflowContractTests(unittest.TestCase):
             "mvn --batch-mode --file bindings/java/pom.xml test",
             "actions/setup-python@",
             "python-version: '3.12'",
-            "python -m pip install --editable bindings/python",
+            "python -m pip install --no-build-isolation bindings/python",
             "python -m pytest -q bindings/python/tests",
             "python bindings/python/examples/vendor_extension_registry.py",
         ):
