@@ -38,11 +38,6 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
 
-    def assert_pi_runner_with_hosted_fallback(self, body: str, fallback: str) -> None:
-        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", body)
-        self.assertIn("fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')", body)
-        self.assertIn(fallback, body)
-
     def assert_uv_managed_python_312(self, job: str) -> None:
         for required in self.UV_PYTHON_SETUP:
             with self.subTest(required=required):
@@ -188,22 +183,31 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, job)
 
-    def test_linux_jobs_route_to_pi_only_for_same_repository_pull_requests(self) -> None:
+    def test_ci_jobs_use_github_hosted_runners(self) -> None:
         contents = self.require_workflow()
 
         for job in ("core", "script-contracts", "language-bindings", "coverage"):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
-                self.assertIn("matrix.os == 'ubuntu-latest'", body)
-                self.assert_pi_runner_with_hosted_fallback(body, "|| matrix.os")
+                self.assertIn("runs-on: ${{ matrix.os }}", body)
 
-        for job in ("normative-inventory", "coverage-gate"):
+        for job in (
+            "ffi-sanitizer",
+            "fuzz-smoke",
+            "normative-inventory",
+            "coverage-gate",
+            "adapter-coverage",
+            "dependency-policy",
+            "scheduled-dependency-policy",
+            "run-summary",
+        ):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
-                self.assert_pi_runner_with_hosted_fallback(body, "|| 'ubuntu-latest'")
+                self.assertRegex(body, r"(?m)^    runs-on: ubuntu-latest$")
 
         branch_coverage = self.require_job(contents, "branch-coverage")
-        self.assertRegex(branch_coverage, r"(?m)^    runs-on: \[self-hosted, Linux, ARM64\]$")
+        self.assertRegex(branch_coverage, r"(?m)^    runs-on: ubuntu-24\.04-arm$")
+        self.assertNotRegex(contents, r"(?m)^\s*runs-on:.*self-hosted")
 
     def test_binding_toolchains_are_pinned_for_pull_requests(self) -> None:
         contents = self.require_workflow()
@@ -274,7 +278,7 @@ class WorkflowContractTests(unittest.TestCase):
         job = self.require_job(contents, "adapter-coverage")
 
         self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
-        self.assert_pi_runner_with_hosted_fallback(job, "|| 'ubuntu-latest'")
+        self.assertRegex(job, r"(?m)^    runs-on: ubuntu-latest$")
         self.assertRegex(job, r"(?ms)^    needs:\s*\n\s+- language-bindings$")
         self.assert_uv_managed_python_312(job)
 
@@ -314,7 +318,22 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("bash scripts/collect_ffi_coverage.sh coverage-ffi", job)
         self.assertIn("name: coverage-ffi", job)
         self.assertIn("path: coverage-ffi/coverage.json", job)
+        self.assertIn(
+            "CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked",
+            collector,
+        )
         self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked", collector)
+        self.assertIn('cargo_output="${report_dir}/cargo-llvm-cov.log"', collector)
+        self.assertIn("c_api_coverage\\.rs", collector)
+        self.assertIn(
+            'test_binary_name="$(',
+            collector,
+        )
+        self.assertIn("sed -nE '/Running tests", collector)
+        self.assertIn("c_api_coverage-[[:xdigit:]]+", collector)
+        self.assertIn("| tail -n 1", collector)
+        self.assertIn('test_binary="${llvm_cov_target}/debug/deps/${test_binary_name}"', collector)
+        self.assertNotIn('test_binaries=("${llvm_cov_target}"/debug/deps/c_api_coverage-*)', collector)
         self.assertIn("KMIPKit.profdata", collector)
         self.assertIn("libkmipkit_ffi.so", collector)
         self.assertIn("--sources", collector)
@@ -381,7 +400,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotRegex(job, r"(?m)^\s*if:.*(?:paths|changed-files)")
         self.assertRegex(job, r"(?i)Test-DependencyPolicy\.ps1")
 
-    def test_dependency_policy_job_is_read_only_and_routes_fork_runs_to_hosted_linux(self) -> None:
+    def test_dependency_policy_job_is_read_only_and_uses_hosted_linux(self) -> None:
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?ms)^permissions:\s*\n\s*contents:\s*read\b")
         self.assertNotRegex(contents, r"(?m)^\s*(?:contents|pull-requests|packages):\s*write\b")
@@ -389,7 +408,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotRegex(contents, r"(?m)^\s*pull_request_target\s*:")
 
         job = self.require_policy_job(contents, "dependency-policy")
-        self.assert_pi_runner_with_hosted_fallback(job, "|| 'ubuntu-latest'")
+        self.assertRegex(job, r"(?m)^    runs-on: ubuntu-latest$")
 
     def test_dependency_policy_job_pins_tool_and_checks_both_workspaces(self) -> None:
         contents = self.require_workflow()
@@ -509,10 +528,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("${{ toJSON(needs) }}", job)
         summary_script = (REPOSITORY_ROOT / "scripts" / "ci_summary.py").read_text(encoding="utf-8")
         self.assertIn("GITHUB_STEP_SUMMARY", summary_script)
-        self.assertIn("github.event_name == 'schedule'", job)
-        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", job)
-        self.assertIn("fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')", job)
-        self.assertIn("|| 'ubuntu-latest'", job)
+        self.assertRegex(job, r"(?m)^    runs-on: ubuntu-latest$")
 
     def test_coverage_gate_adds_its_result_and_metrics_to_the_job_summary(self) -> None:
         contents = self.require_workflow()
