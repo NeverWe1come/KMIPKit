@@ -289,6 +289,88 @@ fn item_type_code(value: ItemType) -> u8 {
     }
 }
 
+#[cfg(test)]
+mod view_ownership_tests {
+    use super::*;
+
+    fn byte_string_data(value: &Value) -> *const u8 {
+        value.with_value(|value| match value {
+            ValueView::ByteString(bytes) => bytes.as_ptr(),
+            _ => ptr::null(),
+        })
+    }
+
+    fn value_view_byte_string_data(value: &HandleValue) -> *const u8 {
+        let HandleValue::ValueView(value) = value else {
+            return ptr::null();
+        };
+        value.with_value(|value| match value {
+            ValueView::ByteString(bytes) => bytes.as_ptr(),
+            _ => ptr::null(),
+        })
+    }
+
+    #[test]
+    fn value_view_retains_the_existing_payload_allocation() {
+        let source_value = Value::byte_string(vec![0x11, 0x22, 0x33, 0x44]);
+        let source_data = byte_string_data(&source_value);
+        let source = make_handle(
+            Kind::Value,
+            HandleValue::Value(source_value),
+        );
+        let mut view = ptr::null_mut();
+
+        assert_eq!(kmipkit_ttlv_value_view(source, &mut view), SUCCESS);
+        let view_handle = reference_handle(&view, Kind::ValueView).unwrap();
+        let view_data = value_view_byte_string_data(&view_handle.value);
+        kmipkit_ttlv_value_view_release(view);
+        kmipkit_ttlv_value_release(source);
+
+        assert_eq!(view_data, source_data);
+    }
+
+    #[test]
+    fn structure_item_and_value_views_retain_the_original_payload_allocation() {
+        let tag = RawTag::new(0x0042_0001)
+            .and_then(|raw| raw.try_checked())
+            .unwrap();
+        let source_value = Value::byte_string(vec![0xA1, 0xB2, 0xC3]);
+        let source_data = byte_string_data(&source_value);
+        let item = Item::new(tag, source_value).unwrap();
+        let mut source_structure = Structure::new();
+        source_structure.try_push(item).unwrap();
+        let source = make_handle(
+            Kind::Structure,
+            HandleValue::Structure(source_structure),
+        );
+        let mut structure_view = ptr::null_mut();
+        let mut item_view = ptr::null_mut();
+        let mut value_view = ptr::null_mut();
+
+        assert_eq!(
+            kmipkit_ttlv_structure_view(source, &mut structure_view),
+            SUCCESS
+        );
+        assert_eq!(
+            kmipkit_ttlv_structure_view_item_at(structure_view, 0, &mut item_view),
+            SUCCESS
+        );
+        assert_eq!(
+            kmipkit_ttlv_item_view_value(item_view, &mut value_view),
+            SUCCESS
+        );
+        let value_handle = reference_handle(&value_view, Kind::ValueView).unwrap();
+        let view_data = value_view_byte_string_data(&value_handle.value);
+
+        kmipkit_ttlv_value_view_release(value_view);
+        kmipkit_ttlv_item_view_release(item_view);
+        kmipkit_ttlv_structure_view_release(structure_view);
+        kmipkit_ttlv_structure_release(source);
+
+        assert_eq!(view_data, source_data);
+    }
+}
+
 fn clone_value(value: ValueView<'_>) -> FfiResult<Value> {
     match value {
         ValueView::Structure(structure) => Ok(Value::structure(clone_structure_view(&structure)?)),
