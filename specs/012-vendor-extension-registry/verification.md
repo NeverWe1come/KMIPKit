@@ -196,6 +196,13 @@ Red/baseline evidence:
 - Runtime payload-index accounting is asserted at the client layer because
   `kmipkit-protocol` deliberately has no dependency on `kmipkit-client`.
 
+Manifest ownership correction Red evidence:
+
+- `.venv\Scripts\python.exe -m unittest tools.api_manifest.tests.test_generate.ManifestSchemaTests.test_schema_accepts_borrowed_value_inside_optional_rust_result -v`
+  — expected Red: the Rust type schema rejects
+  `Option<&ValidatedExtensionValue>`, so the manifest cannot yet describe the
+  borrowed inspection accessor without pretending to return an owned payload.
+
 Red/Green evidence:
 
 - Red: `de93ace`; the provenance regression test failed to compile because the

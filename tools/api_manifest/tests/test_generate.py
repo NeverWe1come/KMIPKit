@@ -484,6 +484,14 @@ class ManifestSchemaTests(unittest.TestCase):
                     ("functions", 0, language, field),
                 )
 
+    def test_schema_accepts_borrowed_value_inside_optional_rust_result(self) -> None:
+        manifest = self._load_fixture()
+        manifest["functions"][0]["rust"]["returnType"] = (
+            "Option<&ValidatedExtensionValue>"
+        )
+
+        self.assertEqual(list(self.validator.iter_errors(manifest)), [])
+
     def test_schema_rejects_limit_values_outside_the_approved_profile(self) -> None:
         manifest = self._load_fixture()
         manifest["limits"][0]["hardMaximum"] = 1025
