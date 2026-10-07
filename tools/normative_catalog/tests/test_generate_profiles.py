@@ -60,6 +60,7 @@ def closure_catalog() -> dict[str, object]:
                 "source_clause_ids": ["KMIPKIT-CLAUSE-PROF-3.1.1-001"],
                 "role": "client",
                 "scope_state": "profile_conditional",
+                "profile_ids": ["KMIPKIT-PROFILE-BASELINE-CLIENT"],
             },
         ],
     }
@@ -94,6 +95,23 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-1.1-001",
             ),
         )
+
+    def test_conditional_requirement_applies_only_to_profiles_linked_by_the_catalog(self) -> None:
+        catalog = closure_catalog()
+
+        baseline = compute_profile_closure(
+            catalog,
+            ["KMIPKIT-CLAUSE-PROF-6.1-001"],
+            profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
+        )
+        unrelated = compute_profile_closure(
+            catalog,
+            ["KMIPKIT-CLAUSE-PROF-6.1-001"],
+            profile_id="KMIPKIT-PROFILE-UNRELATED-CLIENT",
+        )
+
+        self.assertIn("KMIPKIT-REQ-PROF-3.1.1-001", baseline.requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-PROF-3.1.1-001", unrelated.requirement_ids)
 
     def test_closure_rejects_recursive_normative_inclusion_cycles(self) -> None:
         catalog = closure_catalog()
