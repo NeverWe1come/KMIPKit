@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+import re
 import sys
 import unicodedata
 from pathlib import Path
@@ -16,6 +17,14 @@ else:
 
 
 REPORT_PATH = Path("specification/catalog/coverage-report.md")
+_SENSITIVE_ASSIGNMENT = re.compile(
+    r"(?i)(?P<label>credential|password|secret|token|private[-_ ]?key|raw[-_ ]?kmip[-_ ]?body)"
+    r"(?P<separator>\s*[:=]\s*)(?P<value>[^\s,;]+)"
+)
+_PEM_PRIVATE_KEY = re.compile(
+    r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----",
+    re.IGNORECASE,
+)
 SECTION_ORDER = (
     "Source documents",
     "Count reconciliation",
@@ -80,6 +89,17 @@ def _escape_link_label(value: Any) -> str:
     text = text.replace("[", "\\[").replace("]", "\\]")
     text = text.replace("<", "&lt;").replace(">", "&gt;")
     return text
+
+
+def _safe_diagnostic_text(value: Any, fallback: str) -> str:
+    """Keep arbitrary evidence notes out of reports when they resemble secrets."""
+    if not isinstance(value, str):
+        return fallback
+    redacted = _PEM_PRIVATE_KEY.sub("[redacted]", value)
+    return _SENSITIVE_ASSIGNMENT.sub(
+        lambda match: f"{match.group('label')}{match.group('separator')}[redacted]",
+        redacted,
+    )
 
 
 def _table(headers: tuple[str, ...], rows: list[tuple[Any, ...]]) -> list[str]:
@@ -234,7 +254,10 @@ def render_report(catalog: dict[str, Any], *, selected_profile_ids: set[str] | N
         ("Requirement", "Evidence gap", "Source"),
         [(
             row.get("requirement_id"),
-            row.get("review_note") or "No requirement-level official test evidence is linked.",
+            _safe_diagnostic_text(
+                row.get("review_note"),
+                "No requirement-specific official Test Cases ID is linked.",
+            ),
             _source_reference(row),
         ) for row in requirements_without_tests],
     ))
@@ -346,7 +369,10 @@ def render_report(catalog: dict[str, Any], *, selected_profile_ids: set[str] | N
                 )
                 if row.get(field)
             ) or "none linked",
-            row.get("summary"), _source_reference(row),
+            _safe_diagnostic_text(
+                row.get("summary"), "Open source discrepancy requires review."
+            ),
+            _source_reference(row),
         ) for row in open_discrepancies],
     ))
     lines.append("")
@@ -428,8 +454,8 @@ def main(argv: list[str] | None = None) -> int:
             repo_root=repository,
             selected_profile_ids=selected_profile_ids,
         )
-    except (OSError, ValueError, PathSecurityError) as error:
-        print(f"coverage report failed: {error}", file=sys.stderr)
+    except (OSError, ValueError, PathSecurityError):
+        print("coverage report failed: catalog or report input is invalid or unsafe", file=sys.stderr)
         return 1
     if not valid:
         print("coverage report is stale; run report.py --write", file=sys.stderr)

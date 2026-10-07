@@ -342,13 +342,14 @@ class CoverageReportTests(unittest.TestCase):
         private_key_marker = "private-key-sentinel-932"
         raw_body_marker = "raw-kmip-body-sentinel-184"
         catalog["requirements"][0]["review_note"] = (
-            f"diagnostic {credential_marker} {private_key_marker} {raw_body_marker}"
+            f"diagnostic {credential_marker} private-key={private_key_marker} "
+            f"raw-kmip-body={raw_body_marker}"
         )
         catalog["discrepancies"] = [
             {
                 "discrepancy_id": "KMIPKIT-DISC-REPORT-001",
                 "state": "open",
-                "summary": f"malformed evidence {raw_body_marker}",
+                "summary": f"malformed evidence raw-kmip-body={raw_body_marker}",
                 "source_refs": [],
                 "affected_requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
                 "affected_element_ids": [],
