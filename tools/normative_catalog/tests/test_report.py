@@ -449,6 +449,23 @@ class CoverageReportTests(unittest.TestCase):
             self.assertIn("KMIPKIT-SRC-profiles", report)
             self.assertIn("| Sources | 4 |", report)
 
+    def test_script_entrypoint_does_not_echo_sensitive_values_from_path_errors(self) -> None:
+        marker = "raw-kmip-body-path-sentinel-591"
+        with tempfile.TemporaryDirectory() as directory:
+            missing_root = Path(directory) / marker
+            script = Path(__file__).resolve().parents[1] / "report.py"
+            result = subprocess.run(
+                [sys.executable, str(script), "--write", "--repo-root", str(missing_root)],
+                cwd=ROOT,
+                capture_output=True,
+                check=False,
+                text=True,
+            )
+
+        self.assertEqual(result.returncode, 1)
+        self.assertNotIn(marker, result.stderr)
+        self.assertNotIn(marker, result.stdout)
+
     def test_check_detects_stale_report_and_write_replaces_it(self) -> None:
         catalog = report_catalog()
         with tempfile.TemporaryDirectory() as directory:
