@@ -61,7 +61,7 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 - [x] T026 [US1] Attach the finalized registry to client configuration and add repeatable, ordered validated Message Extension attachment with caller-explicit Criticality Indicator to typed ClientBatchItem encoding in crates/kmipkit-client/src/lib.rs and crates/kmipkit-client/src/execute.rs
 - [x] T027 [US1] Pass User Story 1 tests including raised/lowered/default/hard limit boundaries, bounded enum/order validation, and secret-buffer lifetime/zeroization across transport success and failure; execute compile-fail boundary checks and commit the Green stage with evidence in crates/kmipkit-protocol/tests/extension_definition.rs and crates/kmipkit-client/tests/extension_registry.rs
 - [x] T028 [US1] Refactor builders and validation for clarity and bounded work, rerun all limit, lifecycle, and focused tests, and commit the Refactor stage in crates/kmipkit-protocol/src/extension/ and crates/kmipkit-client/src/extension_registry.rs
-- [ ] T029 [US1] Add runnable Rust, C, Java, and Python registration/construction examples in the English and Spanish guides and binding packages in docs/user-guide/en/vendor-extensions.md, docs/user-guide/es/extensiones-de-fabricante.md, bindings/c/examples/, bindings/java/examples/, and bindings/python/examples/
+- [x] T029 [US1] Add runnable Rust, C, Java, and Python registration/construction examples in the English and Spanish guides and binding packages in docs/user-guide/en/vendor-extensions.md, docs/user-guide/es/extensiones-de-fabricante.md, bindings/c/examples/, bindings/java/examples/, and bindings/python/examples/
 
 ## Phase 4: User Story 2 - Recognize and inspect a registered extension (Priority: P1)
 
@@ -85,7 +85,7 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 - [x] T038 [US2] Verify extension payload ownership follows existing zeroization behavior and redact all error/debug/display paths in crates/kmipkit-protocol/src/extension/ and crates/kmipkit-client/src/extension_registry.rs
 - [x] T039 [US2] Pass recognition, preservation, fake-transport, and redaction tests and commit the Green stage with evidence in crates/kmipkit-client/tests/extension_recognition.rs and crates/kmipkit-client/tests/unit/extension_execution.rs
 - [x] T040 [US2] Refactor matching and response integration, rerun focused and property tests, and commit the Refactor stage in crates/kmipkit-client/src/extension_registry.rs and crates/kmipkit-protocol/src/extension/
-- [ ] T041 [US2] Document Rust, C, Java, and Python recognition, unknown criticality, preservation, and runtime-copy limitations in docs/user-guide/en/vendor-extensions.md, docs/user-guide/es/extensiones-de-fabricante.md, and the language package examples
+- [x] T041 [US2] Document Rust, C, Java, and Python recognition, unknown criticality, preservation, and runtime-copy limitations in docs/user-guide/en/vendor-extensions.md, docs/user-guide/es/extensiones-de-fabricante.md, and the language package examples
 
 ## Phase 5: User Story 3 - Share metadata and validation across languages (Priority: P1)
 
@@ -104,23 +104,23 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 
 ### Implementation for User Story 3
 
-- [ ] T048 [P] [US3] Implement opaque fixed-width C handles and kmipkit_-prefixed registry and client-configuration functions for construction, ownership/access, limits, outbound attachment, and inbound typed inspection/preservation; use typed pointers with uint64_t byte lengths for all variable-length inputs, reject over-limit values before dereference/read/copy, never perform unbounded NUL scans, and add SAFETY comments for each unsafe block in crates/kmipkit-ffi/src/extension_registry.rs
-- [ ] T049 [P] [US3] Implement the compiled real-C-consumer test target and link it to the KMIPKit shared library in bindings/c/CMakeLists.txt and bindings/c/tests/
-- [ ] T050 [P] [US3] Implement Java 17 handwritten facade, JNI lifecycle, immutable ClientConfiguration ownership/access to its registry, ExtensionRegistryLimits, outbound attachment, inbound typed inspection/preservation, and stable error mapping in bindings/java/src/main/java/org/kmipkit/ExtensionRegistry.java, bindings/java/src/main/java/org/kmipkit/ClientConfiguration.java, and bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java
-- [ ] T051 [P] [US3] Implement Python 3.12 CFFI/Maturin facade, deterministic close/context-manager behavior, immutable ClientConfiguration ownership/access to its registry, ExtensionRegistryLimits, outbound attachment, inbound typed inspection/preservation, and stable error mapping in bindings/python/src/kmipkit/extensions.py
-- [ ] T052 [US3] Generate Rust/C/Java/Python declarations and parity scaffolding from specification/api/public-api.json in tools/api_manifest/generate.py
-- [ ] T053 [US3] Run the real C consumer, Java 17 JNI suite, Python 3.12 CFFI suite, and shared fixture parity tests; commit the Green stage with evidence in bindings/c/tests/, bindings/java/src/test/, and bindings/python/tests/
-- [ ] T054 [US3] Refactor binding ownership and lifecycle code, rerun all parity suites, and commit the Refactor stage in crates/kmipkit-ffi/src/extension_registry.rs and bindings/
-- [ ] T055 [US3] Document the manifest regeneration and check commands for maintainers in docs/development/api-manifest.md
+- [x] T048 [P] [US3] Implement opaque fixed-width C handles and kmipkit_-prefixed registry and client-configuration functions for construction, ownership/access, limits, outbound attachment, and inbound typed inspection/preservation; use typed pointers with uint64_t byte lengths for all variable-length inputs, reject over-limit values before dereference/read/copy, never perform unbounded NUL scans, and add SAFETY comments for each unsafe block in crates/kmipkit-ffi/src/extension_registry.rs
+- [x] T049 [P] [US3] Implement the compiled real-C-consumer test target and link it to the KMIPKit shared library in bindings/c/CMakeLists.txt and bindings/c/tests/
+- [x] T050 [P] [US3] Implement Java 17 handwritten facade, JNI lifecycle, immutable ClientConfiguration ownership/access to its registry, ExtensionRegistryLimits, outbound attachment, inbound typed inspection/preservation, and stable error mapping in bindings/java/src/main/java/org/kmipkit/ExtensionRegistry.java, bindings/java/src/main/java/org/kmipkit/ClientConfiguration.java, and bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java
+- [x] T051 [P] [US3] Implement Python 3.12 CFFI/Maturin facade, deterministic close/context-manager behavior, immutable ClientConfiguration ownership/access to its registry, ExtensionRegistryLimits, outbound attachment, inbound typed inspection/preservation, and stable error mapping in bindings/python/src/kmipkit/extensions.py
+- [x] T052 [US3] Generate Rust/C/Java/Python declarations and parity scaffolding from specification/api/public-api.json in tools/api_manifest/generate.py
+- [x] T053 [US3] Run the real C consumer, Java 17 JNI suite, Python 3.12 CFFI suite, and shared fixture parity tests; commit the Green stage with evidence in bindings/c/tests/, bindings/java/src/test/, and bindings/python/tests/
+- [x] T054 [US3] Refactor binding ownership and lifecycle code, rerun all parity suites, and commit the Refactor stage in crates/kmipkit-ffi/src/extension_registry.rs and bindings/
+- [x] T055 [US3] Document the manifest regeneration and check commands for maintainers in docs/development/api-manifest.md
 
 ## Phase 6: Polish, conformance, and release readiness
 
 **Purpose**: Close traceability, coverage, generated-output, security, and documentation gates for this feature.
 
-- [ ] T056 [P] Add exact-clause OASIS-derived vectors for §8.3 Table 396 repeated Message Extension order, §9.13 Table 418 structure, §7.13 Table 365, and §11.44 Table 476, plus a bounded schema-validation fuzz target, in tests/fixtures/extensions/oasis/, fuzz/fuzz_targets/extension_schema.rs, and fuzz/Cargo.toml
-- [ ] T057 Add stable requirement-to-source/spec/code/test links for every KMIPKIT-0012-FR entry in specification/compliance/requirements/KMIPKIT-0012.csv
-- [ ] T058 Update English and Spanish API/user documentation and execute every runnable registry example in docs/user-guide/en/vendor-extensions.md and docs/user-guide/es/extensiones-de-fabricante.md
-- [ ] T059 Add CI regeneration check that fails on generated diffs and run it without modifying generated outputs by hand in .github/workflows/ci.yml
+- [x] T056 [P] Add exact-clause OASIS-derived vectors for §8.3 Table 396 repeated Message Extension order, §9.13 Table 418 structure, §7.13 Table 365, and §11.44 Table 476, plus a bounded schema-validation fuzz target, in tests/fixtures/extensions/oasis/, fuzz/fuzz_targets/extension_schema.rs, and fuzz/Cargo.toml
+- [x] T057 Add stable requirement-to-source/spec/code/test links for every KMIPKIT-0012-FR entry in specification/compliance/requirements/KMIPKIT-0012.csv
+- [x] T058 Update English and Spanish API/user documentation and execute every runnable registry example in docs/user-guide/en/vendor-extensions.md and docs/user-guide/es/extensiones-de-fabricante.md
+- [x] T059 Add CI regeneration check that fails on generated diffs and run it without modifying generated outputs by hand in .github/workflows/ci.yml
 - [ ] T060 Enforce feature coverage gates of at least 95% TTLV/protocol and changed code, 85% FFI/adapters and any changed transport code, and the repository 90% overall gate; document only justified generated-code exclusions in docs/development/testing.md
 - [ ] T061 Run formatting, Clippy, workspace tests, cargo llvm-cov, generator checks, property/negative/fuzz tests, FFI sanitizer jobs, C consumer, Java, Python, dependency-policy CI, and supported-platform CI; verify limit/lifecycle tests and record exact command results in specs/012-vendor-extension-registry/verification.md
 - [ ] T062 Reconcile implementation, tests, docs, generated artifacts, and requirement traceability against every acceptance criterion; audit Rust, C, Java, and Python public signatures for forbidden raw-body, arbitrary-Item, callback, or executable-plugin routes in specs/012-vendor-extension-registry/verification.md
