@@ -482,7 +482,7 @@
         "name": "kmipkit_ttlv_item_type_t",
         "kind": "enum",
         "underlyingType": "uint8_t",
-        "unknownValuePolicy": "preserve-raw"
+        "unknownValuePolicy": "reject-unsupported"
       },
       "java": {
         "package": "org.kmipkit.ttlv",
@@ -493,8 +493,8 @@
         "name": "ItemType"
       },
       "enumRepresentation": {
-        "shape": "open-numeric",
-        "unknownValuePolicy": "preserve-raw",
+        "shape": "closed-numeric",
+        "unknownValuePolicy": "reject-unsupported",
         "values": [
           {
             "name": "Structure",
@@ -5480,7 +5480,7 @@
             "type": "u32"
           }
         ],
-        "returnType": "Result<RawTag, ProtocolError>"
+        "returnType": "Result<RawTag, ModelError>"
       },
       "c": {
         "symbol": "kmipkit_ttlv_raw_tag_create",
@@ -5617,7 +5617,7 @@
             "type": "&RawTag"
           }
         ],
-        "returnType": "Result<Tag, ProtocolError>"
+        "returnType": "Result<Tag, ModelError>"
       },
       "c": {
         "symbol": "kmipkit_ttlv_raw_tag_try_checked",
@@ -5807,7 +5807,7 @@
             "type": "usize"
           }
         ],
-        "returnType": "Result<CodecLimits, ProtocolError>"
+        "returnType": "Result<CodecLimits, LimitsError>"
       },
       "c": {
         "symbol": "kmipkit_codec_limits_create",
@@ -6268,7 +6268,9 @@
         ],
         "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_Enumeration",
         "returnType": "TtlvValue",
-        "errorCategories": []
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "python": {
         "module": "kmipkit.ttlv",
@@ -6281,7 +6283,9 @@
         ],
         "cffiSymbol": "kmipkit_ttlv_value_enumeration",
         "returnType": "Value",
-        "errorCategories": []
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "ordering": "not-applicable"
     },
@@ -6322,7 +6326,9 @@
           }
         ],
         "returnType": "int32_t",
-        "errorCategories": []
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "java": {
         "package": "org.kmipkit.ttlv",
@@ -6472,7 +6478,9 @@
         ],
         "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValue_Interval",
         "returnType": "TtlvValue",
-        "errorCategories": []
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "python": {
         "module": "kmipkit.ttlv",
@@ -6485,7 +6493,9 @@
         ],
         "cffiSymbol": "kmipkit_ttlv_value_interval",
         "returnType": "Value",
-        "errorCategories": []
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "ordering": "not-applicable"
     },
@@ -6566,8 +6576,8 @@
         "KMIPKIT-0012-FR-012"
       ],
       "rust": {
-        "module": "kmipkit_ttlv::Value",
-        "name": "big_integer",
+        "module": "kmipkit_protocol::extension::ttlv",
+        "name": "big_integer_with_limits",
         "owner": "protocol",
         "requestBoundary": "not-applicable",
         "parameters": [
@@ -6670,8 +6680,8 @@
         "KMIPKIT-0012-FR-012"
       ],
       "rust": {
-        "module": "kmipkit_ttlv::Value",
-        "name": "text_string",
+        "module": "kmipkit_protocol::extension::ttlv",
+        "name": "text_string_with_limits",
         "owner": "protocol",
         "requestBoundary": "not-applicable",
         "parameters": [
@@ -6777,8 +6787,8 @@
         "KMIPKIT-0012-FR-012"
       ],
       "rust": {
-        "module": "kmipkit_ttlv::Value",
-        "name": "byte_string",
+        "module": "kmipkit_protocol::extension::ttlv",
+        "name": "byte_string_with_limits",
         "owner": "protocol",
         "requestBoundary": "not-applicable",
         "parameters": [
@@ -7023,8 +7033,8 @@
         "KMIPKIT-0012-FR-012"
       ],
       "rust": {
-        "module": "kmipkit_ttlv::Item",
-        "name": "new",
+        "module": "kmipkit_protocol::extension::ttlv",
+        "name": "item_with_limits",
         "owner": "protocol",
         "requestBoundary": "not-applicable",
         "parameters": [
@@ -7342,7 +7352,9 @@
           }
         ],
         "returnType": "int32_t",
-        "errorCategories": []
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "java": {
         "package": "org.kmipkit.ttlv",
@@ -7557,7 +7569,9 @@
           }
         ],
         "returnType": "int32_t",
-        "errorCategories": []
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "java": {
         "package": "org.kmipkit.ttlv",
@@ -7748,7 +7762,9 @@
           }
         ],
         "returnType": "int32_t",
-        "errorCategories": []
+        "errorCategories": [
+          "invalid_input"
+        ]
       },
       "java": {
         "package": "org.kmipkit.ttlv",
