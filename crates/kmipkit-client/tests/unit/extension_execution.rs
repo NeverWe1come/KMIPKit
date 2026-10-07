@@ -19,7 +19,7 @@ use crate::execute::{
     encode_message_for_test,
 };
 use crate::execute_test_support::{test_item, test_structure};
-use crate::extension_registry::{self, ClientExtensionRegistry};
+use crate::extension_registry::{self, ClientConfiguration, ClientExtensionRegistry};
 
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -111,13 +111,23 @@ impl Transport for SharedFakeTransport {
 }
 
 fn client_for(response: Vec<u8>) -> (Client, Rc<RefCell<ScriptedTransport>>) {
+    client_for_configuration(response, ClientConfiguration::new(empty_registry()))
+}
+
+fn client_for_configuration(
+    response: Vec<u8>,
+    configuration: ClientConfiguration,
+) -> (Client, Rc<RefCell<ScriptedTransport>>) {
     let transport = Rc::new(RefCell::new(ScriptedTransport::new(
         ExchangeScript::Success {
             response,
             request_write_chunks: vec![3, 7, 2],
         },
     )));
-    let client = Client::for_test(SharedFakeTransport(Rc::clone(&transport)));
+    let client = Client::for_test_with_configuration(
+        SharedFakeTransport(Rc::clone(&transport)),
+        configuration,
+    );
     (client, transport)
 }
 
@@ -147,14 +157,14 @@ fn extension_parts(extension: &ClientMessageExtension) -> (String, bool, Structu
             .find(|field| field.tag().raw() == VENDOR_EXTENSION)
             .expect("the response extension includes Vendor Extension")
             .with_value(|value| match value {
-                ValueView::Structure(payload) => copy_structure(payload),
+                ValueView::Structure(payload) => copy_structure(&payload),
                 _ => panic!("the response Vendor Extension is a Structure"),
             });
         (vendor, criticality, payload)
     })
 }
 
-fn copy_structure(view: StructureView<'_>) -> Structure {
+fn copy_structure(view: &StructureView<'_>) -> Structure {
     let mut copied = Structure::new();
     for child in view.children() {
         let value = child.with_value(copy_value);
@@ -167,7 +177,7 @@ fn copy_structure(view: StructureView<'_>) -> Structure {
 
 fn copy_value(view: ValueView<'_>) -> Value {
     match view {
-        ValueView::Structure(value) => Value::structure(copy_structure(value)),
+        ValueView::Structure(value) => Value::structure(copy_structure(&value)),
         ValueView::Integer(value) => Value::integer(*value),
         ValueView::LongInteger(value) => Value::long_integer(*value),
         ValueView::BigInteger(value) => Value::big_integer(value.to_vec()),
@@ -257,6 +267,34 @@ fn an_unregistered_critical_response_extension_is_rejected_without_retry() {
         1,
         "execution does not retry"
     );
+}
+
+#[test]
+fn a_registered_critical_response_extension_is_accepted_by_typed_execution() {
+    let registered = registry();
+    let (mut client, transport) = client_for_configuration(
+        response_with_extension(true),
+        ClientConfiguration::new(registry()),
+    );
+    let response = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions())),
+            &CodecLimits::defaults(),
+        )
+        .expect("a recognized critical extension is not an unknown critical extension");
+    let extension = &response.get(0).expect("one response item").extensions()[0];
+    let (vendor, criticality, payload) = extension_parts(extension);
+    let recognition = extension_registry::inspect(
+        &registered,
+        &vendor,
+        payload,
+        &CodecLimits::defaults(),
+    )
+    .expect("the returned generic payload remains inspectable");
+
+    assert!(criticality);
+    assert!(extension_registry::is_recognized(&recognition));
+    assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
 #[test]

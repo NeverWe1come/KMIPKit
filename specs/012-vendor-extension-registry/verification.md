@@ -32,6 +32,15 @@ Red/Green/Refactor commits:
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
 
+## 2026-10-07 — registered response recognition Red
+
+- `cargo test -p kmipkit-client --lib unit::extension_execution_tests::a_registered_critical_response_extension_is_accepted_by_typed_execution -- --nocapture`
+  — expected Red (exit 101): the test cannot compile because `Client` has no
+  configuration-aware construction path. Without retaining the immutable
+  client registry, typed response mapping cannot distinguish a recognized
+  critical Message Extension from an unknown critical extension while keeping
+  KMIPKIT-0007 rejection behavior for the latter.
+
 ## 2026-10-07 — vendor extension registry user story 1 test Red stage
 
 ### Change
