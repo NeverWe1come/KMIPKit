@@ -22,6 +22,7 @@ from tools.normative_catalog.validate import (
     _check_tag_registry,
     validate_catalog,
 )
+from tools.normative_catalog.audit_sources import audit_document
 import tools.normative_catalog.validate as catalog_validate
 
 
@@ -2727,6 +2728,28 @@ class CatalogValidationTests(unittest.TestCase):
         missing = sorted(inherited_requirement_ids - set(baseline["requirement_ids"]))
 
         self.assertFalse(missing, f"Baseline closure omits incorporated requirements: {missing}")
+
+    def test_baseline_profile_closes_over_all_normative_specification_candidates(self) -> None:
+        """Profiles v2.1 §6.1 item 1 incorporates the entire KMIP Specification v2.1."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        specification_candidates = audit_document(spec_path.read_bytes(), "KMIPKIT-SRC-spec")
+        expected_clause_ids = {candidate["clause_id"] for candidate in specification_candidates}
+
+        missing = sorted(expected_clause_ids - set(baseline["source_clause_ids"]))
+
+        self.assertEqual(
+            len(missing),
+            0,
+            f"Baseline closure omits {len(missing)} pinned Specification clauses, including {missing[:5]}",
+        )
 
     def test_discrepancy_authority_must_derive_from_cited_source(self) -> None:
         document = minimal_catalog()
