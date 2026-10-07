@@ -552,11 +552,13 @@ impl Error for UnregisteredExtension {}
 #[cfg(test)]
 mod tests {
     use super::{
-        candidate_matches_discriminator, client_extension_registry, discriminator_candidates,
+        candidate_matches_discriminator, client_extension_registry, client_request_message_extension,
+        discriminator_candidates, validate_extension_value, ClientConfiguration,
     };
     use crate::extension_registry_test_support::index_compilation_attempts;
     use kmipkit_protocol::extension;
-    use kmipkit_ttlv::{Item, ItemType, RawTag, Tag, Value};
+    use kmipkit_ttlv::codec::CodecLimits;
+    use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value};
 
     fn vendor_tag() -> Tag {
         RawTag::new(0x42_0001)
@@ -668,6 +670,46 @@ mod tests {
         client_extension_registry(vec![definition("valid", "value")], extension::defaults())
             .expect("a valid registry reaches index compilation");
         assert_eq!(index_compilation_attempts(), initial + 1);
+    }
+
+    #[test]
+    fn registered_request_values_retain_their_source_registry_identity() {
+        let registry_a = client_extension_registry(
+            vec![definition("alpha", "alpha-v1")],
+            extension::defaults(),
+        )
+        .expect("registry A is valid");
+        let registry_b = client_extension_registry(
+            vec![definition("alpha", "alpha-v1")],
+            extension::defaults(),
+        )
+        .expect("registry B is independently valid");
+        let configuration_a = ClientConfiguration::new(registry_a);
+        let configuration_b = ClientConfiguration::new(registry_b);
+        let identity = extension::extension_identity("example.vendor", "alpha", "1")
+            .expect("the registered identity is valid");
+        let mut payload = Structure::new();
+        payload
+            .try_push(
+                Item::new(vendor_tag(), Value::text_string("alpha-v1".to_owned()))
+                    .expect("the discriminator item is valid"),
+            )
+            .expect("the payload fits in the TTLV structure");
+        let registered = validate_extension_value(
+            configuration_a.extension_registry(),
+            identity,
+            payload,
+            &CodecLimits::defaults(),
+        )
+        .expect("registry A validates its registered payload");
+        let request_extension = client_request_message_extension(registered, true)
+            .expect("the request-use criticality is explicit");
+
+        assert!(request_extension.is_owned_by(&configuration_a));
+        assert!(
+            !request_extension.is_owned_by(&configuration_b),
+            "a request extension sealed by registry A must not be accepted by configuration B"
+        );
     }
 
     #[test]
