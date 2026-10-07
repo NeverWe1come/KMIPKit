@@ -684,12 +684,20 @@ def _metadata_path(
         raise PolicyError(f"{label} path must be absolute")
     lexical_path = Path(os.path.abspath(os.fspath(raw_path)))
     lexical_root = Path(os.path.abspath(os.fspath(lexical_checkout_root)))
+    canonical_path: Path | None = None
     if not _is_within(lexical_path, lexical_root):
-        raise PolicyError(f"{label} path is outside the checkout")
-    try:
-        canonical_path = lexical_path.resolve(strict=True)
-    except (OSError, RuntimeError):
-        raise PolicyError(f"{label} path cannot be canonicalized") from None
+        try:
+            canonical_candidate = lexical_path.resolve(strict=True)
+        except (OSError, RuntimeError):
+            raise PolicyError(f"{label} path is outside the checkout") from None
+        if not _is_within(canonical_candidate, canonical_checkout_root):
+            raise PolicyError(f"{label} path is outside the checkout")
+        canonical_path = canonical_candidate
+    if canonical_path is None:
+        try:
+            canonical_path = lexical_path.resolve(strict=True)
+        except (OSError, RuntimeError):
+            raise PolicyError(f"{label} path cannot be canonicalized") from None
     if not _is_within(canonical_path, canonical_checkout_root):
         raise PolicyError(f"{label} path resolves outside the checkout")
     return lexical_path, canonical_path

@@ -174,6 +174,20 @@ class DependencyPolicyApiTests(unittest.TestCase):
             _, metadata = self.make_repository(alias)
             policy.validate_workspace_metadata(alias, metadata)
 
+    def test_checkout_root_alias_accepts_metadata_from_canonical_checkout_path(self) -> None:
+        policy = self.require_policy()
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "checkout"
+            root.mkdir()
+            alias = parent / "checkout-alias"
+            try:
+                alias.symlink_to(root, target_is_directory=True)
+            except OSError as error:
+                self.skipTest(f"directory symlinks are unavailable: {error}")
+            _, metadata = self.make_repository(root)
+            policy.validate_workspace_metadata(alias, metadata)
+
     def test_optional_feature_only_external_path_dependency_is_rejected(self) -> None:
         policy = self.require_policy()
         with tempfile.TemporaryDirectory() as directory:
