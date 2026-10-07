@@ -85,7 +85,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Keep the C ABI consumer on the VS 2022 image expected by CMake 3.31.
+        os: [ubuntu-latest, windows-2022, macos-latest]
     env:
       CARGO_TERM_COLOR: always
       RUSTUP_TOOLCHAIN: '1.94'

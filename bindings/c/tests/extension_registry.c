@@ -7,11 +7,10 @@
  * KMIP Specification v2.1 §11.56 permits the 0x54 extension Tag range; the
  * catalog policy accepts those unknown Tags for generic preservation.
  *
- * The current public C header has no ClientBatchItem constructor or request
- * encoder/getter, so a C consumer cannot observe emitted outbound order yet.
- * It can still test explicit Criticality Indicator validation. The C ABI
- * exposes only stable int32_t error categories, not diagnostic strings, so
- * payload redaction is constrained to verifying stable category-only results.
+ * The public C header exposes ClientBatchItem construction and inspection, but
+ * does not execute or encode requests. The C ABI exposes only stable int32_t
+ * error categories, not diagnostic strings, so payload redaction is constrained
+ * to verifying stable category-only results.
  * Use-after-release, dangling, and foreign pointers are caller-precondition
  * violations and are deliberately not probed here.
  */
@@ -1436,7 +1435,7 @@ static bool test_ttlv_scalar_views_and_limits(void)
     REQUIRE_STATUS(kmipkit_ttlv_value_view_integer(view, &integer), KMIPKIT_SUCCESS);
     REQUIRE(integer == -17);
     REQUIRE_STATUS(kmipkit_ttlv_value_view_boolean(view, &boolean),
-        KMIPKIT_ERROR_INVALID_SCHEMA);
+        KMIPKIT_ERROR_INVALID_INPUT);
     kmipkit_ttlv_value_view_release(view);
     view = NULL;
     kmipkit_ttlv_value_release(value);
@@ -1485,7 +1484,7 @@ static bool test_ttlv_scalar_views_and_limits(void)
     REQUIRE_STATUS(kmipkit_ttlv_value_view_byte_at(view, 2U, &byte), KMIPKIT_SUCCESS);
     REQUIRE(byte == big_integer_bytes[2]);
     REQUIRE_STATUS(kmipkit_ttlv_value_view_byte_at(view, 3U, &byte),
-        KMIPKIT_ERROR_INVALID_SCHEMA);
+        KMIPKIT_ERROR_INVALID_INPUT);
     kmipkit_ttlv_value_view_release(view);
     view = NULL;
     kmipkit_ttlv_value_release(value);
@@ -1587,7 +1586,7 @@ static bool test_ttlv_scalar_views_and_limits(void)
     item_value_view = NULL;
     item_count = UINT64_MAX;
     REQUIRE_STATUS(kmipkit_ttlv_structure_view_item_at(structure_view, 1U, &item_view),
-        KMIPKIT_SUCCESS);
+        KMIPKIT_ERROR_INVALID_INPUT);
     REQUIRE(item_view == NULL);
 
     kmipkit_tag_release(item_tag);
