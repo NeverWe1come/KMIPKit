@@ -26,6 +26,18 @@ PROFILE_SPEC_PATH = "specs/010-profile-conformance/spec.md"
 PROFILE_OUTPUT_PATH = "crates/kmipkit-protocol/src/profiles_generated.rs"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
+_VERIFICATION_CATEGORIES = {
+    "MUST": "RequiredBehavior",
+    "SHALL": "RequiredBehavior",
+    "REQUIRED": "RequiredBehavior",
+    "MUST NOT": "ProhibitedBehavior",
+    "SHALL NOT": "ProhibitedBehavior",
+    "SHOULD": "RecommendedBehaviorOrDeviation",
+    "RECOMMENDED": "RecommendedBehaviorOrDeviation",
+    "SHOULD NOT": "DiscouragedAbsenceOrDeviation",
+    "MAY": "OptionalCapability",
+    "OPTIONAL": "OptionalCapability",
+}
 
 
 class ProfileGenerationError(ValueError):
@@ -310,19 +322,7 @@ def _rust_string_array(record: Mapping[str, Any], field: str) -> str:
 
 
 def _verification_category(source_keyword: str) -> str:
-    categories = {
-        "MUST": "RequiredBehavior",
-        "SHALL": "RequiredBehavior",
-        "REQUIRED": "RequiredBehavior",
-        "MUST NOT": "ProhibitedBehavior",
-        "SHALL NOT": "ProhibitedBehavior",
-        "SHOULD": "RecommendedBehaviorOrDeviation",
-        "RECOMMENDED": "RecommendedBehaviorOrDeviation",
-        "SHOULD NOT": "DiscouragedAbsenceOrDeviation",
-        "MAY": "OptionalCapability",
-        "OPTIONAL": "OptionalCapability",
-    }
-    category = categories.get(source_keyword)
+    category = _VERIFICATION_CATEGORIES.get(source_keyword)
     if category is None:
         raise ProfileGenerationError("client requirement has an unsupported normative keyword")
     return category
