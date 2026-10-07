@@ -1,9 +1,11 @@
 # Incremental verification record
 
-This file records evidence as KMIPKIT-0012 is implemented. Cross-language
-registry parity, examples, and a bounded fuzz smoke run have local evidence.
-The final aggregate coverage gate, current-commit CI/platform matrix, feature
-acceptance audit, and independent QA/security reviews remain open.
+This file records implementation and review evidence for KMIPKIT-0012. The
+aggregate coverage gate, platform matrix, generated-output checks, and
+independent QA/security reviews passed on the last pushed implementation head.
+A small follow-up now hardens failure-path cleanup in the C consumer test; its
+local MSVC build and run passed, and T061 stays open until CI validates that
+follow-up on the pushed head.
 
 ## 2026-10-07 — bounded schema order validation
 
@@ -1109,3 +1111,24 @@ The Python adapter's Extension Information test expectation was also corrected t
 - `docs/development/testing.md` now documents the source-generation reason and behavior-test coverage for these narrow exclusions. The fix requires a fresh full PR CI run before T060/T061 can close; coverage thresholds remain unchanged.
 
 - After resolving the concurrent remote coverage change, `python -X utf8 -m unittest discover -s scripts/tests -q` passed all 200 tests, with 26 expected skips; this includes the contract requiring exactly the two Maturin-generated CFFI wrappers to be excluded. `git diff --check` passed. Run `37690027658` used the remote one-wrapper configuration and does not verify this correction; a fresh CI run on the corrected head is still required.
+
+## 2026-10-08 — coverage and platform verification
+
+GitHub Actions run [37695659017](https://github.com/NeverWe1come/KMIPKit/actions/runs/37695659017) completed successfully for PR #52 at commit `02411b33a129f0c819dbe8277372519b93e2d72a`. The aggregate coverage gate reported:
+
+| Scope | Covered / measured | Coverage | Gate |
+|---|---:|---:|---:|
+| Changed production code | 7,337 / 7,713 | 95.13% | 95% |
+| `kmipkit-ttlv` | 724 / 730 | 99.18% | 95% |
+| `kmipkit-protocol` | 3,922 / 4,065 | 96.48% | 95% |
+| `kmipkit-transport` | 87 / 87 | 100.00% | 85% |
+| `kmipkit-ffi` | 2,035 / 2,137 | 95.23% | 85% |
+| Java adapters | 618 / 670 | 92.24% | 85% |
+| Python adapters | 773 / 783 | 98.72% | 85% |
+| JNI bridge | 1,193 / 1,312 | 90.93% | 85% |
+| Workspace | 9,500 / 9,846 | 96.49% | 90% |
+
+The changed-code report included 21 summary-only lines as uncovered; the JNI report did the same. Both scopes still met their thresholds. Core Rust checks passed on Linux, Windows, and macOS with stable and Rust 1.94 where configured. Script contracts, native language bindings on Linux/Windows/macOS, the Linux FFI sanitizer, extension-schema fuzz smoke, normative inventory and generated-output checks, dependency policy, adapter coverage, and the aggregate gate all passed. T060 is complete. T061 remains open until the test-harness cleanup follow-up passes CI on the pushed head. The PR remains open for human review and merge.
+
+- Independent QA review found no test defect or acceptance-criteria gap in the boundary additions. Independent security review found no production security effect and confirmed the follow-up's status-specific cleanup is safe for these exact live, unique test handles and valid tags; this is fixture-specific reasoning, not a general C ABI ownership rule.
+- After the cleanup change, MSVC compiled and ran `bindings/c/tests/extension_registry.c` against the built FFI library; all 13 C consumer groups passed. `git diff --check` also passed locally. This local run does not replace the required current-head CI rerun.
