@@ -13,8 +13,10 @@ from pathlib import Path
 from typing import Any
 
 if __package__:
+    from .generate_profiles import ProfileGenerationError, compute_profile_closure
     from .safe_io import PathSecurityError, confined_path, safe_read_bytes
 else:
+    from generate_profiles import ProfileGenerationError, compute_profile_closure
     from safe_io import PathSecurityError, confined_path, safe_read_bytes
 
 
@@ -29,6 +31,7 @@ TOP_LEVEL_FIELDS = {
     "schema_version",
     "sources",
     "source_clauses",
+    "normative_inclusions",
     "elements",
     "tag_ranges",
     "requirements",
@@ -86,6 +89,7 @@ CLAUSE_SCOPES = {
 REQUIREMENT_ID_PATTERN = r"KMIPKIT-REQ-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}(?:-[0-9]{3})?"
 TOP_LEVEL_ID_FIELDS = {
     "source_clauses": ("clause_id", r"KMIPKIT-CLAUSE-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}"),
+    "normative_inclusions": ("inclusion_id", r"KMIPKIT-INCLUSION-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
     "elements": ("element_id", r"KMIPKIT-ELEM-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
     "tag_ranges": ("range_id", r"KMIPKIT-RANGE-[0-9]{3}"),
     "requirements": ("requirement_id", REQUIREMENT_ID_PATTERN),
@@ -114,7 +118,7 @@ TEST_CASE_FIELDS = {
     "fixture_path", "fixture_availability", "mapping_confidence",
 }
 PROFILE_FIELDS = {
-    "profile_id", "name", "role", "source_refs", "source_clause_ids",
+    "profile_id", "name", "role", "source_refs", "direct_source_clause_ids", "source_clause_ids",
     "dependency_profile_ids", "transport_requirements", "encoding_requirements",
     "applicability", "claim_state", "requirement_ids", "element_ids", "test_case_ids",
 }
@@ -723,6 +727,55 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
     return clauses
 
 
+def _check_normative_inclusions(catalog: dict[str, Any], sources: set[str], clauses: set[str]) -> None:
+    """Validate source-backed normative inclusion edges and reject reachable cycles."""
+    clause_records = {record["clause_id"]: record for record in catalog["source_clauses"]}
+    included_edges: set[tuple[str, str, str | None]] = set()
+    for inclusion in catalog["normative_inclusions"]:
+        if not isinstance(inclusion, dict) or set(inclusion) != {
+            "inclusion_id", "source_clause_id", "included_source_id", "included_section"
+        }:
+            _fail("normative inclusion has missing or unknown fields")
+        source_clause_id = inclusion["source_clause_id"]
+        included_source_id = inclusion["included_source_id"]
+        included_section = inclusion["included_section"]
+        if source_clause_id not in clauses:
+            _fail("normative inclusion refers to an unresolved source clause")
+        if not isinstance(included_source_id, str) or included_source_id not in sources:
+            _fail("normative inclusion refers to an unresolved included source")
+        if included_section is not None and (
+            not isinstance(included_section, str)
+            or re.fullmatch(r"[0-9]+(?:\.[0-9]+)*", included_section) is None
+        ):
+            _fail("normative inclusion has an invalid included section")
+        edge = (source_clause_id, included_source_id, included_section)
+        if edge in included_edges:
+            _fail("catalog contains a duplicate normative inclusion edge")
+        included_edges.add(edge)
+        matching_clauses = [
+            clause
+            for clause in catalog["source_clauses"]
+            if clause["source_id"] == included_source_id
+            and (
+                included_section is None
+                or clause["section"] == included_section
+                or clause["section"].startswith(f"{included_section}.")
+            )
+        ]
+        if not matching_clauses:
+            _fail("normative inclusion does not resolve to a catalogued source section")
+
+    if catalog["normative_inclusions"]:
+        try:
+            compute_profile_closure(
+                catalog,
+                [record["source_clause_id"] for record in catalog["normative_inclusions"]],
+                profile_id="KMIPKIT-INCLUSION-VALIDATION",
+            )
+        except ProfileGenerationError as error:
+            raise CatalogValidationError("normative inclusion closure is invalid") from error
+
+
 def _check_semantics(
     catalog: dict[str, Any],
     sources: set[str],
@@ -891,8 +944,12 @@ def _check_semantics(
             _fail("profile name is required")
         _enum(profile["role"], {"client", "server", "both"}, "profile role")
         _source_refs(profile["source_refs"], sources, "profile source_refs")
-        for field in ("source_clause_ids", "transport_requirements", "encoding_requirements"):
+        for field in (
+            "direct_source_clause_ids", "source_clause_ids", "transport_requirements", "encoding_requirements"
+        ):
             _string_values(profile, field, "profile")
+        if any(clause_id not in clauses for clause_id in profile["direct_source_clause_ids"]):
+            _fail("profile has unresolved direct source clause references")
         if any(clause_id not in clauses for clause_id in profile["source_clause_ids"]):
             _fail("profile has unresolved source clause references")
         for field, valid_ids in (
@@ -923,6 +980,21 @@ def _check_semantics(
                 _fail("profile evidence is incomplete without clauses, requirements, elements, and tests")
             if not any(test_cases[test_id]["source_id"] == "KMIPKIT-SRC-testcases" for test_id in profile["test_case_ids"]):
                 _fail("profile evidence is incomplete without an official KMIP Test Case")
+        _string_values(profile, "direct_source_clause_ids", "profile", non_empty=True)
+        _string_values(profile, "source_clause_ids", "profile", non_empty=True)
+        if profile["role"] in {"client", "both"}:
+            try:
+                closure = compute_profile_closure(
+                    catalog,
+                    profile["direct_source_clause_ids"],
+                    profile_id=profile["profile_id"],
+                )
+            except ProfileGenerationError as error:
+                raise CatalogValidationError("profile normative closure is invalid") from error
+            if profile["source_clause_ids"] != list(closure.source_clause_ids):
+                _fail("profile clause closure does not match its direct roots and normative inclusions")
+            if profile["requirement_ids"] != list(closure.requirement_ids):
+                _fail("profile requirement closure does not match its clauses and product scope")
 
     for test_case in catalog["test_cases"]:
         if not isinstance(test_case, dict) or set(test_case) != TEST_CASE_FIELDS:
@@ -1333,6 +1405,7 @@ def load_validated_catalog(raw: bytes, repo_root: Path, *, require_complete: boo
     sources = _check_source_records(catalog, repo_root, tree)
     clauses = _check_clauses(catalog, sources)
     _check_identifiers(catalog)
+    _check_normative_inclusions(catalog, sources, clauses)
     _check_semantics(catalog, sources, clauses, tree, repo_root)
     if require_complete:
         _check_complete_inventory(catalog)

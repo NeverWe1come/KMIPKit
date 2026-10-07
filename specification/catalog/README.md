@@ -27,6 +27,18 @@ fixture links separately from normalized display fields. An unavailable
 fixture is evidence of a missing local artifact, not a failed conformance
 result.
 
+Profile records keep `direct_source_clause_ids` as reviewed closure roots and
+store `source_clause_ids` and `requirement_ids` as their deterministic computed
+closure. `normative_inclusions` records source-backed incorporation edges;
+`included_section: null` means the entire pinned source document, while a
+section value includes that section and its dot-delimited subclauses. The
+validator rejects unresolved or duplicate edges, cycles, and stored profile
+closures that differ from their roots and inclusions. Informative references
+are not represented as normative inclusion edges. Baseline Client §6.1 item 1
+includes the whole KMIP Specification v2.1 source, and item 2 includes Profiles
+§3.1. Those catalog links do not imply that the profile is runtime-eligible or
+that conformance has been established.
+
 `coverage-report.md` is generated from the reviewed catalog by
 `tools/normative_catalog/report.py`. Do not edit the report manually. Empty
 coverage assignments remain visible as unassigned. Prohibited requirements
