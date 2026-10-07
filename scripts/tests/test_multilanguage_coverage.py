@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
@@ -17,6 +16,27 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 class MultiLanguageCoverageTests(unittest.TestCase):
     def require_gate(self) -> None:
         self.assertIsNotNone(GATE, "coverage_gate.py must provide the multi-language coverage contract")
+
+    def _write_gate_workspace(self, root: Path, line_count: int = 10):
+        rust_source = root / "crates/kmipkit-ttlv/src/lib.rs"
+        rust_source.parent.mkdir(parents=True)
+        rust_source.write_text("pub fn item() {}\n", encoding="utf-8")
+        source_paths = {
+            "Java adapters": "bindings/java/src/main/java/org/kmipkit/Registry.java",
+            "Python adapters": "bindings/python/src/kmipkit/extensions.py",
+            "JNI bridge": "bindings/java/native/kmipkit_jni.cpp",
+        }
+        adapter_reports = {}
+        for scope, relative in source_paths.items():
+            source = root / relative
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text("\n".join(f"source line {number}" for number in range(1, line_count + 1)), encoding="utf-8")
+            adapter_reports[scope] = {relative: {line: 1 for line in range(1, line_count + 1)}}
+        rust_reports = {
+            platform: {"crates/kmipkit-ttlv/src/lib.rs": {1: 1}}
+            for platform in ("ubuntu", "windows", "macos")
+        }
+        return rust_reports, adapter_reports, source_paths
 
     def test_rust_protocol_and_ttlv_are_enforced_as_separate_scopes(self) -> None:
         self.require_gate()
@@ -36,6 +56,33 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
             with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-protocol coverage"):
                 GATE._evaluate_coverage(root, reports, "")
+
+    def test_rust_ffi_and_transport_are_enforced_as_separate_scopes(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = {
+                "kmipkit-ttlv": 1,
+                "kmipkit-protocol": 1,
+                "kmipkit-transport": 19,
+                "kmipkit-ffi": 1,
+            }
+            line_maps = {}
+            for crate, line_count in paths.items():
+                relative = f"crates/{crate}/src/lib.rs"
+                source = root / relative
+                source.parent.mkdir(parents=True)
+                source.write_text("\n".join("pub fn item() {}" for _ in range(line_count)), encoding="utf-8")
+                line_maps[relative] = {
+                    line: int(crate != "kmipkit-ffi") for line in range(1, line_count + 1)
+                }
+            reports = {platform: line_maps for platform in ("ubuntu", "windows", "macos")}
+            ffi_c_consumer_report = {
+                "crates/kmipkit-ffi/src/lib.rs": {1: 0},
+            }
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-ffi coverage 0/1.*85%"):
+                GATE._evaluate_coverage(root, reports, "", ffi_c_consumer_report=ffi_c_consumer_report)
 
     def test_jacoco_parser_maps_production_source_lines(self) -> None:
         self.require_gate()
@@ -97,6 +144,58 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
         self.assertEqual(set(expected_paths), set().union(*sources.values()))
 
+    def test_adapter_production_code_prevents_rust_only_unavailable_preflight(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            rust_source = root / "crates/sample/src/lib.rs"
+            rust_source.parent.mkdir(parents=True)
+            rust_source.write_text("trait Declaration { fn method(); }\n", encoding="utf-8")
+            java_source = root / "bindings/java/src/main/java/org/kmipkit/Registry.java"
+            java_source.parent.mkdir(parents=True)
+            java_source.write_text("class Registry { void register() {} }\n", encoding="utf-8")
+
+            scan = GATE.scan_production_sources(root)
+
+        self.assertTrue(scan.eligible)
+        self.assertEqual("adapter production source requires coverage", scan.reason)
+
+    def test_each_adapter_scope_fails_independently_at_85_percent(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            rust_reports, adapter_reports, source_paths = self._write_gate_workspace(root)
+            for scope, relative in source_paths.items():
+                with self.subTest(scope=scope):
+                    undercovered = dict(adapter_reports)
+                    undercovered[scope] = {relative: {line: int(line <= 8) for line in range(1, 11)}}
+                    with self.assertRaisesRegex(GATE.CoverageDataError, rf"{scope} coverage 8/10.*85%"):
+                        GATE._evaluate_coverage(root, rust_reports, "", undercovered)
+
+    def test_changed_java_python_and_jni_production_lines_share_the_95_percent_gate(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            rust_reports, adapter_reports, source_paths = self._write_gate_workspace(root, line_count=20)
+            changed_lines = {}
+            for scope, relative in source_paths.items():
+                adapter_reports[scope] = {
+                    relative: {line: int(line < 20) for line in range(1, 21)}
+                }
+                changed_lines[relative] = "\n".join(
+                    (
+                        f"diff --git a/{relative} b/{relative}",
+                        f"--- a/{relative}",
+                        f"+++ b/{relative}",
+                        "@@ -19 +19,2 @@",
+                        " source line 19",
+                        "+new production line",
+                    )
+                )
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "Changed production code coverage 0/3.*95%"):
+                GATE._evaluate_coverage(root, rust_reports, "\n".join(changed_lines.values()), adapter_reports)
+
     def test_jni_llvm_export_parser_accepts_the_native_bridge_file(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
@@ -105,7 +204,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             source.parent.mkdir(parents=True)
             source.write_text("int bridge() { return 1; }\n", encoding="utf-8")
             document = llvm_document(
-                [[1, 1, 1, 31, 1, 0, 0, 0]],
+                [[1, 1, 1, len("int bridge() { return 1; }") + 1, 1, 0, 0, 0]],
                 filename="bindings/java/native/kmipkit_jni.cpp",
             )
 
@@ -152,20 +251,31 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         jacoco = pom.find(".//m:plugin[m:artifactId='jacoco-maven-plugin']", namespace)
         self.assertIsNotNone(jacoco, "JaCoCo must be configured for handwritten Java package code")
         jacoco_version = jacoco.findtext("m:version", namespaces=namespace)
+        if jacoco_version and jacoco_version.startswith("${") and jacoco_version.endswith("}"):
+            jacoco_version = pom.findtext(f"m:properties/m:{jacoco_version[2:-1]}", namespaces=namespace)
         self.assertRegex(jacoco_version or "", r"^\d+\.\d+\.\d+$", "JaCoCo version must be pinned")
         java_configuration = ET.tostring(jacoco, encoding="unicode")
         self.assertIn("0.85", java_configuration, "Java line coverage must enforce the 85% package gate")
 
         pyproject_path = REPOSITORY_ROOT / "bindings/python/pyproject.toml"
-        tomllib_spec = importlib.util.find_spec("tomllib")
-        self.assertIsNotNone(tomllib_spec, "the pinned Python toolchain must provide tomllib")
+        import re
         import tomllib
 
         with pyproject_path.open("rb") as pyproject_file:
             pyproject = tomllib.load(pyproject_file)
-        dependencies = pyproject["project"]["optional-dependencies"]["coverage"]
-        self.assertTrue(any(dependency.startswith("coverage==") for dependency in dependencies))
-        self.assertTrue(any(dependency.startswith("pytest-cov==") for dependency in dependencies))
+        requirements = REPOSITORY_ROOT / "bindings/python/requirements-coverage.txt"
+        pinned = {
+            name: version
+            for line in requirements.read_text(encoding="utf-8").splitlines()
+            if line and not line.startswith("#")
+            for name, version in [line.split("==", maxsplit=1)]
+        }
+        self.assertEqual(
+            {"cffi", "coverage", "maturin", "pytest", "pytest-cov"},
+            set(pinned),
+            "the Python collector must expose one complete pinned test/build tool set",
+        )
+        self.assertTrue(all(re.fullmatch(r"\d+\.\d+\.\d+", version) for version in pinned.values()))
         self.assertEqual("kmipkit", pyproject["tool"]["coverage"]["run"]["source"][0])
         self.assertEqual(85, pyproject["tool"]["coverage"]["report"]["fail_under"])
         self.assertFalse(pyproject["tool"]["coverage"]["run"].get("omit"))
@@ -173,11 +283,17 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         native_collector = REPOSITORY_ROOT / "scripts/collect_jni_coverage.sh"
         self.assertTrue(native_collector.is_file(), "the JNI bridge needs a Linux LLVM coverage collector")
         script = native_collector.read_text(encoding="utf-8")
-        self.assertRegex(script, r"clang\+\+-[0-9]+")
-        self.assertRegex(script, r"llvm-profdata-[0-9]+")
-        self.assertRegex(script, r"llvm-cov-[0-9]+")
-        self.assertIn("-fcoverage-mapping", script)
-        self.assertIn("kmipkit_jni.cpp", script)
+        self.assertIn("20.1.8", script)
+        self.assertIn('readonly llvm_major="20"', script)
+        self.assertIn('"clang++-${llvm_major}"', script)
+        self.assertIn('"llvm-profdata-${llvm_major}"', script)
+        self.assertIn('"llvm-cov-${llvm_major}"', script)
+        self.assertIn('--ignore-filename-regex="${ignored_source_regex}"', script)
+        native_build = (REPOSITORY_ROOT / "bindings/java/native/build.sh").read_text(encoding="utf-8")
+        self.assertIn("kmipkit_jni.cpp", native_build)
+        self.assertIn("readlink -f", native_build, "Linux must resolve the javac symlink before locating jni.h")
+        self.assertIn("-fprofile-instr-generate", native_build)
+        self.assertIn("-fcoverage-mapping", native_build)
 
 
 if __name__ == "__main__":

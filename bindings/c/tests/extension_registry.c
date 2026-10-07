@@ -1314,9 +1314,10 @@ static bool test_handle_release_and_null_output_on_error(void)
     kmipkit_client_extension_registry_t *registry = NULL;
     kmipkit_client_configuration_t *configuration = NULL;
     kmipkit_client_extension_registry_t *accessor = NULL;
+    kmipkit_extension_definition_t *indexed_definition = NULL;
+    kmipkit_extension_definition_t *matched_definition = NULL;
     kmipkit_extension_registry_limits_t limits;
     uint64_t count = 0U;
-    kmipkit_extension_definition_t *indexed_definition = NULL;
 
     REQUIRE_STATUS(kmipkit_codec_limits_defaults(&codec_limits), KMIPKIT_SUCCESS);
     REQUIRE(load_default_limits(&limits));
@@ -1345,12 +1346,612 @@ static bool test_handle_release_and_null_output_on_error(void)
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_at(accessor,
         UINT64_MAX, &indexed_definition), KMIPKIT_SUCCESS);
     REQUIRE(indexed_definition == NULL);
+    REQUIRE_STATUS(kmipkit_client_extension_registry_definition_at(accessor,
+        0U, &indexed_definition), KMIPKIT_SUCCESS);
+    REQUIRE(indexed_definition != NULL);
+    REQUIRE_STATUS(kmipkit_client_extension_registry_definition_for_identity(
+        accessor, identity, &matched_definition), KMIPKIT_SUCCESS);
+    REQUIRE(matched_definition != NULL);
 
+    kmipkit_extension_definition_release(matched_definition);
     kmipkit_extension_definition_release(indexed_definition);
     kmipkit_client_extension_registry_release(accessor);
     kmipkit_client_configuration_release(configuration);
     kmipkit_client_extension_registry_release(registry);
     kmipkit_extension_definition_release(definition);
+    kmipkit_extension_identity_release(identity);
+    kmipkit_codec_limits_release(codec_limits);
+    return true;
+}
+
+static bool value_view_has_type(kmipkit_ttlv_value_view_t *view,
+                                kmipkit_ttlv_item_type_t expected)
+{
+    uint8_t observed = 0U;
+    return kmipkit_ttlv_value_view_type(view, &observed) == KMIPKIT_SUCCESS &&
+        observed == expected;
+}
+
+static bool test_ttlv_scalar_views_and_limits(void)
+{
+    static const uint8_t big_integer_bytes[] = {0x01U, 0x02U, 0x03U};
+    static const uint8_t text_bytes[] = {'K', 'M', 'I', 'P'};
+    static const uint8_t byte_string_bytes[] = {0U, 0x7FU, 0xFFU};
+    kmipkit_codec_limits_t *limits = NULL;
+    kmipkit_codec_limits_t *invalid_limits = NULL;
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_ttlv_value_view_t *view = NULL;
+    kmipkit_ttlv_structure_t *structure = NULL;
+    kmipkit_ttlv_structure_t *updated_structure = NULL;
+    kmipkit_ttlv_structure_view_t *structure_view = NULL;
+    kmipkit_ttlv_item_t *item = NULL;
+    kmipkit_ttlv_item_view_t *item_view = NULL;
+    kmipkit_ttlv_value_view_t *item_value_view = NULL;
+    kmipkit_tag_t *item_tag = NULL;
+    uint64_t observed = 0U;
+    uint64_t item_count = UINT64_MAX;
+    uint8_t item_type = 0U;
+    uint8_t byte = 0U;
+    int32_t integer = 0;
+    uint32_t interval = 0U;
+    uint32_t enumeration = 0U;
+    uint8_t boolean = 0U;
+    int64_t date_time = 0;
+    uint32_t observed_raw_tag = 0U;
+
+    REQUIRE_STATUS(kmipkit_codec_limits_create(4096U, 32U, 256U, &limits),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_codec_limits_max_message_bytes(limits, &observed),
+        KMIPKIT_SUCCESS);
+    REQUIRE(observed == UINT64_C(4096));
+    REQUIRE_STATUS(kmipkit_codec_limits_max_structure_depth(limits, &observed),
+        KMIPKIT_SUCCESS);
+    REQUIRE(observed == UINT64_C(32));
+    REQUIRE_STATUS(kmipkit_codec_limits_max_elements(limits, &observed),
+        KMIPKIT_SUCCESS);
+    REQUIRE(observed == UINT64_C(256));
+    REQUIRE_STATUS(kmipkit_codec_limits_create(4096U, 65U, 256U, &invalid_limits),
+        KMIPKIT_ERROR_RESOURCE_LIMIT);
+    REQUIRE(invalid_limits == NULL);
+
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create(KMIPKIT_PAYLOAD_TAG_VALUE, &raw_tag),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_value(raw_tag, &observed_raw_tag), KMIPKIT_SUCCESS);
+    REQUIRE(observed_raw_tag == KMIPKIT_PAYLOAD_TAG_VALUE);
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_tag_value(tag, &observed_raw_tag), KMIPKIT_SUCCESS);
+    REQUIRE(observed_raw_tag == KMIPKIT_PAYLOAD_TAG_VALUE);
+    kmipkit_tag_release(tag);
+    tag = NULL;
+    kmipkit_raw_tag_release(raw_tag);
+    raw_tag = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_integer(-17, &value), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_INTEGER));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_type(view, &item_type), KMIPKIT_SUCCESS);
+    REQUIRE(item_type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_integer(view, &integer), KMIPKIT_SUCCESS);
+    REQUIRE(integer == -17);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_boolean(view, &boolean),
+        KMIPKIT_ERROR_INVALID_SCHEMA);
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_long_integer(INT64_C(-9000000001), &value),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_long_integer(view, &date_time), KMIPKIT_SUCCESS);
+    REQUIRE(date_time == INT64_C(-9000000001));
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_enumeration(UINT32_C(314159), &value),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_enumeration(view, &enumeration), KMIPKIT_SUCCESS);
+    REQUIRE(enumeration == UINT32_C(314159));
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_boolean(2U, &value), KMIPKIT_ERROR_INVALID_INPUT);
+    REQUIRE(value == NULL);
+    REQUIRE_STATUS(kmipkit_ttlv_value_boolean(1U, &value), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_boolean(view, &boolean), KMIPKIT_SUCCESS);
+    REQUIRE(boolean == 1U);
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_big_integer(limits, big_integer_bytes,
+        (uint64_t)sizeof(big_integer_bytes), &value), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_byte_length(view, &observed), KMIPKIT_SUCCESS);
+    REQUIRE(observed == (uint64_t)sizeof(big_integer_bytes));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_byte_at(view, 2U, &byte), KMIPKIT_SUCCESS);
+    REQUIRE(byte == big_integer_bytes[2]);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_byte_at(view, 3U, &byte),
+        KMIPKIT_ERROR_INVALID_SCHEMA);
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_text_string(limits, text_bytes,
+        (uint64_t)sizeof(text_bytes), &value), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_byte_length(view, &observed), KMIPKIT_SUCCESS);
+    REQUIRE(observed == (uint64_t)sizeof(text_bytes));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_byte_at(view, 0U, &byte), KMIPKIT_SUCCESS);
+    REQUIRE(byte == (uint8_t)'K');
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_byte_string(limits, byte_string_bytes,
+        (uint64_t)sizeof(byte_string_bytes), &value), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_byte_length(view, &observed), KMIPKIT_SUCCESS);
+    REQUIRE(observed == (uint64_t)sizeof(byte_string_bytes));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_byte_at(view, 1U, &byte), KMIPKIT_SUCCESS);
+    REQUIRE(byte == byte_string_bytes[1]);
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_date_time(INT64_C(1700000000), &value),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_date_time(view, &date_time), KMIPKIT_SUCCESS);
+    REQUIRE(date_time == INT64_C(1700000000));
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_interval(42U, &value), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_INTERVAL));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_interval(view, &interval), KMIPKIT_SUCCESS);
+    REQUIRE(interval == 42U);
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_value_date_time_extended(INT64_C(1700000012), &value),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view(value, &view), KMIPKIT_SUCCESS);
+    REQUIRE(value_view_has_type(view, KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED));
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_date_time_extended(view, &date_time),
+        KMIPKIT_SUCCESS);
+    REQUIRE(date_time == INT64_C(1700000012));
+    kmipkit_ttlv_value_view_release(view);
+    view = NULL;
+    kmipkit_ttlv_value_release(value);
+    value = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create(KMIPKIT_PAYLOAD_TAG_VALUE, &raw_tag),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_integer(11, &value), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_item_create(tag, value, limits, &item), KMIPKIT_SUCCESS);
+    value = NULL; /* Item construction consumes the value handle. */
+    REQUIRE_STATUS(kmipkit_ttlv_structure_create(&structure), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_structure_with_item(structure, item, limits,
+        &updated_structure), KMIPKIT_SUCCESS);
+    structure = NULL; /* Structure construction consumes both input handles. */
+    item = NULL;
+    structure = updated_structure;
+    updated_structure = NULL;
+    REQUIRE_STATUS(kmipkit_ttlv_structure_view(structure, &structure_view),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_structure_view_item_count(structure_view, &item_count),
+        KMIPKIT_SUCCESS);
+    REQUIRE(item_count == 1U);
+    REQUIRE_STATUS(kmipkit_ttlv_structure_view_item_at(structure_view, 0U, &item_view),
+        KMIPKIT_SUCCESS);
+    REQUIRE(item_view != NULL);
+    REQUIRE_STATUS(kmipkit_ttlv_item_view_tag(item_view, &item_tag), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_tag_value(item_tag, &observed_raw_tag), KMIPKIT_SUCCESS);
+    REQUIRE(observed_raw_tag == KMIPKIT_PAYLOAD_TAG_VALUE);
+    REQUIRE_STATUS(kmipkit_ttlv_item_view_type(item_view, &item_type), KMIPKIT_SUCCESS);
+    REQUIRE(item_type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER);
+    REQUIRE_STATUS(kmipkit_ttlv_item_view_value(item_view, &item_value_view),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_integer(item_value_view, &integer),
+        KMIPKIT_SUCCESS);
+    REQUIRE(integer == 11);
+    kmipkit_ttlv_item_view_release(item_view);
+    item_view = NULL;
+    kmipkit_ttlv_value_view_release(item_value_view);
+    item_value_view = NULL;
+    item_count = UINT64_MAX;
+    REQUIRE_STATUS(kmipkit_ttlv_structure_view_item_at(structure_view, 1U, &item_view),
+        KMIPKIT_SUCCESS);
+    REQUIRE(item_view == NULL);
+
+    kmipkit_tag_release(item_tag);
+    kmipkit_ttlv_item_view_release(item_view);
+    kmipkit_ttlv_value_view_release(item_value_view);
+    kmipkit_ttlv_structure_view_release(structure_view);
+    kmipkit_ttlv_value_view_release(view);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_item_release(item);
+    kmipkit_ttlv_structure_release(updated_structure);
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    kmipkit_codec_limits_release(invalid_limits);
+    kmipkit_codec_limits_release(limits);
+    return true;
+}
+
+static bool test_schema_path_and_order_builders(void)
+{
+    kmipkit_ttlv_path_t *path = NULL;
+    kmipkit_ttlv_path_t *child_path = NULL;
+    kmipkit_extension_schema_t *bytes_schema = NULL;
+    kmipkit_extension_schema_t *updated_schema = NULL;
+    kmipkit_extension_schema_t *integer_schema = NULL;
+    kmipkit_extension_schema_t *masked_integer_schema = NULL;
+    kmipkit_extension_schema_t *required_mask_schema = NULL;
+    kmipkit_extension_schema_t *unsigned_schema = NULL;
+    kmipkit_extension_schema_t *masked_schema = NULL;
+    kmipkit_extension_schema_t *enum_schema = NULL;
+    kmipkit_extension_schema_t *repeated_schema = NULL;
+    kmipkit_extension_schema_t *scalar_schema = NULL;
+    kmipkit_extension_schema_t *invalid_schema = NULL;
+    kmipkit_extension_child_rule_t *optional_rule = NULL;
+    kmipkit_extension_child_rule_t *required_rule = NULL;
+    kmipkit_extension_child_rule_t *mask_rule = NULL;
+    kmipkit_extension_child_rule_t *repeated_rule = NULL;
+    kmipkit_extension_child_rule_t *children[4];
+    kmipkit_extension_order_constraint_t *constraint = NULL;
+    kmipkit_extension_schema_t *structure_schema = NULL;
+    static const uint32_t scalar_types[] = {
+        KMIPKIT_TTLV_ITEM_TYPE_INTEGER,
+        KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER,
+        KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER,
+        KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION,
+        KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN,
+        KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING,
+        KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING,
+        KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME,
+        KMIPKIT_TTLV_ITEM_TYPE_INTERVAL,
+        KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED
+    };
+    size_t index;
+
+    for (index = 0U; index < sizeof(scalar_types) / sizeof(scalar_types[0]); ++index) {
+        REQUIRE_STATUS(kmipkit_extension_schema_scalar(scalar_types[index],
+            &scalar_schema), KMIPKIT_SUCCESS);
+        kmipkit_extension_schema_release(scalar_schema);
+        scalar_schema = NULL;
+    }
+    REQUIRE_STATUS(kmipkit_extension_schema_scalar(KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE,
+        &invalid_schema), KMIPKIT_ERROR_INVALID_SCHEMA);
+    REQUIRE(invalid_schema == NULL);
+    REQUIRE_STATUS(kmipkit_extension_schema_scalar(0U, &invalid_schema),
+        KMIPKIT_ERROR_INVALID_SCHEMA);
+    REQUIRE(invalid_schema == NULL);
+
+    REQUIRE_STATUS(kmipkit_ttlv_path_create(KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR, &path),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_path_with_child_tag(path, KMIPKIT_PAYLOAD_TAG_VALUE,
+        &child_path), KMIPKIT_SUCCESS);
+    path = NULL; /* Appending a path tag consumes the original path handle. */
+    REQUIRE(child_path != NULL);
+
+    REQUIRE_STATUS(kmipkit_extension_schema_scalar(KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING,
+        &bytes_schema), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_extension_schema_minimum_length(bytes_schema, 2U,
+        &updated_schema), KMIPKIT_SUCCESS);
+    bytes_schema = NULL; /* Schema transforms consume the source schema. */
+    bytes_schema = updated_schema;
+    updated_schema = NULL;
+    REQUIRE_STATUS(kmipkit_extension_schema_maximum_length(bytes_schema, 16U,
+        &updated_schema), KMIPKIT_SUCCESS);
+    bytes_schema = NULL;
+    bytes_schema = updated_schema;
+    updated_schema = NULL;
+    REQUIRE_STATUS(kmipkit_extension_schema_scalar(KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING,
+        &invalid_schema), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_extension_schema_minimum_length(invalid_schema, 4U,
+        &updated_schema), KMIPKIT_SUCCESS);
+    invalid_schema = NULL; /* Schema transforms consume their input handle. */
+    invalid_schema = updated_schema;
+    updated_schema = NULL;
+    REQUIRE_STATUS(kmipkit_extension_schema_maximum_length(invalid_schema, 2U,
+        &updated_schema), KMIPKIT_ERROR_INVALID_SCHEMA);
+    invalid_schema = NULL; /* Failed transforms also consume their input handle. */
+    REQUIRE(updated_schema == NULL);
+    REQUIRE_STATUS(kmipkit_extension_child_rule_optional(KMIPKIT_PAYLOAD_TAG_VALUE,
+        bytes_schema, &optional_rule), KMIPKIT_SUCCESS);
+
+    REQUIRE_STATUS(kmipkit_extension_schema_scalar(KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION,
+        &integer_schema), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_extension_schema_unsigned_numeric_range(integer_schema,
+        1U, 100U, &unsigned_schema), KMIPKIT_SUCCESS);
+    integer_schema = NULL;
+    REQUIRE_STATUS(kmipkit_extension_schema_allowed_enumeration(unsigned_schema,
+        UINT32_C(7), &enum_schema), KMIPKIT_SUCCESS);
+    unsigned_schema = NULL; /* Enumeration constraints consume their source schema. */
+    REQUIRE_STATUS(kmipkit_extension_child_rule_required(
+        KMIPKIT_PAYLOAD_TAG_ORDER_MARKER, enum_schema, &required_rule),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_extension_schema_scalar(KMIPKIT_TTLV_ITEM_TYPE_INTEGER,
+        &integer_schema), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_extension_schema_allowed_bit_mask(integer_schema,
+        UINT32_C(0x03), &masked_integer_schema), KMIPKIT_SUCCESS);
+    integer_schema = NULL;
+    REQUIRE_STATUS(kmipkit_extension_schema_required_bit_mask(masked_integer_schema,
+        UINT32_C(0x01), &required_mask_schema), KMIPKIT_SUCCESS);
+    masked_integer_schema = NULL;
+    REQUIRE_STATUS(kmipkit_extension_child_rule_required(UINT32_C(0x420007),
+        required_mask_schema, &mask_rule), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_extension_schema_scalar(KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING,
+        &repeated_schema), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_extension_child_rule_repeated(UINT32_C(0x420008),
+        repeated_schema, &repeated_rule), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_extension_order_constraint_create(
+        KMIPKIT_PAYLOAD_TAG_VALUE, KMIPKIT_PAYLOAD_TAG_ORDER_MARKER, &constraint),
+        KMIPKIT_SUCCESS);
+    children[0] = optional_rule;
+    children[1] = required_rule;
+    children[2] = mask_rule;
+    children[3] = repeated_rule;
+    REQUIRE_STATUS(kmipkit_extension_schema_structure(children, 4U, &constraint, 1U,
+        1U, &structure_schema), KMIPKIT_SUCCESS);
+    REQUIRE(structure_schema != NULL);
+
+    kmipkit_extension_schema_release(structure_schema);
+    kmipkit_extension_order_constraint_release(constraint);
+    kmipkit_extension_child_rule_release(repeated_rule);
+    kmipkit_extension_child_rule_release(mask_rule);
+    kmipkit_extension_child_rule_release(required_rule);
+    kmipkit_extension_child_rule_release(optional_rule);
+    kmipkit_extension_schema_release(required_mask_schema);
+    kmipkit_extension_schema_release(masked_integer_schema);
+    kmipkit_extension_schema_release(enum_schema);
+    kmipkit_extension_schema_release(repeated_schema);
+    kmipkit_extension_schema_release(scalar_schema);
+    kmipkit_extension_schema_release(invalid_schema);
+    kmipkit_extension_schema_release(masked_schema);
+    kmipkit_extension_schema_release(unsigned_schema);
+    kmipkit_extension_schema_release(integer_schema);
+    kmipkit_extension_schema_release(updated_schema);
+    kmipkit_extension_schema_release(bytes_schema);
+    kmipkit_ttlv_path_release(child_path);
+    kmipkit_ttlv_path_release(path);
+    return true;
+}
+
+static bool test_extension_information_and_definition_accessors(void)
+{
+    static const uint8_t info_name[] = "extension-information";
+    static const uint8_t description[] = "vendor metadata";
+    static const uint8_t name[] = "alpha";
+    static const uint8_t discriminator[] = "alpha-v1";
+    kmipkit_codec_limits_t *codec_limits = NULL;
+    kmipkit_extension_identity_t *identity = NULL;
+    kmipkit_extension_identity_t *observed_identity = NULL;
+    kmipkit_extension_definition_t *definition = NULL;
+    kmipkit_extension_definition_t *updated_definition = NULL;
+    kmipkit_extension_information_t *information = NULL;
+    kmipkit_extension_information_t *updated_information = NULL;
+    kmipkit_extension_information_t *observed_information = NULL;
+    kmipkit_ttlv_structure_t *information_ttlv = NULL;
+    kmipkit_ttlv_structure_view_t *information_view = NULL;
+    uint64_t item_count = 0U;
+    bool succeeded = false;
+
+    if (kmipkit_codec_limits_defaults(&codec_limits) != KMIPKIT_SUCCESS ||
+        !create_fixture_definition(codec_limits, name, sizeof(name) - 1U,
+            KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR, discriminator,
+            sizeof(discriminator) - 1U, &identity, &definition) ||
+        kmipkit_extension_information_create(info_name, sizeof(info_name) - 1U,
+            &information) != KMIPKIT_SUCCESS ||
+        kmipkit_extension_information_tag(information, KMIPKIT_EXTENSION_TAG,
+            &updated_information) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    information = updated_information;
+    updated_information = NULL;
+    if (kmipkit_extension_information_type(information,
+            KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &updated_information) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    information = updated_information;
+    updated_information = NULL;
+    if (kmipkit_extension_information_enumeration(information, UINT32_C(7),
+            &updated_information) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    information = updated_information;
+    updated_information = NULL;
+    if (kmipkit_extension_information_attribute(information, 1U,
+            &updated_information) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    information = updated_information;
+    updated_information = NULL;
+    if (kmipkit_extension_information_parent_structure_tag(information,
+            KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR, &updated_information) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    information = updated_information;
+    updated_information = NULL;
+    if (kmipkit_extension_information_description(information, description,
+            sizeof(description) - 1U, &updated_information) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    information = updated_information;
+    updated_information = NULL;
+    if (kmipkit_extension_information_to_ttlv(information, &information_ttlv) !=
+            KMIPKIT_SUCCESS ||
+        kmipkit_ttlv_structure_view(information_ttlv, &information_view) !=
+            KMIPKIT_SUCCESS ||
+        kmipkit_ttlv_structure_view_item_count(information_view, &item_count) !=
+            KMIPKIT_SUCCESS || item_count < UINT64_C(6)) {
+        goto cleanup;
+    }
+    if (kmipkit_extension_definition_with_information(definition, information,
+            &updated_definition) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    definition = NULL;
+    if (kmipkit_extension_definition_identity(updated_definition,
+            &observed_identity) != KMIPKIT_SUCCESS ||
+        kmipkit_extension_definition_information(updated_definition,
+            &observed_information) != KMIPKIT_SUCCESS || observed_information == NULL) {
+        goto cleanup;
+    }
+    succeeded = true;
+
+cleanup:
+    if (!succeeded) {
+        fprintf(stderr, "FAIL %s: extension information round-trip failed\n", __func__);
+    }
+    kmipkit_ttlv_structure_view_release(information_view);
+    kmipkit_ttlv_structure_release(information_ttlv);
+    kmipkit_extension_information_release(observed_information);
+    kmipkit_extension_information_release(updated_information);
+    kmipkit_extension_information_release(information);
+    kmipkit_extension_definition_release(updated_definition);
+    kmipkit_extension_definition_release(definition);
+    kmipkit_extension_identity_release(observed_identity);
+    kmipkit_extension_identity_release(identity);
+    kmipkit_codec_limits_release(codec_limits);
+    return succeeded;
+}
+
+static bool test_definition_validation_and_ttlv_identity_readback(void)
+{
+    static const uint8_t name[] = "alpha";
+    static const uint8_t discriminator[] = "alpha-v1";
+    kmipkit_codec_limits_t *codec_limits = NULL;
+    kmipkit_extension_identity_t *identity = NULL;
+    kmipkit_extension_identity_t *validated_identity = NULL;
+    kmipkit_extension_definition_t *definition = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_ttlv_structure_t *nested = NULL;
+    kmipkit_ttlv_structure_t *updated = NULL;
+    kmipkit_ttlv_structure_view_t *generic_value = NULL;
+    kmipkit_validated_extension_value_t *validated = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_ttlv_value_t *nested_value = NULL;
+    kmipkit_ttlv_value_view_t *value_view = NULL;
+    kmipkit_ttlv_path_t *path = NULL;
+    kmipkit_ttlv_path_t *updated_path = NULL;
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_item_t *item = NULL;
+    uint64_t generic_item_count = 0U;
+    int64_t observed = 0;
+
+    REQUIRE_STATUS(kmipkit_codec_limits_defaults(&codec_limits), KMIPKIT_SUCCESS);
+    REQUIRE(create_fixture_definition(codec_limits, name, sizeof(name) - 1U,
+        KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR, discriminator,
+        sizeof(discriminator) - 1U, &identity, &definition));
+    REQUIRE(create_fixture_payload_with_discriminator(codec_limits, 42,
+        UINT32_C(314159), false, discriminator, sizeof(discriminator) - 1U, &payload));
+
+    /* Add a nested, unknown structure to exercise recursive generic path access. */
+    REQUIRE_STATUS(kmipkit_ttlv_structure_create(&nested), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create(UINT32_C(0x420008), &raw_tag),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_long_integer(73, &value), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_item_create(tag, value, codec_limits, &item),
+        KMIPKIT_SUCCESS);
+    value = NULL; /* Item construction consumes the value handle. */
+    REQUIRE_STATUS(kmipkit_ttlv_structure_with_item(nested, item, codec_limits,
+        &updated), KMIPKIT_SUCCESS);
+    nested = NULL; /* Structure construction consumes both input handles. */
+    item = NULL;
+    nested = updated;
+    updated = NULL;
+    kmipkit_tag_release(tag);
+    tag = NULL;
+    kmipkit_raw_tag_release(raw_tag);
+    raw_tag = NULL;
+
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create(UINT32_C(0x420007), &raw_tag),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_structure(nested, codec_limits, &nested_value),
+        KMIPKIT_SUCCESS);
+    nested = NULL; /* Structure value construction consumes the structure handle. */
+    REQUIRE_STATUS(kmipkit_ttlv_item_create(tag, nested_value, codec_limits, &item),
+        KMIPKIT_SUCCESS);
+    nested_value = NULL; /* Item construction consumes the value handle. */
+    REQUIRE_STATUS(kmipkit_ttlv_structure_with_item(payload, item, codec_limits,
+        &updated), KMIPKIT_SUCCESS);
+    payload = NULL; /* Structure construction consumes both input handles. */
+    item = NULL;
+    payload = updated;
+    updated = NULL;
+    kmipkit_tag_release(tag);
+    tag = NULL;
+    kmipkit_raw_tag_release(raw_tag);
+    raw_tag = NULL;
+
+    REQUIRE_STATUS(kmipkit_extension_definition_validate(definition, payload,
+        &validated, codec_limits), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_validated_extension_value_identity(validated,
+        &validated_identity), KMIPKIT_SUCCESS);
+    REQUIRE(identity_name_matches(validated_identity, name, sizeof(name) - 1U));
+    REQUIRE_STATUS(kmipkit_validated_extension_value_generic_value(validated,
+        &generic_value), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_structure_view_item_count(generic_value,
+        &generic_item_count), KMIPKIT_SUCCESS);
+    REQUIRE(generic_item_count == UINT64_C(6));
+
+    REQUIRE_STATUS(kmipkit_ttlv_path_create(UINT32_C(0x420007), &path),
+        KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_path_with_child_tag(path, UINT32_C(0x420008),
+        &updated_path), KMIPKIT_SUCCESS);
+    path = NULL; /* Appending the child tag consumes the original path handle. */
+    path = updated_path;
+    updated_path = NULL;
+    REQUIRE_STATUS(kmipkit_validated_extension_value_value_at(validated, path,
+        &value_view), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS(kmipkit_ttlv_value_view_long_integer(value_view, &observed),
+        KMIPKIT_SUCCESS);
+    REQUIRE(observed == 73);
+
+    kmipkit_ttlv_structure_view_release(generic_value);
+    kmipkit_ttlv_value_view_release(value_view);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_value_release(nested_value);
+    kmipkit_ttlv_item_release(item);
+    kmipkit_ttlv_structure_release(updated);
+    kmipkit_ttlv_structure_release(nested);
+    kmipkit_ttlv_path_release(path);
+    kmipkit_validated_extension_value_release(validated);
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_extension_definition_release(definition);
+    kmipkit_extension_identity_release(validated_identity);
     kmipkit_extension_identity_release(identity);
     kmipkit_codec_limits_release(codec_limits);
     return true;
@@ -1371,7 +1972,11 @@ int main(int argc, char **argv)
         {"explicit outbound criticality", test_explicit_outbound_criticality},
         {"null and wrong-kind release no-ops", test_null_and_wrong_kind_release_are_noops},
         {"identity fields and batch extension order", test_identity_fields_and_batch_extension_order},
-        {"handle release and null output semantics", test_handle_release_and_null_output_on_error}
+        {"handle release and null output semantics", test_handle_release_and_null_output_on_error},
+        {"TTLV scalar views and limits", test_ttlv_scalar_views_and_limits},
+        {"schema path and order builders", test_schema_path_and_order_builders},
+        {"extension information and definition accessors", test_extension_information_and_definition_accessors},
+        {"definition validation and TTLV identity readback", test_definition_validation_and_ttlv_identity_readback}
     };
     size_t index;
     size_t failures = 0U;
@@ -1384,6 +1989,7 @@ int main(int argc, char **argv)
             ++failures;
         } else {
             printf("PASS %s\n", tests_without_arguments[index].name);
+            (void)fflush(stdout);
         }
     }
     if (failures != 0U) {

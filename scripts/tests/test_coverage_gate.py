@@ -277,7 +277,7 @@ class CoverageGateTests(unittest.TestCase):
 
             results = GATE._evaluate_coverage(root, reports, diff)
 
-        self.assertIn("Changed executable Rust lines: not applicable.", results)
+        self.assertIn("Changed executable production lines: not applicable.", results)
 
     def test_mixed_hit_shared_summary_line_does_not_reserve_uncovered_slot(self) -> None:
         self.require_gate()
@@ -309,7 +309,7 @@ class CoverageGateTests(unittest.TestCase):
 
             results = GATE._evaluate_coverage(root, reports, diff)
 
-        self.assertIn("Changed executable Rust lines: not applicable.", results)
+        self.assertIn("Changed executable production lines: not applicable.", results)
 
     def test_platform_uncovered_summary_residuals_are_summed_for_package_coverage(self) -> None:
         self.require_gate()
@@ -326,7 +326,7 @@ class CoverageGateTests(unittest.TestCase):
                 for platform in ("ubuntu", "windows", "macos")
             }
 
-            with self.assertRaisesRegex(GATE.CoverageDataError, "TTLV/protocol coverage 19/22"):
+            with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-ttlv coverage 19/22"):
                 GATE._evaluate_coverage(root, reports, "")
 
     def test_platform_uncovered_summary_residuals_are_summed_for_workspace_coverage(self) -> None:
@@ -365,7 +365,7 @@ class CoverageGateTests(unittest.TestCase):
                 for platform in ("ubuntu", "windows", "macos")
             }
 
-            with self.assertRaisesRegex(GATE.CoverageDataError, "TTLV/protocol coverage"):
+            with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-ttlv coverage"):
                 GATE._evaluate_coverage(root, reports, "")
 
     def test_missing_function_record_cannot_hide_an_uncovered_line_from_the_gate(self) -> None:
@@ -390,7 +390,7 @@ class CoverageGateTests(unittest.TestCase):
                 platform: GATE.parse_llvm_export(document, root)
                 for platform in ("ubuntu", "windows", "macos")
             }
-            with self.assertRaisesRegex(GATE.CoverageDataError, "TTLV/protocol coverage"):
+            with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-ttlv coverage"):
                 GATE._evaluate_coverage(root, reports, "")
 
     def test_file_segments_override_outer_positive_region_for_nested_uncovered_code(self) -> None:
@@ -468,7 +468,7 @@ class CoverageGateTests(unittest.TestCase):
         wrong_type = json.loads(json.dumps(valid_report))
         wrong_type["type"] = "other.export"
         invalid_schemas.append(wrong_type)
-        for unsupported_version in ("2.0.0", "3.2.0", "3.x.1"):
+        for unsupported_version in ("2.1.0", "3.2.0", "3.x.1"):
             unsupported = json.loads(json.dumps(valid_report))
             unsupported["version"] = unsupported_version
             invalid_schemas.append(unsupported)
@@ -492,6 +492,23 @@ class CoverageGateTests(unittest.TestCase):
             document["version"] = "3.1.0"
             report = GATE.parse_llvm_export(json.dumps(document), root)
         self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
+
+    def test_llvm_20_1_8_native_fixture_maps_the_jni_source_lines(self) -> None:
+        self.require_gate()
+        fixtures = Path(__file__).parent / "fixtures"
+        relative_source = "bindings/java/native/kmipkit_jni.cpp"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / relative_source
+            source.parent.mkdir(parents=True)
+            source.write_bytes((fixtures / "llvm-cov-20.1.8-native.cpp").read_bytes())
+            document = (fixtures / "llvm-cov-20.1.8-native.json").read_text(encoding="utf-8")
+            report = GATE.parse_llvm_export(document, root)
+
+        self.assertEqual(
+            {1: 2, 2: 2, 3: 1, 4: 1, 5: 2, 6: 2, 8: 2, 9: 2, 10: 2},
+            report[relative_source],
+        )
 
     def test_report_paths_must_resolve_inside_the_checkout(self) -> None:
         self.require_gate()
@@ -819,7 +836,62 @@ trait Example { fn declaration(&self); }
             GATE.parse_added_rust_lines(diff),
         )
 
-    def test_platform_reports_sum_execution_counts_by_source_line(self) -> None:
+    def test_scoped_llvm_export_ignores_unreported_dependency_functions(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            ffi_source = "crates/kmipkit-ffi/src/extension_registry.rs"
+            dependency_source = "crates/kmipkit-ttlv/src/value.rs"
+            for source in (ffi_source, dependency_source):
+                path = root / source
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("pub fn measured() {}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 20, 2, 0, 0, 0]], ffi_source))
+            document["data"][0]["functions"].append(
+                {
+                    "name": "dependency_function",
+                    "count": 1,
+                    "filenames": [dependency_source],
+                    "regions": [[1, 1, 1, 20, 1, 0, 0, 0]],
+                }
+            )
+
+            report = GATE.parse_llvm_export(
+                document,
+                root,
+                source_filter={ffi_source},
+            )
+
+        self.assertEqual({ffi_source: {1: 2}}, report)
+
+    def test_scoped_llvm_export_requires_every_requested_source(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            present = "crates/kmipkit-ffi/src/extension_registry.rs"
+            missing = "crates/kmipkit-ffi/src/limits.rs"
+            for source in (present, missing):
+                path = root / source
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("pub fn measured() {}\n", encoding="utf-8")
+            document = llvm_document([[1, 1, 1, 20, 2, 0, 0, 0]], present)
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "Requested source is missing"):
+                GATE.parse_llvm_export(document, root, source_filter={present, missing})
+
+    def test_coverage_report_union_counts_each_source_line_once(self) -> None:
+        self.require_gate()
+        source = "crates/kmipkit-ffi/src/extension_registry.rs"
+        merged = GATE.merge_coverage_reports(
+            {
+                "workspace": {source: {7: 2, 8: 0}},
+                "c-consumer": {source: {7: 3, 9: 4}},
+            }
+        )
+        self.assertEqual({7: 3, 8: 0, 9: 4}, merged[source])
+        self.assertEqual(2, sum(count > 0 for count in merged[source].values()))
+
+    def test_platform_reports_union_execution_counts_by_source_line(self) -> None:
         self.require_gate()
         merged = GATE.merge_platform_reports(
             {
@@ -828,7 +900,34 @@ trait Example { fn declaration(&self); }
                 "macos": {"crates/kmipkit/src/lib.rs": {8: 4}},
             }
         )
-        self.assertEqual({7: 5, 8: 4}, merged["crates/kmipkit/src/lib.rs"])
+        self.assertEqual({7: 3, 8: 4}, merged["crates/kmipkit/src/lib.rs"])
+
+    def test_ffi_c_consumer_artifact_is_required_when_ffi_has_product_code(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ffi" / "src" / "extension_registry.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn exported_entry() {}\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "coverage-ffi.*coverage.json"):
+                GATE._load_ffi_c_consumer_artifact(root / "reports", root)
+
+    def test_ffi_c_consumer_artifact_measures_only_ffi_product_sources(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = "crates/kmipkit-ffi/src/extension_registry.rs"
+            source_path = root / source
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text("pub fn exported_entry() {}\n", encoding="utf-8")
+            report_path = root / "reports" / "coverage-ffi" / "coverage.json"
+            report_path.parent.mkdir(parents=True)
+            report_path.write_text(llvm_document([[1, 1, 1, 25, 1, 0, 0, 0]], source), encoding="utf-8")
+
+            report = GATE._load_ffi_c_consumer_artifact(root / "reports", root)
+
+        self.assertEqual({source: {1: 1}}, report)
 
     def test_threshold_boundaries_and_not_applicable_changed_metric(self) -> None:
         self.require_gate()
@@ -999,7 +1098,7 @@ trait Example { fn declaration(&self); }
             markdown = summary.read_text(encoding="utf-8")
             self.assertIn("PASS", markdown)
             self.assertIn("Changed Rust coverage: 1/1 (100.00%)", markdown)
-            self.assertIn("TTLV/protocol coverage: 2/2 (100.00%)", markdown)
+            self.assertIn("kmipkit-ttlv coverage: 2/2 (100.00%)", markdown)
             self.assertIn("Workspace coverage: 2/2 (100.00%)", markdown)
 
     def test_aggregate_writes_failure_diagnostic_to_the_job_summary(self) -> None:

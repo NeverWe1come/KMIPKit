@@ -419,7 +419,7 @@ class ExtensionRegistryTests(unittest.TestCase):
                     {"tag": "0x4200A5", "type": "TextString", "value": "alpha"},
                     {"tag": "0x4200A6", "type": "Integer", "value": 0x00540001},
                     {"tag": "0x4200A7", "type": "Enumeration", "value": 7},
-                    {"tag": "0x4200A8", "type": "Integer", "value": 17},
+                    {"tag": "0x420129", "type": "Integer", "value": 17},
                     {"tag": "0x42012A", "type": "Boolean", "value": False},
                     {"tag": "0x42012B", "type": "Integer", "value": 0x00540002},
                     {"tag": "0x42012C", "type": "TextString", "value": "local metadata"},
@@ -636,6 +636,233 @@ class ExtensionRegistryTests(unittest.TestCase):
             self.assertEqual(registry_api.definition_count(active_registry), 1)
         with self.assertRaises(errors.InvalidInputError):
             registry_api.definition_count(registry)
+
+    def test_ttlv_scalar_views_cover_the_item_types_and_reject_invalid_python_inputs(self) -> None:
+        unknown_type = ttlv.ItemType(0xF0)
+        self.assertEqual(unknown_type.name, "Unknown_0xF0")
+        with self.assertRaises(ValueError):
+            ttlv.ItemType(0x100)
+
+        raw_tag = ttlv.raw_tag_from_raw(0x0042_0001)
+        tag = ttlv.raw_tag_try_checked(raw_tag)
+        self.assertEqual(ttlv.raw_tag_value(raw_tag), 0x0042_0001)
+        self.assertEqual(ttlv.tag_value(tag), 0x0042_0001)
+
+        limits = _codec_limits()
+        self.assertGreater(ttlv.codec_limits_max_message_bytes(limits), 0)
+        self.assertGreater(ttlv.codec_limits_max_structure_depth(limits), 0)
+        self.assertGreater(ttlv.codec_limits_max_elements(limits), 0)
+        custom_limits = ttlv.codec_limits_create(1_024, 8, 32)
+        self.assertEqual(ttlv.codec_limits_max_message_bytes(custom_limits), 1_024)
+        self.assertEqual(ttlv.codec_limits_max_structure_depth(custom_limits), 8)
+        self.assertEqual(ttlv.codec_limits_max_elements(custom_limits), 32)
+
+        scalar_cases = (
+            (ttlv.ttlv_value_integer(-5), ttlv.ItemType.Integer, ttlv.ttlv_value_view_integer, -5),
+            (ttlv.ttlv_value_long_integer(-7), ttlv.ItemType.LongInteger, ttlv.ttlv_value_view_long_integer, -7),
+            (ttlv.ttlv_value_enumeration(17), ttlv.ItemType.Enumeration, ttlv.ttlv_value_view_enumeration, 17),
+            (ttlv.ttlv_value_boolean(True), ttlv.ItemType.Boolean, ttlv.ttlv_value_view_boolean, True),
+            (ttlv.ttlv_value_date_time(1_700_000_000), ttlv.ItemType.DateTime, ttlv.ttlv_value_view_date_time, 1_700_000_000),
+            (ttlv.ttlv_value_interval(250), ttlv.ItemType.Interval, ttlv.ttlv_value_view_interval, 250),
+            (ttlv.ttlv_value_date_time_extended(-1_700_000_000), ttlv.ItemType.DateTimeExtended, ttlv.ttlv_value_view_date_time_extended, -1_700_000_000),
+        )
+        for value, expected_type, getter, expected_value in scalar_cases:
+            with self.subTest(item_type=expected_type):
+                view = ttlv.ttlv_value_view(value)
+                try:
+                    self.assertIs(ttlv.ttlv_value_view_type(view), expected_type)
+                    self.assertEqual(getter(view), expected_value)
+                finally:
+                    view.close()
+                    value.close()
+
+        text = ttlv.ttlv_value_text_string(b"abc", limits)
+        text_view = ttlv.ttlv_value_view(text)
+        try:
+            self.assertEqual(ttlv.ttlv_value_view_byte_length(text_view), 3)
+            self.assertEqual(ttlv.ttlv_value_view_byte_at(text_view, 1), ord("b"))
+            with self.assertRaises(errors.InvalidInputError):
+                ttlv.ttlv_value_view_byte_at(text_view, -1)
+        finally:
+            text_view.close()
+            text.close()
+
+        for constructor in (
+            ttlv.ttlv_value_big_integer,
+            ttlv.ttlv_value_byte_string,
+        ):
+            value = constructor(b"\x01", limits)
+            value.close()
+
+        empty_structure = ttlv.ttlv_structure_create()
+        structure_view = ttlv.ttlv_structure_view(empty_structure)
+        try:
+            self.assertEqual(ttlv.ttlv_structure_view_item_count(structure_view), 0)
+            with self.assertRaises(errors.InvalidInputError):
+                ttlv.ttlv_structure_view_item_at(structure_view, -1)
+        finally:
+            structure_view.close()
+            empty_structure.close()
+
+        with self.assertRaises(errors.InvalidInputError):
+            ttlv.ttlv_value_boolean(1)
+        with self.assertRaises(errors.InvalidInputError):
+            ttlv.ttlv_value_text_string("text", limits)
+        limits.close()
+        custom_limits.close()
+        tag.close()
+        raw_tag.close()
+
+    def test_extension_validation_rejects_mistyped_inputs_and_preserves_optional_metadata(self) -> None:
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.create_extension_identity(None, "extension", "1")
+
+        defaults = registry_api.default_extension_registry_limits()
+        values = [getattr(defaults, field) for field in registry_api._LIMIT_FIELDS]
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.create_extension_registry_limits(*values[:-1])
+        invalid_values = values.copy()
+        invalid_values[0] = True
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.create_extension_registry_limits(*invalid_values)
+        invalid_values[0] = -1
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.create_extension_registry_limits(*invalid_values)
+        invalid_values[0] = 1 << 64
+        with self.assertRaises(errors.ResourceLimitError):
+            registry_api.create_extension_registry_limits(*invalid_values)
+
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.structure_schema([], [], 1)
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.with_type(
+                registry_api.create_extension_information("name"), unknown_type := ttlv.ItemType(0xF0)
+            )
+        self.assertEqual(unknown_type.name, "Unknown_0xF0")
+
+        definition = self.definitions["known.alpha"]
+        value = _structure_from_fixture(
+            self.fixtures["valid-recognized"]["extension"]["payload"]["children"]
+        )
+        codec_limits = _codec_limits()
+        validated = registry_api.validate_extension_value(definition, value, codec_limits)
+        self.assertEqual(validated.identity.name, "alpha")
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.validate_extension_value(definition, value)
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.validate_extension_value(object())
+
+        registry = registry_api.create_client_extension_registry([definition], defaults)
+        try:
+            self.assertIsNone(registry_api.definition_at(registry, 8))
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.definition_at(registry, -1)
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.definition_at(registry, True)
+        finally:
+            registry.close()
+
+        information = registry_api.extension_definition_information(definition)
+        self.assertIsNotNone(information)
+        if information is not None:
+            information.close()
+        validated.close()
+        value.close()
+        codec_limits.close()
+
+    def test_adapter_rejects_mistyped_extension_arguments_before_native_calls(self) -> None:
+        information = registry_api.create_extension_information("metadata")
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.with_attribute(information, 1)
+
+        definition = self.definitions["known.alpha"]
+        registry = registry_api.create_client_extension_registry(
+            [definition], registry_api.default_extension_registry_limits()
+        )
+        identity = registry_api.extension_definition_identity(definition)
+        limits = _codec_limits()
+        payload = _structure_from_fixture(
+            self.fixtures["valid-recognized"]["extension"]["payload"]["children"]
+        )
+        value = None
+        item = registry_api.client_batch_item_discover_versions()
+        nested_value = None
+        nested_view = None
+        try:
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.validate_extension_value(registry, identity, payload, object())
+
+            value = registry_api.validate_extension_value(
+                registry, identity, payload, limits
+            )
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.create_client_request_message_extension(value, 1)
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.client_batch_item_extension_identity_at(item, -1)
+            with self.assertRaises(errors.InvalidInputError):
+                registry_api.client_batch_item_extension_criticality_indicator_at(
+                    item, True
+                )
+
+            nested_structure = ttlv.ttlv_structure_create()
+            nested_value = ttlv.ttlv_value_structure(nested_structure, limits)
+            nested_view = ttlv.ttlv_value_view(nested_value)
+            self.assertIsNone(
+                registry_api._view_scalar(nested_view, ttlv.ItemType.Structure)
+            )
+        finally:
+            if nested_view is not None:
+                nested_view.close()
+            if nested_value is not None:
+                nested_value.close()
+            if value is not None:
+                value.close()
+            item.close()
+            payload.close()
+            limits.close()
+            identity.close()
+            registry.close()
+            information.close()
+
+    def test_schema_builders_exercise_optional_repeated_order_and_value_constraints(self) -> None:
+        first_tag = _tag("0x540001")
+        second_tag = _tag("0x540002")
+        text_schema = registry_api.scalar_schema(ttlv.ItemType.TextString)
+        integer_schema = registry_api.scalar_schema(ttlv.ItemType.Integer)
+        enumeration_schema = registry_api.scalar_schema(ttlv.ItemType.Enumeration)
+        optional = registry_api.optional_child_rule(first_tag, text_schema)
+        repeated = registry_api.repeated_child_rule(second_tag, text_schema)
+        order = registry_api.create_extension_order_constraint(first_tag, second_tag)
+        structure = registry_api.structure_schema([optional, repeated], [order], False)
+
+        transformed_text = registry_api.with_maximum_length(
+            registry_api.with_minimum_length(text_schema, 1), 32
+        )
+        transformed_integer = registry_api.with_signed_range(integer_schema, -10, 10)
+        transformed_enumeration = registry_api.with_unsigned_range(
+            enumeration_schema, 1, 10
+        )
+        transformed_enumeration = registry_api.with_allowed_enumeration(
+            transformed_enumeration, 3
+        )
+        transformed_integer = registry_api.with_allowed_bit_mask(transformed_integer, 0x0F)
+        transformed_integer = registry_api.with_required_bit_mask(transformed_integer, 0x03)
+
+        for handle in (
+            structure,
+            transformed_text,
+            transformed_integer,
+            transformed_enumeration,
+            order,
+            optional,
+            repeated,
+            text_schema,
+            integer_schema,
+            enumeration_schema,
+            first_tag,
+            second_tag,
+        ):
+            handle.close()
 
     def test_failure_and_default_diagnostics_redact_secret_fixture_values(self) -> None:
         fixture = self.fixtures["synthetic-secret-bearing"]

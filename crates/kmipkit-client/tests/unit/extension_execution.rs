@@ -49,6 +49,14 @@ fn response_with_extension(criticality: bool) -> Vec<u8> {
 }
 
 fn response_with_extension_for_operation(criticality: bool, operation: u32) -> Vec<u8> {
+    response_with_extension_vendor(criticality, operation, VENDOR.to_owned())
+}
+
+fn response_with_extension_vendor(
+    criticality: bool,
+    operation: u32,
+    vendor: String,
+) -> Vec<u8> {
     let mut extension_payload = Structure::new();
     extension_payload
         .try_push(test_item(
@@ -82,7 +90,7 @@ fn response_with_extension_for_operation(criticality: bool, operation: u32) -> V
         ])),
     )]);
     let extension = test_structure([
-        test_item(VENDOR_IDENTIFICATION, Value::text_string(VENDOR.to_owned())),
+        test_item(VENDOR_IDENTIFICATION, Value::text_string(vendor)),
         test_item(CRITICALITY_INDICATOR, Value::boolean(criticality)),
         test_item(VENDOR_EXTENSION, Value::structure(extension_payload)),
     ]);
@@ -295,6 +303,31 @@ fn an_unregistered_critical_response_extension_is_rejected_without_retry() {
         1,
         "execution does not retry"
     );
+}
+
+#[test]
+fn oversized_response_extension_vendor_is_rejected_with_protocol_delivery_evidence() {
+    let response = response_with_extension_vendor(
+        false,
+        crate::execute_test_support::DISCOVER_VERSIONS_OPERATION,
+        "v".repeat(4_097),
+    );
+    let (mut client, transport) = client_for(response);
+
+    let error = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions())),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("response extension text over the registry limit is rejected");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+    assert!(!format!("{error}").contains("vvvvvvvv"));
 }
 
 #[test]

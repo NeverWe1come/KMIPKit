@@ -209,6 +209,23 @@ jobs:
       - name: Install pinned coverage tool
         run: cargo install cargo-llvm-cov --version 0.9.1 --locked
 
+      - name: Install LLVM 20.1.8 for Linux FFI coverage export
+        if: matrix.platform == 'ubuntu'
+        uses: KyleMayes/install-llvm-action@ebc0426251bc40c7cd31162802432c68818ab8f0 # KyleMayes/install-llvm-action v2.0.9
+        with:
+          version: '20.1.8'
+          directory: ${{ runner.temp }}/llvm-20
+
+      - name: Add versioned LLVM coverage tool names
+        if: matrix.platform == 'ubuntu'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/llvm-20-tools"
+          for tool in llvm-cov; do
+            ln -s "$LLVM_PATH/bin/$tool" "$RUNNER_TEMP/llvm-20-tools/${tool}-20"
+          done
+          echo "$RUNNER_TEMP/llvm-20-tools" >> "$GITHUB_PATH"
+
       - name: Check production source eligibility
         id: source
         shell: pwsh
@@ -231,12 +248,25 @@ jobs:
           & $python.Source scripts/coverage_gate.py normalize --workspace . --input coverage-raw.json --output coverage.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Collect C consumer FFI coverage
+        if: steps.source.outputs.eligible == 'true' && matrix.platform == 'ubuntu'
+        shell: bash
+        run: bash scripts/collect_ffi_coverage.sh coverage-ffi
+
       - name: Upload platform coverage report
         if: steps.source.outputs.eligible == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
           name: coverage-${{ matrix.platform }}
           path: coverage.json
+          if-no-files-found: error
+
+      - name: Upload C consumer FFI coverage report
+        if: steps.source.outputs.eligible == 'true' && matrix.platform == 'ubuntu'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: coverage-ffi
+          path: coverage-ffi/coverage.json
           if-no-files-found: error
 
       - name: Upload explicit unavailable status

@@ -2,7 +2,7 @@
 //!
 //! Traceability: KMIPKIT-0012-FR-009.
 
-use kmipkit_protocol::extension;
+use kmipkit_protocol::{ProtocolErrorKind, extension};
 use kmipkit_ttlv::{ItemType, ValueView};
 
 const TABLE_365_TAGS_IN_ORDER: [u32; 7] = [
@@ -92,4 +92,65 @@ fn extension_information_exposes_every_optional_field_in_table_order_and_type() 
         ]
     );
     assert!(items[4].with_value(|value| matches!(value, ValueView::Boolean(false))));
+}
+
+#[test]
+fn extension_type_maps_every_supported_ttlv_type_to_its_table_365_enumeration() {
+    for (item_type, expected_enumeration) in [
+        (ItemType::Structure, 0x01),
+        (ItemType::Integer, 0x02),
+        (ItemType::LongInteger, 0x03),
+        (ItemType::BigInteger, 0x04),
+        (ItemType::Enumeration, 0x05),
+        (ItemType::Boolean, 0x06),
+        (ItemType::TextString, 0x07),
+        (ItemType::ByteString, 0x08),
+        (ItemType::DateTime, 0x09),
+        (ItemType::Interval, 0x0A),
+        (ItemType::DateTimeExtended, 0x0B),
+    ] {
+        let information = extension::extension_information("vendor-extension")
+            .expect("Extension Name is required");
+        let information = extension::with_type(information, item_type)
+            .expect("each represented TTLV type has a Table 365 code");
+        let encoded =
+            extension::to_ttlv(information).expect("Extension Type encodes as an Enumeration");
+        let enumeration = encoded.view().children()[1].with_value(|value| match value {
+            ValueView::Enumeration(value) => Some(*value),
+            _ => None,
+        });
+
+        assert_eq!(enumeration, Some(expected_enumeration));
+    }
+}
+
+#[test]
+fn extension_information_rejects_invalid_identity_and_out_of_range_integer_fields() {
+    assert_eq!(
+        extension::extension_information("")
+            .expect_err("empty Extension Name is invalid")
+            .kind(),
+        ProtocolErrorKind::InvalidIdentity
+    );
+
+    let information =
+        extension::extension_information("vendor-extension").expect("Extension Name is required");
+    assert_eq!(
+        extension::with_tag(information.clone(), 0x0100_0000)
+            .expect_err("Extension Tag must fit 24 bits")
+            .kind(),
+        ProtocolErrorKind::InvalidSchema
+    );
+    assert_eq!(
+        extension::with_enumeration(information.clone(), u32::MAX)
+            .expect_err("Extension Enumeration must fit a signed KMIP Integer")
+            .kind(),
+        ProtocolErrorKind::InvalidSchema
+    );
+    assert_eq!(
+        extension::with_parent_structure_tag(information, 0x0100_0000)
+            .expect_err("Parent Structure Tag must fit 24 bits")
+            .kind(),
+        ProtocolErrorKind::InvalidSchema
+    );
 }

@@ -19,8 +19,21 @@ set_target_properties(kmipkit_extension_registry_consumer PROPERTIES
     BUILD_RPATH "${KMIPKIT_TARGET_DIR}"
 )
 
+add_executable(kmipkit_vendor_extension_example examples/vendor_extension.c)
+target_compile_features(kmipkit_vendor_extension_example PRIVATE c_std_11)
+target_include_directories(kmipkit_vendor_extension_example PRIVATE include)
+target_link_libraries(kmipkit_vendor_extension_example PRIVATE "${KMIPKIT_FFI_LIBRARY}")
+set_target_properties(kmipkit_vendor_extension_example PROPERTIES
+    BUILD_RPATH "${KMIPKIT_TARGET_DIR}"
+)
+
 add_test(
     NAME kmipkit_extension_registry_consumer
     COMMAND kmipkit_extension_registry_consumer
         "${CMAKE_CURRENT_LIST_DIR}/../../tests/fixtures/extensions/cases.json"
+)
+
+add_test(
+    NAME kmipkit_vendor_extension_example
+    COMMAND kmipkit_vendor_extension_example
 )

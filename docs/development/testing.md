@@ -101,18 +101,21 @@ result, and known workaround.
 
 ## Coverage
 
-- TTLV/protocol: 95 percent line minimum.
-- Transport/FFI/bindings: 85 percent line minimum.
-- Workspace: 90 percent line minimum.
-- Changed code: 95 percent line minimum.
+- `kmipkit-ttlv` and `kmipkit-protocol`: 95 percent line minimum each.
+- `kmipkit-transport`, `kmipkit-ffi`, Java, Python, and JNI: 85 percent
+  line minimum for each separately measured scope.
+- Rust workspace: 90 percent line minimum.
+- Changed production code across Rust, Java, Python, and JNI: 95 percent line
+  minimum.
 - Normative requirement traceability: 100 percent.
 
 Use `cargo llvm-cov`. CI collects LLVM JSON coverage on Linux, Windows, and
 macOS for the checked-out pull-request merge commit. The changed-code gate
-compares that exact tree with the pull-request base and derives executable Rust
-line counts from LLVM file segments across the three reports. It validates the
-parsed line and covered-line totals as lower bounds against each file's LLVM
-summary while checking function code-region schemas, file references, and
+compares that exact tree with the pull-request base, derives executable Rust
+line counts from LLVM file segments across the three reports, and checks added
+Java, Python, and JNI source lines against their own collector reports. It
+validates the parsed line and covered-line totals as lower bounds against each
+file's LLVM summary while checking function code-region schemas, file references, and
 each code region's start line against the file segment map. The parser checks
 region start lines because a region may span structural source lines that have
 no executable code. LLVM sums line summaries by source-level function group,
@@ -129,23 +132,128 @@ reserves are conservative because LLVM does not report their physical
 locations. Missing region start lines fail closed. This preserves
 nested-region counts and prevents missing function records from hiding
 uncovered lines. It requires at least 95 percent changed executable-line
-coverage. The 95 percent package gate
-applies to `kmipkit-ttlv` and `kmipkit-protocol`; 85 percent applies to
-`kmipkit-transport` and `kmipkit-ffi`; the workspace gate is 90 percent.
+coverage. Each Rust crate is gated separately: `kmipkit-ttlv` and
+`kmipkit-protocol` at 95 percent, and `kmipkit-transport` and `kmipkit-ffi`
+at 85 percent. The Rust workspace gate is 90 percent and includes Rust
+production crates only.
 An LLVM report that repeats a workspace source path across export mappings
 fails closed until those mappings can be reconciled independently; function
 regions from distinct `CoverageMapping` objects are never combined to explain
 one another's summaries.
 
-The normalizer accepts the reviewed LLVM JSON export schema versions 3.0.x and
-3.1.x. Other major or minor versions fail closed until their consumed file,
-segment, region, and summary fields have been checked and covered by a fixture.
+### Adapter and FFI coverage
+
+The coverage aggregator also requires one JaCoCo XML report at
+`coverage-java/jacoco.xml`, one coverage.py Cobertura report at
+`coverage-python/coverage.xml`, and one LLVM JSON report at
+`coverage-jni/coverage.json` whenever these source trees exist. It checks each
+scope independently at 85 percent, then includes all reported production
+lines in the 95 percent changed-code gate. Adapter report paths must resolve to
+the source checkout, and every selected production source must be present in
+its report.
+
+JaCoCo 0.8.12 measures compiled Java product code below
+`bindings/java/src/main/java/org/kmipkit`; its Maven check enforces 85 percent
+line coverage. Test classes are compiled under `src/test/java` and examples
+remain under `bindings/java/examples`, so neither is product coverage input.
+Generated Java package code remains included. JaCoCo measures JVM bytecode;
+it does not measure the native JNI implementation.
+
+Python uses the single exact-pinned test/build requirements set in
+`bindings/python/requirements-coverage.txt`: coverage 7.10.6, pytest-cov
+6.2.1, pytest 8.4.2, CFFI 1.17.1, and Maturin 1.9.4. The committed
+coverage.py configuration selects `kmipkit` as the measured source package
+with no omissions, so handwritten and generated files under
+`bindings/python/src/kmipkit` remain in the 85 percent gate. Tests and example
+consumers live outside that package and are not measured as product code.
+
+The Rust C ABI implementation, including generated Rust FFI code, is measured
+by `cargo llvm-cov` in `kmipkit-ffi`. Its Linux-only `coverage-c-consumer`
+feature compiles the existing public C consumer test into the Rust integration
+test binary and calls it under the same coverage process. This keeps the
+behavior assertions in C while making their Rust ABI calls visible to LLVM.
+The ordinary CMake consumer test still runs in the language-bindings job. The
+coverage build uses the exact-pinned `cc` 1.6.0 build dependency only when the
+coverage feature is enabled. The C header contains declarations, not
+executable lines. The handwritten JNI implementation in
+`bindings/java/native/kmipkit_jni.cpp` is compiled with LLVM source-based
+coverage instrumentation and measured from its own report; JaCoCo and Rust
+coverage do not count those C++ lines. The JNI collector is Linux-only and
+requires LLVM/Clang 20.1.8. There are no generated-source coverage exclusions
+in the current configuration.
+
+The aggregate job requires these inputs at the report root:
+
+```text
+coverage-reports/
+  coverage-ubuntu/coverage.json
+  coverage-windows/coverage.json
+  coverage-macos/coverage.json
+  coverage-ffi/coverage.json
+  coverage-java/jacoco.xml
+  coverage-python/coverage.xml
+  coverage-jni/coverage.json
+```
+
+Collect them with the following commands. Run the Rust commands in each
+platform matrix job; cargo-llvm-cov is pinned at 0.9.1. The Python commands
+run in the Python 3.12 environment provisioned by CI or an active Python 3.12
+virtual environment.
+
+```sh
+cargo llvm-cov --workspace --all-features --locked --json --output-path coverage-raw.json
+python scripts/coverage_gate.py normalize --workspace . --input coverage-raw.json --output coverage.json
+
+mvn -B -f bindings/java/pom.xml clean verify
+
+python -m pip install -r bindings/python/requirements-coverage.txt
+python -m pip install --no-build-isolation --editable bindings/python
+python -m pytest -q bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml --cov-report=xml:coverage-reports/coverage-python/coverage.xml
+
+# Linux only; requires clang/LLVM 20.1.8 and runs the Java suite against instrumented JNI.
+bash scripts/collect_jni_coverage.sh target/coverage-jni
+
+# Linux only; runs the C ABI consumer against the instrumented Rust library.
+bash scripts/collect_ffi_coverage.sh target/coverage-ffi
+
+mkdir -p coverage-reports/coverage-java coverage-reports/coverage-jni coverage-reports/coverage-ffi
+cp bindings/java/target/site/jacoco/jacoco.xml coverage-reports/coverage-java/jacoco.xml
+cp target/coverage-jni/coverage.json coverage-reports/coverage-jni/coverage.json
+cp target/coverage-ffi/coverage.json coverage-reports/coverage-ffi/coverage.json
+python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base <full-base-sha> --merge <full-merge-sha>
+```
+
+The pull-request workflow's Linux `coverage` job runs the C ABI collector and
+uploads `coverage-ffi`; its Linux `adapter-coverage` job runs the Java, Python,
+and JNI collectors and uploads their three reports. The `coverage-gate` job
+requires successful Rust and adapter collection, downloads all seven coverage
+artifacts into `coverage-reports`, and runs the aggregate command with the pull request
+base and merge commit SHAs shown above. A local aggregate run must supply real
+reports from Ubuntu, Windows, and macOS; missing platform or adapter artifacts
+fail closed.
+
+The normalizer accepts LLVM JSON export schema 2.0.x for the pinned JNI
+collector (LLVM 20.1.8) and schemas 3.0.x and 3.1.x for Rust coverage.
+Schema 2.0.x is accepted only with a captured native fixture; other major or
+minor versions fail closed until their consumed file, segment, region, and
+summary fields have been checked and covered by a fixture. LLVM 20.1.8's
+export command has no include-filename option, so the Linux JNI collector
+excludes only the JDK `jni.h` wrapper declarations and
+`bindings/c/include/kmipkit.h` declarations. The Rust `kmipkit-ffi` sources
+measure the C ABI implementation separately; these headers contain no
+handwritten JNI implementation. Every other reported source path is retained
+and checked by the normalizer, so the JNI denominator includes the actual
+`bindings/java/native/kmipkit_jni.cpp` lines and fails closed on unexpected
+headers.
 
 The changed-code metric is `not applicable` when a pull request changes no
-executable Rust lines; the package and workspace gates still apply. Coverage
-is `unavailable` only when a complete scan finds no production function
-bodies. Each required platform then uploads an explicit unavailable status.
-Unreadable or unclassifiable source requires coverage, inline `#[cfg(test)]`
+executable production lines; the package and workspace gates still apply.
+Coverage is `unavailable` only when a complete Rust scan finds no production
+function bodies and no Java, Python, or JNI production package exists. Adapter
+source files conservatively require measured coverage even when Rust has no
+function bodies. Each required platform then uploads an explicit unavailable
+status only for the complete no-code case. Unreadable or unclassifiable source
+requires coverage, inline `#[cfg(test)]`
 modules fail preflight, and missing or malformed reports fail once production
 code is eligible. Keep tests in crate-level external test directories outside
 `src/`. Every Rust file under `src/` is included regardless of its name or

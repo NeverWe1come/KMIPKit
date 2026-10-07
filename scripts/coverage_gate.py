@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
+import xml.etree.ElementTree as ET
 
 
 class CoverageDataError(RuntimeError):
@@ -205,9 +206,61 @@ def _is_rust_source_tree_path(path: str | Path) -> bool:
 
 
 def is_coverage_source_path(path: str | Path) -> bool:
-    """Return whether a relative Rust path belongs to production crate source."""
+    """Return whether a relative path names an audited production source file."""
     normalized = str(path).replace("\\", "/").lstrip("./")
-    return _is_rust_source_tree_path(normalized)
+    if _is_rust_source_tree_path(normalized):
+        return True
+    parts = PurePosixPath(normalized).parts
+    if len(parts) >= 7 and parts[:5] == (
+        "bindings",
+        "java",
+        "src",
+        "main",
+        "java",
+    ) and parts[5] == "org" and parts[6] == "kmipkit":
+        return normalized.endswith(".java")
+    if len(parts) >= 5 and parts[:4] == ("bindings", "python", "src", "kmipkit"):
+        return normalized.endswith(".py")
+    return normalized == "bindings/java/native/kmipkit_jni.cpp"
+
+
+def scan_adapter_sources(workspace_root: str | Path) -> dict[str, set[str]]:
+    """List handwritten and generated product adapter sources, excluding consumers."""
+    root = Path(workspace_root).resolve()
+    scopes = {
+        "Java adapters": root / "bindings/java/src/main/java/org/kmipkit",
+        "Python adapters": root / "bindings/python/src/kmipkit",
+    }
+    sources: dict[str, set[str]] = {name: set() for name in (*scopes, "JNI bridge")}
+    for scope, source_root in scopes.items():
+        if not source_root.exists():
+            continue
+        if source_root.is_symlink():
+            raise CoverageDataError(f"Adapter source root is a symlink and cannot be scanned: {source_root}")
+        suffix = ".java" if scope == "Java adapters" else ".py"
+        walk_errors: list[str] = []
+
+        def on_walk_error(error: OSError) -> None:
+            walk_errors.append(str(error))
+
+        for current, directories, filenames in os.walk(source_root, topdown=True, onerror=on_walk_error):
+            current_path = Path(current)
+            symlinked = _find_symlinked_directories(current_path, directories, walk_errors, "adapter source directory")
+            directories[:] = [name for name in directories if name not in symlinked]
+            for filename in filenames:
+                candidate = current_path / filename
+                if candidate.suffix != suffix:
+                    continue
+                relative = candidate.relative_to(root).as_posix()
+                if is_coverage_source_path(relative):
+                    sources[scope].add(relative)
+        if walk_errors:
+            raise CoverageDataError(f"Adapter source scan is incomplete: {walk_errors[0]}")
+
+    jni_source = root / "bindings/java/native/kmipkit_jni.cpp"
+    if jni_source.is_file():
+        sources["JNI bridge"].add(jni_source.relative_to(root).as_posix())
+    return sources
 
 
 def _excluded_test_module(
@@ -303,7 +356,7 @@ def _find_symlinked_directories(
 
 
 def scan_production_sources(workspace_root: str | Path) -> SourceScanResult:
-    """Scan every production Rust file; uncertainty requires coverage."""
+    """Scan production sources; uncertainty and adapter files require coverage."""
     root = Path(workspace_root).resolve()
     crates = root / "crates"
     if not crates.is_dir():
@@ -366,10 +419,22 @@ def scan_production_sources(workspace_root: str | Path) -> SourceScanResult:
     if scan_errors:
         reason = f"source scan was incomplete; coverage is required: {scan_errors[0]}"
         return SourceScanResult(True, reason, len(source_files), eligible_files, complete=False)
+    adapter_sources = scan_adapter_sources(root)
+    adapter_file_count = sum(len(paths) for paths in adapter_sources.values())
     if eligible_files:
         reason = f"executable or ambiguous function body found in {len(eligible_files)} source file(s)"
-        return SourceScanResult(True, reason, len(source_files), eligible_files)
-    return SourceScanResult(False, "no production function bodies found after a complete source scan", len(source_files))
+        return SourceScanResult(True, reason, len(source_files) + adapter_file_count, eligible_files)
+    if adapter_file_count:
+        return SourceScanResult(
+            True,
+            "adapter production source requires coverage",
+            len(source_files) + adapter_file_count,
+        )
+    return SourceScanResult(
+        False,
+        "no production function bodies found after a complete source scan",
+        len(source_files),
+    )
 
 
 def _canonical_source_path(
@@ -405,7 +470,7 @@ def _load_json_document(document: str | bytes | Mapping[str, Any]) -> dict[str, 
     if value.get("type") != "llvm.coverage.json.export":
         raise CoverageDataError("LLVM report has an unsupported or missing export type.")
     version = value.get("version")
-    if not isinstance(version, str) or re.fullmatch(r"3\.(?:0|1)\.\d+", version) is None:
+    if not isinstance(version, str) or re.fullmatch(r"(?:2\.0|3\.(?:0|1))\.\d+", version) is None:
         raise CoverageDataError(f"LLVM report has an unsupported or missing schema version: {version!r}")
     if not isinstance(value.get("data"), list) or not value["data"]:
         raise CoverageDataError("LLVM report is missing a non-empty data array.")
@@ -512,10 +577,28 @@ def _parse_file_segments(file_record: Mapping[str, Any], source_path: Path) -> d
     return line_counts
 
 
-def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root: str | Path) -> dict[str, dict[int, int]]:
-    """Parse LLVM file segments for line counts and validate function code regions."""
+def parse_llvm_export(
+    document: str | bytes | Mapping[str, Any],
+    workspace_root: str | Path,
+    *,
+    source_filter: set[str] | frozenset[str] | None = None,
+) -> dict[str, dict[int, int]]:
+    """Parse LLVM file segments, optionally projecting onto exact source files."""
     root = Path(workspace_root).resolve()
     parsed = _load_json_document(document)
+    allowed_sources: frozenset[str] | None = None
+    if source_filter is not None:
+        if not isinstance(source_filter, (set, frozenset)) or not source_filter:
+            raise CoverageDataError("LLVM source filter must be a non-empty set of production source paths.")
+        normalized_sources: set[str] = set()
+        for requested_source in source_filter:
+            if not isinstance(requested_source, str):
+                raise CoverageDataError("LLVM source filter contains a non-string path.")
+            canonical = _canonical_source_path(requested_source, root)
+            if canonical is None or canonical != requested_source.replace("\\", "/"):
+                raise CoverageDataError(f"LLVM source filter path is not a canonical production source: {requested_source}.")
+            normalized_sources.add(canonical)
+        allowed_sources = frozenset(normalized_sources)
     lines: dict[str, dict[int, int]] = {}
     summary_uncovered_counts: dict[str, int] = {}
     function_region_lines: dict[str, set[int]] = {}
@@ -545,6 +628,8 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
                 except (OSError, ValueError) as error:
                     raise CoverageDataError(f"LLVM report path is outside the workspace: {file_record['filename']}") from error
                 continue
+            if allowed_sources is not None and source not in allowed_sources:
+                raise CoverageDataError(f"Scoped LLVM report contains an unexpected source file: {source}.")
             register_source_mapping(source, data_item_index)
             file_record_key = (data_item_index, source)
             if file_record_key in file_records_seen:
@@ -584,7 +669,7 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
                 if kind not in {0, 1, 2, 3}:
                     raise CoverageDataError(f"LLVM function region has an unsupported region kind: {kind}")
                 source = _canonical_source_path(filenames[file_id], root)
-                if source is None or kind != 0:
+                if source is None or kind != 0 or (allowed_sources is not None and source not in allowed_sources):
                     continue
                 register_source_mapping(source, data_item_index)
                 regions_seen += 1
@@ -620,6 +705,12 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
 
     if regions_seen == 0:
         raise CoverageDataError("LLVM report contains no production code regions.")
+    if allowed_sources is not None:
+        missing_sources = allowed_sources.difference(lines)
+        if missing_sources:
+            raise CoverageDataError(
+                "Requested source is missing from LLVM file segments: " + ", ".join(sorted(missing_sources))
+            )
     for source, region_lines in function_region_lines.items():
         missing_lines = region_lines.difference(lines.get(source, {}))
         if missing_lines:
@@ -659,6 +750,114 @@ def parse_llvm_export(document: str | bytes | Mapping[str, Any], workspace_root:
             summary_uncovered - segment_uncovered - known_shared_uncovered,
         )
     return CoverageReport(lines, summary_uncovered_excess)
+
+
+def _coverage_report_source(candidate: Path, workspace_root: Path, report_kind: str) -> str:
+    try:
+        resolved = candidate.resolve(strict=True)
+        relative = resolved.relative_to(workspace_root).as_posix()
+    except (OSError, ValueError) as error:
+        raise CoverageDataError(f"{report_kind} source path is outside the workspace or missing: {candidate}") from error
+    if not is_coverage_source_path(relative):
+        raise CoverageDataError(f"{report_kind} references a non-production source path: {relative}")
+    return relative
+
+
+def _parse_coverage_xml(document: str | bytes, report_kind: str) -> ET.Element:
+    try:
+        root = ET.fromstring(document)
+    except (ET.ParseError, TypeError, ValueError) as error:
+        raise CoverageDataError(f"{report_kind} coverage report is not valid XML: {error}") from error
+    return root
+
+
+def parse_jacoco_report(document: str | bytes, workspace_root: str | Path) -> dict[str, dict[int, int]]:
+    """Parse JaCoCo source-file line counters for the Java production package."""
+    root = Path(workspace_root).resolve()
+    xml_root = _parse_coverage_xml(document, "JaCoCo")
+    if xml_root.tag != "report":
+        raise CoverageDataError("JaCoCo coverage report root must be <report>.")
+    source_root = root / "bindings/java/src/main/java"
+    report: dict[str, dict[int, int]] = {}
+    for package in xml_root.findall("package"):
+        package_name = package.get("name")
+        if not isinstance(package_name, str) or not package_name:
+            raise CoverageDataError("JaCoCo package is missing its source path.")
+        package_path = PurePosixPath(package_name)
+        if package_path.is_absolute() or ".." in package_path.parts:
+            raise CoverageDataError(f"JaCoCo package path is invalid: {package_name}")
+        for source_file in package.findall("sourcefile"):
+            source_name = source_file.get("name")
+            if not isinstance(source_name, str) or Path(source_name).name != source_name:
+                raise CoverageDataError("JaCoCo sourcefile has an invalid name.")
+            source = _coverage_report_source(source_root.joinpath(*package_path.parts, source_name), root, "JaCoCo")
+            if source in report:
+                raise CoverageDataError(f"JaCoCo report repeats source file: {source}.")
+            lines: dict[int, int] = {}
+            for line_element in source_file.findall("line"):
+                try:
+                    line = int(line_element.attrib["nr"])
+                    missed = int(line_element.attrib["mi"])
+                    covered = int(line_element.attrib["ci"])
+                except (KeyError, ValueError) as error:
+                    raise CoverageDataError(f"JaCoCo line counter is malformed for {source}.") from error
+                if line < 1 or min(missed, covered) < 0 or line in lines:
+                    raise CoverageDataError(f"JaCoCo line counter is invalid or repeated for {source}:{line}.")
+                lines[line] = int(covered > 0)
+            report[source] = lines
+    if not report:
+        raise CoverageDataError("JaCoCo coverage report contains no source files.")
+    return report
+
+
+def parse_cobertura_report(document: str | bytes, workspace_root: str | Path) -> dict[str, dict[int, int]]:
+    """Parse coverage.py Cobertura lines, keeping only KMIPKit Python package code."""
+    root = Path(workspace_root).resolve()
+    xml_root = _parse_coverage_xml(document, "Cobertura")
+    if xml_root.tag != "coverage":
+        raise CoverageDataError("Cobertura coverage report root must be <coverage>.")
+    source_elements = xml_root.findall("./sources/source")
+    source_roots = [Path(element.text or "") for element in source_elements if (element.text or "").strip()]
+    if not source_roots:
+        source_roots = [Path(".")]
+    report: dict[str, dict[int, int]] = {}
+    for class_element in xml_root.findall(".//class"):
+        filename = class_element.get("filename")
+        if not isinstance(filename, str) or not filename:
+            raise CoverageDataError("Cobertura class is missing its source filename.")
+        relative_filename = Path(filename)
+        candidates = []
+        for source_root in source_roots:
+            base = source_root if source_root.is_absolute() else root / source_root
+            candidates.append(relative_filename if relative_filename.is_absolute() else base / relative_filename)
+        if not relative_filename.is_absolute():
+            candidates.append(root / relative_filename)
+        resolved_source: str | None = None
+        last_error: CoverageDataError | None = None
+        for candidate in candidates:
+            try:
+                resolved_source = _coverage_report_source(candidate, root, "Cobertura")
+                break
+            except CoverageDataError as error:
+                last_error = error
+        if resolved_source is None:
+            raise last_error or CoverageDataError(f"Cobertura source path is invalid: {filename}")
+        if resolved_source in report:
+            raise CoverageDataError(f"Cobertura report repeats source file: {resolved_source}.")
+        lines: dict[int, int] = {}
+        for line_element in class_element.findall("./lines/line"):
+            try:
+                line = int(line_element.attrib["number"])
+                hits = int(line_element.attrib["hits"])
+            except (KeyError, ValueError) as error:
+                raise CoverageDataError(f"Cobertura line counter is malformed for {resolved_source}.") from error
+            if line < 1 or hits < 0 or line in lines:
+                raise CoverageDataError(f"Cobertura line counter is invalid or repeated for {resolved_source}:{line}.")
+            lines[line] = hits
+        report[resolved_source] = lines
+    if not report:
+        raise CoverageDataError("Cobertura coverage report contains no source files.")
+    return report
 
 
 def normalize_llvm_export(document: str | bytes, workspace_root: str | Path) -> str:
@@ -755,8 +954,8 @@ def _decode_git_diff_path(value: str) -> str:
         raise CoverageDataError("Git diff path is not valid UTF-8.") from error
 
 
-def parse_added_rust_lines(diff: str) -> dict[str, set[int]]:
-    """Return added destination-tree line numbers from a unified Git diff."""
+def _parse_added_source_lines(diff: str, source_filter: Any) -> dict[str, set[int]]:
+    """Return added destination-tree line numbers matching a source predicate."""
     changed: dict[str, set[int]] = {}
     current_path: str | None = None
     new_line = 0
@@ -765,7 +964,7 @@ def parse_added_rust_lines(diff: str) -> dict[str, set[int]]:
         if line.startswith("+++ "):
             destination = _decode_git_diff_path(line[4:])
             current_path = None if destination == "/dev/null" else destination.removeprefix("b/")
-            if current_path and not current_path.endswith(".rs"):
+            if current_path and not source_filter(current_path):
                 current_path = None
         elif line.startswith("@@ "):
             match = re.match(r"@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@", line)
@@ -787,22 +986,39 @@ def parse_added_rust_lines(diff: str) -> dict[str, set[int]]:
     return changed
 
 
+def parse_added_rust_lines(diff: str) -> dict[str, set[int]]:
+    """Return added Rust line numbers from production crate source files."""
+    return _parse_added_source_lines(diff, _is_rust_source_tree_path)
+
+
+def parse_added_production_lines(diff: str) -> dict[str, set[int]]:
+    """Return added Rust and adapter line numbers from production source files."""
+    return _parse_added_source_lines(diff, is_coverage_source_path)
+
+
+def merge_coverage_reports(reports: Mapping[str, Mapping[str, Mapping[int, int]]]) -> dict[str, dict[int, int]]:
+    """Union source-line hits across reports without counting duplicate lines twice."""
+    if not isinstance(reports, Mapping) or not reports:
+        raise CoverageDataError("Coverage aggregation requires at least one report.")
+    merged: dict[str, dict[int, int]] = {}
+    for report_name, report in reports.items():
+        if not isinstance(report, Mapping):
+            raise CoverageDataError(f"{report_name} coverage report is malformed.")
+        for source, line_counts in report.items():
+            if not is_coverage_source_path(source) or not isinstance(line_counts, Mapping):
+                raise CoverageDataError(f"{report_name} report contains an invalid source path or line map.")
+            for line, count in line_counts.items():
+                if type(line) is not int or line < 1 or type(count) is not int or count < 0:
+                    raise CoverageDataError(f"{report_name} report contains invalid line data for {source}.")
+                target = merged.setdefault(source, {})
+                target[line] = max(target.get(line, 0), count)
+    return merged
+
+
 def merge_platform_reports(reports: Mapping[str, Mapping[str, Mapping[int, int]]]) -> dict[str, dict[int, int]]:
     if set(reports) != {"ubuntu", "windows", "macos"}:
         raise CoverageDataError("Coverage aggregation requires exactly ubuntu, windows, and macos reports.")
-    merged: dict[str, dict[int, int]] = {}
-    for platform, report in reports.items():
-        if not isinstance(report, Mapping):
-            raise CoverageDataError(f"{platform} coverage report is malformed.")
-        for source, line_counts in report.items():
-            if not is_coverage_source_path(source) or not isinstance(line_counts, Mapping):
-                raise CoverageDataError(f"{platform} report contains an invalid source path or line map.")
-            for line, count in line_counts.items():
-                if type(line) is not int or line < 1 or type(count) is not int or count < 0:
-                    raise CoverageDataError(f"{platform} report contains invalid line data for {source}.")
-                target = merged.setdefault(source, {})
-                target[line] = target.get(line, 0) + count
-    return merged
+    return merge_coverage_reports(reports)
 
 
 def meets_threshold(covered: int, total: int, threshold: float) -> bool:
@@ -835,7 +1051,22 @@ def changed_code_result(changed_lines: set[tuple[str, int]] | set[int], coverage
 def _run_git_diff(workspace: Path, base: str, merge: str) -> str:
     if not re.fullmatch(r"[0-9a-fA-F]{40,64}", base) or not re.fullmatch(r"[0-9a-fA-F]{40,64}", merge):
         raise CoverageDataError("Base and merge identifiers must be full Git object IDs.")
-    command = ["git", "-C", str(workspace), "diff", "--no-ext-diff", "--no-renames", "--unified=0", base, merge, "--", "*.rs"]
+    command = [
+        "git",
+        "-C",
+        str(workspace),
+        "diff",
+        "--no-ext-diff",
+        "--no-renames",
+        "--unified=0",
+        base,
+        merge,
+        "--",
+        "*.rs",
+        "*.java",
+        "*.py",
+        "*.cpp",
+    ]
     try:
         result = subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
     except (OSError, subprocess.CalledProcessError) as error:
@@ -874,18 +1105,123 @@ def _load_platform_artifacts(report_root: Path, workspace: Path) -> dict[str, An
     return reports
 
 
-def _evaluate_coverage(workspace: Path, reports: Mapping[str, Mapping[str, Mapping[int, int]]], diff: str) -> list[str]:
+def _load_ffi_c_consumer_artifact(
+    report_root: Path,
+    workspace: Path,
+) -> Mapping[str, Mapping[int, int]] | None:
+    """Load Rust FFI line hits produced by the instrumented C ABI consumer."""
+    source_scan = scan_production_sources(workspace)
+    if not source_scan.complete:
+        raise CoverageDataError(f"Production source scan is incomplete: {source_scan.reason}")
+    expected_sources = {
+        source
+        for source in source_scan.eligible_files
+        if source.startswith("crates/kmipkit-ffi/src/")
+    }
+    if not expected_sources:
+        return None
+    report_path = report_root / "coverage-ffi" / "coverage.json"
+    if not report_path.is_file():
+        raise CoverageDataError(f"Required Rust C ABI coverage artifact is missing: {report_path}.")
+    try:
+        report = parse_llvm_export(
+            report_path.read_text(encoding="utf-8"),
+            workspace,
+            source_filter=expected_sources,
+        )
+    except OSError as error:
+        raise CoverageDataError(f"Could not read Rust C ABI coverage report: {error}") from error
+    missing_sources = expected_sources.difference(report)
+    unexpected_sources = set(report).difference(expected_sources)
+    if missing_sources:
+        raise CoverageDataError(
+            f"Eligible Rust FFI source is missing from C ABI coverage report: {', '.join(sorted(missing_sources))}"
+        )
+    if unexpected_sources:
+        raise CoverageDataError(
+            f"Rust C ABI coverage report contains a source outside its package: {', '.join(sorted(unexpected_sources))}"
+        )
+    return report
+
+
+def _load_adapter_reports(
+    report_root: Path,
+    workspace: Path,
+) -> dict[str, Mapping[str, Mapping[int, int]]] | None:
+    sources = scan_adapter_sources(workspace)
+    if not any(sources.values()):
+        return None
+    inputs = {
+        "Java adapters": (report_root / "coverage-java" / "jacoco.xml", parse_jacoco_report),
+        "Python adapters": (report_root / "coverage-python" / "coverage.xml", parse_cobertura_report),
+        "JNI bridge": (report_root / "coverage-jni" / "coverage.json", parse_llvm_export),
+    }
+    parsed: dict[str, Mapping[str, Mapping[int, int]]] = {}
+    for scope, (report_path, parser) in inputs.items():
+        expected_sources = sources[scope]
+        if not expected_sources:
+            continue
+        if not report_path.is_file():
+            raise CoverageDataError(f"Required {scope} coverage artifact is missing: {report_path}.")
+        try:
+            document = report_path.read_bytes()
+            adapter_report = parser(document, workspace)
+        except OSError as error:
+            raise CoverageDataError(f"Could not read {scope} coverage report: {error}") from error
+        missing_sources = expected_sources.difference(adapter_report)
+        unexpected_sources = set(adapter_report).difference(expected_sources)
+        if missing_sources:
+            raise CoverageDataError(
+                f"Eligible {scope} source is missing from its coverage report: {', '.join(sorted(missing_sources))}"
+            )
+        if unexpected_sources:
+            raise CoverageDataError(
+                f"{scope} coverage report contains a source outside its package: {', '.join(sorted(unexpected_sources))}"
+            )
+        parsed[scope] = adapter_report
+    return parsed
+
+
+def _evaluate_coverage(
+    workspace: Path,
+    reports: Mapping[str, Mapping[str, Mapping[int, int]]],
+    diff: str,
+    adapter_reports: Mapping[str, Mapping[str, Mapping[int, int]]] | None = None,
+    ffi_c_consumer_report: Mapping[str, Mapping[int, int]] | None = None,
+) -> list[str]:
     merged = merge_platform_reports(reports)
-    summary_uncovered_excess: dict[str, int] = {}
-    for report in reports.values():
-        if isinstance(report, CoverageReport):
-            for source, count in report.summary_uncovered_excess.items():
-                summary_uncovered_excess[source] = summary_uncovered_excess.get(source, 0) + count
     source_scan = scan_production_sources(workspace)
     if not source_scan.eligible:
         raise CoverageDataError("Coverage reports contain production code but source preflight found no executable production files.")
     if not source_scan.complete:
         raise CoverageDataError(f"Production source scan is incomplete: {source_scan.reason}")
+    expected_ffi_sources = {
+        source
+        for source in source_scan.eligible_files
+        if source.startswith("crates/kmipkit-ffi/src/")
+    }
+    if expected_ffi_sources and ffi_c_consumer_report is None:
+        raise CoverageDataError("Rust FFI C-consumer coverage report is required for this workspace.")
+    if ffi_c_consumer_report is not None:
+        missing_ffi_sources = expected_ffi_sources.difference(ffi_c_consumer_report)
+        unexpected_ffi_sources = set(ffi_c_consumer_report).difference(expected_ffi_sources)
+        if missing_ffi_sources:
+            raise CoverageDataError(
+                f"Eligible Rust FFI source is missing from C ABI coverage report: {', '.join(sorted(missing_ffi_sources))}"
+            )
+        if unexpected_ffi_sources:
+            raise CoverageDataError(
+                f"Rust C ABI coverage report contains a source outside its package: {', '.join(sorted(unexpected_ffi_sources))}"
+            )
+        merged = merge_coverage_reports({"platforms": merged, "ffi-c-consumer": ffi_c_consumer_report})
+    summary_uncovered_excess: dict[str, int] = {}
+    for report in reports.values():
+        if isinstance(report, CoverageReport):
+            for source, count in report.summary_uncovered_excess.items():
+                summary_uncovered_excess[source] = summary_uncovered_excess.get(source, 0) + count
+    if isinstance(ffi_c_consumer_report, CoverageReport):
+        for source, count in ffi_c_consumer_report.summary_uncovered_excess.items():
+            summary_uncovered_excess[source] = summary_uncovered_excess.get(source, 0) + count
     missing_sources = source_scan.eligible_files.difference(merged)
     if missing_sources:
         missing = ", ".join(sorted(missing_sources))
@@ -894,58 +1230,126 @@ def _evaluate_coverage(workspace: Path, reports: Mapping[str, Mapping[str, Mappi
     if not all_lines:
         raise CoverageDataError("Eligible production source has no executable lines in the LLVM reports.")
 
+    adapter_sources = scan_adapter_sources(workspace)
+    if any(adapter_sources.values()) and adapter_reports is None:
+        raise CoverageDataError("Java, Python, and JNI coverage reports are required for this workspace.")
+    adapter_reports = adapter_reports or {}
+    adapter_scopes = {
+        "Java adapters": 85,
+        "Python adapters": 85,
+        "JNI bridge": 85,
+    }
+    for label, threshold in adapter_scopes.items():
+        source_paths = adapter_sources[label]
+        if not source_paths:
+            continue
+        if label not in adapter_reports:
+            raise CoverageDataError(f"Required {label} coverage report is missing.")
+        report = adapter_reports[label]
+        missing_adapter_sources = source_paths.difference(report)
+        if missing_adapter_sources:
+            raise CoverageDataError(
+                f"Eligible {label} source is missing from its coverage report: {', '.join(sorted(missing_adapter_sources))}"
+            )
+
     results: list[str] = []
-    changed = parse_added_rust_lines(diff)
+    changed = parse_added_production_lines(diff)
+    production_lines = dict(all_lines)
+    adapter_summary_excess: dict[str, int] = {}
+    for report in adapter_reports.values():
+        for source, line_counts in report.items():
+            for line, count in line_counts.items():
+                production_lines[(source, line)] = count
+        if isinstance(report, CoverageReport):
+            for source, count in report.summary_uncovered_excess.items():
+                adapter_summary_excess[source] = adapter_summary_excess.get(source, 0) + count
+
     changed_executable = {
         (source, line)
         for source, line_numbers in changed.items()
         for line in line_numbers
-        if (source, line) in all_lines
+        if (source, line) in production_lines
     }
     if changed_executable:
-        covered = sum(all_lines[item] > 0 for item in changed_executable)
+        covered = sum(production_lines[item] > 0 for item in changed_executable)
         changed_sources = {source for source in changed if source in merged}
         summary_only = sum(summary_uncovered_excess.get(source, 0) for source in changed_sources)
+        changed_adapter_sources = {source for source in changed if source in adapter_summary_excess}
+        summary_only += sum(adapter_summary_excess.get(source, 0) for source in changed_adapter_sources)
         total = len(changed_executable) + summary_only
+        rust_only = all(source.endswith(".rs") for source, _ in changed_executable)
         if not meets_threshold(covered, total, 95):
-            raise CoverageDataError(f"Changed Rust code coverage {covered}/{total} is below 95%.")
+            prefix = "Changed Rust code" if rust_only else "Changed production code"
+            raise CoverageDataError(f"{prefix} coverage {covered}/{total} is below 95%.")
         percentage = covered * 100 / total
+        label = "Changed Rust" if rust_only else "Changed production"
         results.append(
-            f"Changed Rust coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered (95% minimum)."
+            f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered (95% minimum)."
         )
     else:
         changed_sources = {source for source in changed if source in merged}
         summary_only = sum(summary_uncovered_excess.get(source, 0) for source in changed_sources)
+        summary_only += sum(adapter_summary_excess.get(source, 0) for source in changed if source in adapter_summary_excess)
         if summary_only:
+            changed_rust_only = all(source.endswith(".rs") for source in changed)
+            prefix = "Changed Rust code coverage" if changed_rust_only else "Changed production code coverage"
             raise CoverageDataError(
-                "Changed Rust code coverage cannot be marked not applicable while LLVM summary lines are absent from segments."
+                f"{prefix} cannot be marked not applicable while LLVM summary lines are absent from segments."
             )
-        results.append("Changed executable Rust lines: not applicable.")
+        results.append("Changed executable production lines: not applicable.")
 
-    groups = {
-        "TTLV/protocol": (95, ("kmipkit-ttlv", "kmipkit-protocol")),
-        "transport/FFI": (85, ("kmipkit-transport", "kmipkit-ffi")),
+    crate_thresholds = {
+        "kmipkit-ttlv": 95,
+        "kmipkit-protocol": 95,
+        "kmipkit-transport": 85,
+        "kmipkit-ffi": 85,
     }
-    for label, (threshold, crate_names) in groups.items():
-        group_lines = {
+    for crate_name, threshold in crate_thresholds.items():
+        crate_lines = {
             (source, line): count
             for (source, line), count in all_lines.items()
-            if PurePosixPath(source).parts[1] in crate_names
+            if len(PurePosixPath(source).parts) > 1
+            and PurePosixPath(source).parts[0] == "crates"
+            and PurePosixPath(source).parts[1] == crate_name
         }
-        if group_lines:
-            covered = sum(count > 0 for count in group_lines.values())
-            summary_only = sum(
-                count
-                for source, count in summary_uncovered_excess.items()
-                if PurePosixPath(source).parts[1] in crate_names
-            )
-            total = len(group_lines) + summary_only
-            if not meets_threshold(covered, total, threshold):
-                raise CoverageDataError(f"{label} coverage {covered}/{total} is below {threshold}%.")
-            percentage = covered * 100 / total
-            results.append(
-                f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
-            )
+        if not crate_lines:
+            continue
+        covered = sum(count > 0 for count in crate_lines.values())
+        summary_only = sum(
+            count
+            for source, count in summary_uncovered_excess.items()
+            if len(PurePosixPath(source).parts) > 1 and PurePosixPath(source).parts[1] == crate_name
+        )
+        total = len(crate_lines) + summary_only
+        if not meets_threshold(covered, total, threshold):
+            raise CoverageDataError(f"{crate_name} coverage {covered}/{total} is below {threshold}%.")
+        percentage = covered * 100 / total
+        results.append(
+            f"{crate_name} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
+        )
+
+    for label, threshold in adapter_scopes.items():
+        source_paths = adapter_sources[label]
+        if not source_paths:
+            continue
+        report = adapter_reports[label]
+        scoped_lines = {
+            (source, line): count
+            for source, line_counts in report.items()
+            if source in source_paths
+            for line, count in line_counts.items()
+        }
+        summary_only = sum(
+            count for source, count in adapter_summary_excess.items() if source in source_paths
+        )
+        covered = sum(count > 0 for count in scoped_lines.values())
+        total = len(scoped_lines) + summary_only
+        if not meets_threshold(covered, total, threshold):
+            raise CoverageDataError(f"{label} coverage {covered}/{total} is below {threshold}%.")
+        percentage = covered * 100 / total
+        results.append(
+            f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
+        )
 
     covered = sum(count > 0 for count in all_lines.values())
     summary_only = sum(summary_uncovered_excess.values())
@@ -995,8 +1399,10 @@ def _command_aggregate(args: argparse.Namespace) -> int:
             ["All three platforms verified that no production function bodies exist; no threshold is claimed."],
         )
         return 0
+    ffi_c_consumer_report = _load_ffi_c_consumer_artifact(Path(args.report_dir), workspace)
+    adapter_reports = _load_adapter_reports(Path(args.report_dir), workspace)
     diff = _run_git_diff(workspace, args.base, args.merge)
-    results = _evaluate_coverage(workspace, reports, diff)
+    results = _evaluate_coverage(workspace, reports, diff, adapter_reports, ffi_c_consumer_report)
     for result in results:
         print(result)
     _append_coverage_summary(args.summary_file, "passed", results)

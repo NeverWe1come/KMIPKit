@@ -28,6 +28,7 @@ fn private_validation_errors_have_safe_display_text() {
         BatchValidationError::RepeatedBatchErrorContinuation,
         BatchValidationError::SingleItemBatchErrorContinuation,
         BatchValidationError::InvalidBatchErrorContinuation,
+        BatchValidationError::ExtensionRegistryMismatch,
     ];
     for error in errors {
         assert_ne!(error.to_string(), "");
@@ -41,6 +42,10 @@ fn private_validation_errors_have_safe_display_text() {
     assert_eq!(
         ResponseLimitExceeded.to_string(),
         "response exceeds the configured byte limit"
+    );
+    assert_eq!(
+        BatchValidationError::ExtensionRegistryMismatch.to_string(),
+        "request extension was validated for a different client registry"
     );
 }
 
@@ -96,6 +101,23 @@ fn response_association_rejects_duplicate_request_id_matches() {
     assert_eq!(
         associate_batch_items(&requests, &responses),
         Err(ResponseAssociationError::DuplicateId)
+    );
+}
+
+#[test]
+fn response_association_rejects_an_unmatched_batch_item_identifier() {
+    let requests = [BatchIdentity {
+        operation: 0x0000_001E,
+        unique_batch_item_id: Some(b"requested-id".to_vec()),
+    }];
+    let responses = [BatchIdentity {
+        operation: 0x0000_001E,
+        unique_batch_item_id: Some(b"returned-id".to_vec()),
+    }];
+
+    assert_eq!(
+        associate_batch_items(&requests, &responses),
+        Err(ResponseAssociationError::UnknownId)
     );
 }
 

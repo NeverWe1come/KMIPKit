@@ -25,6 +25,14 @@ const BATCH_ITEM_TAG: u32 = 0x0042_000F;
 const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 const CRITICALITY_INDICATOR_TAG: u32 = 0x0042_0026;
 const VENDOR_EXTENSION_TAG: u32 = 0x0042_009C;
+const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
+const CLIENT_CORRELATION_VALUE_TAG: u32 = 0x0042_0105;
+const ASYNCHRONOUS_INDICATOR_TAG: u32 = 0x0042_0007;
+const BATCH_ERROR_CONTINUATION_OPTION_TAG: u32 = 0x0042_000E;
+const BATCH_ORDER_OPTION_TAG: u32 = 0x0042_0010;
+const TIME_STAMP_TAG: u32 = 0x0042_0092;
+const BATCH_COUNT_TAG: u32 = 0x0042_000D;
+const UNIQUE_BATCH_ITEM_ID_TAG: u32 = 0x0042_0093;
 const SECRET_SENTINEL: &[u8] = b"KMIPKIT_EXTENSION_SECRET_SENTINEL_73";
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -264,6 +272,7 @@ fn capture_extensions(bytes: &[u8]) -> Result<Vec<CapturedExtension>, DecodeErro
 struct ObservingTransport {
     inner: Rc<RefCell<ScriptedTransport>>,
     captured: Rc<RefCell<Vec<CapturedExtension>>>,
+    captured_request: Rc<RefCell<Vec<u8>>>,
     owner_observer: ZeroizationObserver,
     owner_live_during_exchange: Rc<Cell<bool>>,
 }
@@ -272,6 +281,7 @@ struct ClientFixture {
     client: Client,
     transport: Rc<RefCell<ScriptedTransport>>,
     captured: Rc<RefCell<Vec<CapturedExtension>>>,
+    captured_request: Rc<RefCell<Vec<u8>>>,
     owner_live_through_exchange: Rc<Cell<bool>>,
 }
 
@@ -286,6 +296,7 @@ impl Transport for ObservingTransport {
         let captured = capture_extensions(request)
             .expect("the client emits a complete request with valid TTLV framing");
         self.captured.borrow_mut().extend(captured);
+        self.captured_request.borrow_mut().extend_from_slice(request);
         let result = self
             .inner
             .borrow_mut()
@@ -303,10 +314,12 @@ fn client_for(
 ) -> ClientFixture {
     let inner = Rc::new(RefCell::new(ScriptedTransport::new(script)));
     let captured = Rc::new(RefCell::new(Vec::new()));
+    let captured_request = Rc::new(RefCell::new(Vec::new()));
     let owner_live = Rc::new(Cell::new(false));
     let transport = ObservingTransport {
         inner: Rc::clone(&inner),
         captured: Rc::clone(&captured),
+        captured_request: Rc::clone(&captured_request),
         owner_observer: observer.clone(),
         owner_live_during_exchange: Rc::clone(&owner_live),
     };
@@ -319,12 +332,190 @@ fn client_for(
         client,
         transport: inner,
         captured,
+        captured_request,
         owner_live_through_exchange: owner_live,
     }
 }
 
 fn response_success() -> Vec<u8> {
     response_bytes((2, 1), &[ResponseItemFixture::success(None)])
+}
+
+fn item_value(children: &[Item], raw_tag: u32) -> Option<&Item> {
+    children
+        .iter()
+        .find(|item| item.tag().raw() == raw_tag)
+}
+
+#[test]
+fn execute_encodes_every_optional_batch_header_and_item_identifier() {
+    const CORRELATION: &str = "request-correlation-73";
+    const ASYNC_CORRELATION: &[u8] = b"async-correlation-73";
+    const TIMESTAMP: i64 = 1_700_000_000;
+    let observer = ZeroizationObserver::new(None);
+    let mut fixture = client_for(
+        ExchangeScript::Success {
+            response: response_bytes(
+                (2, 1),
+                &[
+                    ResponseItemFixture::pending(Some(b"batch-a"), ASYNC_CORRELATION),
+                    ResponseItemFixture::success(Some(b"batch-b")),
+                ],
+            ),
+            request_write_chunks: Vec::new(),
+        },
+        &observer,
+        request_configuration(&[]),
+    );
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(b"batch-a".to_vec()),
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(b"batch-b".to_vec()),
+    ])
+    .with_client_correlation_value(CORRELATION.to_owned())
+    .with_asynchronous_indicator(2)
+    .with_batch_error_continuation_option(1)
+    .with_batch_order_option(true)
+    .with_request_time_stamp(TIMESTAMP);
+
+    let response = fixture
+        .client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("all supported request header options are encoded and accepted");
+
+    assert_eq!(response.len(), 2);
+    assert_eq!(fixture.transport.borrow().exchange_count(), 1);
+    let decoded = decode_with_limits(&fixture.captured_request.borrow(), &CodecLimits::defaults())
+        .expect("captured request is valid TTLV");
+    decoded.with_value(|root| {
+        let ValueView::Structure(message) = root else {
+            panic!("request message is a Structure");
+        };
+        let header =
+            item_value(message.children(), REQUEST_HEADER_TAG).expect("request header exists");
+        header.with_value(|value| {
+            let ValueView::Structure(header) = value else {
+                panic!("request header is a Structure");
+            };
+            assert_eq!(
+                item_value(header.children(), CLIENT_CORRELATION_VALUE_TAG)
+                    .expect("client correlation is encoded")
+                    .with_value(|value| match value {
+                        ValueView::TextString(value) => value.to_owned(),
+                        _ => panic!("client correlation is a Text String"),
+                    }),
+                CORRELATION
+            );
+            assert_eq!(
+                item_value(header.children(), ASYNCHRONOUS_INDICATOR_TAG)
+                    .expect("asynchronous indicator is encoded")
+                    .with_value(|value| match value {
+                        ValueView::Enumeration(value) => *value,
+                        _ => panic!("asynchronous indicator is an Enumeration"),
+                    }),
+                2
+            );
+            assert_eq!(
+                item_value(header.children(), BATCH_ERROR_CONTINUATION_OPTION_TAG)
+                    .expect("batch error continuation is encoded")
+                    .with_value(|value| match value {
+                        ValueView::Enumeration(value) => *value,
+                        _ => panic!("batch error continuation is an Enumeration"),
+                    }),
+                1
+            );
+            assert_eq!(
+                item_value(header.children(), BATCH_ORDER_OPTION_TAG)
+                    .expect("batch order is encoded")
+                    .with_value(|value| match value {
+                        ValueView::Boolean(value) => *value,
+                        _ => panic!("batch order is Boolean"),
+                    }),
+                true
+            );
+            assert_eq!(
+                item_value(header.children(), TIME_STAMP_TAG)
+                    .expect("request timestamp is encoded")
+                    .with_value(|value| match value {
+                        ValueView::DateTime(value) => *value,
+                        _ => panic!("request timestamp is Date Time"),
+                    }),
+                TIMESTAMP
+            );
+            assert_eq!(
+                item_value(header.children(), BATCH_COUNT_TAG)
+                    .expect("batch count is encoded")
+                    .with_value(|value| match value {
+                        ValueView::Integer(value) => *value,
+                        _ => panic!("batch count is Integer"),
+                    }),
+                2
+            );
+        });
+
+        let batch_item_ids = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM_TAG)
+            .map(|item| {
+                item.with_value(|value| {
+                    let ValueView::Structure(batch_item) = value else {
+                        panic!("batch item is a Structure");
+                    };
+                    item_value(batch_item.children(), UNIQUE_BATCH_ITEM_ID_TAG)
+                        .expect("unique batch item ID is encoded")
+                        .with_value(|value| match value {
+                            ValueView::ByteString(value) => value.to_vec(),
+                            _ => panic!("unique batch item ID is a Byte String"),
+                        })
+                })
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(batch_item_ids, [b"batch-a".to_vec(), b"batch-b".to_vec()]);
+    });
+}
+
+#[test]
+fn execute_rejects_extension_validated_for_a_different_registry_before_exchange() {
+    let observer = ZeroizationObserver::new(None);
+    let validated_configuration = request_configuration(&[("vendor.alpha", "alpha", "alpha-v1")]);
+    let other_configuration = request_configuration(&[("vendor.beta", "beta", "beta-v1")]);
+    let extension = validated_request_extension(
+        validated_configuration.extension_registry(),
+        "vendor.alpha",
+        "alpha",
+        "alpha-v1",
+        SECRET_SENTINEL,
+        true,
+    );
+    let mut fixture = client_for(
+        ExchangeScript::Success {
+            response: response_success(),
+            request_write_chunks: Vec::new(),
+        },
+        &observer,
+        other_configuration,
+    );
+    let batch_item =
+        ClientBatchItem::new(ClientRequest::discover_versions()).with_extension(extension);
+
+    let error = fixture
+        .client
+        .execute(ClientBatch::new(batch_item), &CodecLimits::defaults())
+        .expect_err("a request extension must match the client's registered extension set");
+
+    assert_eq!(
+        error.category(),
+        crate::ClientErrorCategory::Validation
+    );
+    assert_eq!(
+        error.cause_category(),
+        Some(crate::ClientCauseCategory::InvalidInput)
+    );
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fixture.transport.borrow().exchange_count(), 0);
+    assert!(fixture.captured_request.borrow().is_empty());
 }
 
 #[test]

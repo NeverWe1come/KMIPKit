@@ -203,6 +203,30 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, job)
 
+    def test_linux_coverage_job_collects_and_uploads_the_ffi_c_consumer_report(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "coverage")
+        collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertRegex(job, r"(?ms)^\s+- platform: ubuntu\s*\n\s+os: ubuntu-latest")
+        self.assertIn("- name: Collect C consumer FFI coverage", job)
+        self.assertIn("if: steps.source.outputs.eligible == 'true' && matrix.platform == 'ubuntu'", job)
+        self.assertIn("bash scripts/collect_ffi_coverage.sh coverage-ffi", job)
+        self.assertIn("name: coverage-ffi", job)
+        self.assertIn("path: coverage-ffi/coverage.json", job)
+        self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked", collector)
+        self.assertIn("KMIPKit.profdata", collector)
+        self.assertIn("libkmipkit_ffi.so", collector)
+        self.assertIn("--sources", collector)
+        self.assertIn("crates/kmipkit-ffi/src/extension_registry.rs", collector)
+        self.assertIn('--output "${report_dir}/coverage.json"', collector)
+
+        gate = self.require_job(contents, "coverage-gate")
+        self.assertIn("coverage", gate)
+        self.assertIn("pattern: coverage-*", gate)
+
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "coverage-gate")
@@ -214,6 +238,13 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("needs.adapter-coverage.result", job)
         self.assertIn("pattern: coverage-*", job)
         self.assertIn("scripts/coverage_gate.py aggregate", job)
+
+    def test_testing_guide_lists_the_ffi_report_and_local_collector_command(self) -> None:
+        guide = TESTING_GUIDE.read_text(encoding="utf-8")
+        normalized_guide = " ".join(guide.split())
+        self.assertIn("coverage-ffi/coverage.json", normalized_guide)
+        self.assertIn("bash scripts/collect_ffi_coverage.sh target/coverage-ffi", normalized_guide)
+        self.assertIn("downloads all seven coverage artifacts", normalized_guide)
 
     def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
         contents = self.require_workflow()

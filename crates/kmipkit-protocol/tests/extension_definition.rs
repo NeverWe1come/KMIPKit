@@ -95,6 +95,7 @@ fn compatibility_includes_kmip_2_1_and_the_running_kmipkit_version() {
         (3, 0, 2, 1, "0.0.0", "99.0.0"),
         (2, 1, 2, 1, "not-semver", "99.0.0"),
         (2, 1, 2, 1, "0.0.0", "1.2"),
+        (2, 1, 2, 1, "0.0.0.1", "99.0.0"),
         (2, 1, 2, 1, "1.0.0", "0.9.0"),
         (2, 1, 2, 1, "99.0.0", "100.0.0"),
         (2, 1, 2, 1, "0.0.0", "0.0.1"),
@@ -152,6 +153,191 @@ fn discriminator_scalar_size_and_path_depth_obey_their_hard_limits() {
     assert_kind(
         extension::with_child_tag(path, tag(64)),
         ProtocolErrorKind::ResourceLimit,
+    );
+}
+
+#[test]
+fn cloned_discriminator_preserves_each_supported_scalar_ttlv_value() {
+    let values = [
+        Value::integer(-7),
+        Value::long_integer(-9),
+        Value::big_integer(vec![0x80, 0x01]),
+        Value::enumeration(17),
+        Value::boolean(true),
+        Value::text_string("extension scalar".to_owned()),
+        Value::byte_string(vec![0x00, 0xA5]),
+        Value::date_time(1_700_000_000),
+        Value::interval(2_500),
+        Value::date_time_extended(-1_700_000_000),
+    ];
+
+    for value in values {
+        let original = valid_discriminator(value);
+        let cloned = extension::clone_extension_discriminator(&original)
+            .expect("a supported scalar discriminator can be copied");
+
+        assert_eq!(cloned.path().tags(), original.path().tags());
+        assert!(cloned.has_same_scalar(&original));
+    }
+}
+
+#[test]
+fn scalar_fingerprints_are_type_separated_and_structures_have_no_fingerprint() {
+    let values = [
+        Value::integer(-7),
+        Value::long_integer(-9),
+        Value::big_integer(vec![0x80, 0x01]),
+        Value::enumeration(17),
+        Value::boolean(true),
+        Value::text_string("extension scalar".to_owned()),
+        Value::byte_string(vec![0x00, 0xA5]),
+        Value::date_time(1_700_000_000),
+        Value::interval(2_500),
+        Value::date_time_extended(-1_700_000_000),
+    ];
+
+    let fingerprints = values
+        .into_iter()
+        .map(|value| {
+            let discriminator = valid_discriminator(value);
+            let debug = format!("{discriminator:?}");
+            assert!(debug.contains("Discriminator"));
+            assert!(debug.contains("scalar_value"));
+            discriminator
+                .scalar_fingerprint()
+                .expect("supported scalar types have fingerprints")
+        })
+        .collect::<Vec<_>>();
+
+    assert_ne!(fingerprints[0], fingerprints[1]);
+    assert_eq!(
+        fingerprints[5],
+        extension::discriminator(
+            extension::ttlv_path(tag(1)).expect("the path is non-empty"),
+            Value::text_string("extension scalar".to_owned()),
+        )
+        .expect("the scalar discriminator is valid")
+        .scalar_fingerprint()
+        .expect("TextString has a scalar fingerprint")
+    );
+
+    let structure_item = kmipkit_ttlv::Item::new(
+        tag(2),
+        Value::structure(kmipkit_ttlv::Structure::new()),
+    )
+    .expect("the test Structure uses a valid extension tag");
+    assert_eq!(
+        structure_item.with_value(|view| extension::scalar_value_fingerprint(&view)),
+        None,
+        "a Structure is not a discriminator scalar",
+    );
+}
+
+#[test]
+fn nested_discriminator_paths_match_only_the_declared_terminal_schema() {
+    let identity =
+        extension::extension_identity("example.vendor", "nested", "1").expect("identity is valid");
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+        .expect("compatibility includes this KMIPKit version");
+    let inner_schema = extension::structure(
+        vec![
+            extension::required(
+                tag(2),
+                extension::scalar(ItemType::TextString).expect("TextString is supported"),
+            )
+            .expect("the terminal child rule is valid"),
+        ],
+        Vec::new(),
+        false,
+    )
+    .expect("the nested Structure schema is valid");
+    let schema = extension::structure(
+        vec![extension::required(tag(1), inner_schema).expect("the nested rule is valid")],
+        Vec::new(),
+        false,
+    )
+    .expect("the root Structure schema is valid");
+    let path = extension::with_child_tag(
+        extension::ttlv_path(tag(1)).expect("the path starts with one tag"),
+        tag(2),
+    )
+    .expect("the nested path is within the depth limit");
+    let discriminator = extension::discriminator(path, Value::text_string("value".to_owned()))
+        .expect("the TextString discriminator is valid");
+
+    assert!(
+        extension::extension_definition(identity.clone(), compatibility, discriminator, schema)
+            .is_ok()
+    );
+
+    let missing_path = extension::ttlv_path(tag(3)).expect("the path is non-empty");
+    let missing_discriminator =
+        valid_discriminator(Value::text_string("value".to_owned()));
+    assert_eq!(missing_discriminator.path().tags(), &[tag(1)]);
+    assert_eq!(missing_path.tags(), &[tag(3)]);
+    let scalar_schema = extension::structure(
+        vec![
+            extension::required(
+                tag(1),
+                extension::scalar(ItemType::TextString).expect("TextString is supported"),
+            )
+            .expect("the child rule is valid"),
+        ],
+        Vec::new(),
+        false,
+    )
+    .expect("the root schema is valid");
+    assert_kind(
+        extension::extension_definition(
+            identity,
+            compatibility,
+            extension::discriminator(missing_path, Value::text_string("value".to_owned()))
+                .expect("the discriminator scalar is valid"),
+            scalar_schema,
+        ),
+        ProtocolErrorKind::InvalidSchema,
+    );
+}
+
+#[test]
+fn cloned_definition_preserves_identity_compatibility_discriminator_and_information() {
+    let identity =
+        extension::extension_identity("example.vendor", "cloned", "1").expect("identity is valid");
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+        .expect("compatibility includes this KMIPKit version");
+    let schema = extension::structure(
+        vec![
+            extension::required(
+                tag(1),
+                extension::scalar(ItemType::TextString).expect("TextString is supported"),
+            )
+            .expect("the discriminator child rule is valid"),
+        ],
+        Vec::new(),
+        false,
+    )
+    .expect("root schema is valid");
+    let discriminator = valid_discriminator(Value::text_string("match".to_owned()));
+    let definition =
+        extension::extension_definition(identity, compatibility, discriminator, schema)
+            .expect("schema and discriminator agree");
+    let information = extension::extension_information("metadata").expect("name is valid");
+    let definition = extension::with_information(definition, information)
+        .expect("optional Extension Information can be attached");
+
+    let cloned = extension::clone_extension_definition(&definition)
+        .expect("a complete definition can be copied for a binding");
+
+    assert_eq!(cloned.identity_ref(), definition.identity_ref());
+    assert_eq!(cloned.compatibility(), definition.compatibility());
+    assert!(
+        cloned
+            .discriminator()
+            .has_same_scalar(definition.discriminator())
+    );
+    assert_eq!(
+        extension::information(&cloned),
+        extension::information(&definition)
     );
 }
 

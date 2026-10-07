@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 import importlib.util
 import sys
 import threading
@@ -33,12 +34,20 @@ def _load_adapter() -> tuple[types.ModuleType, types.ModuleType, str]:
     class FakeFFI:
         NULL = object()
 
+        def new(self, declaration: str, initializer: object = None) -> object:
+            if initializer is None:
+                return [self.NULL]
+            return declaration, initializer
+
     class FakeLibrary:
         releases = 0
+        fail_release = False
 
         def release_handle(self, handle: object) -> None:
             del handle
             self.releases += 1
+            if self.fail_release:
+                raise RuntimeError("synthetic native cleanup failure")
 
     native = types.ModuleType(f"{package_name}._ffi")
     native.ffi = FakeFFI()
@@ -63,6 +72,55 @@ def _unload_adapter(package_name: str) -> None:
 
 
 class ConsumedHandleTests(unittest.TestCase):
+    def test_handle_marshalling_rejects_invalid_inputs_and_preserves_null_array_rules(
+        self,
+    ) -> None:
+        handles, native, package_name = _load_adapter()
+        try:
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles.NativeHandle(native.ffi.NULL)
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles._owned_bytes("\ud800")
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles._owned_bytes(object())
+            raw, pointer = handles._owned_bytes(bytearray(b"value"))
+            self.assertEqual(raw, b"value")
+            self.assertEqual(pointer, ("uint8_t[]", b"value"))
+
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles._new_handle("kmipkit_probe_t", lambda *_: 0)
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles._invoke(lambda *_: (_ for _ in ()).throw(TypeError()))
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles._invoke_consuming(lambda *_: 0, (object(),), (1,))
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles._invoke_consuming(lambda *_: 0, (object(),), (0,))
+
+            class ProbeHandle(handles.NativeHandle):
+                _release_name = "release_handle"
+
+            source = ProbeHandle(object())
+            with self.assertRaises(handles.errors.InvalidInputError):
+                source._restore(object(), None)
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles._invoke_consuming(lambda *_: 0, (source,), (0, 0))
+            self.assertIs(native.ffi.NULL, handles._array_or_null("kmipkit_probe_t", []))
+            self.assertEqual(
+                handles._array_or_null("kmipkit_probe_t", [source]),
+                ("kmipkit_probe_t *[]", [source._pointer()]),
+            )
+            source.close()
+
+            native.lib.fail_release = True
+            finalizer_probe = ProbeHandle(object())
+            del finalizer_probe
+            gc.collect()
+            native.lib.fail_release = False
+            self.assertGreaterEqual(native.lib.releases, 2)
+        finally:
+            native.lib.fail_release = False
+            _unload_adapter(package_name)
+
     def test_close_and_transfer_cannot_both_claim_the_native_handle(self) -> None:
         handles, native, package_name = _load_adapter()
         try:
