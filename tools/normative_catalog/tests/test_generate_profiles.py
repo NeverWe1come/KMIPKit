@@ -5,15 +5,18 @@ from __future__ import annotations
 import json
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from tools.normative_catalog.generate_profiles import (
     ProfileGenerationError,
     load_profile_targets,
     compute_profile_closure,
     parse_profile_targets,
+    ProfileTargets,
+    render_profiles_source,
     rust_string_literal,
 )
+from tools.normative_catalog.validate import load_validated_catalog
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -224,11 +227,37 @@ class ProfileTargetManifestTests(unittest.TestCase):
     def test_fixed_loader_uses_a_64_kib_read_bound(self) -> None:
         with patch(
             "tools.normative_catalog.generate_profiles.safe_read_bytes",
-            return_value=json.dumps(self.manifest).encode("utf-8"),
+            side_effect=lambda _root, path, *, max_bytes: (
+                json.dumps(self.manifest).encode("utf-8")
+                if path == "specification/catalog/profile-targets.json"
+                else b"**FR-003**"
+            ),
         ) as safe_read:
             load_profile_targets(ROOT, self.catalog)
 
-        self.assertEqual(safe_read.call_args.kwargs["max_bytes"], 65_536)
+        self.assertIn(
+            call(ROOT, "specification/catalog/profile-targets.json", max_bytes=65_536),
+            safe_read.call_args_list,
+        )
+
+    def test_generated_metadata_preserves_closure_evidence_and_separate_target_state(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
+        targets = ProfileTargets(
+            "1.0",
+            ("KMIPKIT-PROFILE-BASELINE-CLIENT",),
+            "KMIPKIT-0010/FR-003",
+        )
+
+        generated = render_profiles_source(catalog, targets)
+
+        self.assertEqual(generated, render_profiles_source(catalog, targets))
+        self.assertEqual(generated.count("\n    GeneratedClientProfile {"), 18)
+        self.assertIn('claim_state: "not_claimed"', generated)
+        self.assertIn("selected_target: true", generated)
+        self.assertIn('fixture_availability: "unavailable"', generated)
+        self.assertIn('"KMIPKIT-REQ-SPEC-2.1-001"', generated)
+        self.assertNotIn("ProfileRuleMapping", generated)
 
 
 if __name__ == "__main__":

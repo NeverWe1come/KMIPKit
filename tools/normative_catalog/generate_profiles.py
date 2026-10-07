@@ -2,13 +2,30 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import re
+import subprocess
+import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
+
+if __package__:
+    from .safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
+else:
+    from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
 
 
 _SECTION = re.compile(r"[0-9]+(?:\.[0-9]+)*\Z")
+_TARGET_DECISION = re.compile(r"KMIPKIT-0010/(FR-[0-9]{3})\Z")
+MAX_PROFILE_TARGET_BYTES = 65_536
+PROFILE_TARGET_PATH = "specification/catalog/profile-targets.json"
+PROFILE_SPEC_PATH = "specs/010-profile-conformance/spec.md"
+PROFILE_OUTPUT_PATH = "crates/kmipkit-protocol/src/profiles_generated.rs"
+CATALOG_PATH = "specification/catalog/kmip-2.1.json"
+MAX_CATALOG_BYTES = 16 * 1024 * 1024
 
 
 class ProfileGenerationError(ValueError):
@@ -21,6 +38,86 @@ class ProfileClosure:
 
     source_clause_ids: tuple[str, ...]
     requirement_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ProfileTargets:
+    """Strict project target selection, kept separate from runtime selection."""
+
+    release_line: str
+    profile_ids: tuple[str, ...]
+    decision_ref: str
+
+
+def _reject_duplicate_target_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ProfileGenerationError("profile target manifest contains duplicate JSON keys")
+        result[key] = value
+    return result
+
+
+def parse_profile_targets(raw: bytes, catalog: Mapping[str, Any], repo_root: Path) -> ProfileTargets:
+    """Parse and validate the exact bounded target manifest schema."""
+    if len(raw) > MAX_PROFILE_TARGET_BYTES:
+        raise ProfileGenerationError("profile target manifest exceeds its size limit")
+    try:
+        document = json.loads(raw.decode("utf-8"), object_pairs_hook=_reject_duplicate_target_pairs)
+    except ProfileGenerationError:
+        raise
+    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as error:
+        raise ProfileGenerationError("profile target manifest is not valid UTF-8 JSON") from error
+    if not isinstance(document, dict) or set(document) != {"release_line", "profile_ids", "decision_ref"}:
+        raise ProfileGenerationError("profile target manifest has missing or unknown fields")
+    release_line = document["release_line"]
+    profile_ids = document["profile_ids"]
+    decision_ref = document["decision_ref"]
+    if release_line != "1.0" or not isinstance(release_line, str):
+        raise ProfileGenerationError("profile target manifest release line must be 1.0")
+    if (
+        not isinstance(profile_ids, list)
+        or not profile_ids
+        or any(not isinstance(profile_id, str) or not profile_id.strip() for profile_id in profile_ids)
+        or len(profile_ids) != len(set(profile_ids))
+    ):
+        raise ProfileGenerationError("profile target IDs must be unique non-empty strings")
+    if not isinstance(decision_ref, str) or not decision_ref.strip():
+        raise ProfileGenerationError("profile target decision reference must be non-empty")
+    decision_match = _TARGET_DECISION.fullmatch(decision_ref)
+    if decision_match is None:
+        raise ProfileGenerationError("profile target decision reference is unresolved")
+    try:
+        specification = safe_read_bytes(repo_root, PROFILE_SPEC_PATH, max_bytes=1_048_576).decode("utf-8")
+    except (OSError, UnicodeDecodeError, PathSecurityError) as error:
+        raise ProfileGenerationError("profile target decision source is unavailable") from error
+    if f"**{decision_match.group(1)}**" not in specification:
+        raise ProfileGenerationError("profile target decision reference is unresolved")
+
+    raw_profiles = catalog.get("profiles")
+    if not isinstance(raw_profiles, list):
+        raise ProfileGenerationError("catalog has invalid profile records")
+    profiles_by_id = {
+        profile.get("profile_id"): profile
+        for profile in raw_profiles
+        if isinstance(profile, dict) and isinstance(profile.get("profile_id"), str)
+    }
+    for profile_id in profile_ids:
+        profile = profiles_by_id.get(profile_id)
+        if profile is None:
+            raise ProfileGenerationError("profile target refers to an unresolved profile")
+        if profile.get("role") != "client" or profile.get("applicability") not in {"client_1_0", "conditional"}:
+            raise ProfileGenerationError("profile target includes a profile outside approved client scope")
+    return ProfileTargets(release_line, tuple(profile_ids), decision_ref)
+
+
+def load_profile_targets(repo_root: Path, catalog: Mapping[str, Any]) -> ProfileTargets:
+    """Read the fixed target path safely with the 64 KiB input cap."""
+    try:
+        raw = safe_read_bytes(repo_root, PROFILE_TARGET_PATH, max_bytes=MAX_PROFILE_TARGET_BYTES)
+    except (OSError, PathSecurityError) as error:
+        raise ProfileGenerationError("profile target manifest is unavailable or unsafe") from error
+    return parse_profile_targets(raw, catalog, repo_root)
 
 
 def _section_in_scope(section: str, included_section: str | None) -> bool:
@@ -186,3 +283,191 @@ def rust_string_literal(value: str) -> str:
         else:
             escaped.append(character)
     return f'"{"".join(escaped)}"'
+
+
+def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) -> str:
+    """Render deterministic immutable client metadata without executable rules."""
+    raw_profiles = catalog.get("profiles")
+    raw_test_cases = catalog.get("test_cases")
+    if not isinstance(raw_profiles, list) or not isinstance(raw_test_cases, list):
+        raise ProfileGenerationError("catalog has invalid profile or test records")
+    tests_by_id = {
+        test_case.get("test_id"): test_case
+        for test_case in raw_test_cases
+        if isinstance(test_case, dict) and isinstance(test_case.get("test_id"), str)
+    }
+    profiles = sorted(
+        (profile for profile in raw_profiles if isinstance(profile, dict) and profile.get("role") == "client"),
+        key=lambda profile: profile.get("profile_id", ""),
+    )
+    if not profiles:
+        raise ProfileGenerationError("catalog contains no client profiles")
+
+    def string_field(record: Mapping[str, Any], field: str) -> str:
+        value = record.get(field)
+        if not isinstance(value, str) or not value:
+            raise ProfileGenerationError(f"profile metadata field {field} must be non-empty text")
+        return rust_string_literal(value)
+
+    def string_array(record: Mapping[str, Any], field: str) -> str:
+        values = record.get(field)
+        if (
+            not isinstance(values, list)
+            or any(not isinstance(value, str) or not value for value in values)
+            or len(values) != len(set(values))
+        ):
+            raise ProfileGenerationError(f"profile metadata field {field} must contain unique text values")
+        if not values:
+            return "&[]"
+        encoded = [rust_string_literal(value) for value in values]
+        if len(encoded) == 1:
+            return f"&[{encoded[0]}]"
+        encoded_values = ",\n            ".join(encoded) + ","
+        return f"&[\n            {encoded_values}\n        ]"
+
+    lines = [
+        "//! Generated from the reviewed normative catalog and fixed profile target manifest.",
+        "//! This file contains metadata only; it does not contain executable conformance rules.",
+        "",
+        "/// Official conformance test evidence linked to a profile.",
+        "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
+        "pub struct GeneratedProfileTestCase {",
+        "    /// Stable catalog test identifier.",
+        "    pub test_id: &'static str,",
+        "    /// Official OASIS case identifier.",
+        "    pub official_case_id: &'static str,",
+        "    /// Catalogued mandatory, optional, or unspecified status.",
+        "    pub mandatory_status: &'static str,",
+        "    /// Whether the exact local fixture is available.",
+        "    pub fixture_availability: &'static str,",
+        "}",
+        "",
+        "/// Immutable source and applicability metadata for one client profile.",
+        "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
+        "pub struct GeneratedClientProfile {",
+        "    /// Stable catalog profile identifier.",
+        "    pub profile_id: &'static str,",
+        "    /// Human-readable source name.",
+        "    pub name: &'static str,",
+        "    /// Source applicability lifecycle.",
+        "    pub applicability: &'static str,",
+        "    /// Catalog evidence lifecycle, independent of target membership.",
+        "    pub claim_state: &'static str,",
+        "    /// Whether the fixed product target manifest selects this profile.",
+        "    pub selected_target: bool,",
+        "    /// Profile clauses directly selected as closure roots.",
+        "    pub direct_source_clause_ids: &'static [&'static str],",
+        "    /// Complete computed normative clause closure.",
+        "    pub source_clause_ids: &'static [&'static str],",
+        "    /// Applicable stable normative requirement identifiers.",
+        "    pub requirement_ids: &'static [&'static str],",
+        "    /// Profile dependencies resolved by the selection layer.",
+        "    pub dependency_profile_ids: &'static [&'static str],",
+        "    /// Transport requirements retained as metadata.",
+        "    pub transport_requirements: &'static [&'static str],",
+        "    /// Encoding requirements retained as metadata.",
+        "    pub encoding_requirements: &'static [&'static str],",
+        "    /// Linked official tests and local fixture availability.",
+        "    pub test_cases: &'static [GeneratedProfileTestCase],",
+        "}",
+        "",
+        "/// Client profiles sorted by stable profile identifier.",
+        "pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[",
+    ]
+    selected_ids = set(targets.profile_ids)
+    for profile in profiles:
+        profile_id = profile.get("profile_id")
+        if not isinstance(profile_id, str) or not profile_id:
+            raise ProfileGenerationError("client profile lacks a stable identity")
+        test_ids = profile.get("test_case_ids")
+        if (
+            not isinstance(test_ids, list)
+            or any(not isinstance(test_id, str) or test_id not in tests_by_id for test_id in test_ids)
+            or len(test_ids) != len(set(test_ids))
+        ):
+            raise ProfileGenerationError("client profile has unresolved or duplicate test identifiers")
+        tests = []
+        for test_id in test_ids:
+            test_case = tests_by_id[test_id]
+            tests.append(
+                "\n".join(
+                    [
+                        "            GeneratedProfileTestCase {",
+                        f"                test_id: {rust_string_literal(test_id)},",
+                        f"                official_case_id: {string_field(test_case, 'official_case_id')},",
+                        f"                mandatory_status: {string_field(test_case, 'mandatory_status')},",
+                        f"                fixture_availability: {string_field(test_case, 'fixture_availability')},",
+                        "            },",
+                    ]
+                )
+            )
+        lines.extend(
+            [
+                "    GeneratedClientProfile {",
+                f"        profile_id: {rust_string_literal(profile_id)},",
+                f"        name: {string_field(profile, 'name')},",
+                f"        applicability: {string_field(profile, 'applicability')},",
+                f"        claim_state: {string_field(profile, 'claim_state')},",
+                f"        selected_target: {str(profile_id in selected_ids).lower()},",
+                f"        direct_source_clause_ids: {string_array(profile, 'direct_source_clause_ids')},",
+                f"        source_clause_ids: {string_array(profile, 'source_clause_ids')},",
+                f"        requirement_ids: {string_array(profile, 'requirement_ids')},",
+                f"        dependency_profile_ids: {string_array(profile, 'dependency_profile_ids')},",
+                f"        transport_requirements: {string_array(profile, 'transport_requirements')},",
+                f"        encoding_requirements: {string_array(profile, 'encoding_requirements')},",
+                "        test_cases: &[",
+                *tests,
+                "        ],",
+                "    },",
+            ]
+        )
+    lines.extend(["];", ""])
+    try:
+        formatted = subprocess.run(
+            ["rustfmt", "--edition", "2024", "--emit", "stdout"],
+            input="\n".join(lines),
+            capture_output=True,
+            check=False,
+            text=True,
+            encoding="utf-8",
+        )
+    except OSError as error:
+        raise ProfileGenerationError("rustfmt is unavailable for deterministic profile output") from error
+    if formatted.returncode != 0:
+        raise ProfileGenerationError("rustfmt rejected generated profile metadata")
+    return formatted.stdout
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--write", action="store_true", help="write generated client profile metadata")
+    mode.add_argument("--check", action="store_true", help="fail if generated metadata is stale")
+    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
+    arguments = parser.parse_args(argv)
+    try:
+        repository = arguments.repo_root.resolve(strict=True)
+        raw_catalog = safe_read_bytes(repository, CATALOG_PATH, max_bytes=MAX_CATALOG_BYTES)
+        if __package__:
+            from .validate import load_validated_catalog
+        else:
+            from validate import load_validated_catalog
+        catalog = load_validated_catalog(raw_catalog, repository, require_complete=True)
+        targets = load_profile_targets(repository, catalog)
+        expected = render_profiles_source(catalog, targets).encode("utf-8")
+        if arguments.check:
+            current = safe_read_bytes(repository, PROFILE_OUTPUT_PATH, max_bytes=MAX_CATALOG_BYTES)
+            if current != expected:
+                print("generated profile metadata is stale; run generate_profiles.py --write", file=sys.stderr)
+                return 1
+        else:
+            atomic_write_bytes(repository, PROFILE_OUTPUT_PATH, expected)
+    except (OSError, PathSecurityError, ProfileGenerationError, ValueError) as error:
+        print(f"profile metadata generation failed: {error}", file=sys.stderr)
+        return 1
+    print(f"Profile metadata {'verified' if arguments.check else 'written'}: {PROFILE_OUTPUT_PATH}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

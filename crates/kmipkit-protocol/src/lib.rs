@@ -11,6 +11,8 @@ mod poll;
 mod process;
 mod query_async_requests;
 mod result;
+/// Generated source and evidence metadata for catalogued client profiles.
+pub mod profiles_generated;
 
 pub use asynchronous::AsynchronousOperationError;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
