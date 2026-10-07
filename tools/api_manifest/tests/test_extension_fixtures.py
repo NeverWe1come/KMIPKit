@@ -1,4 +1,4 @@
-"""Contract checks for the shared, adapter-neutral extension fixture corpus."""
+"""Contract checks for shared extension fixtures; KMIP 2.1 §11.56 Extensions range, ADR-0010."""
 
 from __future__ import annotations
 
@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[3]
 FIXTURE_DIRECTORY = ROOT / "tests" / "fixtures" / "extensions"
 FIXTURE_SCHEMA = FIXTURE_DIRECTORY / "fixture.schema.json"
 FIXTURE_CORPUS = FIXTURE_DIRECTORY / "cases.json"
+PUBLIC_API_MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+ADAPTERS = ("rust", "c", "java", "python")
 
 
 class ExtensionFixtureCorpusTests(unittest.TestCase):
@@ -204,6 +206,84 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
             expected["diagnostics"]["containsPayloadValues"],
             "secret-bearing case diagnostics must not contain payload values",
         )
+
+    def test_limit_cases_cover_parity_boundaries_and_raised_defaults(self) -> None:
+        corpus, schema = self.corpus_and_schema()
+        self.assertTrue(Draft202012Validator(schema).is_valid(corpus), "fixture corpus violates its schema")
+
+        manifest = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
+        manifest_limits = manifest["limits"]
+        fixture_limits = corpus.get("limitCases")
+        self.assertIsInstance(fixture_limits, list, "fixture corpus must include resource-limit parity cases")
+        limits_by_id = {limit["id"]: limit for limit in fixture_limits}
+        self.assertEqual(
+            list(limits_by_id),
+            [limit["id"] for limit in manifest_limits],
+            "limit parity fixtures must follow manifest order",
+        )
+
+        for manifest_limit in manifest_limits:
+            fixture = limits_by_id[manifest_limit["id"]]
+            with self.subTest(limit=manifest_limit["id"]):
+                self.assertEqual(fixture["default"], manifest_limit["default"])
+                self.assertEqual(fixture["hardMaximum"], manifest_limit["hardMaximum"])
+                probes = {probe["profile"]: probe for probe in fixture["probes"]}
+                required_profiles = {"default", "lowered", "hard", "over-hard"}
+                if manifest_limit["default"] < manifest_limit["hardMaximum"]:
+                    required_profiles.add("raised-default")
+                self.assertEqual(set(probes), required_profiles)
+
+                expected_values = {
+                    "default": manifest_limit["default"],
+                    "lowered": max(1, manifest_limit["default"] // 2),
+                    "hard": manifest_limit["hardMaximum"],
+                    "over-hard": manifest_limit["hardMaximum"] + 1,
+                }
+                if "raised-default" in required_profiles:
+                    expected_values["raised-default"] = manifest_limit["default"] + 1
+
+                for profile, probe in probes.items():
+                    expected = "resource_limit" if profile == "over-hard" else "accepted"
+                    self.assertEqual(probe["value"], expected_values[profile])
+                    self.assertEqual(probe["expectedOutcome"], expected)
+                    self.assertEqual(
+                        probe["expectedByAdapter"],
+                        {adapter: expected for adapter in ADAPTERS},
+                        "all adapters must agree on each normalized limit outcome",
+                    )
+
+    def test_algorithm_work_cases_declare_fixed_cross_adapter_bounds(self) -> None:
+        corpus, schema = self.corpus_and_schema()
+        self.assertTrue(Draft202012Validator(schema).is_valid(corpus), "fixture corpus violates its schema")
+
+        work_cases = corpus.get("algorithmWorkCases")
+        self.assertIsInstance(work_cases, list, "fixture corpus must declare fixed algorithm work cases")
+        by_id = {case["id"]: case for case in work_cases}
+        expected_bounds = {
+            "client-definitions": {"hardMaximum": 1024},
+            "discriminator-path-depth": {"hardMaximum": 64},
+            "payload-items-including-root": {"hardMaximum": 100000},
+            "path-step-tag-comparisons": {"hardMaximum": 35},
+            "total-lookup-comparisons": {"hardMaximum": 4194304},
+            "schema-tag-comparisons-per-item": {"hardMaximum": 13},
+            "allowed-enum-comparisons-per-item": {"hardMaximum": 13},
+            "order-constraint-position-pass": {"passesPerPayload": 1},
+            "order-constraint-edge-check": {"checksPerEdge": 1},
+        }
+        self.assertEqual(set(by_id), set(expected_bounds))
+
+        for case_id, bounds in expected_bounds.items():
+            case = by_id[case_id]
+            with self.subTest(work_case=case_id):
+                for field, value in bounds.items():
+                    self.assertEqual(case[field], value)
+                expected = case["expectedOutcome"]
+                self.assertIn(expected, {"accepted", "resource_limit"})
+                self.assertEqual(
+                    case["expectedByAdapter"],
+                    {adapter: expected for adapter in ADAPTERS},
+                    "all adapters must agree on fixed algorithm work outcomes",
+                )
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
   "title": "KMIPKit shared extension fixture corpus",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "formatVersion", "outcomeEncoding", "definitions", "cases"],
+  "required": ["format", "formatVersion", "outcomeEncoding", "definitions", "cases", "limitCases", "algorithmWorkCases"],
   "properties": {
     "format": {
       "const": "kmipkit-extension-fixtures"
@@ -57,6 +57,20 @@
       "minItems": 1,
       "items": {
         "$ref": "#/$defs/fixtureCase"
+      }
+    },
+    "limitCases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/limitCase"
+      }
+    },
+    "algorithmWorkCases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/algorithmWorkCase"
       }
     }
   },
@@ -326,6 +340,73 @@
           }
         }
       }
+    },
+    "limitCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "default", "hardMaximum", "unit", "errorCategory", "probes"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "default": {"type": "integer", "minimum": 1},
+        "hardMaximum": {"type": "integer", "minimum": 1},
+        "unit": {"type": "string", "minLength": 1},
+        "errorCategory": {"const": "resource_limit"},
+        "probes": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["profile", "value", "expectedOutcome", "expectedByAdapter"],
+            "properties": {
+              "profile": {
+                "enum": ["default", "lowered", "hard", "over-hard", "raised-default"]
+              },
+              "value": {"type": "integer", "minimum": 1},
+              "expectedOutcome": {"enum": ["accepted", "resource_limit"]},
+              "expectedByAdapter": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["rust", "c", "java", "python"],
+                "properties": {
+                  "rust": {"enum": ["accepted", "resource_limit"]},
+                  "c": {"enum": ["accepted", "resource_limit"]},
+                  "java": {"enum": ["accepted", "resource_limit"]},
+                  "python": {"enum": ["accepted", "resource_limit"]}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "algorithmWorkCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "expectedOutcome", "expectedByAdapter"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "hardMaximum": {"type": "integer", "minimum": 1},
+        "passesPerPayload": {"type": "integer", "minimum": 1},
+        "checksPerEdge": {"type": "integer", "minimum": 1},
+        "expectedOutcome": {"const": "accepted"},
+        "expectedByAdapter": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rust", "c", "java", "python"],
+          "properties": {
+            "rust": {"const": "accepted"},
+            "c": {"const": "accepted"},
+            "java": {"const": "accepted"},
+            "python": {"const": "accepted"}
+          }
+        }
+      },
+      "oneOf": [
+        {"required": ["hardMaximum"]},
+        {"required": ["passesPerPayload"]},
+        {"required": ["checksPerEdge"]}
+      ]
     }
   }
 }

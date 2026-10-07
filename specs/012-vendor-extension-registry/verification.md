@@ -414,3 +414,40 @@ Verification:
 - `python tools/api_manifest/generate.py --check` — passed; six generated files
   are current.
 - `git diff --check` — passed.
+
+
+## 2026-10-07 — User Story 3 test-only Red stage
+
+Added manifest parity checks, expanded the shared adapter-neutral fixture corpus
+with all registry limit boundaries and bounded algorithm-work cases, and added
+C, Java 17, and Python 3.12 consumer tests for registry ownership, limits,
+inspection/preservation, metadata, lifecycle, and redacted errors. The preserved
+vendor-range child uses Tag 0x540001 under KMIP 2.1 §11.56 and ADR-0010.
+
+Red and baseline evidence:
+
+- python <temp-venv>/Scripts/python.exe -m unittest discover -s tools/api_manifest/tests -v
+  — passed 38 tests; two symlink tests were skipped because Windows denied
+  symlink creation without the required privilege.
+- python tools/api_manifest/generate.py --check — passed; all six generated
+  outputs remain current.
+- cc -std=c11 -Wall -Wextra -Werror -Ibindings/c/include -fsyntax-only
+  bindings/c/tests/extension_registry.c (WSL Ubuntu) — expected Red: the
+  generated declarations use a single opaque handle pointer for the
+  ExtensionChildRule and ExtensionDefinition collections, while a C
+  consumer needs arrays of opaque handles (handle **). An opaque handle
+  cannot represent an array through pointer arithmetic. The manifest and
+  generator contract must be corrected before this consumer can compile.
+- javac --release 17 -Xmaxerrs 20 ... ExtensionRegistryTest.java — expected
+  Red: the Java facade/classes and JUnit dependency are not yet present; javac
+  reports the absent org.junit.jupiter.api and org.kmipkit.extensions
+  packages.
+- python312 -m unittest discover -s bindings/python/tests -p
+  test_extension_registry.py -v — expected Red at import:
+  ModuleNotFoundError: No module named kmipkit; the CFFI package is not
+  implemented yet. Python 3.12 AST parsing passed.
+- git diff --check — passed.
+
+No production binding implementation or generated output was changed in this
+Red stage. C, Java, and Python runtime assertions await their corresponding
+adapter implementations.
