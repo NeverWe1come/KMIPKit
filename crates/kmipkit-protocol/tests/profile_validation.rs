@@ -63,10 +63,13 @@ fn conditional_and_out_of_scope_profiles_fail_closed() {
 
 #[test]
 fn unknown_and_duplicate_profile_ids_return_stable_validation_codes() {
-    let unknown = ProfileValidationSelection::new(["KMIPKIT-PROFILE-UNKNOWN"])
+    let secret_marker = "private-key-sentinel";
+    let unknown = ProfileValidationSelection::new([secret_marker])
         .validate()
         .expect_err("unknown IDs cannot resolve to catalog metadata");
     assert_eq!(unknown.code(), ProfileValidationErrorCode::UnknownProfile);
+    assert!(!unknown.to_string().contains(secret_marker));
+    assert!(!format!("{unknown:?}").contains(secret_marker));
 
     let duplicate = ProfileValidationSelection::new([BASELINE, BASELINE])
         .validate()
