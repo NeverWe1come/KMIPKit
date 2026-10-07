@@ -134,6 +134,12 @@ unsafe extern "C" {
     pub fn kmipkit_ttlv_value_view_release(handle: *mut kmipkit_ttlv_value_view_t);
     // KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
     pub fn kmipkit_extension_identity_create(vendor_identifier_data: *const u8, vendor_identifier_length: u64, name_data: *const u8, name_length: u64, version_data: *const u8, version_length: u64, out_identity: *mut *mut kmipkit_extension_identity_t) -> i32;
+    // KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
+    pub fn kmipkit_extension_identity_vendor_identifier(identity: *mut kmipkit_extension_identity_t, out_value: *mut *mut kmipkit_ttlv_value_t) -> i32;
+    // KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
+    pub fn kmipkit_extension_identity_name(identity: *mut kmipkit_extension_identity_t, out_value: *mut *mut kmipkit_ttlv_value_t) -> i32;
+    // KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
+    pub fn kmipkit_extension_identity_version(identity: *mut kmipkit_extension_identity_t, out_value: *mut *mut kmipkit_ttlv_value_t) -> i32;
     // KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
     pub fn kmipkit_extension_definition_create(identity: *mut kmipkit_extension_identity_t, compatibility: *mut kmipkit_extension_compatibility_t, discriminator: *mut kmipkit_extension_discriminator_t, schema: *mut kmipkit_extension_schema_t, out_definition: *mut *mut kmipkit_extension_definition_t) -> i32;
     // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011, KMIPKIT-0012-FR-012
@@ -156,6 +162,14 @@ unsafe extern "C" {
     pub fn kmipkit_client_request_message_extension_create(value: *mut kmipkit_registered_extension_value_t, criticality_indicator: u8, out_extension: *mut *mut kmipkit_client_request_message_extension_t) -> i32;
     // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
     pub fn kmipkit_client_batch_item_with_extension(item: *mut kmipkit_client_batch_item_t, extension: *mut kmipkit_client_request_message_extension_t, out_item: *mut *mut kmipkit_client_batch_item_t) -> i32;
+    // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
+    pub fn kmipkit_client_batch_item_discover_versions(out_item: *mut *mut kmipkit_client_batch_item_t) -> i32;
+    // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
+    pub fn kmipkit_client_batch_item_extension_count(item: *mut kmipkit_client_batch_item_t, out_count: *mut u64) -> i32;
+    // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
+    pub fn kmipkit_client_batch_item_extension_identity_at(item: *mut kmipkit_client_batch_item_t, index: u64, out_identity: *mut *mut kmipkit_extension_identity_t) -> i32;
+    // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
+    pub fn kmipkit_client_batch_item_extension_criticality_indicator_at(item: *mut kmipkit_client_batch_item_t, index: u64, out_criticality_indicator: *mut u8) -> i32;
     // KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010
     pub fn kmipkit_extension_compatibility_create(kmip_min_major: u8, kmip_min_minor: u8, kmip_max_major: u8, kmip_max_minor: u8, kmipkit_minimum_data: *const u8, kmipkit_minimum_length: u64, kmipkit_maximum_data: *const u8, kmipkit_maximum_length: u64, out_compatibility: *mut *mut kmipkit_extension_compatibility_t) -> i32;
     // KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-006, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012

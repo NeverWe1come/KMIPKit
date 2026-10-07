@@ -118,6 +118,12 @@ void kmipkit_ttlv_value_view_release(kmipkit_ttlv_value_view_t *handle);
 
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_identity_create(const uint8_t * vendor_identifier_data, uint64_t vendor_identifier_length, const uint8_t * name_data, uint64_t name_length, const uint8_t * version_data, uint64_t version_length, kmipkit_extension_identity_t ** out_identity);
+/* KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
+int32_t kmipkit_extension_identity_vendor_identifier(kmipkit_extension_identity_t * identity, kmipkit_ttlv_value_t ** out_value);
+/* KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
+int32_t kmipkit_extension_identity_name(kmipkit_extension_identity_t * identity, kmipkit_ttlv_value_t ** out_value);
+/* KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
+int32_t kmipkit_extension_identity_version(kmipkit_extension_identity_t * identity, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_definition_create(kmipkit_extension_identity_t * identity, kmipkit_extension_compatibility_t * compatibility, kmipkit_extension_discriminator_t * discriminator, kmipkit_extension_schema_t * schema, kmipkit_extension_definition_t ** out_definition);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011, KMIPKIT-0012-FR-012 */
@@ -143,6 +149,14 @@ int32_t kmipkit_client_extension_registry_validate(kmipkit_client_extension_regi
 int32_t kmipkit_client_request_message_extension_create(kmipkit_registered_extension_value_t * value, uint8_t criticality_indicator, kmipkit_client_request_message_extension_t ** out_extension);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
 int32_t kmipkit_client_batch_item_with_extension(kmipkit_client_batch_item_t * item, kmipkit_client_request_message_extension_t * extension, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
+int32_t kmipkit_client_batch_item_discover_versions(kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
+int32_t kmipkit_client_batch_item_extension_count(kmipkit_client_batch_item_t * item, uint64_t * out_count);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
+int32_t kmipkit_client_batch_item_extension_identity_at(kmipkit_client_batch_item_t * item, uint64_t index, kmipkit_extension_identity_t ** out_identity);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011 */
+int32_t kmipkit_client_batch_item_extension_criticality_indicator_at(kmipkit_client_batch_item_t * item, uint64_t index, uint8_t * out_criticality_indicator);
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_extension_compatibility_create(uint8_t kmip_min_major, uint8_t kmip_min_minor, uint8_t kmip_max_major, uint8_t kmip_max_minor, const uint8_t * kmipkit_minimum_data, uint64_t kmipkit_minimum_length, const uint8_t * kmipkit_maximum_data, uint64_t kmipkit_maximum_length, kmipkit_extension_compatibility_t ** out_compatibility);
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-006, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */

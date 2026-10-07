@@ -198,6 +198,216 @@
     {
       "c": {
         "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "identity",
+            "ownership": "borrowed",
+            "type": "kmipkit_extension_identity_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_value",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_value_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_extension_identity_vendor_identifier"
+      },
+      "id": "extension_identity_vendor_identifier",
+      "java": {
+        "class": "ExtensionIdentity",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_extensions_ExtensionIdentity_vendorIdentifier",
+        "method": "vendorIdentifier",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "String"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_extension_identity_vendor_identifier",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "extension_identity_vendor_identifier",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "identity",
+            "type": "ExtensionIdentity"
+          }
+        ],
+        "returnType": "str"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-009",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension::ExtensionIdentity",
+        "name": "vendor_identifier",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "identity",
+            "type": "&ExtensionIdentity"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "&str"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "identity",
+            "ownership": "borrowed",
+            "type": "kmipkit_extension_identity_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_value",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_value_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_extension_identity_name"
+      },
+      "id": "extension_identity_name",
+      "java": {
+        "class": "ExtensionIdentity",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_extensions_ExtensionIdentity_name",
+        "method": "name",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "String"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_extension_identity_name",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "extension_identity_name",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "identity",
+            "type": "ExtensionIdentity"
+          }
+        ],
+        "returnType": "str"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-009",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension::ExtensionIdentity",
+        "name": "name",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "identity",
+            "type": "&ExtensionIdentity"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "&str"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "identity",
+            "ownership": "borrowed",
+            "type": "kmipkit_extension_identity_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_value",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_value_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_extension_identity_version"
+      },
+      "id": "extension_identity_version",
+      "java": {
+        "class": "ExtensionIdentity",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_extensions_ExtensionIdentity_version",
+        "method": "version",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "String"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_extension_identity_version",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "extension_identity_version",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "identity",
+            "type": "ExtensionIdentity"
+          }
+        ],
+        "returnType": "str"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-009",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension::ExtensionIdentity",
+        "name": "version",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "identity",
+            "type": "&ExtensionIdentity"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "&str"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
           "compatibility_mismatch",
           "invalid_identity",
           "invalid_input",
@@ -1400,6 +1610,304 @@
         ],
         "requestBoundary": "accepts-only-sealed-validated-values",
         "returnType": "ClientBatchItem"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_discover_versions"
+      },
+      "id": "client_batch_item_discover_versions",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_extensions_ClientBatchItem_discoverVersions",
+        "method": "discoverVersions",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "preserves-caller-batch-and-extension-order",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_discover_versions",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "client_batch_item_discover_versions",
+        "module": "kmipkit.extensions",
+        "parameters": [],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::execute::ClientBatchItem",
+        "name": "discover_versions",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchItem"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_count",
+            "ownership": "none",
+            "type": "uint64_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_extension_count"
+      },
+      "id": "client_batch_item_extension_count",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_extensions_ClientBatchItem_extensionCount",
+        "method": "extensionCount",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "long"
+      },
+      "ordering": "preserves-caller-batch-and-extension-order",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_extension_count",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "client_batch_item_extension_count",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "ClientBatchItem"
+          }
+        ],
+        "returnType": "int"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::execute::ClientBatchItem",
+        "name": "extension_count",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "&ClientBatchItem"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "usize"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "index",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_identity",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_extension_identity_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_extension_identity_at"
+      },
+      "id": "client_batch_item_extension_identity_at",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_extensions_ClientBatchItem_extensionIdentityAt",
+        "method": "extensionIdentityAt",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "index",
+            "type": "long"
+          }
+        ],
+        "returnType": "ExtensionIdentity"
+      },
+      "ordering": "preserves-caller-batch-and-extension-order",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_extension_identity_at",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "client_batch_item_extension_identity_at",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "ClientBatchItem"
+          },
+          {
+            "name": "index",
+            "type": "int"
+          }
+        ],
+        "returnType": "ExtensionIdentity"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::execute::ClientBatchItem",
+        "name": "extension_identity_at",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "&ClientBatchItem"
+          },
+          {
+            "name": "index",
+            "type": "usize"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Option<ExtensionIdentity>"
+      }
+    },
+    {
+      "c": {
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "index",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_criticality_indicator",
+            "ownership": "none",
+            "type": "uint8_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_extension_criticality_indicator_at"
+      },
+      "id": "client_batch_item_extension_criticality_indicator_at",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_extensions_ClientBatchItem_extensionCriticalityIndicatorAt",
+        "method": "extensionCriticalityIndicatorAt",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "index",
+            "type": "long"
+          }
+        ],
+        "returnType": "boolean"
+      },
+      "ordering": "preserves-caller-batch-and-extension-order",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_extension_criticality_indicator_at",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "client_batch_item_extension_criticality_indicator_at",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "ClientBatchItem"
+          },
+          {
+            "name": "index",
+            "type": "int"
+          }
+        ],
+        "returnType": "bool"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::execute::ClientBatchItem",
+        "name": "extension_criticality_indicator_at",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "&ClientBatchItem"
+          },
+          {
+            "name": "index",
+            "type": "usize"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Option<bool>"
       }
     },
     {
