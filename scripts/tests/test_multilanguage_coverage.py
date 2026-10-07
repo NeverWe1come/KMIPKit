@@ -28,7 +28,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
         hosted_jdk_header = "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64/include/jni.h"
         system_jdk_header = "/usr/lib/jvm/java-17-openjdk-amd64/include/jni.h"
-        project_header = str(REPOSITORY_ROOT / "bindings/java/native/include/jni.h")
+        project_header = (REPOSITORY_ROOT / "bindings/java/native/include/jni.h").as_posix()
         self.assertRegex(hosted_jdk_header, ignored_source_regex)
         self.assertRegex(system_jdk_header, ignored_source_regex)
         self.assertNotRegex(project_header, ignored_source_regex)
