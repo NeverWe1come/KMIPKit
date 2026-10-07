@@ -17,6 +17,7 @@ struct ValidationMetrics {
     schema_tag_comparisons_per_item: Vec<usize>,
     enum_comparisons_per_item: Vec<usize>,
     order_edge_checks_per_structure: Vec<usize>,
+    occurrence_entries_per_structure: Vec<usize>,
 }
 
 #[cfg(not(test))]
@@ -195,6 +196,7 @@ fn validate_structure(
         .try_reserve_exact(rules.len())
         .map_err(|_| resource_limit())?;
     occurrences.resize(rules.len(), ChildOccurrences::default());
+    record_occurrence_entries(metrics, rules.len())?;
 
     for (position, item) in value.children().iter().enumerate() {
         let (index, comparisons) = find_rule_index(rules, child_tag_index, item.tag());
@@ -558,6 +560,26 @@ fn record_order_edge_checks(
     Ok(())
 }
 
+#[cfg(test)]
+fn record_occurrence_entries(
+    metrics: &mut ValidationMetrics,
+    entries: usize,
+) -> Result<(), ProtocolError> {
+    metrics
+        .occurrence_entries_per_structure
+        .try_reserve(1)
+        .map_err(|_| resource_limit())?;
+    metrics.occurrence_entries_per_structure.push(entries);
+    Ok(())
+}
+
+#[cfg(not(test))]
+#[inline]
+#[allow(clippy::unnecessary_wraps)] // Test metrics can fail while reserving their bounded traces.
+fn record_occurrence_entries(_: &mut ValidationMetrics, _: usize) -> Result<(), ProtocolError> {
+    Ok(())
+}
+
 #[cfg(not(test))]
 #[inline]
 #[allow(clippy::unnecessary_wraps)] // Test metrics can fail while reserving their bounded traces.
@@ -579,6 +601,10 @@ fn resource_limit() -> ProtocolError {
         ProtocolCauseCategory::InvalidValue,
     )
 }
+
+#[cfg(test)]
+#[path = "value_amplification_tests.rs"]
+mod value_amplification_tests;
 
 #[cfg(test)]
 mod t018_work_bound_tests {
