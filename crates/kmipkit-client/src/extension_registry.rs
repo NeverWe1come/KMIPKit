@@ -249,8 +249,6 @@ impl ClientRequestMessageExtension {
     }
 
     /// Checks whether this request value was sealed by the given client configuration.
-    // KMIPKIT-0013 consumes this when the production client retains its configuration.
-    #[allow(dead_code)]
     pub(crate) fn is_owned_by(&self, configuration: &ClientConfiguration) -> bool {
         Arc::ptr_eq(
             &self.value.registry_identity,

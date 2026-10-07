@@ -278,7 +278,8 @@ impl fmt::Display for ClientBatch {
     }
 }
 
-/// An opaque preserved non-critical Message Extension.
+/// An opaque preserved Message Extension accepted by the client's recognition
+/// and criticality policy.
 pub struct ClientMessageExtension {
     structure: Structure,
 }
@@ -356,14 +357,15 @@ pub enum ClientOperation {
 
 /// A completed or Pending asynchronous operation response owned by the client.
 ///
-/// The complete response tree remains available through callback-scoped views.
-/// Correlation values stay inside that zeroizing generic tree and are never
-/// copied into an ordinary client-owned buffer.
+/// Correlation values stay inside the zeroizing generic response tree and are
+/// never copied into an ordinary client-owned buffer. Accepted Message
+/// Extensions are available as opaque generic values through [`Self::extensions`].
 pub struct ClientOperationOutcome {
     operation: ClientOperation,
     result: kmipkit_protocol::KmipOperationResult,
     response: ResponseMessage,
     cancellation_result: Option<CancellationResult>,
+    extensions: Vec<ClientMessageExtension>,
 }
 
 impl ClientOperationOutcome {
@@ -377,6 +379,16 @@ impl ClientOperationOutcome {
     #[must_use]
     pub const fn result(&self) -> &kmipkit_protocol::KmipOperationResult {
         &self.result
+    }
+
+    /// Returns the accepted Message Extensions preserved from this response.
+    ///
+    /// Recognized critical extensions and non-critical extensions are
+    /// preserved. An unrecognized critical extension causes execution to fail
+    /// before an outcome is returned.
+    #[must_use]
+    pub fn extensions(&self) -> &[ClientMessageExtension] {
+        &self.extensions
     }
 
     /// Returns whether the server reported Operation Pending.
@@ -539,7 +551,11 @@ impl ClientBatchItemResponse {
         &self.outcome
     }
 
-    /// Returns the preserved non-critical Message Extensions.
+    /// Returns the accepted Message Extensions preserved from this response.
+    ///
+    /// Recognized critical extensions and non-critical extensions are
+    /// preserved. An unrecognized critical extension causes execution to fail
+    /// before a response is returned.
     #[must_use]
     pub fn extensions(&self) -> &[ClientMessageExtension] {
         &self.extensions
@@ -649,6 +665,13 @@ impl Client {
         limits: &CodecLimits,
     ) -> Result<ClientBatchResponse, ClientError> {
         let options = validate_batch(&batch).map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
+        validate_request_extension_ownership(&batch, &self.configuration).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
                 RequestDeliveryState::NotSent,
@@ -937,6 +960,21 @@ impl Client {
     }
 
     #[cfg(test)]
+    pub(super) fn for_test_with_configuration_and_request_observer<T: Transport + 'static>(
+        transport: T,
+        configuration: ClientConfiguration,
+        observer: private_wire_writer::ZeroizationObserver,
+    ) -> Self {
+        Self {
+            transport: Box::new(transport),
+            configuration,
+            request_owner_observer: Some(observer),
+            pending_owner_observer: None,
+            limits_identity_observer: None,
+        }
+    }
+
+    #[cfg(test)]
     pub(super) fn for_test_with_limits_observer<T: Transport + 'static>(
         transport: T,
         observer: LimitsIdentityObserver,
@@ -1049,6 +1087,7 @@ pub(super) enum BatchValidationError {
     RepeatedBatchErrorContinuation,
     SingleItemBatchErrorContinuation,
     InvalidBatchErrorContinuation,
+    ExtensionRegistryMismatch,
 }
 
 impl fmt::Display for BatchValidationError {
@@ -1063,6 +1102,9 @@ impl fmt::Display for BatchValidationError {
                 "batch error continuation is invalid for a single item"
             }
             Self::InvalidBatchErrorContinuation => "batch error continuation is unassigned",
+            Self::ExtensionRegistryMismatch => {
+                "request extension was validated for a different client registry"
+            }
         };
         formatter.write_str(message)
     }
@@ -1089,6 +1131,20 @@ pub(super) fn validate_batch(
         }
     }
     Ok(options)
+}
+
+fn validate_request_extension_ownership(
+    batch: &ClientBatch,
+    configuration: &ClientConfiguration,
+) -> Result<(), BatchValidationError> {
+    if batch.items.iter().any(|item| {
+        item.message_extensions
+            .iter()
+            .any(|extension| !extension.is_owned_by(configuration))
+    }) {
+        return Err(BatchValidationError::ExtensionRegistryMismatch);
+    }
+    Ok(())
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -1626,6 +1682,7 @@ fn validate_async_response(
         .copied()
         .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
 
+    let mut extensions = Vec::new();
     for extension_index in 0..item.message_extension_count() {
         let extension = item
             .message_extension(extension_index)
@@ -1635,6 +1692,10 @@ fn validate_async_response(
             .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
         let recognized = inspect_response_extension(extension, registry, limits)?;
         validate_unknown_extension(critical && !recognized).map_err(ProtocolError::from)?;
+        let structure = extension
+            .with_ttlv(|view| copy_structure(&view))
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))??;
+        extensions.push(ClientMessageExtension { structure });
     }
 
     let (result, cancellation_result) = match kind {
@@ -1692,6 +1753,7 @@ fn validate_async_response(
         result,
         response,
         cancellation_result,
+        extensions,
     })
 }
 

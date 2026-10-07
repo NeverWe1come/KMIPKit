@@ -14,7 +14,9 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
 use crate::execute::{Client, ClientBatch, ClientBatchItem, ClientRequest, ZeroizationObserver};
 use crate::execute_test_support::{ResponseItemFixture, response_bytes};
-use crate::extension_registry::{self, ClientRequestMessageExtension};
+use crate::extension_registry::{
+    self, ClientConfiguration, ClientExtensionRegistry, ClientRequestMessageExtension,
+};
 
 const DISCRIMINATOR_TAG: u32 = 0x0054_0001;
 const SECRET_TAG: u32 = 0x0054_0002;
@@ -39,13 +41,11 @@ fn tag(raw: u32) -> Tag {
         .expect("extension test tag uses the vendor allocation")
 }
 
-fn validated_request_extension(
+fn request_extension_definition(
     vendor: &str,
     name: &str,
     discriminator: &str,
-    secret: &[u8],
-    criticality: bool,
-) -> ClientRequestMessageExtension {
+) -> extension::ExtensionDefinition {
     let identity = extension::extension_identity(vendor, name, "1")
         .expect("request extension identity is valid");
     let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
@@ -72,16 +72,33 @@ fn validated_request_extension(
         false,
     )
     .expect("request extension schema is valid");
-    let definition = extension::extension_definition(
-        identity.clone(),
-        compatibility,
-        discriminator_value,
-        schema,
-    )
-    .expect("request extension definition is valid");
+    extension::extension_definition(identity.clone(), compatibility, discriminator_value, schema)
+        .expect("request extension definition is valid")
+}
+
+fn request_configuration(identities: &[(&str, &str, &str)]) -> ClientConfiguration {
+    let definitions = identities
+        .iter()
+        .map(|(vendor, name, discriminator)| {
+            request_extension_definition(vendor, name, discriminator)
+        })
+        .collect();
     let registry =
-        extension_registry::client_extension_registry(vec![definition], extension::defaults())
-            .expect("request extension definition is registered");
+        extension_registry::client_extension_registry(definitions, extension::defaults())
+            .expect("request extension definitions are registered");
+    ClientConfiguration::new(registry)
+}
+
+fn validated_request_extension(
+    registry: &ClientExtensionRegistry,
+    vendor: &str,
+    name: &str,
+    discriminator: &str,
+    secret: &[u8],
+    criticality: bool,
+) -> ClientRequestMessageExtension {
+    let identity = extension::extension_identity(vendor, name, "1")
+        .expect("request extension identity is valid");
     let mut payload = Structure::new();
     payload
         .try_push(
@@ -99,7 +116,7 @@ fn validated_request_extension(
         )
         .expect("secret payload fits the Structure");
     let value = extension_registry::validate_extension_value(
-        &registry,
+        registry,
         identity,
         payload,
         &CodecLimits::defaults(),
@@ -279,7 +296,11 @@ impl Transport for ObservingTransport {
     }
 }
 
-fn client_for(script: ExchangeScript, observer: &ZeroizationObserver) -> ClientFixture {
+fn client_for(
+    script: ExchangeScript,
+    observer: &ZeroizationObserver,
+    configuration: ClientConfiguration,
+) -> ClientFixture {
     let inner = Rc::new(RefCell::new(ScriptedTransport::new(script)));
     let captured = Rc::new(RefCell::new(Vec::new()));
     let owner_live = Rc::new(Cell::new(false));
@@ -289,7 +310,11 @@ fn client_for(script: ExchangeScript, observer: &ZeroizationObserver) -> ClientF
         owner_observer: observer.clone(),
         owner_live_during_exchange: Rc::clone(&owner_live),
     };
-    let client = Client::for_test_with_request_observer(transport, observer.clone());
+    let client = Client::for_test_with_configuration_and_request_observer(
+        transport,
+        configuration,
+        observer.clone(),
+    );
     ClientFixture {
         client,
         transport: inner,
@@ -305,17 +330,34 @@ fn response_success() -> Vec<u8> {
 #[test]
 fn repeated_message_extensions_keep_explicit_criticality_and_caller_order() {
     let observer = ZeroizationObserver::new(None);
+    let configuration = request_configuration(&[
+        ("vendor.alpha", "alpha", "alpha-v1"),
+        ("vendor.beta", "beta", "beta-v1"),
+    ]);
+    let first = validated_request_extension(
+        configuration.extension_registry(),
+        "vendor.alpha",
+        "alpha",
+        "alpha-v1",
+        SECRET_SENTINEL,
+        true,
+    );
+    let second = validated_request_extension(
+        configuration.extension_registry(),
+        "vendor.beta",
+        "beta",
+        "beta-v1",
+        SECRET_SENTINEL,
+        false,
+    );
     let mut fixture = client_for(
         ExchangeScript::Success {
             response: response_success(),
             request_write_chunks: vec![3, 7, 2],
         },
         &observer,
+        configuration,
     );
-    let first =
-        validated_request_extension("vendor.alpha", "alpha", "alpha-v1", SECRET_SENTINEL, true);
-    let second =
-        validated_request_extension("vendor.beta", "beta", "beta-v1", SECRET_SENTINEL, false);
     assert_eq!(
         format!("{first:?}"),
         "ClientRequestMessageExtension([REDACTED])"
@@ -355,19 +397,22 @@ fn repeated_message_extensions_keep_explicit_criticality_and_caller_order() {
 #[test]
 fn secret_request_owner_lives_through_success_and_zeroizes_before_release() {
     let observer = ZeroizationObserver::new(None);
+    let configuration = request_configuration(&[("vendor.secret", "secret", "secret-v1")]);
+    let extension = validated_request_extension(
+        configuration.extension_registry(),
+        "vendor.secret",
+        "secret",
+        "secret-v1",
+        SECRET_SENTINEL,
+        true,
+    );
     let mut fixture = client_for(
         ExchangeScript::Success {
             response: response_success(),
             request_write_chunks: vec![1, 2, 3, 5],
         },
         &observer,
-    );
-    let extension = validated_request_extension(
-        "vendor.secret",
-        "secret",
-        "secret-v1",
-        SECRET_SENTINEL,
-        true,
+        configuration,
     );
     let batch_item =
         ClientBatchItem::new(ClientRequest::discover_versions()).with_extension(extension);
@@ -404,14 +449,16 @@ fn secret_request_lifecycle_reports_delivery_state_without_retry_and_zeroizes_on
 
     for (script, expected_state) in cases {
         let observer = ZeroizationObserver::new(None);
-        let mut fixture = client_for(script, &observer);
+        let configuration = request_configuration(&[("vendor.secret", "secret", "secret-v1")]);
         let extension = validated_request_extension(
+            configuration.extension_registry(),
             "vendor.secret",
             "secret",
             "secret-v1",
             SECRET_SENTINEL,
             false,
         );
+        let mut fixture = client_for(script, &observer, configuration);
         let batch_item =
             ClientBatchItem::new(ClientRequest::discover_versions()).with_extension(extension);
         let error = fixture

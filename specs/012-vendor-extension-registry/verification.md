@@ -32,6 +32,24 @@ Red/Green/Refactor commits:
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
 
+## 2026-10-07 — request extension client-ownership Green
+
+The client now checks the sealed registry identity of every outbound typed
+Message Extension against its own immutable `ClientConfiguration` before
+building or sending the request. A value created by another registry returns a
+redacted validation error with delivery state `NotSent`; valid same-registry
+values remain eligible for normal request encoding.
+
+Red/Green evidence:
+
+- Red: `d2a0fc6`; the fake-transport regression showed that a request extension
+  validated by registry A could be submitted through a client using registry B.
+- Green: `cargo test -p kmipkit-client --lib a_request_extension_from_another_client_registry_is_rejected_before_transport -- --nocapture` — passed; the request was rejected before transport and reported `NotSent`.
+
+This closes the ownership boundary described by `KMIPKIT-0012-FR-005` and the
+Registered Extension Value definition. The protocol-level schema validation
+alone cannot confer a client registry seal.
+
 ## 2026-10-07 — cross-configuration request ownership Red
 
 - `cargo test -p kmipkit-client --lib a_request_extension_from_another_client_registry_is_rejected_before_transport -- --nocapture`
@@ -328,8 +346,47 @@ Red/Green evidence:
 Verification:
 
 - `cargo test -p kmipkit-client -p kmipkit-protocol --all-features` — passed,
-  including 191 client unit tests, response-recognition/fake-transport tests,
+  including 192 client unit tests, response-recognition/fake-transport tests,
   protocol preservation/redaction tests, integration tests, and doctests.
+- `cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo fmt --all --check` — passed.
+- `python tools/api_manifest/generate.py --check` — passed; six generated files
+  are current.
+- `git diff --check` — passed.
+
+## 2026-10-07 — client-owned request extensions and async response access
+
+Outbound typed request extensions are now checked against the registry owned
+by the executing client before request construction. Cross-registry values
+return a redacted `NotSent` validation error. Existing request zeroization and
+ordering tests now build their extension values from the same client
+configuration they exercise.
+
+Async outcomes now expose accepted generic Message Extensions through
+`ClientOperationOutcome::extensions()`, matching synchronous outcome access.
+Recognized critical values remain available for caller inspection, while
+unrecognized critical values still fail response validation. Documentation for
+both outcome accessors now covers recognized critical and non-critical
+extensions.
+
+Red/Green evidence:
+
+- Request ownership Red: `d2a0fc6`; the client sent an extension sealed by a
+  different configuration instead of rejecting it before transport.
+- Async preservation Red: `9885e26`; the focused test failed to compile because
+  `ClientOperationOutcome` did not expose an `extensions()` accessor.
+- Green: request ownership is validated before encoding; async response mapping
+  validates criticality and retains the original generic extension Structure.
+  The focused request-ownership and async-recognition tests both pass.
+- The first full suite exposed three legacy secret-extension fixtures that
+  created unrelated registries; those fixtures now use their client's owned
+  registry, preserving the required ownership boundary.
+
+Verification:
+
+- `cargo test -p kmipkit-client -p kmipkit-protocol --all-features` — passed;
+  all client/protocol unit, integration, property, UI compile-fail, and doctest
+  targets passed (192 client unit tests).
 - `cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
 - `cargo fmt --all --check` — passed.
 - `python tools/api_manifest/generate.py --check` — passed; six generated files
