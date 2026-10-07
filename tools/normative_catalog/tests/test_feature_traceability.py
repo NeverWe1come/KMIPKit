@@ -330,6 +330,46 @@ class FeatureTraceabilityTests(unittest.TestCase):
 
             self.assertFalse(self._is_executable_test_ref(reference))
 
+    def test_profile_requirements_are_owned_by_profile_conformance(self) -> None:
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        in_scope_client_profiles = {
+            row["profile_id"]
+            for row in catalog["profiles"]
+            if row.get("role") == "client"
+            and row.get("applicability") in {"client_1_0", "conditional"}
+        }
+        in_scope_requirement_ids = {
+            requirement_id
+            for profile in catalog["profiles"]
+            if profile.get("profile_id") in in_scope_client_profiles
+            for requirement_id in profile.get("requirement_ids", [])
+        }
+        requirements = {
+            row["requirement_id"]: row
+            for row in catalog["requirements"]
+        }
+        profile_requirement_ids = sorted(
+            requirement_id
+            for requirement_id in in_scope_requirement_ids
+            if requirement_id.startswith("KMIPKIT-REQ-PROF-")
+        )
+
+        self.assertEqual(148, len(profile_requirement_ids))
+        incorrectly_owned_profile_requirements = [
+            (requirement_id, requirements[requirement_id].get("feature_spec"))
+            for requirement_id in profile_requirement_ids
+            if requirements[requirement_id].get("feature_spec") != "KMIPKIT-0010"
+        ]
+        self.assertEqual([], incorrectly_owned_profile_requirements)
+
+        incorrectly_owned_base_requirements = sorted(
+            requirement_id
+            for requirement_id in in_scope_requirement_ids
+            if requirement_id.startswith("KMIPKIT-REQ-SPEC-")
+            and requirements[requirement_id].get("feature_spec") == "KMIPKIT-0010"
+        )
+        self.assertEqual([], incorrectly_owned_base_requirements)
+
     @staticmethod
     def _is_executable_test_ref(test_ref: str) -> bool:
         test_path, separator, test_name = test_ref.partition("::")
