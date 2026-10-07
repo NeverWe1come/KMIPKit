@@ -1,7 +1,6 @@
 package org.kmipkit.internal;
 
 import java.lang.ref.Cleaner;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
@@ -9,6 +8,7 @@ import org.kmipkit.NativeExtensionRegistry;
 /** Shared lifecycle state for Java wrappers around opaque native handles. */
 public final class NativeHandle {
     private static final Cleaner CLEANER = Cleaner.create();
+    // Serializes multi-owner transfers and every native-handle invalidation.
     private static final Object STATE_LOCK = new Object();
 
     private final State state;
@@ -27,7 +27,7 @@ public final class NativeHandle {
     }
 
     public long get() {
-        long value = state.value.get();
+        long value = state.value;
         if (value == 0) {
             throw new InvalidInputException("native handle is closed");
         }
@@ -53,7 +53,7 @@ public final class NativeHandle {
         synchronized (STATE_LOCK) {
             for (int index = 0; index < handles.length; index++) {
                 NativeHandle handle = handles[index];
-                if (handle == null || handle.state.value.get() == 0) {
+                if (handle == null || handle.state.value == 0) {
                     throw new InvalidInputException("native handle is closed");
                 }
                 for (int prior = 0; prior < index; prior++) {
@@ -63,7 +63,8 @@ public final class NativeHandle {
                 }
             }
             for (int index = 0; index < handles.length; index++) {
-                transferred[index] = handles[index].state.value.getAndSet(0);
+                transferred[index] = handles[index].state.value;
+                handles[index].state.value = 0;
             }
         }
         for (NativeHandle handle : handles) {
@@ -75,7 +76,8 @@ public final class NativeHandle {
     public void close() {
         long value;
         synchronized (STATE_LOCK) {
-            value = state.value.getAndSet(0);
+            value = state.value;
+            state.value = 0;
         }
         if (value != 0) {
             NativeExtensionRegistry.ensureLoaded();
@@ -85,11 +87,12 @@ public final class NativeHandle {
     }
 
     private static final class State implements Runnable {
-        private final AtomicLong value;
+        // Writes use STATE_LOCK; volatile keeps individual handle reads lock-free.
+        private volatile long value;
         private final int handleKind;
 
         private State(long value, int handleKind) {
-            this.value = new AtomicLong(value);
+            this.value = value;
             this.handleKind = handleKind;
         }
 
@@ -97,7 +100,8 @@ public final class NativeHandle {
         public void run() {
             long toRelease;
             synchronized (STATE_LOCK) {
-                toRelease = value.getAndSet(0);
+                toRelease = value;
+                value = 0;
             }
             if (toRelease != 0) {
                 try {
