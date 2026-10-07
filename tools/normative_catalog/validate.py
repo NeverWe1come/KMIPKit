@@ -978,8 +978,21 @@ def _check_semantics(
             )
             if any(not linked_ids for linked_ids in evidence_links):
                 _fail("profile evidence is incomplete without clauses, requirements, elements, and tests")
-            if not any(test_cases[test_id]["source_id"] == "KMIPKIT-SRC-testcases" for test_id in profile["test_case_ids"]):
+            profile_test_cases = [test_cases[test_id] for test_id in profile["test_case_ids"]]
+            if not any(test_case["source_id"] == "KMIPKIT-SRC-testcases" for test_case in profile_test_cases):
                 _fail("profile evidence is incomplete without an official KMIP Test Case")
+            if any(
+                test_case["mandatory_status"] == "mandatory"
+                and test_case["fixture_availability"] != "available"
+                for test_case in profile_test_cases
+            ):
+                _fail("profile evidence is incomplete with an unavailable mandatory fixture")
+            profile_requirements = [requirements[requirement_id] for requirement_id in profile["requirement_ids"]]
+            if any(
+                not requirement["implementation_refs"] or not requirement["verification_refs"]
+                for requirement in profile_requirements
+            ):
+                _fail("profile evidence is incomplete without requirement implementation and verification assignments")
         _string_values(profile, "direct_source_clause_ids", "profile", non_empty=True)
         _string_values(profile, "source_clause_ids", "profile", non_empty=True)
         if profile["role"] in {"client", "both"}:

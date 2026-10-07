@@ -187,6 +187,7 @@ def _typed_rule_coverage(
     source_clause_ids: list[str],
     candidates: list[dict[str, Any]],
     typed_rule_mappings: list[dict[str, Any]] | None,
+    accepted_deviation_id: str | None = None,
 ) -> tuple[str, str, str, list[str], list[dict[str, Any]], bool | None]:
     if __package__:
         from .generate_profiles import _verification_category
@@ -226,12 +227,20 @@ def _typed_rule_coverage(
             and isinstance((test_id := mapping.get("test_id")), str)
             and test_id.strip()
         })
-        test_status = (
-            "Category test reference: present"
-            if test_ids
-            else "No category-appropriate rule test"
-        )
-        complete = bool(valid_mappings and test_ids)
+        has_accepted_deviation = accepted_deviation_id is not None and category in {
+            "RecommendedBehaviorOrDeviation",
+            "DiscouragedAbsenceOrDeviation",
+        }
+        if has_accepted_deviation:
+            test_status = f"Accepted deviation: {accepted_deviation_id}"
+            complete = bool(valid_mappings)
+        else:
+            test_status = (
+                "Category test reference: present"
+                if test_ids
+                else "No category-appropriate rule test"
+            )
+            complete = bool(valid_mappings and test_ids)
 
     mapping_test_ids = sorted({
         value
@@ -273,6 +282,11 @@ def _profile_requirement_coverage(
         requirement_id = mapping.get("requirement_id")
         if isinstance(requirement_id, str):
             mappings_by_requirement[requirement_id].append(mapping)
+    decisions_by_id = {
+        row.get("decision_id"): row
+        for row in catalog.get("decisions", [])
+        if isinstance(row.get("decision_id"), str)
+    }
 
     rows: list[tuple[Any, ...]] = []
     requirement_complete: dict[str, bool | None] = {}
@@ -294,6 +308,16 @@ def _profile_requirement_coverage(
             value for value in requirement.get("source_clause_ids") or [] if isinstance(value, str)
         )
         candidates = mappings_by_requirement.get(requirement_id, [])
+        decision_id = requirement.get("decision_id")
+        decision = decisions_by_id.get(decision_id)
+        accepted_deviation_id = (
+            decision_id
+            if isinstance(decision_id, str)
+            and decision is not None
+            and decision.get("status") == "accepted"
+            and requirement_id in decision.get("requirement_ids", [])
+            else None
+        )
         (
             category_label,
             mapping_status,
@@ -306,6 +330,7 @@ def _profile_requirement_coverage(
             source_clause_ids,
             candidates,
             typed_rule_mappings,
+            accepted_deviation_id,
         )
 
         implementation_refs = sorted(
@@ -317,7 +342,6 @@ def _profile_requirement_coverage(
         official_test_ids = sorted(
             value for value in requirement.get("test_case_ids") or [] if isinstance(value, str)
         )
-        decision_id = requirement.get("decision_id")
         rule_implementation_refs = [PROFILE_RULE_SOURCE] if valid_mappings else []
         rows.append((
             requirement_id,
@@ -367,6 +391,189 @@ def _profile_requirement_coverage(
     for profile_id in profiles_by_id:
         is_runtime_available(profile_id)
     return rows, runtime_availability
+
+
+def evaluate_profile_readiness(
+    catalog: dict[str, Any],
+    profile_id: str,
+    *,
+    selected_profile_ids: set[str] | None,
+    typed_rule_mappings: list[dict[str, Any]] | None,
+    verification_manifest: dict[str, Any] | None,
+    current_context: dict[str, Any] | None,
+    current_head: str | None = None,
+    repository_root: Path | None = None,
+) -> dict[str, Any]:
+    """Evaluate stable catalog obligations against one current CI run, without publishing a claim."""
+    profiles_by_id = {
+        row.get("profile_id"): row
+        for row in catalog.get("profiles", [])
+        if isinstance(row.get("profile_id"), str)
+    }
+    profile = profiles_by_id.get(profile_id)
+    selected = None if selected_profile_ids is None else profile_id in selected_profile_ids
+    if profile is None:
+        return {
+            "profile_id": profile_id,
+            "target_selected": selected,
+            "runtime_validation_available": False,
+            "effective_state": "evidence_incomplete",
+            "blockers": ["profile is missing from the catalog"],
+            "published_claim": False,
+        }
+
+    blockers: list[str] = []
+    if verification_manifest is None:
+        blockers.append("current protected-release-push verification manifest is unavailable")
+    else:
+        try:
+            import sys
+
+            root = Path(repository_root or Path(__file__).resolve().parents[2]).resolve(strict=True)
+            root_text = str(root)
+            if root_text not in sys.path:
+                sys.path.insert(0, root_text)
+            from scripts.ci_summary import validate_evidence_manifest
+
+            validate_evidence_manifest(
+                verification_manifest,
+                event_name=str((current_context or {}).get("event_name", "")),
+                current_context=current_context or {},
+                current_head=current_head or "",
+            )
+        except (ImportError, OSError, TypeError, ValueError):
+            blockers.append("current verification manifest is invalid or does not match this run")
+
+    if profile.get("role") != "client":
+        blockers.append("profile is not a client profile")
+    applicability = profile.get("applicability")
+    if applicability == "conditional":
+        blockers.append("conditional profile requires explicit satisfied configuration")
+    elif applicability != "client_1_0":
+        blockers.append("profile is outside the KMIPKit 1.0 client scope")
+
+    requirement_rows, runtime_by_profile = _profile_requirement_coverage(
+        catalog,
+        typed_rule_mappings,
+    )
+    requirement_coverage_by_id = {row[0]: row for row in requirement_rows}
+    requirements_by_id = {
+        row.get("requirement_id"): row
+        for row in catalog.get("requirements", [])
+        if isinstance(row.get("requirement_id"), str)
+    }
+    if typed_rule_mappings is None:
+        blockers.append("typed rule registry has not been evaluated")
+
+    requirement_ids = profile.get("requirement_ids")
+    if not isinstance(requirement_ids, list) or not requirement_ids:
+        blockers.append("profile has no normative requirements")
+        requirement_ids = []
+    for requirement_id in requirement_ids:
+        if not isinstance(requirement_id, str):
+            blockers.append("profile contains a malformed requirement link")
+            continue
+        requirement = requirements_by_id.get(requirement_id)
+        if requirement is None:
+            blockers.append(f"unresolved normative requirement: {requirement_id}")
+            continue
+        if not requirement.get("implementation_refs"):
+            blockers.append(f"missing implementation assignment: {requirement_id}")
+        if not requirement.get("verification_refs"):
+            blockers.append(f"missing verification assignment: {requirement_id}")
+        coverage = requirement_coverage_by_id.get(requirement_id)
+        if coverage is None:
+            blockers.append(f"requirement is outside the checked profile closure: {requirement_id}")
+            continue
+        if coverage[3] != "Typed rule mapping: present":
+            blockers.append(f"typed rule mapping incomplete: {requirement_id}")
+        if coverage[4] not in {"Category test reference: present"} and not coverage[4].startswith(
+            "Accepted deviation: "
+        ):
+            blockers.append(f"category-appropriate test incomplete: {requirement_id}")
+
+    test_case_ids = set(
+        value for value in profile.get("test_case_ids", []) if isinstance(value, str)
+    )
+    for requirement_id in requirement_ids:
+        requirement = requirements_by_id.get(requirement_id) if isinstance(requirement_id, str) else None
+        if requirement is not None:
+            test_case_ids.update(
+                value for value in requirement.get("test_case_ids", []) if isinstance(value, str)
+            )
+    test_cases_by_id = {
+        row.get("test_id"): row
+        for row in catalog.get("test_cases", [])
+        if isinstance(row.get("test_id"), str)
+    }
+    if not test_case_ids:
+        blockers.append("profile has no linked official or project test cases")
+    official_sources: set[str] = set()
+    for test_id in sorted(test_case_ids):
+        test_case = test_cases_by_id.get(test_id)
+        if test_case is None:
+            blockers.append(f"unresolved linked test case: {test_id}")
+            continue
+        if test_case.get("source_id") == "KMIPKIT-SRC-testcases":
+            official_sources.add("KMIPKIT-SRC-testcases")
+        if test_case.get("source_id") == "KMIPKIT-SRC-profiles":
+            official_sources.add("KMIPKIT-SRC-profiles")
+        if (
+            test_case.get("mandatory_status") == "mandatory"
+            and test_case.get("fixture_availability") != "available"
+        ):
+            blockers.append(f"mandatory fixture unavailable: {test_id}")
+    if not official_sources:
+        blockers.append("profile has no linked official test case")
+
+    visited: set[str] = set()
+    resolved: dict[str, bool] = {}
+
+    def dependencies_ready(current_id: str) -> bool:
+        if current_id in resolved:
+            return resolved[current_id]
+        if current_id in visited:
+            blockers.append(f"dependency cycle detected: {current_id}")
+            return False
+        visited.add(current_id)
+        current = profiles_by_id.get(current_id)
+        if current is None:
+            blockers.append(f"unresolved dependency profile: {current_id}")
+            visited.remove(current_id)
+            resolved[current_id] = False
+            return False
+        ready = current.get("claim_state") == "evidence_complete"
+        for dependency_id in current.get("dependency_profile_ids", []):
+            if not isinstance(dependency_id, str) or not dependencies_ready(dependency_id):
+                ready = False
+                blockers.append(f"dependency profile is not evidence complete: {dependency_id}")
+        visited.remove(current_id)
+        resolved[current_id] = ready
+        return ready
+
+    dependencies_ready(profile_id)
+    runtime_available = runtime_by_profile.get(profile_id) is True
+    if not runtime_available:
+        blockers.append("runtime profile validation is unavailable")
+
+    unique_blockers = sorted(set(blockers))
+    catalog_state = str(profile.get("claim_state", "not_claimed"))
+    if unique_blockers and catalog_state == "evidence_complete":
+        effective_state = "evidence_incomplete"
+        unique_blockers.append("catalog claim_state evidence_complete is stale")
+    elif not unique_blockers and catalog_state != "evidence_complete":
+        effective_state = catalog_state
+        unique_blockers.append("catalog claim_state requires a human-reviewed update")
+    else:
+        effective_state = catalog_state
+    return {
+        "profile_id": profile_id,
+        "target_selected": selected,
+        "runtime_validation_available": runtime_available,
+        "effective_state": effective_state,
+        "blockers": sorted(set(unique_blockers)),
+        "published_claim": False,
+    }
 
 
 def render_report(

@@ -2738,6 +2738,35 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "(?i)(mandatory.{0,40}fixture|fixture.{0,40}mandatory)"):
             validate(catalog)
 
+    def test_profile_cannot_claim_complete_evidence_without_requirement_assignments(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        baseline["claim_state"] = "evidence_complete"
+        official_test = next(
+            test_case
+            for test_case in catalog["test_cases"]
+            if test_case["source_id"] == "KMIPKIT-SRC-testcases"
+        )
+        baseline["test_case_ids"] = sorted({
+            *baseline["test_case_ids"],
+            official_test["test_id"],
+        })
+        for test_case in catalog["test_cases"]:
+            if test_case["test_id"] in baseline["test_case_ids"]:
+                test_case["mandatory_status"] = "optional"
+
+        with self.assertRaisesRegex(
+            CatalogValidationError,
+            "requirement implementation and verification assignments",
+        ):
+            validate(catalog)
+
     def test_baseline_profile_links_normative_basic_auth_subclauses(self) -> None:
         """Profiles v2.1 §6.1 item 2 incorporates §§3.1.1 and 3.1.2."""
         catalog = json.loads(

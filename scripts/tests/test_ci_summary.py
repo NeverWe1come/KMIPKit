@@ -287,6 +287,14 @@ class CiSummaryTests(unittest.TestCase):
             manifest["checks"],
         )
         self.assertEqual(self.branch_protection(), manifest["branch_protection"])
+        self.assertIsNone(
+            summary_module.validate_evidence_manifest(
+                manifest,
+                event_name="push",
+                current_context=self.release_context(),
+                current_head="a" * 40,
+            )
+        )
 
     def test_release_evidence_manifest_rejects_ineligible_contexts(self) -> None:
         summary_module = self.require_summary()
@@ -379,6 +387,139 @@ class CiSummaryTests(unittest.TestCase):
                         needs=self.successful_release_needs(),
                         branch_protection=branch_policy,
                     )
+
+    def test_release_evidence_manifest_validation_rejects_stale_and_duplicate_evidence(self) -> None:
+        summary_module = self.require_summary()
+        manifest = summary_module.build_evidence_manifest(
+            event_name="push",
+            context=self.release_context(),
+            needs=self.successful_release_needs(),
+            branch_protection=self.branch_protection(),
+        )
+        invalid_manifests = []
+        for field, value in (
+            ("repository", "someone-else/KMIPKit"),
+            ("event_name", "pull_request"),
+            ("ref", "refs/heads/main"),
+            ("ref_protected", False),
+            ("workflow_ref", "untrusted-workflow"),
+            ("run_id", "987654321"),
+            ("run_attempt", "2"),
+        ):
+            invalid_manifests.append(manifest | {field: value})
+        invalid_manifests.append(manifest | {"checked_out_commit": "b" * 40})
+        invalid_manifests.append(manifest | {"schema_version": True})
+        invalid_manifests.append(manifest | {"ref_protected": 1})
+        invalid_manifests.append(manifest | {"checks": manifest["checks"][:-1]})
+        invalid_manifests.append(
+            manifest
+            | {
+                "checks": [
+                    *manifest["checks"][:-1],
+                    manifest["checks"][0],
+                ]
+            }
+        )
+        invalid_manifests.append(
+            manifest
+            | {
+                "checks": [
+                    *manifest["checks"][:-1],
+                    manifest["checks"][-1] | {"conclusion": "failure"},
+                ]
+            }
+        )
+        invalid_manifests.append(manifest | {"unknown": "field"})
+
+        for invalid_manifest in invalid_manifests:
+            with self.subTest(manifest=invalid_manifest):
+                with self.assertRaises(ValueError):
+                    summary_module.validate_evidence_manifest(
+                        invalid_manifest,
+                        event_name="push",
+                        current_context=self.release_context(),
+                        current_head="a" * 40,
+                    )
+
+        for current_context, current_head in (
+            (self.release_context(run_id="987654321"), "a" * 40),
+            (self.release_context(run_attempt="2"), "a" * 40),
+            (self.release_context(sha="b" * 40), "a" * 40),
+            (self.release_context(ref_protected=1), "a" * 40),
+            (self.release_context(), "b" * 40),
+        ):
+            with self.subTest(current_context=current_context, current_head=current_head):
+                with self.assertRaises(ValueError):
+                    summary_module.validate_evidence_manifest(
+                        manifest,
+                        event_name="push",
+                        current_context=current_context,
+                        current_head=current_head,
+                    )
+
+    def test_main_writes_only_ephemeral_release_manifest_output(self) -> None:
+        summary_module = self.require_summary()
+        context = self.release_context()
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "step-summary.md"
+            output_path = Path(directory) / "step-output.txt"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_OUTPUT": str(output_path),
+                "CI_NEEDS_JSON": json.dumps(self.successful_release_needs()),
+                "CI_BRANCH_PROTECTION_JSON": json.dumps(self.branch_protection()),
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_REPOSITORY": context["repository"],
+                "GITHUB_REF": context["ref"],
+                "GITHUB_REF_PROTECTED": "true",
+                "GITHUB_WORKFLOW_REF": context["workflow_ref"],
+                "GITHUB_SHA": context["sha"],
+                "GITHUB_RUN_ID": context["run_id"],
+                "GITHUB_RUN_ATTEMPT": context["run_attempt"],
+                "GITHUB_SERVER_URL": "https://github.com",
+            }
+            with mock.patch.dict(os.environ, environment, clear=False):
+                exit_code = summary_module.main()
+
+            self.assertEqual(0, exit_code)
+            output = output_path.read_text(encoding="utf-8")
+            self.assertEqual(1, len(output.splitlines()))
+            key, encoded_manifest = output.strip().split("=", 1)
+            self.assertEqual("profile_evidence_manifest", key)
+            manifest = json.loads(encoded_manifest)
+            self.assertEqual(6, len(manifest["checks"]))
+            self.assertNotIn("CI_BRANCH_PROTECTION_JSON", output)
+            self.assertNotIn("private-key", output.lower())
+
+    def test_main_fails_closed_when_release_policy_evidence_is_missing(self) -> None:
+        summary_module = self.require_summary()
+        context = self.release_context()
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "step-summary.md"
+            output_path = Path(directory) / "step-output.txt"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_OUTPUT": str(output_path),
+                "CI_NEEDS_JSON": json.dumps(self.successful_release_needs()),
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_REPOSITORY": context["repository"],
+                "GITHUB_REF": context["ref"],
+                "GITHUB_REF_PROTECTED": "true",
+                "GITHUB_WORKFLOW_REF": context["workflow_ref"],
+                "GITHUB_SHA": context["sha"],
+                "GITHUB_RUN_ID": context["run_id"],
+                "GITHUB_RUN_ATTEMPT": context["run_attempt"],
+                "GITHUB_SERVER_URL": "https://github.com",
+            }
+            with mock.patch.dict(os.environ, environment, clear=False):
+                exit_code = summary_module.main()
+
+            self.assertEqual(1, exit_code)
+            self.assertFalse(output_path.exists())
+            self.assertIn(
+                "CI summary could not be rendered",
+                summary_path.read_text(encoding="utf-8"),
+            )
 
 
 if __name__ == "__main__":
