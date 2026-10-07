@@ -111,7 +111,7 @@ fn local_records_never_advance_catalog_state_or_publish_a_claim() {
         .expect("Baseline profile resolves");
 
     assert!(readiness.requirement_records_complete());
-    assert_eq!("not_claimed", readiness.effective_state());
+    assert_eq!("evidence_incomplete", readiness.effective_state());
     assert!(
         readiness
             .blockers()
