@@ -32,6 +32,13 @@ Red/Green/Refactor commits:
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
 
+## 2026-10-07 — cross-configuration request ownership Red
+
+- `cargo test -p kmipkit-client --lib a_request_extension_from_another_client_registry_is_rejected_before_transport -- --nocapture`
+  — expected Red: an extension value sealed by one registry was accepted and
+  sent by a client configured with a different registry. The required result
+  is a sanitized validation error with `NotSent` evidence and zero exchanges.
+
 ## 2026-10-07 — adversarial lookup comparison boundary
 
 Added a sorted payload with a repeated discriminator at the start followed by

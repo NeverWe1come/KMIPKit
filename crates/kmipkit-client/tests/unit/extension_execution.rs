@@ -251,6 +251,30 @@ fn empty_registry() -> ClientExtensionRegistry {
     .expect("an empty registry is valid")
 }
 
+fn registered_request_extension(
+    registry: &ClientExtensionRegistry,
+    criticality: bool,
+) -> crate::extension_registry::ClientRequestMessageExtension {
+    let identity = kmipkit_protocol::extension::extension_identity(VENDOR, "fixture", "1")
+        .expect("the fixture identity is valid");
+    let mut payload = Structure::new();
+    payload
+        .try_push(test_item(
+            DISCRIMINATOR_TAG,
+            Value::byte_string(DISCRIMINATOR.to_vec()),
+        ))
+        .expect("the discriminator fits the extension payload");
+    let value = extension_registry::validate_extension_value(
+        registry,
+        identity,
+        payload,
+        &CodecLimits::defaults(),
+    )
+    .expect("the extension value belongs to the source registry");
+    extension_registry::client_request_message_extension(value, criticality)
+        .expect("request criticality is explicit")
+}
+
 #[test]
 fn an_unregistered_critical_response_extension_is_rejected_without_retry() {
     let (mut client, transport) = client_for(response_with_extension(true));
@@ -411,4 +435,27 @@ fn an_unregistered_noncritical_response_payload_stays_generic_and_preserved() {
         1,
         "execution does not retry"
     );
+}
+
+#[test]
+fn a_request_extension_from_another_client_registry_is_rejected_before_transport() {
+    let source_registry = registry();
+    let extension = registered_request_extension(&source_registry, false);
+    let (mut client, transport) = client_for_configuration(
+        response_with_extension(false),
+        ClientConfiguration::new(empty_registry()),
+    );
+
+    let error = client
+        .execute(
+            ClientBatch::new(
+                ClientBatchItem::new(ClientRequest::discover_versions()).with_extension(extension),
+            ),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("registered request values are scoped to their client registry");
+
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
 }
