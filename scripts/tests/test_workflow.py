@@ -227,7 +227,10 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(branch_coverage, r"(?m)^    if: github\.event_name == 'schedule'$")
         gate = self.require_job(contents, "coverage-gate")
         self.assertRegex(gate, r"(?m)^    if: always\(\) && github\.event_name == 'pull_request'$")
-        self.assertIn("if: always() && needs.coverage.result != 'success'", gate)
+        self.assertIn(
+            "if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')",
+            gate,
+        )
 
     def test_branch_coverage_documentation_matches_schedule_only_workflow(self) -> None:
         guide = TESTING_GUIDE.read_text(encoding="utf-8")
@@ -387,8 +390,12 @@ class WorkflowContractTests(unittest.TestCase):
         job = self.require_job(contents, "coverage-gate")
         self.assertIn("--summary-file", job)
         self.assertIn("$GITHUB_STEP_SUMMARY", job)
-        self.assertIn("Summarize failed platform collection", job)
-        self.assertIn("if: always() && needs.coverage.result != 'success'", job)
+        self.assertIn("Summarize failed platform or adapter collection", job)
+        self.assertIn(
+            "if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')",
+            job,
+        )
+        self.assertIn("ADAPTER_COVERAGE_RESULT: ${{ needs.adapter-coverage.result }}", job)
         self.assertIn("Summarize skipped coverage aggregation", job)
         self.assertIn("steps.enforce.outcome == 'skipped'", job)
 

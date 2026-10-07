@@ -249,22 +249,25 @@ jobs:
 
   coverage-gate:
     if: always() && github.event_name == 'pull_request'
-    name: Coverage gate / three platforms
+    name: Coverage gate / platforms and adapters
     runs-on: ${{ github.event.pull_request.head.repo.full_name == github.repository && fromJSON('["self-hosted","Linux","ARM64"]') || 'ubuntu-latest' }}
-    needs: coverage
+    needs:
+      - coverage
+      - adapter-coverage
     steps:
-      - name: Require successful platform coverage collection
-        if: always() && needs.coverage.result != 'success'
+      - name: Require successful platform and adapter coverage collection
+        if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')
         run: |
-          echo "Coverage matrix completed with result: ${{ needs.coverage.result }}" >&2
+          echo "Coverage matrix result: ${{ needs.coverage.result }}; adapter coverage result: ${{ needs.adapter-coverage.result }}" >&2
           exit 1
 
-      - name: Summarize failed platform collection
-        if: always() && needs.coverage.result != 'success'
+      - name: Summarize failed platform or adapter collection
+        if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')
         env:
           COVERAGE_RESULT: ${{ needs.coverage.result }}
+          ADAPTER_COVERAGE_RESULT: ${{ needs.adapter-coverage.result }}
         run: |
-          printf '### Coverage gate\n\n**Result:** ❌ FAIL — platform collection did not complete.\n\n- Coverage matrix result: `%s`.\n\n' "$COVERAGE_RESULT" >> "$GITHUB_STEP_SUMMARY"
+          printf '### Coverage gate\n\n**Result:** ❌ FAIL — platform or adapter collection did not complete.\n\n- Coverage matrix result: `%s`.\n- Adapter coverage result: `%s`.\n\n' "$COVERAGE_RESULT" "$ADAPTER_COVERAGE_RESULT" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout pull request merge commit
         id: checkout
@@ -274,7 +277,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Download platform reports
+      - name: Download platform and adapter reports
         id: download
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # actions/download-artifact v8.0.1
         with:
@@ -287,12 +290,109 @@ jobs:
         run: python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base "${{ github.event.pull_request.base.sha }}" --merge "${{ github.sha }}" --summary-file "$GITHUB_STEP_SUMMARY"
 
       - name: Summarize skipped coverage aggregation
-        if: always() && needs.coverage.result == 'success' && steps.enforce.outcome == 'skipped'
+        if: always() && needs.coverage.result == 'success' && needs.adapter-coverage.result == 'success' && steps.enforce.outcome == 'skipped'
         env:
           CHECKOUT_RESULT: ${{ steps.checkout.outcome }}
           DOWNLOAD_RESULT: ${{ steps.download.outcome }}
         run: |
           printf '### Coverage gate\n\n**Result:** ❌ FAIL — aggregation did not run.\n\n- Checkout result: `%s`.\n- Artifact download result: `%s`.\n\n' "$CHECKOUT_RESULT" "$DOWNLOAD_RESULT" >> "$GITHUB_STEP_SUMMARY"
+
+  adapter-coverage:
+    if: github.event_name == 'pull_request'
+    name: Adapter coverage / Linux
+    runs-on: ${{ github.event.pull_request.head.repo.full_name == github.repository && fromJSON('["self-hosted","Linux","ARM64"]') || 'ubuntu-latest' }}
+    needs:
+      - language-bindings
+    env:
+      CARGO_TERM_COLOR: always
+      RUSTUP_TOOLCHAIN: '1.94'
+    steps:
+      - name: Checkout pull request merge commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install Rust 1.94
+        run: rustup toolchain install 1.94 --profile minimal
+
+      - name: Set up Java 17
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # actions/setup-java v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Set up Maven 3.9.16
+        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # stCarolas/setup-maven v5.1
+        with:
+          maven-version: '3.9.16'
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # actions/setup-python v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Install LLVM 20.1.8 for JNI coverage
+        uses: KyleMayes/install-llvm-action@ebc0426251bc40c7cd31162802432c68818ab8f0 # KyleMayes/install-llvm-action v2.0.9
+        with:
+          version: '20.1.8'
+          directory: ${{ runner.temp }}/llvm-20
+
+      - name: Add versioned LLVM tool names
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/llvm-20-tools"
+          for tool in clang++ llvm-profdata llvm-cov; do
+            ln -s "$LLVM_PATH/bin/$tool" "$RUNNER_TEMP/llvm-20-tools/${tool}-20"
+          done
+          echo "$RUNNER_TEMP/llvm-20-tools" >> "$GITHUB_PATH"
+
+      - name: Run Java tests and collect JaCoCo report
+        shell: bash
+        run: |
+          mvn --batch-mode --file bindings/java/pom.xml clean verify
+          mkdir -p coverage-java
+          cp bindings/java/target/site/jacoco/jacoco.xml coverage-java/jacoco.xml
+
+      - name: Run Python coverage suite
+        shell: bash
+        run: |
+          python -m pip install --requirement bindings/python/requirements-coverage.txt
+          python -m pip install --no-build-isolation --editable bindings/python
+          mkdir -p coverage-python
+          python -m pytest -q bindings/python/tests \
+            --cov=kmipkit \
+            --cov-config=bindings/python/pyproject.toml \
+            --cov-report=xml:coverage-python/coverage.xml
+
+      - name: Run JNI coverage suite
+        shell: bash
+        run: |
+          bash scripts/collect_jni_coverage.sh target/coverage-jni
+          mkdir -p coverage-jni
+          cp target/coverage-jni/coverage.json coverage-jni/coverage.json
+
+      - name: Upload Java coverage report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: coverage-java
+          path: coverage-java/jacoco.xml
+          if-no-files-found: error
+
+      - name: Upload Python coverage report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: coverage-python
+          path: coverage-python/coverage.xml
+          if-no-files-found: error
+
+      - name: Upload JNI coverage report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: coverage-jni
+          path: coverage-jni/coverage.json
+          if-no-files-found: error
 
   dependency-policy:
     name: Dependency policy / pull request
@@ -407,6 +507,7 @@ jobs:
       - normative-inventory
       - coverage
       - coverage-gate
+      - adapter-coverage
       - dependency-policy
       - scheduled-dependency-policy
       - branch-coverage
