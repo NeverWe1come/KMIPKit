@@ -12,17 +12,7 @@ mod tls_policy;
 #[test]
 fn runtime_client_configuration_disables_key_logging_and_early_data() {
     let pki = EphemeralPki::generate().expect("ephemeral test certificates are generated");
-    let mut roots = RootCertStore::empty();
-    roots
-        .add(CertificateDer::from(
-            pki.authority_certificate_der().to_vec(),
-        ))
-        .expect("the ephemeral test root is valid");
-    let mut config = tls_policy::client_config_builder()
-        .expect("the TLS 1.3 AWS-LC builder is valid")
-        .with_root_certificates(roots)
-        .with_no_client_auth();
-    tls_policy::apply_client_safety_policy(&mut config);
+    let config = verified_client_config(&pki);
 
     assert!(!config.key_log.will_log("CLIENT_HANDSHAKE_TRAFFIC_SECRET"));
     assert!(!config.key_log.will_log("CLIENT_EARLY_TRAFFIC_SECRET"));
@@ -47,19 +37,8 @@ fn runtime_client_configuration_negotiates_tls13_with_a_local_peer() {
     let local_listener = listener.into_inner();
     let server = thread::spawn(move || run_tls_server(&local_listener, server_config));
 
-    let mut roots = RootCertStore::empty();
-    roots
-        .add(CertificateDer::from(
-            pki.authority_certificate_der().to_vec(),
-        ))
-        .expect("the ephemeral test root is valid");
-    let mut client_config = tls_policy::client_config_builder()
-        .expect("the TLS 1.3 AWS-LC builder is valid")
-        .with_root_certificates(roots)
-        .with_no_client_auth();
-    tls_policy::apply_client_safety_policy(&mut client_config);
     let mut client = ClientConnection::new(
-        Arc::new(client_config),
+        Arc::new(verified_client_config(&pki)),
         ServerName::try_from("server.kmipkit.test")
             .expect("fixture hostname is a valid server name"),
     )
@@ -95,6 +74,21 @@ fn tls13_server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
         )
         .expect("the test server identity is valid");
     Arc::new(config)
+}
+
+fn verified_client_config(pki: &EphemeralPki) -> rustls::ClientConfig {
+    let mut roots = RootCertStore::empty();
+    roots
+        .add(CertificateDer::from(
+            pki.authority_certificate_der().to_vec(),
+        ))
+        .expect("the ephemeral test root is valid");
+    let mut config = tls_policy::client_config_builder()
+        .expect("the TLS 1.3 AWS-LC builder is valid")
+        .with_root_certificates(roots)
+        .with_no_client_auth();
+    tls_policy::apply_client_safety_policy(&mut config);
+    config
 }
 
 fn run_tls_server(listener: &TcpListener, config: Arc<ServerConfig>) -> bool {

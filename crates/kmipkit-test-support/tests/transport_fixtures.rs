@@ -20,9 +20,28 @@ fn ephemeral_pki_generates_distinct_client_and_server_credentials_without_debugg
         second.server_identity().private_key_der(),
         "each generated server identity must use fresh key material"
     );
+    assert_ne!(
+        first.client_identity().private_key_der(),
+        first.server_identity().private_key_der(),
+        "client and server identities must not share key material"
+    );
+    assert_ne!(
+        first.client_identity().certificate_der(),
+        first.server_identity().certificate_der(),
+        "client and server identities must have distinct certificates"
+    );
+    assert_eq!(
+        first.client_identity().certificate_chain_der()[1],
+        first.authority_certificate_der()
+    );
+    assert_eq!(
+        first.server_identity().certificate_chain_der()[1],
+        first.authority_certificate_der()
+    );
 
     let formatted = format!("{first:?}");
     assert!(!formatted.contains("private_key_der"));
+    assert!(formatted.contains("[REDACTED]"));
     assert!(!formatted.contains(&hex(first.server_identity().private_key_der())));
     assert!(!formatted.contains(&hex(first.client_identity().private_key_der())));
 }
@@ -58,6 +77,19 @@ fn local_transport_listener_never_binds_a_public_interface() {
         .expect("the transport fixture binds to an ephemeral loopback port");
 
     assert!(fixture.local_addr().ip().is_loopback());
+}
+
+#[test]
+fn local_dns_fixture_rejects_non_loopback_records_before_binding() {
+    let result = LocalDnsFixture::bind(BTreeMap::from([(
+        "transport.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::new(203, 0, 113, 1))],
+    )]));
+
+    let error = result
+        .err()
+        .expect("non-loopback records are rejected before binding");
+    assert_eq!(error.kind(), io::ErrorKind::InvalidInput);
 }
 
 fn query_dns(server: SocketAddr, hostname: &str, record_type: u16) -> io::Result<Vec<u8>> {
