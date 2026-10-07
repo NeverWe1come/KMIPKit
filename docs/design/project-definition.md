@@ -98,7 +98,9 @@ algorithm, key length, usage, mode, padding, and export policy remain explicit.
 
 - The Rust client is synchronous.
 - KMIP protocol asynchronous results are fully supported.
-- A client is thread safe and owns one reusable connection.
+- A client is thread safe and serializes calls through one worker. It may
+  reuse a healthy HTTPS connection; raw TLS opens one connection per exchange
+  and closes it after exactly one response frame.
 - Concurrent calls on one client are serialized.
 - Applications create multiple clients for parallel network operations.
 - No request is retried automatically.
@@ -111,6 +113,9 @@ algorithm, key length, usage, mode, padding, and export policy remain explicit.
 - 0-RTT, redirects, HTTP compression, proxies, TLS key logging, and automatic
   network revocation lookup are disabled.
 - Explicit CRL input is supported.
+- TLS 1.3 resumption tickets stay in memory within one client configuration,
+  expire after at most one hour, and inherit the full handshake's peer and
+  trust/CRL decision. Rebuilding the client applies changed trust inputs.
 - Secret types minimize copies and zeroize owned memory.
 - Logs and errors redact credentials, keys, raw bodies, and sensitive data.
 - Decoder resource limits are enforced before allocation.

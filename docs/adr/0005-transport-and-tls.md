@@ -1,6 +1,6 @@
 # ADR-0005: Synchronous transports and TLS policy
 
-Status: Accepted
+Status: Accepted; implementation-backend clauses superseded in part by ADR-0015
 Date: 2026-10-03
 
 ## Context
@@ -11,10 +11,14 @@ suites required when a KMIP implementation elects to support TLS 1.2.
 
 ## Decision
 
-Support TLS 1.3 only with rustls and aws-lc-rs. Use `TcpStream + rustls` for
-raw TTLV and `reqwest::blocking + rustls` for HTTPS/HTTP 1.1. Require mTLS and
-server verification. Disable 0-RTT, redirects, compression, proxies, key
-logging, automatic retries, and automatic failover.
+Support TLS 1.3 only with rustls and aws-lc-rs. Require mTLS and server
+verification. Disable 0-RTT, redirects, compression, proxies, key logging,
+automatic retries, and automatic failover. ADR-0015 supersedes this ADR's
+`TcpStream`/`reqwest::blocking` implementation choices: KMIPKit uses Tokio and
+`tokio-rustls` behind its synchronous per-client worker, with Hyper's HTTP/1
+parser for HTTPS. HTTPS may reuse a healthy connection; raw TLS closes after
+one response frame. The public TLS and no-retry policy in this ADR remains in
+force.
 
 ## Consequences
 

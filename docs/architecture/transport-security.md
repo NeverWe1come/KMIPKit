@@ -1,11 +1,10 @@
 # Transport and security architecture
 
-This document describes the intended 1.0 transport profile, not current
-backend availability. KMIPKIT-0007 provides the public low-level exchange
-contract and an internal test fake only; no production TLS/HTTPS adapter or
-usable network-client constructor is available yet. A separately approved
-transport feature will provide construction from validated configuration and
-must not expose arbitrary transport injection. See the
+This document describes the intended 1.0 transport profile and its accepted
+implementation boundary. KMIPKIT-0013 specifies production TLS/HTTPS adapters
+and a synchronous client constructor from validated configuration; its
+implementation is in progress. The constructor must not expose arbitrary
+transport injection. See the
 [client execution guide](../user-guide/en/client-execution.md) for the
 implemented boundary.
 
@@ -13,18 +12,21 @@ implemented boundary.
 
 ### Raw TLS
 
-- `std::net::TcpStream` and rustls.
+- Tokio TCP and `tokio-rustls` on the private per-client worker.
 - Read the 8-byte TTLV header first.
 - Validate root tag, type, declared length, configured maximum, and arithmetic
   before allocation.
-- Read exactly the value and padding; following bytes belong to the next frame.
+- Read exactly the value and padding, then close the connection after that one
+  response frame. Any surplus stream bytes are discarded with the connection.
 - Close the connection on invalid framing, incomplete EOF, or limit violation.
 
 ### HTTPS
 
-- `reqwest::blocking` with only the rustls backend.
+- Hyper's HTTP/1 client parser over the verified rustls stream.
 - HTTPS only, HTTP/1.1 only.
 - POST to a configurable path; default `/kmip`.
+- Send exactly one `Host` header derived from the endpoint authority; the
+  target path and TLS verification-name override do not alter it.
 - `Content-Type: application/octet-stream`.
 - No redirect, proxy, or compression behavior.
 - Strict KMIP HTTPS profile status, header, and body checks.
@@ -37,11 +39,16 @@ implemented boundary.
 - Certificate and private key input from PEM or DER files and in-memory
   buffers.
 - Explicit CA roots; optional platform trust is an explicit choice.
-- Mandatory chain, validity, and hostname/SAN verification.
+- Mandatory chain, validity, and hostname/SAN verification on each full
+  handshake.
 - Optional separate TLS server name for IP-based connections.
 - Explicit caller-provided CRLs; no network CRL or OCSP lookup.
 - TLS key logging and 0-RTT disabled.
-- Session resumption allowed in bounded per-client memory only.
+- Support TLS 1.3 session resumption with at most 16 in-memory tickets per
+  client configuration and a one-hour local expiry. A resumed session
+  inherits the peer identity and trust/CRL decision from its verified full
+  handshake; rebuilding the client applies changed trust inputs and starts
+  with an empty cache.
 - No persistence or sharing across different identities/configurations.
 
 There is no production switch that accepts arbitrary certificates. Tests use
@@ -53,9 +60,11 @@ configuration at runtime.
 
 ## Connection model
 
-One client owns one reusable connection and serializes its calls. A network or
-protocol framing error invalidates the connection. A later operation may
-reconnect. The failed operation is never retried automatically.
+One client serializes its calls through one worker. HTTPS may reuse a healthy
+HTTP/1 connection; raw TLS closes its connection after each response frame.
+A network or protocol framing error invalidates the current connection. A
+later operation may reconnect. The failed operation is never retried
+automatically.
 
 One endpoint is configured per client. Alternative endpoints returned by KMIP
 are exposed to the application but never selected automatically.
