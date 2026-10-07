@@ -1048,6 +1048,200 @@ static bool test_explicit_outbound_criticality(void)
     return true;
 }
 
+static bool ttlv_value_matches_text(kmipkit_ttlv_value_t *value,
+                                    const uint8_t *expected,
+                                    uint64_t expected_length)
+{
+    kmipkit_ttlv_value_view_t *view = NULL;
+    uint8_t item_type = 0U;
+    uint64_t actual_length = 0U;
+    uint64_t index;
+    bool matches = true;
+
+    if (kmipkit_ttlv_value_view(value, &view) != KMIPKIT_SUCCESS ||
+        kmipkit_ttlv_value_view_type(view, &item_type) != KMIPKIT_SUCCESS ||
+        item_type != KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING ||
+        kmipkit_ttlv_value_view_byte_length(view, &actual_length) != KMIPKIT_SUCCESS ||
+        actual_length != expected_length) {
+        matches = false;
+        goto cleanup;
+    }
+
+    for (index = 0U; index < expected_length; ++index) {
+        uint8_t actual_byte = 0U;
+        if (kmipkit_ttlv_value_view_byte_at(view, index, &actual_byte) != KMIPKIT_SUCCESS ||
+            actual_byte != expected[index]) {
+            matches = false;
+            break;
+        }
+    }
+
+cleanup:
+    kmipkit_ttlv_value_view_release(view);
+    return matches;
+}
+
+static bool identity_name_matches(kmipkit_extension_identity_t *identity,
+                                  const uint8_t *expected,
+                                  uint64_t expected_length)
+{
+    kmipkit_ttlv_value_t *name = NULL;
+    const int32_t status = kmipkit_extension_identity_name(identity, &name);
+    const bool matches = status == KMIPKIT_SUCCESS && name != NULL &&
+        ttlv_value_matches_text(name, expected, expected_length);
+    kmipkit_ttlv_value_release(name);
+    return matches;
+}
+
+static bool test_identity_fields_and_batch_extension_order(void)
+{
+    static const uint8_t alpha_name[] = "alpha";
+    static const uint8_t beta_name[] = "beta";
+    static const uint8_t vendor[] = "example.vendor";
+    static const uint8_t version[] = "1";
+    static const uint8_t discriminator[] = "alpha-v1";
+    kmipkit_codec_limits_t *codec_limits = NULL;
+    kmipkit_extension_identity_t *alpha_identity = NULL;
+    kmipkit_extension_identity_t *beta_identity = NULL;
+    kmipkit_extension_identity_t *first_identity = NULL;
+    kmipkit_extension_identity_t *second_identity = NULL;
+    kmipkit_extension_definition_t *alpha_definition = NULL;
+    kmipkit_extension_definition_t *beta_definition = NULL;
+    kmipkit_extension_definition_t *definitions[2];
+    kmipkit_client_extension_registry_t *registry = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_registered_extension_value_t *registered = NULL;
+    kmipkit_client_request_message_extension_t *extension = NULL;
+    kmipkit_client_batch_item_t *batch_item = NULL;
+    kmipkit_client_batch_item_t *updated_batch_item = NULL;
+    kmipkit_ttlv_value_t *field_value = NULL;
+    kmipkit_extension_registry_limits_t limits;
+    uint64_t extension_count = 0U;
+    uint8_t criticality = UINT8_C(0xFF);
+    int32_t status;
+    bool succeeded = false;
+
+    if (kmipkit_codec_limits_defaults(&codec_limits) != KMIPKIT_SUCCESS ||
+        !load_default_limits(&limits) ||
+        !create_fixture_definition(codec_limits, alpha_name,
+            (uint64_t)(sizeof(alpha_name) - 1U), KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR,
+            discriminator, (uint64_t)(sizeof(discriminator) - 1U),
+            &alpha_identity, &alpha_definition) ||
+        !create_fixture_definition(codec_limits, beta_name,
+            (uint64_t)(sizeof(beta_name) - 1U), KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR,
+            discriminator, (uint64_t)(sizeof(discriminator) - 1U),
+            &beta_identity, &beta_definition)) {
+        goto cleanup;
+    }
+
+    if (kmipkit_extension_identity_vendor_identifier(alpha_identity, &field_value) != KMIPKIT_SUCCESS ||
+        !ttlv_value_matches_text(field_value, vendor, (uint64_t)(sizeof(vendor) - 1U))) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_value_release(field_value);
+    field_value = NULL;
+    if (kmipkit_extension_identity_name(alpha_identity, &field_value) != KMIPKIT_SUCCESS ||
+        !ttlv_value_matches_text(field_value, alpha_name,
+            (uint64_t)(sizeof(alpha_name) - 1U))) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_value_release(field_value);
+    field_value = NULL;
+    if (kmipkit_extension_identity_version(alpha_identity, &field_value) != KMIPKIT_SUCCESS ||
+        !ttlv_value_matches_text(field_value, version,
+            (uint64_t)(sizeof(version) - 1U))) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_value_release(field_value);
+    field_value = NULL;
+
+    definitions[0] = alpha_definition;
+    definitions[1] = beta_definition;
+    if (!create_registry(definitions, UINT64_C(2), &limits, &registry) ||
+        !create_fixture_payload(codec_limits, 42, UINT32_MAX, false, &payload) ||
+        kmipkit_client_extension_registry_validate(registry, alpha_identity,
+            payload, codec_limits, &registered) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    status = kmipkit_client_request_message_extension_create(registered, UINT8_C(1),
+        &extension);
+    registered = NULL;
+    if (status != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_discover_versions(&batch_item) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_with_extension(batch_item, extension,
+        &updated_batch_item);
+    batch_item = NULL;
+    extension = NULL;
+    if (status != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    batch_item = updated_batch_item;
+    updated_batch_item = NULL;
+
+    if (kmipkit_client_extension_registry_validate(registry, beta_identity,
+            payload, codec_limits, &registered) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    status = kmipkit_client_request_message_extension_create(registered, UINT8_C(0),
+        &extension);
+    registered = NULL;
+    if (status != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    updated_batch_item = NULL;
+    status = kmipkit_client_batch_item_with_extension(batch_item, extension,
+        &updated_batch_item);
+    batch_item = NULL;
+    extension = NULL;
+    if (status != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    batch_item = updated_batch_item;
+    updated_batch_item = NULL;
+
+    if (kmipkit_client_batch_item_extension_count(batch_item,
+            &extension_count) != KMIPKIT_SUCCESS || extension_count != UINT64_C(2) ||
+        kmipkit_client_batch_item_extension_identity_at(batch_item, UINT64_C(0),
+            &first_identity) != KMIPKIT_SUCCESS || first_identity == NULL ||
+        kmipkit_client_batch_item_extension_identity_at(batch_item, UINT64_C(1),
+            &second_identity) != KMIPKIT_SUCCESS || second_identity == NULL ||
+        !identity_name_matches(first_identity, alpha_name,
+            (uint64_t)(sizeof(alpha_name) - 1U)) ||
+        !identity_name_matches(second_identity, beta_name,
+            (uint64_t)(sizeof(beta_name) - 1U)) ||
+        kmipkit_client_batch_item_extension_criticality_indicator_at(batch_item,
+            UINT64_C(0), &criticality) != KMIPKIT_SUCCESS || criticality != UINT8_C(1)) {
+        goto cleanup;
+    }
+    criticality = UINT8_C(0xFF);
+    if (kmipkit_client_batch_item_extension_criticality_indicator_at(batch_item,
+            UINT64_C(1), &criticality) != KMIPKIT_SUCCESS || criticality != UINT8_C(0)) {
+        goto cleanup;
+    }
+    succeeded = true;
+
+cleanup:
+    kmipkit_ttlv_value_release(field_value);
+    kmipkit_extension_identity_release(first_identity);
+    kmipkit_extension_identity_release(second_identity);
+    kmipkit_client_batch_item_release(updated_batch_item);
+    kmipkit_client_batch_item_release(batch_item);
+    kmipkit_client_request_message_extension_release(extension);
+    kmipkit_registered_extension_value_release(registered);
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_client_extension_registry_release(registry);
+    kmipkit_extension_definition_release(alpha_definition);
+    kmipkit_extension_definition_release(beta_definition);
+    kmipkit_extension_identity_release(alpha_identity);
+    kmipkit_extension_identity_release(beta_identity);
+    kmipkit_codec_limits_release(codec_limits);
+    return succeeded;
+}
+
 static bool test_handle_release_and_null_output_on_error(void)
 {
     static const uint8_t name[] = "alpha";
@@ -1114,6 +1308,7 @@ int main(int argc, char **argv)
         {"inbound inspection and generic preservation", test_inbound_inspection_and_generic_preservation},
         {"stable redacted errors and invalid handles", test_redacted_stable_errors_and_invalid_handles},
         {"explicit outbound criticality", test_explicit_outbound_criticality},
+        {"identity fields and batch extension order", test_identity_fields_and_batch_extension_order},
         {"handle release and null output semantics", test_handle_release_and_null_output_on_error}
     };
     size_t index;

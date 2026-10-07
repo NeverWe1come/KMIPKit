@@ -366,6 +366,20 @@ fn repeated_message_extensions_keep_explicit_criticality_and_caller_order() {
         .with_extension(first)
         .with_extension(second);
 
+    assert_eq!(batch_item.extension_count(), 2);
+    let first_identity = batch_item
+        .extension_identity_at(0)
+        .expect("the first extension identity is present");
+    let second_identity = batch_item
+        .extension_identity_at(1)
+        .expect("the second extension identity is present");
+    assert_eq!(first_identity.name(), "alpha");
+    assert_eq!(second_identity.name(), "beta");
+    assert_eq!(batch_item.extension_criticality_indicator_at(0), Some(true));
+    assert_eq!(batch_item.extension_criticality_indicator_at(1), Some(false));
+    assert_eq!(batch_item.extension_identity_at(2), None);
+    assert_eq!(batch_item.extension_criticality_indicator_at(2), None);
+
     fixture
         .client
         .execute(ClientBatch::new(batch_item), &CodecLimits::defaults())

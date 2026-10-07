@@ -522,3 +522,17 @@ Red evidence:
   defines no Java/Maven dependency allowlist. No Java runtime dependency is
   planned; the bridge uses JDK JNI headers and the installed Visual Studio
   compiler.
+
+## 2026-10-07 — C identity and batch inspection Red stage
+
+Added C consumer assertions for all three identity fields and for the order and
+explicit criticality of two attached extensions. A Rust client unit test also
+asserts `ClientBatchItem` count, identity-at, criticality-at, and out-of-range
+behavior.
+
+Red evidence:
+
+- `cargo test -p kmipkit-client --lib repeated_message_extensions_keep_explicit_criticality_and_caller_order` — expected compile failure because `ClientBatchItem` does not yet expose `extension_count`, `extension_identity_at`, or `extension_criticality_indicator_at`.
+- In WSL Ubuntu, `cargo build -p kmipkit-ffi` — passed for the baseline ABI.
+- In WSL Ubuntu, `gcc -std=c11 -Wall -Wextra -Werror -pedantic -I bindings/c/include bindings/c/tests/extension_registry.c -L target/debug -lkmipkit_ffi -Wl,-rpath,$PWD/target/debug -o target/debug/kmipkit-c-consumer` — expected link failure because all seven newly manifested identity/batch symbols are declared by the generated header but not exported yet; C compilation itself succeeded.
+- `git diff --check` — passed.
