@@ -135,6 +135,16 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported pull-request platform must run fixture generator rejection tests.",
         )
 
+    def test_script_contract_job_installs_pinned_fixture_test_dependencies(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        self.assert_uv_managed_python_312(job)
+        self.assertIn(
+            "uv pip install --requirement tools/api_manifest/requirements-test.txt",
+            job,
+            "Fixture contract tests must install their pinned jsonschema dependency.",
+        )
+
     def test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "ffi-sanitizer")
