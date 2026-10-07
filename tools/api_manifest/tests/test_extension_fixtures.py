@@ -88,7 +88,7 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
             "invalid-schema": "unrecognized.schema_invalid",
             "multiply-matching": "unrecognized.ambiguous",
             "unknown-preserved": "unrecognized.no_match",
-            "synthetic-secret-bearing": "unrecognized.schema_invalid",
+            "synthetic-secret-bearing": "recognized",
         }
         self.assertTrue(
             set(expected_outcomes).issubset(actual_cases),
@@ -155,6 +155,50 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
         diagnostic_metadata = {key: value for key, value in expected.items() if key != "preservedPayload"}
         serialized_metadata = json.dumps(diagnostic_metadata, sort_keys=True)
         self.assertTrue(secret_value not in serialized_metadata, "secret sentinel leaked into outcome metadata")
+        self.assertEqual(expected["outcomeCode"], "recognized", "secret-bearing value must validate for outbound use")
+        self.assertTrue(expected["typedValueAvailable"], "outbound request must use a validated typed value")
+        definition = next(
+            item for item in corpus["definitions"] if item["id"] == "known.alpha"
+        )
+        self.assertTrue(
+            Draft202012Validator(definition["payloadSchema"]).is_valid(fixture["extension"]["payload"]),
+            "secret-bearing outbound payload must satisfy its definition schema",
+        )
+        outbound_request = expected.get("outboundRequest")
+        self.assertTrue(
+            isinstance(outbound_request, dict),
+            "secret-bearing case must declare a normalized outbound request expectation",
+        )
+        if not isinstance(outbound_request, dict):
+            return
+        self.assertEqual(
+            outbound_request["outcomeCode"],
+            "outbound.validated",
+            "outbound outcome code must be stable",
+        )
+        attachments = outbound_request["attachments"]
+        self.assertEqual(
+            [attachment["fixtureId"] for attachment in attachments],
+            ["synthetic-secret-bearing", "valid-recognized"],
+            "outbound extension attachment order must remain explicit",
+        )
+        self.assertEqual(
+            [attachment["criticalityIndicator"] for attachment in attachments],
+            [False, True],
+            "each outbound extension must carry its explicit criticality indicator",
+        )
+        cases_by_id = {item["id"]: item for item in corpus["cases"]}
+        for attachment in attachments:
+            attached_fixture = cases_by_id[attachment["fixtureId"]]
+            self.assertEqual(
+                attached_fixture["expected"]["outcomeCode"],
+                "recognized",
+                "outbound attachment must reference a recognized fixture",
+            )
+            self.assertTrue(
+                attached_fixture["expected"]["typedValueAvailable"],
+                "outbound attachment must reference a validated typed value",
+            )
         self.assertTrue(expected["diagnostics"]["redacted"], "secret-bearing case must require redacted diagnostics")
         self.assertFalse(
             expected["diagnostics"]["containsPayloadValues"],
