@@ -28,6 +28,8 @@ VERSION_PATTERN = re.compile(
 HEX_REVISION_PATTERN = re.compile(r"[0-9a-fA-F]{40}")
 ADVISORY_ID_PATTERN = re.compile(r"(?:RUSTSEC-[0-9]{4}-[0-9]{4}|CVE-[0-9]{4}-[0-9]{4,7}|GHSA-[23456789cfghjmpqrvwx]{4}-[23456789cfghjmpqrvwx]{4}-[23456789cfghjmpqrvwx]{4})")
 DIAGNOSTIC_CODE_PATTERN = re.compile(r"[a-z][a-z0-9_-]{0,63}")
+SPDX_TOKEN_PATTERN = re.compile(r"\s*(\(|\)|[A-Za-z0-9][A-Za-z0-9.+-]{0,127})")
+MAX_DIAGNOSTIC_LICENSE_LENGTH = 512
 LICENSE_DIAGNOSTIC_CODES = frozenset(
     {
         "accepted",
@@ -191,6 +193,122 @@ def _top_level_diagnostic_packages(fields: dict[str, Any]) -> list[tuple[str, st
     return sorted(found)
 
 
+def _validated_spdx_expression(value: Any) -> str | None:
+    """Keep only bounded SPDX expressions with no custom or document references."""
+    if (
+        not isinstance(value, str)
+        or not value
+        or len(value) > MAX_DIAGNOSTIC_LICENSE_LENGTH
+        or any(ord(character) < 32 for character in value)
+    ):
+        return None
+    tokens: list[str] = []
+    position = 0
+    while position < len(value):
+        match = SPDX_TOKEN_PATTERN.match(value, position)
+        if match is None:
+            return None
+        token = match.group(1)
+        tokens.append(token)
+        position = match.end()
+    if not tokens:
+        return None
+
+    index = 0
+
+    def parse_primary() -> bool:
+        nonlocal index
+        if index >= len(tokens):
+            return False
+        token = tokens[index]
+        if token == "(":
+            index += 1
+            if not parse_or_expression() or index >= len(tokens) or tokens[index] != ")":
+                return False
+            index += 1
+        elif token not in {"AND", "OR", "WITH", ")"}:
+            if token.lower().startswith(("licenseref-", "documentref-")):
+                return False
+            index += 1
+        else:
+            return False
+
+        if index < len(tokens) and tokens[index] == "WITH":
+            index += 1
+            if index >= len(tokens):
+                return False
+            exception = tokens[index]
+            if exception in {"AND", "OR", "WITH", "(", ")"} or exception.lower().startswith(
+                ("licenseref-", "documentref-")
+            ):
+                return False
+            index += 1
+        return True
+
+    def parse_and_expression() -> bool:
+        nonlocal index
+        if not parse_primary():
+            return False
+        while index < len(tokens) and tokens[index] == "AND":
+            index += 1
+            if not parse_primary():
+                return False
+        return True
+
+    def parse_or_expression() -> bool:
+        nonlocal index
+        if not parse_and_expression():
+            return False
+        while index < len(tokens) and tokens[index] == "OR":
+            index += 1
+            if not parse_and_expression():
+                return False
+        return True
+
+    if not parse_or_expression() or index != len(tokens):
+        return None
+    return value.strip()
+
+
+def _diagnostic_license_evidence(package: dict[str, Any]) -> str:
+    """Read a safe license expression from one Cargo metadata package record."""
+    if "license" not in package:
+        return "unavailable"
+    raw_license = package["license"]
+    if raw_license is None:
+        return "missing"
+    return _validated_spdx_expression(raw_license) or "unavailable"
+
+
+def _diagnostic_licenses(metadata_by_workspace: Any) -> dict[tuple[str, str], str]:
+    licenses: dict[tuple[str, str], set[str]] = {}
+    if not isinstance(metadata_by_workspace, dict):
+        return {}
+    for workspace in ("root", "fuzz"):
+        metadata = metadata_by_workspace.get(workspace)
+        packages = metadata.get("packages") if isinstance(metadata, dict) else None
+        if not isinstance(packages, list):
+            continue
+        for package in packages:
+            if not isinstance(package, dict):
+                continue
+            name = package.get("name")
+            version = package.get("version")
+            if (
+                isinstance(name, str)
+                and PACKAGE_PATTERN.fullmatch(name)
+                and isinstance(version, str)
+                and VERSION_PATTERN.fullmatch(version)
+            ):
+                licenses.setdefault((name, version), set()).add(
+                    _diagnostic_license_evidence(package)
+                )
+    return {
+        key: next(iter(values)) if len(values) == 1 else "ambiguous"
+        for key, values in licenses.items()
+    }
+
+
 def _cargo_deny_error_exit_bitmask(error_counts: dict[str, int]) -> int:
     """Map failed policy sections to cargo-deny's check exit bitset."""
     exit_bitmask = 0
@@ -221,6 +339,7 @@ def parse_cargo_deny_findings(
         raise PolicyError("cargo metadata omits the scanned workspace packages")
 
     source_by_coordinate: dict[tuple[str, str], set[str | None]] = {}
+    license_by_coordinate: dict[tuple[str, str], set[str]] = {}
     for package_item in packages:
         if not isinstance(package_item, dict):
             raise PolicyError("cargo metadata contains an invalid package")
@@ -236,6 +355,9 @@ def parse_cargo_deny_findings(
         ):
             raise PolicyError("cargo metadata package coordinates are malformed")
         source_by_coordinate.setdefault((name, version), set()).add(source)
+        license_by_coordinate.setdefault((name, version), set()).add(
+            _diagnostic_license_evidence(package_item)
+        )
 
     diagnostics: list[tuple[str, dict[str, Any]]] = []
     summary: dict[str, dict[str, int]] | None = None
@@ -278,7 +400,7 @@ def parse_cargo_deny_findings(
         check: dict.fromkeys(CARGO_DENY_DIAGNOSTIC_SEVERITIES, 0)
         for check in ("advisories", "bans", "licenses", "sources")
     }
-    findings: set[tuple[str, str, str, str | None, str | None]] = set()
+    findings: set[tuple[str, str, str, str | None, str | None, str | None]] = set()
     for _, fields in diagnostics:
         code = fields.get("code")
         severity = fields.get("severity")
@@ -313,7 +435,15 @@ def parse_cargo_deny_findings(
             source = next(iter(sources))
             if source is not None:
                 _validate_source(source, require_immutable_git=False)
-            findings.add((kind, package_name, version, source, advisory_id))
+            license_expression = None
+            if kind == "license":
+                license_values = license_by_coordinate.get((package_name, version), set())
+                license_expression = (
+                    next(iter(license_values))
+                    if len(license_values) == 1
+                    else "ambiguous"
+                )
+            findings.add((kind, package_name, version, source, advisory_id, license_expression))
 
     for check, severities in observed_counts.items():
         for severity in CARGO_DENY_DIAGNOSTIC_SEVERITIES:
@@ -327,8 +457,9 @@ def parse_cargo_deny_findings(
             "version": version,
             **({"source": source} if source is not None else {}),
             **({"advisory_id": advisory_id} if advisory_id is not None else {}),
+            **({"license_expression": license_expression} if license_expression is not None else {}),
         }
-        for kind, package_name, version, source, advisory_id in sorted(findings)
+        for kind, package_name, version, source, advisory_id, license_expression in sorted(findings)
     ]
     expected_exit_code = _cargo_deny_error_exit_bitmask(
         {check: counts["errors"] for check, counts in observed_counts.items()}
@@ -372,6 +503,7 @@ def format_cargo_deny_diagnostics(raw_output: str, metadata_by_workspace: Any) -
     if not isinstance(raw_output, str) or len(raw_output) > 16 * 1024 * 1024:
         return "cargo-deny diagnostics unavailable (output was malformed or exceeded the report limit)."
     sources = _diagnostic_sources(metadata_by_workspace)
+    licenses = _diagnostic_licenses(metadata_by_workspace)
     reports: list[str] = []
     recognized = False
     for line in raw_output.splitlines():
@@ -427,8 +559,13 @@ def format_cargo_deny_diagnostics(raw_output: str, metadata_by_workspace: Any) -
                     break
         for name, version in packages:
             source = sources.get((name, version), "source:unavailable")
+            license_detail = (
+                f" license={licenses.get((name, version), 'unavailable')}"
+                if rule.startswith("license-")
+                else ""
+            )
             reports.append(
-                f"{severity} {name}@{version} source={source} rule={rule}{evidence}"
+                f"{severity} {name}@{version} source={source} rule={rule}{license_detail}{evidence}"
             )
     if not recognized:
         return "cargo-deny diagnostics unavailable (no recognized structured findings)."
@@ -918,9 +1055,15 @@ def _describe_exception_finding(finding_item: dict[str, Any]) -> str:
     source = _redact_diagnostic_source(finding_item.get("source"))
     advisory = finding_item.get("advisory_id")
     advisory_detail = f" advisory={advisory}" if advisory is not None else ""
+    license_expression = finding_item.get("license_expression")
+    license_detail = (
+        f" license={license_expression}"
+        if finding_item["kind"] == "license" and license_expression is not None
+        else ""
+    )
     return (
         f"finding {finding_item['package']}@{finding_item['version']} "
-        f"source={source} rule={finding_item['kind']}{advisory_detail}"
+        f"source={source} rule={finding_item['kind']}{license_detail}{advisory_detail}"
     )
 
 
@@ -957,6 +1100,17 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
             if not ADVISORY_ID_PATTERN.fullmatch(advisory_id):
                 raise PolicyError("dependency finding advisory ID is malformed")
             finding_copy["advisory_id"] = advisory_id
+        if "license_expression" in item:
+            if kind != "license":
+                raise PolicyError("license expression is only valid for a license finding")
+            raw_license = item["license_expression"]
+            if isinstance(raw_license, str) and raw_license in {"missing", "unavailable", "ambiguous"}:
+                finding_copy["license_expression"] = raw_license
+            else:
+                license_expression = _validated_spdx_expression(raw_license)
+                if license_expression is None:
+                    raise PolicyError("dependency finding license expression is malformed")
+                finding_copy["license_expression"] = license_expression
         normalized_findings.append(finding_copy)
 
     matched_entry_indexes: set[int] = set()

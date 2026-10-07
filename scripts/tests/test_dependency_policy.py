@@ -518,6 +518,18 @@ class DependencyExceptionTests(unittest.TestCase):
             with self.subTest(index=index):
                 self.assertIn(f"dependency-{index:02d}@1.0.0", diagnostic)
 
+    def test_malformed_license_evidence_fails_without_echoing_metadata(self) -> None:
+        raw_license = "LicenseRef-SENTINELSECRET00000000"
+
+        with self.assertRaises(self.policy_error()) as context:
+            self.validate(
+                [],
+                [finding("license", "private-crate", "1.0.0", license_expression=raw_license)],
+            )
+
+        self.assertIn("license expression is malformed", str(context.exception))
+        self.assertNotIn(raw_license, str(context.exception))
+
     def test_cli_reports_findings_when_exception_register_is_empty(self) -> None:
         self.require_policy()
         with tempfile.TemporaryDirectory() as directory:
@@ -1253,9 +1265,24 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
             '"graphs":[{"Krate":{"name":"bad-license","version":"2.3.4"}}]}}'
         )
 
-        report = formatter(raw_output, {"root": {"packages": []}, "fuzz": {"packages": []}})
+        report = formatter(
+            raw_output,
+            {
+                "root": {
+                    "packages": [
+                        {
+                            "name": "bad-license",
+                            "version": "2.3.4",
+                            "license": "LicenseRef-SENTINELSECRET00000000",
+                        }
+                    ]
+                },
+                "fuzz": {"packages": []},
+            },
+        )
 
         self.assertNotIn("LicenseRef-SENTINELSECRET00000000", report)
+        self.assertIn("license=unavailable", report)
 
     def test_failure_report_includes_a_validated_metadata_license_expression(self) -> None:
         formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
