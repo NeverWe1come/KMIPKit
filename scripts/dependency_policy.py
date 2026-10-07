@@ -913,6 +913,17 @@ def _format_exception_diagnostics(diagnostics: list[str]) -> str:
     return "; ".join(diagnostics)
 
 
+def _describe_exception_finding(finding_item: dict[str, Any]) -> str:
+    """Describe one finding with only normalized, safely displayable evidence."""
+    source = _redact_diagnostic_source(finding_item.get("source"))
+    advisory = finding_item.get("advisory_id")
+    advisory_detail = f" advisory={advisory}" if advisory is not None else ""
+    return (
+        f"finding {finding_item['package']}@{finding_item['version']} "
+        f"source={source} rule={finding_item['kind']}{advisory_detail}"
+    )
+
+
 def validate_exceptions(register: Any, findings: list[dict], *, today: date | None = None) -> list[str]:
     """Require a one-to-one exact match between current exceptions and findings."""
     current_date = today or date.today()
@@ -962,19 +973,13 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
                 if not matches
                 else "matches multiple registered exceptions"
             )
-            source = _redact_diagnostic_source(finding_item.get("source"))
-            advisory = finding_item.get("advisory_id")
-            advisory_detail = f" advisory={advisory}" if advisory is not None else ""
-            exception_diagnostics.append(
-                f"finding {finding_item['package']}@{finding_item['version']} "
-                f"source={source} rule={finding_item['kind']}{advisory_detail} {match_status}"
-            )
+            exception_diagnostics.append(f"{_describe_exception_finding(finding_item)} {match_status}")
             continue
         index, entry = matches[0]
         if index in matched_entry_indexes:
             exception_diagnostics.append(
-                f"exception {entry['id']} matches more than one finding "
-                f"({finding_item['kind']} {finding_item['package']}@{finding_item['version']})"
+                f"exception {entry['id']} matches more than one "
+                f"{_describe_exception_finding(finding_item)}"
             )
             continue
         matched_entry_indexes.add(index)
