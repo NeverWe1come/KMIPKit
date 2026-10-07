@@ -227,7 +227,8 @@ static bool create_fixture_definition(kmipkit_codec_limits_t *codec_limits,
 {
     static const uint8_t vendor[] = "example.vendor";
     static const uint8_t version[] = "1";
-    static const uint8_t compatibility_version[] = "1.0.0";
+    static const uint8_t compatibility_minimum[] = "0.0.0";
+    static const uint8_t compatibility_maximum[] = "99.0.0";
     kmipkit_extension_identity_t *identity = NULL;
     kmipkit_extension_compatibility_t *compatibility = NULL;
     kmipkit_ttlv_path_t *path = NULL;
@@ -254,9 +255,9 @@ static bool create_fixture_definition(kmipkit_codec_limits_t *codec_limits,
             vendor, (uint64_t)(sizeof(vendor) - 1U), name, name_length,
             version, (uint64_t)(sizeof(version) - 1U), &identity) != KMIPKIT_SUCCESS ||
         kmipkit_extension_compatibility_create(
-            2U, 1U, 2U, 1U, compatibility_version,
-            (uint64_t)(sizeof(compatibility_version) - 1U), compatibility_version,
-            (uint64_t)(sizeof(compatibility_version) - 1U), &compatibility) != KMIPKIT_SUCCESS ||
+            2U, 1U, 2U, 1U, compatibility_minimum,
+            (uint64_t)(sizeof(compatibility_minimum) - 1U), compatibility_maximum,
+            (uint64_t)(sizeof(compatibility_maximum) - 1U), &compatibility) != KMIPKIT_SUCCESS ||
         kmipkit_ttlv_path_create(discriminator_tag, &path) != KMIPKIT_SUCCESS ||
         kmipkit_ttlv_value_text_string(codec_limits, discriminator_text,
             discriminator_length, &discriminator_value) != KMIPKIT_SUCCESS) {
