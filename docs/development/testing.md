@@ -258,8 +258,10 @@ Schema 2.0.x is accepted only with a captured native fixture; other major or
 minor versions fail closed until their consumed file, segment, region, and
 summary fields have been checked and covered by a fixture. LLVM 20.1.8's
 export command has no include-filename option, so the Linux JNI collector
-excludes only the JDK `jni.h` wrapper declarations and
-`bindings/c/include/kmipkit.h` declarations. The Rust `kmipkit-ffi` sources
+excludes only the JDK `jni.h` wrapper declarations when they resolve under
+`/usr/lib/jvm/<jdk>/include` or GitHub-hosted
+`/opt/hostedtoolcache/Java_<distribution>/<version>/<architecture>/include`,
+plus `bindings/c/include/kmipkit.h` declarations. The Rust `kmipkit-ffi` sources
 measure the C ABI implementation separately; these headers contain no
 handwritten JNI implementation. Every other reported source path is retained
 and checked by the normalizer, so the JNI denominator includes the actual
