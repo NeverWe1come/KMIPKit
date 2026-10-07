@@ -8,17 +8,17 @@ The generic TTLV surface uses owned `TtlvValue`, `TtlvItem`, and `TtlvStructure`
 
 ## C
 
-C receives fixed-width stable symbols with kmipkit_ prefix and opaque handles. Constructors return stable error codes and either a complete handle or no handle. The API documents retain/release/drop ownership and does not expose payload bytes through errors or logs. Unsafe code is isolated in kmipkit-ffi and each unsafe block states its safety invariant.
+C receives fixed-width stable symbols with kmipkit_ prefix and opaque handles. Constructors return stable error codes and either a complete handle or no handle. Functions reject NULL handles and live KMIPKit handles of the wrong declared kind with `invalid_input` before dereference. Every non-NULL input handle must be live and have the declared type; use-after-release, dangling pointers, and foreign pointers violate the caller precondition and cannot be safely probed. The API documents retain/release/drop ownership and does not expose payload bytes through errors or logs. Unsafe code is isolated in kmipkit-ffi and each unsafe block states its safety invariant.
 
 C-owned value handles and C view handles have different semantics: a view handle is library-owned and must be released, but is a read-only view rather than a payload copy. Each C view pins/retains its backing value or structure until its release function drops that reference; the caller may release the original owner while the view remains live. Variable-length inputs use `const uint8_t *` plus `uint64_t` byte length and are bounded before any read or copy; variable-length view outputs use length/index accessors.
 
 ## Java
 
-Java 17 uses the JNI bridge. Native handles have explicit close/lifecycle semantics and errors map to stable categories. JNI/runtime copies may outlive the native owner and are outside KMIPKit zeroization guarantees.
+Java 17 uses the JNI bridge. Native handles have explicit close/lifecycle semantics; wrappers reject use of a closed handle with the stable `invalid_input` category before JNI. JNI/runtime copies may outlive the native owner and are outside KMIPKit zeroization guarantees.
 
 ## Python
 
-Python 3.12 uses CFFI/Maturin. Native handles have deterministic close/context-manager semantics. Python-managed bytes/objects are outside KMIPKit zeroization guarantees. Errors do not include payload reprs.
+Python 3.12 uses CFFI/Maturin. Native handles have deterministic close/context-manager semantics; wrappers reject use of a closed handle with the stable `invalid_input` category before CFFI. Python-managed bytes/objects are outside KMIPKit zeroization guarantees. Errors do not include payload reprs.
 
 ## Parity
 
