@@ -150,6 +150,39 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
         self.assertNotIn("0x540010", rust)
         self.assertIn("number: 8_675_309", rust)
         self.assertNotIn("number: 8675309", rust)
+        self.assertIn("number: 4_294_967_295", rust)
+        self.assertNotRegex(rust, r"\b0x[0-9A-Fa-f]{5,}\b")
+        self.assertNotRegex(rust, r"\b\d{5,}\b")
+        self.assertEqual(_GENERATOR._rust_integer_literal(-1_234_567_890), "-1_234_567_890")
+
+    def test_generated_adapter_fixtures_keep_criticality_and_outbound_order(self) -> None:
+        api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
+        corpus, _ = self.corpus_and_schema()
+        outputs = _GENERATOR.render(api, corpus)
+
+        for path, generated in outputs.items():
+            with self.subTest(adapter_fixture=path.name):
+                self.assertIn("outbound.validated", generated)
+                self.assertIn("synthetic-secret-bearing", generated)
+                self.assertIn("valid-recognized", generated)
+        self.assertIn("critical: false", outputs[GENERATED_RUST_FIXTURES])
+        self.assertIn("critical: true", outputs[GENERATED_RUST_FIXTURES])
+
+    def test_fixture_generator_rejects_invalid_outbound_attachment_records(self) -> None:
+        api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
+        corpus, _ = self.corpus_and_schema()
+
+        unknown_case = copy.deepcopy(corpus)
+        outbound = unknown_case["cases"][-1]["expected"]["outboundRequest"]
+        outbound["attachments"][0]["fixtureId"] = "missing-fixture"
+        with self.assertRaises(_GENERATOR.FixtureError):
+            _GENERATOR.render(api, unknown_case)
+
+        invalid_criticality = copy.deepcopy(corpus)
+        outbound = invalid_criticality["cases"][-1]["expected"]["outboundRequest"]
+        outbound["attachments"][0]["criticalityIndicator"] = "false"
+        with self.assertRaises(_GENERATOR.FixtureError):
+            _GENERATOR.render(api, invalid_criticality)
 
     def test_fixture_generator_fails_closed_and_tracks_manifest_metadata(self) -> None:
         api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
