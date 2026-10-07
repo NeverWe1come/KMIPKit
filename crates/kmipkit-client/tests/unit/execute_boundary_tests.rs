@@ -106,6 +106,38 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "approved_registry_value_validation",
+        path: "src/extension_registry.rs",
+        source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<RegisteredExtensionValue, ClientError> { loop {} }",
+        probe: "registry-scoped generic TTLV validation",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "registry_value_validation_wrong_module",
+        path: "tests/fixtures/execute_boundary/registry_value_validation_wrong_module.rs",
+        source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<RegisteredExtensionValue, ClientError> { loop {} }",
+        probe: "same generic input outside the registry module",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_value_validation_wrong_argument",
+        path: "tests/fixtures/execute_boundary/registry_value_validation_wrong_argument.rs",
+        source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, payload: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<RegisteredExtensionValue, ClientError> { loop {} }",
+        probe: "renamed generic input",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_value_validation_wrong_output",
+        path: "tests/fixtures/execute_boundary/registry_value_validation_wrong_output.rs",
+        source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<kmipkit_ttlv::Item, ClientError> { loop {} }",
+        probe: "generic TTLV output",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "public_structure_view_input",
         path: "tests/fixtures/execute_boundary/public_structure_view_input.rs",
         source: include_str!(
@@ -2537,6 +2569,8 @@ fn candidate_check_fixture(fixture: &Fixture) -> Result<(), CandidateRejection> 
         Path::new("execute.rs")
     } else if fixture.id == "approved_error_validation_source" {
         Path::new("error.rs")
+    } else if fixture.id == "approved_registry_value_validation" {
+        Path::new("extension_registry.rs")
     } else {
         Path::new("fixture.rs")
     };
@@ -2928,6 +2962,25 @@ fn generic_item_and_raw_body_inputs_are_rejected() {
     assert!(
         accepted.is_empty(),
         "accepted forbidden fixtures: {accepted:?}"
+    );
+}
+
+#[test]
+fn registry_validation_generic_input_is_the_only_exact_exception() {
+    assert_eq!(
+        candidate_check_fixture(fixture("approved_registry_value_validation")),
+        Ok(()),
+        "the registry may validate a generic subtree only through its exact sealed-value API"
+    );
+
+    let rejected = accepted_ids_for_rejected_fixtures(&[
+        "registry_value_validation_wrong_module",
+        "registry_value_validation_wrong_argument",
+        "registry_value_validation_wrong_output",
+    ]);
+    assert!(
+        rejected.is_empty(),
+        "accepted non-exact registry validation signatures: {rejected:?}"
     );
 }
 
