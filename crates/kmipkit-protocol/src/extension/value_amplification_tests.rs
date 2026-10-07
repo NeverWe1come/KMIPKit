@@ -9,6 +9,7 @@ const NESTED_STRUCTURE_TAG_OFFSET: u32 = 300;
 const FIRST_NESTED_RULE_TAG_OFFSET: u32 = 400;
 const CHILD_RULE_COUNT: u32 = 256;
 const NESTED_STRUCTURE_COUNT: usize = 10_000;
+const SPARSE_PRESENT_RULE_COUNT: usize = 16;
 const DISCRIMINATOR: &str = "empty-nested-structure-amplification-v1";
 
 fn tag(offset: u32) -> Tag {
@@ -113,7 +114,7 @@ fn many_empty_nested_structures_do_not_repeat_schema_width_work() {
 }
 
 #[test]
-fn sparse_nonempty_structures_bound_order_lookup_work_by_edge_count() {
+fn sparse_nonempty_structures_bound_order_lookup_work_by_present_pairs() {
     let children = (0..CHILD_RULE_COUNT)
         .map(|index| {
             extension::optional(
@@ -160,9 +161,13 @@ fn sparse_nonempty_structures_bound_order_lookup_work_by_edge_count() {
         extension::extension_definition(identity, compatibility, discriminator, root_schema)
             .expect("extension definition is valid");
 
-    let mut nested_items = (0..32)
-        .step_by(2)
-        .map(|index| item(FIRST_NESTED_RULE_TAG_OFFSET + index, Value::integer(1)));
+    let mut nested_items = (0..SPARSE_PRESENT_RULE_COUNT * 2).step_by(2).map(|index| {
+        item(
+            FIRST_NESTED_RULE_TAG_OFFSET
+                + u32::try_from(index).expect("fixture child offset fits u32"),
+            Value::integer(1),
+        )
+    });
     let nested_value = Value::structure(structure(nested_items.by_ref()));
     let value = structure([
         item(
@@ -175,11 +180,12 @@ fn sparse_nonempty_structures_bound_order_lookup_work_by_edge_count() {
     let (_, metrics) = validate_with_metrics(&definition, value, &CodecLimits::defaults())
         .expect("sparse declared children satisfy the schema");
 
+    let directed_present_pairs = SPARSE_PRESENT_RULE_COUNT * (SPARSE_PRESENT_RULE_COUNT - 1);
     assert!(
         metrics
             .order_edge_work_per_structure
             .iter()
-            .all(|work| *work <= (CHILD_RULE_COUNT - 1) as usize),
-        "order lookup work should stay within one declared-edge pass per Structure"
+            .all(|work| *work <= directed_present_pairs),
+        "sparse order lookup work should depend on present rule pairs, not schema width"
     );
 }
