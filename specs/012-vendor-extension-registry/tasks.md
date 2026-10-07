@@ -169,7 +169,7 @@ Every functional requirement and buildable success criterion has at least one pl
 | KMIPKIT-0012-FR-009 | T012, T019 |
 | KMIPKIT-0012-FR-010 | T004, T043-T055 |
 | KMIPKIT-0012-FR-011 | T020-T021, T027-T028, T033, T038, T043-T045 |
-| KMIPKIT-0012-FR-012 | T004, T009, T014, T017-T018, T024, T027, T030-T031, T035, T043-T046, T048, T050-T051, T056 |
+| KMIPKIT-0012-FR-012 | T004, T009, T014, T017-T018, T024, T027, T030-T031, T035, T043-T046, T048, T050-T051, T056, T065 |
 | KMIPKIT-0012-FR-013 | T029, T041, T058 |
 | KMIPKIT-0012-FR-014 | T001-T008, T042, T049, T052, T059 |
 | KMIPKIT-0012-SC-001 | T043-T047, T053 |
@@ -178,7 +178,7 @@ Every functional requirement and buildable success criterion has at least one pl
 | KMIPKIT-0012-SC-004 | T020, T062 |
 | KMIPKIT-0012-SC-005 | T057, T062 |
 | KMIPKIT-0012-SC-006 | T020-T021, T027-T028, T033, T038, T043-T045 |
-| KMIPKIT-0012-SC-007 | T014, T017-T018, T024, T027, T030-T031, T035, T043-T046, T048, T050-T051, T061 |
+| KMIPKIT-0012-SC-007 | T014, T017-T018, T024, T027, T030-T031, T035, T043-T046, T048, T050-T051, T061, T065 |
 | KMIPKIT-0012-SC-008 | T020-T021, T027-T028, T061 |
 
 ## Parallel opportunities
@@ -199,4 +199,4 @@ Every functional requirement and buildable success criterion has at least one pl
 
 ## Phase 7: Convergence
 
-- [ ] T065 Bound recursive schema preflight by the remaining aggregate schema-node and constraint-member budgets, stop at the first exceeded budget, and preserve Red, Green, and Refactor evidence in distinct commits per KMIPKIT-0012-FR-012, KMIPKIT-0012-SC-007, and the plan's pre-allocation limit decision (partial).
+- [x] T065 Bound recursive schema preflight by the remaining aggregate schema-node and constraint-member budgets, stop at the first exceeded budget, and preserve Red, Green, and Refactor evidence in distinct commits per KMIPKIT-0012-FR-012, KMIPKIT-0012-SC-007, and the plan's pre-allocation limit decision (partial).

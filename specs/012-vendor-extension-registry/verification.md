@@ -989,3 +989,10 @@ The Python adapter's Extension Information test expectation was also corrected t
   three-crate test command above.
 - Focused Clippy for protocol, client, and FFI, workspace formatting check, and
   `git diff --check` pass after the test helper lint correction.
+- Refactor: centralized checked aggregate-counter updates without changing the
+  limit outcomes. After refactor, `cargo +1.94 test -p kmipkit-protocol -p
+  kmipkit-client -p kmipkit-ffi --all-features`, focused Clippy for the same
+  crates, `cargo +1.94 fmt --all --check`, and `git diff --check` passed.
+- T065 evidence is separated into commits: Red `f4eec99`, Green `f702bbd` and
+  `3e83d04`, Refactor `3c41a77`. The wider T060 coverage gate and T061 final
+  release validation remain open.
