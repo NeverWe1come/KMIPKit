@@ -23,7 +23,8 @@ _EMPTY_TYPED_RULE_REGISTRY = re.compile(
 )
 _SENSITIVE_ASSIGNMENT = re.compile(
     r"(?i)(?P<label>credential|password|secret|token|private[-_ ]?key|raw[-_ ]?kmip[-_ ]?body)"
-    r"(?P<separator>\s*[:=]\s*)(?P<value>[^\s,;]+)"
+    r"(?P<separator>\s*[:=]\s*)"
+    r"(?P<value>\"(?:\\.|[^\"\\\r\n])*\"|'(?:\\.|[^'\\\r\n])*'|[^\s,;]+)"
 )
 _PEM_PRIVATE_KEY = re.compile(
     r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----",
