@@ -168,6 +168,45 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('build-backend = "maturin"', python_project)
         self.assertIn('bindings = "cffi"', python_project)
 
+    def test_adapter_coverage_job_collects_and_uploads_aggregate_inputs(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "adapter-coverage")
+
+        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        self.assert_pi_runner_with_hosted_fallback(job, "|| 'ubuntu-latest'")
+        self.assertRegex(job, r"(?ms)^    needs:\s*\n\s+- language-bindings$")
+
+        for required in (
+            "mvn --batch-mode --file bindings/java/pom.xml clean verify",
+            "bindings/java/target/site/jacoco/jacoco.xml",
+            "coverage-java/jacoco.xml",
+            "python -m pip install --requirement bindings/python/requirements-coverage.txt",
+            "python -m pip install --no-build-isolation --editable bindings/python",
+            "--cov-report=xml:coverage-python/coverage.xml",
+            "bash scripts/collect_jni_coverage.sh target/coverage-jni",
+            "target/coverage-jni/coverage.json",
+            "coverage-jni/coverage.json",
+            "name: coverage-java",
+            "path: coverage-java/jacoco.xml",
+            "name: coverage-python",
+            "path: coverage-python/coverage.xml",
+            "name: coverage-jni",
+            "path: coverage-jni/coverage.json",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+
+    def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "coverage-gate")
+        self.assertRegex(
+            job,
+            r"(?ms)^    needs:\s*\n\s+- coverage\s*\n\s+- adapter-coverage$",
+        )
+        self.assertIn("needs.adapter-coverage.result", job)
+        self.assertIn("pattern: coverage-*", job)
+        self.assertIn("scripts/coverage_gate.py aggregate", job)
+
     def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?ms)^on:\s*\n(?:(?!^jobs:).)*?^\s+schedule:")
@@ -320,6 +359,7 @@ class WorkflowContractTests(unittest.TestCase):
             "normative-inventory",
             "coverage",
             "coverage-gate",
+            "adapter-coverage",
             "dependency-policy",
             "scheduled-dependency-policy",
             "branch-coverage",
