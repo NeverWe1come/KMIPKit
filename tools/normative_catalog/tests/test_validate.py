@@ -2751,6 +2751,57 @@ class CatalogValidationTests(unittest.TestCase):
             f"Baseline closure omits {len(missing)} pinned Specification clauses, including {missing[:5]}",
         )
 
+    def test_baseline_profile_records_whole_source_and_basic_auth_inclusions(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        expected_direct = {
+            "KMIPKIT-CLAUSE-PROF-3.1-001",
+            "KMIPKIT-CLAUSE-PROF-5.1.1-001",
+            "KMIPKIT-CLAUSE-PROF-6.1-001",
+            "KMIPKIT-CLAUSE-PROF-6.1-002",
+            "KMIPKIT-CLAUSE-PROF-6.1-003",
+            "KMIPKIT-CLAUSE-PROF-6.1-004",
+        }
+        self.assertEqual(set(baseline["direct_source_clause_ids"]), expected_direct)
+        actual_inclusions = {
+            (item["source_clause_id"], item["included_source_id"], item["included_section"])
+            for item in catalog["normative_inclusions"]
+        }
+        self.assertTrue(
+            {
+                ("KMIPKIT-CLAUSE-PROF-6.1-001", "KMIPKIT-SRC-spec", None),
+                ("KMIPKIT-CLAUSE-PROF-6.1-002", "KMIPKIT-SRC-profiles", "3.1"),
+            }.issubset(actual_inclusions)
+        )
+        self.assertTrue(
+            {
+                "KMIPKIT-REQ-PROF-3.1.1-002",
+                "KMIPKIT-REQ-PROF-3.1.1-004",
+                "KMIPKIT-REQ-PROF-3.1.1-005",
+                "KMIPKIT-REQ-PROF-3.1.2-002",
+                "KMIPKIT-REQ-PROF-3.1.2-005",
+            }.issubset(set(baseline["requirement_ids"]))
+        )
+
+    def test_catalog_validation_rejects_an_omitted_profile_closure_clause(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        document = json.loads(catalog_path.read_text(encoding="utf-8"))
+        baseline = next(
+            profile
+            for profile in document["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        baseline["source_clause_ids"].remove(baseline["source_clause_ids"][0])
+
+        with self.assertRaisesRegex(CatalogValidationError, "profile clause closure"):
+            validate_catalog(json.dumps(document).encode("utf-8"), ROOT, require_complete=True)
+
     def test_discrepancy_authority_must_derive_from_cited_source(self) -> None:
         document = minimal_catalog()
         document["discrepancies"] = [
