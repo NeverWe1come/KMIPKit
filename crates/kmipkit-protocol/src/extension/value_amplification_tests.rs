@@ -104,6 +104,11 @@ fn many_empty_nested_structures_do_not_repeat_schema_width_work() {
         "no declared order edge can be violated when all nested children are absent"
     );
     assert_eq!(
+        metrics.order_edge_work_per_structure.iter().sum::<usize>(),
+        0,
+        "empty nested Structures must not scan schema order edges"
+    );
+    assert_eq!(
         metrics
             .occurrence_entries_per_structure
             .iter()
