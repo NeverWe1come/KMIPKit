@@ -63,6 +63,17 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Set up Python 3.12
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
+        with:
+          version: '0.12.23'
+          python-version: '3.12'
+          activate-environment: true
+          no-project: true
+
+      - name: Install pinned Python contract dependencies
+        run: uv pip install --requirement tools/api_manifest/requirements-test.txt
+
       - name: Run Python contracts
         shell: pwsh
         run: |
