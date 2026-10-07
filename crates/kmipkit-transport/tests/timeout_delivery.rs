@@ -1,10 +1,8 @@
-//! Red-phase tests for I/O inactivity deadlines and HTTP delivery evidence.
+//! Production transport timeout and HTTP delivery evidence tests.
 //!
-//! These tests include the real private worker state machine so they can
-//! verify cancellation, dispatch, response observation, and finalization
-//! without exporting an internal test seam. `src/timeout.rs` is intentionally
-//! absent until T010; the Red run is therefore expected to stop at that
-//! missing production module before runtime assertions can execute.
+//! These tests include the real private timeout and worker state machines so
+//! they can verify deadlines, cancellation, dispatch, response observation,
+//! and finalization without exporting an internal test seam.
 
 use std::convert::Infallible;
 use std::error::Error as StdError;
@@ -34,8 +32,8 @@ const SHORT_IO_TIMEOUT: Duration = Duration::from_millis(250);
 #[path = "../src/worker.rs"]
 mod worker;
 
-// T010 will add this private module. Keeping this source inclusion here means
-// the tests exercise the implementation itself rather than a test double.
+// Include the production implementation directly so these tests exercise the
+// private timeout seam rather than a test double.
 #[path = "../src/timeout.rs"]
 mod timeout;
 
