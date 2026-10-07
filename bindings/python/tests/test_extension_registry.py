@@ -370,6 +370,27 @@ class ExtensionRegistryTests(unittest.TestCase):
                                 ],
                             )
                         if validated is not None:
+                            native_identity = registry_api.validated_extension_identity(
+                                validated
+                            )
+                            try:
+                                expected_identity = self.definitions[
+                                    fixture["expected"]["matchedDefinitionIds"][0]
+                                ].identity
+                                self.assertEqual(
+                                    (
+                                        native_identity.vendor_identifier,
+                                        native_identity.name,
+                                        native_identity.version,
+                                    ),
+                                    (
+                                        expected_identity.vendor_identifier,
+                                        expected_identity.name,
+                                        expected_identity.version,
+                                    ),
+                                )
+                            finally:
+                                native_identity.close()
                             self.assertEqual(
                                 _normalize_structure(
                                     registry_api.validated_extension_value_generic_value(validated)
