@@ -8,11 +8,28 @@ repository.workspace = true
 description = "Test fixtures and helpers for KMIPKit"
 publish = false
 
+[features]
+default = ["fixtures"]
+fixtures = ["dep:aws-lc-rs", "dep:rcgen"]
+scripted-transport = ["dep:kmipkit-transport"]
+
 [dependencies]
+aws-lc-rs = { workspace = true, optional = true }
 kmipkit-protocol.workspace = true
-kmipkit-transport.workspace = true
+kmipkit-transport = { workspace = true, optional = true }
 kmipkit-ttlv.workspace = true
+rcgen = { workspace = true, optional = true }
 zeroize.workspace = true
+
+[[test]]
+name = "redacted_debug"
+path = "tests/redacted_debug.rs"
+required-features = ["scripted-transport"]
+
+[[test]]
+name = "response_zeroization"
+path = "tests/response_zeroization.rs"
+required-features = ["scripted-transport"]
 
 [lints]
 workspace = true

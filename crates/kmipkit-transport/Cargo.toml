@@ -17,5 +17,8 @@ tokio.workspace = true
 tokio-rustls.workspace = true
 zeroize.workspace = true
 
+[dev-dependencies]
+kmipkit-test-support = { workspace = true, default-features = false, features = ["fixtures"] }
+
 [lints]
 workspace = true

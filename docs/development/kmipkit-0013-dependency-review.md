@@ -1,7 +1,7 @@
 # KMIPKIT-0013 dependency review
 
 **Review date:** 2026-10-07  
-**Status:** The original T003 dependency review completed on 2026-10-07. T003 is reopened for review of the exact-pinned test-only `rcgen` dependency introduced by T004; the original closure evidence below remains historical until a new closure entry is added.
+**Status:** T003 completed on 2026-10-07 for the original production graph, then reopened and re-completed for T004's test-only PKI dependency graph. The closure records below distinguish the original review from the T004 extension.
 
 ## Scope and current graph
 
@@ -9,6 +9,17 @@ The transport dependency set adds Tokio, Hyper HTTP/1, rustls with AWS-LC,
 tokio-rustls, Hickory system DNS, native certificate loading, and bytes. Direct
 dependencies are exact-pinned, and the root lockfile is committed with the
 dependency update. No Git dependency or alternate TLS provider is introduced.
+
+The T004 extension adds exact-pinned `rcgen` 0.14.10 to
+`kmipkit-test-support` with default features disabled and `aws_lc_rs` selected.
+It adds exact-pinned `aws-lc-rs` 1.18.1 with default features disabled and only
+`prebuilt-nasm` enabled so standalone Windows fixture builds use the already
+selected provider without requiring a system NASM executable. Test-support's
+`fixtures` and `scripted-transport` features are separate; transport opts into
+fixtures without activating the optional edge back to `kmipkit-transport`.
+`kmipkit-client` explicitly opts into `scripted-transport` for its existing
+test doubles. No production package depends on `kmipkit-test-support` or
+`rcgen`.
 
 The initial `rustls = 0.23.43` pin was affected by RUSTSEC-2026-0285. The
 upstream fixed release is 0.23.45; its release notes identify 0.23.13 through
@@ -83,6 +94,35 @@ The macOS target has not yet been compiled locally. Its Apple-target dependency
 graph was checked with `cargo tree --target all`; the macOS CI job remains the
 verification point for the `system-configuration` and Security Framework
 native build path.
+
+## T004 test-fixture dependency review
+
+The exact T004 graph was re-reviewed after adding the test-only PKI generator.
+The original T003 findings, maintainer-approved policy exceptions, and PR #50
+evidence apply to the earlier graph; they do not substitute for these checks.
+
+- `pwsh -File scripts/Test-DependencyPolicy.ps1` passed on 2026-10-07 with host
+  `x86_64-pc-windows-msvc`. It validated all four existing exact exception IDs,
+  refreshed both RustSec scans to commit
+  `b8a1a33e246a0a9a3b5f377248c41a503defec74`, and confirmed the root and fuzz
+  lockfiles remained unchanged during the check. The dependency closure is
+  covered by the existing finite license allowlist; no new exception or
+  advisory waiver was added.
+- `cargo tree --manifest-path Cargo.toml -p kmipkit-transport --all-targets -e features --locked --offline --prefix none`
+  confirmed Hyper enables `client` and `http1`; rustls/tokio-rustls and rcgen
+  use AWS-LC; `aws-lc-rs` enables `prebuilt-nasm`; and the graph has no `ring`
+  provider, TLS 1.2, HTTP/2, proxy, or compression feature.
+- `cargo tree --manifest-path Cargo.toml -p kmipkit-transport -e normal --locked --offline --prefix none`
+  confirmed the production transport dependency path does not include
+  `kmipkit-test-support`, `rcgen`, `reqwest`, or `hyper-util`.
+- A first Windows build probe before adding the explicit `prebuilt-nasm`
+  feature failed because the rcgen-only AWS-LC path attempted to invoke NASM.
+  The test-support dependency now enables `prebuilt-nasm` with AWS-LC's
+  defaults still disabled. The full platform build matrix remains a CI gate.
+
+This review covers the T004 dependency addition and closes the reopened T003
+gate. CI must still compile the test-support fixture and its AWS-LC build path
+on the supported Linux, Windows, and macOS targets.
 
 ## Disposition still required
 
