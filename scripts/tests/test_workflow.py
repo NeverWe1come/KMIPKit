@@ -14,6 +14,10 @@ POLICY_RUNNER = REPOSITORY_ROOT / "scripts" / "Test-DependencyPolicy.ps1"
 
 
 class WorkflowContractTests(unittest.TestCase):
+    COVERAGE_COLLECTION_GUARD = (
+        "if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')"
+    )
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.contents = WORKFLOW.read_text(encoding="utf-8") if WORKFLOW.is_file() else None
@@ -206,10 +210,7 @@ class WorkflowContractTests(unittest.TestCase):
             job,
             r"(?ms)^    needs:\s*\n\s+- coverage\s*\n\s+- adapter-coverage$",
         )
-        self.assertIn(
-            "if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')",
-            job,
-        )
+        self.assertIn(self.COVERAGE_COLLECTION_GUARD, job)
         self.assertIn("needs.adapter-coverage.result", job)
         self.assertIn("pattern: coverage-*", job)
         self.assertIn("scripts/coverage_gate.py aggregate", job)
@@ -227,10 +228,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(branch_coverage, r"(?m)^    if: github\.event_name == 'schedule'$")
         gate = self.require_job(contents, "coverage-gate")
         self.assertRegex(gate, r"(?m)^    if: always\(\) && github\.event_name == 'pull_request'$")
-        self.assertIn(
-            "if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')",
-            gate,
-        )
+        self.assertIn(self.COVERAGE_COLLECTION_GUARD, gate)
 
     def test_branch_coverage_documentation_matches_schedule_only_workflow(self) -> None:
         guide = TESTING_GUIDE.read_text(encoding="utf-8")
@@ -391,10 +389,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("--summary-file", job)
         self.assertIn("$GITHUB_STEP_SUMMARY", job)
         self.assertIn("Summarize failed platform or adapter collection", job)
-        self.assertIn(
-            "if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')",
-            job,
-        )
+        self.assertIn(self.COVERAGE_COLLECTION_GUARD, job)
         self.assertIn("ADAPTER_COVERAGE_RESULT: ${{ needs.adapter-coverage.result }}", job)
         self.assertIn("Summarize skipped coverage aggregation", job)
         self.assertIn("steps.enforce.outcome == 'skipped'", job)
