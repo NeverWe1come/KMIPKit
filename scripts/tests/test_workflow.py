@@ -107,7 +107,7 @@ class WorkflowContractTests(unittest.TestCase):
     def test_linux_jobs_route_to_pi_only_for_same_repository_pull_requests(self) -> None:
         contents = self.require_workflow()
 
-        for job in ("core", "script-contracts", "coverage"):
+        for job in ("core", "script-contracts", "language-bindings", "coverage"):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
                 self.assertIn("matrix.os == 'ubuntu-latest'", body)
@@ -127,7 +127,6 @@ class WorkflowContractTests(unittest.TestCase):
 
         self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
         self.assertIn("os: [ubuntu-latest, windows-latest, macos-latest]", job)
-        self.assert_pi_runner_with_hosted_fallback(job, "|| matrix.os")
 
         for required in (
             "RUSTUP_TOOLCHAIN: '1.94'",
