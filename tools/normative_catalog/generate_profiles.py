@@ -313,16 +313,38 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
     """Render deterministic immutable client metadata without executable rules."""
     raw_profiles = catalog.get("profiles")
     raw_test_cases = catalog.get("test_cases")
-    if not isinstance(raw_profiles, list) or not isinstance(raw_test_cases, list):
-        raise ProfileGenerationError("catalog has invalid profile or test records")
+    raw_requirements = catalog.get("requirements")
+    raw_decisions = catalog.get("decisions")
+    if (
+        not isinstance(raw_profiles, list)
+        or not isinstance(raw_test_cases, list)
+        or not isinstance(raw_requirements, list)
+        or not isinstance(raw_decisions, list)
+    ):
+        raise ProfileGenerationError("catalog has invalid profile, requirement, decision, or test records")
     tests_by_id = {
         test_case.get("test_id"): test_case
         for test_case in raw_test_cases
         if isinstance(test_case, dict) and isinstance(test_case.get("test_id"), str)
     }
+    accepted_decision_ids = {
+        decision.get("decision_id")
+        for decision in raw_decisions
+        if isinstance(decision, dict) and decision.get("status") == "accepted"
+    }
     profiles = sorted(
         (profile for profile in raw_profiles if isinstance(profile, dict) and profile.get("role") == "client"),
         key=lambda profile: profile.get("profile_id", ""),
+    )
+    requirements = sorted(
+        (
+            requirement
+            for requirement in raw_requirements
+            if isinstance(requirement, dict)
+            and requirement.get("role") in {"client", "both"}
+            and requirement.get("scope_state") in {"client_1_0", "profile_conditional"}
+        ),
+        key=lambda requirement: requirement.get("requirement_id", ""),
     )
     if not profiles:
         raise ProfileGenerationError("catalog contains no client profiles")
@@ -342,6 +364,25 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub mandatory_status: &'static str,",
         "    /// Whether the exact local fixture is available.",
         "    pub fixture_availability: &'static str,",
+        "}",
+        "",
+        "/// Source-backed normative metadata for a client-applicable requirement.",
+        "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
+        "pub struct GeneratedClientRequirement {",
+        "    /// Stable catalog requirement identifier.",
+        "    pub requirement_id: &'static str,",
+        "    /// Exact OASIS keyword used by the requirement.",
+        "    pub source_keyword: &'static str,",
+        "    /// Catalogued client applicability state.",
+        "    pub scope_state: &'static str,",
+        "    /// Stable source clauses that contain this requirement.",
+        "    pub source_clause_ids: &'static [&'static str],",
+        "    /// Profiles to which a conditional requirement applies.",
+        "    pub profile_ids: &'static [&'static str],",
+        "    /// Official OASIS test cases linked by the catalog.",
+        "    pub official_test_case_ids: &'static [&'static str],",
+        "    /// Whether the catalog records a reviewed deviation.",
+        "    pub has_accepted_deviation: bool,",
         "}",
         "",
         "/// Immutable source and applicability metadata for one client profile.",
@@ -373,10 +414,46 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub test_cases: &'static [GeneratedProfileTestCase],",
         "}",
         "",
-        "/// Client profiles sorted by stable profile identifier.",
-        "pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[",
     ]
     selected_ids = set(targets.profile_ids)
+    lines.extend(
+        [
+            "",
+            "/// Client requirements in the approved product scope, sorted by stable identifier.",
+            "pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[",
+        ]
+    )
+    for requirement in requirements:
+        requirement_id = requirement.get("requirement_id")
+        source_keyword = requirement.get("source_keyword")
+        if (
+            not isinstance(requirement_id, str)
+            or not requirement_id
+            or not isinstance(source_keyword, str)
+            or not source_keyword
+        ):
+            raise ProfileGenerationError("client requirement lacks stable source metadata")
+        lines.extend(
+            [
+                "    GeneratedClientRequirement {",
+                f"        requirement_id: {rust_string_literal(requirement_id)},",
+                f"        source_keyword: {rust_string_literal(source_keyword)},",
+                f"        scope_state: {_rust_string_field(requirement, 'scope_state')},",
+                f"        source_clause_ids: {_rust_string_array(requirement, 'source_clause_ids')},",
+                f"        profile_ids: {_rust_string_array(requirement, 'profile_ids')},",
+                f"        official_test_case_ids: {_rust_string_array(requirement, 'test_case_ids')},",
+                (
+                    "        has_accepted_deviation: "
+                    f"{str(requirement.get('status') == 'deviated' and requirement.get('decision_id') in accepted_decision_ids).lower()},"
+                ),
+                "    },",
+            ]
+        )
+    lines.extend(["];", ""])
+
+    lines.append("")
+    lines.append("/// Client profile metadata sorted by stable profile identifier.")
+    lines.append("pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[")
     for profile in profiles:
         profile_id = profile.get("profile_id")
         if not isinstance(profile_id, str) or not profile_id:

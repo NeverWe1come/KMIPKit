@@ -272,9 +272,15 @@ class ProfileTargetManifestTests(unittest.TestCase):
 
         self.assertTrue("pub struct GeneratedClientRequirement" in generated)
         self.assertTrue("pub const CLIENT_REQUIREMENTS" in generated)
-        for keyword in ("MUST", "SHALL", "REQUIRED", "MUST NOT", "SHALL NOT", "SHOULD", "RECOMMENDED", "SHOULD NOT", "MAY", "OPTIONAL"):
+        expected_keywords = {
+            requirement["source_keyword"]
+            for requirement in catalog["requirements"]
+            if requirement["role"] in {"client", "both"}
+            and requirement["scope_state"] in {"client_1_0", "profile_conditional"}
+        }
+        for keyword in expected_keywords:
             with self.subTest(keyword=keyword):
-                self.assertIn(f'source_keyword: "{keyword}"', generated)
+                self.assertTrue(f'source_keyword: "{keyword}"' in generated)
         self.assertNotIn("ProfileRuleMapping", generated)
 
 
