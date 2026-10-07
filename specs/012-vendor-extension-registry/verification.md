@@ -45,3 +45,29 @@ Red/Green/Refactor commits:
 - These reviews cover only this remediation. They do not replace the qualified
   independent human security review required before the 1.0 release or the
   feature-wide QA/security gates in T061–T063.
+
+## 2026-10-07 — client configuration owns an extension registry
+
+### Change
+
+Added an immutable `ClientConfiguration` that owns one registry snapshot and
+exposes a read-only registry view. The configuration type and its constructor
+and accessor are now part of the public API manifest. The production transport
+constructor remains in KMIPKIT-0013 and can consume this configuration.
+
+Red/Green evidence:
+
+- Red: `ee76e84`; the new cross-client configuration test failed to compile
+  because `ClientConfiguration` did not exist.
+- Green: implementation and generated API outputs are in the current worktree;
+  the focused configuration-isolation test passes.
+- The separate client Refactor stage required by T016 remains open.
+
+### Verification
+
+- `cargo test -p kmipkit-client -p kmipkit-protocol --all-features --quiet` — passed.
+- `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings` — passed.
+- `cargo fmt --all --check` — passed after formatting the new test.
+- `py -3 tools/api_manifest/generate.py --check` — passed; all six generated outputs match.
+- `.venv\\Scripts\\python.exe -m unittest discover -s tools/api_manifest/tests -v` — 31 passed, 2 skipped because this Windows account cannot create symlinks.
+- `git diff --check` — passed.

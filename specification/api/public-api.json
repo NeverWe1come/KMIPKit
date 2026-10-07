@@ -287,6 +287,36 @@
       }
     },
     {
+      "id": "ClientConfiguration",
+      "kind": "opaque-handle",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-001",
+        "KMIPKIT-0012-FR-003",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry",
+        "name": "ClientConfiguration",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_client_configuration_t",
+        "kind": "opaque-handle",
+        "handleKind": "client_configuration",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_client_configuration_release"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "ClientConfiguration"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "ClientConfiguration"
+      }
+    },
+    {
       "id": "ValidatedExtensionValue",
       "kind": "sealed-value",
       "requirementIds": [
@@ -1112,7 +1142,7 @@
         "parameters": [
           {
             "name": "definition",
-            "type": "ExtensionDefinition"
+            "type": "&ExtensionDefinition"
           },
           {
             "name": "value",
@@ -1207,6 +1237,158 @@
           "resource_limit"
         ],
         "returnType": "ValidatedExtensionValue"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_configuration_new",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-001",
+        "KMIPKIT-0012-FR-003",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry::ClientConfiguration",
+        "name": "new",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "extension_registry",
+            "type": "ClientExtensionRegistry"
+          }
+        ],
+        "returnType": "ClientConfiguration"
+      },
+      "c": {
+        "symbol": "kmipkit_client_configuration_create",
+        "parameters": [
+          {
+            "name": "extension_registry",
+            "kind": "handle",
+            "type": "kmipkit_client_extension_registry_t *",
+            "ownership": "consumed"
+          },
+          {
+            "name": "out_configuration",
+            "kind": "output",
+            "type": "kmipkit_client_configuration_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientConfiguration",
+        "method": "create",
+        "parameters": [
+          {
+            "name": "extensionRegistry",
+            "type": "ClientExtensionRegistry"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_extensions_ClientConfiguration_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "ClientConfiguration"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "create_client_configuration",
+        "parameters": [
+          {
+            "name": "extension_registry",
+            "type": "ClientExtensionRegistry"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_configuration_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "ClientConfiguration"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_configuration_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-001",
+        "KMIPKIT-0012-FR-003",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry::ClientConfiguration",
+        "name": "extension_registry",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "&ClientConfiguration"
+          }
+        ],
+        "returnType": "&ClientExtensionRegistry"
+      },
+      "c": {
+        "symbol": "kmipkit_client_configuration_extension_registry",
+        "parameters": [
+          {
+            "name": "configuration",
+            "kind": "handle",
+            "type": "kmipkit_client_configuration_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_registry",
+            "kind": "output",
+            "type": "kmipkit_client_extension_registry_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientConfiguration",
+        "method": "extensionRegistry",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_extensions_ClientConfiguration_extensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "ClientExtensionRegistry"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "client_configuration_extension_registry",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_configuration_extension_registry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "ClientExtensionRegistry"
       },
       "ordering": "not-applicable"
     },
@@ -4855,7 +5037,7 @@
         "parameters": [
           {
             "name": "definition",
-            "type": "ExtensionDefinition"
+            "type": "&ExtensionDefinition"
           }
         ],
         "returnType": "ExtensionIdentity"
@@ -4929,7 +5111,7 @@
         "parameters": [
           {
             "name": "definition",
-            "type": "ExtensionDefinition"
+            "type": "&ExtensionDefinition"
           }
         ],
         "returnType": "Option<ExtensionInformation>"
@@ -5314,13 +5496,13 @@
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
-        "name": "identity",
+        "name": "validated_extension_value_identity",
         "owner": "protocol",
         "requestBoundary": "not-applicable",
         "parameters": [
           {
             "name": "value",
-            "type": "ValidatedExtensionValue"
+            "type": "&ValidatedExtensionValue"
           }
         ],
         "returnType": "ExtensionIdentity"
@@ -5396,7 +5578,7 @@
         "parameters": [
           {
             "name": "value",
-            "type": "ValidatedExtensionValue"
+            "type": "&ValidatedExtensionValue"
           }
         ],
         "returnType": "&Structure"

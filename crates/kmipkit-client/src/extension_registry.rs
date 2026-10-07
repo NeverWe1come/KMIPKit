@@ -35,6 +35,37 @@ pub struct ClientExtensionRegistry {
     limits: ExtensionRegistryLimits,
 }
 
+/// Immutable client configuration containing one owned extension registry.
+///
+/// The production transport constructor can consume this configuration
+/// without rebuilding or sharing registry state between clients.
+pub struct ClientConfiguration {
+    extension_registry: ClientExtensionRegistry,
+}
+
+impl ClientConfiguration {
+    /// Creates a client configuration from one immutable extension registry.
+    #[must_use]
+    pub fn new(extension_registry: ClientExtensionRegistry) -> Self {
+        Self { extension_registry }
+    }
+
+    /// Returns the registry owned by this client configuration.
+    #[must_use]
+    pub const fn extension_registry(&self) -> &ClientExtensionRegistry {
+        &self.extension_registry
+    }
+}
+
+impl fmt::Debug for ClientConfiguration {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ClientConfiguration")
+            .field("extension_registry", &self.extension_registry)
+            .finish()
+    }
+}
+
 impl fmt::Debug for ClientExtensionRegistry {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter

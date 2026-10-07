@@ -262,36 +262,29 @@ fn client_configurations_own_isolated_immutable_registries() {
     let alpha_identity = extension::identity(&alpha);
     let beta_identity = extension::identity(&beta);
 
-    let alpha_registry = extension_registry::client_extension_registry(
-        vec![alpha],
-        extension::defaults(),
-    )
-    .expect("alpha registry is valid");
-    let beta_registry = extension_registry::client_extension_registry(
-        vec![beta],
-        extension::defaults(),
-    )
-    .expect("beta registry is valid");
-    let alpha_configuration =
-        extension_registry::ClientConfiguration::new(alpha_registry);
-    let beta_configuration =
-        extension_registry::ClientConfiguration::new(beta_registry);
+    let alpha_registry =
+        extension_registry::client_extension_registry(vec![alpha], extension::defaults())
+            .expect("alpha registry is valid");
+    let beta_registry =
+        extension_registry::client_extension_registry(vec![beta], extension::defaults())
+            .expect("beta registry is valid");
+    let alpha_configuration = extension_registry::ClientConfiguration::new(alpha_registry);
+    let beta_configuration = extension_registry::ClientConfiguration::new(beta_registry);
 
     let alpha_registry = alpha_configuration.extension_registry();
     let beta_registry = beta_configuration.extension_registry();
     assert_eq!(extension_registry::definition_count(alpha_registry), 1);
     assert_eq!(extension_registry::definition_count(beta_registry), 1);
     assert!(
-        extension_registry::definition_for_identity(alpha_registry, alpha_identity).is_some()
+        extension_registry::definition_for_identity(alpha_registry, alpha_identity.clone())
+            .is_some()
     );
     assert!(
         extension_registry::definition_for_identity(alpha_registry, beta_identity.clone())
             .is_none(),
         "one configuration must not observe another configuration's definitions"
     );
-    assert!(
-        extension_registry::definition_for_identity(beta_registry, beta_identity).is_some()
-    );
+    assert!(extension_registry::definition_for_identity(beta_registry, beta_identity).is_some());
     assert!(
         extension_registry::definition_for_identity(beta_registry, alpha_identity).is_none(),
         "configuration registries stay isolated after attachment"
