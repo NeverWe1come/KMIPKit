@@ -14,7 +14,7 @@ C-owned value handles and C view handles have different semantics: a view handle
 
 ## Java
 
-Java 17 uses the JNI bridge. Native handles have explicit close/lifecycle semantics; wrappers reject use of a closed handle with the stable `invalid_input` category before JNI. JNI/runtime copies may outlive the native owner and are outside KMIPKit zeroization guarantees.
+Java 17 uses the JNI bridge. Native handles have explicit close/lifecycle semantics; wrappers reject use of a closed handle with the stable `invalid_input` category before JNI. The JNI bridge zeroizes its temporary native byte buffer after constructing BigInteger, TextString, or ByteString values. Copies retained by Java arrays and objects are owned by the Java runtime and remain outside KMIPKit zeroization guarantees.
 
 ## Python
 

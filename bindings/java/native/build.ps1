@@ -9,6 +9,7 @@ $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe
 $nativeOutput = Join-Path $PSScriptRoot '..\target\native'
 $rustLibrary = Join-Path $repositoryRoot 'target\debug\kmipkit_ffi.lib'
 $jniSource = Join-Path $PSScriptRoot 'kmipkit_jni.cpp'
+$zeroizingTestSource = Join-Path $PSScriptRoot 'tests\zeroizing_bytes_test.cpp'
 $cHeader = Join-Path $repositoryRoot 'bindings\c\include'
 
 if (-not (Test-Path -LiteralPath $vswhere -PathType Leaf)) {
@@ -30,6 +31,23 @@ if (-not (Test-Path -LiteralPath $rustLibrary -PathType Leaf)) {
     throw 'Cargo did not produce target\debug\kmipkit_ffi.lib for the JNI link.'
 }
 
+$zeroizingTestObject = Join-Path $nativeOutput 'zeroizing_bytes_test.obj'
+$zeroizingTestExecutable = Join-Path $nativeOutput 'zeroizing_bytes_test.exe'
+$zeroizingTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$zeroizingTestCompiler += ' /Fo' + '"' + $zeroizingTestObject + '"'
+$zeroizingTestCompiler += ' ' + '"' + $zeroizingTestSource + '"'
+$zeroizingTestCompiler += ' /Fe:' + '"' + $zeroizingTestExecutable + '"'
+$zeroizingTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$zeroizingTestCommand += $zeroizingTestCompiler
+& $env:ComSpec /d /s /c $zeroizingTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI scratch zeroization test compile failed with exit code $LASTEXITCODE."
+}
+& $zeroizingTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI scratch zeroization test failed with exit code $LASTEXITCODE."
+}
+
 $jniInclude = Join-Path $javaHome 'include'
 $jniPlatformInclude = Join-Path $jniInclude 'win32'
 $objectPath = Join-Path $nativeOutput 'kmipkit_jni.obj'
@@ -39,6 +57,7 @@ $compiler = 'cl.exe /nologo /std:c++17 /EHsc /MD /LD'
 $compiler += ' /I' + '"' + $jniInclude + '"'
 $compiler += ' /I' + '"' + $jniPlatformInclude + '"'
 $compiler += ' /I' + '"' + $cHeader + '"'
+$compiler += ' /I' + '"' + $PSScriptRoot + '"'
 $compiler += ' /Fo' + '"' + $objectPath + '"'
 $compiler += ' ' + '"' + $jniSource + '"'
 $compiler += ' ' + '"' + $rustLibrary + '"'

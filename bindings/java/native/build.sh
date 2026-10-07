@@ -23,6 +23,11 @@ fi
 native_output="$script_dir/../target/native"
 mkdir -p "$native_output"
 
+zeroizing_bytes_test="$native_output/zeroizing_bytes_test"
+"${CXX:-c++}" -std=c++17 -Wall -Wextra -Werror \
+    "$script_dir/tests/zeroizing_bytes_test.cpp" -o "$zeroizing_bytes_test"
+"$zeroizing_bytes_test"
+
 cargo build --locked -p kmipkit-ffi --manifest-path "$repository_root/Cargo.toml"
 
 case "$(uname -s)" in

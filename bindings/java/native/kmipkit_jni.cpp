@@ -1,5 +1,6 @@
 #include <jni.h>
 #include "kmipkit.h"
+#include "secure_bytes.hpp"
 
 #include <algorithm>
 #include <array>
@@ -435,6 +436,7 @@ jlong make_bytes_value(JNIEnv* env, jbyteArray raw_value, jlongArray raw_limits)
         CodecLimits limits;
         if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
         std::vector<uint8_t> bytes;
+        kmipkit::secure::VectorWiper bytes_wiper(bytes);
         if (!read_bytes(env, raw_value, limits.max_message_bytes(), bytes)) return static_cast<jlong>(0);
         return return_handle<kmipkit_ttlv_value_t>(env, [&](auto output) {
             if constexpr (Kind == 0) {

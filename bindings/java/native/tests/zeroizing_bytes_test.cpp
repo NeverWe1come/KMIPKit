@@ -10,22 +10,25 @@ namespace {
 
 bool deallocated_bytes_were_zeroized = false;
 
+template <typename T>
 struct InspectingAllocator {
-    using value_type = std::uint8_t;
+    using value_type = T;
 
-    std::uint8_t* allocate(std::size_t count) {
-        return static_cast<std::uint8_t*>(::operator new(count));
+    T* allocate(std::size_t count) {
+        return static_cast<T*>(::operator new(count * sizeof(T)));
     }
 
-    void deallocate(std::uint8_t* bytes, std::size_t count) noexcept {
-        deallocated_bytes_were_zeroized = true;
-        for (std::size_t index = 0; index < count; ++index) {
+    void deallocate(T* bytes, std::size_t count) noexcept {
+        constexpr std::size_t secret_length = 3;
+        deallocated_bytes_were_zeroized = count >= secret_length;
+        for (std::size_t index = 0; index < secret_length && index < count; ++index) {
             deallocated_bytes_were_zeroized = deallocated_bytes_were_zeroized && bytes[index] == 0;
         }
         ::operator delete(bytes);
     }
 
-    friend bool operator==(const InspectingAllocator&, const InspectingAllocator&) noexcept {
+    template <typename U>
+    bool operator==(const InspectingAllocator<U>&) const noexcept {
         return true;
     }
 };
@@ -33,7 +36,7 @@ struct InspectingAllocator {
 bool vector_wiper_clears_owned_bytes_before_deallocation() {
     deallocated_bytes_were_zeroized = false;
     {
-        std::vector<std::uint8_t, InspectingAllocator> bytes;
+        std::vector<std::uint8_t, InspectingAllocator<std::uint8_t>> bytes;
         bytes.push_back(0x53);
         bytes.push_back(0x45);
         bytes.push_back(0x43);
