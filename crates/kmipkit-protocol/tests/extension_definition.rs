@@ -108,6 +108,23 @@ fn compatibility_includes_kmip_2_1_and_the_running_kmipkit_version() {
 }
 
 #[test]
+fn compatibility_rejects_noncanonical_and_unrepresentable_semver_components() {
+    for minimum in [
+        "01.0.0",
+        "1.00.0",
+        "1.0.00",
+        "1..0",
+        "1.0.18446744073709551616",
+        "1.0.0-rc.1",
+    ] {
+        assert_kind(
+            extension::compatibility(2, 1, 2, 1, minimum, "99.0.0"),
+            ProtocolErrorKind::CompatibilityMismatch,
+        );
+    }
+}
+
+#[test]
 fn discriminator_scalar_size_and_path_depth_obey_their_hard_limits() {
     assert_eq!(
         valid_discriminator(Value::text_string("x".repeat(4_096)))
@@ -318,6 +335,9 @@ fn cloned_definition_preserves_identity_compatibility_discriminator_and_informat
     let definition =
         extension::extension_definition(identity, compatibility, discriminator, schema)
             .expect("schema and discriminator agree");
+    let cloned_without_information = extension::clone_extension_definition(&definition)
+        .expect("a definition without optional metadata can be copied");
+    assert!(extension::information(&cloned_without_information).is_none());
     let information = extension::extension_information("metadata").expect("name is valid");
     let definition = extension::with_information(definition, information)
         .expect("optional Extension Information can be attached");

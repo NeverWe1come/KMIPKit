@@ -212,6 +212,37 @@ fn definitions_reject_unresolvable_or_wrong_type_discriminator_paths() {
             .kind(),
         ProtocolErrorKind::InvalidSchema
     );
+
+    let scalar_intermediate_schema = extension::structure(
+        vec![
+            extension::required(
+                tag(DISCRIMINATOR_OFFSET),
+                extension::scalar(ItemType::Integer).expect("Integer is supported"),
+            )
+            .expect("the scalar intermediate rule is valid"),
+        ],
+        Vec::new(),
+        false,
+    )
+    .expect("root schema is valid");
+    let nested_path = extension::with_child_tag(
+        extension::ttlv_path(tag(DISCRIMINATOR_OFFSET)).expect("path is non-empty"),
+        tag(NESTED_OFFSET),
+    )
+    .expect("nested path is within its bound");
+    assert_eq!(
+        extension::extension_definition(
+            extension::extension_identity("example.vendor", "scalar-intermediate", "1")
+                .expect("identity is valid"),
+            compatibility,
+            extension::discriminator(nested_path, Value::integer(1))
+                .expect("the discriminator is a scalar"),
+            scalar_intermediate_schema,
+        )
+        .expect_err("a discriminator cannot descend through a scalar schema")
+        .kind(),
+        ProtocolErrorKind::InvalidSchema
+    );
 }
 
 #[test]
@@ -390,6 +421,138 @@ fn order_edge_allows_an_absent_optional_endpoint() {
         )
         .is_ok()
     );
+}
+
+#[test]
+fn sparse_order_validation_checks_present_pairs_and_rejects_reversed_occurrences() {
+    const FIRST_TAG: u32 = 30;
+    const EDGE_COUNT: u32 = 8;
+
+    let rules = (0..=EDGE_COUNT)
+        .map(|offset| {
+            extension::optional(
+                tag(FIRST_TAG + offset),
+                extension::scalar(ItemType::Integer).expect("Integer is supported"),
+            )
+            .expect("optional order rule is valid")
+        })
+        .collect();
+    let edges = (0..EDGE_COUNT)
+        .map(|offset| {
+            extension::extension_order_constraint(
+                tag(FIRST_TAG + offset),
+                tag(FIRST_TAG + offset + 1),
+            )
+            .expect("adjacent distinct Tags form an order edge")
+        })
+        .collect();
+    let definition = definition(rules, edges, false);
+
+    let ordered = extension_value([
+        item(FIRST_TAG, Value::integer(1)),
+        item(FIRST_TAG + 1, Value::integer(2)),
+    ]);
+    assert!(
+        extension::validate(&definition, ordered, &CodecLimits::defaults()).is_ok(),
+        "sparse present-pair lookup accepts the declared order"
+    );
+
+    let reversed = extension_value([
+        item(FIRST_TAG + 1, Value::integer(2)),
+        item(FIRST_TAG, Value::integer(1)),
+    ]);
+    assert_invalid_schema(extension::validate(
+        &definition,
+        reversed,
+        &CodecLimits::defaults(),
+    ));
+}
+
+#[test]
+fn schema_only_validation_preserves_mismatches_and_propagates_ttlv_limits() {
+    let definition = definition(
+        vec![required_payload(
+            extension::scalar(ItemType::Integer).expect("Integer is supported"),
+        )],
+        Vec::new(),
+        false,
+    );
+    let invalid = extension_value([item(PAYLOAD_OFFSET, Value::text_string("secret".into()))]);
+    let outcome = extension::validate_schema_only(&definition, invalid, &CodecLimits::defaults())
+        .expect("schema mismatches are represented without exposing a partial typed view");
+    let extension::SchemaValidationOutcome::SchemaInvalid(generic) = outcome else {
+        panic!("the mismatching generic subtree must remain unrecognized");
+    };
+    assert_eq!(generic.view().children().len(), 2);
+    assert_eq!(generic.view().children()[1].tag(), tag(PAYLOAD_OFFSET));
+
+    let too_small = CodecLimits::new(7, 1, 1).expect("a positive small byte limit is valid");
+    let Err(error) = extension::validate_schema_only(&definition, Structure::default(), &too_small)
+    else {
+        panic!("resource-limit failures cannot produce a partial value");
+    };
+    assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
+}
+
+#[test]
+fn nested_discriminator_path_rejects_a_non_structure_intermediate_value() {
+    let discriminator_path = extension::with_child_tag(
+        extension::ttlv_path(tag(40)).expect("the nested path begins with one Tag"),
+        tag(41),
+    )
+    .expect("the nested path is within the configured depth");
+    let nested_schema = extension::structure(
+        vec![
+            extension::required(
+                tag(41),
+                extension::scalar(ItemType::TextString).expect("Text String is supported"),
+            )
+            .expect("the terminal discriminator field is valid"),
+        ],
+        Vec::new(),
+        false,
+    )
+    .expect("the nested schema is valid");
+    let schema = extension::structure(
+        vec![extension::required(tag(40), nested_schema).expect("nested rule is valid")],
+        Vec::new(),
+        false,
+    )
+    .expect("the root schema is valid");
+    let identity = extension::extension_identity("example.vendor", "nested-value", "1")
+        .expect("the extension identity is valid");
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+        .expect("the extension compatibility includes the client");
+    let discriminator = extension::discriminator(
+        discriminator_path,
+        Value::text_string("nested-discriminator".into()),
+    )
+    .expect("the discriminator value is scalar");
+    let definition =
+        extension::extension_definition(identity, compatibility, discriminator, schema)
+            .expect("the discriminator path resolves through Structure schema nodes");
+
+    let invalid = structure([item(40, Value::integer(1))]);
+    assert_invalid_schema(extension::validate(
+        &definition,
+        invalid,
+        &CodecLimits::defaults(),
+    ));
+}
+
+#[test]
+fn repeated_discriminator_occurrences_are_rejected_before_schema_validation() {
+    let definition = definition(Vec::new(), Vec::new(), false);
+    let duplicate = extension_value([item(
+        DISCRIMINATOR_OFFSET,
+        Value::text_string(DISCRIMINATOR.into()),
+    )]);
+
+    assert_invalid_schema(extension::validate(
+        &definition,
+        duplicate,
+        &CodecLimits::defaults(),
+    ));
 }
 
 #[test]
@@ -694,6 +857,15 @@ fn malformed_schema_builders_reject_incompatible_or_reversed_constraints() {
             1,
         )
         .expect_err("bit masks require an Integer schema")
+        .kind(),
+        ProtocolErrorKind::InvalidSchema
+    );
+    assert_eq!(
+        extension::with_required_bit_mask(
+            extension::scalar(ItemType::Enumeration).expect("Enumeration is supported"),
+            1,
+        )
+        .expect_err("required masks also need an Integer schema")
         .kind(),
         ProtocolErrorKind::InvalidSchema
     );

@@ -5,8 +5,8 @@
 use std::error::Error;
 use std::fmt::Write as _;
 
-use kmipkit_protocol::ProtocolErrorKind;
 use kmipkit_protocol::extension;
+use kmipkit_protocol::{ProtocolCauseCategory, ProtocolErrorKind};
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value};
 
@@ -203,6 +203,46 @@ fn protocol_extension_errors_use_the_manifest_categories() {
     )
     .expect_err("configured definition limits cannot exceed the hard maximum");
     assert_eq!(above_hard_maximum.kind(), ProtocolErrorKind::ResourceLimit);
+}
+
+#[test]
+fn protocol_error_categories_display_only_stable_safe_text() {
+    for (kind, expected) in [
+        (
+            ProtocolErrorKind::InvalidIdentity,
+            "invalid extension identity",
+        ),
+        (ProtocolErrorKind::DuplicateKey, "duplicate extension key"),
+        (
+            ProtocolErrorKind::CompatibilityMismatch,
+            "extension compatibility mismatch",
+        ),
+        (ProtocolErrorKind::InvalidSchema, "invalid extension schema"),
+        (
+            ProtocolErrorKind::ResourceLimit,
+            "extension resource limit exceeded",
+        ),
+        (ProtocolErrorKind::InvalidInput, "invalid protocol input"),
+        (ProtocolErrorKind::InvalidValue, "invalid protocol value"),
+        (
+            ProtocolErrorKind::MalformedMessage,
+            "malformed protocol message",
+        ),
+        (
+            ProtocolErrorKind::UnsupportedValue,
+            "unsupported protocol value",
+        ),
+    ] {
+        assert_eq!(kind.to_string(), expected);
+    }
+
+    for (cause, expected) in [
+        (ProtocolCauseCategory::InvalidValue, "invalid value"),
+        (ProtocolCauseCategory::InvalidEncoding, "invalid encoding"),
+        (ProtocolCauseCategory::Other, "other protocol cause"),
+    ] {
+        assert_eq!(cause.to_string(), expected);
+    }
 }
 
 fn assert_diagnostics_identify_tag_path(diagnostics: &str) {

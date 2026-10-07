@@ -406,6 +406,98 @@ fn known_header_field_with_wrong_ttlv_type_reports_safe_category() {
     assert!(!error.to_string().contains("true"));
 }
 
+#[test]
+fn required_message_fields_reject_wrong_ttlv_types_at_each_validation_layer() {
+    let request_batch = || {
+        item(
+            BATCH_ITEM,
+            Value::structure(structure([
+                item(OPERATION, Value::enumeration(1)),
+                item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
+            ])),
+        )
+    };
+
+    let wrong_request_count = structure([
+        item(
+            REQUEST_HEADER,
+            Value::structure(structure([
+                item(PROTOCOL_VERSION, version()),
+                item(BATCH_COUNT, Value::text_string("one".to_owned())),
+            ])),
+        ),
+        request_batch(),
+    ]);
+    assert_eq!(
+        RequestMessage::try_from_ttlv(wrong_request_count)
+            .expect_err("Batch Count is an Integer")
+            .kind(),
+        MessageValidationErrorKind::WrongItemType
+    );
+
+    let wrong_response_timestamp = structure([
+        item(
+            RESPONSE_HEADER,
+            Value::structure(structure([
+                item(PROTOCOL_VERSION, version()),
+                item(TIME_STAMP, Value::integer(1)),
+                item(BATCH_COUNT, Value::integer(1)),
+            ])),
+        ),
+        item(
+            BATCH_ITEM,
+            Value::structure(structure([
+                item(RESULT_STATUS, Value::enumeration(0)),
+                item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]);
+    assert_eq!(
+        ResponseMessage::try_from_ttlv(wrong_response_timestamp)
+            .expect_err("Time Stamp is a Date-Time")
+            .kind(),
+        MessageValidationErrorKind::WrongItemType
+    );
+
+    let wrong_response_count = structure([
+        item(
+            RESPONSE_HEADER,
+            Value::structure(structure([
+                item(PROTOCOL_VERSION, version()),
+                item(TIME_STAMP, Value::date_time(1)),
+                item(BATCH_COUNT, Value::enumeration(1)),
+            ])),
+        ),
+        item(
+            BATCH_ITEM,
+            Value::structure(structure([
+                item(RESULT_STATUS, Value::enumeration(0)),
+                item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]);
+    assert_eq!(
+        ResponseMessage::try_from_ttlv(wrong_response_count)
+            .expect_err("Batch Count is an Integer")
+            .kind(),
+        MessageValidationErrorKind::WrongItemType
+    );
+
+    let wrong_result_status = response_tree_with_batch_items(
+        [structure([
+            item(RESULT_STATUS, Value::integer(0)),
+            item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+        ])],
+        1,
+    );
+    assert_eq!(
+        ResponseMessage::try_from_ttlv(wrong_result_status)
+            .expect_err("Result Status is an Enumeration")
+            .kind(),
+        MessageValidationErrorKind::WrongItemType
+    );
+}
+
 fn request_tree_with_header_fields(extra: Item) -> Structure {
     structure([
         item(

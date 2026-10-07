@@ -852,3 +852,34 @@ The Python adapter's Extension Information test expectation was also corrected t
   workspace totals are below T060's required gates. This is a coverage-gate
   failure, not a Rust test failure. T060 remains open pending targeted
   behavior tests and a fresh measured report.
+
+## 2026-10-07 — targeted Rust coverage tests (Green; T060 remains open)
+
+- Added behavior assertions for deep TTLV value cloning and child-order
+  preservation; definition compatibility and safe error-category display;
+  schema-only mismatch preservation and codec-limit propagation; a scalar
+  intermediate discriminator path; required bit-mask type rejection; cloning
+  definitions both with and without Extension Information; malformed required
+  message-field types; and the typed credential-type accessor.
+- Rust 1.94 focused tests passed:
+  `cargo +1.94 test -p kmipkit-ttlv --test value_clone`;
+  `cargo +1.94 test -p kmipkit-protocol --test extension_definition`;
+  `cargo +1.94 test -p kmipkit-protocol --test extension_error`;
+  `cargo +1.94 test -p kmipkit-protocol --test extension_schema`;
+  `cargo +1.94 test -p kmipkit-protocol --test message_validation`;
+  `cargo +1.94 test -p kmipkit-protocol --test credential_public_api`.
+- A fresh clean Linux Rust 1.94 run passed all workspace test binaries and
+  emitted `/home/ramp1953/kmipkit-0012-coverage-final.json` using an isolated
+  `CARGO_TARGET_DIR`. Raw line summaries are TTLV 737/750 (98.27%), protocol
+  4006/4242 (94.44%), client 2504/2673 (93.68%), transport 88/88 (100%), FFI
+  Rust-only 1428/2180 (65.50%), and Rust workspace 8995/10169 (88.46%). TTLV
+  clears its gate; protocol remains 24 covered lines short of the 4030/4242
+  minimum. The raw workspace figure does not include the separately normalized
+  C-consumer FFI data.
+- The dedicated normalized FFI report remains 2009/2180 (92.16%) with all 13 C
+  consumer groups passing, above the 85% FFI gate. Adapter, changed-production
+  line, and cross-platform aggregate results have not been collected here; the
+  repository 90% aggregate must be determined by merging the complete CI
+  artifacts.
+- `cargo +1.94 fmt --all --check` passed. No production behavior, thresholds,
+  generated output, or coverage exclusions changed. T060 and T061 remain open.
