@@ -63,13 +63,14 @@ class PublicApiParityTests(unittest.TestCase):
             "extension_identity_version",
             "client_batch_item_discover_versions",
             "client_batch_item_extension_count",
-            "client_batch_item_extension_at",
-            "client_request_message_extension_criticality_indicator",
-            "client_request_message_extension_value",
-            "registered_extension_value_identity",
+            "client_batch_item_extension_identity_at",
+            "client_batch_item_extension_criticality_indicator_at",
         }
 
-        self.assertTrue(required_functions.issubset(function_ids), sorted(required_functions - function_ids))
+        self.assertTrue(
+            required_functions.issubset(function_ids),
+            sorted(required_functions - function_ids),
+        )
 
     def test_limit_names_defaults_and_hard_maxima_are_ordered_and_equivalent(self) -> None:
         limits = self.manifest["limits"]
