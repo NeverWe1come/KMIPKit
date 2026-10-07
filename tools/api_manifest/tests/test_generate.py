@@ -36,6 +36,26 @@ GENERATED_OUTPUT_MAP = {
     "pythonApi": GENERATED_OUTPUTS[4],
     "parityFixtures": GENERATED_OUTPUTS[5],
 }
+HANDLE_ARRAY_CONTRACTS = (
+    (
+        "extension_schema_structure",
+        "children",
+        "kmipkit_extension_child_rule_t",
+        "child_count",
+    ),
+    (
+        "extension_schema_structure",
+        "order_constraints",
+        "kmipkit_extension_order_constraint_t",
+        "order_constraint_count",
+    ),
+    (
+        "client_extension_registry_create",
+        "definitions",
+        "kmipkit_extension_definition_t",
+        "definition_count",
+    ),
+)
 LIMIT_IDS = (
     "maxDefinitions",
     "maxSchemaNodes",
@@ -85,6 +105,25 @@ def _reverse_object_keys(value: object) -> object:
     if isinstance(value, list):
         return [_reverse_object_keys(child) for child in value]
     return value
+
+
+def _apply_handle_array_contract(manifest: dict[str, object]) -> None:
+    functions = {function["id"]: function for function in manifest["functions"]}
+    for function_id, parameter_name, handle_type, count_parameter in HANDLE_ARRAY_CONTRACTS:
+        function = functions[function_id]
+        parameter = next(
+            item for item in function["c"]["parameters"] if item["name"] == parameter_name
+        )
+        parameter.update(
+            {
+                "kind": "handle-array",
+                "type": f"{handle_type} **",
+                "handleType": handle_type,
+                "ownership": "borrowed",
+                "countParameter": count_parameter,
+                "nullable": True,
+            }
+        )
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
@@ -195,6 +234,97 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 manifest = self._load_manifest(root)
                 function = next(item for item in manifest["functions"] if item["id"] == function_id)
                 function[language]["errorCategories"].remove("invalid_input")
+                self._write_manifest(root, manifest)
+
+                result = self._run_generator(root, "--write")
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+
+    def test_handle_arrays_preserve_typed_pointer_to_pointer_abi(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+            manifest = self._load_manifest(root)
+            _apply_handle_array_contract(manifest)
+            functions = {function["id"]: function for function in manifest["functions"]}
+            for function_id, _, _, _ in HANDLE_ARRAY_CONTRACTS:
+                function = functions[function_id]
+                for language in ("c", "java", "python"):
+                    self.assertIn("invalid_input", function[language]["errorCategories"])
+            self._write_manifest(root, manifest)
+
+            result = self._run_generator(root, "--write")
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            c_header = (root / GENERATED_OUTPUTS[1]).read_text(encoding="utf-8")
+            rust_ffi = (root / GENERATED_OUTPUTS[0]).read_text(encoding="utf-8")
+            self.assertIn("NULL is valid only when the linked count is zero", c_header)
+            self.assertIn("check the count before reading elements", c_header)
+            for _, parameter_name, handle_type, _ in HANDLE_ARRAY_CONTRACTS:
+                self.assertIn(f"{handle_type} ** {parameter_name}", c_header)
+                self.assertIn(f"{parameter_name}: *mut *mut {handle_type}", rust_ffi)
+
+    def test_handle_arrays_require_known_types_counts_and_invalid_input_mappings(self) -> None:
+        mutations = (
+            (
+                "unknown handle type",
+                lambda manifest: next(
+                    item for item in next(
+                        record for record in manifest["functions"]
+                        if record["id"] == "extension_schema_structure"
+                    )["c"]["parameters"] if item["name"] == "children"
+                ).update(
+                    {
+                        "type": "kmipkit_unknown_handle_t **",
+                        "handleType": "kmipkit_unknown_handle_t",
+                    }
+                ),
+            ),
+            (
+                "array pointer does not match handle type",
+                lambda manifest: next(
+                    item for item in next(
+                        record for record in manifest["functions"]
+                        if record["id"] == "extension_schema_structure"
+                    )["c"]["parameters"] if item["name"] == "children"
+                ).update({"type": "kmipkit_extension_order_constraint_t **"}),
+            ),
+            (
+                "unresolved count parameter",
+                lambda manifest: next(
+                    item for item in next(
+                        record for record in manifest["functions"]
+                        if record["id"] == "extension_schema_structure"
+                    )["c"]["parameters"] if item["name"] == "children"
+                ).update({"countParameter": "missing_count"}),
+            ),
+            (
+                "count parameter is not uint64",
+                lambda manifest: next(
+                    item for item in next(
+                        record for record in manifest["functions"]
+                        if record["id"] == "extension_schema_structure"
+                    )["c"]["parameters"] if item["name"] == "child_count"
+                ).update({"type": "uint32_t"}),
+            ),
+            *(
+                (
+                    f"{language} invalid_input mapping",
+                    lambda manifest, language=language: next(
+                        record for record in manifest["functions"]
+                        if record["id"] == function_id
+                    )[language]["errorCategories"].remove("invalid_input"),
+                )
+                for function_id, _, _, _ in HANDLE_ARRAY_CONTRACTS[:1]
+                for language in ("c", "java", "python")
+            ),
+        )
+        for label, mutate in mutations:
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as directory:
+                root = _create_repo(Path(directory))
+                manifest = self._load_manifest(root)
+                _apply_handle_array_contract(manifest)
+                mutate(manifest)
                 self._write_manifest(root, manifest)
 
                 result = self._run_generator(root, "--write")
