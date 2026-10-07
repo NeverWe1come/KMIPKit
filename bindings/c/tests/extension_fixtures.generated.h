@@ -1,4 +1,4 @@
-/* Generated from specification/api/public-api.json and tests/fixtures/extensions/cases.json. API contract sha256: f54ae735a2ca4d7173b0c493c367c9fde70d17e02b06cd7134572f068c8d8c1d. Do not edit. */
+/* Generated from specification/api/public-api.json and tests/fixtures/extensions/cases.json. API contract sha256: db9618f0b89ec0c9c6842c3be1749aea88202d426890f19ca5e747dd5ab575f1. Do not edit. */
 #ifndef KMIPKIT_EXTENSION_FIXTURES_GENERATED_H
 #define KMIPKIT_EXTENSION_FIXTURES_GENERATED_H
 #include <stdbool.h>
@@ -9,6 +9,8 @@ typedef struct { uint32_t tag; uint8_t type; const char *text; int64_t minimum; 
 typedef struct kmipkit_fixture_schema { uint8_t type; const char *text; int64_t minimum; int64_t maximum; bool has_range; const kmipkit_fixture_child_rule_t *children; size_t child_count; } kmipkit_fixture_schema_t;
 typedef struct { const char *id; const char *vendor; const char *name; const char *version; const uint32_t *path; size_t path_count; uint8_t discriminator_type; const char *discriminator_text; int64_t discriminator_number; const kmipkit_fixture_schema_t *schema; } kmipkit_fixture_definition_t;
 typedef struct { const char *id; const char *vendor; bool critical; const kmipkit_fixture_item_t *payload; size_t payload_count; const char *outcome; const char *const *matched_ids; size_t matched_count; bool typed; } kmipkit_fixture_case_t;
+typedef struct { const char *fixture_id; bool criticality_indicator; } kmipkit_fixture_attachment_t;
+typedef struct { const char *fixture_id; const char *outcome; const kmipkit_fixture_attachment_t *attachments; size_t attachment_count; } kmipkit_fixture_outbound_request_t;
 static const kmipkit_fixture_schema_t kmipkit_fixture_schema_0_schema_0_schema_0 = { 7U, "route-alpha", INT64_C(0), INT64_C(0), false, NULL, 0U };
 static const kmipkit_fixture_schema_t kmipkit_fixture_schema_0_schema_0_schema_1 = { 7U, "route-beta", INT64_C(0), INT64_C(0), false, NULL, 0U };
 static const kmipkit_fixture_schema_t kmipkit_fixture_schema_0_schema_0_schema_2 = { 7U, "shared", INT64_C(0), INT64_C(0), false, NULL, 0U };
@@ -82,6 +84,7 @@ static const kmipkit_fixture_item_t kmipkit_fixture_payload_4[] = {
     { UINT32_C(0x420005), 7U, "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A", INT64_C(0), UINT32_C(0), NULL, 0U }
 };
 static const char *const kmipkit_fixture_matched_4[] = { "known.alpha" };
+static const kmipkit_fixture_attachment_t kmipkit_fixture_attachments_4[] = { { "synthetic-secret-bearing", false }, { "valid-recognized", true } };
 static const kmipkit_fixture_case_t kmipkit_fixture_cases[] = {
     { "valid-recognized", "example.vendor", false, kmipkit_fixture_payload_0, 5U, "recognized", kmipkit_fixture_matched_0, 1U, true },
     { "invalid-schema", "example.vendor", false, kmipkit_fixture_payload_1, 2U, "unrecognized.schema_invalid", kmipkit_fixture_matched_1, 1U, false },
@@ -89,6 +92,10 @@ static const kmipkit_fixture_case_t kmipkit_fixture_cases[] = {
     { "unknown-preserved", "example.vendor", false, kmipkit_fixture_payload_3, 2U, "unrecognized.no_match", NULL, 0U, false },
     { "synthetic-secret-bearing", "example.vendor", false, kmipkit_fixture_payload_4, 3U, "recognized", kmipkit_fixture_matched_4, 1U, true },
 };
+static const kmipkit_fixture_outbound_request_t kmipkit_fixture_outbound_requests[] = {
+    { "synthetic-secret-bearing", "outbound.validated", kmipkit_fixture_attachments_4, 2U },
+};
 #define KMIPKIT_FIXTURE_CASE_COUNT 5U
+#define KMIPKIT_FIXTURE_OUTBOUND_REQUEST_COUNT 1U
 #define KMIPKIT_FIXTURE_DEFINITION_COUNT 3U
 #endif

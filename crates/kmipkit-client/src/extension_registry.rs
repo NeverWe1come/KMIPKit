@@ -1215,4 +1215,4 @@ impl Error for UnregisteredExtension {}
 
 #[cfg(test)]
 #[path = "../tests/unit/extension_registry_tests.rs"]
-mod tests;
+pub(crate) mod tests;

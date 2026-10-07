@@ -165,8 +165,32 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
                 self.assertIn("outbound.validated", generated)
                 self.assertIn("synthetic-secret-bearing", generated)
                 self.assertIn("valid-recognized", generated)
+        for fixture in corpus["cases"]:
+            critical = str(fixture["extension"]["criticalityIndicator"]).lower()
+            case_id = fixture["id"]
+            vendor = fixture["extension"]["vendorIdentification"]
+            with self.subTest(inbound_case=case_id):
+                self.assertIn(f'"{case_id}", "{vendor}", {critical}', outputs[GENERATED_C_FIXTURES])
+                self.assertIn(f'new Case("{case_id}", "{vendor}", {critical}', outputs[GENERATED_JAVA_FIXTURES])
+                self.assertIn(
+                    f'Case {{ id: "{case_id}", vendor: "{vendor}", critical: {critical}',
+                    outputs[GENERATED_RUST_FIXTURES],
+                )
+        for path, generated in outputs.items():
+            with self.subTest(outbound_order=path.name):
+                marker = (
+                    "static const kmipkit_fixture_attachment_t kmipkit_fixture_attachments_"
+                    if path == GENERATED_C_FIXTURES
+                    else "OUTBOUND_REQUESTS"
+                )
+                outbound = generated[generated.index(marker) :]
+                self.assertLess(
+                    outbound.index("synthetic-secret-bearing"),
+                    outbound.index("valid-recognized"),
+                )
         self.assertIn("critical: false", outputs[GENERATED_RUST_FIXTURES])
-        self.assertIn("critical: true", outputs[GENERATED_RUST_FIXTURES])
+        self.assertIn("criticality_indicator: false", outputs[GENERATED_RUST_FIXTURES])
+        self.assertIn("criticality_indicator: true", outputs[GENERATED_RUST_FIXTURES])
 
     def test_fixture_generator_rejects_invalid_outbound_attachment_records(self) -> None:
         api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
@@ -205,6 +229,22 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
         )["c"].pop("symbol")
         with self.assertRaises(_GENERATOR.FixtureError):
             _GENERATOR.render(malformed_mapping, corpus)
+
+        malformed_outbound_order = copy.deepcopy(api)
+        next(
+            function for function in malformed_outbound_order["functions"]
+            if function["id"] == "client_batch_item_with_extension"
+        )["ordering"] = "sorted-by-identity"
+        with self.assertRaises(_GENERATOR.FixtureError):
+            _GENERATOR.render(malformed_outbound_order, corpus)
+
+        malformed_criticality = copy.deepcopy(api)
+        next(
+            function for function in malformed_criticality["functions"]
+            if function["id"] == "client_request_message_extension_create"
+        )["criticalityIndicator"]["cParameter"]["acceptedValues"] = [0]
+        with self.assertRaises(_GENERATOR.FixtureError):
+            _GENERATOR.render(malformed_criticality, corpus)
 
         changed_mapping = copy.deepcopy(api)
         next(

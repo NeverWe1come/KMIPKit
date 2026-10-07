@@ -469,17 +469,20 @@ class ExtensionRegistryTests(unittest.TestCase):
             list(self.definitions.values()), registry_api.default_extension_registry_limits()
         )
         limits = _codec_limits()
+        item = None
+        identities = []
         try:
-            outbound = self.fixtures["synthetic-secret-bearing"]["expected"]
-            outbound = outbound["outboundRequest"]["attachments"]
-            message_extensions = []
-            caller_selections = []
+            request = self.fixtures["synthetic-secret-bearing"]["expected"]["outboundRequest"]
+            self.assertEqual(request["outcomeCode"], "outbound.validated")
+            outbound = request["attachments"]
+            item = registry_api.client_batch_item_discover_versions()
             for attachment in outbound:
                 fixture = self.fixtures[attachment["fixtureId"]]
                 definition_id = fixture["expected"]["matchedDefinitionIds"][0]
                 identity = registry_api.extension_definition_identity(
                     self.definitions[definition_id]
                 )
+                identities.append(identity)
                 value = registry_api.validate_extension_value(
                     registry,
                     identity,
@@ -488,26 +491,44 @@ class ExtensionRegistryTests(unittest.TestCase):
                         ),
                     limits,
                 )
-                caller_selections.append(
-                    (attachment["fixtureId"], attachment["criticalityIndicator"])
+                message_extension = registry_api.create_client_request_message_extension(
+                    value, attachment["criticalityIndicator"]
                 )
-                message_extensions.append(
-                    registry_api.create_client_request_message_extension(
-                        value, attachment["criticalityIndicator"]
-                    )
-                )
+                item = registry_api.with_extension(item, message_extension)
 
             self.assertEqual(
-                caller_selections,
+                [
+                    (attachment["fixtureId"], attachment["criticalityIndicator"])
+                    for attachment in outbound
+                ],
                 [("synthetic-secret-bearing", False), ("valid-recognized", True)],
             )
             self.assertEqual(
-                len(message_extensions),
+                registry_api.client_batch_item_extension_count(item),
                 len(outbound),
-                "one request-extension wrapper is built for each ordered fixture attachment",
+                "one request extension is attached for each ordered fixture attachment",
             )
+            for index, attachment in enumerate(outbound):
+                fixture = self.fixtures[attachment["fixtureId"]]
+                definition_id = fixture["expected"]["matchedDefinitionIds"][0]
+                expected = self.definitions[definition_id].identity
+                actual = registry_api.client_batch_item_extension_identity_at(item, index)
+                identities.append(actual)
+                self.assertEqual(
+                    (actual.vendor_identifier, actual.name, actual.version),
+                    (expected.vendor_identifier, expected.name, expected.version),
+                )
+                self.assertEqual(
+                    registry_api.client_batch_item_extension_criticality_indicator_at(item, index),
+                    attachment["criticalityIndicator"],
+                )
         finally:
+            if item is not None:
+                item.close()
+            for identity in identities:
+                identity.close()
             registry.close()
+            limits.close()
 
     def test_discover_versions_batch_item_preserves_extension_identity_and_order(self) -> None:
         limits = _codec_limits()

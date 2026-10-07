@@ -14,6 +14,7 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
 use crate::execute::{Client, ClientBatch, ClientBatchItem, ClientRequest, ZeroizationObserver};
 use crate::execute_test_support::{ResponseItemFixture, response_bytes};
+use crate::extension_fixtures;
 use crate::extension_registry::{
     self, ClientConfiguration, ClientExtensionRegistry, ClientRequestMessageExtension,
 };
@@ -604,6 +605,103 @@ fn repeated_message_extensions_keep_explicit_criticality_and_caller_order() {
     );
     assert_eq!(observer.result(), Some(true));
     assert_eq!(fixture.transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn every_shared_outbound_fixture_runs_through_the_fake_transport_in_both_orders() {
+    for request in extension_fixtures::OUTBOUND_REQUESTS {
+        assert_eq!(request.outcome, "outbound.validated");
+        let owner_case = extension_fixtures::CASES
+            .iter()
+            .find(|case| case.id == request.fixture_id)
+            .expect("outbound request names its generated source fixture");
+        assert_eq!(owner_case.outcome, "recognized");
+        assert!(owner_case.typed);
+        for reversed in [false, true] {
+            let configuration =
+                crate::extension_registry::tests::shared_fixture_configuration(reversed);
+            let registry = configuration.extension_registry();
+            let mut item = ClientBatchItem::discover_versions();
+            let mut expected_capture = Vec::new();
+            for attachment in request.attachments {
+                let fixture = extension_fixtures::CASES
+                    .iter()
+                    .find(|case| case.id == attachment.fixture_id)
+                    .expect("outbound attachment names a generated inbound fixture");
+                assert_eq!(fixture.outcome, "recognized", "{}", fixture.id);
+                assert!(fixture.typed, "{}", fixture.id);
+                assert_eq!(fixture.matched_ids.len(), 1, "{}", fixture.id);
+                let definition = extension_fixtures::DEFINITIONS
+                    .iter()
+                    .find(|definition| definition.id == fixture.matched_ids[0])
+                    .expect("outbound fixture match names a generated definition");
+                let identity = extension::extension_identity(
+                    definition.vendor,
+                    definition.name,
+                    definition.version,
+                )
+                .expect("generated outbound fixture identity is valid");
+                let payload = crate::extension_registry::tests::fixture_payload(fixture.payload);
+                let validated = extension_registry::validate_extension_value(
+                    registry,
+                    identity,
+                    payload,
+                    &CodecLimits::defaults(),
+                )
+                .expect("generated outbound fixture payload validates");
+                item = item.with_extension(
+                    extension_registry::client_request_message_extension(
+                        validated,
+                        attachment.criticality_indicator,
+                    )
+                    .expect("generated criticality is accepted"),
+                );
+                expected_capture.push(CapturedExtension {
+                    vendor: fixture.vendor.to_owned(),
+                    criticality: attachment.criticality_indicator,
+                    payload_tags: fixture.payload.iter().map(|field| field.tag).collect(),
+                });
+            }
+
+            assert_eq!(item.extension_count(), request.attachments.len());
+            for (index, attachment) in request.attachments.iter().enumerate() {
+                let fixture = extension_fixtures::CASES
+                    .iter()
+                    .find(|case| case.id == attachment.fixture_id)
+                    .expect("outbound attachment names a generated inbound fixture");
+                let definition = extension_fixtures::DEFINITIONS
+                    .iter()
+                    .find(|definition| definition.id == fixture.matched_ids[0])
+                    .expect("outbound fixture match names a generated definition");
+                let identity = item
+                    .extension_identity_at(index)
+                    .expect("attached extension identity is available");
+                assert_eq!(identity.vendor_identifier(), definition.vendor);
+                assert_eq!(identity.name(), definition.name);
+                assert_eq!(identity.version(), definition.version);
+                assert_eq!(
+                    item.extension_criticality_indicator_at(index),
+                    Some(attachment.criticality_indicator)
+                );
+            }
+
+            let observer = ZeroizationObserver::new(None);
+            let mut client = client_for(
+                ExchangeScript::Success {
+                    response: response_success(),
+                    request_write_chunks: Vec::new(),
+                },
+                &observer,
+                configuration,
+            );
+            client
+                .client
+                .execute(ClientBatch::new(item), &CodecLimits::defaults())
+                .expect("shared outbound fixture request passes through the fake transport");
+            assert_eq!(*client.captured.borrow(), expected_capture);
+            assert_eq!(client.transport.borrow().exchange_count(), 1);
+        }
+    }
 }
 
 #[test]

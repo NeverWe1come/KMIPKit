@@ -9,8 +9,7 @@ use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
-#[path = "../fixtures/extensions/extension_fixtures.generated.rs"]
-mod generated_fixtures;
+use crate::extension_fixtures as generated_fixtures;
 
 fn vendor_tag() -> Tag {
     RawTag::new(0x42_0001)
@@ -27,7 +26,7 @@ fn fixture_tag(raw: u32) -> Tag {
 }
 
 fn fixture_schema(schema: &generated_fixtures::Schema) -> extension::ExtensionSchema {
-    if schema.item_type == ItemType::Structure {
+    if schema.kind == ItemType::Structure {
         let children = schema
             .children
             .iter()
@@ -39,7 +38,7 @@ fn fixture_schema(schema: &generated_fixtures::Schema) -> extension::ExtensionSc
         extension::structure(children, Vec::new(), true)
             .expect("the generated Structure schema is valid")
     } else {
-        let scalar = extension::scalar(schema.item_type)
+        let scalar = extension::scalar(schema.kind)
             .expect("the generated scalar schema has a scalar Item Type");
         if schema.has_range {
             extension::with_signed_range(scalar, schema.minimum, schema.maximum)
@@ -53,21 +52,23 @@ fn fixture_schema(schema: &generated_fixtures::Schema) -> extension::ExtensionSc
 fn fixture_scalar(item_type: ItemType, text: &str, number: i64) -> Value {
     match item_type {
         ItemType::TextString => Value::text_string(text.to_owned()),
-        ItemType::Enumeration => Value::enumeration(number as u32),
+        ItemType::Enumeration => Value::enumeration(
+            u32::try_from(number).expect("the generated Enumeration fixture fits in u32"),
+        ),
         ItemType::LongInteger => Value::long_integer(number),
         _ => panic!("the generated fixture uses an unsupported scalar Item Type"),
     }
 }
 
 fn fixture_value(item: &generated_fixtures::Item) -> Value {
-    if item.item_type == ItemType::Structure {
+    if item.kind == ItemType::Structure {
         Value::structure(fixture_payload(item.children))
     } else {
-        fixture_scalar(item.item_type, item.text, item.number)
+        fixture_scalar(item.kind, item.text, item.number)
     }
 }
 
-fn fixture_payload(items: &[generated_fixtures::Item]) -> Structure {
+pub(crate) fn fixture_payload(items: &[generated_fixtures::Item]) -> Structure {
     let mut structure = Structure::new();
     for item in items {
         structure
@@ -80,7 +81,9 @@ fn fixture_payload(items: &[generated_fixtures::Item]) -> Structure {
     structure
 }
 
-fn fixture_definition(fixture: &generated_fixtures::Definition) -> extension::ExtensionDefinition {
+pub(crate) fn fixture_definition(
+    fixture: &generated_fixtures::Definition,
+) -> extension::ExtensionDefinition {
     let identity = extension::extension_identity(fixture.vendor, fixture.name, fixture.version)
         .expect("the generated extension identity is valid");
     let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
@@ -110,16 +113,34 @@ fn fixture_definition(fixture: &generated_fixtures::Definition) -> extension::Ex
     .expect("the generated definition is valid")
 }
 
+pub(crate) fn shared_fixture_configuration(reversed: bool) -> ClientConfiguration {
+    let definitions = (0..generated_fixtures::DEFINITIONS.len())
+        .map(|offset| {
+            let index = if reversed {
+                generated_fixtures::DEFINITIONS.len() - offset - 1
+            } else {
+                offset
+            };
+            fixture_definition(&generated_fixtures::DEFINITIONS[index])
+        })
+        .collect();
+    ClientConfiguration::new(
+        client_extension_registry(definitions, extension::defaults())
+            .expect("shared fixture definitions produce a valid registry"),
+    )
+}
+
 fn assert_fixture_structure(
     actual: &Structure,
     expected: &[generated_fixtures::Item],
     fixture_id: &str,
 ) {
-    assert_fixture_view(actual.view(), expected, fixture_id);
+    let view = actual.view();
+    assert_fixture_view(&view, expected, fixture_id);
 }
 
 fn assert_fixture_view(
-    actual: StructureView<'_>,
+    actual: &StructureView<'_>,
     expected: &[generated_fixtures::Item],
     fixture_id: &str,
 ) {
@@ -133,24 +154,24 @@ fn assert_fixture_view(
         );
         assert_eq!(
             actual.item_type(),
-            expected.item_type,
+            expected.kind,
             "{fixture_id} item {index} type"
         );
         actual.with_value(|value| match value {
-            ValueView::Structure(nested) if expected.item_type == ItemType::Structure => {
-                assert_fixture_view(nested, expected.children, fixture_id);
+            ValueView::Structure(nested) if expected.kind == ItemType::Structure => {
+                assert_fixture_view(&nested, expected.children, fixture_id);
             }
-            ValueView::TextString(text) if expected.item_type == ItemType::TextString => {
+            ValueView::TextString(text) if expected.kind == ItemType::TextString => {
                 assert_eq!(text, expected.text, "{fixture_id} item {index} text");
             }
-            ValueView::Enumeration(number) if expected.item_type == ItemType::Enumeration => {
+            ValueView::Enumeration(number) if expected.kind == ItemType::Enumeration => {
                 assert_eq!(
                     i64::from(*number),
                     expected.number,
                     "{fixture_id} item {index} enumeration"
                 );
             }
-            ValueView::LongInteger(number) if expected.item_type == ItemType::LongInteger => {
+            ValueView::LongInteger(number) if expected.kind == ItemType::LongInteger => {
                 assert_eq!(
                     *number, expected.number,
                     "{fixture_id} item {index} integer"
@@ -553,6 +574,11 @@ fn every_shared_inbound_fixture_matches_internal_outcome_ids_and_preserved_ttlv_
             .expect("the shared fixture definitions produce a valid registry");
 
         for fixture in generated_fixtures::CASES {
+            assert!(
+                !fixture.critical,
+                "{} inbound criticality fixture",
+                fixture.id
+            );
             let details = super::inspect_with_details(
                 &registry,
                 fixture.vendor,

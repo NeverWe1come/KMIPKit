@@ -79,6 +79,49 @@ final class ExtensionRegistryTest {
                 TtlvStructureView preserved = ExtensionRecognition.genericValue(recognition);
                 assertSharedStructure(preserved, fixture.payload(), fixture.id());
             }
+            assertSharedOutboundRequests(registry);
+        }
+    }
+
+    private static void assertSharedOutboundRequests(ClientExtensionRegistry registry) throws Exception {
+        for (SharedExtensionFixtures.OutboundRequest request : SharedExtensionFixtures.OUTBOUND_REQUESTS) {
+            assertEquals("outbound.validated", request.outcome(), request.fixtureId());
+            ClientBatchItem item = ClientBatchItem.discoverVersions();
+            for (SharedExtensionFixtures.Attachment attachment : request.attachments()) {
+                SharedExtensionFixtures.Case fixture = SharedExtensionFixtures.CASES.stream()
+                        .filter(candidate -> candidate.id().equals(attachment.fixtureId()))
+                        .findFirst().orElseThrow();
+                assertEquals("recognized", fixture.outcome(), fixture.id());
+                assertTrue(fixture.typed(), fixture.id());
+                assertEquals(1, fixture.matchedIds().size(), fixture.id());
+                SharedExtensionFixtures.Definition definition = SharedExtensionFixtures.DEFINITIONS.stream()
+                        .filter(candidate -> candidate.id().equals(fixture.matchedIds().get(0)))
+                        .findFirst().orElseThrow();
+                ExtensionIdentity identity = ExtensionIdentity.create(
+                        definition.vendor(), definition.name(), definition.version());
+                TtlvStructure payload = sharedPayload(fixture.payload());
+                RegisteredExtensionValue value = registry.validateExtensionValue(
+                        identity, payload, CODEC_LIMITS);
+                item = item.withExtension(ClientRequestMessageExtension.create(
+                        value, attachment.criticalityIndicator()));
+            }
+
+            assertEquals(request.attachments().size(), item.extensionCount(), request.fixtureId());
+            for (int index = 0; index < request.attachments().size(); index++) {
+                SharedExtensionFixtures.Attachment attachment = request.attachments().get(index);
+                SharedExtensionFixtures.Case fixture = SharedExtensionFixtures.CASES.stream()
+                        .filter(candidate -> candidate.id().equals(attachment.fixtureId()))
+                        .findFirst().orElseThrow();
+                SharedExtensionFixtures.Definition definition = SharedExtensionFixtures.DEFINITIONS.stream()
+                        .filter(candidate -> candidate.id().equals(fixture.matchedIds().get(0)))
+                        .findFirst().orElseThrow();
+                ExtensionIdentity actual = item.extensionIdentityAt(index);
+                assertEquals(definition.vendor(), actual.vendorIdentifier(), request.fixtureId());
+                assertEquals(definition.name(), actual.name(), request.fixtureId());
+                assertEquals(definition.version(), actual.version(), request.fixtureId());
+                assertEquals(attachment.criticalityIndicator(),
+                        item.extensionCriticalityIndicatorAt(index), request.fixtureId());
+            }
         }
     }
 

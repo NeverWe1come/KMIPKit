@@ -41,6 +41,7 @@ REQUIRED_TYPE_IDS = {
     "ClientExtensionRegistry", "ExtensionRecognition", "ValidatedExtensionValue",
     "TtlvStructure", "TtlvItem", "TtlvValue", "TtlvStructureView",
     "TtlvItemView", "TtlvValueView", "TtlvItemType",
+    "ClientBatchItem", "ClientRequestMessageExtension",
 }
 REQUIRED_FUNCTION_IDS = {
     "extension_identity_create", "extension_compatibility_create", "ttlv_path_create",
@@ -55,7 +56,10 @@ REQUIRED_FUNCTION_IDS = {
     "ttlv_structure_view_item_at", "ttlv_item_view_tag", "ttlv_item_view_type",
     "ttlv_item_view_value", "ttlv_value_view_type", "ttlv_value_view_structure",
     "ttlv_value_view_long_integer", "ttlv_value_view_enumeration", "ttlv_value_view_byte_length",
-    "ttlv_value_view_byte_at",
+    "ttlv_value_view_byte_at", "client_request_message_extension_create",
+    "client_batch_item_with_extension", "client_batch_item_discover_versions",
+    "client_batch_item_extension_count", "client_batch_item_extension_identity_at",
+    "client_batch_item_extension_criticality_indicator_at",
 }
 
 
@@ -102,6 +106,12 @@ class Definition:
 
 
 @dataclass(frozen=True)
+class OutboundAttachment:
+    fixture_id: str
+    criticality_indicator: bool
+
+
+@dataclass(frozen=True)
 class Case:
     fixture_id: str
     vendor: str
@@ -110,6 +120,8 @@ class Case:
     outcome: str
     matched_ids: tuple[str, ...]
     typed: bool
+    outbound_outcome: str
+    outbound_attachments: tuple[OutboundAttachment, ...]
 
 
 def _keys(value: Any, expected: set[str], where: str, optional: set[str] = frozenset()) -> dict[str, Any]:
@@ -347,6 +359,31 @@ def _validate_manifest(value: Any) -> dict[str, Any]:
             raise FixtureError(f"manifest Python CFFI symbol for {function_id} disagrees with the stable C ABI")
         if not functions[function_id]["java"]["jniSymbol"].startswith("Java_"):
             raise FixtureError(f"manifest Java JNI symbol for {function_id} is malformed")
+    order_preserving_functions = (
+        "client_request_message_extension_create",
+        "client_batch_item_with_extension",
+        "client_batch_item_discover_versions",
+    )
+    if any(
+        functions[function_id].get("ordering") != "preserves-caller-batch-and-extension-order"
+        for function_id in order_preserving_functions
+    ):
+        raise FixtureError("public API manifest does not guarantee outbound extension ordering")
+    criticality_metadata = functions["client_request_message_extension_create"].get(
+        "criticalityIndicator"
+    )
+    expected_criticality_metadata = {
+        "rustParameter": {"name": "criticality_indicator", "type": "bool"},
+        "cParameter": {
+            "name": "criticality_indicator",
+            "type": "uint8_t",
+            "acceptedValues": [0, 1],
+        },
+        "javaParameter": {"name": "criticalityIndicator", "type": "boolean"},
+        "pythonParameter": {"name": "criticality_indicator", "type": "bool"},
+    }
+    if criticality_metadata != expected_criticality_metadata:
+        raise FixtureError("public API manifest criticality metadata is unsupported")
     enum = types["TtlvItemType"].get("enumRepresentation", {}).get("values", [])
     enum_metadata = types["TtlvItemType"].get("enumRepresentation", {})
     if enum_metadata.get("shape") != "closed-numeric" or enum_metadata.get("unknownValuePolicy") != "reject-unsupported":
@@ -390,6 +427,7 @@ def _parse_inputs(api: Any, corpus: Any) -> tuple[dict[str, Any], tuple[Definiti
         raise FixtureError("fixture definition IDs must be unique")
     cases: list[Case] = []
     seen_cases: set[str] = set()
+    outbound_requests: list[tuple[int, Any, str]] = []
     for index, raw in enumerate(raw_cases):
         where = f"cases[{index}]"
         _keys(raw, {"id", "kind", "extension", "expected"}, where, {"secretSentinel"})
@@ -443,7 +481,67 @@ def _parse_inputs(api: Any, corpus: Any) -> tuple[dict[str, Any], tuple[Definiti
         diagnostics = _keys(expected["diagnostics"], {"redacted", "containsPayloadValues"}, f"{where}.expected.diagnostics")
         if diagnostics != {"redacted": True, "containsPayloadValues": False}:
             raise FixtureError(f"{where} diagnostics must preserve the redacted metadata contract")
-        cases.append(Case(case_id, _string(extension["vendorIdentification"], f"{where}.extension.vendorIdentification"), extension["criticalityIndicator"], payload.children, outcome, match_ids, typed))
+        cases.append(
+            Case(
+                case_id,
+                _string(extension["vendorIdentification"], f"{where}.extension.vendorIdentification"),
+                extension["criticalityIndicator"],
+                payload.children,
+                outcome,
+                match_ids,
+                typed,
+                "",
+                (),
+            )
+        )
+        if "outboundRequest" in expected:
+            outbound_requests.append(
+                (
+                    len(cases) - 1,
+                    expected["outboundRequest"],
+                    f"{where}.expected.outboundRequest",
+                )
+            )
+    cases_by_id = {case.fixture_id: case for case in cases}
+    for case_index, raw_request, where in outbound_requests:
+        request = _keys(raw_request, {"outcomeCode", "attachments"}, where)
+        outbound_outcome = _string(request["outcomeCode"], f"{where}.outcomeCode")
+        if outbound_outcome != "outbound.validated":
+            raise FixtureError(f"{where} has an unsupported outbound outcome code")
+        raw_attachments = request["attachments"]
+        if not isinstance(raw_attachments, list) or not raw_attachments:
+            raise FixtureError(f"{where}.attachments must be a non-empty array")
+        attachments = []
+        for attachment_index, raw_attachment in enumerate(raw_attachments):
+            attachment_where = f"{where}.attachments[{attachment_index}]"
+            attachment = _keys(
+                raw_attachment,
+                {"fixtureId", "criticalityIndicator"},
+                attachment_where,
+            )
+            fixture_id = _string(attachment["fixtureId"], f"{attachment_where}.fixtureId")
+            if not isinstance(attachment["criticalityIndicator"], bool):
+                raise FixtureError(f"{attachment_where}.criticalityIndicator must be Boolean")
+            target_case = cases_by_id.get(fixture_id)
+            if target_case is None:
+                raise FixtureError(f"{attachment_where} references an unknown fixture case")
+            if target_case.outcome != "recognized" or not target_case.typed or len(target_case.matched_ids) != 1:
+                raise FixtureError(f"{attachment_where} must reference one typed recognized fixture")
+            attachments.append(
+                OutboundAttachment(fixture_id, attachment["criticalityIndicator"])
+            )
+        case = cases[case_index]
+        cases[case_index] = Case(
+            case.fixture_id,
+            case.vendor,
+            case.critical,
+            case.payload,
+            case.outcome,
+            case.matched_ids,
+            case.typed,
+            outbound_outcome,
+            tuple(attachments),
+        )
     return manifest, definitions, tuple(cases)
 
 
@@ -474,11 +572,34 @@ def _rust_string(value: str) -> str:
     return '"' + "".join(escaped) + '"'
 
 
+def _rust_tag_literal(tag: int) -> str:
+    digits = f"{tag:08X}"
+    return f"0x{digits[:-4]}_{digits[-4:]}"
+
+
+def _rust_integer_literal(value: int) -> str:
+    digits = str(abs(value))
+    first_group_length = len(digits) % 3 or 3
+    groups = [digits[:first_group_length]]
+    groups.extend(
+        digits[index : index + 3]
+        for index in range(first_group_length, len(digits), 3)
+    )
+    sign = "-" if value < 0 else ""
+    return sign + "_".join(groups)
+
+
 def _generate_c(manifest: dict[str, Any], definitions: tuple[Definition, ...], cases: tuple[Case, ...]) -> str:
     # C test descriptors use a tagged flat representation: each structure owns a
     # depth-first item span, making construction independent of JSON parsing.
     type_values = manifest["item_types"]
     lines = [f"/* Generated from specification/api/public-api.json and tests/fixtures/extensions/cases.json. API contract sha256: {manifest['fingerprint']}. Do not edit. */", "#ifndef KMIPKIT_EXTENSION_FIXTURES_GENERATED_H", "#define KMIPKIT_EXTENSION_FIXTURES_GENERATED_H", "#include <stdbool.h>", "#include <stdint.h>", "#include <stddef.h>", "typedef struct kmipkit_fixture_item { uint32_t tag; uint8_t type; const char *text; int64_t signed_value; uint32_t enum_value; const struct kmipkit_fixture_item *children; size_t child_count; } kmipkit_fixture_item_t;", "typedef struct { uint32_t tag; uint8_t type; const char *text; int64_t minimum; int64_t maximum; bool has_range; const struct kmipkit_fixture_schema *nested; } kmipkit_fixture_child_rule_t;", "typedef struct kmipkit_fixture_schema { uint8_t type; const char *text; int64_t minimum; int64_t maximum; bool has_range; const kmipkit_fixture_child_rule_t *children; size_t child_count; } kmipkit_fixture_schema_t;", "typedef struct { const char *id; const char *vendor; const char *name; const char *version; const uint32_t *path; size_t path_count; uint8_t discriminator_type; const char *discriminator_text; int64_t discriminator_number; const kmipkit_fixture_schema_t *schema; } kmipkit_fixture_definition_t;", "typedef struct { const char *id; const char *vendor; bool critical; const kmipkit_fixture_item_t *payload; size_t payload_count; const char *outcome; const char *const *matched_ids; size_t matched_count; bool typed; } kmipkit_fixture_case_t;"]
+    lines.extend(
+        [
+            "typedef struct { const char *fixture_id; bool criticality_indicator; } kmipkit_fixture_attachment_t;",
+            "typedef struct { const char *fixture_id; const char *outcome; const kmipkit_fixture_attachment_t *attachments; size_t attachment_count; } kmipkit_fixture_outbound_request_t;",
+        ]
+    )
     # For C descriptor generation use flat depth-first item arrays with parent-child spans.
     def emit_item_array(items: tuple[Item, ...], name: str) -> None:
         flat: list[tuple[Item, int, int]] = []
@@ -528,10 +649,33 @@ def _generate_c(manifest: dict[str, Any], definitions: tuple[Definition, ...], c
         ids = ", ".join(_cpp_string(value) for value in case.matched_ids) or "NULL"
         if case.matched_ids:
             lines.append(f"static const char *const kmipkit_fixture_matched_{index}[] = {{ {ids} }};")
+        if case.outbound_attachments:
+            attachments = ", ".join(
+                f"{{ {_cpp_string(attachment.fixture_id)}, {'true' if attachment.criticality_indicator else 'false'} }}"
+                for attachment in case.outbound_attachments
+            )
+            lines.append(
+                f"static const kmipkit_fixture_attachment_t kmipkit_fixture_attachments_{index}[] = {{ {attachments} }};"
+            )
     lines.append("static const kmipkit_fixture_case_t kmipkit_fixture_cases[] = {")
     for index, case in enumerate(cases):
         lines.append(f"    {{ {_cpp_string(case.fixture_id)}, {_cpp_string(case.vendor)}, {'true' if case.critical else 'false'}, kmipkit_fixture_payload_{index}, {len(case.payload)}U, {_cpp_string(case.outcome)}, {'kmipkit_fixture_matched_' + str(index) if case.matched_ids else 'NULL'}, {len(case.matched_ids)}U, {'true' if case.typed else 'false'} }},")
-    lines.extend(["};", f"#define KMIPKIT_FIXTURE_CASE_COUNT {len(cases)}U", f"#define KMIPKIT_FIXTURE_DEFINITION_COUNT {len(definitions)}U", "#endif"])
+    lines.append("};")
+    outbound_cases = [
+        (index, case) for index, case in enumerate(cases) if case.outbound_attachments
+    ]
+    if outbound_cases:
+        lines.append("static const kmipkit_fixture_outbound_request_t kmipkit_fixture_outbound_requests[] = {")
+        for index, case in outbound_cases:
+            lines.append(
+                f"    {{ {_cpp_string(case.fixture_id)}, {_cpp_string(case.outbound_outcome)}, kmipkit_fixture_attachments_{index}, {len(case.outbound_attachments)}U }},"
+            )
+        lines.append("};")
+    else:
+        lines.append(
+            "static const kmipkit_fixture_outbound_request_t kmipkit_fixture_outbound_requests[1] = { { NULL, NULL, NULL, 0U } };"
+        )
+    lines.extend([f"#define KMIPKIT_FIXTURE_CASE_COUNT {len(cases)}U", f"#define KMIPKIT_FIXTURE_OUTBOUND_REQUEST_COUNT {len(outbound_cases)}U", f"#define KMIPKIT_FIXTURE_DEFINITION_COUNT {len(definitions)}U", "#endif"])
     return "\n".join(lines) + "\n"
 
 
@@ -552,10 +696,25 @@ def _java_schema(schema: Schema, values: dict[str, int]) -> str:
 def _generate_java(manifest: dict[str, Any], definitions: tuple[Definition, ...], cases: tuple[Case, ...]) -> str:
     values = manifest["item_types"]
     lines = [f"// Generated from specification/api/public-api.json and tests/fixtures/extensions/cases.json. API contract sha256: {manifest['fingerprint']}. Do not edit.", "package org.kmipkit;", "", "import java.util.List;", "", "final class SharedExtensionFixtures {", "    record Item(int tag, int type, String text, long number, List<Item> children) {}", "    record ChildRule(int tag, Schema schema) {}", "    record Schema(int type, String text, boolean hasRange, long minimum, long maximum, List<ChildRule> children) {}", "    record Definition(String id, String vendor, String name, String version, List<Integer> path, int discriminatorType, String discriminatorText, long discriminatorNumber, Schema schema) {}", "    record Case(String id, String vendor, boolean critical, List<Item> payload, String outcome, List<String> matchedIds, boolean typed) {}", "    static final List<Definition> DEFINITIONS = List.of("]
+    lines[11:11] = [
+        "    record Attachment(String fixtureId, boolean criticalityIndicator) {}",
+        "    record OutboundRequest(String fixtureId, String outcome, List<Attachment> attachments) {}",
+    ]
     for index, definition in enumerate(definitions):
         path = "List.of(" + ", ".join(f"0x{tag:06X}" for tag in definition.path) + ")"
         comma = "," if index + 1 < len(definitions) else ""
         lines.append(f"        new Definition({_java_literal(definition.fixture_id)}, {_java_literal(definition.vendor)}, {_java_literal(definition.name)}, {_java_literal(definition.version)}, {path}, {values[definition.discriminator_type]}, {_java_literal(definition.discriminator_text)}, {definition.discriminator_number}L, {_java_schema(definition.schema, values)}){comma}")
+    lines.extend(["    );", "    static final List<OutboundRequest> OUTBOUND_REQUESTS = List.of("])
+    outbound_cases = [case for case in cases if case.outbound_attachments]
+    for index, case in enumerate(outbound_cases):
+        attachments = "List.of(" + ", ".join(
+            f"new Attachment({_java_literal(attachment.fixture_id)}, {str(attachment.criticality_indicator).lower()})"
+            for attachment in case.outbound_attachments
+        ) + ")"
+        comma = "," if index + 1 < len(outbound_cases) else ""
+        lines.append(
+            f"        new OutboundRequest({_java_literal(case.fixture_id)}, {_java_literal(case.outbound_outcome)}, {attachments}){comma}"
+        )
     lines.extend(["    );", "    static final List<Case> CASES = List.of("])
     for index, case in enumerate(cases):
         payload = "List.of(" + ", ".join(_java_item(item, values) for item in case.payload) + ")"
@@ -568,13 +727,13 @@ def _generate_java(manifest: dict[str, Any], definitions: tuple[Definition, ...]
 
 def _rust_item(item: Item) -> str:
     children = "&[" + ", ".join(_rust_item(child) for child in item.children) + "]"
-    value = _rust_string(item.text) if item.item_type == "TextString" else str(item.number)
-    return f"Item {{ tag: 0x{item.tag:06X}, item_type: ItemType::{item.item_type}, text: {value if item.item_type == 'TextString' else '""'}, number: {item.number}, children: {children} }}"
+    value = _rust_string(item.text) if item.item_type == "TextString" else _rust_integer_literal(item.number)
+    return f"Item {{ tag: {_rust_tag_literal(item.tag)}, kind: ItemType::{item.item_type}, text: {value if item.item_type == 'TextString' else '""'}, number: {_rust_integer_literal(item.number)}, children: {children} }}"
 
 
 def _rust_schema(schema: Schema) -> str:
-    children = "&[" + ", ".join(f"ChildRule {{ tag: 0x{rule.tag:06X}, schema: {_rust_schema(rule.schema)} }}" for rule in schema.children) + "]"
-    return f"Schema {{ item_type: ItemType::{schema.item_type}, has_range: {str(schema.has_range).lower()}, minimum: {schema.minimum}, maximum: {schema.maximum}, children: {children} }}"
+    children = "&[" + ", ".join(f"ChildRule {{ tag: {_rust_tag_literal(rule.tag)}, schema: {_rust_schema(rule.schema)} }}" for rule in schema.children) + "]"
+    return f"Schema {{ kind: ItemType::{schema.item_type}, has_range: {str(schema.has_range).lower()}, minimum: {_rust_integer_literal(schema.minimum)}, maximum: {_rust_integer_literal(schema.maximum)}, children: {children} }}"
 
 
 def _generate_rust(manifest: dict[str, Any], definitions: tuple[Definition, ...], cases: tuple[Case, ...]) -> str:
@@ -584,29 +743,47 @@ def _generate_rust(manifest: dict[str, Any], definitions: tuple[Definition, ...]
         "",
         "#[derive(Clone, Copy)]",
         "#[rustfmt::skip]",
-        "pub struct Item { pub tag: u32, pub item_type: ItemType, pub text: &'static str, pub number: i64, pub children: &'static [Item] }",
+        "pub struct Item { pub tag: u32, pub kind: ItemType, pub text: &'static str, pub number: i64, pub children: &'static [Item] }",
         "#[derive(Clone, Copy)]",
         "#[rustfmt::skip]",
         "pub struct ChildRule { pub tag: u32, pub schema: Schema }",
         "#[derive(Clone, Copy)]",
         "#[rustfmt::skip]",
-        "pub struct Schema { pub item_type: ItemType, pub has_range: bool, pub minimum: i64, pub maximum: i64, pub children: &'static [ChildRule] }",
+        "pub struct Schema { pub kind: ItemType, pub has_range: bool, pub minimum: i64, pub maximum: i64, pub children: &'static [ChildRule] }",
         "#[rustfmt::skip]",
         "pub struct Definition { pub id: &'static str, pub vendor: &'static str, pub name: &'static str, pub version: &'static str, pub path: &'static [u32], pub discriminator_type: ItemType, pub discriminator_text: &'static str, pub discriminator_number: i64, pub schema: Schema }",
         "#[rustfmt::skip]",
-        "pub struct Case { pub id: &'static str, pub vendor: &'static str, pub payload: &'static [Item], pub outcome: &'static str, pub matched_ids: &'static [&'static str], pub typed: bool }",
+        "pub struct Case { pub id: &'static str, pub vendor: &'static str, pub critical: bool, pub payload: &'static [Item], pub outcome: &'static str, pub matched_ids: &'static [&'static str], pub typed: bool }",
+        "#[derive(Clone, Copy)]",
+        "#[rustfmt::skip]",
+        "pub struct OutboundAttachment { pub fixture_id: &'static str, pub criticality_indicator: bool }",
+        "#[derive(Clone, Copy)]",
+        "#[rustfmt::skip]",
+        "pub struct OutboundRequest { pub fixture_id: &'static str, pub outcome: &'static str, pub attachments: &'static [OutboundAttachment] }",
         "",
         "#[rustfmt::skip]",
         "pub static DEFINITIONS: &[Definition] = &[",
     ]
     for definition in definitions:
-        path = "&[" + ", ".join(f"0x{tag:06X}" for tag in definition.path) + "]"
-        lines.append(f"    Definition {{ id: {_rust_string(definition.fixture_id)}, vendor: {_rust_string(definition.vendor)}, name: {_rust_string(definition.name)}, version: {_rust_string(definition.version)}, path: {path}, discriminator_type: ItemType::{definition.discriminator_type}, discriminator_text: {_rust_string(definition.discriminator_text)}, discriminator_number: {definition.discriminator_number}, schema: {_rust_schema(definition.schema)} }},")
+        path = "&[" + ", ".join(_rust_tag_literal(tag) for tag in definition.path) + "]"
+        lines.append(f"    Definition {{ id: {_rust_string(definition.fixture_id)}, vendor: {_rust_string(definition.vendor)}, name: {_rust_string(definition.name)}, version: {_rust_string(definition.version)}, path: {path}, discriminator_type: ItemType::{definition.discriminator_type}, discriminator_text: {_rust_string(definition.discriminator_text)}, discriminator_number: {_rust_integer_literal(definition.discriminator_number)}, schema: {_rust_schema(definition.schema)} }},")
     lines.extend(["];", "", "#[rustfmt::skip]", "pub static CASES: &[Case] = &["])
     for case in cases:
         items = "&[" + ", ".join(_rust_item(item) for item in case.payload) + "]"
         ids = "&[" + ", ".join(_rust_string(value) for value in case.matched_ids) + "]"
-        lines.append(f"    Case {{ id: {_rust_string(case.fixture_id)}, vendor: {_rust_string(case.vendor)}, payload: {items}, outcome: {_rust_string(case.outcome)}, matched_ids: {ids}, typed: {str(case.typed).lower()} }},")
+        lines.append(f"    Case {{ id: {_rust_string(case.fixture_id)}, vendor: {_rust_string(case.vendor)}, critical: {str(case.critical).lower()}, payload: {items}, outcome: {_rust_string(case.outcome)}, matched_ids: {ids}, typed: {str(case.typed).lower()} }},")
+    lines.extend(["];"])
+    lines.extend(["", "#[rustfmt::skip]", "pub static OUTBOUND_REQUESTS: &[OutboundRequest] = &["])
+    for case in cases:
+        if not case.outbound_attachments:
+            continue
+        attachments = "&[" + ", ".join(
+            f"OutboundAttachment {{ fixture_id: {_rust_string(attachment.fixture_id)}, criticality_indicator: {str(attachment.criticality_indicator).lower()} }}"
+            for attachment in case.outbound_attachments
+        ) + "]"
+        lines.append(
+            f"    OutboundRequest {{ fixture_id: {_rust_string(case.fixture_id)}, outcome: {_rust_string(case.outbound_outcome)}, attachments: {attachments} }},"
+        )
     lines.extend(["];", ""])
     return "\n".join(lines)
 

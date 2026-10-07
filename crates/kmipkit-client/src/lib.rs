@@ -26,6 +26,10 @@ mod error;
 pub mod extension_registry;
 
 #[cfg(test)]
+#[path = "../tests/fixtures/extensions/extension_fixtures.generated.rs"]
+pub(crate) mod extension_fixtures;
+
+#[cfg(test)]
 #[path = "../tests/unit/extension_registry_test_support.rs"]
 mod extension_registry_test_support;
 

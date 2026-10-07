@@ -934,6 +934,10 @@ static bool compare_fixture_structure(kmipkit_ttlv_structure_view_t *view,
     return true;
 }
 
+static bool ttlv_value_matches_text(kmipkit_ttlv_value_t *value,
+                                    const uint8_t *expected,
+                                    uint64_t expected_length);
+
 static bool inspect_shared_fixture_case(kmipkit_client_extension_registry_t *registry,
                                         kmipkit_codec_limits_t *limits,
                                         const kmipkit_fixture_case_t *fixture)
@@ -968,6 +972,160 @@ cleanup:
     kmipkit_extension_recognition_release(recognition);
     kmipkit_ttlv_structure_release(payload);
     return succeeded;
+}
+
+static const kmipkit_fixture_case_t *shared_fixture_case(const char *fixture_id)
+{
+    size_t index;
+    for (index = 0U; index < KMIPKIT_FIXTURE_CASE_COUNT; ++index) {
+        if (strcmp(kmipkit_fixture_cases[index].id, fixture_id) == 0) {
+            return &kmipkit_fixture_cases[index];
+        }
+    }
+    return NULL;
+}
+
+static size_t shared_fixture_definition_index(const char *definition_id)
+{
+    size_t index;
+    for (index = 0U; index < KMIPKIT_FIXTURE_DEFINITION_COUNT; ++index) {
+        if (strcmp(kmipkit_fixture_definitions[index].id, definition_id) == 0) {
+            return index;
+        }
+    }
+    return KMIPKIT_FIXTURE_DEFINITION_COUNT;
+}
+
+static bool identity_matches_fixture(kmipkit_extension_identity_t *identity,
+                                     const kmipkit_fixture_definition_t *fixture)
+{
+    kmipkit_ttlv_value_t *field = NULL;
+    bool matches = kmipkit_extension_identity_vendor_identifier(identity, &field) == KMIPKIT_SUCCESS &&
+        ttlv_value_matches_text(field, (const uint8_t *)fixture->vendor,
+            (uint64_t)strlen(fixture->vendor));
+    kmipkit_ttlv_value_release(field);
+    field = NULL;
+    matches = matches && kmipkit_extension_identity_name(identity, &field) == KMIPKIT_SUCCESS &&
+        ttlv_value_matches_text(field, (const uint8_t *)fixture->name,
+            (uint64_t)strlen(fixture->name));
+    kmipkit_ttlv_value_release(field);
+    field = NULL;
+    matches = matches && kmipkit_extension_identity_version(identity, &field) == KMIPKIT_SUCCESS &&
+        ttlv_value_matches_text(field, (const uint8_t *)fixture->version,
+            (uint64_t)strlen(fixture->version));
+    kmipkit_ttlv_value_release(field);
+    return matches;
+}
+
+static bool inspect_shared_outbound_request(
+    kmipkit_client_extension_registry_t *registry,
+    kmipkit_codec_limits_t *limits,
+    kmipkit_extension_definition_t *const *definitions,
+    const kmipkit_fixture_outbound_request_t *request)
+{
+    kmipkit_client_batch_item_t *item = NULL;
+    kmipkit_client_batch_item_t *updated_item = NULL;
+    kmipkit_extension_identity_t *identity = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_registered_extension_value_t *registered = NULL;
+    kmipkit_client_request_message_extension_t *extension = NULL;
+    kmipkit_fixture_case_t const *owner_case = shared_fixture_case(request->fixture_id);
+    const char *failure = "request fixture has a recognized owner case";
+    bool succeeded = false;
+    size_t index;
+
+    if (strcmp(request->outcome, "outbound.validated") != 0 || owner_case == NULL ||
+        !owner_case->typed || strcmp(owner_case->outcome, "recognized") != 0 ||
+        kmipkit_client_batch_item_discover_versions(&item) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    for (index = 0U; index < request->attachment_count; ++index) {
+        const kmipkit_fixture_attachment_t *attachment = &request->attachments[index];
+        const kmipkit_fixture_case_t *target = shared_fixture_case(attachment->fixture_id);
+        size_t definition_index;
+        uint64_t count = 0U;
+        uint8_t criticality = UINT8_C(0xFF);
+        failure = "outbound attachment resolves to one typed recognized case";
+        if (target == NULL || !target->typed || target->matched_count != 1U ||
+            strcmp(target->outcome, "recognized") != 0) {
+            goto cleanup;
+        }
+        definition_index = shared_fixture_definition_index(target->matched_ids[0]);
+        failure = "outbound fixture match resolves to a generated definition";
+        if (definition_index >= KMIPKIT_FIXTURE_DEFINITION_COUNT ||
+            kmipkit_extension_definition_identity(definitions[definition_index],
+                &identity) != KMIPKIT_SUCCESS ||
+            create_fixture_structure(limits, target->payload,
+                target->payload_count, &payload) != KMIPKIT_SUCCESS ||
+            kmipkit_client_extension_registry_validate(registry, identity,
+                payload, limits, &registered) != KMIPKIT_SUCCESS) {
+            goto cleanup;
+        }
+        failure = "public C adapter creates an explicit-criticality wrapper";
+        if (kmipkit_client_request_message_extension_create(registered,
+                attachment->criticality_indicator ? UINT8_C(1) : UINT8_C(0),
+                &extension) != KMIPKIT_SUCCESS) {
+            registered = NULL;
+            goto cleanup;
+        }
+        registered = NULL;
+        failure = "public C adapter appends the ordered outbound wrapper";
+        if (kmipkit_client_batch_item_with_extension(item, extension,
+                &updated_item) != KMIPKIT_SUCCESS) {
+            item = NULL;
+            extension = NULL;
+            goto cleanup;
+        }
+        item = NULL;
+        extension = NULL;
+        item = updated_item;
+        updated_item = NULL;
+        kmipkit_extension_identity_release(identity);
+        identity = NULL;
+        kmipkit_ttlv_structure_release(payload);
+        payload = NULL;
+        failure = "public C adapter exposes generated outbound order and criticality";
+        if (kmipkit_client_batch_item_extension_count(item, &count) != KMIPKIT_SUCCESS ||
+            count != (uint64_t)(index + 1U) ||
+            kmipkit_client_batch_item_extension_identity_at(item, (uint64_t)index,
+                &identity) != KMIPKIT_SUCCESS || identity == NULL ||
+            !identity_matches_fixture(identity, &kmipkit_fixture_definitions[definition_index]) ||
+            kmipkit_client_batch_item_extension_criticality_indicator_at(item,
+                (uint64_t)index, &criticality) != KMIPKIT_SUCCESS ||
+            criticality != (attachment->criticality_indicator ? UINT8_C(1) : UINT8_C(0))) {
+            goto cleanup;
+        }
+        kmipkit_extension_identity_release(identity);
+        identity = NULL;
+    }
+    succeeded = true;
+
+cleanup:
+    if (!succeeded) {
+        fprintf(stderr, "FAIL %s: %s (%s)\n", __func__, failure, request->fixture_id);
+    }
+    kmipkit_client_batch_item_release(updated_item);
+    kmipkit_client_batch_item_release(item);
+    kmipkit_extension_identity_release(identity);
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_registered_extension_value_release(registered);
+    kmipkit_client_request_message_extension_release(extension);
+    return succeeded;
+}
+
+static bool inspect_shared_outbound_requests(
+    kmipkit_client_extension_registry_t *registry,
+    kmipkit_codec_limits_t *limits,
+    kmipkit_extension_definition_t *const *definitions)
+{
+    size_t index;
+    for (index = 0U; index < KMIPKIT_FIXTURE_OUTBOUND_REQUEST_COUNT; ++index) {
+        if (!inspect_shared_outbound_request(registry, limits, definitions,
+                &kmipkit_fixture_outbound_requests[index])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 static bool test_inbound_inspection_and_generic_preservation(void)
@@ -1009,6 +1167,9 @@ static bool test_inbound_inspection_and_generic_preservation(void)
                     &kmipkit_fixture_cases[index])) {
                 goto cleanup;
             }
+        }
+        if (!inspect_shared_outbound_requests(registry, codec_limits, definitions)) {
+            goto cleanup;
         }
     }
     succeeded = true;
