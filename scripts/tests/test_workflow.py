@@ -130,7 +130,7 @@ class WorkflowContractTests(unittest.TestCase):
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
         self.assertIn(
-            "unittest discover -s tools/api_manifest/tests -p test_extension_fixtures.py -v",
+            "unittest discover -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v",
             job,
             "Every supported pull-request platform must run fixture generator rejection tests.",
         )
