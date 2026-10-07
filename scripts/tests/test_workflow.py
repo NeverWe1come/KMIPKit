@@ -137,6 +137,8 @@ class WorkflowContractTests(unittest.TestCase):
             "ctest --test-dir build/c-consumer -C Release --output-on-failure",
             "actions/setup-java@",
             "java-version: '17'",
+            "stCarolas/setup-maven@",
+            "maven-version: '3.9.16'",
             "mvn --batch-mode --file bindings/java/pom.xml test",
             "actions/setup-python@",
             "python-version: '3.12'",
