@@ -919,3 +919,11 @@ The Python adapter's Extension Information test expectation was also corrected t
 - After restoration, `cargo +1.94 test -p kmipkit-ttlv --test value_clone`
   passed both tests. `cargo +1.94 fmt --all --check` and `git diff --check`
   passed. No production behavior changed.
+- The first PR CI run exposed `clippy::match_same_arms` in the shared value
+  comparison helper on macOS and Windows. The compatible `i64`, `u32`, and
+  byte-slice variants now share match arms; no comparison behavior changed.
+- Red: `cargo +1.94 clippy --workspace --all-targets --all-features -- -D
+  warnings` reported the three identical match-arm pairs. Green/refactor:
+  after merging those arms, the same full-workspace Clippy command passed;
+  `cargo +1.94 test -p kmipkit-ttlv --test value_clone`, formatting, and
+  `git diff --check` also passed.

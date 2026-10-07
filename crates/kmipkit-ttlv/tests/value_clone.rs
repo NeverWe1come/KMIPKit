@@ -25,14 +25,14 @@ fn assert_views_equal(left: ValueView<'_>, right: ValueView<'_>) {
             }
         }
         (ValueView::Integer(left), ValueView::Integer(right)) => assert_eq!(left, right),
-        (ValueView::LongInteger(left), ValueView::LongInteger(right)) => assert_eq!(left, right),
-        (ValueView::BigInteger(left), ValueView::BigInteger(right)) => assert_eq!(left, right),
-        (ValueView::Enumeration(left), ValueView::Enumeration(right)) => assert_eq!(left, right),
+        (ValueView::LongInteger(left), ValueView::LongInteger(right))
+        | (ValueView::DateTime(left), ValueView::DateTime(right)) => assert_eq!(left, right),
+        (ValueView::BigInteger(left), ValueView::BigInteger(right))
+        | (ValueView::ByteString(left), ValueView::ByteString(right)) => assert_eq!(left, right),
+        (ValueView::Enumeration(left), ValueView::Enumeration(right))
+        | (ValueView::Interval(left), ValueView::Interval(right)) => assert_eq!(left, right),
         (ValueView::Boolean(left), ValueView::Boolean(right)) => assert_eq!(left, right),
         (ValueView::TextString(left), ValueView::TextString(right)) => assert_eq!(left, right),
-        (ValueView::ByteString(left), ValueView::ByteString(right)) => assert_eq!(left, right),
-        (ValueView::DateTime(left), ValueView::DateTime(right)) => assert_eq!(left, right),
-        (ValueView::Interval(left), ValueView::Interval(right)) => assert_eq!(left, right),
         (ValueView::DateTimeExtended(left), ValueView::DateTimeExtended(right)) => {
             assert_eq!(left, right);
         }
