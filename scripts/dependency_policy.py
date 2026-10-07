@@ -342,7 +342,7 @@ def parse_cargo_deny_findings(
         raise PolicyError("cargo metadata omits the scanned workspace packages")
 
     source_by_coordinate: dict[tuple[str, str], set[str | None]] = {}
-    license_by_coordinate: dict[tuple[str, str], set[str]] = {}
+    license_by_coordinate = _diagnostic_licenses({workspace_name: workspace_metadata})
     for package_item in packages:
         if not isinstance(package_item, dict):
             raise PolicyError("cargo metadata contains an invalid package")
@@ -358,9 +358,6 @@ def parse_cargo_deny_findings(
         ):
             raise PolicyError("cargo metadata package coordinates are malformed")
         source_by_coordinate.setdefault((name, version), set()).add(source)
-        license_by_coordinate.setdefault((name, version), set()).add(
-            _diagnostic_license_evidence(package_item)
-        )
 
     diagnostics: list[tuple[str, dict[str, Any]]] = []
     summary: dict[str, dict[str, int]] | None = None
@@ -440,12 +437,7 @@ def parse_cargo_deny_findings(
                 _validate_source(source, require_immutable_git=False)
             license_expression = None
             if kind == "license":
-                license_values = license_by_coordinate.get((package_name, version), set())
-                license_expression = (
-                    next(iter(license_values))
-                    if len(license_values) == 1
-                    else "ambiguous"
-                )
+                license_expression = license_by_coordinate.get((package_name, version), "unavailable")
             findings.add((kind, package_name, version, source, advisory_id, license_expression))
 
     for check, severities in observed_counts.items():
