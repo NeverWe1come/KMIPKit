@@ -972,3 +972,13 @@ The Python adapter's Extension Information test expectation was also corrected t
   t065_aggregate_preflight_tests -- --nocapture` failed both expected cases;
   the assertions reported `Ok(())` where `ResourceLimit` was required. Test-only
   visit instrumentation also records schema recursion depth for Green checks.
+
+## 2026-10-07 — bounded recursive schema preflight (Green)
+
+- The schema validator now counts aggregate nodes and constraint members during
+  recursion and returns at the first over-budget node. Client registry preflight
+  passes the remaining budgets before full accounting or any definition clone.
+- Green: `cargo +1.94 test -p kmipkit-protocol -p kmipkit-client -p kmipkit-ffi
+  --all-features` passed, including both bounded-visit probes and the existing
+  exact/over aggregate-boundary tests. T065 remains open for Refactor and final
+  validation evidence.

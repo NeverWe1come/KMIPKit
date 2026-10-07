@@ -14,7 +14,7 @@ pub use definition::{
     ExtensionIdentity, TtlvPath, accounting, clone_extension_definition,
     clone_extension_discriminator, compatibility, discriminator, extension_definition,
     extension_identity, identity, scalar_value_fingerprint, ttlv_path, validate_schema_limits,
-    with_child_tag,
+    validate_schema_limits_with_aggregate, with_child_tag,
 };
 pub use information::{
     ExtensionInformation, extension_information, information, to_ttlv, with_attribute,

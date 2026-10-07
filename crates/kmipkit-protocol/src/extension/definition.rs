@@ -424,6 +424,29 @@ pub fn validate_schema_limits(
     definition.schema.validate_registry_limits(limits)
 }
 
+/// Verifies schema limits against the remaining aggregate registry budgets.
+///
+/// This bounded preflight stops as soon as either aggregate is exceeded, so
+/// callers can reject borrowed definitions before accounting or cloning them.
+///
+/// # Errors
+///
+/// Returns `ResourceLimit` when a per-schema bound or either remaining
+/// aggregate budget is exceeded.
+#[doc(hidden)]
+pub fn validate_schema_limits_with_aggregate(
+    definition: &ExtensionDefinition,
+    limits: &ExtensionRegistryLimits,
+    remaining_schema_nodes: u64,
+    remaining_constraint_members: u64,
+) -> Result<(), ProtocolError> {
+    definition.schema.validate_registry_limits_with_aggregate(
+        limits,
+        remaining_schema_nodes,
+        remaining_constraint_members,
+    )
+}
+
 /// Returns a clone of the stable identity declared by this definition.
 #[must_use]
 pub fn identity(definition: &ExtensionDefinition) -> ExtensionIdentity {

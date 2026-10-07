@@ -671,16 +671,48 @@ impl ExtensionSchema {
         &self,
         limits: &ExtensionRegistryLimits,
     ) -> Result<(), ProtocolError> {
-        self.validate_registry_limits_at(limits, 1)
+        self.validate_registry_limits_with_aggregate(
+            limits,
+            limits.max_schema_nodes(),
+            limits.max_total_constraint_members(),
+        )
+    }
+
+    pub(crate) fn validate_registry_limits_with_aggregate(
+        &self,
+        limits: &ExtensionRegistryLimits,
+        maximum_schema_nodes: u64,
+        maximum_constraint_members: u64,
+    ) -> Result<(), ProtocolError> {
+        let mut schema_nodes = 0;
+        let mut constraint_members = 0;
+        self.validate_registry_limits_at(
+            limits,
+            1,
+            &mut schema_nodes,
+            &mut constraint_members,
+            maximum_schema_nodes,
+            maximum_constraint_members,
+        )
     }
 
     fn validate_registry_limits_at(
         &self,
         limits: &ExtensionRegistryLimits,
         depth: usize,
+        schema_nodes: &mut u64,
+        constraint_members: &mut u64,
+        maximum_schema_nodes: u64,
+        maximum_constraint_members: u64,
     ) -> Result<(), ProtocolError> {
         #[cfg(test)]
         REGISTRY_LIMIT_SCHEMA_VISITS.with(|visits| visits.set(visits.get() + 1));
+
+        let next_schema_nodes = schema_nodes
+            .checked_add(1)
+            .filter(|count| *count <= maximum_schema_nodes)
+            .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+        *schema_nodes = next_schema_nodes;
 
         let configured_depth = u64::try_from(depth)
             .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
@@ -702,6 +734,14 @@ impl ExtensionSchema {
                 .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
             let order_member_count = u64::try_from(order_edges.len())
                 .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+            let node_constraint_members = per_rule_members
+                .checked_add(order_member_count)
+                .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+            let next_constraint_members = constraint_members
+                .checked_add(node_constraint_members)
+                .filter(|count| *count <= maximum_constraint_members)
+                .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+            *constraint_members = next_constraint_members;
             if child_count > limits.max_child_rules_per_structure()
                 || order_member_count > limits.max_constraint_members_per_rule()
             {
@@ -710,10 +750,21 @@ impl ExtensionSchema {
             let child_depth = checked_usize_counter_add(depth, 1)
                 .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
             for child in children {
-                child
-                    .schema
-                    .validate_registry_limits_at(limits, child_depth)?;
+                child.schema.validate_registry_limits_at(
+                    limits,
+                    child_depth,
+                    schema_nodes,
+                    constraint_members,
+                    maximum_schema_nodes,
+                    maximum_constraint_members,
+                )?;
             }
+        } else {
+            let next_constraint_members = constraint_members
+                .checked_add(per_rule_members)
+                .filter(|count| *count <= maximum_constraint_members)
+                .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+            *constraint_members = next_constraint_members;
         }
         Ok(())
     }

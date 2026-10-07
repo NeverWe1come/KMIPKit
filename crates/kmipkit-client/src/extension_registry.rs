@@ -1013,58 +1013,142 @@ fn charge_tag_comparison(
     Ok(())
 }
 
+/// Incremental, allocation-free registry-definition limit preflight.
+///
+/// The C ABI uses this before it deep-clones borrowed definitions. Rust
+/// callers use the same checks before building registry indexes.
+#[doc(hidden)]
+pub struct RegistryDefinitionPreflight {
+    limits: ExtensionRegistryLimits,
+    expected_definitions: u64,
+    checked_definitions: u64,
+    text_bytes: u64,
+    schema_nodes: u64,
+    discriminator_bytes: u64,
+    constraint_members: u64,
+}
+
+impl RegistryDefinitionPreflight {
+    /// Starts a preflight for the stated definition count and limit set.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ResourceLimit` when the definition count exceeds its limit.
+    pub fn new(
+        expected_definitions: u64,
+        limits: ExtensionRegistryLimits,
+    ) -> Result<Self, ProtocolError> {
+        if expected_definitions > limits.max_definitions() {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+        Ok(Self {
+            limits,
+            expected_definitions,
+            checked_definitions: 0,
+            text_bytes: 0,
+            schema_nodes: 0,
+            discriminator_bytes: 0,
+            constraint_members: 0,
+        })
+    }
+
+    /// Checks one borrowed definition and adds its counts with overflow guards.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ResourceLimit` when any configured schema, text,
+    /// discriminator, constraint, or definition limit is exceeded.
+    pub fn add_definition(
+        &mut self,
+        definition: &ExtensionDefinition,
+    ) -> Result<(), ProtocolError> {
+        let next_definition_count = self
+            .checked_definitions
+            .checked_add(1)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        if next_definition_count > self.expected_definitions {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+
+        let remaining_schema_nodes = self
+            .limits
+            .max_schema_nodes()
+            .checked_sub(self.schema_nodes)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        let remaining_constraint_members = self
+            .limits
+            .max_total_constraint_members()
+            .checked_sub(self.constraint_members)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        extension::validate_schema_limits_with_aggregate(
+            definition,
+            &self.limits,
+            remaining_schema_nodes,
+            remaining_constraint_members,
+        )?;
+        let accounting = extension::accounting(definition)?;
+        if exceeds_limit(
+            accounting.maximum_text_field_bytes,
+            self.limits.max_text_bytes_per_field(),
+        ) || exceeds_limit(accounting.discriminator_path_depth, self.limits.max_depth())
+        {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+        add_bounded_total(
+            &mut self.text_bytes,
+            accounting.text_bytes,
+            self.limits.max_registry_text_bytes(),
+        )?;
+        add_bounded_total(
+            &mut self.schema_nodes,
+            accounting.schema_nodes,
+            self.limits.max_schema_nodes(),
+        )?;
+        add_bounded_total(
+            &mut self.discriminator_bytes,
+            accounting.discriminator_bytes,
+            self.limits.max_total_discriminator_scalar_bytes(),
+        )?;
+        add_bounded_total(
+            &mut self.constraint_members,
+            accounting.constraint_members,
+            self.limits.max_total_constraint_members(),
+        )?;
+        if exceeds_limit(
+            accounting.discriminator_bytes,
+            self.limits.max_discriminator_scalar_bytes(),
+        ) {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+        self.checked_definitions = next_definition_count;
+        Ok(())
+    }
+
+    /// Verifies that every definition in the declared count was checked.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ResourceLimit` when the checked count differs from the
+    /// declared count.
+    pub fn finish(self) -> Result<(), ProtocolError> {
+        if self.checked_definitions != self.expected_definitions {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+        Ok(())
+    }
+}
+
 fn validate_totals(
     definitions: &[ExtensionDefinition],
     limits: &ExtensionRegistryLimits,
 ) -> Result<(), ProtocolError> {
     let count = u64::try_from(definitions.len())
         .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
-    if count > limits.max_definitions() {
-        return Err(registry_error(ProtocolErrorKind::ResourceLimit));
-    }
-
-    let mut text_bytes = 0_u64;
-    let mut schema_nodes = 0_u64;
-    let mut discriminator_bytes = 0_u64;
-    let mut constraint_members = 0_u64;
+    let mut preflight = RegistryDefinitionPreflight::new(count, *limits)?;
     for definition in definitions {
-        extension::validate_schema_limits(definition, limits)?;
-        let accounting = extension::accounting(definition)?;
-        if exceeds_limit(
-            accounting.maximum_text_field_bytes,
-            limits.max_text_bytes_per_field(),
-        ) || exceeds_limit(accounting.discriminator_path_depth, limits.max_depth())
-        {
-            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
-        }
-        add_bounded_total(
-            &mut text_bytes,
-            accounting.text_bytes,
-            limits.max_registry_text_bytes(),
-        )?;
-        add_bounded_total(
-            &mut schema_nodes,
-            accounting.schema_nodes,
-            limits.max_schema_nodes(),
-        )?;
-        add_bounded_total(
-            &mut discriminator_bytes,
-            accounting.discriminator_bytes,
-            limits.max_total_discriminator_scalar_bytes(),
-        )?;
-        add_bounded_total(
-            &mut constraint_members,
-            accounting.constraint_members,
-            limits.max_total_constraint_members(),
-        )?;
-        if exceeds_limit(
-            accounting.discriminator_bytes,
-            limits.max_discriminator_scalar_bytes(),
-        ) {
-            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
-        }
+        preflight.add_definition(definition)?;
     }
-    Ok(())
+    preflight.finish()
 }
 
 fn exceeds_limit(value: usize, maximum: u64) -> bool {
