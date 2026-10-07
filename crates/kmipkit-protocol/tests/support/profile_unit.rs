@@ -579,6 +579,14 @@ fn readiness_reconciles_catalog_states_with_blockers() {
         vec![ProfileReadinessBlocker::CatalogEvidenceReviewRequired],
         review_required
     );
+
+    let repeated = ProfileReadinessBlocker::VerificationManifestUnavailable;
+    let mut unchanged_with_duplicates = vec![repeated, repeated];
+    assert_eq!(
+        "evidence_incomplete",
+        reconcile_effective_state("evidence_incomplete", &mut unchanged_with_duplicates)
+    );
+    assert_eq!(vec![repeated], unchanged_with_duplicates);
 }
 
 #[test]
