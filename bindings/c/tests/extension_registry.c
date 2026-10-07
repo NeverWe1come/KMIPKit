@@ -495,9 +495,13 @@ static bool test_typed_length_safety(void)
     REQUIRE(information == NULL);
     REQUIRE_STATUS(kmipkit_extension_information_create(
         name, (uint64_t)(sizeof(name) - 1U), &information), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_extension_information_description(
-        information, INVALID_INPUT_PTR, oversized_text_length,
-        &updated_information), KMIPKIT_ERROR_RESOURCE_LIMIT);
+    {
+        kmipkit_extension_information_t *consumed_information = information;
+        information = NULL;
+        REQUIRE_STATUS(kmipkit_extension_information_description(
+            consumed_information, INVALID_INPUT_PTR, oversized_text_length,
+            &updated_information), KMIPKIT_ERROR_RESOURCE_LIMIT);
+    }
     REQUIRE(updated_information == NULL);
 
     REQUIRE_STATUS(kmipkit_codec_limits_create(8U, 64U, 100U, &codec_limits),

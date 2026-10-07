@@ -171,8 +171,6 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
       RUSTUP_TOOLCHAIN: nightly
-      RUSTFLAGS: -Zsanitizer=address
-      CFLAGS: -fsanitize=address -fno-omit-frame-pointer
       ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
     steps:
@@ -182,11 +180,17 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
-      - name: Install nightly Rust with source component
-        run: rustup toolchain install nightly --profile minimal --component rust-src
+      - name: Install nightly Rust
+        run: rustup toolchain install nightly --profile minimal
 
-      - name: Run the C consumer against the Rust FFI under AddressSanitizer
-        run: cargo +nightly test --locked --target x86_64-unknown-linux-gnu -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage -- --test-threads=1
+      - name: Build the Rust C ABI under AddressSanitizer
+        run: cargo +nightly rustc --locked -p kmipkit-ffi --lib -- -Zsanitizer=address
+
+      - name: Run the C consumer against the instrumented Rust FFI
+        run: |
+          mkdir -p target/sanitizers
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include bindings/c/tests/extension_registry.c -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi -o target/sanitizers/extension_registry_consumer
+          target/sanitizers/extension_registry_consumer
 
       - name: Run the JNI zeroization owner test under native sanitizers
         run: |

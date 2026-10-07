@@ -133,11 +133,11 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("runs-on: ubuntu-latest", job)
 
         for required in (
-            "rustup toolchain install nightly --profile minimal --component rust-src",
-            "RUSTFLAGS: -Zsanitizer=address",
-            "CFLAGS: -fsanitize=address -fno-omit-frame-pointer",
+            "rustup toolchain install nightly --profile minimal",
+            "cargo +nightly rustc --locked -p kmipkit-ffi --lib -- -Zsanitizer=address",
+            "cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include",
+            "bindings/c/tests/extension_registry.c",
             "ASAN_OPTIONS: detect_leaks=1:halt_on_error=1",
-            "cargo +nightly test --locked --target x86_64-unknown-linux-gnu -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage",
             "-fsanitize=address,undefined -fno-omit-frame-pointer",
             "bindings/java/native/tests/zeroizing_bytes_test.cpp",
         ):
