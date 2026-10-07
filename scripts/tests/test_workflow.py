@@ -121,7 +121,7 @@ class WorkflowContractTests(unittest.TestCase):
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assertRegex(branch_coverage, r"(?m)^    runs-on: \[self-hosted, Linux, ARM64\]$")
 
-    def test_binding_consumers_run_on_all_platforms_for_pull_requests(self) -> None:
+    def test_binding_toolchains_are_pinned_for_pull_requests(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "language-bindings")
 
@@ -131,21 +131,30 @@ class WorkflowContractTests(unittest.TestCase):
         for required in (
             "RUSTUP_TOOLCHAIN: '1.94'",
             "rustup toolchain install 1.94 --profile minimal",
-            "cargo build --locked -p kmipkit-ffi",
-            "cmake -S bindings/c -B build/c-consumer",
-            "cmake --build build/c-consumer --config Release",
-            "ctest --test-dir build/c-consumer -C Release --output-on-failure",
             "actions/setup-java@",
             "java-version: '17'",
             "stCarolas/setup-maven@",
             "maven-version: '3.9.16'",
-            "mvn --batch-mode --file bindings/java/pom.xml test",
             "lukka/get-cmake@",
             "cmakeVersion: '3.31.6'",
             "ninjaVersion: '1.13.2'",
             "actions/setup-python@",
             "python-version: '3.12'",
             "python -m pip install --requirement bindings/python/requirements-coverage.txt",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+
+    def test_binding_consumers_run_on_all_platforms(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-bindings")
+
+        for required in (
+            "cargo build --locked -p kmipkit-ffi",
+            "cmake -S bindings/c -B build/c-consumer",
+            "cmake --build build/c-consumer --config Release",
+            "ctest --test-dir build/c-consumer -C Release --output-on-failure",
+            "mvn --batch-mode --file bindings/java/pom.xml test",
             "python -m pip install --no-build-isolation bindings/python",
             "python -m pytest -q bindings/python/tests",
             "python bindings/python/examples/vendor_extension_registry.py",
