@@ -451,3 +451,55 @@ Red and baseline evidence:
 No production binding implementation or generated output was changed in this
 Red stage. C, Java, and Python runtime assertions await their corresponding
 adapter implementations.
+
+## 2026-10-07 — Java 17 facade T050 partial verification
+
+Added the Maven/JUnit 5 build and Java facade classes for the approved registry
+and generic TTLV API surface. JNI lifecycle and C ABI bridge implementation
+remain in progress under T050. The Java Red test received two compile-only corrections: its missing import for the
+manifest's `org.kmipkit.extensions.TtlvPath`, and a final loop-index capture for
+the limit-boundary assertion. Neither changes test coverage or intent.
+
+Verification:
+
+- `mvn -q -f bindings/java/pom.xml compile` — passed (exit 0), compiling
+  production sources with the Maven compiler configured for Java 17.
+- `mvn -f bindings/java/pom.xml -DskipTests test-compile` — passed; Maven
+  reports `BUILD SUCCESS` and compiles both Java test sources with `--release
+  17`.
+- `mvn -f bindings/java/pom.xml '-Dtest=ExtensionRegistryTest#everyRegistryLimitExposesDefaultsAndAcceptsItsLowerAndHardBoundaries' test`
+  — passed (1 test, 0 failures/errors); this pure-Java boundary test does not
+  require JNI.
+- `mvn -f bindings/java/pom.xml -Dtest=NativeHandleTransferTest test` — passed
+  (3 tests, 0 failures/errors). Coverage verifies transfer disarms the Cleaner,
+  rejects reuse, permits close after transfer without native release, and leaves
+  all owners live when an atomic multi-handle transfer sees a closed input.
+- Facade transfers now match every `consumed` handle parameter in the manifest.
+  The configuration wrapper snapshots definition/limit metadata before it
+  transfers its registry; request-extension criticality and batch attachment
+  order remain in Java-owned metadata after their native handles transfer.
+- `python -m unittest discover -s tools/api_manifest/tests -p test_parity.py -v`
+  — passed (5 tests), including legal Java identifier validation.
+- `python tools/api_manifest/generate.py --check` — passed earlier with all six
+  outputs current. A later rerun in this shared worktree now fails because
+  `crates/kmipkit-ffi/src/extension_registry_generated.rs` differs from the
+  manifest renderer (expected 27,712 bytes, current 30,646 bytes); that file is
+  concurrently modified outside this Java change and was not edited here.
+- `mvn -f bindings/java/pom.xml test` — expected runtime block (exit 1):
+  `Tests run: 13, Failures: 1, Errors: 8, Skipped: 0`. The first native call
+  fails with `java.lang.UnsatisfiedLinkError: no kmipkit_jni in
+  java.library.path`; subsequent tests report `NoClassDefFoundError` because
+  `NativeExtensionRegistry` could not initialize. The single assertion failure
+  expected `ResourceLimitException` but received that same initialization
+  error. Build configuration and test sources compile; registry behavior is
+  not Green until a JNI library is available.
+
+T050 remains partial. Commit `c8b5052` corrected the manifest mapping to the
+Java-legal `TtlvValueView.booleanValue()` name and its JNI symbol. Repeated
+outbound attachment order and encoded criticality remain unverified: the
+approved slice has no public `ClientBatchItem` constructor or request encoder.
+Typed recognition metadata is also blocked because the approved C ABI has no
+identity-field getter; do not infer an identity by scanning payload
+discriminators. The JNI bridge and its runtime lifecycle remain
+unimplemented/in progress under T050 pending an approved identity-getter
+contract.
