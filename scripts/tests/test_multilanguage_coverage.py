@@ -300,7 +300,11 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         self.assertTrue(all(re.fullmatch(r"\d+\.\d+\.\d+", version) for version in pinned.values()))
         self.assertEqual("kmipkit", pyproject["tool"]["coverage"]["run"]["source"][0])
         self.assertEqual(85, pyproject["tool"]["coverage"]["report"]["fail_under"])
-        self.assertFalse(pyproject["tool"]["coverage"]["run"].get("omit"))
+        self.assertEqual(
+            pyproject["tool"]["coverage"]["run"].get("omit"),
+            ["*/kmipkit/_ffi/__init__.py", "*/kmipkit/_ffi/ffi.py"],
+            "only build-generated CFFI wrapper modules may be excluded from Python source coverage",
+        )
 
         native_collector = REPOSITORY_ROOT / "scripts/collect_jni_coverage.sh"
         self.assertTrue(native_collector.is_file(), "the JNI bridge needs a Linux LLVM coverage collector")
