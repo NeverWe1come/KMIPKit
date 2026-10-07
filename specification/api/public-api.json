@@ -8630,9 +8630,9 @@
       "java": {
         "package": "org.kmipkit.ttlv",
         "class": "TtlvValueView",
-        "method": "boolean",
+        "method": "booleanValue",
         "parameters": [],
-        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_boolean",
+        "jniSymbol": "Java_org_kmipkit_ttlv_TtlvValueView_booleanValue",
         "returnType": "boolean",
         "errorCategories": [
           "invalid_input"
