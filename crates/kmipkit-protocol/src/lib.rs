@@ -35,6 +35,7 @@ pub use message::{
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
 pub use profile::{
+    ProfileEvidenceReadiness, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
     ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
     ProfileValidationSelection,
 };

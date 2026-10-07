@@ -8,7 +8,7 @@
 //! §14.1; Baseline Client's inherited profile closure follows KMIP Profiles
 //! v2.1 §6.1.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 use std::error::Error;
 use std::fmt;
 
@@ -137,6 +137,268 @@ impl ProfileValidationResult {
         &self.requirement_ids
     }
 }
+
+/// One caller-visible local record for a stable profile requirement.
+///
+/// These records help diagnose catalog and implementation coverage. They are
+/// not CI results and cannot establish release evidence or publish a claim.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProfileEvidenceRecord {
+    requirement_id: String,
+    passed: bool,
+}
+
+impl ProfileEvidenceRecord {
+    /// Creates a local record that reports its requirement check passed.
+    #[must_use]
+    pub fn passed(requirement_id: impl Into<String>) -> Self {
+        Self {
+            requirement_id: requirement_id.into(),
+            passed: true,
+        }
+    }
+
+    /// Creates a local record that reports its requirement check failed.
+    #[must_use]
+    pub fn failed(requirement_id: impl Into<String>) -> Self {
+        Self {
+            requirement_id: requirement_id.into(),
+            passed: false,
+        }
+    }
+}
+
+/// Stable reasons that local profile evidence cannot be considered complete.
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum ProfileReadinessBlocker {
+    /// A required catalog requirement has no local record.
+    MissingRequirementRecord { requirement_id: &'static str },
+    /// A required catalog requirement has a failing local record.
+    FailedRequirementRecord { requirement_id: &'static str },
+    /// Local evidence repeats one required requirement.
+    DuplicateRequirementRecord { requirement_id: &'static str },
+    /// Local evidence names a requirement outside the generated closure.
+    UnknownRequirementRecord,
+    /// The profile's typed runtime rule registry is incomplete.
+    RuntimeValidationUnavailable,
+    /// A required official fixture is unavailable.
+    MandatoryFixtureUnavailable { test_id: &'static str },
+    /// The profile is conditional and has no satisfied typed condition.
+    ConditionalProfileUnsatisfied,
+    /// A dependency has not reached the catalog evidence-complete state.
+    DependencyEvidenceIncomplete { profile_id: &'static str },
+    /// The required current-run protected-release-push manifest is unavailable.
+    VerificationManifestUnavailable,
+    /// The catalog lifecycle says complete while recomputed evidence is blocked.
+    StaleCatalogEvidenceState,
+    /// Complete local evidence still requires a reviewed catalog lifecycle update.
+    CatalogEvidenceReviewRequired,
+    /// The profile is outside the approved 1.0 client scope.
+    ProfileUnavailable,
+}
+
+impl ProfileReadinessBlocker {
+    /// Returns a stable, redacted diagnostic message.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::MissingRequirementRecord { .. } => "required requirement evidence is missing",
+            Self::FailedRequirementRecord { .. } => "required requirement evidence failed",
+            Self::DuplicateRequirementRecord { .. } => "requirement evidence record is duplicated",
+            Self::UnknownRequirementRecord => "requirement evidence record is unknown",
+            Self::RuntimeValidationUnavailable => "runtime profile validation is unavailable",
+            Self::MandatoryFixtureUnavailable { .. } => "mandatory profile fixture is unavailable",
+            Self::ConditionalProfileUnsatisfied => "conditional profile is unsatisfied",
+            Self::DependencyEvidenceIncomplete { .. } => {
+                "dependency profile evidence is incomplete"
+            }
+            Self::VerificationManifestUnavailable => "current verification manifest is unavailable",
+            Self::StaleCatalogEvidenceState => "catalog evidence-complete state is stale",
+            Self::CatalogEvidenceReviewRequired => "catalog evidence state requires human review",
+            Self::ProfileUnavailable => "profile is outside the KMIPKit 1.0 client scope",
+        }
+    }
+
+    /// Returns the requirement ID for a requirement-specific blocker.
+    #[must_use]
+    pub const fn requirement_id(self) -> Option<&'static str> {
+        match self {
+            Self::MissingRequirementRecord { requirement_id }
+            | Self::FailedRequirementRecord { requirement_id }
+            | Self::DuplicateRequirementRecord { requirement_id } => Some(requirement_id),
+            _ => None,
+        }
+    }
+}
+
+/// Read-only local readiness view for one generated client profile.
+///
+/// The result never publishes a claim. Local records, generated metadata, and
+/// runtime rule completeness are insufficient without the repository's
+/// current protected-release-push verification manifest.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProfileReadiness {
+    profile_id: String,
+    target_selected: bool,
+    runtime_validation_available: bool,
+    effective_state: String,
+    requirement_records_complete: bool,
+    blockers: Vec<ProfileReadinessBlocker>,
+}
+
+impl ProfileReadiness {
+    /// Evaluates local evidence records against a generated client profile.
+    ///
+    /// Returns `None` when `profile_id` does not resolve to generated client
+    /// metadata. A complete set of local records does not advance catalog state
+    /// or replace a current CI verification manifest.
+    #[must_use]
+    pub fn evaluate(profile_id: &str, records: &[ProfileEvidenceRecord]) -> Option<Self> {
+        let profile = find_profile(CLIENT_PROFILES, profile_id)?;
+        let required_ids: BTreeSet<_> = profile.requirement_ids.iter().copied().collect();
+        let mut evidence_by_requirement: HashMap<&str, Vec<bool>> = HashMap::new();
+        let mut has_unexpected_requirement = false;
+        for record in records {
+            if required_ids.contains(record.requirement_id.as_str()) {
+                evidence_by_requirement
+                    .entry(record.requirement_id.as_str())
+                    .or_default()
+                    .push(record.passed);
+            } else {
+                has_unexpected_requirement = true;
+            }
+        }
+
+        let mut blockers = Vec::new();
+        let mut requirement_records_complete = true;
+        for requirement_id in profile.requirement_ids {
+            match evidence_by_requirement.get(requirement_id) {
+                None => {
+                    requirement_records_complete = false;
+                    blockers
+                        .push(ProfileReadinessBlocker::MissingRequirementRecord { requirement_id });
+                }
+                Some(results) if results.len() != 1 => {
+                    requirement_records_complete = false;
+                    blockers.push(ProfileReadinessBlocker::DuplicateRequirementRecord {
+                        requirement_id,
+                    });
+                }
+                Some(results) if results[0] => {}
+                Some(_) => {
+                    requirement_records_complete = false;
+                    blockers
+                        .push(ProfileReadinessBlocker::FailedRequirementRecord { requirement_id });
+                }
+            }
+        }
+        if has_unexpected_requirement {
+            requirement_records_complete = false;
+            blockers.push(ProfileReadinessBlocker::UnknownRequirementRecord);
+        }
+
+        let runtime_validation_available = ProfileValidationSelection::new([profile_id])
+            .validate()
+            .is_ok();
+        if !runtime_validation_available {
+            blockers.push(ProfileReadinessBlocker::RuntimeValidationUnavailable);
+        }
+        if profile.applicability == "conditional" {
+            blockers.push(ProfileReadinessBlocker::ConditionalProfileUnsatisfied);
+        } else if profile.applicability != "client_1_0" {
+            blockers.push(ProfileReadinessBlocker::ProfileUnavailable);
+        }
+        blockers.extend(profile.test_cases.iter().filter_map(|test_case| {
+            (test_case.mandatory_status == "mandatory"
+                && test_case.fixture_availability != "available")
+                .then_some(ProfileReadinessBlocker::MandatoryFixtureUnavailable {
+                    test_id: test_case.test_id,
+                })
+        }));
+        blockers.extend(
+            profile
+                .dependency_profile_ids
+                .iter()
+                .filter_map(|dependency_id| {
+                    find_profile(CLIENT_PROFILES, dependency_id)
+                        .is_none_or(|dependency| dependency.claim_state != "evidence_complete")
+                        .then_some(ProfileReadinessBlocker::DependencyEvidenceIncomplete {
+                            profile_id: dependency_id,
+                        })
+                }),
+        );
+        blockers.push(ProfileReadinessBlocker::VerificationManifestUnavailable);
+
+        blockers.sort();
+        blockers.dedup();
+        let catalog_state = profile.claim_state;
+        let effective_state = if catalog_state == "evidence_complete" && !blockers.is_empty() {
+            blockers.push(ProfileReadinessBlocker::StaleCatalogEvidenceState);
+            "evidence_incomplete"
+        } else if catalog_state != "evidence_complete" && blockers.is_empty() {
+            blockers.push(ProfileReadinessBlocker::CatalogEvidenceReviewRequired);
+            catalog_state
+        } else {
+            catalog_state
+        };
+        blockers.sort();
+        blockers.dedup();
+
+        Some(Self {
+            profile_id: profile_id.to_owned(),
+            target_selected: profile.selected_target,
+            runtime_validation_available,
+            effective_state: effective_state.to_owned(),
+            requirement_records_complete,
+            blockers,
+        })
+    }
+
+    /// Returns the generated profile identifier.
+    #[must_use]
+    pub fn profile_id(&self) -> &str {
+        &self.profile_id
+    }
+
+    /// Returns whether the fixed project target manifest selects this profile.
+    #[must_use]
+    pub const fn target_selected(&self) -> bool {
+        self.target_selected
+    }
+
+    /// Returns whether a complete typed rule registry permits runtime validation.
+    #[must_use]
+    pub const fn runtime_validation_available(&self) -> bool {
+        self.runtime_validation_available
+    }
+
+    /// Returns the effective catalog evidence lifecycle without upgrading it.
+    #[must_use]
+    pub fn effective_state(&self) -> &str {
+        &self.effective_state
+    }
+
+    /// Returns whether every local requirement record is present and passing.
+    #[must_use]
+    pub const fn requirement_records_complete(&self) -> bool {
+        self.requirement_records_complete
+    }
+
+    /// Returns deterministic stable blockers for this local readiness view.
+    #[must_use]
+    pub fn blockers(&self) -> &[ProfileReadinessBlocker] {
+        &self.blockers
+    }
+
+    /// Returns `false`; readiness evaluation never publishes a conformance claim.
+    #[must_use]
+    pub const fn published_claim(&self) -> bool {
+        false
+    }
+}
+
+/// Compatibility name emphasizing that this is evidence metadata, not support status.
+pub type ProfileEvidenceReadiness = ProfileReadiness;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum RuleTestKind {

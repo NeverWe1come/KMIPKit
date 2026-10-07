@@ -5,8 +5,7 @@
 
 use kmipkit_protocol::{
     DiscoverVersionsResponse, ProfileEvidenceReadiness, ProfileEvidenceRecord,
-    QueryAsyncRequestsResponse, ResponseMessage,
-    profiles_generated::CLIENT_PROFILES,
+    QueryAsyncRequestsResponse, ResponseMessage, profiles_generated::CLIENT_PROFILES,
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
@@ -21,6 +20,7 @@ const RESULT_STATUS: u32 = 0x0042_007F;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const TIME_STAMP: u32 = 0x0042_0092;
 const BATCH_COUNT: u32 = 0x0042_000D;
+const ASYNCHRONOUS_CORRELATION_VALUES: u32 = 0x0042_0176;
 const QUERY_ASYNCHRONOUS_REQUESTS: u32 = 0x0000_0039;
 const DISCOVER_VERSIONS: u32 = 0x0000_001E;
 
@@ -82,7 +82,7 @@ fn baseline_requirements() -> &'static [&'static str] {
 fn passing_records() -> Vec<ProfileEvidenceRecord> {
     baseline_requirements()
         .iter()
-        .map(|requirement_id| ProfileEvidenceRecord::passed(requirement_id))
+        .map(|requirement_id| ProfileEvidenceRecord::passed(*requirement_id))
         .collect()
 }
 
@@ -112,19 +112,26 @@ fn local_records_never_advance_catalog_state_or_publish_a_claim() {
 
     assert!(readiness.requirement_records_complete());
     assert_eq!("not_claimed", readiness.effective_state());
-    assert!(readiness.blockers().iter().any(|blocker| {
-        blocker.as_str() == "current verification manifest is unavailable"
-    }));
+    assert!(
+        readiness
+            .blockers()
+            .iter()
+            .any(|blocker| { blocker.as_str() == "current verification manifest is unavailable" })
+    );
     assert!(!readiness.published_claim());
 }
 
 #[test]
 fn query_and_discover_versions_responses_do_not_change_profile_readiness() {
     let records = passing_records();
-    let before = ProfileEvidenceReadiness::evaluate(BASELINE, &records)
-        .expect("Baseline profile resolves");
+    let before =
+        ProfileEvidenceReadiness::evaluate(BASELINE, &records).expect("Baseline profile resolves");
 
-    let query_message = response(QUERY_ASYNCHRONOUS_REQUESTS, None);
+    let query_payload = structure([item(
+        ASYNCHRONOUS_CORRELATION_VALUES,
+        Value::structure(Structure::new()),
+    )]);
+    let query_message = response(QUERY_ASYNCHRONOUS_REQUESTS, Some(query_payload));
     let query = QueryAsyncRequestsResponse::try_from_response_item(
         query_message
             .batch_items()
@@ -149,10 +156,13 @@ fn query_and_discover_versions_responses_do_not_change_profile_readiness() {
             .expect("fixture has one response batch item"),
     )
     .expect("fixture is a Discover Versions response");
-    assert_eq!(Some(&[kmipkit_protocol::ProtocolVersion::from_raw(2, 1)][..]), discover.supported_versions());
+    assert_eq!(
+        Some(&[kmipkit_protocol::ProtocolVersion::from_raw(2, 1)][..]),
+        discover.supported_versions()
+    );
 
-    let after = ProfileEvidenceReadiness::evaluate(BASELINE, &records)
-        .expect("Baseline profile resolves");
+    let after =
+        ProfileEvidenceReadiness::evaluate(BASELINE, &records).expect("Baseline profile resolves");
     assert_eq!(before, after);
     assert!(!after.published_claim());
 }
