@@ -79,6 +79,14 @@ def _create_fixture_repo(parent: Path) -> Path:
     return root
 
 
+def _reverse_object_keys(value: object) -> object:
+    if isinstance(value, dict):
+        return {key: _reverse_object_keys(child) for key, child in reversed(list(value.items()))}
+    if isinstance(value, list):
+        return [_reverse_object_keys(child) for child in value]
+    return value
+
+
 class ManifestGeneratorCliTests(unittest.TestCase):
     def _run_generator(self, root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         self.assertTrue(
@@ -129,6 +137,125 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 {relative_path: (root / relative_path).read_bytes() for relative_path in GENERATED_OUTPUTS},
                 first_outputs,
             )
+
+    def test_object_key_order_does_not_change_generated_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+            first = self._run_generator(root, "--write")
+            self.assertEqual(first.returncode, 0, first.stderr)
+            first_outputs = {
+                relative_path: (root / relative_path).read_bytes()
+                for relative_path in GENERATED_OUTPUTS
+            }
+            manifest = self._load_manifest(root)
+            reversed_manifest = _reverse_object_keys(manifest)
+            self.assertIsInstance(reversed_manifest, dict)
+            self._write_manifest(root, reversed_manifest)
+
+            second = self._run_generator(root, "--write")
+
+            self.assertEqual(second.returncode, 0, second.stderr)
+            self.assertEqual(
+                {relative_path: (root / relative_path).read_bytes() for relative_path in GENERATED_OUTPUTS},
+                first_outputs,
+            )
+
+    def test_unsorted_requirement_ids_are_rejected_before_writing(self) -> None:
+        mutations = (
+            ("root requirement IDs", lambda value: value["requirementIds"].reverse()),
+            ("type requirement IDs", lambda value: value["types"][0]["requirementIds"].reverse()),
+            ("function requirement IDs", lambda value: value["functions"][0]["requirementIds"].reverse()),
+        )
+        for label, mutate in mutations:
+            with self.subTest(location=label), tempfile.TemporaryDirectory() as directory:
+                root = _create_repo(Path(directory))
+                manifest = self._load_manifest(root)
+                mutate(manifest)
+                self._write_manifest(root, manifest)
+
+                result = self._run_generator(root, "--write")
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+
+    def test_required_invalid_input_error_mappings_are_enforced(self) -> None:
+        mutations = (
+            ("C handle mapping", "client_extension_registry_inspect", "c"),
+            ("Java handle mapping", "client_extension_registry_inspect", "java"),
+            ("Python handle mapping", "client_extension_registry_inspect", "python"),
+            ("Java Enumeration range", "ttlv_value_enumeration", "java"),
+            ("Python Enumeration range", "ttlv_value_enumeration", "python"),
+            ("Java Interval range", "ttlv_value_interval", "java"),
+            ("Python Interval range", "ttlv_value_interval", "python"),
+            ("C Boolean input", "ttlv_value_boolean", "c"),
+        )
+        for label, function_id, language in mutations:
+            with self.subTest(mapping=label), tempfile.TemporaryDirectory() as directory:
+                root = _create_repo(Path(directory))
+                manifest = self._load_manifest(root)
+                function = next(item for item in manifest["functions"] if item["id"] == function_id)
+                function[language]["errorCategories"].remove("invalid_input")
+                self._write_manifest(root, manifest)
+
+                result = self._run_generator(root, "--write")
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+
+    def test_duplicate_c_parameter_names_are_rejected_before_span_resolution(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+            manifest = self._load_manifest(root)
+            function = next(item for item in manifest["functions"] if item["id"] == "extension_identity_create")
+            parameters = function["c"]["parameters"]
+            length = next(item for item in parameters if item["name"] == "name_length")
+            length["name"] = "vendor_identifier_length"
+            name_span = next(item for item in parameters if item["name"] == "name_data")
+            name_span["byteLengthParameter"] = "vendor_identifier_length"
+            self._write_manifest(root, manifest)
+
+            result = self._run_generator(root, "--write")
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+
+    def test_rust_2024_keywords_are_raw_escaped_and_unescapable_names_rejected(self) -> None:
+        for keyword in ("const", "false", "abstract", "gen"):
+            with self.subTest(keyword=keyword), tempfile.TemporaryDirectory() as directory:
+                root = _create_repo(Path(directory))
+                manifest = self._load_manifest(root)
+                function = next(item for item in manifest["functions"] if item["id"] == "ttlv_value_integer")
+                function["c"]["parameters"][0]["name"] = keyword
+                self._write_manifest(root, manifest)
+
+                result = self._run_generator(root, "--write")
+
+                self.assertEqual(result.returncode, 0, result.stderr)
+                rust_output = (root / GENERATED_OUTPUTS[0]).read_text(encoding="utf-8")
+                self.assertIn(f"r#{keyword}: ", rust_output)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+            manifest = self._load_manifest(root)
+            function = next(item for item in manifest["functions"] if item["id"] == "ttlv_value_integer")
+            function["c"]["parameters"][0]["name"] = "self"
+            self._write_manifest(root, manifest)
+
+            result = self._run_generator(root, "--write")
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+
+    def test_parity_fixture_preserves_complete_manifest_mappings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+            manifest = self._load_manifest(root)
+            result = self._run_generator(root, "--write")
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            parity = json.loads((root / GENERATED_OUTPUTS[5]).read_text(encoding="utf-8"))
+
+            self.assertEqual(parity, manifest)
 
     def test_check_mode_compares_outputs_without_rewriting_them(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
