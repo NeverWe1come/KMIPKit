@@ -376,17 +376,10 @@ fn reference_registry(
 }
 
 fn release<T>(pointer: *mut T, kind: Kind) {
-    if pointer.is_null() {
+    if reference_handle(&pointer, kind).is_err() {
         return;
     }
-    // SAFETY: release pointers must be live KMIPKit handles; a non-matching live handle is left
-    // alone. Dangling and foreign pointers remain caller precondition violations.
-    let handle = unsafe { &*pointer.cast::<Handle>() };
-    if handle.kind != kind {
-        return;
-    }
-    // SAFETY: this release consumes the one Arc strong reference returned to the C caller.
-    drop(unsafe { Arc::from_raw(pointer.cast::<Handle>()) });
+    drop(consume_owner(pointer));
 }
 
 #[unsafe(no_mangle)]

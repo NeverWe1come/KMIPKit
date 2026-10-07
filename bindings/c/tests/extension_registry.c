@@ -1107,6 +1107,32 @@ static bool identity_name_matches(kmipkit_extension_identity_t *identity,
     return matches;
 }
 
+static bool test_null_and_wrong_kind_release_are_noops(void)
+{
+    static const uint8_t vendor[] = "example.vendor";
+    static const uint8_t name[] = "release-check";
+    static const uint8_t version[] = "1";
+    kmipkit_extension_identity_t *identity = NULL;
+    kmipkit_ttlv_value_t *identity_name = NULL;
+
+    REQUIRE_STATUS(kmipkit_extension_identity_create(vendor,
+        (uint64_t)(sizeof(vendor) - 1U), name,
+        (uint64_t)(sizeof(name) - 1U), version,
+        (uint64_t)(sizeof(version) - 1U), &identity), KMIPKIT_SUCCESS);
+
+    kmipkit_extension_identity_release(NULL);
+    kmipkit_client_extension_registry_release(
+        (kmipkit_client_extension_registry_t *)identity);
+    REQUIRE_STATUS(kmipkit_extension_identity_name(identity, &identity_name),
+        KMIPKIT_SUCCESS);
+    REQUIRE(ttlv_value_matches_text(identity_name, name,
+        (uint64_t)(sizeof(name) - 1U)));
+
+    kmipkit_ttlv_value_release(identity_name);
+    kmipkit_extension_identity_release(identity);
+    return true;
+}
+
 static bool test_identity_fields_and_batch_extension_order(void)
 {
     static const uint8_t alpha_name[] = "alpha";
@@ -1343,6 +1369,7 @@ int main(int argc, char **argv)
         {"inbound inspection and generic preservation", test_inbound_inspection_and_generic_preservation},
         {"stable redacted errors and invalid handles", test_redacted_stable_errors_and_invalid_handles},
         {"explicit outbound criticality", test_explicit_outbound_criticality},
+        {"null and wrong-kind release no-ops", test_null_and_wrong_kind_release_are_noops},
         {"identity fields and batch extension order", test_identity_fields_and_batch_extension_order},
         {"handle release and null output semantics", test_handle_release_and_null_output_on_error}
     };
