@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
@@ -16,6 +17,21 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 class MultiLanguageCoverageTests(unittest.TestCase):
     def require_gate(self) -> None:
         self.assertIsNotNone(GATE, "coverage_gate.py must provide the multi-language coverage contract")
+
+    def test_jni_collector_ignores_hosted_toolcache_jdk_header(self) -> None:
+        self.require_gate()
+        script = (REPOSITORY_ROOT / "scripts/collect_jni_coverage.sh").read_text(encoding="utf-8")
+        match = re.search(r"^readonly ignored_source_regex='([^']+)'$", script, re.MULTILINE)
+        self.assertIsNotNone(match, "the JNI collector must declare its narrow source exclusions")
+        assert match is not None
+        ignored_source_regex = match.group(1)
+
+        hosted_jdk_header = "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64/include/jni.h"
+        system_jdk_header = "/usr/lib/jvm/java-17-openjdk-amd64/include/jni.h"
+        project_header = str(REPOSITORY_ROOT / "bindings/java/native/include/jni.h")
+        self.assertRegex(hosted_jdk_header, ignored_source_regex)
+        self.assertRegex(system_jdk_header, ignored_source_regex)
+        self.assertNotRegex(project_header, ignored_source_regex)
 
     def _write_gate_workspace(self, root: Path, line_count: int = 10):
         rust_source = root / "crates/kmipkit-ttlv/src/lib.rs"
