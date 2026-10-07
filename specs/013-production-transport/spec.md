@@ -86,6 +86,7 @@ existing valid wire behavior.
 ## Scope and Exclusions
 
 - This feature adds production raw TTLV over TLS 1.3 and TTLV over HTTPS/HTTP 1.1, both with mutual TLS.
+- Shared integration-test PKI fixtures use an exact-pinned, test-support-only certificate generator configured with AWS-LC and no default features; this dependency is excluded from production dependency paths and must not enable `ring`.
 - The client is synchronous and owns one configured endpoint and its transport. Calls on one client are serialized.
 - The production client retains the immutable KMIPKIT-0012 `ClientConfiguration` separately from
   transport configuration. Transport configuration does not contain or replace the extension

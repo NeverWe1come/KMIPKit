@@ -15,7 +15,7 @@ The transport stack differs from accepted ADR-0005's `reqwest::blocking` choice.
 ## Technical Context
 
 **Language/Version**: Rust 2024, MSRV 1.94.
-**Primary Dependencies**: Exact-pinned `tokio` for owned asynchronous I/O and timers; `tokio-rustls` and `rustls` with AWS-LC for TLS; a client-owned `rustls::client::ClientSessionStore` to expire TLS 1.3 tickets after one hour; `hyper` with HTTP/1 only for HTTPS parsing; `bytes` for a request body owner backed by a zeroizing allocation; `rustls-native-certs` for explicitly selected platform root loading; `hickory-resolver` with Tokio and system configuration for bounded asynchronous hostname lookup; `zeroize` for KMIPKit-owned secret buffers. T003 reviews exact versions, feature flags, transitive licenses/advisories, native requirements, MSRV, and supported targets under KMIPKIT-0011.
+**Primary Dependencies**: Exact-pinned `tokio` for owned asynchronous I/O and timers; `tokio-rustls` and `rustls` with AWS-LC for TLS; a client-owned `rustls::client::ClientSessionStore` to expire TLS 1.3 tickets after one hour; `hyper` with HTTP/1 only for HTTPS parsing; `bytes` for a request body owner backed by a zeroizing allocation; `rustls-native-certs` for explicitly selected platform root loading; `hickory-resolver` with Tokio and system configuration for bounded asynchronous hostname lookup; `zeroize` for KMIPKit-owned secret buffers. `kmipkit-test-support` uses exact-pinned `rcgen` only to make fresh local test credentials, with default features disabled and AWS-LC selected; no production crate depends on it, and `ring` must remain absent. T003 reviews exact versions, feature flags, transitive licenses/advisories, native requirements, MSRV, and supported targets under KMIPKIT-0011.
 **Storage**: None. One client owns validated configuration, TLS state, a worker, and at most one connection at a time; only HTTPS reuses it across exchanges.
 **Testing**: Rust unit, fake-I/O, ephemeral-PKI, raw TLS and HTTP/1 integration tests; existing cross-platform CI and coverage gates.
 **Target Platform**: Linux, Windows, and macOS on Rust 1.94 or later.
@@ -72,7 +72,10 @@ crates/kmipkit-client/src/
 └── lib.rs                 # production constructor using validated KMIPKit config
 crates/kmipkit-test-support/src/
 ├── pki.rs                 # ephemeral test certificate helpers, if shared
-└── dns.rs                 # deterministic local resolver fixtures, if shared
+├── dns.rs                 # deterministic loopback DNS fixture
+└── local_transport.rs     # loopback-only listener helper
+crates/kmipkit-transport/src/
+└── tls_policy.rs          # private TLS 1.3/AWS-LC/key-log/early-data policy builder
 crates/kmipkit-transport/tests/
 ├── raw_tls.rs
 ├── https.rs

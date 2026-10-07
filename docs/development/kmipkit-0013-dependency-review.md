@@ -1,7 +1,7 @@
 # KMIPKIT-0013 dependency review
 
 **Review date:** 2026-10-07  
-**Status:** T003 complete on 2026-10-07. This note retains historical findings and statuses; the final closure section supersedes earlier statements that the gate remained open.
+**Status:** The original T003 dependency review completed on 2026-10-07. T003 is reopened for review of the exact-pinned test-only `rcgen` dependency introduced by T004; the original closure evidence below remains historical until a new closure entry is added.
 
 ## Scope and current graph
 
@@ -274,7 +274,7 @@ workspace checks refreshed RustSec to commit
 exception IDs and confirmed that `Cargo.lock` and `fuzz/Cargo.lock` were
 unchanged.
 
-## T003 closure evidence
+## Original T003 closure evidence
 
 The following final evidence supersedes the earlier historical statements in
 this note that T003 remained open:
@@ -296,8 +296,8 @@ this note that T003 remained open:
   supported-target dependency paths are documented in this review. No
   unresolved dependency-policy finding remains for the accepted design.
 
-T003 is complete. T004 and other non-overlapping implementation tasks may
-proceed under the approved specification. The client-execution task gaps
-identified by the independent audit must be reconciled before starting T046
-through T051. The historical audit and rejected alternatives stay in this
-document so future dependency updates can reuse their evidence.
+The original T003 review passed before adding the T004 certificate fixture
+dependency. It no longer closes the reopened dependency gate. The client-
+execution task gaps identified by the independent audit must be reconciled
+before starting T046 through T051. Historical audit notes remain here so
+future dependency reviews can reuse their evidence.
