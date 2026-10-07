@@ -121,6 +121,39 @@ class WorkflowContractTests(unittest.TestCase):
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assertRegex(branch_coverage, r"(?m)^    runs-on: \[self-hosted, Linux, ARM64\]$")
 
+    def test_binding_consumers_run_on_all_platforms_for_pull_requests(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-bindings")
+
+        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        self.assertIn("os: [ubuntu-latest, windows-latest, macos-latest]", job)
+        self.assert_pi_runner_with_hosted_fallback(job, "|| matrix.os")
+
+        for required in (
+            "RUSTUP_TOOLCHAIN: '1.94'",
+            "rustup toolchain install 1.94 --profile minimal",
+            "cargo build --locked -p kmipkit-ffi",
+            "cmake -S bindings/c -B build/c-consumer",
+            "cmake --build build/c-consumer --config Release",
+            "ctest --test-dir build/c-consumer -C Release --output-on-failure",
+            "actions/setup-java@",
+            "java-version: '17'",
+            "mvn --batch-mode --file bindings/java/pom.xml test",
+            "actions/setup-python@",
+            "python-version: '3.12'",
+            "python -m pip install --editable bindings/python",
+            "python -m pytest -q bindings/python/tests",
+            "python bindings/python/examples/vendor_extension_registry.py",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+
+        python_project = (REPOSITORY_ROOT / "bindings" / "python" / "pyproject.toml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('build-backend = "maturin"', python_project)
+        self.assertIn('bindings = "cffi"', python_project)
+
     def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?ms)^on:\s*\n(?:(?!^jobs:).)*?^\s+schedule:")
@@ -269,6 +302,7 @@ class WorkflowContractTests(unittest.TestCase):
         for dependency in (
             "core",
             "script-contracts",
+            "language-bindings",
             "normative-inventory",
             "coverage",
             "coverage-gate",
