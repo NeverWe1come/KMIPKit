@@ -28,7 +28,8 @@ pub use schema::{
     with_signed_range, with_unsigned_range,
 };
 pub use value::{
-    ValidatedExtensionValue, generic_value, validate, validated_extension_value_identity,
+    SchemaValidationOutcome, ValidatedExtensionValue, generic_value, validate,
+    validate_schema_only, validated_extension_value_identity,
 };
 
 use crate::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};

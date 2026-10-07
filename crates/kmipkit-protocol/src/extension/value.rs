@@ -66,7 +66,63 @@ pub fn validate(
     value: Structure,
     limits: &CodecLimits,
 ) -> Result<ValidatedExtensionValue, ProtocolError> {
-    validate_inner(definition, value, limits).map(|(validated, _)| validated)
+    let ((), _) = validate_inner(
+        definition,
+        &value,
+        limits,
+        ValidationMode::RequireDiscriminator,
+    )?;
+    Ok(ValidatedExtensionValue {
+        identity: definition.identity.clone(),
+        generic_value: value,
+    })
+}
+
+/// Schema-validation outcome that deliberately makes no recognition claim.
+///
+/// A `SchemaValid` result proves only that the payload matches the definition's
+/// data-only schema. It does not prove that the discriminator matched. This
+/// hidden cross-crate outcome is consumed by client inspection only after its
+/// bounded index establishes one exact discriminator match.
+#[doc(hidden)]
+pub enum SchemaValidationOutcome {
+    /// The complete definition schema accepted the original subtree.
+    SchemaValid(ValidatedExtensionValue),
+    /// The schema rejected the original subtree; it remains generic and owned.
+    SchemaInvalid(Structure),
+}
+
+/// Validates only the data-only schema and retains schema-invalid input generically.
+///
+/// This cross-crate helper makes no assertion that the discriminator matches.
+/// Client recognition calls it only after its bounded index has proved one
+/// exact discriminator match. Callers that need a complete standalone check
+/// must use [`validate`]. The original subtree is moved through either outcome
+/// without cloning secret-bearing payloads or exposing a partial typed value.
+///
+/// # Errors
+///
+/// Returns a sanitized resource-limit error when the configured TTLV bounds
+/// are exceeded. A schema mismatch is represented as
+/// `SchemaValidationOutcome::SchemaInvalid`.
+#[doc(hidden)]
+pub fn validate_schema_only(
+    definition: &ExtensionDefinition,
+    value: Structure,
+    limits: &CodecLimits,
+) -> Result<SchemaValidationOutcome, ProtocolError> {
+    match validate_inner(definition, &value, limits, ValidationMode::SchemaOnly) {
+        Ok(((), _)) => Ok(SchemaValidationOutcome::SchemaValid(
+            ValidatedExtensionValue {
+                identity: definition.identity.clone(),
+                generic_value: value,
+            },
+        )),
+        Err(error) if error.kind() == ProtocolErrorKind::InvalidSchema => {
+            Ok(SchemaValidationOutcome::SchemaInvalid(value))
+        }
+        Err(error) => Err(error),
+    }
 }
 
 #[cfg(test)]
@@ -75,25 +131,12 @@ fn validate_with_metrics(
     value: Structure,
     limits: &CodecLimits,
 ) -> Result<(ValidatedExtensionValue, ValidationMetrics), ProtocolError> {
-    validate_inner(definition, value, limits)
-}
-
-fn validate_inner(
-    definition: &ExtensionDefinition,
-    value: Structure,
-    limits: &CodecLimits,
-) -> Result<(ValidatedExtensionValue, ValidationMetrics), ProtocolError> {
-    let mut metrics = ValidationMetrics::default();
-    let mut path = Vec::new();
-    path.try_reserve(limits.max_structure_depth().min(64))
-        .map_err(|_| resource_limit())?;
-    validate_ttlv_limits(&value, limits, &mut path)?;
-
-    let root_view = value.view();
-    validate_discriminator(&root_view, definition.discriminator(), &mut path)?;
-    path.clear();
-    validate_structure(&definition.schema, &root_view, &mut path, &mut metrics)?;
-
+    let ((), metrics) = validate_inner(
+        definition,
+        &value,
+        limits,
+        ValidationMode::RequireDiscriminator,
+    )?;
     Ok((
         ValidatedExtensionValue {
             identity: definition.identity.clone(),
@@ -101,6 +144,34 @@ fn validate_inner(
         },
         metrics,
     ))
+}
+
+#[derive(Clone, Copy)]
+enum ValidationMode {
+    RequireDiscriminator,
+    SchemaOnly,
+}
+
+fn validate_inner(
+    definition: &ExtensionDefinition,
+    value: &Structure,
+    limits: &CodecLimits,
+    mode: ValidationMode,
+) -> Result<((), ValidationMetrics), ProtocolError> {
+    let mut metrics = ValidationMetrics::default();
+    let mut path = Vec::new();
+    path.try_reserve(limits.max_structure_depth().min(64))
+        .map_err(|_| resource_limit())?;
+    validate_ttlv_limits(value, limits, &mut path)?;
+
+    let root_view = value.view();
+    if matches!(mode, ValidationMode::RequireDiscriminator) {
+        validate_discriminator(&root_view, definition.discriminator(), &mut path)?;
+        path.clear();
+    }
+    validate_structure(&definition.schema, &root_view, &mut path, &mut metrics)?;
+
+    Ok(((), metrics))
 }
 
 fn validate_ttlv_limits(

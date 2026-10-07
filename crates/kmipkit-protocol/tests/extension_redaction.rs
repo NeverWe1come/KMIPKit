@@ -3,6 +3,7 @@
 //! Traceability: KMIPKIT-0012-FR-011 and KMIP 2.1 §9.13, Table 418.
 
 use std::error::Error;
+use std::fmt::Write as _;
 
 use kmipkit_protocol::extension;
 use kmipkit_ttlv::codec::CodecLimits;
@@ -82,7 +83,7 @@ fn diagnostics(error: &dyn Error) -> String {
     let mut text = format!("debug={error:?}; display={error}");
     let mut source = error.source();
     while let Some(cause) = source {
-        text.push_str(&format!("; source-debug={cause:?}; source-display={cause}"));
+        let _ = write!(text, "; source-debug={cause:?}; source-display={cause}");
         source = cause.source();
     }
     text

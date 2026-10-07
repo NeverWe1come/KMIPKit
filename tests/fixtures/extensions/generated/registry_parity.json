@@ -893,7 +893,7 @@
           },
           {
             "name": "vendor_identifier",
-            "type": "str"
+            "type": "&str"
           },
           {
             "name": "value",
@@ -4676,7 +4676,7 @@
         "parameters": [
           {
             "name": "recognition",
-            "type": "ExtensionRecognition"
+            "type": "&ExtensionRecognition"
           }
         ],
         "requestBoundary": "not-applicable",
@@ -4751,11 +4751,11 @@
         "parameters": [
           {
             "name": "recognition",
-            "type": "ExtensionRecognition"
+            "type": "&ExtensionRecognition"
           }
         ],
         "requestBoundary": "not-applicable",
-        "returnType": "Option<ValidatedExtensionValue>"
+        "returnType": "Option<&ValidatedExtensionValue>"
       }
     },
     {
@@ -4826,7 +4826,7 @@
         "parameters": [
           {
             "name": "recognition",
-            "type": "ExtensionRecognition"
+            "type": "&ExtensionRecognition"
           }
         ],
         "requestBoundary": "not-applicable",

@@ -3,7 +3,7 @@
 ## Ownership
 
 - kmipkit-protocol owns ExtensionIdentity, ExtensionInformation, ExtensionSchema, ExtensionDefinition, and sealed ValidatedExtensionValue.
-- kmipkit-client owns ClientExtensionRegistry, attachment to immutable client configuration, and ClientRequestMessageExtension request use.
+- kmipkit-client owns ClientExtensionRegistry, ExtensionRecognition, attachment to immutable client configuration, and ClientRequestMessageExtension request use.
 - kmipkit-protocol owns the public ExtensionRegistryLimits value type; kmipkit-client enforces per-registry definition, schema-node, constraint-member, discriminator-byte, metadata, payload-index, and lookup-comparison totals when assembling or inspecting a snapshot.
 - kmipkit-ffi owns all unsafe opaque-handle conversion. Other crates retain forbid(unsafe_code).
 - The protocol crate depends only on TTLV and existing approved workspace dependencies. Registry code has no transport/TLS handle.

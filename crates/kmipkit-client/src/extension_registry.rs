@@ -12,7 +12,107 @@ use kmipkit_protocol::extension::{
 };
 use kmipkit_protocol::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 use kmipkit_transport::RequestDeliveryState;
-use kmipkit_ttlv::{Tag, ValueView};
+use kmipkit_ttlv::{Structure, StructureView, Tag, ValueView, codec::CodecLimits};
+
+const MAX_PAYLOAD_ITEMS: usize = 100_000;
+const MAX_TAG_COMPARISONS_PER_STEP: u64 = 35;
+
+#[derive(Clone, Copy, Default)]
+struct PayloadEntry {
+    tag: u32,
+    child_index: usize,
+    nested_structure: Option<usize>,
+}
+
+struct IndexedStructure {
+    entry_start: usize,
+    entry_count: usize,
+}
+
+struct PayloadTagIndex {
+    structures: Vec<IndexedStructure>,
+    entries: Vec<PayloadEntry>,
+    scratch: Vec<PayloadEntry>,
+}
+
+struct LookupBudget<'a> {
+    maximum_comparisons: u64,
+    comparisons: &'a mut u64,
+}
+
+#[derive(Default)]
+struct PayloadAccounting {
+    item_count: usize,
+    structure_count: usize,
+    child_count: usize,
+    maximum_width: usize,
+}
+
+enum RecognitionValue {
+    Validated(ValidatedExtensionValue),
+    Unrecognized(Structure),
+}
+
+/// Result of inspecting a generic vendor extension subtree.
+///
+/// Recognized results own a completely schema-validated value. Unrecognized
+/// results still own and expose the unchanged generic TTLV subtree. Formatting
+/// always redacts payload content.
+pub struct ExtensionRecognition {
+    value: RecognitionValue,
+}
+
+impl fmt::Debug for ExtensionRecognition {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("ExtensionRecognition([REDACTED])")
+    }
+}
+
+impl ExtensionRecognition {
+    /// Returns whether one exact discriminator match passed complete schema validation.
+    #[must_use]
+    pub const fn is_recognized(&self) -> bool {
+        matches!(&self.value, RecognitionValue::Validated(_))
+    }
+
+    /// Borrows the complete validated extension value, if recognition succeeded.
+    #[must_use]
+    pub const fn validated_value(&self) -> Option<&ValidatedExtensionValue> {
+        match &self.value {
+            RecognitionValue::Validated(value) => Some(value),
+            RecognitionValue::Unrecognized(_) => None,
+        }
+    }
+
+    /// Borrows the original generic TTLV subtree regardless of recognition outcome.
+    #[must_use]
+    const fn generic_value(&self) -> &Structure {
+        match &self.value {
+            RecognitionValue::Validated(value) => extension::generic_value(value),
+            RecognitionValue::Unrecognized(value) => value,
+        }
+    }
+}
+
+/// Returns whether the generic extension subtree has one exact, schema-valid match.
+#[must_use]
+pub const fn is_recognized(recognition: &ExtensionRecognition) -> bool {
+    recognition.is_recognized()
+}
+
+/// Borrows the complete typed value when recognition succeeded.
+#[must_use]
+pub const fn validated_value(
+    recognition: &ExtensionRecognition,
+) -> Option<&ValidatedExtensionValue> {
+    recognition.validated_value()
+}
+
+/// Borrows the original generic subtree for recognized and unrecognized values.
+#[must_use]
+pub fn generic_value(recognition: &ExtensionRecognition) -> &kmipkit_ttlv::Structure {
+    recognition.generic_value()
+}
 
 #[derive(Default)]
 struct DiscriminatorIndex {
@@ -362,6 +462,488 @@ pub(crate) fn candidate_matches_discriminator(
 #[must_use]
 pub const fn limits(registry: &ClientExtensionRegistry) -> ExtensionRegistryLimits {
     registry.limits
+}
+
+/// Inspects one generic vendor extension subtree against this immutable registry.
+///
+/// The original subtree is retained whether it is recognized or not. Zero or
+/// multiple exact discriminator matches remain unrecognized; one exact match
+/// proceeds to complete schema validation. The lookup uses one bounded index
+/// shared across all registered paths and never reorders the source tree.
+///
+/// # Errors
+///
+/// Returns a redacted `ResourceLimit` error with `NotSent` delivery evidence
+/// when TTLV, payload-index, or tag-comparison bounds are exceeded. No partial
+/// recognition result is returned on error.
+pub fn inspect(
+    registry: &ClientExtensionRegistry,
+    vendor_identifier: &str,
+    value: kmipkit_ttlv::Structure,
+    limits: &kmipkit_ttlv::codec::CodecLimits,
+) -> Result<ExtensionRecognition, ClientError> {
+    if u64::try_from(vendor_identifier.len()).map_or(true, |length| {
+        length > registry.limits.max_text_bytes_per_field()
+    }) {
+        return Err(ClientError::protocol(
+            registry_error(ProtocolErrorKind::ResourceLimit),
+            RequestDeliveryState::NotSent,
+        ));
+    }
+
+    let index = PayloadTagIndex::build(&value, limits, registry.limits.max_payload_index_records())
+        .map_err(|error| ClientError::protocol(error, RequestDeliveryState::NotSent))?;
+
+    let mut comparisons = 0_u64;
+    let mut exact_match = None;
+    for (definition_index, definition) in registry.definitions.iter().enumerate() {
+        let path = definition.discriminator().path().tags();
+        let mut lookup_budget = LookupBudget {
+            maximum_comparisons: registry.limits.max_lookup_comparisons(),
+            comparisons: &mut comparisons,
+        };
+        let matched = index
+            .resolve_path(&value.view(), path, &mut lookup_budget, |scalar| {
+                let Some(fingerprint) = extension::scalar_value_fingerprint(&scalar) else {
+                    return false;
+                };
+                let Some(candidates) =
+                    discriminator_candidates(registry, vendor_identifier, path, fingerprint)
+                else {
+                    return false;
+                };
+
+                let mut exact = false;
+                for candidate_index in candidates.iter().copied() {
+                    if candidate_matches_discriminator(
+                        registry,
+                        candidate_index,
+                        vendor_identifier,
+                        path,
+                        &scalar,
+                    ) && candidate_index == definition_index
+                    {
+                        exact = true;
+                    }
+                }
+                exact
+            })
+            .map_err(|error| ClientError::protocol(error, RequestDeliveryState::NotSent))?
+            .unwrap_or(false);
+
+        if matched && exact_match != Some(definition_index) {
+            if exact_match.is_some() {
+                return Ok(ExtensionRecognition {
+                    value: RecognitionValue::Unrecognized(value),
+                });
+            }
+            exact_match = Some(definition_index);
+        }
+    }
+
+    let Some(definition_index) = exact_match else {
+        return Ok(ExtensionRecognition {
+            value: RecognitionValue::Unrecognized(value),
+        });
+    };
+    let definition = registry.definitions.get(definition_index).ok_or_else(|| {
+        ClientError::protocol(
+            registry_error(ProtocolErrorKind::InvalidSchema),
+            RequestDeliveryState::NotSent,
+        )
+    })?;
+    let value = match extension::validate_schema_only(definition, value, limits)
+        .map_err(|error| ClientError::protocol(error, RequestDeliveryState::NotSent))?
+    {
+        extension::SchemaValidationOutcome::SchemaValid(value) => {
+            RecognitionValue::Validated(value)
+        }
+        extension::SchemaValidationOutcome::SchemaInvalid(value) => {
+            RecognitionValue::Unrecognized(value)
+        }
+    };
+    Ok(ExtensionRecognition { value })
+}
+
+impl PayloadTagIndex {
+    fn build(
+        value: &Structure,
+        codec_limits: &CodecLimits,
+        max_index_records: u64,
+    ) -> Result<Self, ProtocolError> {
+        let max_index_records = usize::try_from(max_index_records)
+            .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        let max_depth = codec_limits.max_structure_depth();
+        let mut accounting = PayloadAccounting {
+            item_count: 1,
+            ..PayloadAccounting::default()
+        };
+        if accounting.item_count > codec_limits.max_elements() {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+        let encoded_size = count_payload_structure(
+            &value.view(),
+            1,
+            max_depth,
+            codec_limits,
+            max_index_records,
+            &mut accounting,
+        )?;
+        if encoded_size > codec_limits.max_message_bytes() {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+
+        let child_count = accounting.child_count;
+        let structure_count = accounting.structure_count;
+        let mut structures = Vec::new();
+        structures
+            .try_reserve_exact(structure_count)
+            .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        let mut entries = Vec::new();
+        entries
+            .try_reserve_exact(child_count)
+            .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        let mut scratch = Vec::new();
+        scratch
+            .try_reserve_exact(accounting.maximum_width)
+            .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        scratch.resize(accounting.maximum_width, PayloadEntry::default());
+
+        let mut index = Self {
+            structures,
+            entries,
+            scratch,
+        };
+        let root = value.view();
+        index.append_structure(&root)?;
+        Ok(index)
+    }
+
+    fn append_structure(&mut self, view: &StructureView<'_>) -> Result<usize, ProtocolError> {
+        let structure_index = self.structures.len();
+        let entry_start = self.entries.len();
+        let children = view.children();
+        self.structures.push(IndexedStructure {
+            entry_start,
+            entry_count: children.len(),
+        });
+        for (child_index, child) in children.iter().enumerate() {
+            self.entries.push(PayloadEntry {
+                tag: child.tag().raw(),
+                child_index,
+                nested_structure: None,
+            });
+        }
+
+        for (child_index, child) in children.iter().enumerate() {
+            let nested_index = child.with_value(|value| match value {
+                ValueView::Structure(nested) => self.append_structure(&nested).map(Some),
+                _ => Ok(None),
+            })?;
+            let entry_index = entry_start
+                .checked_add(child_index)
+                .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+            let entry = self
+                .entries
+                .get_mut(entry_index)
+                .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+            entry.nested_structure = nested_index;
+        }
+
+        self.radix_sort_structure(entry_start, children.len())?;
+        Ok(structure_index)
+    }
+
+    fn radix_sort_structure(&mut self, start: usize, count: usize) -> Result<(), ProtocolError> {
+        let end = start
+            .checked_add(count)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        let entries = self
+            .entries
+            .get_mut(start..end)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        let scratch = self
+            .scratch
+            .get_mut(..count)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        for shift in [0_u32, 8, 16] {
+            let mut counts = [0_usize; 256];
+            for entry in entries.iter() {
+                let bucket = usize::try_from((entry.tag >> shift) & 0xff)
+                    .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+                let count = counts
+                    .get_mut(bucket)
+                    .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+                *count = count
+                    .checked_add(1)
+                    .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+            }
+            let mut next = [0_usize; 256];
+            let mut offset = 0_usize;
+            for (bucket, count) in counts.iter().copied().enumerate() {
+                let position = next
+                    .get_mut(bucket)
+                    .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+                *position = offset;
+                offset = offset
+                    .checked_add(count)
+                    .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+            }
+            for entry in entries.iter().copied() {
+                let bucket = usize::try_from((entry.tag >> shift) & 0xff)
+                    .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+                let position = next
+                    .get_mut(bucket)
+                    .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+                let destination = scratch
+                    .get_mut(*position)
+                    .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+                *destination = entry;
+                *position = position
+                    .checked_add(1)
+                    .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+            }
+            entries.copy_from_slice(scratch);
+        }
+        Ok(())
+    }
+
+    fn resolve_path<F>(
+        &self,
+        root: &StructureView<'_>,
+        path: &[Tag],
+        budget: &mut LookupBudget<'_>,
+        mut terminal: F,
+    ) -> Result<Option<bool>, ProtocolError>
+    where
+        F: for<'value> FnMut(ValueView<'value>) -> bool,
+    {
+        self.resolve_path_at(0, root, path, 0, budget, &mut terminal)
+    }
+
+    fn resolve_path_at<F>(
+        &self,
+        structure_index: usize,
+        current: &StructureView<'_>,
+        path: &[Tag],
+        path_position: usize,
+        budget: &mut LookupBudget<'_>,
+        terminal: &mut F,
+    ) -> Result<Option<bool>, ProtocolError>
+    where
+        F: for<'value> FnMut(ValueView<'value>) -> bool,
+    {
+        let Some(tag) = path.get(path_position) else {
+            return Ok(None);
+        };
+        let Some(entry) = self.unique_child(structure_index, tag.raw(), budget)? else {
+            return Ok(None);
+        };
+        let child = current
+            .children()
+            .get(entry.child_index)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        if path_position + 1 == path.len() {
+            return child.with_value(|value| Ok(Some(terminal(value))));
+        }
+        let Some(nested_index) = entry.nested_structure else {
+            return Ok(None);
+        };
+        child.with_value(|value| match value {
+            ValueView::Structure(nested) => self.resolve_path_at(
+                nested_index,
+                &nested,
+                path,
+                path_position + 1,
+                budget,
+                terminal,
+            ),
+            _ => Ok(None),
+        })
+    }
+
+    fn unique_child(
+        &self,
+        structure_index: usize,
+        tag: u32,
+        budget: &mut LookupBudget<'_>,
+    ) -> Result<Option<PayloadEntry>, ProtocolError> {
+        let structure = self
+            .structures
+            .get(structure_index)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        let start = structure.entry_start;
+        let end = start
+            .checked_add(structure.entry_count)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        let mut step_comparisons = 0_u64;
+        let mut low = start;
+        let mut high = end;
+        while low < high {
+            let middle = low + (high - low) / 2;
+            let entry = self
+                .entries
+                .get(middle)
+                .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+            charge_tag_comparison(budget, &mut step_comparisons)?;
+            if entry.tag < tag {
+                low = middle.saturating_add(1);
+            } else {
+                high = middle;
+            }
+        }
+        if low >= end {
+            return Ok(None);
+        }
+        let first = self
+            .entries
+            .get(low)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        charge_tag_comparison(budget, &mut step_comparisons)?;
+        if first.tag != tag {
+            return Ok(None);
+        }
+
+        let first_after_match = low
+            .checked_add(1)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        let mut upper = first_after_match;
+        let mut upper_end = end;
+        while upper < upper_end {
+            let middle = upper + (upper_end - upper) / 2;
+            let entry = self
+                .entries
+                .get(middle)
+                .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+            charge_tag_comparison(budget, &mut step_comparisons)?;
+            if entry.tag <= tag {
+                upper = middle.saturating_add(1);
+            } else {
+                upper_end = middle;
+            }
+        }
+        if upper != first_after_match {
+            return Ok(None);
+        }
+        Ok(Some(*first))
+    }
+}
+
+fn count_payload_structure(
+    structure: &StructureView<'_>,
+    depth: usize,
+    maximum_depth: usize,
+    codec_limits: &CodecLimits,
+    max_index_records: usize,
+    accounting: &mut PayloadAccounting,
+) -> Result<usize, ProtocolError> {
+    if depth > maximum_depth {
+        return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+    }
+    accounting.structure_count = accounting
+        .structure_count
+        .checked_add(1)
+        .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+    if accounting
+        .structure_count
+        .checked_add(accounting.child_count)
+        .is_none_or(|records| records > max_index_records)
+    {
+        return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+    }
+    let mut encoded_size = 8_usize;
+    accounting.maximum_width = accounting.maximum_width.max(structure.children().len());
+    for child in structure.children() {
+        accounting.item_count = accounting
+            .item_count
+            .checked_add(1)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        if accounting.item_count > codec_limits.max_elements() {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+        if accounting.item_count > MAX_PAYLOAD_ITEMS {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+        accounting.child_count = accounting
+            .child_count
+            .checked_add(1)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        if accounting
+            .structure_count
+            .checked_add(accounting.child_count)
+            .is_none_or(|records| records > max_index_records)
+        {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+
+        let child_size = child.with_value(|value| match value {
+            ValueView::Structure(nested) => count_payload_structure(
+                &nested,
+                depth.saturating_add(1),
+                maximum_depth,
+                codec_limits,
+                max_index_records,
+                accounting,
+            ),
+            scalar => {
+                let payload_length = scalar_payload_length(&scalar)
+                    .ok_or_else(|| registry_error(ProtocolErrorKind::UnsupportedValue))?;
+                padded_item_size(payload_length)
+            }
+        })?;
+        encoded_size = encoded_size
+            .checked_add(child_size)
+            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+        if encoded_size > codec_limits.max_message_bytes() {
+            return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+        }
+    }
+    Ok(encoded_size)
+}
+
+fn scalar_payload_length(value: &ValueView<'_>) -> Option<usize> {
+    match value {
+        ValueView::Integer(_)
+        | ValueView::LongInteger(_)
+        | ValueView::Enumeration(_)
+        | ValueView::Boolean(_)
+        | ValueView::DateTime(_)
+        | ValueView::Interval(_)
+        | ValueView::DateTimeExtended(_) => Some(8),
+        ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) => Some(bytes.len()),
+        ValueView::TextString(text) => Some(text.len()),
+        _ => None,
+    }
+}
+
+fn padded_item_size(payload_length: usize) -> Result<usize, ProtocolError> {
+    let padded_length = payload_length
+        .checked_add(7)
+        .map(|length| (length / 8) * 8)
+        .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+    8_usize
+        .checked_add(padded_length)
+        .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))
+}
+
+fn charge_tag_comparison(
+    budget: &mut LookupBudget<'_>,
+    step_comparisons: &mut u64,
+) -> Result<(), ProtocolError> {
+    *budget.comparisons = budget
+        .comparisons
+        .checked_add(1)
+        .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+    *step_comparisons = step_comparisons
+        .checked_add(1)
+        .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+    if *step_comparisons > MAX_TAG_COMPARISONS_PER_STEP {
+        return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+    }
+    if *budget.comparisons > budget.maximum_comparisons {
+        return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+    }
+    Ok(())
 }
 
 fn validate_totals(

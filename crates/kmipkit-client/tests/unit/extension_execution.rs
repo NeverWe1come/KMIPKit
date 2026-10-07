@@ -1,13 +1,13 @@
 //! Fake-transport response inspection and KMIPKIT-0007 criticality behavior.
 //!
 //! Traceability: KMIPKIT-0012-FR-006 through FR-008, KMIPKIT-0007-FR-010,
-//! KMIP 2.1 §9.13, Table 418. Registry inspection here consumes the generic
-//! subtree returned by the existing response model; execute-time recognition
-//! mapping remains the KMIPKIT-0012 T037 implementation responsibility.
+//! KMIP 2.1 §9.13, Table 418. Registry inspection is integrated with typed
+//! response mapping while KMIPKIT-0007 retains unknown-extension criticality.
 
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use kmipkit_protocol::PollRequest;
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
@@ -42,6 +42,13 @@ const DISCRIMINATOR: &[u8] = b"fixture-v1";
 const UNKNOWN_ENUMERATION: u32 = u32::MAX;
 
 fn response_with_extension(criticality: bool) -> Vec<u8> {
+    response_with_extension_for_operation(
+        criticality,
+        crate::execute_test_support::DISCOVER_VERSIONS_OPERATION,
+    )
+}
+
+fn response_with_extension_for_operation(criticality: bool, operation: u32) -> Vec<u8> {
     let mut extension_payload = Structure::new();
     extension_payload
         .try_push(test_item(
@@ -80,10 +87,7 @@ fn response_with_extension(criticality: bool) -> Vec<u8> {
         test_item(VENDOR_EXTENSION, Value::structure(extension_payload)),
     ]);
     let batch_item = test_structure([
-        test_item(
-            OPERATION,
-            Value::enumeration(crate::execute_test_support::DISCOVER_VERSIONS_OPERATION),
-        ),
+        test_item(OPERATION, Value::enumeration(operation)),
         test_item(RESULT_STATUS, Value::enumeration(0)),
         test_item(RESPONSE_PAYLOAD, Value::structure(response_payload)),
         test_item(MESSAGE_EXTENSION, Value::structure(extension)),
@@ -284,16 +288,32 @@ fn a_registered_critical_response_extension_is_accepted_by_typed_execution() {
         .expect("a recognized critical extension is not an unknown critical extension");
     let extension = &response.get(0).expect("one response item").extensions()[0];
     let (vendor, criticality, payload) = extension_parts(extension);
-    let recognition = extension_registry::inspect(
-        &registered,
-        &vendor,
-        payload,
-        &CodecLimits::defaults(),
-    )
-    .expect("the returned generic payload remains inspectable");
+    let recognition =
+        extension_registry::inspect(&registered, &vendor, payload, &CodecLimits::defaults())
+            .expect("the returned generic payload remains inspectable");
 
     assert!(criticality);
     assert!(extension_registry::is_recognized(&recognition));
+    let discriminator = String::from_utf8_lossy(DISCRIMINATOR);
+    assert!(!format!("{recognition:?}").contains(discriminator.as_ref()));
+    assert!(!format!("{extension:?}").contains(VENDOR));
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn a_registered_critical_async_response_extension_is_accepted() {
+    let (mut client, transport) = client_for_configuration(
+        response_with_extension_for_operation(true, 0x0000_001A),
+        ClientConfiguration::new(registry()),
+    );
+    let outcome = client
+        .execute_poll(
+            PollRequest::new(b"poll-correlation"),
+            &CodecLimits::defaults(),
+        )
+        .expect("a registered critical extension is recognized in an async response");
+
+    assert_eq!(outcome.operation(), crate::ClientOperation::Poll);
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 

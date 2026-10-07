@@ -6,10 +6,10 @@ use std::fmt;
 
 use kmipkit_protocol::{
     AsynchronousOperationError, CancelRequest, CancelResponse, CancellationResult,
-    DiscoverVersionsRequest, DiscoverVersionsResponse, PollRequest, PollResponse, ProcessRequest,
-    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
-    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus,
+    DiscoverVersionsRequest, DiscoverVersionsResponse, MessageExtensionView, PollRequest,
+    PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError,
+    ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
+    RequestMessage, ResponseBatchItemView, ResponseMessage, ResultStatus,
 };
 use kmipkit_transport::{RequestDeliveryState, Transport};
 use kmipkit_ttlv::codec::{CodecLimits, DecodeError, decode_with_limits};
@@ -18,7 +18,9 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 use zeroize::Zeroize;
 use zeroize::Zeroizing;
 
-use crate::extension_registry::ClientRequestMessageExtension;
+use crate::extension_registry::{
+    self, ClientConfiguration, ClientExtensionRegistry, ClientRequestMessageExtension,
+};
 use crate::{ClientCauseCategory, ClientError};
 
 #[path = "wire_encoder.rs"]
@@ -610,6 +612,7 @@ impl fmt::Debug for ClientBatchResponse {
 /// scope, limits, redaction, and transport boundaries.
 pub struct Client {
     transport: Box<dyn Transport>,
+    configuration: ClientConfiguration,
     #[cfg(test)]
     request_owner_observer: Option<private_wire_writer::ZeroizationObserver>,
     #[cfg(test)]
@@ -662,6 +665,8 @@ impl Client {
             &batch,
             &options,
             response_message,
+            self.configuration.extension_registry(),
+            limits,
             #[cfg(test)]
             self.pending_owner_observer.as_ref(),
         )
@@ -892,14 +897,25 @@ impl Client {
             kind,
             asynchronous_indicator,
             expected_cancel_correlation,
+            self.configuration.extension_registry(),
+            limits,
         )
         .map_err(|error| protocol_failure_at(error, delivery_state))
     }
 
     #[cfg(test)]
     pub(super) fn for_test<T: Transport + 'static>(transport: T) -> Self {
+        Self::for_test_with_configuration(transport, empty_test_configuration())
+    }
+
+    #[cfg(test)]
+    pub(super) fn for_test_with_configuration<T: Transport + 'static>(
+        transport: T,
+        configuration: ClientConfiguration,
+    ) -> Self {
         Self {
             transport: Box::new(transport),
+            configuration,
             request_owner_observer: None,
             pending_owner_observer: None,
             limits_identity_observer: None,
@@ -913,6 +929,7 @@ impl Client {
     ) -> Self {
         Self {
             transport: Box::new(transport),
+            configuration: empty_test_configuration(),
             request_owner_observer: Some(observer),
             pending_owner_observer: None,
             limits_identity_observer: None,
@@ -926,6 +943,7 @@ impl Client {
     ) -> Self {
         Self {
             transport: Box::new(transport),
+            configuration: empty_test_configuration(),
             request_owner_observer: None,
             pending_owner_observer: None,
             limits_identity_observer: Some(observer),
@@ -940,11 +958,22 @@ impl Client {
     ) -> Self {
         Self {
             transport: Box::new(transport),
+            configuration: empty_test_configuration(),
             request_owner_observer: Some(request_observer),
             pending_owner_observer: Some(pending_observer),
             limits_identity_observer: None,
         }
     }
+}
+
+#[cfg(test)]
+fn empty_test_configuration() -> ClientConfiguration {
+    let registry = crate::extension_registry::client_extension_registry(
+        Vec::new(),
+        kmipkit_protocol::extension::defaults(),
+    )
+    .expect("an empty extension registry is valid");
+    ClientConfiguration::new(registry)
 }
 
 struct OperationEncodingPermit {
@@ -1469,6 +1498,8 @@ fn validate_response(
     request: &ClientBatch,
     options: &ValidatedBatchOptions,
     response: ResponseMessage,
+    registry: &ClientExtensionRegistry,
+    limits: &CodecLimits,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
 ) -> Result<ClientBatchResponse, ProtocolError> {
     if !protocol_version_is_supported(response.header().protocol_version()) {
@@ -1507,7 +1538,8 @@ fn validate_response(
             let critical = extension
                 .criticality_indicator()
                 .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
-            validate_unknown_extension(critical).map_err(ProtocolError::from)?;
+            let recognized = inspect_response_extension(extension, registry, limits)?;
+            validate_unknown_extension(critical && !recognized).map_err(ProtocolError::from)?;
             let structure = extension
                 .with_ttlv(|view| copy_structure(&view))
                 .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))??;
@@ -1568,6 +1600,8 @@ fn validate_async_response(
     kind: ClientOperation,
     asynchronous_indicator: Option<u32>,
     expected_cancel_correlation: Option<&[u8]>,
+    registry: &ClientExtensionRegistry,
+    limits: &CodecLimits,
 ) -> Result<ClientOperationOutcome, ProtocolError> {
     if !protocol_version_is_supported(response.header().protocol_version()) {
         return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
@@ -1599,7 +1633,8 @@ fn validate_async_response(
         let critical = extension
             .criticality_indicator()
             .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
-        validate_unknown_extension(critical).map_err(ProtocolError::from)?;
+        let recognized = inspect_response_extension(extension, registry, limits)?;
+        validate_unknown_extension(critical && !recognized).map_err(ProtocolError::from)?;
     }
 
     let (result, cancellation_result) = match kind {
@@ -1658,6 +1693,26 @@ fn validate_async_response(
         response,
         cancellation_result,
     })
+}
+
+fn inspect_response_extension(
+    extension: MessageExtensionView<'_>,
+    registry: &ClientExtensionRegistry,
+    limits: &CodecLimits,
+) -> Result<bool, ProtocolError> {
+    let vendor = extension
+        .with_vendor_identification(str::to_owned)
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
+    let payload = extension
+        .with_vendor_extension(|view| copy_structure(&view))
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))??;
+    let recognition = extension_registry::inspect(registry, &vendor, payload, limits).map_err(
+        |error| match error {
+            ClientError::Protocol { error, .. } => error,
+            _ => protocol_error(ProtocolErrorKind::ResourceLimit),
+        },
+    )?;
+    Ok(extension_registry::is_recognized(&recognition))
 }
 
 fn asynchronous_operation_error(error: AsynchronousOperationError) -> ProtocolError {

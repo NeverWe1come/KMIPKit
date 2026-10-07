@@ -287,3 +287,44 @@ configured maximum; error categories and fail-fast order are unchanged.
 - `cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
+
+## 2026-10-07 — recognized response extension Green
+
+`Client` now retains its immutable `ClientConfiguration`. Synchronous and
+asynchronous typed response mapping inspects each Message Extension using that
+client's registry and the same per-call `CodecLimits` used for response
+decoding. Recognized critical extensions continue; unrecognized critical
+extensions still pass through KMIPKIT-0007's rejection helper. The response
+model retains its original generic Message Extension for caller inspection.
+
+Payload ownership review: `ExtensionRecognition` owns either the original
+generic `Structure` or a schema-validated value that owns the same generic
+subtree. The response mapping's bounded copies use the existing TTLV `Value`
+owner, whose drop recursively zeroizes payloads; decode and response copies
+therefore follow the established zeroization behavior. Recognition and
+response-extension Debug implementations redact payload/vendor content, with
+sentinel assertions in the fake-transport tests. Protocol redaction tests cover
+schema errors and validated values.
+
+Red/Green evidence:
+
+- Red: `4961de7`; the registered-critical fake-transport test could not compile
+  because the client did not retain a configuration or registry.
+- Green: the response mapping stores the configuration and recognizes both
+  synchronous and asynchronous registered critical extensions. Unknown
+  critical and non-critical fake-transport cases continue to verify the
+  KMIPKIT-0007 behavior.
+- The adversarial 35-comparison case passes; lowering the internal hard bound
+  to 34 makes it fail at that exact comparison. The all-equal repeated-tag
+  case separately proves its 34-comparison boundary.
+
+Verification:
+
+- `cargo test -p kmipkit-client -p kmipkit-protocol --all-features` — passed,
+  including 191 client unit tests, response-recognition/fake-transport tests,
+  protocol preservation/redaction tests, integration tests, and doctests.
+- `cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo fmt --all --check` — passed.
+- `python tools/api_manifest/generate.py --check` — passed; six generated files
+  are current.
+- `git diff --check` — passed.
