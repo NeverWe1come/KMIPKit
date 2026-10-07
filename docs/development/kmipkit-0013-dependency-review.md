@@ -30,8 +30,9 @@ the reviewed target set, and ran both waiver-free workspace scans. The command
 did not pass because the current exception register is empty while the root
 workspace still contains license and duplicate-version findings.
 
-The current locked baseline scans were then run directly with cargo-deny
-0.20.2 so their exact findings could be recorded after the rustls update:
+The committed locked graph was scanned directly with cargo-deny 0.20.2. A
+separate lockfile-only attempt to remove the `syn` duplicate was rejected
+after security review, and `Cargo.lock` was restored to the committed graph.
 
 | Workspace | Advisory errors | Duplicate errors | License errors | Warnings | Result |
 |---|---:|---:|---:|---:|---|
@@ -43,17 +44,17 @@ The root duplicate sets are:
 - `core-foundation` 0.9.4 via Hickory `system-configuration` 0.7.0 and
   `core-foundation` 0.10.1 via `rustls-native-certs` 0.8.4's
   `security-framework` 3.7.0 dependency on Apple targets.
-- `syn` 2.0.119 and 3.0.6, required by distinct proc-macro dependency families
-  in the combined workspace graph.
+- `syn` 2.0.119 and 3.0.6, required by distinct proc-macro dependency
+  families in the combined workspace graph.
 
 An upstream update to `system-configuration` 0.8.0 would use
 `core-foundation` 0.10, but Hickory resolver 0.26.3 constrains its Apple-only
 `system-configuration` dependency to the incompatible 0.7 line. Avoiding this
 duplicate therefore requires a Hickory release that updates that constraint
-or a different system-DNS design; no lockfile-only update can unify it. The
-`syn` duplicate is likewise across incompatible major versions and multiple
-independent proc-macro families; do not force an unreviewed dependency
-replacement to hide it.
+or a different system-DNS design; no lockfile-only update can unify it. A
+separate attempt to remove the `syn` duplicate with compatible transitive
+pins was rejected after it required vulnerable `zerovec` packages; the
+committed lockfile has been restored. Both duplicate sets remain unresolved.
 
 The five denied package license expressions are:
 
@@ -143,13 +144,22 @@ limits, and deadlines on Linux, Windows, and macOS. Replacing Hickory with a
 blocking system lookup would not implement the bounded asynchronous resolver
 contract in `spec.md` and `research.md`.
 
-The locked `syn` duplicate is independent of the Core Foundation target
-duplicate and also remains. In the current graph, `syn` 2.0.119 is used by
-`serde_derive` 1.0.228; `syn` 3.0.6 is used by separate proc-macro families
-including `async-trait`, `displaydoc`, `futures-macro`, `synstructure`,
-`thiserror-impl`, and `tokio-macros`. These major versions cannot be unified
-by lockfile resolution. Therefore, the Hickory upstream manifest update alone
-would not make the duplicate-version scan pass.
+An attempted lockfile-only alignment pinned compatible releases of
+`async-trait`, `displaydoc`, `futures-util`, `thiserror`, `tokio-macros`, and
+the ICU derive chain so the reachable proc-macro graph used `syn` 2.0.119.
+The trial compiled with `cargo check --workspace --all-features --locked`,
+and cargo-deny reported no known advisory for that graph. Independent
+security review then found that this alignment required `zerovec` 0.11.6 and
+`zerovec-derive` 0.11.3, both affected by [GHSA-7fx9-626j-vqph](https://github.com/unicode-org/icu4x/security/advisories/GHSA-7fx9-626j-vqph).
+The advisory rates the issue High: the derive can accept invalid bytes in
+later elements of a multi-element buffer, potentially violating type
+validity. It identifies `zerovec` 0.11.8 and `zerovec-derive` 0.11.5 as
+patched; the upstream [fix](https://github.com/unicode-org/icu4x/pull/8393)
+documents the validation bug. The current lockfile keeps these fixed versions
+(`zerovec` 0.11.8 and `zerovec-derive` 0.11.6), which means the `syn` 3
+dependency remains. The trial lockfile was discarded. The cargo-deny
+advisory result alone is insufficient for this package because it did not
+report this GHSA.
 
 The independent package-source review confirmed the published license
 expressions recorded above in the versions fixed by `Cargo.lock`. The ISC and
@@ -161,10 +171,11 @@ disposition; the SPDX expression alone is not a legal analysis. The review
 did not make a legal determination or approve an exception.
 
 Commands used for this follow-up included `cargo info hickory-resolver`,
-`cargo info rustls-native-certs`, `cargo info system-configuration`, and
+`cargo info rustls-native-certs`, `cargo info system-configuration`,
 `cargo tree --locked --workspace --target aarch64-apple-darwin -i
-core-foundation@0.9.4` / `core-foundation@0.10.1`. The `syn` paths were
-checked with `cargo tree --locked --workspace -i syn@2.0.119` and
-`cargo tree --locked --workspace -i syn@3.0.6`. The version and graph
-findings supplement, but do not replace, the required human review. T003
-remains unchecked.
+core-foundation@0.9.4` / `core-foundation@0.10.1`, `cargo tree --locked
+--workspace -d`, `cargo deny check`, and `cargo deny check advisories`. Both
+`syn` paths were checked with `cargo tree --locked --workspace -i
+syn@2.0.119` and `cargo tree --locked --workspace -i syn@3.0.6`. The version
+and graph findings supplement, but do not replace, the required human review.
+T003 remains unchecked.
