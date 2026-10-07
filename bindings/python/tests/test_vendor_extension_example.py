@@ -17,11 +17,7 @@ EXAMPLE = ROOT / "bindings" / "python" / "examples" / "vendor_extension_registry
 class VendorExtensionExampleTests(unittest.TestCase):
     def test_example_runs_and_demonstrates_preservation_and_ordered_attachments(self) -> None:
         environment = os.environ.copy()
-        source = str(ROOT / "bindings" / "python" / "src")
-        existing_pythonpath = environment.get("PYTHONPATH")
-        environment["PYTHONPATH"] = (
-            source if not existing_pythonpath else os.pathsep.join((source, existing_pythonpath))
-        )
+        environment.pop("PYTHONPATH", None)
 
         result = subprocess.run(
             [sys.executable, str(EXAMPLE)],
