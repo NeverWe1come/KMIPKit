@@ -455,6 +455,30 @@ class DependencyExceptionTests(unittest.TestCase):
         policy = self.require_policy()
         policy.validate_exceptions({"schema_version": 1, "exceptions": entries}, findings, today=date(2026, 1, 15))
 
+    def test_exception_validation_reports_all_unmatched_findings_and_versions(self) -> None:
+        findings = [
+            finding("duplicate", "core-foundation", "0.9.4"),
+            finding("duplicate", "core-foundation", "0.10.1"),
+            finding("duplicate", "syn", "2.0.119"),
+            finding("duplicate", "syn", "3.0.6"),
+            finding("license", "aws-lc-rs", "1.18.1"),
+        ]
+
+        with self.assertRaises(self.policy_error()) as context:
+            self.validate([], findings)
+
+        diagnostic = str(context.exception)
+        self.assertIn("has no exact registered exception", diagnostic)
+        for package_name, version in (
+            ("core-foundation", "0.9.4"),
+            ("core-foundation", "0.10.1"),
+            ("syn", "2.0.119"),
+            ("syn", "3.0.6"),
+            ("aws-lc-rs", "1.18.1"),
+        ):
+            with self.subTest(package=package_name, version=version):
+                self.assertIn(f"{package_name}@{version}", diagnostic)
+
     def test_registered_exception_must_have_a_matching_policy_config_waiver(self) -> None:
         policy = self.require_policy()
         entry = exact_exception("duplicate", source="registry+https://github.com/rust-lang/crates.io-index")
@@ -1003,6 +1027,15 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
             contents.index("dependency policy exact exception validation"),
             contents.rindex("$workspace in @("),
         )
+
+    def test_runner_reports_safe_exact_exception_validation_diagnostics(self) -> None:
+        contents = self.require_runner()
+        self.assertIn("[switch]$SafePolicyDiagnostics", contents)
+        self.assertIn("$policyReport = $stderr.Trim()", contents)
+        validation_start = contents.index("dependency policy exact exception validation")
+        validation_end = contents.index("foreach ($workspace in @(", validation_start)
+        validation_call = contents[validation_start:validation_end]
+        self.assertIn("-SafePolicyDiagnostics", validation_call)
 
     def test_runner_executes_negative_fixtures_with_the_verified_pinned_binary(self) -> None:
         contents = self.require_runner()
