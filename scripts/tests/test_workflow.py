@@ -463,6 +463,8 @@ class WorkflowContractTests(unittest.TestCase):
             "core",
             "script-contracts",
             "language-bindings",
+            "ffi-sanitizer",
+            "fuzz-smoke",
             "normative-inventory",
             "coverage",
             "coverage-gate",

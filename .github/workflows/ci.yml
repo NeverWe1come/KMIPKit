@@ -164,6 +164,56 @@ jobs:
           python -m pytest -q bindings/python/tests
           python bindings/python/examples/vendor_extension_registry.py
 
+  ffi-sanitizer:
+    if: github.event_name == 'pull_request'
+    name: FFI sanitizer / Linux
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      RUSTUP_TOOLCHAIN: nightly
+      RUSTFLAGS: -Zsanitizer=address
+      CFLAGS: -fsanitize=address -fno-omit-frame-pointer
+      ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+    steps:
+      - name: Checkout pull request merge commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install nightly Rust with source component
+        run: rustup toolchain install nightly --profile minimal --component rust-src
+
+      - name: Run the C consumer against the Rust FFI under AddressSanitizer
+        run: cargo +nightly test --locked --target x86_64-unknown-linux-gnu -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage -- --test-threads=1
+
+      - name: Run the JNI zeroization owner test under native sanitizers
+        run: |
+          mkdir -p target/sanitizers
+          c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer bindings/java/native/tests/zeroizing_bytes_test.cpp -o target/sanitizers/zeroizing_bytes_test
+          target/sanitizers/zeroizing_bytes_test
+
+  fuzz-smoke:
+    if: github.event_name == 'pull_request'
+    name: Fuzz smoke / extension schema
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request merge commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install nightly Rust
+        run: rustup toolchain install nightly --profile minimal
+
+      - name: Install pinned cargo-fuzz
+        run: cargo +nightly install cargo-fuzz --version 0.13.2 --locked
+
+      - name: Fuzz the bounded extension schema target
+        run: cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
+
   normative-inventory:
     if: github.event_name == 'pull_request'
     name: Normative inventory / immutable sources and coverage
@@ -553,6 +603,8 @@ jobs:
       - core
       - script-contracts
       - language-bindings
+      - ffi-sanitizer
+      - fuzz-smoke
       - normative-inventory
       - coverage
       - coverage-gate

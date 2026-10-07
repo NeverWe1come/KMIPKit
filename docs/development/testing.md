@@ -40,15 +40,17 @@ The `extension_schema` libFuzzer target decodes at most 4 KiB of input with a
 64-Structure and 512-Item limit, then validates any decoded root Structure
 against a fixed nested extension schema. Schema mismatches are expected; a
 panic, partial value, or limit bypass is not. Run it with the repository's
-nightly toolchain and `cargo-fuzz` installed:
+nightly toolchain and pinned `cargo-fuzz` 0.13.2 installed:
 
 ```text
-cargo +nightly fuzz run extension_schema -- -max_len=4096 -timeout=5
+cargo +nightly install cargo-fuzz --version 0.13.2 --locked
+cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
 ```
 
-For a bounded local smoke campaign, add `-runs=1000`. Keep minimized crashes
-under `fuzz/artifacts/extension_schema/` for triage, and promote any regression
-input into a deterministic protocol test before fixing it.
+Pull-request CI runs the same bounded smoke campaign in `fuzz-smoke`. Keep
+minimized crashes under `fuzz/artifacts/extension_schema/` for triage, and
+promote any regression input into a deterministic protocol test before fixing
+it.
 
 ### Client tests
 
@@ -88,6 +90,9 @@ framing, forbidden redirect/compression behavior, and connection reuse.
 - Compile and execute a C consumer.
 - Run panic-containment and memory ownership tests.
 - Run sanitizer jobs for the FFI surface.
+- Pull-request CI runs the Linux C consumer through the Rust ABI under
+  AddressSanitizer and runs the JNI zeroizing-owner test under AddressSanitizer
+  and UndefinedBehaviorSanitizer in `ffi-sanitizer`.
 - Test Java from the packaged native JAR.
 - Test Python from the built wheel in a clean environment.
 - Run shared behavioral vectors through Rust, C, Java, and Python.
