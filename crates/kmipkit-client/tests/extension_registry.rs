@@ -580,7 +580,7 @@ fn registry_enforces_configured_text_field_limit_on_every_identity_and_metadata_
         "name5",
         "ver55",
         "meta5",
-        Some("desc"),
+        Some("desc5"),
         &[0x42_0001],
         "value",
     );
