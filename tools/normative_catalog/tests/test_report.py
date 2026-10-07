@@ -336,6 +336,33 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn(r"not\_claimed", report)
         self.assertIn("selected", report)
 
+    def test_report_omits_secret_markers_from_untrusted_diagnostic_text(self) -> None:
+        catalog = report_catalog()
+        credential_marker = "credential=report-secret-sentinel-731"
+        private_key_marker = "private-key-sentinel-932"
+        raw_body_marker = "raw-kmip-body-sentinel-184"
+        catalog["requirements"][0]["review_note"] = (
+            f"diagnostic {credential_marker} {private_key_marker} {raw_body_marker}"
+        )
+        catalog["discrepancies"] = [
+            {
+                "discrepancy_id": "KMIPKIT-DISC-REPORT-001",
+                "state": "open",
+                "summary": f"malformed evidence {raw_body_marker}",
+                "source_refs": [],
+                "affected_requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "affected_element_ids": [],
+                "affected_profile_ids": [],
+                "affected_policy_ids": [],
+            }
+        ]
+
+        report = render_report(catalog)
+
+        for marker in (credential_marker, private_key_marker, raw_body_marker):
+            with self.subTest(marker=marker):
+                self.assertNotIn(marker, report)
+
     def test_full_catalog_report_reconciles_tags_ranges_and_profile_cases(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         report = render_report(catalog)
