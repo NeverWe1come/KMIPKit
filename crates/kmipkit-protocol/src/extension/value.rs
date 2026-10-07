@@ -340,18 +340,8 @@ fn validate_order_edges(
     path: &mut Vec<kmipkit_ttlv::Tag>,
     metrics: &mut ValidationMetrics,
 ) -> Result<(), ProtocolError> {
-    let pair_count = present_rule_indices
-        .len()
-        .checked_mul(present_rule_indices.len().saturating_sub(1))
-        .and_then(|count| count.checked_div(2))
-        .ok_or_else(resource_limit)?;
-    let pair_search_count = pair_count.checked_mul(2).ok_or_else(resource_limit)?;
-    let maximum_search_comparisons =
-        usize::try_from(usize::BITS - order_edges.len().leading_zeros())
-            .map_err(|_| resource_limit())?;
-    let pair_work_bound = pair_search_count
-        .checked_mul(maximum_search_comparisons)
-        .ok_or_else(resource_limit)?;
+    let pair_work_bound =
+        order_pair_search_work_bound(order_edges.len(), present_rule_indices.len())?;
     let mut checks = 0_usize;
     let mut work = 0_usize;
     let mut first_invalid_edge: Option<usize> = None;
@@ -412,6 +402,22 @@ fn validate_order_edges(
 
     record_order_edge_work(metrics, work)?;
     record_order_edge_checks(metrics, checks)
+}
+
+fn order_pair_search_work_bound(
+    edge_count: usize,
+    present_rule_count: usize,
+) -> Result<usize, ProtocolError> {
+    let pair_count = present_rule_count
+        .checked_mul(present_rule_count.saturating_sub(1))
+        .and_then(|count| count.checked_div(2))
+        .ok_or_else(resource_limit)?;
+    let directed_search_count = pair_count.checked_mul(2).ok_or_else(resource_limit)?;
+    let maximum_search_comparisons =
+        usize::try_from(usize::BITS - edge_count.leading_zeros()).map_err(|_| resource_limit())?;
+    directed_search_count
+        .checked_mul(maximum_search_comparisons)
+        .ok_or_else(resource_limit)
 }
 
 fn find_order_edge(
