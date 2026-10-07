@@ -20,6 +20,7 @@ bindings = "cffi"
 branch = false
 relative_files = true
 source = ["kmipkit"]
+omit = ["*/kmipkit/_ffi/__init__.py", "*/kmipkit/_ffi/ffi.py"]
 
 [tool.coverage.report]
 fail_under = 85
