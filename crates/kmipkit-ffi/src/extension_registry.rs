@@ -24,8 +24,16 @@ use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
 #[cfg(test)]
+#[path = "../tests/support/registry_preflight_tests.rs"]
+mod registry_preflight_tests;
+#[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
+
+#[cfg(test)]
+thread_local! {
+    static REGISTRY_DEFINITION_CLONE_COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
 
 const SUCCESS: i32 = 0;
 const ERROR_COMPATIBILITY_MISMATCH: i32 = 1;
@@ -1421,6 +1429,8 @@ pub extern "C" fn kmipkit_client_extension_registry_create(
         Kind::Definition,
         |handle| {
             let definition = definition_from_handle(handle)?;
+            #[cfg(test)]
+            REGISTRY_DEFINITION_CLONE_COUNT.with(|count| count.set(count.get() + 1));
             extension::clone_extension_definition(definition)
                 .map_err(|error| protocol_status(&error))
         },

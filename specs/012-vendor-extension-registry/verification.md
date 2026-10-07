@@ -927,3 +927,23 @@ The Python adapter's Extension Information test expectation was also corrected t
   after merging those arms, the same full-workspace Clippy command passed;
   `cargo +1.94 test -p kmipkit-ttlv --test value_clone`, formatting, and
   `git diff --check` also passed.
+
+## 2026-10-07 — allocation-before-limit boundary regressions (Red)
+
+- Added Python probes for TTLV bytearray materialization, over-limit identity
+  text encoding, and schema/registry collection traversal; added Java probes
+  for schema and registry list traversal.
+- Python Red: `bindings/python/.venv/Scripts/python.exe -m pytest -q
+  bindings/python/tests/test_extension_registry.py -k precedes` failed all
+  four new cases. The bytearray was converted, text was encoded, and the
+  oversized collections were traversed before the expected resource-limit
+  error.
+- Java Red: `mvn -f bindings/java/pom.xml -Dtest=ExtensionRegistryTest test`
+  failed the two new cases because `List.copyOf` and schema iteration reached
+  the adversarial `get` methods before rejecting their sizes.
+- C ABI Red: `cargo +1.94 test -p kmipkit-ffi
+  registry_construction_checks_aggregate_limits_before_definition_clones --
+  --nocapture` failed because one definition clone occurred before the
+  aggregate schema-node limit returned `ERROR_RESOURCE_LIMIT`.
+- These are expected Red outcomes; the production fix and Green evidence are
+  not recorded in this commit.

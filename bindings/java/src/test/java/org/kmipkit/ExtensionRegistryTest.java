@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -519,6 +520,43 @@ final class ExtensionRegistryTest {
                 new LimitCase("maxLookupComparisons", 1_048_576, 4_194_304,
                         ExtensionRegistryLimits::maxLookupComparisons),
                 new LimitCase("maxDepth", 64, 64, ExtensionRegistryLimits::maxDepth));
+    }
+
+    @Test
+    void registryDefinitionLimitIsCheckedBeforeTraversingInputList() {
+        ExtensionRegistryLimits limits = ExtensionRegistryLimits.defaults();
+        List<ExtensionDefinition> definitions = new AbstractList<>() {
+            @Override
+            public ExtensionDefinition get(int index) {
+                throw new AssertionError("over-limit definitions were traversed");
+            }
+
+            @Override
+            public int size() {
+                return Math.toIntExact(limits.maxDefinitions() + 1);
+            }
+        };
+
+        assertThrows(ResourceLimitException.class,
+                () -> ClientExtensionRegistry.create(definitions, limits));
+    }
+
+    @Test
+    void schemaChildLimitIsCheckedBeforeTraversingInputList() {
+        List<ExtensionChildRule> children = new AbstractList<>() {
+            @Override
+            public ExtensionChildRule get(int index) {
+                throw new AssertionError("over-limit schema rules were traversed");
+            }
+
+            @Override
+            public int size() {
+                return 4_097;
+            }
+        };
+
+        assertThrows(ResourceLimitException.class,
+                () -> ExtensionSchema.structure(children, List.of(), true));
     }
 
 }

@@ -921,5 +921,52 @@ class ExtensionRegistryTests(unittest.TestCase):
             registry.close()
 
 
+    def test_variable_ttlv_limit_precedes_bytearray_materialization(self) -> None:
+        class UncopyableByteArray(bytearray):
+            def __bytes__(self) -> bytes:
+                raise AssertionError("over-limit bytearray was copied")
+
+        limits = ttlv.codec_limits_create(1, 64, 100)
+        try:
+            with self.assertRaises(errors.ResourceLimitError):
+                ttlv.ttlv_value_byte_string(UncopyableByteArray(b"too large"), limits)
+        finally:
+            limits.close()
+
+    def test_identity_text_limit_precedes_utf8_encoding(self) -> None:
+        class UnencodableLongText(str):
+            def encode(self, *args: Any, **kwargs: Any) -> bytes:
+                raise AssertionError("over-limit text was encoded")
+
+        with self.assertRaises(errors.ResourceLimitError):
+            registry_api.create_extension_identity(
+                VENDOR_IDENTIFIER, UnencodableLongText("x" * 4_097), "1"
+            )
+
+    def test_registry_definition_limit_precedes_iterating_input(self) -> None:
+        class OversizedDefinitions(list[Any]):
+            def __len__(self) -> int:
+                return 257
+
+            def __iter__(self):
+                raise AssertionError("over-limit definitions were iterated")
+
+        with self.assertRaises(errors.ResourceLimitError):
+            registry_api.create_client_extension_registry(
+                OversizedDefinitions(), registry_api.default_extension_registry_limits()
+            )
+
+    def test_schema_child_limit_precedes_iterating_input(self) -> None:
+        class OversizedRules(list[Any]):
+            def __len__(self) -> int:
+                return 4_097
+
+            def __iter__(self):
+                raise AssertionError("over-limit schema rules were iterated")
+
+        with self.assertRaises(errors.ResourceLimitError):
+            registry_api.structure_schema(OversizedRules(), [], False)
+
+
 if __name__ == "__main__":
     unittest.main()
