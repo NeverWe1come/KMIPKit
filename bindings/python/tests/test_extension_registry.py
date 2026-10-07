@@ -8,6 +8,7 @@ through SC-007. Wire preservation follows KMIP 2.1 §8.3, Table 396;
 from __future__ import annotations
 
 import copy
+import gc
 import json
 import unittest
 from pathlib import Path
@@ -718,6 +719,11 @@ class ExtensionRegistryTests(unittest.TestCase):
             value = constructor(b"\x01", limits)
             value.close()
 
+        released_bytes = memoryview(b"released")
+        released_bytes.release()
+        with self.assertRaises(errors.InvalidInputError):
+            ttlv.ttlv_value_byte_string(released_bytes, limits)
+
         empty_structure = ttlv.ttlv_structure_create()
         structure_view = ttlv.ttlv_structure_view(empty_structure)
         try:
@@ -942,6 +948,82 @@ class ExtensionRegistryTests(unittest.TestCase):
             registry_api.create_extension_identity(
                 VENDOR_IDENTIFIER, UnencodableLongText("x" * 4_097), "1"
             )
+        with self.assertRaises(errors.ResourceLimitError):
+            registry_api.create_extension_identity(
+                VENDOR_IDENTIFIER, "🔒" * 1_025, "1"
+            )
+
+    def test_registry_tuple_snapshot_and_input_boundaries(self) -> None:
+        defaults = registry_api.default_extension_registry_limits()
+        registry = registry_api.create_client_extension_registry(
+            (self.definitions["known.alpha"],), defaults
+        )
+        try:
+            self.assertEqual(registry_api.definition_count(registry), 1)
+        finally:
+            registry.close()
+
+        with self.assertRaises(errors.ResourceLimitError):
+            registry_api.create_client_extension_registry(
+                tuple([None] * (defaults.max_definitions + 1)), defaults
+            )
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.create_client_extension_registry(iter(()), defaults)
+        with self.assertRaises(errors.InvalidInputError):
+            registry_api.create_client_extension_registry((), object())
+
+        default_values = [
+            getattr(defaults, field) for field in registry_api._LIMIT_FIELDS
+        ]
+        for invalid_value, expected_error in (
+            (True, errors.InvalidInputError),
+            (-1, errors.InvalidInputError),
+            (1 << 64, errors.ResourceLimitError),
+        ):
+            values = default_values.copy()
+            values[0] = invalid_value
+            invalid_limits = registry_api.ExtensionRegistryLimits(*values)
+            with self.subTest(max_definitions=invalid_value):
+                with self.assertRaises(expected_error):
+                    registry_api.create_client_extension_registry(
+                        (), invalid_limits
+                    )
+
+    def test_value_at_view_keeps_its_value_and_path_alive(self) -> None:
+        definition = self.definitions["known.alpha"]
+        fixture = self.fixtures["valid-recognized"]["extension"]
+        limits = _codec_limits()
+        value = registry_api.validate_extension_value(
+            definition,
+            _structure_from_fixture(fixture["payload"]["children"]),
+            limits,
+        )
+        tag = _tag("0x420001")
+        path = registry_api.create_ttlv_path(tag)
+        view = registry_api.value_at(value, path)
+        del value, path
+        gc.collect()
+        try:
+            self.assertIs(ttlv.ttlv_value_view_type(view), ttlv.ItemType.TextString)
+            self.assertEqual(ttlv.ttlv_value_view_byte_length(view), len("alpha-v1"))
+            self.assertEqual(ttlv.ttlv_value_view_byte_at(view, 0), ord("a"))
+        finally:
+            view.close()
+            tag.close()
+            limits.close()
+
+    def test_definition_without_optional_information_returns_none(self) -> None:
+        source = self.definitions["known.alpha"]
+        definition = registry_api.create_extension_definition(
+            source.identity,
+            source.compatibility,
+            source.discriminator,
+            source.schema,
+        )
+        try:
+            self.assertIsNone(registry_api.extension_definition_information(definition))
+        finally:
+            definition.close()
 
     def test_registry_definition_limit_precedes_iterating_input(self) -> None:
         class OversizedDefinitions(list[Any]):

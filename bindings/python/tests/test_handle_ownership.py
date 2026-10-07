@@ -155,6 +155,16 @@ class ConsumedHandleTests(unittest.TestCase):
             self.assertEqual(raw, b"value")
             self.assertEqual(pointer, ("uint8_t[]", b"value"))
 
+            raw, pointer = handles._owned_bytes(memoryview(b"view"))
+            self.assertEqual(raw, b"view")
+            self.assertEqual(pointer, ("uint8_t[]", b"view"))
+            with self.assertRaises(handles.errors.ResourceLimitError):
+                handles._owned_bytes(memoryview(b"oversized"), maximum=4)
+            released = memoryview(b"released")
+            released.release()
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles._owned_bytes(released)
+
             with self.assertRaises(handles.errors.InvalidInputError):
                 handles._new_handle("kmipkit_probe_t", lambda *_: 0)
             with self.assertRaises(handles.errors.InvalidInputError):

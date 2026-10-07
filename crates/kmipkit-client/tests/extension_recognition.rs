@@ -206,9 +206,83 @@ fn missing_repeated_and_wrong_type_discriminator_paths_are_unrecognized() {
         )
         .expect("the repeated discriminator fits the payload");
     let wrong_type = payload(&[FIRST_PATH_TAG], Value::integer(7));
+    let structured_discriminator = payload(&[FIRST_PATH_TAG], Value::structure(Structure::new()));
 
     for value in [missing, repeated, wrong_type] {
         assert_unrecognized(&inspect(&registry, value, &CodecLimits::defaults()));
+    }
+    let recognition = inspect(
+        &registry,
+        structured_discriminator,
+        &CodecLimits::defaults(),
+    );
+    assert_unrecognized(&recognition);
+    let preserved = extension_registry::generic_value(&recognition).view();
+    assert_eq!(preserved.children()[0].tag(), tag(FIRST_PATH_TAG));
+    assert_eq!(preserved.children()[0].item_type(), ItemType::Structure);
+}
+
+#[test]
+fn inspect_rejects_payloads_over_each_codec_resource_boundary() {
+    let registry = registry(vec![definition(
+        "alpha",
+        &[FIRST_PATH_TAG],
+        "alpha-v1",
+        false,
+    )]);
+    let default_elements = CodecLimits::DEFAULT_MAX_ELEMENTS;
+    let default_depth = CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH;
+    let empty_payload = || Structure::new();
+    let matching_payload = || payload(&[FIRST_PATH_TAG], Value::text_string("alpha-v1".to_owned()));
+    let cases = [
+        (
+            "root element exceeds a zero item budget",
+            empty_payload(),
+            CodecLimits::new(CodecLimits::DEFAULT_MAX_MESSAGE_BYTES, default_depth, 0)
+                .expect("zero item count is a valid configured limit"),
+        ),
+        (
+            "root structure exceeds a zero depth budget",
+            empty_payload(),
+            CodecLimits::new(8, 0, default_elements)
+                .expect("zero structure depth is a valid configured limit"),
+        ),
+        (
+            "empty root exceeds its encoded byte budget",
+            empty_payload(),
+            CodecLimits::new(7, default_depth, default_elements)
+                .expect("seven message bytes is a valid configured limit"),
+        ),
+        (
+            "discriminator child exceeds the item budget",
+            matching_payload(),
+            CodecLimits::new(CodecLimits::DEFAULT_MAX_MESSAGE_BYTES, default_depth, 1)
+                .expect("one item is a valid configured limit"),
+        ),
+        (
+            "discriminator payload exceeds the encoded byte budget",
+            matching_payload(),
+            CodecLimits::new(23, default_depth, default_elements)
+                .expect("twenty-three message bytes is a valid configured limit"),
+        ),
+    ];
+
+    for (case, value, limits) in cases {
+        let error = extension_registry::inspect(&registry, VENDOR, value, &limits).expect_err(case);
+        assert_eq!(error.category(), ClientErrorCategory::Protocol, "{case}");
+        assert_eq!(
+            error.delivery_state(),
+            Some(kmipkit_transport::RequestDeliveryState::NotSent),
+            "{case}"
+        );
+        assert!(
+            matches!(
+                error,
+                ClientError::Protocol { ref error, .. }
+                    if error.kind() == kmipkit_protocol::ProtocolErrorKind::ResourceLimit
+            ),
+            "{case}"
+        );
     }
 }
 
