@@ -38,6 +38,9 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
 
+    def assert_github_hosted_runner(self, body: str, runner: str = "ubuntu-latest") -> None:
+        self.assertRegex(body, rf"(?m)^    runs-on: {re.escape(runner)}$")
+
     def assert_uv_managed_python_312(self, job: str) -> None:
         for required in self.UV_PYTHON_SETUP:
             with self.subTest(required=required):
@@ -203,10 +206,10 @@ class WorkflowContractTests(unittest.TestCase):
         ):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
-                self.assertRegex(body, r"(?m)^    runs-on: ubuntu-latest$")
+                self.assert_github_hosted_runner(body)
 
         branch_coverage = self.require_job(contents, "branch-coverage")
-        self.assertRegex(branch_coverage, r"(?m)^    runs-on: ubuntu-24\.04-arm$")
+        self.assert_github_hosted_runner(branch_coverage, "ubuntu-24.04-arm")
         self.assertNotRegex(contents, r"(?m)^\s*runs-on:.*self-hosted")
 
     def test_binding_toolchains_are_pinned_for_pull_requests(self) -> None:
@@ -278,7 +281,7 @@ class WorkflowContractTests(unittest.TestCase):
         job = self.require_job(contents, "adapter-coverage")
 
         self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
-        self.assertRegex(job, r"(?m)^    runs-on: ubuntu-latest$")
+        self.assert_github_hosted_runner(job)
         self.assertRegex(job, r"(?ms)^    needs:\s*\n\s+- language-bindings$")
         self.assert_uv_managed_python_312(job)
 
@@ -408,7 +411,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotRegex(contents, r"(?m)^\s*pull_request_target\s*:")
 
         job = self.require_policy_job(contents, "dependency-policy")
-        self.assertRegex(job, r"(?m)^    runs-on: ubuntu-latest$")
+        self.assert_github_hosted_runner(job)
 
     def test_dependency_policy_job_pins_tool_and_checks_both_workspaces(self) -> None:
         contents = self.require_workflow()
@@ -528,7 +531,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("${{ toJSON(needs) }}", job)
         summary_script = (REPOSITORY_ROOT / "scripts" / "ci_summary.py").read_text(encoding="utf-8")
         self.assertIn("GITHUB_STEP_SUMMARY", summary_script)
-        self.assertRegex(job, r"(?m)^    runs-on: ubuntu-latest$")
+        self.assert_github_hosted_runner(job)
 
     def test_coverage_gate_adds_its_result_and_metrics_to_the_job_summary(self) -> None:
         contents = self.require_workflow()
