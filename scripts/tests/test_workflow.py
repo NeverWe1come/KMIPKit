@@ -184,6 +184,24 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('build-backend = "maturin"', python_project)
         self.assertIn('bindings = "cffi"', python_project)
 
+    def test_windows_c_consumer_uses_the_msvc_compatible_generator(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-bindings")
+
+        self.assertIn(
+            'cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer',
+            job,
+            "The Windows Rust library uses the MSVC ABI, so the C consumer must use MSVC too.",
+        )
+
+    def test_python_example_smoke_test_uses_the_installed_native_package(self) -> None:
+        example_test = (
+            REPOSITORY_ROOT / "bindings" / "python" / "tests" / "test_vendor_extension_example.py"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("environment.pop(\"PYTHONPATH\", None)", example_test)
+        self.assertNotIn('environment["PYTHONPATH"] =', example_test)
+
     def test_adapter_coverage_job_collects_and_uploads_aggregate_inputs(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "adapter-coverage")
