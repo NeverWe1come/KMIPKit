@@ -139,6 +139,18 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
         literal = _GENERATOR._rust_string('quote" slash\\ line\n tab\t café \x01')
         self.assertEqual(literal, '"quote\\" slash\\\\ line\\n tab\\t café \\u{1}"')
 
+    def test_generated_rust_descriptors_use_clippy_readable_fields_and_literals(self) -> None:
+        api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
+        corpus, _ = self.corpus_and_schema()
+        rust = _GENERATOR.render(api, corpus)[GENERATED_RUST_FIXTURES]
+
+        self.assertIn("pub kind: ItemType", rust)
+        self.assertNotIn("pub item_type:", rust)
+        self.assertIn("0x0054_0010", rust)
+        self.assertNotIn("0x540010", rust)
+        self.assertIn("number: 8_675_309", rust)
+        self.assertNotIn("number: 8675309", rust)
+
     def test_fixture_generator_fails_closed_and_tracks_manifest_metadata(self) -> None:
         api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
         corpus, _ = self.corpus_and_schema()
