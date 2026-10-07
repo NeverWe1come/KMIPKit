@@ -962,3 +962,13 @@ The Python adapter's Extension Information test expectation was also corrected t
   `mvn -f bindings/java/pom.xml
   -Dtest=ExtensionRegistryTest#registryDefinitionLimitBoundsAListThatUnderstatesItsSize
   test`.
+
+## 2026-10-07 — bounded recursive schema preflight (Red)
+
+- Added protocol unit probes for aggregate schema-node and constraint-member
+  limits. Both fail before the fix because `validate_registry_limits` returns
+  success after traversing every sibling despite the lowered aggregate budget.
+- Red: `cargo +1.94 test -p kmipkit-protocol --lib
+  t065_aggregate_preflight_tests -- --nocapture` failed both expected cases;
+  the assertions reported `Ok(())` where `ResourceLimit` was required. Test-only
+  visit instrumentation also records schema recursion depth for Green checks.

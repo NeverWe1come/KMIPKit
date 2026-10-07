@@ -1,5 +1,7 @@
 //! Immutable, data-only schemas for vendor TTLV values.
 
+#[cfg(test)]
+use std::cell::Cell;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -13,6 +15,11 @@ use super::limits::ExtensionRegistryLimits;
 const MAX_CHILD_RULES: usize = 4_096;
 const MAX_CONSTRAINT_MEMBERS: usize = 4_096;
 const MAX_SCHEMA_DEPTH: usize = 64;
+
+#[cfg(test)]
+thread_local! {
+    static REGISTRY_LIMIT_SCHEMA_VISITS: Cell<usize> = const { Cell::new(0) };
+}
 
 /// A recursive description of one allowed TTLV value.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -672,6 +679,9 @@ impl ExtensionSchema {
         limits: &ExtensionRegistryLimits,
         depth: usize,
     ) -> Result<(), ProtocolError> {
+        #[cfg(test)]
+        REGISTRY_LIMIT_SCHEMA_VISITS.with(|visits| visits.set(visits.get() + 1));
+
         let configured_depth = u64::try_from(depth)
             .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
         let per_rule_members = u64::try_from(self.allowed_enumeration.len())
@@ -712,3 +722,7 @@ impl ExtensionSchema {
 #[cfg(test)]
 #[path = "../../tests/unit/extension_schema_counter_overflow_tests.rs"]
 mod t018_counter_overflow_tests;
+
+#[cfg(test)]
+#[path = "../../tests/unit/extension_schema_aggregate_preflight_tests.rs"]
+mod t065_aggregate_preflight_tests;

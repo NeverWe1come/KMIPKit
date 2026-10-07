@@ -196,3 +196,7 @@ Every functional requirement and buildable success criterion has at least one pl
 3. Deliver US1, validate independently, then US2, then US3 with Red/Green/Refactor evidence for each.
 4. Run cross-language parity and all security, traceability, coverage, and CI gates before preparing a draft PR.
 5. Do not begin implementation until the specification is reviewed and integrated under the repository workflow.
+
+## Phase 7: Convergence
+
+- [ ] T065 Bound recursive schema preflight by the remaining aggregate schema-node and constraint-member budgets, stop at the first exceeded budget, and preserve Red, Green, and Refactor evidence in distinct commits per KMIPKIT-0012-FR-012, KMIPKIT-0012-SC-007, and the plan's pre-allocation limit decision (partial).
