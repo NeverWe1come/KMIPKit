@@ -235,7 +235,26 @@ impl ProfileReadinessBlocker {
 ///
 /// The result never publishes a claim. Local records, generated metadata, and
 /// runtime rule completeness are insufficient without the repository's
-/// current protected-release-push verification manifest.
+/// current protected-release-push verification manifest. KMIP Specification
+/// v2.1 §14.1 and Profiles v2.1 §6.1 remain the source for client profile
+/// obligations; this local view is diagnostic evidence only.
+///
+/// # Examples
+///
+/// ```
+/// use kmipkit_protocol::{ProfileReadiness, ProfileReadinessBlocker};
+///
+/// let readiness = ProfileReadiness::evaluate("KMIPKIT-PROFILE-BASELINE-CLIENT", &[])
+///     .expect("Baseline Client is in the generated catalog");
+///
+/// assert!(readiness.target_selected());
+/// assert!(!readiness.runtime_validation_available());
+/// assert_eq!(readiness.effective_state(), "evidence_incomplete");
+/// assert!(!readiness.published_claim());
+/// assert!(readiness
+///     .blockers()
+///     .contains(&ProfileReadinessBlocker::VerificationManifestUnavailable));
+/// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ProfileReadiness {
     profile_id: String,
