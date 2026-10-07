@@ -346,6 +346,22 @@ fn response_success() -> Vec<u8> {
     response_bytes((2, 1), &[ResponseItemFixture::success(None)])
 }
 
+fn shared_fixture_case(fixture_id: &str) -> &'static extension_fixtures::Case {
+    extension_fixtures::CASES
+        .iter()
+        .find(|case| case.id == fixture_id)
+        .expect("outbound descriptor names a generated inbound fixture")
+}
+
+fn shared_fixture_definition(
+    fixture: &extension_fixtures::Case,
+) -> &'static extension_fixtures::Definition {
+    extension_fixtures::DEFINITIONS
+        .iter()
+        .find(|definition| definition.id == fixture.matched_ids[0])
+        .expect("recognized fixture match names a generated definition")
+}
+
 fn item_value(children: &[Item], raw_tag: u32) -> Option<&Item> {
     children.iter().find(|item| item.tag().raw() == raw_tag)
 }
@@ -611,10 +627,7 @@ fn repeated_message_extensions_keep_explicit_criticality_and_caller_order() {
 fn every_shared_outbound_fixture_runs_through_the_fake_transport_in_both_orders() {
     for request in extension_fixtures::OUTBOUND_REQUESTS {
         assert_eq!(request.outcome, "outbound.validated");
-        let owner_case = extension_fixtures::CASES
-            .iter()
-            .find(|case| case.id == request.fixture_id)
-            .expect("outbound request names its generated source fixture");
+        let owner_case = shared_fixture_case(request.fixture_id);
         assert_eq!(owner_case.outcome, "recognized");
         assert!(owner_case.typed);
         for reversed in [false, true] {
@@ -624,17 +637,11 @@ fn every_shared_outbound_fixture_runs_through_the_fake_transport_in_both_orders(
             let mut item = ClientBatchItem::discover_versions();
             let mut expected_capture = Vec::new();
             for attachment in request.attachments {
-                let fixture = extension_fixtures::CASES
-                    .iter()
-                    .find(|case| case.id == attachment.fixture_id)
-                    .expect("outbound attachment names a generated inbound fixture");
+                let fixture = shared_fixture_case(attachment.fixture_id);
                 assert_eq!(fixture.outcome, "recognized", "{}", fixture.id);
                 assert!(fixture.typed, "{}", fixture.id);
                 assert_eq!(fixture.matched_ids.len(), 1, "{}", fixture.id);
-                let definition = extension_fixtures::DEFINITIONS
-                    .iter()
-                    .find(|definition| definition.id == fixture.matched_ids[0])
-                    .expect("outbound fixture match names a generated definition");
+                let definition = shared_fixture_definition(fixture);
                 let identity = extension::extension_identity(
                     definition.vendor,
                     definition.name,
@@ -665,14 +672,8 @@ fn every_shared_outbound_fixture_runs_through_the_fake_transport_in_both_orders(
 
             assert_eq!(item.extension_count(), request.attachments.len());
             for (index, attachment) in request.attachments.iter().enumerate() {
-                let fixture = extension_fixtures::CASES
-                    .iter()
-                    .find(|case| case.id == attachment.fixture_id)
-                    .expect("outbound attachment names a generated inbound fixture");
-                let definition = extension_fixtures::DEFINITIONS
-                    .iter()
-                    .find(|definition| definition.id == fixture.matched_ids[0])
-                    .expect("outbound fixture match names a generated definition");
+                let fixture = shared_fixture_case(attachment.fixture_id);
+                let definition = shared_fixture_definition(fixture);
                 let identity = item
                     .extension_identity_at(index)
                     .expect("attached extension identity is available");
