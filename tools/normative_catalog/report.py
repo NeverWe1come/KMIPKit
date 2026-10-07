@@ -128,7 +128,7 @@ def _source_reference(record: dict[str, Any]) -> str:
     return ", ".join(f"{item.get('source_id', '?')} §{item.get('section', '?')}" for item in references)
 
 
-def render_report(catalog: dict[str, Any]) -> str:
+def render_report(catalog: dict[str, Any], *, selected_profile_ids: set[str] | None = None) -> str:
     """Render a stable report; all catalog strings are inert escaped text."""
     lines = [
         "# KMIP 2.1 inventory coverage",
@@ -285,12 +285,19 @@ def render_report(catalog: dict[str, Any]) -> str:
     lines.extend(["## Profile states", ""])
     lines.extend(_table(
         (
-            "Profile", "Name", "Role", "Applicability", "Claim state", "Source",
+            "Profile", "Name", "Role", "Applicability", "Selected target", "Claim state", "Source",
             "Source clauses", "Requirements", "Elements", "Dependencies",
             "Mandatory / optional tests", "Transport", "Encoding",
         ),
         [(
             row.get("profile_id"), row.get("name"), row.get("role"), row.get("applicability"),
+            (
+                "not evaluated"
+                if selected_profile_ids is None
+                else "selected"
+                if row.get("profile_id") in selected_profile_ids
+                else "not selected"
+            ),
             row.get("claim_state"), _source_reference(row),
             profile_values(row, "source_clause_ids"), profile_values(row, "requirement_ids"),
             profile_values(row, "element_ids"), profile_values(row, "dependency_profile_ids"),
@@ -355,9 +362,16 @@ def render_report(catalog: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def write_report(catalog: dict[str, Any], path: Path, *, check: bool, repo_root: Path | None = None) -> bool:
+def write_report(
+    catalog: dict[str, Any],
+    path: Path,
+    *,
+    check: bool,
+    repo_root: Path | None = None,
+    selected_profile_ids: set[str] | None = None,
+) -> bool:
     """Check byte equality or write the deterministic UTF-8/LF report."""
-    expected = render_report(catalog).encode("utf-8")
+    expected = render_report(catalog, selected_profile_ids=selected_profile_ids).encode("utf-8")
     root = (repo_root or path.parent).resolve(strict=True)
     try:
         if repo_root is None:
@@ -402,7 +416,18 @@ def main(argv: list[str] | None = None) -> int:
         report_path = repository / REPORT_PATH
         raw = safe_read_bytes(repository, "specification/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
         catalog = load_validated_catalog(raw, repository, require_complete=not arguments.structural_only)
-        valid = write_report(catalog, report_path, check=arguments.check, repo_root=repository)
+        selected_profile_ids = None
+        if not arguments.structural_only:
+            from tools.normative_catalog.generate_profiles import load_profile_targets
+
+            selected_profile_ids = set(load_profile_targets(repository, catalog).profile_ids)
+        valid = write_report(
+            catalog,
+            report_path,
+            check=arguments.check,
+            repo_root=repository,
+            selected_profile_ids=selected_profile_ids,
+        )
     except (OSError, ValueError, PathSecurityError) as error:
         print(f"coverage report failed: {error}", file=sys.stderr)
         return 1

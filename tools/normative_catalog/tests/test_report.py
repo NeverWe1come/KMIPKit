@@ -303,6 +303,12 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("KMIPKIT-REQ-PROF-5.1-001", report)
         self.assertIn("KMIPKIT-PROFILE-OTHER", report)
         self.assertIn("KMIPKIT-TEST-PROF-5-1-1", report)
+        self.assertIn("BL-M-1-21", report)
+        self.assertIn("mandatory", report)
+        self.assertIn("BL-O-1-21", report)
+        self.assertIn("optional", report)
+        self.assertIn("TLS 1.3", report)
+        self.assertIn("TTLV", report)
 
     def test_profile_report_separates_selected_target_from_claim_state(self) -> None:
         catalog = report_catalog()
@@ -327,14 +333,8 @@ class CoverageReportTests(unittest.TestCase):
         report = render_report(catalog, selected_profile_ids={"KMIPKIT-PROFILE-BASELINE"})
 
         self.assertIn("Selected target", report)
-        self.assertIn("not_claimed", report)
+        self.assertIn(r"not\_claimed", report)
         self.assertIn("selected", report)
-        self.assertIn("BL-M-1-21", report)
-        self.assertIn("mandatory", report)
-        self.assertIn("BL-O-1-21", report)
-        self.assertIn("optional", report)
-        self.assertIn("TLS 1.3", report)
-        self.assertIn("TTLV", report)
 
     def test_full_catalog_report_reconciles_tags_ranges_and_profile_cases(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))

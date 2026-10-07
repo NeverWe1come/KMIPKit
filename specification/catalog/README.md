@@ -36,8 +36,10 @@ validator rejects unresolved or duplicate edges, cycles, and stored profile
 closures that differ from their roots and inclusions. Informative references
 are not represented as normative inclusion edges. Baseline Client §6.1 item 1
 includes the whole KMIP Specification v2.1 source, and item 2 includes Profiles
-§3.1. Those catalog links do not imply that the profile is runtime-eligible or
-that conformance has been established.
+§3.1. \`profile-targets.json\` selects the product target independently; the
+generated report shows this beside \`claim_state\`. Those catalog links and
+target membership do not imply that the profile is runtime-eligible or that
+conformance has been established.
 
 `coverage-report.md` is generated from the reviewed catalog by
 `tools/normative_catalog/report.py`. Do not edit the report manually. Empty
