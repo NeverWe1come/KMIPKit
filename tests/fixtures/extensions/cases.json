@@ -21,7 +21,7 @@
       "extensionName": "ambiguous-beta",
       "extensionVersion": "1",
       "discriminator": {
-        "path": ["0x420010", "0x420012"],
+        "path": ["0x540010", "0x540012"],
         "itemType": "TextString",
         "value": "route-beta"
       },
@@ -38,14 +38,14 @@
               "type": "object",
               "required": ["tag", "type", "children"],
               "properties": {
-                "tag": {"const": "0x420010"},
+                "tag": {"const": "0x540010"},
                 "type": {"const": "Structure"},
                 "children": {
                   "type": "array",
                   "allOf": [
-                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x420011"}, "type": {"const": "TextString"}, "value": {"const": "route-alpha"}}}},
-                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x420012"}, "type": {"const": "TextString"}, "value": {"const": "route-beta"}}}},
-                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x420013"}, "type": {"const": "TextString"}, "value": {"const": "shared"}}}}
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540011"}, "type": {"const": "TextString"}, "value": {"const": "route-alpha"}}}},
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540012"}, "type": {"const": "TextString"}, "value": {"const": "route-beta"}}}},
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540013"}, "type": {"const": "TextString"}, "value": {"const": "shared"}}}}
                   ]
                 }
               }
@@ -87,7 +87,7 @@
       "extensionName": "ambiguous-alpha",
       "extensionVersion": "1",
       "discriminator": {
-        "path": ["0x420010", "0x420011"],
+        "path": ["0x540010", "0x540011"],
         "itemType": "TextString",
         "value": "route-alpha"
       },
@@ -104,14 +104,14 @@
               "type": "object",
               "required": ["tag", "type", "children"],
               "properties": {
-                "tag": {"const": "0x420010"},
+                "tag": {"const": "0x540010"},
                 "type": {"const": "Structure"},
                 "children": {
                   "type": "array",
                   "allOf": [
-                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x420011"}, "type": {"const": "TextString"}, "value": {"const": "route-alpha"}}}},
-                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x420012"}, "type": {"const": "TextString"}, "value": {"const": "route-beta"}}}},
-                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x420013"}, "type": {"const": "TextString"}, "value": {"const": "shared"}}}}
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540011"}, "type": {"const": "TextString"}, "value": {"const": "route-alpha"}}}},
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540012"}, "type": {"const": "TextString"}, "value": {"const": "route-beta"}}}},
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540013"}, "type": {"const": "TextString"}, "value": {"const": "shared"}}}}
                   ]
                 }
               }
@@ -196,16 +196,16 @@
           "type": "Structure",
           "children": [
             {
-              "tag": "0x420010",
+              "tag": "0x540010",
               "type": "Structure",
               "children": [
-                {"tag": "0x420011", "type": "TextString", "value": "route-alpha"},
-                {"tag": "0x420012", "type": "TextString", "value": "route-beta"},
-                {"tag": "0x420013", "type": "TextString", "value": "shared"}
+                {"tag": "0x540011", "type": "TextString", "value": "route-alpha"},
+                {"tag": "0x540012", "type": "TextString", "value": "route-beta"},
+                {"tag": "0x540013", "type": "TextString", "value": "shared"}
               ]
             },
-            {"tag": "0x420014", "type": "Enumeration", "value": 314159},
-            {"tag": "0x420015", "type": "TextString", "value": "preserve-this-child-order"}
+            {"tag": "0x540014", "type": "Enumeration", "value": 314159},
+            {"tag": "0x540015", "type": "TextString", "value": "preserve-this-child-order"}
           ]
         }
       },
@@ -218,16 +218,16 @@
           "type": "Structure",
           "children": [
             {
-              "tag": "0x420010",
+              "tag": "0x540010",
               "type": "Structure",
               "children": [
-                {"tag": "0x420011", "type": "TextString", "value": "route-alpha"},
-                {"tag": "0x420012", "type": "TextString", "value": "route-beta"},
-                {"tag": "0x420013", "type": "TextString", "value": "shared"}
+                {"tag": "0x540011", "type": "TextString", "value": "route-alpha"},
+                {"tag": "0x540012", "type": "TextString", "value": "route-beta"},
+                {"tag": "0x540013", "type": "TextString", "value": "shared"}
               ]
             },
-            {"tag": "0x420014", "type": "Enumeration", "value": 314159},
-            {"tag": "0x420015", "type": "TextString", "value": "preserve-this-child-order"}
+            {"tag": "0x540014", "type": "Enumeration", "value": 314159},
+            {"tag": "0x540015", "type": "TextString", "value": "preserve-this-child-order"}
           ]
         },
         "diagnostics": {"redacted": true, "containsPayloadValues": false}
@@ -242,8 +242,8 @@
         "payload": {
           "type": "Structure",
           "children": [
-            {"tag": "0x42F001", "type": "Enumeration", "value": 8675309},
-            {"tag": "0x42F002", "type": "TextString", "value": "unknown-extension-content"}
+            {"tag": "0x540021", "type": "Enumeration", "value": 8675309},
+            {"tag": "0x540022", "type": "TextString", "value": "unknown-extension-content"}
           ]
         }
       },
@@ -255,8 +255,8 @@
         "preservedPayload": {
           "type": "Structure",
           "children": [
-            {"tag": "0x42F001", "type": "Enumeration", "value": 8675309},
-            {"tag": "0x42F002", "type": "TextString", "value": "unknown-extension-content"}
+            {"tag": "0x540021", "type": "Enumeration", "value": 8675309},
+            {"tag": "0x540022", "type": "TextString", "value": "unknown-extension-content"}
           ]
         },
         "diagnostics": {"redacted": true, "containsPayloadValues": false}

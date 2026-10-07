@@ -185,7 +185,7 @@ def _normalize_structure(view: Any) -> dict[str, Any]:
         if item_type_name == "Structure":
             normalized["children"] = _normalize_structure(
                 ttlv.ttlv_value_view_structure(value_view)
-            )
+            )["children"]
         elif item_type_name in {"TextString", "ByteString", "BigInteger"}:
             raw = bytes(
                 ttlv.ttlv_value_view_byte_at(value_view, byte_index)
