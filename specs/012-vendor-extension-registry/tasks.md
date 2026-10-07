@@ -36,7 +36,7 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 - [x] T013 Implement the client-owned immutable registry, exact discriminator index, deterministic metadata views, and immutable client configuration attachment in crates/kmipkit-client/src/extension_registry.rs
 - [x] T014 Implement complete schema validation with configured TTLV byte/depth/element limits and all schema-related ExtensionRegistryLimits; compile tag and sorted enum indexes plus order edges, count constraint members before clone/reserve, reject cyclic/duplicate/self order edges, and return path-only redacted limit errors in crates/kmipkit-protocol/src/extension/schema.rs
 - [x] T015 Pass all foundational tests and commit the Green stage with command/output evidence recorded in crates/kmipkit-protocol/tests/extension_error.rs and crates/kmipkit-client/tests/extension_registry.rs
-- [ ] T016 Refactor protocol and registry internals without changing public behavior; retain forbid(unsafe_code) outside kmipkit-ffi and commit the Refactor stage in crates/kmipkit-protocol/src/extension/ and crates/kmipkit-client/src/extension_registry.rs
+- [x] T016 Refactor protocol and registry internals without changing public behavior; retain forbid(unsafe_code) outside kmipkit-ffi and commit the Refactor stage in crates/kmipkit-protocol/src/extension/ and crates/kmipkit-client/src/extension_registry.rs
 
 ## Phase 3: User Story 1 - Register and construct a known extension (Priority: P1)
 

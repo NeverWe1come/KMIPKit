@@ -59,9 +59,12 @@ Red/Green evidence:
 
 - Red: `ee76e84`; the new cross-client configuration test failed to compile
   because `ClientConfiguration` did not exist.
-- Green: implementation and generated API outputs are in the current worktree;
-  the focused configuration-isolation test passes.
-- The separate client Refactor stage required by T016 remains open.
+- Green: `89cc053` implements the configuration type and updates the public
+  manifest and all generated outputs.
+- Refactor: `366ec90` isolates metadata ordering and registry-index compilation
+  in `RegistryIndexes::compile` without changing behavior.
+- Independent QA review: PASS for T013 attachment/isolation and T016 behavior;
+  the separate Red/Green/Refactor commits are present.
 
 ### Verification
 
