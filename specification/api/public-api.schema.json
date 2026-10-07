@@ -633,6 +633,48 @@
             "name",
             "kind",
             "type",
+            "handleType",
+            "ownership",
+            "countParameter",
+            "nullable"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "handle-array"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$",
+              "description": "Pointer-to-pointer array of opaque C handles."
+            },
+            "handleType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$",
+              "description": "Opaque handle type of each array element; must match the declared pointer type."
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "countParameter": {
+              "$ref": "#/$defs/identifier",
+              "description": "Name of the uint64_t scalar parameter that counts array elements."
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether the array pointer may be NULL. When true, NULL is valid only when the linked count is zero; implementations must check the count before reading elements."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
             "ownership"
           ],
           "properties": {
@@ -850,7 +892,7 @@
               "items": {
                 "$ref": "#/$defs/cParameter"
               },
-              "description": "Parameter order is the exact C ABI order. Every variable-length input is one byte-span pointer paired with a uint64_t byte length. Version 1 does not describe variable-length output buffers."
+              "description": "Parameter order is the exact C ABI order. Variable-length byte inputs are byte-span pointers paired with uint64_t byte lengths; handle arrays use explicit uint64_t element counts. Version 1 does not describe variable-length output buffers."
             },
             "returnType": {
               "const": "int32_t",

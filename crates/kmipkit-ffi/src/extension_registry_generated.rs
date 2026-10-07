@@ -143,7 +143,7 @@ unsafe extern "C" {
     // KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010
     pub fn kmipkit_client_configuration_extension_registry(configuration: *mut kmipkit_client_configuration_t, out_registry: *mut *mut kmipkit_client_extension_registry_t) -> i32;
     // KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
-    pub fn kmipkit_client_extension_registry_create(definitions: *mut kmipkit_extension_definition_t, definition_count: u64, max_definitions: u64, max_schema_nodes: u64, max_child_rules_per_structure: u64, max_text_bytes_per_field: u64, max_registry_text_bytes: u64, max_discriminator_scalar_bytes: u64, max_total_discriminator_scalar_bytes: u64, max_constraint_members_per_rule: u64, max_total_constraint_members: u64, max_payload_index_records: u64, max_lookup_comparisons: u64, max_depth: u64, out_registry: *mut *mut kmipkit_client_extension_registry_t) -> i32;
+    pub fn kmipkit_client_extension_registry_create(definitions: *mut *mut kmipkit_extension_definition_t, definition_count: u64, max_definitions: u64, max_schema_nodes: u64, max_child_rules_per_structure: u64, max_text_bytes_per_field: u64, max_registry_text_bytes: u64, max_discriminator_scalar_bytes: u64, max_total_discriminator_scalar_bytes: u64, max_constraint_members_per_rule: u64, max_total_constraint_members: u64, max_payload_index_records: u64, max_lookup_comparisons: u64, max_depth: u64, out_registry: *mut *mut kmipkit_client_extension_registry_t) -> i32;
     // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-006, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-008, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
     pub fn kmipkit_client_extension_registry_inspect(registry: *mut kmipkit_client_extension_registry_t, vendor_identifier_data: *const u8, vendor_identifier_length: u64, value: *mut kmipkit_ttlv_structure_t, out_value: *mut *mut kmipkit_extension_recognition_t, limits: *mut kmipkit_codec_limits_t) -> i32;
     // KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010
@@ -167,7 +167,7 @@ unsafe extern "C" {
     // KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
     pub fn kmipkit_extension_schema_scalar(item_type: u32, out_schema: *mut *mut kmipkit_extension_schema_t) -> i32;
     // KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
-    pub fn kmipkit_extension_schema_structure(children: *mut kmipkit_extension_child_rule_t, child_count: u64, order_constraints: *mut kmipkit_extension_order_constraint_t, order_constraint_count: u64, preserve_undeclared_children: u8, out_schema: *mut *mut kmipkit_extension_schema_t) -> i32;
+    pub fn kmipkit_extension_schema_structure(children: *mut *mut kmipkit_extension_child_rule_t, child_count: u64, order_constraints: *mut *mut kmipkit_extension_order_constraint_t, order_constraint_count: u64, preserve_undeclared_children: u8, out_schema: *mut *mut kmipkit_extension_schema_t) -> i32;
     // KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012
     pub fn kmipkit_extension_child_rule_required(tag: u32, schema: *mut kmipkit_extension_schema_t, out_rule: *mut *mut kmipkit_extension_child_rule_t) -> i32;
     // KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012

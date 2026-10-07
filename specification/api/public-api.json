@@ -1452,9 +1452,12 @@
         "parameters": [
           {
             "name": "definitions",
-            "kind": "handle",
-            "type": "kmipkit_extension_definition_t *",
-            "ownership": "borrowed"
+            "kind": "handle-array",
+            "type": "kmipkit_extension_definition_t **",
+            "ownership": "borrowed",
+            "handleType": "kmipkit_extension_definition_t",
+            "countParameter": "definition_count",
+            "nullable": true
           },
           {
             "name": "definition_count",
@@ -2782,9 +2785,12 @@
         "parameters": [
           {
             "name": "children",
-            "kind": "handle",
-            "type": "kmipkit_extension_child_rule_t *",
-            "ownership": "borrowed"
+            "kind": "handle-array",
+            "type": "kmipkit_extension_child_rule_t **",
+            "ownership": "borrowed",
+            "handleType": "kmipkit_extension_child_rule_t",
+            "countParameter": "child_count",
+            "nullable": true
           },
           {
             "name": "child_count",
@@ -2793,9 +2799,12 @@
           },
           {
             "name": "order_constraints",
-            "kind": "handle",
-            "type": "kmipkit_extension_order_constraint_t *",
-            "ownership": "borrowed"
+            "kind": "handle-array",
+            "type": "kmipkit_extension_order_constraint_t **",
+            "ownership": "borrowed",
+            "handleType": "kmipkit_extension_order_constraint_t",
+            "countParameter": "order_constraint_count",
+            "nullable": true
           },
           {
             "name": "order_constraint_count",

@@ -615,10 +615,13 @@
         ],
         "parameters": [
           {
-            "kind": "handle",
+            "countParameter": "definition_count",
+            "handleType": "kmipkit_extension_definition_t",
+            "kind": "handle-array",
             "name": "definitions",
+            "nullable": true,
             "ownership": "borrowed",
-            "type": "kmipkit_extension_definition_t *"
+            "type": "kmipkit_extension_definition_t **"
           },
           {
             "kind": "scalar",
@@ -1940,10 +1943,13 @@
         ],
         "parameters": [
           {
-            "kind": "handle",
+            "countParameter": "child_count",
+            "handleType": "kmipkit_extension_child_rule_t",
+            "kind": "handle-array",
             "name": "children",
+            "nullable": true,
             "ownership": "borrowed",
-            "type": "kmipkit_extension_child_rule_t *"
+            "type": "kmipkit_extension_child_rule_t **"
           },
           {
             "kind": "scalar",
@@ -1951,10 +1957,13 @@
             "type": "uint64_t"
           },
           {
-            "kind": "handle",
+            "countParameter": "order_constraint_count",
+            "handleType": "kmipkit_extension_order_constraint_t",
+            "kind": "handle-array",
             "name": "order_constraints",
+            "nullable": true,
             "ownership": "borrowed",
-            "type": "kmipkit_extension_order_constraint_t *"
+            "type": "kmipkit_extension_order_constraint_t **"
           },
           {
             "kind": "scalar",

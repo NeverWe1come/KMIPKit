@@ -396,11 +396,20 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 handle_name = param["type"].split()[0].rstrip("*").strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function handle parameter references an unknown opaque type")
+            elif param["kind"] == "handle-array":
+                handle_name = param["handleType"]
+                if handle_name not in c_handle_names:
+                    raise ManifestError("function handle array references an unknown opaque type")
+                if param["type"] != f"{handle_name} **":
+                    raise ManifestError("function handle array pointer type does not match its opaque type")
+                count = param_by_name.get(param["countParameter"])
+                if count is None or count["kind"] != "scalar" or count["type"] != "uint64_t":
+                    raise ManifestError("function handle array count must name a uint64_t scalar parameter")
             elif param["kind"] == "output" and "**" in param["type"]:
                 handle_name = param["type"].split()[0].strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function output references an unknown opaque type")
-        if any(parameter["kind"] == "handle" for parameter in params):
+        if any(parameter["kind"] in {"handle", "handle-array"} for parameter in params):
             if any(
                 "invalid_input" not in record[language]["errorCategories"]
                 for language in ("c", "java", "python")
@@ -553,6 +562,15 @@ def render_c_header(manifest: dict[str, Any]) -> str:
     lines.append("")
     for function in manifest["functions"]:
         requirement_comment = ", ".join(function["requirementIds"])
+        if any(
+            parameter["kind"] == "handle-array" and parameter["nullable"]
+            for parameter in function["c"]["parameters"]
+        ):
+            lines.extend([
+                "/* For nullable handle arrays, NULL is valid only when the linked count is zero.",
+                " * Implementations must check the count before reading elements and return",
+                " * invalid_input when a NULL array has a nonzero count. */",
+            ])
         lines.append(f"/* {requirement_comment} */")
         lines.append(_c_declaration(function))
     lines.extend(["", "#ifdef __cplusplus", "}", "#endif", "#endif /* KMIPKIT_H */", ""])

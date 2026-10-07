@@ -126,8 +126,11 @@ int32_t kmipkit_extension_definition_validate(kmipkit_extension_definition_t * d
 int32_t kmipkit_client_configuration_create(kmipkit_client_extension_registry_t * extension_registry, kmipkit_client_configuration_t ** out_configuration);
 /* KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_client_configuration_extension_registry(kmipkit_client_configuration_t * configuration, kmipkit_client_extension_registry_t ** out_registry);
+/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
-int32_t kmipkit_client_extension_registry_create(kmipkit_extension_definition_t * definitions, uint64_t definition_count, uint64_t max_definitions, uint64_t max_schema_nodes, uint64_t max_child_rules_per_structure, uint64_t max_text_bytes_per_field, uint64_t max_registry_text_bytes, uint64_t max_discriminator_scalar_bytes, uint64_t max_total_discriminator_scalar_bytes, uint64_t max_constraint_members_per_rule, uint64_t max_total_constraint_members, uint64_t max_payload_index_records, uint64_t max_lookup_comparisons, uint64_t max_depth, kmipkit_client_extension_registry_t ** out_registry);
+int32_t kmipkit_client_extension_registry_create(kmipkit_extension_definition_t ** definitions, uint64_t definition_count, uint64_t max_definitions, uint64_t max_schema_nodes, uint64_t max_child_rules_per_structure, uint64_t max_text_bytes_per_field, uint64_t max_registry_text_bytes, uint64_t max_discriminator_scalar_bytes, uint64_t max_total_discriminator_scalar_bytes, uint64_t max_constraint_members_per_rule, uint64_t max_total_constraint_members, uint64_t max_payload_index_records, uint64_t max_lookup_comparisons, uint64_t max_depth, kmipkit_client_extension_registry_t ** out_registry);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-006, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-008, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_client_extension_registry_inspect(kmipkit_client_extension_registry_t * registry, const uint8_t * vendor_identifier_data, uint64_t vendor_identifier_length, kmipkit_ttlv_structure_t * value, kmipkit_extension_recognition_t ** out_value, kmipkit_codec_limits_t * limits);
 /* KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010 */
@@ -150,8 +153,11 @@ int32_t kmipkit_ttlv_path_with_child_tag(kmipkit_ttlv_path_t * path, uint32_t ta
 int32_t kmipkit_extension_discriminator_create(kmipkit_ttlv_path_t * path, kmipkit_ttlv_value_t * scalar_value, kmipkit_extension_discriminator_t ** out_discriminator);
 /* KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_schema_scalar(uint32_t item_type, kmipkit_extension_schema_t ** out_schema);
+/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
-int32_t kmipkit_extension_schema_structure(kmipkit_extension_child_rule_t * children, uint64_t child_count, kmipkit_extension_order_constraint_t * order_constraints, uint64_t order_constraint_count, uint8_t preserve_undeclared_children, kmipkit_extension_schema_t ** out_schema);
+int32_t kmipkit_extension_schema_structure(kmipkit_extension_child_rule_t ** children, uint64_t child_count, kmipkit_extension_order_constraint_t ** order_constraints, uint64_t order_constraint_count, uint8_t preserve_undeclared_children, kmipkit_extension_schema_t ** out_schema);
 /* KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_child_rule_required(uint32_t tag, kmipkit_extension_schema_t * schema, kmipkit_extension_child_rule_t ** out_rule);
 /* KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
