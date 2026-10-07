@@ -59,6 +59,24 @@ Red/Green/Refactor commits:
   `docs/development/testing.md`; generated files and production code are
   unchanged.
 
+## 2026-10-07 — select the pinned Python interpreter in CI
+
+- Red: `52ac62c` added a workflow contract rejecting PATH-based Python
+  selection. The test failed because the job still preferred the runner's
+  `python3` executable.
+- CI confirmation: run `37652625959` showed Windows installed pinned
+  `jsonschema` into the uv environment, then selected
+  `C:\hostedtoolcache\windows\Python\3.12.10\x64\python.exe`; the fixture
+  test failed with `ModuleNotFoundError: jsonschema`.
+- Green: `a01a430` resolves the platform-specific executable inside
+  `$env:VIRTUAL_ENV` and fails early if it is missing. The workflow contract
+  suite passed (32 tests). The exact Python-contract command sequence passed
+  locally: script tests 199 passed with 26 expected cargo-deny skips, the
+  normative catalog suite 170 passed with 7 platform skips, fixture tests
+  13/13 passed, and both generator `--check` commands passed.
+- Refactor: the testing guide now explains explicit interpreter selection;
+  no production code or generated output changed.
+
 ## 2026-10-07 — response integration Refactor
 
 Synchronous and asynchronous typed response paths now share
