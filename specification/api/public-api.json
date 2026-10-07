@@ -1390,7 +1390,7 @@
         "parameters": [
           {
             "name": "registry",
-            "type": "ClientExtensionRegistry"
+            "type": "&ClientExtensionRegistry"
           },
           {
             "name": "vendor_identifier",
@@ -1527,7 +1527,7 @@
         "parameters": [
           {
             "name": "registry",
-            "type": "ClientExtensionRegistry"
+            "type": "&ClientExtensionRegistry"
           }
         ],
         "returnType": "u64"
@@ -1595,7 +1595,7 @@
         "parameters": [
           {
             "name": "registry",
-            "type": "ClientExtensionRegistry"
+            "type": "&ClientExtensionRegistry"
           },
           {
             "name": "index",
@@ -5003,7 +5003,7 @@
         "parameters": [
           {
             "name": "registry",
-            "type": "ClientExtensionRegistry"
+            "type": "&ClientExtensionRegistry"
           },
           {
             "name": "identity",

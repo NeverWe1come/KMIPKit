@@ -29,9 +29,9 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 
 **Purpose**: Build and test the bounded schema/value model and immutable per-client registry primitives required by all stories.
 
-- [ ] T009 [P] Write failing protocol tests for stable extension error categories, path-only redacted errors, and bounded resource-limit rejection in crates/kmipkit-protocol/tests/extension_error.rs
-- [ ] T010 [P] Write failing client tests for immutable snapshots, per-client isolation, deterministic metadata views, and registration-order independence in crates/kmipkit-client/tests/extension_registry.rs
-- [ ] T011 Commit the foundational protocol and client test-only Red stage with failing test output recorded in crates/kmipkit-protocol/tests/extension_error.rs and crates/kmipkit-client/tests/extension_registry.rs
+- [x] T009 [P] Write failing protocol tests for stable extension error categories, path-only redacted errors, and bounded resource-limit rejection in crates/kmipkit-protocol/tests/extension_error.rs
+- [x] T010 [P] Write failing client tests for immutable snapshots, per-client isolation, deterministic metadata views, and registration-order independence in crates/kmipkit-client/tests/extension_registry.rs
+- [x] T011 Commit the foundational protocol and client test-only Red stage with failing test output recorded in crates/kmipkit-protocol/tests/extension_error.rs and crates/kmipkit-client/tests/extension_registry.rs
 - [ ] T012 Implement the protocol extension modules, fallible constructors, sealed validated value, Extension Information model, and public exports in crates/kmipkit-protocol/src/extension/
 - [ ] T013 Implement the client-owned immutable registry, exact discriminator index, deterministic metadata views, and client configuration attachment in crates/kmipkit-client/src/extension_registry.rs
 - [ ] T014 Implement complete schema validation with configured TTLV byte/depth/element limits and all schema-related ExtensionRegistryLimits; compile tag and sorted enum indexes plus order edges, count constraint members before clone/reserve, reject cyclic/duplicate/self order edges, and return path-only redacted limit errors in crates/kmipkit-protocol/src/extension/schema.rs
