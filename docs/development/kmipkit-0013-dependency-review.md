@@ -193,3 +193,58 @@ core-foundation@0.9.4` / `core-foundation@0.10.1`, `cargo tree --locked
 syn@2.0.119` and `cargo tree --locked --workspace -i syn@3.0.6`. The version
 and graph findings supplement, but do not replace, the required human review.
 T003 remains unchecked.
+
+## Proposed disposition for independent human review
+
+The maintainer requested a concrete way to clear the remaining dependency
+gate. The following is a review proposal, not an approved policy change. The
+current specification pins Hickory 0.26.3 and `rustls-native-certs` 0.8.4;
+their Apple-target transitive constraints require `core-foundation` 0.9.4 and
+0.10.1 respectively. The two `syn` major versions are also reachable through
+Hickory's current proc-macro graph. `syn` 2 is required transitively by
+`jni-macros`/`jni-sys-macros` and `serde_derive`, so changing KMIPKit's direct
+test-only `syn` dependency does not eliminate it. The patched `zerovec`
+0.11.8 and `zerovec-derive` 0.11.6 retain the `syn` 3 path. Keep those patched
+versions; the earlier lockfile-only alignment used vulnerable releases.
+
+**Recommended dependency decision:** Retain the approved dependency pins and
+request four exact, expiring duplicate exceptions: `core-foundation` 0.9.4
+and 0.10.1, and `syn` 2.0.119 and 3.0.6. Each record needs an independent
+human reviewer, a dated durable approval reference, a responsible owner,
+mitigation, and an expiry within 90 days. The mitigation should track a
+published Hickory release that removes the Apple version split and upstream
+macro dependencies that remove the `syn` split, while preserving patched
+`zerovec` versions. An alternative version or DNS design requires review of
+the accepted KMIPKIT-0013 specification and platform-trust contract.
+
+**Recommended license decision:** Have the reviewer assess a finite expansion
+of the SPDX allowlist by `ISC` and `BSD-3-Clause`, with the corresponding
+third-party notices retained for distribution. The [SPDX ISC text](https://spdx.org/licenses/ISC.html)
+and [SPDX BSD-3-Clause text](https://spdx.org/licenses/BSD-3-Clause.html)
+provide the standard identifiers and terms. A temporary cargo-deny 0.20.2
+config, differing from `.cargo/deny.toml` only by these two identifiers, was
+checked offline for the license rule. The root workspace changed from five
+license errors to zero; fuzz remained at zero. This probe did not alter either
+checked-in config and does not replace the online advisory check or a human
+license disposition. If the reviewer declines an allowlist expansion, the
+policy instead requires five package/version-specific clarifications with
+reviewed license-file evidence.
+
+The exact locked package archives expose these top-level license files. The
+hashes below are SHA-256 of the files extracted from the crates.io packages;
+the reviewer should inspect the complete files, especially `aws-lc-sys`,
+whose `LICENSE` includes notices for third-party components compiled into
+the native library and others that are not compiled:
+
+| Package | License file | SHA-256 |
+|---|---|---|
+| `aws-lc-rs@1.18.1` | `LICENSE` | `b50b376e7d24a0598488b730c3034ffcd0b58dd36c0913a24b9903a3cfd04bf7` |
+| `aws-lc-sys@0.45.0` | `LICENSE` | `728536b4160e051f86d7c9c388f704866b3d512cd7df97ac3516c65279523c4e` |
+| `rustls-webpki@0.103.15` | `LICENSE` | `5b698ca13897be3afdb7174256fa1574f8c6892b8bea1a66dd6469d3fe27885a` |
+| `subtle@2.6.1` | `LICENSE` | `d1fc1bc0d155df60b2e7705b6b2ae02a05c96f948e1cec6e2fb86360b09f346b` |
+| `untrusted@0.9.0` | `LICENSE.txt` | `7abd9b6960dcf7d4d0a48606a5b71bfe37d472db68d70637f3a58a56785f1621` |
+
+No machine-readable exception or allowlist change should be represented as
+approved until that human decision is recorded. Once it is, update the
+register, cargo-deny configuration, and this review together, then rerun the
+official policy command and the full CI matrix. T003 remains incomplete.
