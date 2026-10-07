@@ -822,6 +822,7 @@ def _safe_destination(root: Path, destination: Path) -> Path:
         relative = destination.relative_to(root)
     except ValueError as error:
         raise FixtureError("generated destination escapes the repository root") from error
+    canonical_root = root.resolve(strict=True)
     if relative.is_absolute() or any(part in ("", ".", "..") for part in relative.parts):
         raise FixtureError("generated destination is not a safe relative path")
 
@@ -834,7 +835,7 @@ def _safe_destination(root: Path, destination: Path) -> Path:
             raise FixtureError("generated destination parent is not a directory")
 
     try:
-        current.resolve(strict=False).relative_to(root)
+        current.resolve(strict=False).relative_to(canonical_root)
     except (OSError, ValueError) as error:
         raise FixtureError("generated destination escapes the repository root") from error
     if current.exists() and not current.is_file():
@@ -882,7 +883,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         outputs = render(_read(MANIFEST), _read(CORPUS))
-        root = ROOT.resolve(strict=True)
+        # Keep the lexical root so destinations built from the same path alias
+        # remain relative; _safe_destination separately checks canonical containment.
+        root = ROOT
         stale = []
         if args.check:
             destinations = _preflight_outputs(root, outputs)
