@@ -41,7 +41,7 @@ transport does not replace, copy into, or mutate the `ClientConfiguration`.
 
 Before constructing an outgoing KMIP `RequestMessage`, encoding it, or calling
 the adapter, `Client::execute` checks the private registry provenance of every
-attached `ClientMessageExtension` against the registry owned by the retained
+attached `ClientRequestMessageExtension` against the registry owned by the retained
 `ClientConfiguration`. A mismatch returns sanitized `InvalidInput` with
 `DeliveryState::NotSent`; no outgoing KMIP request is constructed or encoded,
 and the adapter is not invoked. A same-client extension passes this check and

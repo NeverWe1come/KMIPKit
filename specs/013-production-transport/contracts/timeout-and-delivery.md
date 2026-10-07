@@ -57,7 +57,7 @@ Hyper.
 The typed client retains the immutable KMIPKIT-0012 `ClientConfiguration`
 separately from transport configuration. Before constructing the outgoing
 KMIP `RequestMessage`, encoding, or adapter invocation, it compares the
-private registry provenance of every attached `ClientMessageExtension` with
+private registry provenance of every attached `ClientRequestMessageExtension` with
 the registry owned by that retained configuration. A mismatch is sanitized as
 `InvalidInput` with `NotSent`; it produces no outgoing request message, no
 encoded request, and no adapter call. An extension validated by the retained

@@ -27,9 +27,9 @@
 - [x] Both the typed API and direct production adapters have per-exchange timeout override paths.
 - [x] Raw request staging cleanup, unsolicited HTTPS responses on reused connections, and the raw-TLS connection-model exception have explicit tests and acceptance gates.
 - [x] The production client retains the immutable KMIPKIT-0012 `ClientConfiguration` separately
-  from transport configuration, defines cross-client extension provenance rejection before
-  request construction/encoding/exchange, and preserves same-client extension behavior with public
-  integration coverage.
+  from transport configuration, rejects a foreign `ClientRequestMessageExtension` before request
+  construction/encoding/exchange, and preserves same-client behavior with public integration
+  coverage.
 
 ## Feature Readiness
 

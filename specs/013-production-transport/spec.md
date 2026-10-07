@@ -74,11 +74,11 @@ existing valid wire behavior.
 2. **Given** the current closed typed request set, **When** an application executes a request, **Then** the client encodes and validates it using its configured `CodecLimits`, passes exactly the response-byte limit to the adapter, decodes the bounded response, and returns a typed result without exposing raw response bytes.
 3. **Given** a failed exchange, **When** the next distinct operation is executed, **Then** the client may establish a new connection but never retries the failed KMIP request or automatically selects an alternate endpoint.
 4. **Given** a production client retaining immutable `ClientConfiguration` A separately from its
-   transport configuration, **When** a request carries a `ClientMessageExtension` whose private
+   transport configuration, **When** a request carries a `ClientRequestMessageExtension` whose private
    registry provenance belongs to configuration B, **Then** execution returns sanitized
    `InvalidInput` with `NotSent` before constructing the outgoing KMIP request, encoding it, or
    invoking the adapter.
-5. **Given** a request carrying a `ClientMessageExtension` validated by the same immutable
+5. **Given** a request carrying a `ClientRequestMessageExtension` validated by the same immutable
    `ClientConfiguration` retained by the production client, **When** the request is executed,
    **Then** it follows the existing typed encoding and exchange path and preserves its valid Message
    Extension wire representation.
@@ -121,7 +121,7 @@ existing valid wire behavior.
   separately from the validated transport configuration; the transport configuration MUST NOT
   contain or replace that client's extension registry. Before constructing an outgoing KMIP
   `RequestMessage`, encoding it, or invoking the adapter, `Client::execute` MUST compare the private
-  registry provenance of every attached `ClientMessageExtension` with the registry owned by the
+  registry provenance of every attached `ClientRequestMessageExtension` with the registry owned by the
   retained `ClientConfiguration`. A mismatch MUST return sanitized `InvalidInput` with
   `DeliveryState::NotSent`, without constructing or encoding the outgoing KMIP request and without
   invoking the adapter. An extension validated by the same retained configuration MUST continue

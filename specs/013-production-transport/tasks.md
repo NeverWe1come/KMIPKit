@@ -106,29 +106,32 @@ same-client extension preservation through the public Rust API.
 
 - [ ] T046 [US4] **Red**: Add public API integration tests in `crates/kmipkit-client/tests/production_client.rs` for validated raw TLS/HTTPS construction, no arbitrary transport injection, sync execution inside an existing runtime, options-bearing variants for every current typed operation method, direct-adapter byte exchange overrides, timeout override precedence on both paths, and exact request/response delivery; record expected failures in a Red commit.
 - [ ] T046a [US4] **Red**: Add a focused execution-boundary unit test in
-  `crates/kmipkit-client/src/execute.rs` proving registry provenance is checked before outgoing
-  `RequestMessage` construction, codec invocation, and adapter handoff. Add public Rust integration
-  tests in `crates/kmipkit-client/tests/production_client.rs`:
-  `production_client_rejects_foreign_registry_extension_as_invalid_input_not_sent` validates with
-  `ClientConfiguration` A, attaches that extension to a request for a production client retaining
-  configuration B, and asserts sanitized `InvalidInput`/`NotSent` with no exchange observed at an
-  ephemeral peer; `production_client_accepts_extension_from_its_own_configuration` executes an
-  extension validated by the production client's retained configuration and asserts a typed
-  response plus the expected unchanged Message Extension wire representation. Assert error
-  formatting does not reveal registry identity or extension payload data. Record expected failures
-  in a separate Red commit before T047.
+  `crates/kmipkit-client/src/execute.rs` proving `ClientRequestMessageExtension` registry
+  provenance is checked before outgoing `RequestMessage` construction, codec invocation, and adapter
+  handoff. Add public Rust integration tests in
+  `crates/kmipkit-client/tests/production_client.rs`:
+  `production_client_rejects_foreign_client_request_message_extension_as_invalid_input_not_sent`
+  constructs a `ClientRequestMessageExtension` from `ClientConfiguration` A, attaches it to a
+  request for a production client retaining configuration B, and asserts sanitized
+  `InvalidInput`/`NotSent` with no exchange observed at an ephemeral peer;
+  `production_client_accepts_client_request_message_extension_from_its_own_configuration` executes a
+  `ClientRequestMessageExtension` validated by the production client's retained configuration and
+  asserts a typed response plus the expected unchanged Message Extension wire representation.
+  Assert error formatting does not reveal registry identity or extension payload data. Record
+  expected failures in a separate Red commit before T047.
 - [ ] T047 [US4] **Green**: Add shared public `RequestOptions`, the production constructor, concrete
   direct-adapter `exchange_with_options` methods, adapter selection, and options-bearing variants
   corresponding to every current public typed operation method in `crates/kmipkit-client/src/lib.rs`
   and `crates/kmipkit-transport/src/`. Retain the immutable KMIPKIT-0012 `ClientConfiguration`
   separately from transport configuration; before constructing an outgoing `RequestMessage`,
-  encoding, or adapter invocation, reject attached extensions whose private registry provenance does
-  not match that client's registry as sanitized `InvalidInput`/`NotSent`, while preserving same-client
-  execution and wire behavior. Prove T046 and T046a pass in a separate Green commit.
+  encoding, or adapter invocation, reject attached `ClientRequestMessageExtension` values whose
+  private registry provenance does not match that client's registry as sanitized
+  `InvalidInput`/`NotSent`, while preserving same-client execution and wire behavior. Prove T046 and
+  T046a pass in a separate Green commit.
 - [ ] T048 [US4] **Refactor**: Refactor constructor ownership and ensure calls serialize through the
   private worker without exposing raw transport types in `crates/kmipkit-client/src/lib.rs`; preserve
-  separate configuration ownership and both extension-provenance outcomes, rerun T046 and T046a,
-  and record a distinct Refactor commit.
+  separate configuration ownership and both `ClientRequestMessageExtension` provenance outcomes,
+  rerun T046 and T046a, and record a distinct Refactor commit.
 - [ ] T049 [US4] **Red**: Add tests in `crates/kmipkit-client/tests/production_client.rs` for direct `max_request_bytes` rejection before connect, typed encoded-request rejection at `CodecLimits::max_message_bytes()`, exact response cap, pre-decode returned-length check, typed response validation, and absence of raw response exposure; record expected failures in a Red commit.
 - [ ] T050 [US4] **Green**: Connect existing encode/execute/decode flow to the production adapters and exact limits in `crates/kmipkit-client/src/lib.rs`; prove T049 passes in a separate Green commit.
 - [ ] T051 [US4] **Refactor**: Refactor error conversion and typed decode ownership while preserving `TransportResponse` cleanup in `crates/kmipkit-client/src/lib.rs`; rerun T049 and record a distinct Refactor commit.

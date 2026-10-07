@@ -94,7 +94,8 @@ and User Story 4, specifies separate ownership of `ClientConfiguration` and
 transport configuration in the plan/data model, and records the corresponding
 delivery-state rule. T046a is the Red public Rust integration task; T047 and
 T048 include its Green and Refactor evidence. The same-configuration case is
-required to preserve the existing valid extension encoding and execution path.
+required to preserve the existing valid `ClientRequestMessageExtension`
+encoding and execution path.
 `TransportConfig` remains transport-only and gains no registry field. The
 task coverage map links FR-018 and SC-007 to these tests. The revised package
 contains 18 functional requirements and 63 task entries. Existing FR/SC

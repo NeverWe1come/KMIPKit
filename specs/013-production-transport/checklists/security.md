@@ -41,8 +41,8 @@
 - [ ] CHK024 Is exactly one HTTPS `Host` header derived from endpoint authority, preserving bracketed IPv6 literals and explicit non-default ports, independent of the TLS verification-name override?
 - [ ] CHK025 Does the certificate-validation requirement distinguish a full handshake from resumed sessions, and is the inherited trust/CRL decision bounded by the stated ticket expiry?
 - [ ] CHK026 Does a client extension provenance mismatch fail before request
-  construction/encoding/exchange with sanitized `InvalidInput`/`NotSent`, without exposing registry
-  identity or extension payload data?
+  construction/encoding/exchange for `ClientRequestMessageExtension` with sanitized
+  `InvalidInput`/`NotSent`, without exposing registry identity or extension payload data?
 
 ## Notes
 
