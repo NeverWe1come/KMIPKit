@@ -83,14 +83,7 @@ fn validate_inner(
     let mut path = Vec::new();
     path.try_reserve(limits.max_structure_depth().min(64))
         .map_err(|_| resource_limit())?;
-    let mut item_count = 1_usize;
-    if item_count > limits.max_elements() {
-        return Err(resource_limit_at(&path));
-    }
-    let encoded_size = account_structure(&value.view(), 1, &mut item_count, limits, &mut path)?;
-    if encoded_size > limits.max_message_bytes() {
-        return Err(resource_limit_at(&path));
-    }
+    validate_ttlv_limits(&value, limits, &mut path)?;
 
     let root_view = value.view();
     validate_discriminator(&root_view, definition.discriminator(), &mut path)?;
@@ -104,6 +97,22 @@ fn validate_inner(
         },
         metrics,
     ))
+}
+
+fn validate_ttlv_limits(
+    value: &Structure,
+    limits: &CodecLimits,
+    path: &mut Vec<kmipkit_ttlv::Tag>,
+) -> Result<(), ProtocolError> {
+    let mut item_count = 1_usize;
+    if item_count > limits.max_elements() {
+        return Err(resource_limit_at(path));
+    }
+    let encoded_size = account_structure(&value.view(), 1, &mut item_count, limits, path)?;
+    if encoded_size > limits.max_message_bytes() {
+        return Err(resource_limit_at(path));
+    }
+    Ok(())
 }
 
 /// Returns the identity associated with a validated value.
