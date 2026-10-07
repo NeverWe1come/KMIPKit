@@ -125,7 +125,7 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 - [ ] T061 Run formatting, Clippy, workspace tests, cargo llvm-cov, generator checks, property/negative/fuzz tests, FFI sanitizer jobs, C consumer, Java, Python, dependency-policy CI, and supported-platform CI; verify limit/lifecycle tests and record exact command results in specs/012-vendor-extension-registry/verification.md
 - [x] T062 Reconcile implementation, tests, docs, generated artifacts, and requirement traceability against every acceptance criterion; audit Rust, C, Java, and Python public signatures for forbidden raw-body, arbitrary-Item, callback, or executable-plugin routes in specs/012-vendor-extension-registry/verification.md
 - [x] T063 Complete independent QA and security reviews, resolve findings, and record evidence without treating agent review as human approval in specs/012-vendor-extension-registry/verification.md
-- [ ] T064 Prepare the draft PR with Red/Green/Refactor commits, risks, verification evidence, and generated-artifact summary in the GitHub pull request for KMIPKIT-0012
+- [x] T064 Prepare the draft PR with Red/Green/Refactor commits, risks, verification evidence, and generated-artifact summary in the GitHub pull request for KMIPKIT-0012
 
 ## Dependencies & Execution Order
 

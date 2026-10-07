@@ -789,3 +789,26 @@ The Python adapter's Extension Information test expectation was also corrected t
   A qualified human security review remains a separate 1.0.0 release gate.
 - T062 and T063 are complete on this evidence. Coverage thresholds and the full
   current-HEAD platform CI remain open under T060 and T061.
+
+## 2026-10-07 — draft PR evidence refresh (T064)
+
+- Updated draft PR #52 from the terminal with Red/Green/Refactor commit groups,
+  current local verification, the six generated artifact classes, independent
+  QA/security results, and known release risks.
+- Recorded current-head Actions run `37654461313` at `c20f823` as still in
+  progress. T060/T061 remain open until the multi-platform matrix and aggregate
+  coverage gate complete successfully.
+- PR body: https://github.com/NeverWe1come/KMIPKit/pull/52
+
+## 2026-10-07 — Rust 1.94 FFI coverage-harness Clippy regression (Red)
+
+- Current-head CI run `37654461313`, job `112905929106`, failed the Rust 1.94
+  Clippy gate in `crates/kmipkit-ffi/tests/c_api_coverage.rs`: `borrow_as_ptr`
+  at the raw FFI output pointer and possible truncation/wrap from `usize as i32`.
+- Reproduced before changing code with WSL Ubuntu and Rust 1.94.1:
+  `cargo +1.94 clippy -p kmipkit-ffi --test c_api_coverage --all-features -- -D warnings`.
+  It failed with the same three diagnostics.
+- The Ubuntu coverage job `112905929059` did not execute its coverage steps; GitHub
+  reported that the job failed to be acquired after five attempts. This is a
+  runner-acquisition failure, not a coverage-threshold result, and must be rerun.
+- No source implementation changes are included in this Red evidence.
