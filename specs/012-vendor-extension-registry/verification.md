@@ -829,3 +829,26 @@ The Python adapter's Extension Information test expectation was also corrected t
   `cargo +1.94 clippy -p kmipkit-ffi --test c_api_coverage --all-features -- -D warnings`
   — passed; `cargo +1.94 test -p kmipkit-ffi --test c_api_coverage --all-features -- --nocapture`
   — passed (1 test; 13 C consumer groups).
+
+## 2026-10-07 — workspace coverage gate shortfall (T060 Red)
+
+- The clean Linux Rust 1.94 workspace coverage run, collected with an isolated
+  `CARGO_TARGET_DIR`, does not meet T060's unchanged thresholds. The raw report
+  is `/home/ramp1953/kmipkit-0012-coverage-full.json` (outside the worktree).
+- Measured totals are TTLV 712/750 (94.93%, minimum 95%), protocol 3979/4242
+  (93.80%, minimum 95%), client 2504/2673 (93.68%), transport 88/88 (100%),
+  preliminary FFI 1428/2180 (65.50%), and Rust workspace 8943/10169 (87.94%,
+  minimum 90%). The preliminary FFI workspace report does not include the
+  separately collected C-consumer ABI coverage report; FFI must be assessed
+  from that dedicated report before its 85% gate can be concluded.
+- Segment inspection found the TTLV-owned `try_clone_value` arms and
+  `Structure::default` uncovered. Protocol gaps include schema-validation and
+  message/credential error paths; the complete map is retained in the raw LLVM
+  report for follow-up. No generated-source exclusion or threshold change is
+  proposed.
+- Red command/result: `cargo llvm-cov --workspace --all-features --locked
+  --json --output-path coverage-raw.json` followed by the documented
+  `coverage_gate.py normalize` step completed, but the resulting package and
+  workspace totals are below T060's required gates. This is a coverage-gate
+  failure, not a Rust test failure. T060 remains open pending targeted
+  behavior tests and a fresh measured report.
