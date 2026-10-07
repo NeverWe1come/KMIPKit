@@ -1,7 +1,7 @@
 # KMIPKIT-0013 dependency review
 
 **Review date:** 2026-10-07  
-**Status:** In progress; T003 is not complete and implementation remains gated.
+**Status:** T003 complete on 2026-10-07. This note retains historical findings and statuses; the final closure section supersedes earlier statements that the gate remained open.
 
 ## Scope and current graph
 
@@ -273,3 +273,31 @@ workspace checks refreshed RustSec to commit
 `f246cde705ecb3a6b421d6d5462c6d88f317db5f`; the runner validated all four
 exception IDs and confirmed that `Cargo.lock` and `fuzz/Cargo.lock` were
 unchanged.
+
+## T003 closure evidence
+
+The following final evidence supersedes the earlier historical statements in
+this note that T003 remained open:
+
+- The maintainer-reviewed exact duplicate exceptions and finite ISC/BSD-3-Clause
+  license allowlist are recorded above and were merged in [PR #50](https://github.com/NeverWe1come/KMIPKit/pull/50).
+- The official command `pwsh -File scripts/Test-DependencyPolicy.ps1` passed
+  from the updated production-transport branch on 2026-10-07. It validated all
+  four exception IDs, refreshed both RustSec scans to commit
+  `b8a1a33e246a0a9a3b5f377248c41a503defec74`, and confirmed that `Cargo.lock`
+  and `fuzz/Cargo.lock` were unchanged.
+- [CI run 37604245540](https://github.com/NeverWe1come/KMIPKit/actions/runs/37604245540)
+  passed dependency policy, coverage and coverage-gate checks, script contracts,
+  and workspace formatting, Clippy, tests, and documentation builds on Ubuntu,
+  Windows, and macOS with both Rust 1.94 and stable. Those platform builds
+  cover the selected AWS-LC native dependency path; the CI run also passed the
+  normative inventory and immutable-source checks.
+- The locked feature graph, MSRV metadata, native build requirements, and
+  supported-target dependency paths are documented in this review. No
+  unresolved dependency-policy finding remains for the accepted design.
+
+T003 is complete. T004 and other non-overlapping implementation tasks may
+proceed under the approved specification. The client-execution task gaps
+identified by the independent audit must be reconciled before starting T046
+through T051. The historical audit and rejected alternatives stay in this
+document so future dependency updates can reuse their evidence.
