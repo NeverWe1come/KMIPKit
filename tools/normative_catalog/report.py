@@ -182,15 +182,76 @@ def _source_reference(record: dict[str, Any]) -> str:
     return ", ".join(f"{item.get('source_id', '?')} §{item.get('section', '?')}" for item in references)
 
 
-def _profile_requirement_coverage(
-    catalog: dict[str, Any],
+def _typed_rule_coverage(
+    requirement: dict[str, Any],
+    source_clause_ids: list[str],
+    candidates: list[dict[str, Any]],
     typed_rule_mappings: list[dict[str, Any]] | None,
-) -> tuple[list[tuple[Any, ...]], dict[str, bool | None]]:
+) -> tuple[str, str, str, list[str], list[dict[str, Any]], bool | None]:
     if __package__:
         from .generate_profiles import _verification_category
     else:
         from generate_profiles import _verification_category
 
+    source_keyword = requirement.get("source_keyword")
+    try:
+        category = _verification_category(source_keyword) if isinstance(source_keyword, str) else "unknown"
+    except ValueError:
+        category = "unknown"
+
+    valid_mappings = [
+        mapping
+        for mapping in candidates
+        if mapping.get("source_clause_id") in source_clause_ids
+        and mapping.get("verification_category") == category
+        and mapping.get("evaluator_present") is True
+    ]
+    if typed_rule_mappings is None:
+        mapping_status = "not evaluated"
+        test_status = "not evaluated"
+        complete = None
+    else:
+        mapping_status = (
+            "Typed rule mapping: present"
+            if valid_mappings
+            else "Invalid typed rule mapping"
+            if candidates
+            else "No typed rule mapping"
+        )
+        expected_test_kind = _RULE_TEST_KIND_BY_CATEGORY.get(category)
+        test_ids = sorted({
+            test_id
+            for mapping in valid_mappings
+            if mapping.get("test_kind") == expected_test_kind
+            and isinstance((test_id := mapping.get("test_id")), str)
+            and test_id.strip()
+        })
+        test_status = (
+            "Category test reference: present"
+            if test_ids
+            else "No category-appropriate rule test"
+        )
+        complete = bool(valid_mappings and test_ids)
+
+    mapping_test_ids = sorted({
+        value
+        for mapping in candidates
+        if isinstance((value := mapping.get("test_id")), str) and value.strip()
+    })
+    return (
+        f"{source_keyword or 'unknown'} / {category}",
+        mapping_status,
+        test_status,
+        mapping_test_ids,
+        valid_mappings,
+        complete,
+    )
+
+
+def _profile_requirement_coverage(
+    catalog: dict[str, Any],
+    typed_rule_mappings: list[dict[str, Any]] | None,
+) -> tuple[list[tuple[Any, ...]], dict[str, bool | None]]:
     profiles = [row for row in catalog.get("profiles", []) if row.get("role") == "client"]
     requirements_by_id = {
         row.get("requirement_id"): row
@@ -229,49 +290,23 @@ def _profile_requirement_coverage(
             requirement_complete[requirement_id] = False if typed_rule_mappings is not None else None
             continue
 
-        source_keyword = requirement.get("source_keyword")
-        try:
-            category = _verification_category(source_keyword) if isinstance(source_keyword, str) else "unknown"
-        except ValueError:
-            category = "unknown"
         source_clause_ids = sorted(
             value for value in requirement.get("source_clause_ids") or [] if isinstance(value, str)
         )
         candidates = mappings_by_requirement.get(requirement_id, [])
-        valid_mappings = [
-            mapping
-            for mapping in candidates
-            if mapping.get("source_clause_id") in source_clause_ids
-            and mapping.get("verification_category") == category
-            and mapping.get("evaluator_present") is True
-        ]
-        if typed_rule_mappings is None:
-            mapping_status = "not evaluated"
-            test_status = "not evaluated"
-            test_ids: list[str] = []
-            requirement_complete[requirement_id] = None
-        else:
-            mapping_status = (
-                "Typed rule mapping: present"
-                if valid_mappings
-                else "Invalid typed rule mapping"
-                if candidates
-                else "No typed rule mapping"
-            )
-            expected_test_kind = _RULE_TEST_KIND_BY_CATEGORY.get(category)
-            test_ids = sorted({
-                test_id
-                for mapping in valid_mappings
-                if mapping.get("test_kind") == expected_test_kind
-                and isinstance((test_id := mapping.get("test_id")), str)
-                and test_id.strip()
-            })
-            test_status = (
-                "Category test reference: present"
-                if test_ids
-                else "No category-appropriate rule test"
-            )
-            requirement_complete[requirement_id] = bool(valid_mappings and test_ids)
+        (
+            category_label,
+            mapping_status,
+            test_status,
+            mapping_test_ids,
+            valid_mappings,
+            requirement_complete[requirement_id],
+        ) = _typed_rule_coverage(
+            requirement,
+            source_clause_ids,
+            candidates,
+            typed_rule_mappings,
+        )
 
         implementation_refs = sorted(
             value for value in requirement.get("implementation_refs") or [] if isinstance(value, str)
@@ -283,16 +318,11 @@ def _profile_requirement_coverage(
             value for value in requirement.get("test_case_ids") or [] if isinstance(value, str)
         )
         decision_id = requirement.get("decision_id")
-        mapping_test_ids = sorted({
-            value
-            for mapping in candidates
-            if isinstance((value := mapping.get("test_id")), str) and value.strip()
-        })
         rule_implementation_refs = [PROFILE_RULE_SOURCE] if valid_mappings else []
         rows.append((
             requirement_id,
             ", ".join(source_clause_ids),
-            f"{source_keyword or 'unknown'} / {category}",
+            category_label,
             mapping_status,
             test_status,
             ", ".join(mapping_test_ids) or "—",
