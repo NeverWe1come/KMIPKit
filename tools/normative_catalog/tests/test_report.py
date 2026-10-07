@@ -409,6 +409,56 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", report)
         self.assertIn("current pass/fail is not evaluated", report)
 
+    def test_profile_requirement_coverage_accepts_approved_recommended_deviation(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = report_catalog()
+        requirement = catalog["requirements"][0]
+        requirement["source_keyword"] = "SHOULD"
+        requirement["normative_strength"] = "recommended"
+        requirement["decision_id"] = "KMIPKIT-DEC-PROFILE-001"
+        catalog["source_clauses"][0]["source_keywords"] = ["SHOULD"]
+        catalog["decisions"] = [
+            {
+                "decision_id": "KMIPKIT-DEC-PROFILE-001",
+                "status": "accepted",
+                "requirement_ids": [requirement["requirement_id"]],
+            }
+        ]
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                "name": "Baseline Client",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": [requirement["requirement_id"]],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+        mapping = {
+            "requirement_id": requirement["requirement_id"],
+            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "verification_category": "RecommendedBehaviorOrDeviation",
+            "evaluator_present": True,
+            "test_kind": None,
+            "test_id": None,
+        }
+
+        rows, runtime_availability = report_module._profile_requirement_coverage(
+            catalog,
+            [mapping],
+        )
+
+        self.assertEqual("Accepted deviation: KMIPKIT-DEC-PROFILE-001", rows[0][4])
+        self.assertTrue(runtime_availability["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+
     def test_full_profile_report_fails_closed_on_empty_runtime_registry_and_fixtures(self) -> None:
         from tools.normative_catalog import report as report_module
 
