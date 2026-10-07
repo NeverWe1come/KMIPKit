@@ -53,6 +53,25 @@ _Static_assert(sizeof(uint64_t) == 8, "the C ABI requires 64-bit byte lengths");
         }                                                                         \
     } while (0)
 
+#define REQUIRE_CLEANUP(condition)                                                \
+    do {                                                                          \
+        if (!(condition)) {                                                       \
+            fprintf(stderr, "FAIL %s: %s\n", __func__, #condition);             \
+            goto cleanup;                                                         \
+        }                                                                         \
+    } while (0)
+
+#define REQUIRE_STATUS_CLEANUP(expression, expected_status)                      \
+    do {                                                                          \
+        const int32_t actual_status = (expression);                               \
+        if (actual_status != (expected_status)) {                                \
+            fprintf(stderr, "FAIL %s: %s returned %ld, expected %ld\n",         \
+                    __func__, #expression, (long)actual_status,                  \
+                    (long)(expected_status));                                    \
+            goto cleanup;                                                         \
+        }                                                                         \
+    } while (0)
+
 static bool load_default_limits(kmipkit_extension_registry_limits_t *limits)
 {
     return kmipkit_extension_registry_limits_default_values(
@@ -2236,29 +2255,42 @@ static bool test_definition_validation_and_ttlv_identity_readback(void)
     kmipkit_ttlv_item_t *item = NULL;
     uint64_t generic_item_count = 0U;
     uint64_t index;
+    int32_t call_status;
     int64_t observed = 0;
     uint8_t observed_type = 0U;
+    bool succeeded = false;
 
-    REQUIRE_STATUS(kmipkit_codec_limits_defaults(&codec_limits), KMIPKIT_SUCCESS);
-    REQUIRE(create_fixture_definition(codec_limits, name, sizeof(name) - 1U,
+    REQUIRE_STATUS_CLEANUP(kmipkit_codec_limits_defaults(&codec_limits), KMIPKIT_SUCCESS);
+    REQUIRE_CLEANUP(create_fixture_definition(codec_limits, name, sizeof(name) - 1U,
         KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR, discriminator,
         sizeof(discriminator) - 1U, &identity, &definition));
-    REQUIRE(create_fixture_payload_with_discriminator(codec_limits, 42,
+    REQUIRE_CLEANUP(create_fixture_payload_with_discriminator(codec_limits, 42,
         UINT32_C(314159), false, discriminator, sizeof(discriminator) - 1U, &payload));
 
+    /*
+     * These calls receive live, uniquely owned handles and valid tag constants.
+     * Their INVALID_INPUT returns are therefore pre-transfer validation failures;
+     * later fallible work reports model or resource-limit errors after transfer.
+     * Preserve owners on that early status so the shared cleanup remains safe.
+     */
     /* Add a nested, unknown structure to exercise recursive generic path access. */
-    REQUIRE_STATUS(kmipkit_ttlv_structure_create(&nested), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create(UINT32_C(0x420008), &raw_tag),
+    REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_structure_create(&nested), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_raw_tag_create(UINT32_C(0x420008), &raw_tag),
         KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_value_long_integer(73, &value), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_item_create(tag, value, codec_limits, &item),
-        KMIPKIT_SUCCESS);
-    value = NULL; /* Item construction consumes the value handle. */
-    REQUIRE_STATUS(kmipkit_ttlv_structure_with_item(nested, item, codec_limits,
-        &updated), KMIPKIT_SUCCESS);
-    nested = NULL; /* Structure construction consumes both input handles. */
-    item = NULL;
+    REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
+    REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_value_long_integer(73, &value), KMIPKIT_SUCCESS);
+    call_status = kmipkit_ttlv_item_create(tag, value, codec_limits, &item);
+    if (call_status != KMIPKIT_ERROR_INVALID_INPUT) {
+        value = NULL; /* Valid inputs are consumed before later validation. */
+    }
+    REQUIRE_STATUS_CLEANUP(call_status, KMIPKIT_SUCCESS);
+    call_status = kmipkit_ttlv_structure_with_item(nested, item, codec_limits,
+        &updated);
+    if (call_status != KMIPKIT_ERROR_INVALID_INPUT) {
+        nested = NULL; /* Valid inputs are consumed before later validation. */
+        item = NULL;
+    }
+    REQUIRE_STATUS_CLEANUP(call_status, KMIPKIT_SUCCESS);
     nested = updated;
     updated = NULL;
     kmipkit_tag_release(tag);
@@ -2266,19 +2298,26 @@ static bool test_definition_validation_and_ttlv_identity_readback(void)
     kmipkit_raw_tag_release(raw_tag);
     raw_tag = NULL;
 
-    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create(UINT32_C(0x420007), &raw_tag),
+    REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_raw_tag_create(UINT32_C(0x420007), &raw_tag),
         KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_value_structure(nested, codec_limits, &nested_value),
-        KMIPKIT_SUCCESS);
-    nested = NULL; /* Structure value construction consumes the structure handle. */
-    REQUIRE_STATUS(kmipkit_ttlv_item_create(tag, nested_value, codec_limits, &item),
-        KMIPKIT_SUCCESS);
-    nested_value = NULL; /* Item construction consumes the value handle. */
-    REQUIRE_STATUS(kmipkit_ttlv_structure_with_item(payload, item, codec_limits,
-        &updated), KMIPKIT_SUCCESS);
-    payload = NULL; /* Structure construction consumes both input handles. */
-    item = NULL;
+    REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);
+    call_status = kmipkit_ttlv_value_structure(nested, codec_limits, &nested_value);
+    if (call_status != KMIPKIT_ERROR_INVALID_INPUT) {
+        nested = NULL; /* Valid inputs are consumed before later validation. */
+    }
+    REQUIRE_STATUS_CLEANUP(call_status, KMIPKIT_SUCCESS);
+    call_status = kmipkit_ttlv_item_create(tag, nested_value, codec_limits, &item);
+    if (call_status != KMIPKIT_ERROR_INVALID_INPUT) {
+        nested_value = NULL; /* Valid inputs are consumed before later validation. */
+    }
+    REQUIRE_STATUS_CLEANUP(call_status, KMIPKIT_SUCCESS);
+    call_status = kmipkit_ttlv_structure_with_item(payload, item, codec_limits,
+        &updated);
+    if (call_status != KMIPKIT_ERROR_INVALID_INPUT) {
+        payload = NULL; /* Valid inputs are consumed before later validation. */
+        item = NULL;
+    }
+    REQUIRE_STATUS_CLEANUP(call_status, KMIPKIT_SUCCESS);
     payload = updated;
     updated = NULL;
     kmipkit_tag_release(tag);
@@ -2289,19 +2328,23 @@ static bool test_definition_validation_and_ttlv_identity_readback(void)
 #define APPEND_EXTRA_VALUE(tag_number, constructor_call)                          \
     do {                                                                          \
         int32_t append_status;                                                    \
-        REQUIRE_STATUS(kmipkit_ttlv_raw_tag_create((tag_number), &raw_tag),       \
-            KMIPKIT_SUCCESS);                                                     \
-        REQUIRE_STATUS(kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag),           \
-            KMIPKIT_SUCCESS);                                                     \
-        REQUIRE_STATUS((constructor_call), KMIPKIT_SUCCESS);                      \
-        append_status = kmipkit_ttlv_item_create(tag, value, codec_limits, &item);\
-        value = NULL; /* Item construction consumes the value handle. */          \
-        REQUIRE_STATUS(append_status, KMIPKIT_SUCCESS);                           \
-        append_status = kmipkit_ttlv_structure_with_item(payload, item,            \
+        REQUIRE_STATUS_CLEANUP(                                                   \
+            kmipkit_ttlv_raw_tag_create((tag_number), &raw_tag), KMIPKIT_SUCCESS); \
+        REQUIRE_STATUS_CLEANUP(                                                   \
+            kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag), KMIPKIT_SUCCESS);    \
+        REQUIRE_STATUS_CLEANUP((constructor_call), KMIPKIT_SUCCESS);             \
+        append_status = kmipkit_ttlv_item_create(tag, value, codec_limits, &item); \
+        if (append_status != KMIPKIT_ERROR_INVALID_INPUT) {                       \
+            value = NULL; /* Valid inputs are consumed before later validation. */ \
+        }                                                                         \
+        REQUIRE_STATUS_CLEANUP(append_status, KMIPKIT_SUCCESS);                  \
+        append_status = kmipkit_ttlv_structure_with_item(payload, item,           \
             codec_limits, &updated);                                              \
-        payload = NULL; /* Structure construction consumes both input handles. */ \
-        item = NULL;                                                              \
-        REQUIRE_STATUS(append_status, KMIPKIT_SUCCESS);                           \
+        if (append_status != KMIPKIT_ERROR_INVALID_INPUT) {                       \
+            payload = NULL; /* Valid inputs are consumed before later validation. */ \
+            item = NULL;                                                          \
+        }                                                                         \
+        REQUIRE_STATUS_CLEANUP(append_status, KMIPKIT_SUCCESS);                  \
         payload = updated;                                                        \
         updated = NULL;                                                           \
         kmipkit_tag_release(tag);                                                 \
@@ -2323,39 +2366,44 @@ static bool test_definition_validation_and_ttlv_identity_readback(void)
 
 #undef APPEND_EXTRA_VALUE
 
-    REQUIRE_STATUS(kmipkit_extension_definition_validate(definition, payload,
+    REQUIRE_STATUS_CLEANUP(kmipkit_extension_definition_validate(definition, payload,
         &validated, codec_limits), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_validated_extension_value_identity(validated,
+    REQUIRE_STATUS_CLEANUP(kmipkit_validated_extension_value_identity(validated,
         &validated_identity), KMIPKIT_SUCCESS);
-    REQUIRE(identity_name_matches(validated_identity, name, sizeof(name) - 1U));
-    REQUIRE_STATUS(kmipkit_validated_extension_value_generic_value(validated,
+    REQUIRE_CLEANUP(identity_name_matches(validated_identity, name, sizeof(name) - 1U));
+    REQUIRE_STATUS_CLEANUP(kmipkit_validated_extension_value_generic_value(validated,
         &generic_value), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_structure_view_item_count(generic_value,
+    REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_structure_view_item_count(generic_value,
         &generic_item_count), KMIPKIT_SUCCESS);
-    REQUIRE(generic_item_count == UINT64_C(13));
+    REQUIRE_CLEANUP(generic_item_count == UINT64_C(13));
     for (index = UINT64_C(0); index < UINT64_C(7); ++index) {
-        REQUIRE_STATUS(kmipkit_ttlv_structure_view_item_at(generic_value,
+        REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_structure_view_item_at(generic_value,
             index + UINT64_C(6), &item_view), KMIPKIT_SUCCESS);
-        REQUIRE_STATUS(kmipkit_ttlv_item_view_type(item_view, &observed_type),
+        REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_item_view_type(item_view, &observed_type),
             KMIPKIT_SUCCESS);
-        REQUIRE(observed_type == expected_extra_types[index]);
+        REQUIRE_CLEANUP(observed_type == expected_extra_types[index]);
         kmipkit_ttlv_item_view_release(item_view);
         item_view = NULL;
     }
 
-    REQUIRE_STATUS(kmipkit_ttlv_path_create(UINT32_C(0x420007), &path),
+    REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_path_create(UINT32_C(0x420007), &path),
         KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_path_with_child_tag(path, UINT32_C(0x420008),
-        &updated_path), KMIPKIT_SUCCESS);
-    path = NULL; /* Appending the child tag consumes the original path handle. */
+    call_status = kmipkit_ttlv_path_with_child_tag(path, UINT32_C(0x420008),
+        &updated_path);
+    if (call_status != KMIPKIT_ERROR_INVALID_INPUT) {
+        path = NULL; /* Valid inputs are consumed before later validation. */
+    }
+    REQUIRE_STATUS_CLEANUP(call_status, KMIPKIT_SUCCESS);
     path = updated_path;
     updated_path = NULL;
-    REQUIRE_STATUS(kmipkit_validated_extension_value_value_at(validated, path,
+    REQUIRE_STATUS_CLEANUP(kmipkit_validated_extension_value_value_at(validated, path,
         &value_view), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_value_view_long_integer(value_view, &observed),
+    REQUIRE_STATUS_CLEANUP(kmipkit_ttlv_value_view_long_integer(value_view, &observed),
         KMIPKIT_SUCCESS);
-    REQUIRE(observed == 73);
+    REQUIRE_CLEANUP(observed == 73);
+    succeeded = true;
 
+cleanup:
     kmipkit_ttlv_structure_view_release(generic_value);
     kmipkit_ttlv_item_view_release(item_view);
     kmipkit_ttlv_value_view_release(value_view);
@@ -2371,8 +2419,11 @@ static bool test_definition_validation_and_ttlv_identity_readback(void)
     kmipkit_extension_identity_release(validated_identity);
     kmipkit_extension_identity_release(identity);
     kmipkit_codec_limits_release(codec_limits);
-    return true;
+    return succeeded;
 }
+
+#undef REQUIRE_STATUS_CLEANUP
+#undef REQUIRE_CLEANUP
 
 int main(void)
 {
