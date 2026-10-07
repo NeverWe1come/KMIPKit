@@ -1,8 +1,9 @@
 # Incremental verification record
 
-This file records evidence as KMIPKIT-0012 is implemented. It is not the final
-feature-wide verification record; binding parity, coverage gates, interoperability,
-fuzzing, and the remaining acceptance criteria are still open.
+This file records evidence as KMIPKIT-0012 is implemented. Cross-language
+registry parity, examples, and a bounded fuzz smoke run have local evidence.
+The final aggregate coverage gate, current-commit CI/platform matrix, feature
+acceptance audit, and independent QA/security reviews remain open.
 
 ## 2026-10-07 — bounded schema order validation
 
@@ -31,6 +32,19 @@ Red/Green/Refactor commits:
 - `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings` — passed.
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
+
+## 2026-10-07 — CI fixture-generator rejection tests
+
+- Red: `aad390b` added a workflow contract requiring CI to run the extension
+  fixture generator's negative tests. The focused contract failed because the
+  `script-contracts` job only checked generated outputs and did not run those
+  tests.
+- Green: `0a3dffa` added the fixture test module to the cross-platform
+  `script-contracts` job. The workflow suite passed (30 tests), the fixture
+  module passed (13 tests), and `python -B
+  tools/extension_fixtures/generate.py --check` passed.
+- Refactor: clarified the CI coverage in `docs/development/testing.md`; no
+  production behavior or generated output changed.
 
 ## 2026-10-07 — response integration Refactor
 
@@ -219,7 +233,7 @@ This is feature-level incremental evidence, not the T061 release-readiness gate;
 cross-language parity, coverage, fuzzing, sanitizer jobs, and interoperability
 remain open.
 
-## 2026-10-07 — registry provenance seal (partial cross-spec correction)
+## 2026-10-07 — registry provenance seal and pre-transport check
 
 Independent QA found that a registry-validated outbound value did not retain
 which immutable client registry produced it. Added a private per-registry
@@ -227,19 +241,17 @@ identity token, cloned into each `RegisteredExtensionValue` and retained by
 the request-use wrapper. The regression test proves that configuration A
 recognizes a value validated by A and configuration B does not.
 
-This closes the provenance-loss portion of the finding. The current KMIPKIT-0007
-`Client::execute` has no client-configuration field, so it cannot yet reject a
-cross-configuration request before encoding or exchange. KMIPKIT-0013 owns the
-production client constructor; its integration must retain the registry
-configuration and perform this token comparison at the start of execution,
-returning sanitized `InvalidInput` with `NotSent` before message construction.
-That cross-spec execution check remains open and must be covered by a public
-client test before the finding is closed.
+The execute path now calls `validate_request_extension_ownership` before
+building the request message or exchanging bytes. The regression test
+`a_request_extension_from_another_client_registry_is_rejected_before_transport`
+asserts sanitized validation failure with `NotSent` delivery state and zero
+transport exchanges. This closes the cross-configuration send gap.
 
-Independent review also confirmed that the current accepted KMIPKIT-0013
-specification does not yet require that composition or rejection test. The
-KMIPKIT-0013 contract and task plan must be amended before implementation can
-claim to close this cross-client isolation finding.
+An earlier review note attributed the missing check to the later KMIPKIT-0013
+transport-construction work. That note is superseded: the current implementation
+retains the configuration in `Client` and rejects a foreign registry value
+before encoding or transport. No KMIPKIT-0013 specification amendment is
+needed for this behavior.
 
 ## 2026-10-07 — User Story 2 test-only Red stage
 
@@ -523,6 +535,37 @@ Red evidence:
   planned; the bridge uses JDK JNI headers and the installed Visual Studio
   compiler.
 
+## 2026-10-07 — C ABI and real consumer Green stage
+
+Implemented the 122 functions declared by the generated C header, including
+the seven identity and `ClientBatchItem` inspection functions added to the
+manifest. The C identity getters return owned TTLV TextString handles; batch
+inspection copies each stored identity and preserves extension order and
+explicit criticality. The CMake consumer links to the built `kmipkit_ffi`
+shared library.
+
+Red/Green evidence:
+
+- Red: `d4528d9`; `cargo test -p kmipkit-client --lib repeated_message_extensions_keep_explicit_criticality_and_caller_order` failed to compile because the three batch inspection methods were absent. In WSL Ubuntu, building the C consumer failed at link with unresolved references to the seven newly manifested symbols.
+- Green: `crates/kmipkit-client/src/execute.rs` provides Discover Versions construction and ordered inspection. `crates/kmipkit-ffi/src/extension_registry.rs` implements the seven exports. The C consumer verifies all three identity fields, two distinct extension identities, their order, and criticality values `true` then `false`.
+
+Verification:
+
+- `cargo test -p kmipkit-ffi -p kmipkit-client --all-features` — passed; 192 client unit tests and all client integration, UI compile-fail, and doc tests passed. The FFI Rust unit-test target contains no tests; ABI behavior is exercised through the compiled C consumer below.
+- `cargo clippy -p kmipkit-ffi -p kmipkit-client --all-targets --all-features -- -D warnings` — passed.
+- `cargo fmt -p kmipkit-client -p kmipkit-ffi -- --check` — passed.
+- `python tools/api_manifest/generate.py --check` — passed; six generated outputs are current.
+- Export audit: 122 C header function declarations and 122 explicit Rust exports; no missing or extra names.
+- Unsafe/pointer audit: all 11 unsafe blocks in `extension_registry.rs` have `SAFETY` comments. Variable byte spans and handle arrays pass through bounded helpers before reads; no NUL scans are used. Zero-count arrays accept `NULL` and produce empty collections.
+- In WSL Ubuntu, `cargo build -p kmipkit-ffi` — passed and produced the Linux shared library.
+- In WSL Ubuntu, `gcc -std=c11 -Wall -Wextra -Werror -pedantic -I bindings/c/include bindings/c/tests/extension_registry.c -L target/debug -lkmipkit_ffi -Wl,-rpath,/mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0012-vendor-extension-registry/KMIPKit/target/debug -o target/debug/kmipkit-c-consumer` — passed; linked against the built cdylib.
+- In WSL Ubuntu, `target/debug/kmipkit-c-consumer tests/fixtures/extensions/cases.json` — passed all eight C consumer groups.
+- In WSL Ubuntu, CMake 4.2.3 configure, build, and test commands passed:
+  - `wsl.exe -e bash -lc "export LD_LIBRARY_PATH=/mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake/root/usr/lib/x86_64-linux-gnu && export CMAKE_ROOT=/mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake/root/usr/share/cmake-4.2 && /mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake/root/usr/bin/cmake -S /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0012-vendor-extension-registry/KMIPKit/bindings/c -B /mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake-build"` — configured successfully.
+  - `wsl.exe -e bash -lc "export LD_LIBRARY_PATH=/mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake/root/usr/lib/x86_64-linux-gnu && export CMAKE_ROOT=/mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake/root/usr/share/cmake-4.2 && /mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake/root/usr/bin/cmake --build /mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake-build"` — built the real C consumer.
+  - `wsl.exe -e bash -lc "export LD_LIBRARY_PATH=/mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake/root/usr/lib/x86_64-linux-gnu && export CMAKE_ROOT=/mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake/root/usr/share/cmake-4.2 && /mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake/root/usr/bin/ctest --test-dir /mnt/c/Users/ramp1953/.codex/tmp/kmipkit-cmake-build --output-on-failure"` — passed (1/1).
+- `git diff --check` — passed.
+
 ## 2026-10-07 — C identity and batch inspection Red stage
 
 Added C consumer assertions for all three identity fields and for the order and
@@ -535,4 +578,149 @@ Red evidence:
 - `cargo test -p kmipkit-client --lib repeated_message_extensions_keep_explicit_criticality_and_caller_order` — expected compile failure because `ClientBatchItem` does not yet expose `extension_count`, `extension_identity_at`, or `extension_criticality_indicator_at`.
 - In WSL Ubuntu, `cargo build -p kmipkit-ffi` — passed for the baseline ABI.
 - In WSL Ubuntu, `gcc -std=c11 -Wall -Wextra -Werror -pedantic -I bindings/c/include bindings/c/tests/extension_registry.c -L target/debug -lkmipkit_ffi -Wl,-rpath,$PWD/target/debug -o target/debug/kmipkit-c-consumer` — expected link failure because all seven newly manifested identity/batch symbols are declared by the generated header but not exported yet; C compilation itself succeeded.
+- `git diff --check` — passed.
+
+## 2026-10-07 — Python 3.12 CFFI facade T051 Green and Refactor
+
+Implemented the typed `kmipkit` facade over the manifest-backed C ABI with
+Maturin/CFFI packaging, limits/configuration/registry APIs, generic TTLV
+builders and views, extension inspection and preservation, explicit outbound
+criticality, native identity getters, and Discover Versions batch extension
+inspection. `NativeHandle` owns all CFFI pointers privately, closes
+idempotently, supports context managers, and atomically transfers consumed
+handles under an ownership lock. Errors map to stable redacted categories.
+Python-owned strings and byte values are copies that the Python runtime cannot
+deterministically zeroize; this limitation is documented in the package and
+facade module docstrings.
+
+Red evidence:
+
+- Existing manifest tests committed as `c73a89b` failed before the facade was
+  present. Ownership transfer tests in `0860d8d` established consumed-handle
+  close behavior.
+- `python -m unittest discover -s tests -p test_handle_ownership.py -v` — the
+  new concurrent close/transfer test failed before the ownership lock with two
+  releases for one handle; after the fix it passes with the other ownership
+  cases.
+- The Python batch parity Red test in `2e619b1` failed with missing
+  `client_batch_item_discover_versions`; native identity getter assertions in
+  `82a5e9b` likewise required the newly manifested getters.
+- Shared preservation fixtures were corrected in `255ab97` to use allocated
+  KMIP extension-range tags (`0x540010`–`0x540015`, `0x540021`–`0x540022`), as
+  required by the checked-tag model. Its Python normalizer correction retains
+  the fixture's nested `children` array shape.
+
+Green and Refactor commits:
+
+- `5deaa09` — typed CFFI facade, native handle adapter, stable errors, TTLV
+  views/builders, and Maturin packaging.
+- `d6aaf0a` — consolidated copied identity hydration and deterministic view
+  closure; UTF-8 conversion errors suppress source exception context.
+
+Verification, run from `bindings/python` with Python 3.12:
+
+- `maturin develop` — passed; generated CFFI bindings, built the native-backed
+  wheel, and installed it into the Python 3.12 environment.
+- `python -m unittest discover -s tests -v` — passed, 13 tests, 0 failures or
+  errors. This includes immutable configuration ownership, every registry
+  limit boundary, redacted diagnostics, preservation, identity getters,
+  Discover Versions repeated attachment order and criticality, out-of-range
+  inspection errors, close-after-consume idempotence, conversion rollback, and
+  concurrent close/transfer.
+- `ruff check src/kmipkit --exclude _generated --exclude _ffi` — passed.
+- `ruff format --check src/kmipkit --exclude _generated --exclude _ffi` —
+  passed; 5 source files already formatted.
+- `python -m compileall -q src/kmipkit tests` — passed.
+- Manifest symbol audit — all 97 declared C symbols were available through
+  the freshly built CFFI `lib`; no missing symbols.
+- `pyproject.toml` parse via Python 3.12 `tomllib` — passed.
+
+The batch route exercised here constructs Discover Versions items, the only
+public `ClientBatchItem` constructor in the approved manifest. Generic batch
+item construction and wire encoding remain outside this T051 facade slice.
+
+## 2026-10-07 — Java facade, generated parity, and OASIS vectors Green
+
+### Java 17 JNI facade (T050)
+
+- Red: `7287362`; Green: `5ba20d7`.
+- `mvn -f bindings/java/pom.xml test` — passed on Windows; JNI DLL built and loaded, 14 tests passed (0 failures/errors/skips). A rerun after the current Java changes also passed 14/14.
+- Native symbol audit: all 91 Java native declarations have JNI implementations.
+- `python tools/api_manifest/generate.py --check` — passed; all six generated outputs match the manifest.
+- The 42-test manifest suite below exercises Java API legality and mappings. Linux and macOS JNI builds remain for the platform matrix in T061.
+
+### Cross-adapter Green evidence (T053)
+
+- C Green: `f08dcf4`; WSL Ubuntu real C consumer passed all eight groups, and CMake/CTest passed 1/1.
+- Java Green: `5ba20d7`; JNI-enabled Maven suite passed 14/14.
+- Python Green: `5deaa09`; Python 3.12 CFFI suite passed 13/13 after a fresh Maturin build; Ruff and `compileall` passed.
+- The adapters consume the shared extension corpus; the C consumer, Java and Python suites cover registration/identity, limits, lifecycle, outbound order/criticality, recognition and preservation cases.
+
+### Manifest generation and parity scaffolding (T052, T055)
+
+- `python tools/api_manifest/generate.py --check` — passed; six generated outputs current.
+- `.venv\\Scripts\\python.exe -m unittest discover -s tools/api_manifest/tests -v` — passed, 42 tests; two symlink tests were skipped because Windows denied symlink creation without the required privilege.
+- `docs/development/api-manifest.md` documents write/regenerate and read-only `--check` workflows for maintainers.
+
+### OASIS vectors and schema fuzz target (T056)
+
+Red/Green/Refactor commits: `b8769b5` / `4165ac2` / `8acf3ae`.
+
+- The Table 365 vector caught the wrong Extension Enumeration tag: the implementation returned `0x4200A8` instead of KMIP 2.1 §11.56's `0x420129`. Green corrects the allocation. Vectors cover §7.13 Table 365, §8.3 Table 396 repeated Message Extension ordering, §9.13 Table 418, and §11.44 Table 476.
+- `cargo test -p kmipkit-protocol --test extension_information --test extension_oasis_vectors` — passed (2 + 4 tests).
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo check --manifest-path fuzz/Cargo.toml --bin extension_schema` and fuzz-target Clippy — passed.
+- WSL Ubuntu, `cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5` — completed 1,000 runs from the checked-in valid seed without a crash; coverage reached 463 counters and 697 features.
+- `cargo fmt --all --check` and `git diff --check` — passed.
+
+## 2026-10-07 — cross-adapter lifecycle Refactor (T054)
+
+- Python Refactor: `d6aaf0a` — serialized native-handle ownership transfer and tightened copied identity/view lifetime handling; Python 3.12 CFFI suite passed 13/13.
+- FFI Refactor: `c6afef9` — centralizes typed release validation and ownership consumption. C consumer verified NULL and wrong-kind releases are no-ops while the original live handle remains usable.
+- Java Refactor: `030c912` — replaces mixed atomic/monitor handle state with `volatile long` and the existing lifecycle lock for writes; Cleaner, close, and transfer semantics remain unchanged.
+- FFI/client Rust tests passed (192 client unit tests plus integration/UI/doctests); Clippy `-D warnings` and rustfmt passed. WSL FFI build, CMake/CTest (1/1), and C consumer (9 groups) passed.
+- Java Maven suite passed 14/14 before and after Refactor; generated manifest check passed; parity test module passed 6/6; 91 native declarations match 91 JNI implementations.
+- Python package suite passed 13/13 after Refactor, with Ruff, formatting, `compileall`, and 97-symbol CFFI audit passing.
+
+## 2026-10-07 — CI API-manifest regeneration gate (T059)
+
+- Red: `7bd2416`; `python -m unittest discover -s scripts/tests -p test_workflow.py -v` failed only the new workflow contract because no API manifest check was wired into CI.
+- Green: `72bfe04` adds `python -B tools/api_manifest/generate.py --check` to the cross-platform script-contract job; any stale generated bytes now fail the job on Linux, Windows, or macOS.
+- `python -m unittest discover -s scripts/tests -p test_workflow.py -v` — passed (19 tests).
+- Pinned virtual environment, `python -B tools/api_manifest/generate.py --check` — passed; all six outputs match.
+
+The Python adapter's Extension Information test expectation was also corrected to the §11.56 Extension Enumeration allocation `0x420129`; the old `0x4200A8` value is Fresh. This aligns Python with the OASIS-derived protocol and Java tests.
+
+## 2026-10-07 — requirement traceability links (T057)
+
+- `specification/compliance/requirements/KMIPKIT-0012.csv` contains 14 unique
+  rows matching FR-001 through FR-014 in the approved feature specification.
+- The FR-013 links identify the Rust, C, Java, and Python example files, both
+  language guides, and the runnable example targets. FR-014 identifies the
+  manifest generator tests and the CI `--check` invocation.
+- A path and symbol audit of every `implementation_location` and `test_ids`
+  entry found 0 unresolved references.
+
+## 2026-10-07 — cross-language examples and user guidance (T029, T041, T058)
+
+- English and Spanish guides now point to the actual Python example file,
+  `vendor_extension_registry.py`, and explain registration, typed validation,
+  explicit criticality, ordered attachment, recognition, unknown criticality
+  handling, generic TTLV preservation, and runtime-owned copy limitations.
+- Rust example run: `cargo run -p kmipkit-client --example vendor_extension` —
+  passed; it demonstrates valid recognition, a schema-invalid generic payload,
+  retained TTLV structure, and ordered outbound attachments.
+- C example: `cargo build -p kmipkit-ffi`, bundled CMake configure/build, and
+  CTest — passed (2/2, including the example and real consumer); strict GCC
+  compilation and direct example execution also passed. The sample verifies
+  recognition and generic preservation for valid and schema-invalid values.
+- Java: `mvn -f bindings/java/pom.xml test` — passed (14/14); the JNI-backed
+  example ran and printed its no-network confirmation.
+- Python 3.12: example smoke test — passed (1/1); full package suite — passed
+  (14 tests and 85 subtests). The sample uses shared fixtures and prints
+  preserved TTLV tags plus ordered criticality selections.
+- Rust, C, Java, and Python package examples document that unknown response
+  criticality remains governed by KMIPKIT-0007 and describe the language's
+  secret-copy/zeroization limits. All example inputs are local non-secret data;
+  none sends a KMIP request.
 - `git diff --check` — passed.

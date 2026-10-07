@@ -93,6 +93,8 @@ framing, forbidden redirect/compression behavior, and connection reuse.
 - Pull-request CI runs the Linux C consumer through the Rust ABI under
   AddressSanitizer and runs the JNI zeroizing-owner test under AddressSanitizer
   and UndefinedBehaviorSanitizer in `ffi-sanitizer`.
+- Pull-request CI checks generated API and cross-adapter fixture outputs and
+  runs the extension fixture generator's rejection tests in `script-contracts`.
 - Test Java from the packaged native JAR.
 - Test Python from the built wheel in a clean environment.
 - Run shared behavioral vectors through Rust, C, Java, and Python.
