@@ -16,6 +16,9 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = REPOSITORY_ROOT / "scripts" / "dependency_policy.py"
+SAFE_LICENSE_IDENTIFIERS = frozenset(
+    {"Apache-2.0", "BSD-3-Clause", "ISC", "LLVM-exception", "MIT", "MIT-0"}
+)
 POLICY = None
 POLICY_LOAD_ERROR = None
 if POLICY_PATH.is_file():
@@ -169,6 +172,20 @@ class DependencyPolicyApiTests(unittest.TestCase):
             except OSError as error:
                 self.skipTest(f"directory symlinks are unavailable: {error}")
             _, metadata = self.make_repository(alias)
+            policy.validate_workspace_metadata(alias, metadata)
+
+    def test_checkout_root_alias_accepts_metadata_from_canonical_checkout_path(self) -> None:
+        policy = self.require_policy()
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "checkout"
+            root.mkdir()
+            alias = parent / "checkout-alias"
+            try:
+                alias.symlink_to(root, target_is_directory=True)
+            except OSError as error:
+                self.skipTest(f"directory symlinks are unavailable: {error}")
+            _, metadata = self.make_repository(root)
             policy.validate_workspace_metadata(alias, metadata)
 
     def test_optional_feature_only_external_path_dependency_is_rejected(self) -> None:
@@ -325,8 +342,13 @@ class DependencyPolicyApiTests(unittest.TestCase):
         baseline = tomllib.loads(
             (REPOSITORY_ROOT / ".cargo" / "deny-baseline.toml").read_text(encoding="utf-8")
         )
+        register = json.loads(
+            (REPOSITORY_ROOT / "specification" / "compliance" / "dependency-policy-exceptions.json").read_text(
+                encoding="utf-8"
+            )
+        )
         policy.validate_exception_config(
-            {"schema_version": 1, "exceptions": []},
+            register,
             configured,
             baseline_config=baseline,
         )
@@ -453,7 +475,183 @@ class DependencyExceptionTests(unittest.TestCase):
 
     def validate(self, entries: list[dict], findings: list[dict]) -> None:
         policy = self.require_policy()
-        policy.validate_exceptions({"schema_version": 1, "exceptions": entries}, findings, today=date(2026, 1, 15))
+        policy.validate_exceptions(
+            {"schema_version": 1, "exceptions": entries},
+            findings,
+            today=date(2026, 1, 15),
+            known_license_identifiers=SAFE_LICENSE_IDENTIFIERS,
+        )
+
+    def test_exception_validation_reports_all_unmatched_findings_and_versions(self) -> None:
+        findings = [
+            finding("duplicate", "core-foundation", "0.9.4"),
+            finding("duplicate", "core-foundation", "0.10.1"),
+            finding("duplicate", "syn", "2.0.119"),
+            finding("duplicate", "syn", "3.0.6"),
+            finding("license", "aws-lc-rs", "1.18.1"),
+            finding(
+                "advisory",
+                "advisory-crate",
+                "1.0.0",
+                source="registry+https://packages.example.invalid/index",
+                advisory_id="RUSTSEC-2026-0001",
+            ),
+            finding(
+                "advisory",
+                "advisory-crate",
+                "1.0.0",
+                source="registry+https://packages.example.invalid/index",
+                advisory_id="RUSTSEC-2026-0002",
+            ),
+            finding(
+                "license",
+                "licensed-crate",
+                "4.2.0",
+                source="registry+https://packages.example.invalid/index",
+                license_expression="ISC AND (Apache-2.0 OR ISC)",
+            ),
+        ]
+
+        with self.assertRaises(self.policy_error()) as context:
+            self.validate([], findings)
+
+        diagnostic = str(context.exception)
+        self.assertIn("has no exact registered exception", diagnostic)
+        self.assertIn("advisory=RUSTSEC-2026-0001", diagnostic)
+        self.assertIn("advisory=RUSTSEC-2026-0002", diagnostic)
+        self.assertIn("source=registry+https://packages.example.invalid/<redacted>", diagnostic)
+        self.assertIn("license=ISC AND (Apache-2.0 OR ISC)", diagnostic)
+        for package_name, version in (
+            ("core-foundation", "0.9.4"),
+            ("core-foundation", "0.10.1"),
+            ("syn", "2.0.119"),
+            ("syn", "3.0.6"),
+            ("aws-lc-rs", "1.18.1"),
+        ):
+            with self.subTest(package=package_name, version=version):
+                self.assertIn(f"{package_name}@{version}", diagnostic)
+
+    def test_exception_validation_identifies_every_finding_beyond_twenty(self) -> None:
+        findings = [
+            finding("duplicate", f"dependency-{index:02d}", "1.0.0")
+            for index in range(25)
+        ]
+
+        with self.assertRaises(self.policy_error()) as context:
+            self.validate([], findings)
+
+        diagnostic = str(context.exception)
+        for index in range(25):
+            with self.subTest(index=index):
+                self.assertIn(f"dependency-{index:02d}@1.0.0", diagnostic)
+
+    def test_malformed_license_evidence_fails_without_echoing_metadata(self) -> None:
+        for raw_license in (
+            "LicenseRef-SENTINELSECRET00000000",
+            "SENTINELSECRET00000000",
+            "MIT OR",
+            "(MIT) WITH Classpath-exception-2.0",
+            "MIT\u2028OR\u2028Apache-2.0",
+        ):
+            with self.subTest(raw_license=raw_license):
+                with self.assertRaises(self.policy_error()) as context:
+                    self.validate(
+                        [],
+                        [finding("license", "private-crate", "1.0.0", license_expression=raw_license)],
+                    )
+
+                self.assertIn("license=unavailable", str(context.exception))
+                self.assertNotIn(raw_license, str(context.exception))
+
+    def test_cli_reports_findings_when_exception_register_is_empty(self) -> None:
+        self.require_policy()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Cargo.toml").write_text("[workspace]\n", encoding="utf-8")
+            ttlv_manifest = root / "crates" / "kmipkit-ttlv" / "Cargo.toml"
+            ttlv_manifest.parent.mkdir(parents=True)
+            ttlv_manifest.write_text("[package]\nname = 'kmipkit-ttlv'\n", encoding="utf-8")
+            fuzz_manifest = root / "fuzz" / "Cargo.toml"
+            fuzz_manifest.parent.mkdir(parents=True)
+            fuzz_manifest.write_text("[package]\nname = 'kmipkit-ttlv-fuzz'\n", encoding="utf-8")
+            root_package = package("kmipkit", "1.0.0", root / "Cargo.toml")
+            ttlv_package = package("kmipkit-ttlv", "1.0.0", ttlv_manifest)
+            fuzz_package = package("kmipkit-ttlv-fuzz", "0.0.0", fuzz_manifest)
+            metadata = {
+                "root": workspace_metadata(
+                    root, [root_package, ttlv_package], [root_package, ttlv_package]
+                ),
+                "fuzz": workspace_metadata(root / "fuzz", [fuzz_package, ttlv_package], [fuzz_package]),
+            }
+            root_metadata = root / "root.json"
+            fuzz_metadata = root / "fuzz.json"
+            license_identifiers = root / "license-identifiers.json"
+            exception_register = root / "exceptions.json"
+            findings_path = root / "findings.json"
+            root_metadata.write_text(json.dumps(metadata["root"]), encoding="utf-8")
+            fuzz_metadata.write_text(json.dumps(metadata["fuzz"]), encoding="utf-8")
+            license_identifiers.write_text(
+                json.dumps(sorted(SAFE_LICENSE_IDENTIFIERS)), encoding="utf-8"
+            )
+            exception_register.write_text(
+                json.dumps({"schema_version": 1, "exceptions": []}), encoding="utf-8"
+            )
+            findings_path.write_text(
+                json.dumps(
+                    [
+                        finding("duplicate", "unreviewed-crate", "2.4.0"),
+                        finding(
+                            "advisory",
+                            "advisory-crate",
+                            "1.0.0",
+                            source="registry+https://packages.example.invalid/index",
+                            advisory_id="RUSTSEC-2026-0001",
+                        ),
+                        finding(
+                            "license",
+                            "licensed-crate",
+                            "4.2.0",
+                            source="registry+https://packages.example.invalid/index",
+                            license_expression="ISC AND (Apache-2.0 OR ISC)",
+                        ),
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(POLICY_PATH),
+                    "--checkout-root",
+                    str(root),
+                    "--root-metadata",
+                    str(root_metadata),
+                    "--fuzz-metadata",
+                    str(fuzz_metadata),
+                    "--license-identifiers",
+                    str(license_identifiers),
+                    "--deny-config",
+                    str(REPOSITORY_ROOT / ".cargo" / "deny-baseline.toml"),
+                    "--baseline-deny-config",
+                    str(REPOSITORY_ROOT / ".cargo" / "deny-baseline.toml"),
+                    "--exceptions",
+                    str(exception_register),
+                    "--findings",
+                    str(findings_path),
+                ],
+                cwd=REPOSITORY_ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        self.assertNotEqual(0, completed.returncode)
+        report = completed.stderr
+        self.assertNotIn("findings were supplied without registered exceptions", report)
+        self.assertIn("unreviewed-crate@2.4.0", report)
+        self.assertIn("advisory=RUSTSEC-2026-0001", report)
+        self.assertIn("source=registry+https://packages.example.invalid/<redacted>", report)
+        self.assertIn("license=ISC AND (Apache-2.0 OR ISC)", report)
 
     def test_registered_exception_must_have_a_matching_policy_config_waiver(self) -> None:
         policy = self.require_policy()
@@ -957,7 +1155,12 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
         for required in ("RustSec", "CARGO_HOME", "root", "fuzz", "timestamp", "commit"):
             with self.subTest(required=required):
                 self.assertIn(required.lower(), contents.lower())
-        self.assertNotIn("--offline", contents)
+        configured_start = contents.index(".cargo/deny.toml")
+        self.assertIn(
+            "'--offline',\n            'list', '--format', 'json', '--layout', 'license'",
+            contents,
+        )
+        self.assertNotIn("'--offline'", contents[configured_start:])
         self.assertNotIn("--frozen", contents)
 
     def test_runner_validates_database_remote_and_fails_on_missing_evidence(self) -> None:
@@ -1003,6 +1206,25 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
             contents.index("dependency policy exact exception validation"),
             contents.rindex("$workspace in @("),
         )
+
+    def test_runner_reports_safe_exact_exception_validation_diagnostics(self) -> None:
+        contents = self.require_runner()
+        self.assertIn("[switch]$SafePolicyDiagnostics", contents)
+        self.assertIn("$policyReport = $stderr.Trim()", contents)
+        validation_start = contents.index("dependency policy exact exception validation")
+        validation_end = contents.index("foreach ($workspace in @(", validation_start)
+        validation_call = contents[validation_start:validation_end]
+        self.assertIn("-SafePolicyDiagnostics", validation_call)
+
+    def test_runner_builds_a_trusted_spdx_identifier_inventory_with_cargo_deny(self) -> None:
+        contents = self.require_runner()
+        for required in (
+            "'--layout', 'license'",
+            "--extract-cargo-deny-license-identifiers",
+            "--license-identifiers",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, contents)
 
     def test_runner_executes_negative_fixtures_with_the_verified_pinned_binary(self) -> None:
         contents = self.require_runner()
@@ -1054,7 +1276,7 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
             "fuzz": {"packages": [{"name": "unsafe-crate", "version": "1.2.3", "source": None}]},
         }
 
-        report = formatter(raw_output, metadata)
+        report = formatter(raw_output, metadata, SAFE_LICENSE_IDENTIFIERS)
 
         for expected in (
             "bad-license@2.3.4",
@@ -1097,9 +1319,188 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
             '"graphs":[{"Krate":{"name":"bad-license","version":"2.3.4"}}]}}'
         )
 
-        report = formatter(raw_output, {"root": {"packages": []}, "fuzz": {"packages": []}})
+        report = formatter(
+            raw_output,
+            {
+                "root": {
+                    "packages": [
+                        {
+                            "name": "bad-license",
+                            "version": "2.3.4",
+                            "license": "LicenseRef-SENTINELSECRET00000000",
+                        }
+                    ]
+                },
+                "fuzz": {"packages": []},
+            },
+        )
 
         self.assertNotIn("LicenseRef-SENTINELSECRET00000000", report)
+        self.assertIn("license=unavailable", report)
+
+    def test_failure_report_includes_a_validated_metadata_license_expression(self) -> None:
+        formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
+        self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
+        raw_output = (
+            '{"type":"diagnostic","fields":{"severity":"error","code":"rejected",'
+            '"labels":[{"span":"LicenseRef-SENTINELSECRET00000000"}],'
+            '"graphs":[{"Krate":{"name":"licensed-crate","version":"4.2.0"}}]}}'
+        )
+        metadata = {
+            "root": {
+                "packages": [
+                    {
+                        "name": "licensed-crate",
+                        "version": "4.2.0",
+                        "source": "registry+https://packages.example.invalid/index",
+                        "license": "ISC AND (Apache-2.0 OR ISC)",
+                    }
+                ]
+            },
+            "fuzz": {"packages": []},
+        }
+
+        report = formatter(raw_output, metadata, SAFE_LICENSE_IDENTIFIERS)
+
+        self.assertIn("license=ISC AND (Apache-2.0 OR ISC)", report)
+        self.assertNotIn("LicenseRef-SENTINELSECRET00000000", report)
+
+    def test_unverified_spdx_tokens_and_unicode_separators_are_suppressed(self) -> None:
+        formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
+        self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
+        for raw_license in ("SENTINELSECRET00000000", "MIT\u2028OR\u2028Apache-2.0"):
+            with self.subTest(raw_license=raw_license):
+                raw_output = (
+                    '{"type":"diagnostic","fields":{"severity":"error","code":"rejected",'
+                    '"graphs":[{"Krate":{"name":"licensed-crate","version":"4.2.0"}}]}}'
+                )
+                metadata = {
+                    "root": {
+                        "packages": [
+                            {"name": "licensed-crate", "version": "4.2.0", "license": raw_license}
+                        ]
+                    },
+                    "fuzz": {"packages": []},
+                }
+
+                report = formatter(raw_output, metadata, SAFE_LICENSE_IDENTIFIERS)
+
+                self.assertIn("license=unavailable", report)
+                self.assertNotIn(raw_license, report)
+                self.assertEqual(1, len(report.splitlines()))
+
+    def test_license_inventory_uses_only_identifiers_from_cargo_deny_list(self) -> None:
+        inventory_parser = getattr(POLICY, "parse_cargo_deny_license_inventory", None)
+        self.assertTrue(callable(inventory_parser), "cargo-deny license inventory parser must be implemented")
+        raw_inventory = json.dumps(
+            {
+                "licenses": [
+                    ["Apache-2.0", ["safe-crate 1.0.0 registry+https://example.invalid"]],
+                    [
+                        "Apache-2.0 WITH LLVM-exception",
+                        ["safe-crate 1.0.0 registry+https://example.invalid"],
+                    ],
+                    ["LicenseRef-SENTINELSECRET00000000", ["unsafe-crate 1.0.0 source"]],
+                ],
+                "unlicensed": ["SENTINELSECRET00000000"],
+            }
+        )
+
+        identifiers = inventory_parser(raw_inventory)
+
+        self.assertEqual({"Apache-2.0", "LLVM-exception"}, identifiers)
+        self.assertNotIn("SENTINELSECRET00000000", identifiers)
+
+    def test_cli_extracts_only_safe_license_identifiers_from_inventory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            inventory_path = root / "license-inventory.json"
+            inventory_path.write_text(
+                json.dumps(
+                    {
+                        "licenses": [
+                            ["Apache-2.0", ["safe-crate 1.0.0"]],
+                            ["LicenseRef-SENTINELSECRET00000000", ["private-crate 1.0.0"]],
+                        ],
+                        "unlicensed": ["SENTINELSECRET00000000"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(POLICY_PATH),
+                    "--root-metadata",
+                    str(root / "unused-root.json"),
+                    "--fuzz-metadata",
+                    str(root / "unused-fuzz.json"),
+                    "--extract-cargo-deny-license-identifiers",
+                    "--license-inventory",
+                    str(inventory_path),
+                ],
+                cwd=REPOSITORY_ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(["Apache-2.0"], json.loads(completed.stdout))
+        self.assertNotIn("SENTINELSECRET00000000", completed.stdout)
+
+    def test_baseline_parser_carries_safe_license_metadata_into_findings(self) -> None:
+        parser = getattr(POLICY, "parse_cargo_deny_findings", None)
+        self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
+        raw = "\n".join(
+            (
+                json.dumps(
+                    {
+                        "type": "diagnostic",
+                        "fields": {
+                            "code": "rejected",
+                            "severity": "error",
+                            "graphs": [
+                                {"Krate": {"name": "licensed-crate", "version": "4.2.0"}}
+                            ],
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "summary",
+                        "fields": {
+                            check: {
+                                "errors": int(check == "licenses"),
+                                "warnings": 0,
+                                "notes": 0,
+                                "helps": 0,
+                            }
+                            for check in ("advisories", "bans", "licenses", "sources")
+                        },
+                    }
+                ),
+            )
+        )
+        metadata = {
+            "root": {
+                "packages": [
+                    {
+                        "name": "licensed-crate",
+                        "version": "4.2.0",
+                        "source": "registry+https://packages.example.invalid/index",
+                        "license": "ISC AND (Apache-2.0 OR ISC)",
+                    }
+                ]
+            },
+            "fuzz": {"packages": []},
+        }
+
+        findings = parser(
+            raw, metadata, "root", 4, known_license_identifiers=SAFE_LICENSE_IDENTIFIERS
+        )
+
+        self.assertEqual("ISC AND (Apache-2.0 OR ISC)", findings[0]["license_expression"])
 
     def test_untrusted_json_field_shapes_fail_safely(self) -> None:
         formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)

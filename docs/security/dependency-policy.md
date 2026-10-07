@@ -39,10 +39,18 @@ lockfile hashes so an accidental change fails.
 On a cargo-deny failure, the runner requests its JSON diagnostic format and
 prints only validated package coordinates, rule codes, known advisory
 identifiers, and a source reference with URL paths and credentials redacted.
-It omits license label text entirely and never forwards cargo-deny's raw
-message, stdout, or stderr. If a structured field is missing or malformed,
-the report uses a generic safe placeholder while preserving the failed check
-and exit code.
+For license findings, it prints a bounded ASCII expression from Cargo
+metadata only when every identifier appears in the structured license
+inventory emitted by the pinned cargo-deny binary for that workspace. Custom
+license references, unrecognized identifiers, malformed expressions, and
+non-ASCII separators become `license=unavailable`. The runner omits
+cargo-deny's label text and never forwards its raw message, stdout, or stderr.
+It obtains the license inventory with cargo-deny's offline `list` command;
+advisory scans still run online and refresh RustSec as described above. If a
+structured field is missing or malformed, the report uses a generic safe
+placeholder while preserving the failed check and exit code. Exact-exception
+validation lists every unmatched finding, even when the register is empty,
+and includes the same safe source, advisory, and license evidence.
 
 Tool upgrades require a reviewed change that updates the exact runner pin,
 the documented local version, and this independent tool review together.
