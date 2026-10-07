@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 from unittest.mock import call, patch
@@ -282,6 +283,56 @@ class ProfileTargetManifestTests(unittest.TestCase):
             with self.subTest(keyword=keyword):
                 self.assertTrue(f'source_keyword: "{keyword}"' in generated)
         self.assertNotIn("ProfileRuleMapping", generated)
+
+    def test_generated_requirements_classify_keyword_specific_verification_categories(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
+        targets = ProfileTargets(
+            "1.0",
+            ("KMIPKIT-PROFILE-BASELINE-CLIENT",),
+            "KMIPKIT-0010/FR-003",
+        )
+        expected_categories = {
+            "MUST": "RequiredBehavior",
+            "SHALL": "RequiredBehavior",
+            "REQUIRED": "RequiredBehavior",
+            "MUST NOT": "ProhibitedBehavior",
+            "SHALL NOT": "ProhibitedBehavior",
+            "SHOULD": "RecommendedBehaviorOrDeviation",
+            "RECOMMENDED": "RecommendedBehaviorOrDeviation",
+            "SHOULD NOT": "DiscouragedAbsenceOrDeviation",
+            "MAY": "OptionalCapability",
+            "OPTIONAL": "OptionalCapability",
+        }
+
+        generated = render_profiles_source(catalog, targets)
+        blocks = re.findall(
+            r"    GeneratedClientRequirement \{\n(.*?)\n    \},",
+            generated,
+            flags=re.DOTALL,
+        )
+        actual_categories: dict[str, str] = {}
+        for block in blocks:
+            requirement_id = re.search(r'requirement_id: "([^"]+)"', block)
+            category = re.search(
+                r"verification_category: GeneratedVerificationCategory::([A-Za-z]+)",
+                block,
+            )
+            if requirement_id is not None and category is not None:
+                actual_categories[requirement_id.group(1)] = category.group(1)
+
+        scoped_requirements = {
+            requirement["requirement_id"]: expected_categories[requirement["source_keyword"]]
+            for requirement in catalog["requirements"]
+            if requirement["role"] in {"client", "both"}
+            and requirement["scope_state"] in {"client_1_0", "profile_conditional"}
+        }
+
+        self.assertEqual(actual_categories, scoped_requirements)
+        self.assertEqual(
+            set(actual_categories.values()),
+            set(expected_categories.values()),
+        )
 
 
 if __name__ == "__main__":
