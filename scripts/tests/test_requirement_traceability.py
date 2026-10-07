@@ -66,6 +66,7 @@ EXPECTED_REQUIREMENT_TESTS = {
             "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_failure_report_omits_untrusted_license_ref_labels",
             "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_unverified_spdx_tokens_and_unicode_separators_are_suppressed",
             "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_license_inventory_uses_only_identifiers_from_cargo_deny_list",
+            "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_cli_extracts_only_safe_license_identifiers_from_inventory",
             "scripts/tests/test_dependency_policy.py::CargoDenyDiagnosticTests.test_baseline_parser_carries_safe_license_metadata_into_findings",
             "scripts/tests/test_dependency_policy.py::DependencyPolicyRunnerContractTests.test_runner_builds_a_trusted_spdx_identifier_inventory_with_cargo_deny",
             "scripts/tests/test_dependency_policy.py::DependencyExceptionTests.test_exception_validation_reports_all_unmatched_findings_and_versions",

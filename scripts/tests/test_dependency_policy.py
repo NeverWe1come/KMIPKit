@@ -1136,7 +1136,12 @@ class DependencyPolicyRunnerContractTests(unittest.TestCase):
         for required in ("RustSec", "CARGO_HOME", "root", "fuzz", "timestamp", "commit"):
             with self.subTest(required=required):
                 self.assertIn(required.lower(), contents.lower())
-        self.assertNotIn("--offline", contents)
+        configured_start = contents.index(".cargo/deny.toml")
+        self.assertIn(
+            "'--offline',\n            'list', '--format', 'json', '--layout', 'license'",
+            contents,
+        )
+        self.assertNotIn("'--offline'", contents[configured_start:])
         self.assertNotIn("--frozen", contents)
 
     def test_runner_validates_database_remote_and_fails_on_missing_evidence(self) -> None:
@@ -1386,6 +1391,44 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
 
         self.assertEqual({"Apache-2.0", "LLVM-exception"}, identifiers)
         self.assertNotIn("SENTINELSECRET00000000", identifiers)
+
+    def test_cli_extracts_only_safe_license_identifiers_from_inventory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            inventory_path = root / "license-inventory.json"
+            inventory_path.write_text(
+                json.dumps(
+                    {
+                        "licenses": [
+                            ["Apache-2.0", ["safe-crate 1.0.0"]],
+                            ["LicenseRef-SENTINELSECRET00000000", ["private-crate 1.0.0"]],
+                        ],
+                        "unlicensed": ["SENTINELSECRET00000000"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(POLICY_PATH),
+                    "--root-metadata",
+                    str(root / "unused-root.json"),
+                    "--fuzz-metadata",
+                    str(root / "unused-fuzz.json"),
+                    "--extract-cargo-deny-license-identifiers",
+                    "--license-inventory",
+                    str(inventory_path),
+                ],
+                cwd=REPOSITORY_ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(["Apache-2.0"], json.loads(completed.stdout))
+        self.assertNotIn("SENTINELSECRET00000000", completed.stdout)
 
     def test_baseline_parser_carries_safe_license_metadata_into_findings(self) -> None:
         parser = getattr(POLICY, "parse_cargo_deny_findings", None)

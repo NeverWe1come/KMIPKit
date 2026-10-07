@@ -21,6 +21,7 @@ $rustSecRemote = 'https://github.com/RustSec/advisory-db'
 $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("KMIPKit-DependencyPolicy-" + [guid]::NewGuid().ToString('N'))
 $cargoHome = Join-Path $tempRoot 'cargo-home'
 $metadataRoot = Join-Path $tempRoot 'metadata'
+$licenseIdentifierPaths = [System.Collections.Generic.List[string]]::new()
 $originalCargoHome = $env:CARGO_HOME
 $originalCargoDeny = $env:CARGO_DENY
 
@@ -29,7 +30,8 @@ function Format-CargoDenyFailure {
         [Parameter(Mandatory = $true)][string]$RawOutput,
         [Parameter(Mandatory = $true)][string]$PythonExecutable,
         [Parameter(Mandatory = $true)][string]$RootMetadata,
-        [Parameter(Mandatory = $true)][string]$FuzzMetadata
+        [Parameter(Mandatory = $true)][string]$FuzzMetadata,
+        [Parameter(Mandatory = $true)][string[]]$LicenseIdentifierFiles
     )
 
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
@@ -48,6 +50,10 @@ function Format-CargoDenyFailure {
     [void]$startInfo.ArgumentList.Add($RootMetadata)
     [void]$startInfo.ArgumentList.Add('--fuzz-metadata')
     [void]$startInfo.ArgumentList.Add($FuzzMetadata)
+    foreach ($licenseIdentifierFile in $LicenseIdentifierFiles) {
+        [void]$startInfo.ArgumentList.Add('--license-identifiers')
+        [void]$startInfo.ArgumentList.Add($licenseIdentifierFile)
+    }
 
     $formatter = [System.Diagnostics.Process]::new()
     $formatter.StartInfo = $startInfo
@@ -122,7 +128,8 @@ function Invoke-CapturedCommand {
             }
             if ($CargoDenyDiagnostics) {
                 $safeReport = Format-CargoDenyFailure -RawOutput ($stdout + "`n" + $stderr) `
-                    -PythonExecutable $pythonExecutable -RootMetadata $rootMetadata -FuzzMetadata $fuzzMetadata
+                    -PythonExecutable $pythonExecutable -RootMetadata $rootMetadata -FuzzMetadata $fuzzMetadata `
+                    -LicenseIdentifierFiles $licenseIdentifierPaths.ToArray()
                 throw "$Operation failed with exit code $($process.ExitCode).`n$safeReport"
             }
             throw "$Operation failed with exit code $($process.ExitCode)."
@@ -148,7 +155,8 @@ function Convert-CargoDenyFindings {
         [Parameter(Mandatory = $true)][ValidateSet('root', 'fuzz')][string]$Workspace,
         [Parameter(Mandatory = $true)][string]$PythonExecutable,
         [Parameter(Mandatory = $true)][string]$RootMetadata,
-        [Parameter(Mandatory = $true)][string]$FuzzMetadata
+        [Parameter(Mandatory = $true)][string]$FuzzMetadata,
+        [Parameter(Mandatory = $true)][string]$LicenseIdentifierFile
     )
 
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
@@ -171,6 +179,8 @@ function Convert-CargoDenyFindings {
     [void]$startInfo.ArgumentList.Add($RootMetadata)
     [void]$startInfo.ArgumentList.Add('--fuzz-metadata')
     [void]$startInfo.ArgumentList.Add($FuzzMetadata)
+    [void]$startInfo.ArgumentList.Add('--license-identifiers')
+    [void]$startInfo.ArgumentList.Add($LicenseIdentifierFile)
 
     $parser = [System.Diagnostics.Process]::new()
     $parser.StartInfo = $startInfo
@@ -323,6 +333,22 @@ try {
         [pscustomobject]@{ Name = 'root'; Manifest = $rootManifest },
         [pscustomobject]@{ Name = 'fuzz'; Manifest = $fuzzManifest }
     )) {
+        $rawLicenseInventory = Join-Path $metadataRoot "$($workspace.Name)-licenses-raw.json"
+        $licenseIdentifierPath = Join-Path $metadataRoot "$($workspace.Name)-license-identifiers.json"
+        [void](Invoke-CapturedCommand -Executable $denyExecutable -Arguments @(
+            '--manifest-path', $workspace.Manifest,
+            '--workspace', '--all-features', '--locked', '--offline',
+            'list', '--format', 'json', '--layout', 'license'
+        ) -Operation "$($workspace.Name) cargo-deny license inventory" -StdoutPath $rawLicenseInventory)
+        [void](Invoke-CapturedCommand -Executable $pythonExecutable -Arguments @(
+            (Join-Path $repositoryRoot 'scripts/dependency_policy.py'),
+            '--root-metadata', $rootMetadata,
+            '--fuzz-metadata', $fuzzMetadata,
+            '--extract-cargo-deny-license-identifiers',
+            '--license-inventory', $rawLicenseInventory
+        ) -Operation "$($workspace.Name) cargo-deny license inventory validation" -StdoutPath $licenseIdentifierPath)
+        $licenseIdentifierPaths.Add($licenseIdentifierPath)
+
         $baselineScan = Invoke-CapturedCommand -Executable $denyExecutable -Arguments @(
             '--manifest-path', $workspace.Manifest,
             '--config', $baselineDenyConfig,
@@ -331,7 +357,8 @@ try {
         $rawBaselineOutput = $baselineScan.Stdout + "`n" + $baselineScan.Stderr
         $workspaceFindings = Convert-CargoDenyFindings -RawOutput $rawBaselineOutput `
             -ExitCode $baselineScan.ExitCode -Workspace $workspace.Name `
-            -PythonExecutable $pythonExecutable -RootMetadata $rootMetadata -FuzzMetadata $fuzzMetadata
+            -PythonExecutable $pythonExecutable -RootMetadata $rootMetadata -FuzzMetadata $fuzzMetadata `
+            -LicenseIdentifierFile $licenseIdentifierPath
         foreach ($finding in $workspaceFindings) {
             $baselineFindings.Add($finding)
         }
@@ -341,14 +368,23 @@ try {
     [System.IO.File]::WriteAllText($findingsPath, $safeFindings, [System.Text.UTF8Encoding]::new($false))
 
     # Exact, one-to-one exception evidence is required before the configured scans run.
-    $exceptionValidation = Invoke-CapturedCommand -Executable $pythonExecutable -Arguments @(
+    $exceptionArguments = [System.Collections.Generic.List[string]]::new()
+    foreach ($argument in @(
         (Join-Path $repositoryRoot 'scripts/dependency_policy.py'),
         '--checkout-root', $repositoryRoot,
         '--root-metadata', $rootMetadata,
         '--fuzz-metadata', $fuzzMetadata,
         '--baseline-deny-config', $baselineDenyConfig,
         '--findings', $findingsPath
-    ) -Operation 'dependency policy exact exception validation' -SafePolicyDiagnostics
+    )) {
+        $exceptionArguments.Add($argument)
+    }
+    foreach ($licenseIdentifierPath in $licenseIdentifierPaths) {
+        $exceptionArguments.Add('--license-identifiers')
+        $exceptionArguments.Add($licenseIdentifierPath)
+    }
+    $exceptionValidation = Invoke-CapturedCommand -Executable $pythonExecutable -Arguments $exceptionArguments.ToArray() `
+        -Operation 'dependency policy exact exception validation' -SafePolicyDiagnostics
 
     foreach ($workspace in @(
         [pscustomobject]@{ Name = 'root'; Manifest = $rootManifest },

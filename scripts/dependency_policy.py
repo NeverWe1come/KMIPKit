@@ -28,8 +28,10 @@ VERSION_PATTERN = re.compile(
 HEX_REVISION_PATTERN = re.compile(r"[0-9a-fA-F]{40}")
 ADVISORY_ID_PATTERN = re.compile(r"(?:RUSTSEC-[0-9]{4}-[0-9]{4}|CVE-[0-9]{4}-[0-9]{4,7}|GHSA-[23456789cfghjmpqrvwx]{4}-[23456789cfghjmpqrvwx]{4}-[23456789cfghjmpqrvwx]{4})")
 DIAGNOSTIC_CODE_PATTERN = re.compile(r"[a-z][a-z0-9_-]{0,63}")
-SPDX_TOKEN_PATTERN = re.compile(r"\s*(\(|\)|[A-Za-z0-9][A-Za-z0-9.+-]{0,127})")
+SPDX_TOKEN_PATTERN = re.compile(r" *(\(|\)|[A-Za-z0-9][A-Za-z0-9.+-]{0,127})")
+SPDX_IDENTIFIER_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9.+-]{0,127}")
 MAX_DIAGNOSTIC_LICENSE_LENGTH = 512
+MAX_LICENSE_INVENTORY_LENGTH = 4 * 1024 * 1024
 LICENSE_DIAGNOSTIC_CODES = frozenset(
     {
         "accepted",
@@ -193,14 +195,17 @@ def _top_level_diagnostic_packages(fields: dict[str, Any]) -> list[tuple[str, st
     return sorted(found)
 
 
-def _validated_spdx_expression(value: Any) -> str | None:
-    """Keep only bounded SPDX expressions with no custom or document references."""
+def _parse_spdx_expression(value: Any) -> list[str] | None:
+    """Parse a bounded ASCII SPDX expression and return its license identifiers."""
     if (
         not isinstance(value, str)
         or not value
         or len(value) > MAX_DIAGNOSTIC_LICENSE_LENGTH
-        or any(ord(character) < 32 for character in value)
+        or any(ord(character) < 32 or ord(character) > 126 for character in value)
     ):
+        return None
+    value = value.strip(" ")
+    if not value:
         return None
     tokens: list[str] = []
     position = 0
@@ -270,20 +275,80 @@ def _validated_spdx_expression(value: Any) -> str | None:
 
     if not parse_or_expression() or index != len(tokens):
         return None
-    return value.strip()
+    return [
+        token
+        for token in tokens
+        if token not in {"AND", "OR", "WITH", "(", ")"}
+    ]
 
 
-def _diagnostic_license_evidence(package: dict[str, Any]) -> str:
+def _validated_spdx_expression(value: Any, known_license_identifiers: set[str] | None) -> str | None:
+    """Keep only bounded SPDX expressions whose IDs cargo-deny recognizes."""
+    identifiers = _parse_spdx_expression(value)
+    if (
+        identifiers is None
+        or known_license_identifiers is None
+        or not identifiers
+        or any(identifier not in known_license_identifiers for identifier in identifiers)
+    ):
+        return None
+    return value.strip(" ")
+
+
+def parse_cargo_deny_license_inventory(raw_output: str) -> set[str]:
+    """Extract recognized SPDX IDs from cargo-deny's structured license listing."""
+    if (
+        not isinstance(raw_output, str)
+        or len(raw_output) > MAX_LICENSE_INVENTORY_LENGTH
+    ):
+        raise PolicyError("cargo-deny license inventory is malformed or exceeds the report limit")
+    try:
+        inventory = json.loads(raw_output)
+    except (json.JSONDecodeError, RecursionError, TypeError):
+        raise PolicyError("cargo-deny license inventory is malformed") from None
+    if not isinstance(inventory, dict):
+        raise PolicyError("cargo-deny license inventory is malformed")
+    license_rows = inventory.get("licenses")
+    unlicensed_rows = inventory.get("unlicensed")
+    if (
+        not isinstance(license_rows, list)
+        or len(license_rows) > 100_000
+        or not isinstance(unlicensed_rows, list)
+        or len(unlicensed_rows) > 100_000
+    ):
+        raise PolicyError("cargo-deny license inventory is malformed")
+
+    identifiers: set[str] = set()
+    for row in license_rows:
+        if not isinstance(row, list) or len(row) != 2 or not isinstance(row[0], str) or not isinstance(row[1], list):
+            raise PolicyError("cargo-deny license inventory is malformed")
+        expression = row[0]
+        tokens = _parse_spdx_expression(expression)
+        if tokens is None or any(
+            token.lower().startswith(("licenseref-", "documentref-")) for token in tokens
+        ):
+            continue
+        identifiers.update(
+            token for token in tokens if SPDX_IDENTIFIER_PATTERN.fullmatch(token)
+        )
+    return identifiers
+
+
+def _diagnostic_license_evidence(
+    package: dict[str, Any], known_license_identifiers: set[str] | None
+) -> str:
     """Read a safe license expression from one Cargo metadata package record."""
     if "license" not in package:
         return "unavailable"
     raw_license = package["license"]
     if raw_license is None:
         return "missing"
-    return _validated_spdx_expression(raw_license) or "unavailable"
+    return _validated_spdx_expression(raw_license, known_license_identifiers) or "unavailable"
 
 
-def _diagnostic_licenses(metadata_by_workspace: Any) -> dict[tuple[str, str], str]:
+def _diagnostic_licenses(
+    metadata_by_workspace: Any, known_license_identifiers: set[str] | None
+) -> dict[tuple[str, str], str]:
     licenses: dict[tuple[str, str], set[str]] = {}
     if not isinstance(metadata_by_workspace, dict):
         return {}
@@ -304,7 +369,7 @@ def _diagnostic_licenses(metadata_by_workspace: Any) -> dict[tuple[str, str], st
                 and VERSION_PATTERN.fullmatch(version)
             ):
                 licenses.setdefault((name, version), set()).add(
-                    _diagnostic_license_evidence(package)
+                    _diagnostic_license_evidence(package, known_license_identifiers)
                 )
     return {
         key: next(iter(values)) if len(values) == 1 else "ambiguous"
@@ -326,6 +391,8 @@ def parse_cargo_deny_findings(
     metadata_by_workspace: Any,
     workspace_name: str,
     exit_code: int,
+    *,
+    known_license_identifiers: set[str] | None = None,
 ) -> list[dict[str, str]]:
     """Extract exact policy findings from one complete cargo-deny JSON scan."""
     if not isinstance(raw_output, str) or len(raw_output) > 16 * 1024 * 1024:
@@ -342,7 +409,9 @@ def parse_cargo_deny_findings(
         raise PolicyError("cargo metadata omits the scanned workspace packages")
 
     source_by_coordinate: dict[tuple[str, str], set[str | None]] = {}
-    license_by_coordinate = _diagnostic_licenses({workspace_name: workspace_metadata})
+    license_by_coordinate = _diagnostic_licenses(
+        {workspace_name: workspace_metadata}, known_license_identifiers
+    )
     for package_item in packages:
         if not isinstance(package_item, dict):
             raise PolicyError("cargo metadata contains an invalid package")
@@ -493,12 +562,16 @@ def _diagnostic_sources(metadata_by_workspace: Any) -> dict[tuple[str, str], str
     }
 
 
-def format_cargo_deny_diagnostics(raw_output: str, metadata_by_workspace: Any) -> str:
+def format_cargo_deny_diagnostics(
+    raw_output: str,
+    metadata_by_workspace: Any,
+    known_license_identifiers: set[str] | None = None,
+) -> str:
     """Format cargo-deny JSON diagnostics using only validated, redacted fields."""
     if not isinstance(raw_output, str) or len(raw_output) > 16 * 1024 * 1024:
         return "cargo-deny diagnostics unavailable (output was malformed or exceeded the report limit)."
     sources = _diagnostic_sources(metadata_by_workspace)
-    licenses = _diagnostic_licenses(metadata_by_workspace)
+    licenses = _diagnostic_licenses(metadata_by_workspace, known_license_identifiers)
     reports: list[str] = []
     recognized = False
     for line in raw_output.splitlines():
@@ -1062,7 +1135,13 @@ def _describe_exception_finding(finding_item: dict[str, Any]) -> str:
     )
 
 
-def validate_exceptions(register: Any, findings: list[dict], *, today: date | None = None) -> list[str]:
+def validate_exceptions(
+    register: Any,
+    findings: list[dict],
+    *,
+    today: date | None = None,
+    known_license_identifiers: set[str] | None = None,
+) -> list[str]:
     """Require a one-to-one exact match between current exceptions and findings."""
     current_date = today or date.today()
     if not isinstance(current_date, date):
@@ -1102,10 +1181,10 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
             if isinstance(raw_license, str) and raw_license in {"missing", "unavailable", "ambiguous"}:
                 finding_copy["license_expression"] = raw_license
             else:
-                license_expression = _validated_spdx_expression(raw_license)
-                if license_expression is None:
-                    raise PolicyError("dependency finding license expression is malformed")
-                finding_copy["license_expression"] = license_expression
+                finding_copy["license_expression"] = (
+                    _validated_spdx_expression(raw_license, known_license_identifiers)
+                    or "unavailable"
+                )
         normalized_findings.append(finding_copy)
 
     matched_entry_indexes: set[int] = set()
@@ -1479,6 +1558,39 @@ def _read_json(path: Path, label: str) -> Any:
         raise PolicyError(f"{label} cannot be read as valid JSON") from None
 
 
+def _read_bounded_text(path: Path, label: str, maximum: int) -> str:
+    try:
+        if path.stat().st_size > maximum:
+            raise PolicyError(f"{label} exceeds the report limit")
+        with path.open("r", encoding="utf-8") as stream:
+            value = stream.read(maximum + 1)
+    except (OSError, UnicodeError):
+        raise PolicyError(f"{label} cannot be read") from None
+    if len(value) > maximum:
+        raise PolicyError(f"{label} exceeds the report limit")
+    return value
+
+
+def _load_license_identifiers(paths: list[Path]) -> set[str]:
+    identifiers: set[str] = set()
+    if len(paths) > 8:
+        raise PolicyError("cargo-deny license identifier inventory is malformed")
+    for path in paths:
+        value = _read_json(path, "cargo-deny license identifier inventory")
+        if not isinstance(value, list) or len(value) > 100_000:
+            raise PolicyError("cargo-deny license identifier inventory is malformed")
+        for identifier in value:
+            if (
+                not isinstance(identifier, str)
+                or not SPDX_IDENTIFIER_PATTERN.fullmatch(identifier)
+                or identifier in {"AND", "OR", "WITH"}
+                or identifier.lower().startswith(("licenseref-", "documentref-"))
+            ):
+                raise PolicyError("cargo-deny license identifier inventory is malformed")
+            identifiers.add(identifier)
+    return identifiers
+
+
 def main(argv: list[str] | None = None) -> int:
     """Validate Cargo metadata and exception evidence.
 
@@ -1501,6 +1613,18 @@ def main(argv: list[str] | None = None) -> int:
         help="JSON array of structured cargo-deny findings for exact exception matching",
     )
     parser.add_argument(
+        "--license-identifiers",
+        type=Path,
+        action="append",
+        default=[],
+        help="safe JSON identifier array extracted from cargo-deny's license listing",
+    )
+    parser.add_argument(
+        "--license-inventory",
+        type=Path,
+        help="raw JSON output from cargo-deny list --layout license",
+    )
+    parser.add_argument(
         "--baseline-deny-config",
         type=Path,
         help="waiver-free cargo-deny config that must differ only by registered waiver fields",
@@ -1515,10 +1639,30 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="parse one waiver-free cargo-deny JSON scan from stdin into safe exact findings",
     )
+    parser.add_argument(
+        "--extract-cargo-deny-license-identifiers",
+        action="store_true",
+        help="extract safe SPDX identifiers from cargo-deny's structured license listing",
+    )
     parser.add_argument("--scan-workspace", choices=("root", "fuzz"))
     parser.add_argument("--scan-exit-code", type=int)
     parser.add_argument("--preflight-only", action="store_true")
     arguments = parser.parse_args(argv)
+    if arguments.extract_cargo_deny_license_identifiers:
+        try:
+            if arguments.license_inventory is None:
+                raise PolicyError("cargo-deny license inventory path is missing")
+            raw_inventory = _read_bounded_text(
+                arguments.license_inventory,
+                "cargo-deny license inventory",
+                MAX_LICENSE_INVENTORY_LENGTH,
+            )
+            identifiers = parse_cargo_deny_license_inventory(raw_inventory)
+            print(json.dumps(sorted(identifiers), separators=(",", ":")))
+        except (OSError, UnicodeError, PolicyError):
+            print("dependency policy: cargo-deny license inventory is incomplete or invalid", file=sys.stderr)
+            return 1
+        return 0
     if arguments.extract_cargo_deny_findings:
         try:
             metadata = {
@@ -1527,12 +1671,14 @@ def main(argv: list[str] | None = None) -> int:
             }
             if arguments.scan_workspace is None or arguments.scan_exit_code is None:
                 raise PolicyError("baseline scan context is incomplete")
+            known_license_identifiers = _load_license_identifiers(arguments.license_identifiers)
             raw_output = sys.stdin.read(16 * 1024 * 1024 + 1)
             findings = parse_cargo_deny_findings(
                 raw_output,
                 metadata,
                 arguments.scan_workspace,
                 arguments.scan_exit_code,
+                known_license_identifiers=known_license_identifiers,
             )
             print(json.dumps(findings, separators=(",", ":")))
         except (OSError, UnicodeError, PolicyError):
@@ -1545,8 +1691,13 @@ def main(argv: list[str] | None = None) -> int:
                 "root": _read_json(arguments.root_metadata, "root Cargo metadata"),
                 "fuzz": _read_json(arguments.fuzz_metadata, "fuzz Cargo metadata"),
             }
+            known_license_identifiers = _load_license_identifiers(arguments.license_identifiers)
             raw_output = sys.stdin.read(16 * 1024 * 1024 + 1)
-            print(format_cargo_deny_diagnostics(raw_output, metadata))
+            print(
+                format_cargo_deny_diagnostics(
+                    raw_output, metadata, known_license_identifiers
+                )
+            )
         except (OSError, UnicodeError, PolicyError):
             print("cargo-deny diagnostics unavailable (metadata could not be safely read).")
         return 0
@@ -1574,6 +1725,7 @@ def main(argv: list[str] | None = None) -> int:
                 raise PolicyError("waiver-free cargo-deny baseline cannot be read as valid TOML") from None
         validate_no_local_exception_files((root / "Cargo.toml", root / "fuzz" / "Cargo.toml"))
         findings = validate_workspace_metadata(root, metadata, register)
+        known_license_identifiers = _load_license_identifiers(arguments.license_identifiers)
         validate_exception_config(register, config, baseline_config=baseline_config)
         exceptions = register.get("exceptions") if isinstance(register, dict) else None
         matched_exception_ids: list[str] = []
@@ -1595,7 +1747,11 @@ def main(argv: list[str] | None = None) -> int:
             }
             findings.extend(unique_findings.values())
         if exceptions or arguments.findings is not None:
-            matched_exception_ids = validate_exceptions(register, findings)
+            matched_exception_ids = validate_exceptions(
+                register,
+                findings,
+                known_license_identifiers=known_license_identifiers,
+            )
     except PolicyError as error:
         print(f"dependency policy: {error}", file=sys.stderr)
         return 1
