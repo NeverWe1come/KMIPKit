@@ -36,6 +36,10 @@ path = "tests/public_contract.rs"
 name = "runtime_policy"
 path = "tests/runtime_policy.rs"
 
+[[test]]
+name = "timeout_delivery"
+path = "tests/timeout_delivery.rs"
+
 [dev-dependencies]
 kmipkit-test-support = { workspace = true, default-features = false, features = ["fixtures"] }
 
