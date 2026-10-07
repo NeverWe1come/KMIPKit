@@ -143,7 +143,7 @@ class WorkflowContractTests(unittest.TestCase):
         job = self.require_job(contents, "language-bindings")
 
         self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
-        self.assertIn("os: [ubuntu-latest, windows-latest, macos-latest]", job)
+        self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", job)
 
         for required in (
             "RUSTUP_TOOLCHAIN: '1.94'",
