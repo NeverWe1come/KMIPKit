@@ -45,6 +45,7 @@ Record one row per distinct signed development commit. Keep Red, Green, and Refa
 
 | Red — report selected target independently from claim state | `f6140d5` | `python -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_report_separates_selected_target_from_claim_state` | Expected TypeError because render_report did not accept selected target data. |
 | Green — stable report target membership | `d833a69` | `python -m unittest tools.normative_catalog.tests.test_report`; `python tools/normative_catalog/report.py --write --repo-root .`; `python tools/normative_catalog/report.py --check --repo-root .` | PASS: 20 report tests (1 skipped); report regenerated from the strict fixed manifest and verified byte-identical. The table reports selected target separately from claim_state. |
+| Refactor — isolated report target-state formatting | `140bd21` | `python -m unittest tools.normative_catalog.tests.test_report`; `python tools/normative_catalog/report.py --check --repo-root .` | PASS: 20 report tests (1 skipped); checked-in report remained byte-identical after centralizing target-state formatting. |
 
 ## Verification status
 
