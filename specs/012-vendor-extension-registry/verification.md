@@ -32,6 +32,28 @@ Red/Green/Refactor commits:
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
 
+## 2026-10-07 — response integration Refactor
+
+Synchronous and asynchronous typed response paths now share
+`preserve_response_extensions`, which applies the same recognition lookup,
+KMIPKIT-0007 criticality policy, and generic TTLV preservation in both cases.
+This removes duplicate response-extension handling without changing behavior.
+
+Verification:
+
+- `cargo test -p kmipkit-client --test extension_recognition` — passed (12
+  tests, including exact comparison boundaries and schema-preservation cases).
+- `cargo test -p kmipkit-protocol --test extension_preservation` — passed (7
+  tests, including property-based round-trip/preservation cases).
+- `cargo test -p kmipkit-client -p kmipkit-protocol --all-features` — passed;
+  all client/protocol unit, integration, property, UI compile-fail, and doctest
+  targets passed (192 client unit tests).
+- `cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo fmt --all --check` — passed.
+- `python tools/api_manifest/generate.py --check` — passed; six generated files
+  are current.
+- `git diff --check` — passed.
+
 ## 2026-10-07 — request extension client-ownership Green
 
 The client now checks the sealed registry identity of every outbound typed

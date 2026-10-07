@@ -84,7 +84,7 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 - [x] T037 [US2] Integrate registry inspection with typed response/message mapping while retaining KMIPKIT-0007 criticality decisions in crates/kmipkit-client/src/execute.rs
 - [x] T038 [US2] Verify extension payload ownership follows existing zeroization behavior and redact all error/debug/display paths in crates/kmipkit-protocol/src/extension/ and crates/kmipkit-client/src/extension_registry.rs
 - [x] T039 [US2] Pass recognition, preservation, fake-transport, and redaction tests and commit the Green stage with evidence in crates/kmipkit-client/tests/extension_recognition.rs and crates/kmipkit-client/tests/unit/extension_execution.rs
-- [ ] T040 [US2] Refactor matching and response integration, rerun focused and property tests, and commit the Refactor stage in crates/kmipkit-client/src/extension_registry.rs and crates/kmipkit-protocol/src/extension/
+- [x] T040 [US2] Refactor matching and response integration, rerun focused and property tests, and commit the Refactor stage in crates/kmipkit-client/src/extension_registry.rs and crates/kmipkit-protocol/src/extension/
 - [ ] T041 [US2] Document Rust, C, Java, and Python recognition, unknown criticality, preservation, and runtime-copy limitations in docs/user-guide/en/vendor-extensions.md, docs/user-guide/es/extensiones-de-fabricante.md, and the language package examples
 
 ## Phase 5: User Story 3 - Share metadata and validation across languages (Priority: P1)

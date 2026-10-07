@@ -1586,21 +1586,7 @@ fn validate_response(
     let mut ordered = Vec::with_capacity(request.items.len());
     for (request_index, response_index) in association.into_iter().enumerate() {
         let item = response_items[response_index];
-        let mut extensions = Vec::new();
-        for index in 0..item.message_extension_count() {
-            let extension = item
-                .message_extension(index)
-                .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
-            let critical = extension
-                .criticality_indicator()
-                .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
-            let recognized = inspect_response_extension(extension, registry, limits)?;
-            validate_unknown_extension(critical && !recognized).map_err(ProtocolError::from)?;
-            let structure = extension
-                .with_ttlv(|view| copy_structure(&view))
-                .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))??;
-            extensions.push(ClientMessageExtension { structure });
-        }
+        let extensions = preserve_response_extensions(item, registry, limits)?;
 
         let typed = DiscoverVersionsResponse::try_from_response_item(item).map_err(|error| {
             ProtocolError::new(
@@ -1682,21 +1668,7 @@ fn validate_async_response(
         .copied()
         .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
 
-    let mut extensions = Vec::new();
-    for extension_index in 0..item.message_extension_count() {
-        let extension = item
-            .message_extension(extension_index)
-            .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
-        let critical = extension
-            .criticality_indicator()
-            .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
-        let recognized = inspect_response_extension(extension, registry, limits)?;
-        validate_unknown_extension(critical && !recognized).map_err(ProtocolError::from)?;
-        let structure = extension
-            .with_ttlv(|view| copy_structure(&view))
-            .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))??;
-        extensions.push(ClientMessageExtension { structure });
-    }
+    let extensions = preserve_response_extensions(item, registry, limits)?;
 
     let (result, cancellation_result) = match kind {
         ClientOperation::Poll => {
@@ -1755,6 +1727,29 @@ fn validate_async_response(
         cancellation_result,
         extensions,
     })
+}
+
+fn preserve_response_extensions(
+    item: ResponseBatchItemView<'_>,
+    registry: &ClientExtensionRegistry,
+    limits: &CodecLimits,
+) -> Result<Vec<ClientMessageExtension>, ProtocolError> {
+    let mut extensions = Vec::new();
+    for index in 0..item.message_extension_count() {
+        let extension = item
+            .message_extension(index)
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
+        let critical = extension
+            .criticality_indicator()
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
+        let recognized = inspect_response_extension(extension, registry, limits)?;
+        validate_unknown_extension(critical && !recognized).map_err(ProtocolError::from)?;
+        let structure = extension
+            .with_ttlv(|view| copy_structure(&view))
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))??;
+        extensions.push(ClientMessageExtension { structure });
+    }
+    Ok(extensions)
 }
 
 fn inspect_response_extension(
