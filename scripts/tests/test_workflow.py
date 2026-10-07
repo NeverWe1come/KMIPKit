@@ -142,9 +142,11 @@ class WorkflowContractTests(unittest.TestCase):
             "lukka/get-cmake@",
             "cmakeVersion: '3.31.6'",
             "ninjaVersion: '1.13.2'",
-            "actions/setup-python@",
+            "astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0",
+            "version: '0.12.23'",
             "python-version: '3.12'",
-            "python -m pip install --requirement bindings/python/requirements-coverage.txt",
+            "activate-environment: true",
+            "uv pip install --requirement bindings/python/requirements-coverage.txt",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, job)
@@ -155,11 +157,11 @@ class WorkflowContractTests(unittest.TestCase):
 
         for required in (
             "cargo build --locked -p kmipkit-ffi",
-            "cmake -S bindings/c -B build/c-consumer",
+            "cmake -G Ninja -S bindings/c -B build/c-consumer",
             "cmake --build build/c-consumer --config Release",
             "ctest --test-dir build/c-consumer -C Release --output-on-failure",
             "mvn --batch-mode --file bindings/java/pom.xml test",
-            "python -m pip install --no-build-isolation bindings/python",
+            "uv pip install --no-build-isolation bindings/python",
             "python -m pytest -q bindings/python/tests",
             "python bindings/python/examples/vendor_extension_registry.py",
         ):
@@ -187,8 +189,12 @@ class WorkflowContractTests(unittest.TestCase):
             "mvn --batch-mode --file bindings/java/pom.xml clean verify",
             "bindings/java/target/site/jacoco/jacoco.xml",
             "coverage-java/jacoco.xml",
-            "python -m pip install --requirement bindings/python/requirements-coverage.txt",
-            "python -m pip install --no-build-isolation --editable bindings/python",
+            "astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0",
+            "version: '0.12.23'",
+            "python-version: '3.12'",
+            "activate-environment: true",
+            "uv pip install --requirement bindings/python/requirements-coverage.txt",
+            "uv pip install --no-build-isolation --editable bindings/python",
             "--cov-report=xml:coverage-python/coverage.xml",
             "bash scripts/collect_jni_coverage.sh target/coverage-jni",
             "target/coverage-jni/coverage.json",
