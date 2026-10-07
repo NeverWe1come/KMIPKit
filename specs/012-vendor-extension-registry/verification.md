@@ -2,10 +2,9 @@
 
 This file records implementation and review evidence for KMIPKIT-0012. The
 aggregate coverage gate, platform matrix, generated-output checks, and
-independent QA/security reviews passed on the last pushed implementation head.
-A small follow-up now hardens failure-path cleanup in the C consumer test; its
-local MSVC build and run passed, and T061 stays open until CI validates that
-follow-up on the pushed head.
+independent QA/security reviews passed on the current pushed head. The C
+consumer failure-path cleanup follow-up passed both the local MSVC run and the
+current-head CI matrix; T061 is complete.
 
 ## 2026-10-07 — bounded schema order validation
 
@@ -1128,7 +1127,8 @@ GitHub Actions run [37695659017](https://github.com/NeverWe1come/KMIPKit/actions
 | JNI bridge | 1,193 / 1,312 | 90.93% | 85% |
 | Workspace | 9,500 / 9,846 | 96.49% | 90% |
 
-The changed-code report included 21 summary-only lines as uncovered; the JNI report did the same. Both scopes still met their thresholds. Core Rust checks passed on Linux, Windows, and macOS with stable and Rust 1.94 where configured. Script contracts, native language bindings on Linux/Windows/macOS, the Linux FFI sanitizer, extension-schema fuzz smoke, normative inventory and generated-output checks, dependency policy, adapter coverage, and the aggregate gate all passed. T060 is complete. T061 remains open until the test-harness cleanup follow-up passes CI on the pushed head. The PR remains open for human review and merge.
+The changed-code report included 21 summary-only lines as uncovered; the JNI report did the same. Both scopes still met their thresholds. Core Rust checks passed on Linux, Windows, and macOS with stable and Rust 1.94 where configured. Script contracts, native language bindings on Linux/Windows/macOS, the Linux FFI sanitizer, extension-schema fuzz smoke, normative inventory and generated-output checks, dependency policy, adapter coverage, and the aggregate gate all passed. T060 and T061 are complete. The PR remains open for human review and merge.
 
 - Independent QA review found no test defect or acceptance-criteria gap in the boundary additions. Independent security review found no production security effect and confirmed the follow-up's status-specific cleanup is safe for these exact live, unique test handles and valid tags; this is fixture-specific reasoning, not a general C ABI ownership rule.
-- After the cleanup change, MSVC compiled and ran `bindings/c/tests/extension_registry.c` against the built FFI library; all 13 C consumer groups passed. `git diff --check` also passed locally. This local run does not replace the required current-head CI rerun.
+- After the cleanup change, MSVC compiled and ran `bindings/c/tests/extension_registry.c` against the built FFI library; all 13 C consumer groups passed. `git diff --check` passed locally, and the current-head CI rerun is recorded below.
+- Follow-up CI run [37698065076](https://github.com/NeverWe1come/KMIPKit/actions/runs/37698065076) completed successfully on current PR head `334da823c678ab85cc5e43739be5fc9e919c3111`. The full Rust matrix, platform bindings, C consumer, Java/Python suites, Linux FFI sanitizer, fuzz smoke, immutable-source/catalog checks, dependency policy, platform and adapter coverage, and aggregate coverage gate passed. This run validates the C cleanup follow-up and closes T061; the preceding run's detailed coverage table remains applicable because this follow-up changed only the test consumer and documentation.
