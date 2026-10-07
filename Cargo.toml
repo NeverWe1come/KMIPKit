@@ -28,7 +28,7 @@ kmipkit-client = { path = "crates/kmipkit-client", version = "0.1.0" }
 kmipkit = { path = "crates/kmipkit", version = "0.1.0" }
 kmipkit-ffi = { path = "crates/kmipkit-ffi", version = "0.1.0" }
 kmipkit-test-support = { path = "crates/kmipkit-test-support", version = "0.1.0" }
-rustls = { version = "=0.23.43", default-features = false, features = ["aws_lc_rs", "std"] }
+rustls = { version = "=0.23.45", default-features = false, features = ["aws_lc_rs", "std"] }
 rustls-native-certs = { version = "=0.8.4", default-features = false }
 tokio = { version = "=1.53.2", default-features = false, features = ["io-util", "macros", "net", "rt", "sync", "time"] }
 tokio-rustls = { version = "=0.26.6", default-features = false, features = ["aws_lc_rs"] }
