@@ -158,6 +158,22 @@ async fn a_blocked_flush_uses_the_write_inactivity_deadline() {
 }
 
 #[tokio::test]
+async fn finalized_exchange_rejects_later_flush_io() {
+    let inner = ScriptIo::manual();
+    let observed = inner.clone();
+    let control = dispatched_control();
+    let mut io = deadline_io(inner, None, None, None, control.clone());
+    assert_eq!(control.cancel(), RequestDeliveryState::PossiblySent);
+    observed.release_flush();
+
+    let error = flush(&mut io)
+        .await
+        .expect_err("finalized exchange I/O is rejected before flushing");
+
+    assert_eq!(error.kind(), io::ErrorKind::Interrupted);
+}
+
+#[tokio::test]
 async fn positive_read_progress_restarts_only_the_read_deadline() {
     let inner = ScriptIo::manual();
     let progress = inner.clone();
