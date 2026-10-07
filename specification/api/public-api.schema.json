@@ -139,7 +139,8 @@
     "signatureType": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^[A-Za-z_][A-Za-z0-9_.]*(?:<[A-Za-z_][A-Za-z0-9_., <>]*>)?(?:\\[\\])?$"
+      "pattern": "^(?:\\(\\)|(?:&(?:'[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?|)[A-Za-z_][A-Za-z0-9_]*(?:[A-Za-z0-9_:.<> ,&|?|'\\[\\]]*)?)$",
+      "description": "A source-language type expression only, without a value expression or declaration body. Used for complete binding parameter and return types."
     },
     "bindingParameter": {
       "type": "object",
@@ -192,6 +193,9 @@
         },
         "requirementIds": {
           "$ref": "#/$defs/requirementIds"
+        },
+        "enumRepresentation": {
+          "$ref": "#/$defs/enumRepresentation"
         },
         "rust": {
           "type": "object",
@@ -253,7 +257,72 @@
           "additionalProperties": false
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "enum"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "enumRepresentation"
+            ],
+            "properties": {
+              "c": {
+                "properties": {
+                  "kind": {
+                    "const": "enum"
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "enumRepresentation"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "enumRepresentation": {
+      "type": "object",
+      "required": [
+        "shape",
+        "unknownValuePolicy",
+        "values"
+      ],
+      "properties": {
+        "shape": {
+          "const": "open-numeric"
+        },
+        "unknownValuePolicy": {
+          "const": "preserve-raw"
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/enumValue"
+          },
+          "description": "Known symbolic names and numeric codes in deterministic declaration order. Each code fits the declared unsigned C storage type. The generator also checks that names and codes are individually unique. Unknown codes remain representable.",
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "description": "An open numeric enum with an explicit list of known values and raw preservation for unknown codes."
     },
     "cType": {
       "type": "object",
@@ -289,6 +358,18 @@
         "releaseFunction": {
           "type": "string",
           "pattern": "^kmipkit_[a-z0-9_]+$"
+        },
+        "underlyingType": {
+          "type": "string",
+          "enum": [
+            "uint8_t",
+            "uint16_t",
+            "uint32_t",
+            "uint64_t"
+          ]
+        },
+        "unknownValuePolicy": {
+          "const": "preserve-raw"
         }
       },
       "allOf": [
@@ -326,6 +407,40 @@
                 {
                   "required": [
                     "releaseFunction"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "enum"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "underlyingType",
+              "unknownValuePolicy"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "underlyingType"
+                  ]
+                },
+                {
+                  "required": [
+                    "unknownValuePolicy"
                   ]
                 }
               ]
@@ -433,14 +548,44 @@
             },
             "type": {
               "type": "string",
-              "pattern": "^(?:int32_t|uint32_t|uint64_t) \\*$|^kmipkit_[a-z0-9_]+_t \\*\\*$"
+              "enum": [
+                "int32_t *",
+                "uint32_t *",
+                "uint64_t *"
+              ]
             },
             "ownership": {
+              "const": "none"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership",
+            "nullable"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output"
+            },
+            "type": {
               "type": "string",
-              "enum": [
-                "none",
-                "library-owned"
-              ]
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$"
+            },
+            "ownership": {
+              "const": "library-owned"
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether successful status may return no handle. Required explicitly for every output handle."
             }
           },
           "additionalProperties": false
@@ -549,7 +694,8 @@
             "name",
             "owner",
             "requestBoundary",
-            "parameters"
+            "parameters",
+            "returnType"
           ],
           "properties": {
             "module": {
@@ -577,6 +723,10 @@
                 "$ref": "#/$defs/bindingParameter"
               },
               "description": "Rust parameter names and types, in declaration order."
+            },
+            "returnType": {
+              "$ref": "#/$defs/signatureType",
+              "description": "Complete Rust return type, including a Result<T, E> wrapper when the public function returns errors."
             }
           },
           "additionalProperties": false
@@ -599,7 +749,7 @@
               "items": {
                 "$ref": "#/$defs/cParameter"
               },
-              "description": "Parameter order is the exact C ABI order. Every variable-length input is one byte-span pointer paired with a uint64_t byte length."
+              "description": "Parameter order is the exact C ABI order. Every variable-length input is one byte-span pointer paired with a uint64_t byte length. Version 1 does not describe variable-length output buffers."
             },
             "returnType": {
               "const": "int32_t",
@@ -618,6 +768,7 @@
             "class",
             "method",
             "parameters",
+            "returnType",
             "jniSymbol",
             "errorCategories"
           ],
@@ -646,6 +797,10 @@
             },
             "errorCategories": {
               "$ref": "#/$defs/errorCategoryIds"
+            },
+            "returnType": {
+              "$ref": "#/$defs/signatureType",
+              "description": "Complete Java method return type."
             }
           },
           "additionalProperties": false
@@ -656,6 +811,7 @@
             "module",
             "function",
             "parameters",
+            "returnType",
             "cffiSymbol",
             "errorCategories"
           ],
@@ -681,6 +837,10 @@
             },
             "errorCategories": {
               "$ref": "#/$defs/errorCategoryIds"
+            },
+            "returnType": {
+              "$ref": "#/$defs/signatureType",
+              "description": "Complete Python function return type."
             }
           },
           "additionalProperties": false
@@ -1231,6 +1391,24 @@
       },
       "additionalProperties": false,
       "description": "The generator writes only these source and test destinations, in the property order above. Documentation remains handwritten under the plan's docs/ and language-package docs."
+    },
+    "enumValue": {
+      "type": "object",
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
