@@ -220,6 +220,13 @@ Registry-depth scope Red evidence:
   registry depth limit must bound registered schemas and discriminator paths;
   payload nesting remains governed by `CodecLimits`.
 
+Root-inclusive payload-cap Red evidence:
+
+- `cargo test -p kmipkit-client --test extension_recognition raised_codec_limit_cannot_raise_the_hard_payload_item_cap -- --nocapture`
+  — expected Red (exit 101): the current index accepts 100,000 children in
+  addition to the root when `CodecLimits` is raised. The hard recognition cap
+  is 100,000 total TTLV items, including the root Structure.
+
 Red/Green evidence:
 
 - Red: `de93ace`; the provenance regression test failed to compile because the

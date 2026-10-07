@@ -458,7 +458,7 @@ fn wide_payload_with_last_child_match_stays_within_tag_comparison_budget() {
     )
     .expect("the single-definition registry is valid");
     let mut value = Structure::new();
-    for _ in 0..99_999 {
+    for _ in 0..99_998 {
         value
             .try_push(
                 Item::new(tag(UNKNOWN_TAG), Value::text_string("x".to_owned()))
@@ -478,12 +478,12 @@ fn wide_payload_with_last_child_match_stays_within_tag_comparison_budget() {
     let codec_limits = CodecLimits::new(
         CodecLimits::DEFAULT_MAX_MESSAGE_BYTES,
         CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
-        CodecLimits::DEFAULT_MAX_ELEMENTS + 1,
+        CodecLimits::DEFAULT_MAX_ELEMENTS,
     )
     .expect("the model depth remains within its hard maximum");
 
     let recognition = extension_registry::inspect(&registry, VENDOR, value, &codec_limits)
-        .expect("the 100,000-child lookup stays within the configured comparison budget");
+        .expect("the 100,000-item lookup, including its root, stays within budget");
 
     assert!(extension_registry::is_recognized(&recognition));
 }
@@ -498,7 +498,7 @@ fn repeated_tag_search_stays_within_the_thirty_five_comparison_step_bound() {
         .expect("the configured comparison budget is within its hard maximum")
     };
     let mut value = Structure::new();
-    for _ in 0..100_000 {
+    for _ in 0..99_999 {
         value
             .try_push(
                 Item::new(
@@ -512,7 +512,7 @@ fn repeated_tag_search_stays_within_the_thirty_five_comparison_step_bound() {
     let codec_limits = CodecLimits::new(
         CodecLimits::DEFAULT_MAX_MESSAGE_BYTES,
         CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
-        CodecLimits::DEFAULT_MAX_ELEMENTS + 1,
+        CodecLimits::DEFAULT_MAX_ELEMENTS,
     )
     .expect("the raised element limit remains within TTLV bounds");
 
@@ -521,7 +521,7 @@ fn repeated_tag_search_stays_within_the_thirty_five_comparison_step_bound() {
     assert_unrecognized(&exact);
 
     let mut value = Structure::new();
-    for _ in 0..100_000 {
+    for _ in 0..99_999 {
         value
             .try_push(
                 Item::new(
@@ -550,7 +550,7 @@ fn raised_codec_limit_cannot_raise_the_hard_payload_item_cap() {
         false,
     )]);
     let mut value = Structure::new();
-    for _ in 0..=100_000 {
+    for _ in 0..100_000 {
         value
             .try_push(
                 Item::new(tag(UNKNOWN_TAG), Value::text_string("x".to_owned()))
@@ -561,12 +561,12 @@ fn raised_codec_limit_cannot_raise_the_hard_payload_item_cap() {
     let codec_limits = CodecLimits::new(
         CodecLimits::DEFAULT_MAX_MESSAGE_BYTES,
         CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
-        100_002,
+        100_001,
     )
     .expect("the test explicitly raises the configurable element limit");
 
     let error = extension_registry::inspect(&registry, VENDOR, value, &codec_limits)
-        .expect_err("the fixed recognition hard cap rejects item 100,001");
+        .expect_err("the fixed recognition cap counts the root and rejects total item 100,001");
     assert!(matches!(
         error,
         ClientError::Protocol { ref error, .. }
