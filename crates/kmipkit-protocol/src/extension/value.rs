@@ -262,7 +262,7 @@ fn validate_structure(
         required_child_indices,
         order_edges,
         ..
-    } = &schema.kind
+    } = &schema.inner.kind
     else {
         return Err(invalid_schema(path));
     };
@@ -488,9 +488,11 @@ fn validate_scalar(
     if let Some(length) = scalar_payload_length(value) {
         let length = u64::try_from(length).map_err(|_| resource_limit())?;
         if schema
+            .inner
             .minimum_length
             .is_some_and(|minimum| length < minimum)
             || schema
+                .inner
                 .maximum_length
                 .is_some_and(|maximum| length > maximum)
         {
@@ -500,6 +502,7 @@ fn validate_scalar(
 
     if let Some(value) = signed_scalar(value)
         && schema
+            .inner
             .signed_range
             .is_some_and(|(minimum, maximum)| value < minimum || value > maximum)
     {
@@ -508,6 +511,7 @@ fn validate_scalar(
 
     if let Some(value) = unsigned_scalar(value)
         && schema
+            .inner
             .unsigned_range
             .is_some_and(|(minimum, maximum)| value < minimum || value > maximum)
     {
@@ -515,10 +519,10 @@ fn validate_scalar(
     }
 
     if let ValueView::Enumeration(value) = value {
-        if schema.allowed_enumeration.is_empty() {
+        if schema.inner.allowed_enumeration.is_empty() {
             record_enum_comparisons(metrics, 0)?;
         } else {
-            let (accepted, comparisons) = enum_contains(&schema.allowed_enumeration, **value);
+            let (accepted, comparisons) = enum_contains(&schema.inner.allowed_enumeration, **value);
             record_enum_comparisons(metrics, comparisons)?;
             if !accepted {
                 return Err(invalid_schema(path));
@@ -529,9 +533,11 @@ fn validate_scalar(
     if let ValueView::Integer(value) = value {
         let bits = (**value).cast_unsigned();
         if schema
+            .inner
             .allowed_bit_mask
             .is_some_and(|allowed| bits & !allowed != 0)
             || schema
+                .inner
                 .required_bit_mask
                 .is_some_and(|required| bits & required != required)
         {

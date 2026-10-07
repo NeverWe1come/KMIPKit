@@ -4,13 +4,16 @@
 use std::cell::Cell;
 use std::collections::HashMap;
 use std::fmt;
+use std::sync::Arc;
 
 use kmipkit_ttlv::{ItemType, Tag};
 
 use crate::{ProtocolError, ProtocolErrorKind};
 
 use super::categorized_error;
-use super::limits::ExtensionRegistryLimits;
+use super::limits::{
+    ExtensionRegistryLimits, HARD_MAX_SCHEMA_NODES, HARD_MAX_TOTAL_CONSTRAINT_MEMBERS,
+};
 
 const MAX_CHILD_RULES: usize = 4_096;
 const MAX_CONSTRAINT_MEMBERS: usize = 4_096;
@@ -21,9 +24,16 @@ thread_local! {
     static REGISTRY_LIMIT_SCHEMA_VISITS: Cell<usize> = const { Cell::new(0) };
 }
 
-/// A recursive description of one allowed TTLV value.
+/// A recursive description of one allowed TTLV value. Clones share immutable
+/// schema state so reusing one schema in multiple rules does not duplicate its
+/// recursive tree before registry-wide budgets can be enforced.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ExtensionSchema {
+    pub(crate) inner: Arc<SchemaInner>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct SchemaInner {
     pub(crate) kind: SchemaKind,
     pub(crate) minimum_length: Option<u64>,
     pub(crate) maximum_length: Option<u64>,
@@ -32,6 +42,9 @@ pub struct ExtensionSchema {
     pub(crate) allowed_enumeration: Vec<u32>,
     pub(crate) allowed_bit_mask: Option<u32>,
     pub(crate) required_bit_mask: Option<u32>,
+    depth: usize,
+    node_count: usize,
+    constraint_member_count: usize,
 }
 
 /// A child-order constraint compiled to stable child-rule indexes.
@@ -128,14 +141,19 @@ pub fn scalar(item_type: ItemType) -> Result<ExtensionSchema, ProtocolError> {
     }
 
     Ok(ExtensionSchema {
-        kind: SchemaKind::Scalar(item_type),
-        minimum_length: None,
-        maximum_length: None,
-        signed_range: None,
-        unsigned_range: None,
-        allowed_enumeration: Vec::new(),
-        allowed_bit_mask: None,
-        required_bit_mask: None,
+        inner: Arc::new(SchemaInner {
+            kind: SchemaKind::Scalar(item_type),
+            minimum_length: None,
+            maximum_length: None,
+            signed_range: None,
+            unsigned_range: None,
+            allowed_enumeration: Vec::new(),
+            allowed_bit_mask: None,
+            required_bit_mask: None,
+            depth: 1,
+            node_count: 1,
+            constraint_member_count: 0,
+        }),
     })
 }
 
@@ -158,29 +176,51 @@ pub fn structure(
         return Err(categorized_error(ProtocolErrorKind::ResourceLimit));
     }
 
+    let mut depth = 1_usize;
+    let mut node_count = 1_usize;
+    let mut constraint_member_count = order_constraints.len();
     for child in &children {
-        if child.schema.depth()? >= MAX_SCHEMA_DEPTH {
-            return Err(categorized_error(ProtocolErrorKind::ResourceLimit));
-        }
+        depth = depth.max(
+            checked_usize_counter_add(child.schema.inner.depth, 1)
+                .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?,
+        );
+        add_bounded_schema_metric(
+            &mut node_count,
+            child.schema.inner.node_count,
+            HARD_MAX_SCHEMA_NODES,
+        )?;
+        add_bounded_schema_metric(
+            &mut constraint_member_count,
+            child.schema.inner.constraint_member_count,
+            HARD_MAX_TOTAL_CONSTRAINT_MEMBERS,
+        )?;
+    }
+    if depth > MAX_SCHEMA_DEPTH {
+        return Err(categorized_error(ProtocolErrorKind::ResourceLimit));
     }
 
     let compiled = compile_structure(&children, order_constraints)?;
 
     Ok(ExtensionSchema {
-        kind: SchemaKind::Structure {
-            children,
-            child_tag_index: compiled.child_tag_index,
-            required_child_indices: compiled.required_child_indices,
-            order_edges: compiled.order_edges,
-            preserve_undeclared_children,
-        },
-        minimum_length: None,
-        maximum_length: None,
-        signed_range: None,
-        unsigned_range: None,
-        allowed_enumeration: Vec::new(),
-        allowed_bit_mask: None,
-        required_bit_mask: None,
+        inner: Arc::new(SchemaInner {
+            kind: SchemaKind::Structure {
+                children,
+                child_tag_index: compiled.child_tag_index,
+                required_child_indices: compiled.required_child_indices,
+                order_edges: compiled.order_edges,
+                preserve_undeclared_children,
+            },
+            minimum_length: None,
+            maximum_length: None,
+            signed_range: None,
+            unsigned_range: None,
+            allowed_enumeration: Vec::new(),
+            allowed_bit_mask: None,
+            required_bit_mask: None,
+            depth,
+            node_count,
+            constraint_member_count,
+        }),
     })
 }
 
@@ -258,10 +298,15 @@ pub fn with_minimum_length(
     mut schema: ExtensionSchema,
     value: u64,
 ) -> Result<ExtensionSchema, ProtocolError> {
-    if !schema.supports_length() || schema.maximum_length.is_some_and(|maximum| value > maximum) {
+    if !schema.supports_length()
+        || schema
+            .inner
+            .maximum_length
+            .is_some_and(|maximum| value > maximum)
+    {
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
-    schema.minimum_length = Some(value);
+    Arc::make_mut(&mut schema.inner).minimum_length = Some(value);
     Ok(schema)
 }
 
@@ -275,10 +320,15 @@ pub fn with_maximum_length(
     mut schema: ExtensionSchema,
     value: u64,
 ) -> Result<ExtensionSchema, ProtocolError> {
-    if !schema.supports_length() || schema.minimum_length.is_some_and(|minimum| value < minimum) {
+    if !schema.supports_length()
+        || schema
+            .inner
+            .minimum_length
+            .is_some_and(|minimum| value < minimum)
+    {
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
-    schema.maximum_length = Some(value);
+    Arc::make_mut(&mut schema.inner).maximum_length = Some(value);
     Ok(schema)
 }
 
@@ -296,7 +346,7 @@ pub fn with_signed_range(
     if !schema.supports_signed_range() || minimum > maximum {
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
-    schema.signed_range = Some((minimum, maximum));
+    Arc::make_mut(&mut schema.inner).signed_range = Some((minimum, maximum));
     Ok(schema)
 }
 
@@ -313,7 +363,7 @@ pub fn with_unsigned_range(
     if !schema.supports_unsigned_range() || minimum > maximum {
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
-    schema.unsigned_range = Some((minimum, maximum));
+    Arc::make_mut(&mut schema.inner).unsigned_range = Some((minimum, maximum));
     Ok(schema)
 }
 
@@ -327,10 +377,21 @@ pub fn with_allowed_enumeration(
     mut schema: ExtensionSchema,
     value: u32,
 ) -> Result<ExtensionSchema, ProtocolError> {
-    if !matches!(schema.kind, SchemaKind::Scalar(ItemType::Enumeration)) {
+    if !matches!(
+        &schema.inner.kind,
+        SchemaKind::Scalar(ItemType::Enumeration)
+    ) {
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
-    insert_sorted_constraint(&mut schema.allowed_enumeration, value)?;
+    let inner = Arc::make_mut(&mut schema.inner);
+    insert_sorted_constraint(&mut inner.allowed_enumeration, value)?;
+    inner.constraint_member_count = inner
+        .constraint_member_count
+        .checked_add(1)
+        .filter(|count| {
+            u64::try_from(*count).is_ok_and(|count| count <= HARD_MAX_TOTAL_CONSTRAINT_MEMBERS)
+        })
+        .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
     Ok(schema)
 }
 
@@ -343,10 +404,11 @@ pub fn with_allowed_bit_mask(
     mut schema: ExtensionSchema,
     value: u32,
 ) -> Result<ExtensionSchema, ProtocolError> {
-    if !matches!(schema.kind, SchemaKind::Scalar(ItemType::Integer)) {
+    if !matches!(&schema.inner.kind, SchemaKind::Scalar(ItemType::Integer)) {
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
-    schema.allowed_bit_mask = Some(schema.allowed_bit_mask.unwrap_or(0) | value);
+    let inner = Arc::make_mut(&mut schema.inner);
+    inner.allowed_bit_mask = Some(inner.allowed_bit_mask.unwrap_or(0) | value);
     Ok(schema)
 }
 
@@ -359,10 +421,11 @@ pub fn with_required_bit_mask(
     mut schema: ExtensionSchema,
     value: u32,
 ) -> Result<ExtensionSchema, ProtocolError> {
-    if !matches!(schema.kind, SchemaKind::Scalar(ItemType::Integer)) {
+    if !matches!(&schema.inner.kind, SchemaKind::Scalar(ItemType::Integer)) {
         return Err(categorized_error(ProtocolErrorKind::InvalidSchema));
     }
-    schema.required_bit_mask = Some(schema.required_bit_mask.unwrap_or(0) | value);
+    let inner = Arc::make_mut(&mut schema.inner);
+    inner.required_bit_mask = Some(inner.required_bit_mask.unwrap_or(0) | value);
     Ok(schema)
 }
 
@@ -556,6 +619,22 @@ pub(crate) const fn checked_usize_counter_add(left: usize, right: usize) -> Opti
     left.checked_add(right)
 }
 
+fn add_bounded_schema_metric(
+    total: &mut usize,
+    increment: usize,
+    maximum: u64,
+) -> Result<(), ProtocolError> {
+    let next = checked_usize_counter_add(*total, increment)
+        .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+    let next_u64 =
+        u64::try_from(next).map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
+    if next_u64 > maximum {
+        return Err(categorized_error(ProtocolErrorKind::ResourceLimit));
+    }
+    *total = next;
+    Ok(())
+}
+
 fn add_bounded_registry_counter(
     total: &mut u64,
     increment: u64,
@@ -579,8 +658,8 @@ impl ExtensionSchema {
     /// Returns the TTLV Item Type required at this schema node.
     #[must_use]
     pub(crate) fn item_type(&self) -> ItemType {
-        match self.kind {
-            SchemaKind::Scalar(item_type) => item_type,
+        match &self.inner.kind {
+            SchemaKind::Scalar(item_type) => *item_type,
             SchemaKind::Structure { .. } => ItemType::Structure,
         }
     }
@@ -588,7 +667,7 @@ impl ExtensionSchema {
     /// Returns this Structure's child rules, or `None` for a scalar schema.
     #[must_use]
     pub(crate) fn children(&self) -> Option<&[ExtensionChildRule]> {
-        match &self.kind {
+        match &self.inner.kind {
             SchemaKind::Structure { children, .. } => Some(children),
             SchemaKind::Scalar(_) => None,
         }
@@ -597,8 +676,8 @@ impl ExtensionSchema {
     /// Returns whether undeclared Structure children are retained without a
     /// typed rule.
     #[must_use]
-    pub(crate) const fn preserve_undeclared_children(&self) -> bool {
-        match &self.kind {
+    pub(crate) fn preserve_undeclared_children(&self) -> bool {
+        match &self.inner.kind {
             SchemaKind::Structure {
                 preserve_undeclared_children,
                 ..
@@ -609,14 +688,14 @@ impl ExtensionSchema {
 
     fn supports_length(&self) -> bool {
         matches!(
-            self.kind,
+            self.inner.kind,
             SchemaKind::Scalar(ItemType::TextString | ItemType::ByteString)
         )
     }
 
     fn supports_signed_range(&self) -> bool {
         matches!(
-            self.kind,
+            self.inner.kind,
             SchemaKind::Scalar(
                 ItemType::Integer
                     | ItemType::LongInteger
@@ -628,54 +707,23 @@ impl ExtensionSchema {
 
     fn supports_unsigned_range(&self) -> bool {
         matches!(
-            self.kind,
+            self.inner.kind,
             SchemaKind::Scalar(ItemType::Enumeration | ItemType::Interval)
         )
     }
 
     fn depth(&self) -> Result<usize, ProtocolError> {
-        match &self.kind {
-            SchemaKind::Scalar(_) => Ok(1),
-            SchemaKind::Structure { children, .. } => {
-                let deepest_child = children.iter().try_fold(0_usize, |depth, child| {
-                    Ok::<usize, ProtocolError>(depth.max(child.schema.depth()?))
-                })?;
-                checked_usize_counter_add(deepest_child, 1)
-                    .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))
-            }
-        }
+        Ok(self.inner.depth)
     }
 
     /// Returns the number of schema nodes in this subtree.
     pub(crate) fn node_count(&self) -> Result<usize, ProtocolError> {
-        match &self.kind {
-            SchemaKind::Scalar(_) => Ok(1),
-            SchemaKind::Structure { children, .. } => {
-                children.iter().try_fold(1_usize, |count, child| {
-                    checked_usize_counter_add(count, child.schema.node_count()?)
-                        .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))
-                })
-            }
-        }
+        Ok(self.inner.node_count)
     }
 
     /// Returns allowed-enumeration values and order edges across this subtree.
     pub(crate) fn constraint_member_count(&self) -> Result<usize, ProtocolError> {
-        let order_members = match &self.kind {
-            SchemaKind::Structure {
-                children,
-                order_edges,
-                ..
-            } => children
-                .iter()
-                .try_fold(order_edges.len(), |count, child| {
-                    checked_usize_counter_add(count, child.schema.constraint_member_count()?)
-                        .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))
-                })?,
-            SchemaKind::Scalar(_) => 0,
-        };
-        checked_usize_counter_add(self.allowed_enumeration.len(), order_members)
-            .ok_or_else(|| categorized_error(ProtocolErrorKind::ResourceLimit))
+        Ok(self.inner.constraint_member_count)
     }
 
     /// Checks the configurable registry limits before registry-owned indexes
@@ -725,7 +773,7 @@ impl ExtensionSchema {
 
         let configured_depth = u64::try_from(depth)
             .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
-        let per_rule_members = u64::try_from(self.allowed_enumeration.len())
+        let per_rule_members = u64::try_from(self.inner.allowed_enumeration.len())
             .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
         if configured_depth > limits.max_depth()
             || per_rule_members > limits.max_constraint_members_per_rule()
@@ -737,7 +785,7 @@ impl ExtensionSchema {
             children,
             order_edges,
             ..
-        } = &self.kind
+        } = &self.inner.kind
         {
             let child_count = u64::try_from(children.len())
                 .map_err(|_| categorized_error(ProtocolErrorKind::ResourceLimit))?;
