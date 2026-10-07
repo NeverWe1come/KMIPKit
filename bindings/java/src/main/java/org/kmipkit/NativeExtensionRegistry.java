@@ -105,6 +105,10 @@ public final class NativeExtensionRegistry {
     public static native long clientRequestMessageExtensionCreate(long registeredValue,
             boolean criticalityIndicator);
     public static native long clientBatchItemWithExtension(long item, long requestExtension);
+    public static native long clientBatchItemDiscoverVersions();
+    public static native long clientBatchItemExtensionCount(long item);
+    public static native long clientBatchItemExtensionIdentityAt(long item, long index);
+    public static native boolean clientBatchItemExtensionCriticalityIndicatorAt(long item, long index);
     public static native long extensionInformationCreate(String extensionName);
     public static native long extensionInformationWithTag(long information, int tag);
     public static native long extensionInformationWithType(long information, int type);
@@ -122,7 +126,9 @@ public final class NativeExtensionRegistry {
     public static native long validatedExtensionValueIdentity(long value);
     public static native long validatedExtensionValueGenericValue(long value);
     public static native long validatedExtensionValueValueAt(long value, long path);
-    public static native String[] extensionIdentityFields(long identity);
+    public static native String extensionIdentityVendorIdentifier(long identity);
+    public static native String extensionIdentityName(long identity);
+    public static native String extensionIdentityVersion(long identity);
     public static native long rawTagCreate(int raw);
     public static native int rawTagValue(long rawTag);
     public static native long rawTagChecked(long rawTag);

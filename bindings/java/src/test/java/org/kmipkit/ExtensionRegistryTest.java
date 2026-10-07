@@ -203,7 +203,7 @@ final class ExtensionRegistryTest {
         TtlvStructure ttlv = ExtensionInformation.toTtlv(information);
         TtlvStructureView view = ttlv.view();
         assertEquals(7, view.itemCount());
-        assertEquals(List.of(0x4200A5, 0x4200A6, 0x4200A7, 0x4200A8, 0x42012A, 0x42012B, 0x42012C),
+        assertEquals(List.of(0x4200A5, 0x4200A6, 0x4200A7, 0x420129, 0x42012A, 0x42012B, 0x42012C),
                 List.of(
                         view.itemAt(0).tag().raw(),
                         view.itemAt(1).tag().raw(),
@@ -244,11 +244,13 @@ final class ExtensionRegistryTest {
     @Test
     void requestUseFactoryAcceptsBothExplicitCriticalityChoices() throws Exception {
         ClientExtensionRegistry registry = registry(List.of(alphaDefinition()), defaults());
-        RegisteredExtensionValue value = registry.validateExtensionValue(
+        RegisteredExtensionValue nonCriticalValue = registry.validateExtensionValue(
+                identity(ALPHA_NAME), alphaPayload("preserve-this-child-order"), CODEC_LIMITS);
+        RegisteredExtensionValue criticalValue = registry.validateExtensionValue(
                 identity(ALPHA_NAME), alphaPayload("preserve-this-child-order"), CODEC_LIMITS);
 
-        ClientRequestMessageExtension nonCritical = ClientRequestMessageExtension.create(value, false);
-        ClientRequestMessageExtension critical = ClientRequestMessageExtension.create(value, true);
+        ClientRequestMessageExtension nonCritical = ClientRequestMessageExtension.create(nonCriticalValue, false);
+        ClientRequestMessageExtension critical = ClientRequestMessageExtension.create(criticalValue, true);
 
         assertNotNull(nonCritical);
         assertNotNull(critical);

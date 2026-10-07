@@ -26,11 +26,21 @@ public final class ExtensionIdentity {
 
     static ExtensionIdentity fromNative(long nativeHandle) {
         NativeExtensionRegistry.ensureLoaded();
-        String[] fields = NativeExtensionRegistry.extensionIdentityFields(nativeHandle);
-        if (fields == null || fields.length != 3) {
+        if (nativeHandle == 0) {
             throw new InvalidInputException("native identity metadata is invalid");
         }
-        return new ExtensionIdentity(fields[0], fields[1], fields[2], nativeHandle);
+        try {
+            String vendorIdentifier = NativeExtensionRegistry.extensionIdentityVendorIdentifier(nativeHandle);
+            String name = NativeExtensionRegistry.extensionIdentityName(nativeHandle);
+            String version = NativeExtensionRegistry.extensionIdentityVersion(nativeHandle);
+            if (vendorIdentifier == null || name == null || version == null) {
+                throw new InvalidInputException("native identity metadata is invalid");
+            }
+            return new ExtensionIdentity(vendorIdentifier, name, version, nativeHandle);
+        } catch (RuntimeException | Error error) {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.IDENTITY, nativeHandle);
+            throw error;
+        }
     }
 
     public static ExtensionIdentity create(String vendorIdentifier, String name, String version) {
