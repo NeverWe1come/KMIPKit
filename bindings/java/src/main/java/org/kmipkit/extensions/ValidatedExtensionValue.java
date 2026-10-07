@@ -19,21 +19,26 @@ public final class ValidatedExtensionValue {
 
     public static ExtensionIdentity identity(ValidatedExtensionValue value) {
         NativeExtensionRegistry.ensureLoaded();
-        long identityHandle = NativeExtensionRegistry.validatedExtensionValueIdentity(value.handle.get());
-        return value.identity != null ? value.identity : ExtensionIdentity.fromNative(identityHandle);
+        return value.handle.withValue(handle -> {
+            long identityHandle = NativeExtensionRegistry.validatedExtensionValueIdentity(handle);
+            return value.identity != null ? value.identity : ExtensionIdentity.fromNative(identityHandle);
+        });
     }
 
     public static TtlvStructureView genericValue(ValidatedExtensionValue value) {
         NativeExtensionRegistry.ensureLoaded();
-        long viewHandle = NativeExtensionRegistry.validatedExtensionValueGenericValue(value.handle.get());
-        return TtlvStructureView.fromNative(viewHandle, value);
+        return value.handle.withValue(handle -> TtlvStructureView.fromNative(
+                NativeExtensionRegistry.validatedExtensionValueGenericValue(handle), value));
     }
 
     public static TtlvValueView valueAt(ValidatedExtensionValue value, TtlvPath path) {
         NativeExtensionRegistry.ensureLoaded();
-        long viewHandle = NativeExtensionRegistry.validatedExtensionValueValueAt(
-                value.handle.get(), path.handle());
-        return TtlvValueView.fromNative(viewHandle, value);
+        return NativeHandle.withValues(
+                new NativeHandle[] {value.handle, path.nativeHandleOwner()}, handles -> {
+                    long viewHandle = NativeExtensionRegistry.validatedExtensionValueValueAt(
+                            handles[0], handles[1]);
+                    return TtlvValueView.fromNative(viewHandle, value);
+                });
     }
 
     long handle() {

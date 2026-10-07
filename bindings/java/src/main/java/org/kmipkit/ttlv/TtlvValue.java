@@ -63,7 +63,8 @@ public final class TtlvValue {
     }
 
     public TtlvValueView view() {
-        return TtlvValueView.fromNative(NativeExtensionRegistry.ttlvValueView(handle.get()), this);
+        return handle.withValue(value -> TtlvValueView.fromNative(
+                NativeExtensionRegistry.ttlvValueView(value), this));
     }
 
     public long handle() {

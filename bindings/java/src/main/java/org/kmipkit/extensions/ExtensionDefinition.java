@@ -30,24 +30,32 @@ public final class ExtensionDefinition {
     public static ExtensionDefinition create(ExtensionIdentity identity, Compatibility compatibility,
             Discriminator discriminator, ExtensionSchema schema) {
         NativeExtensionRegistry.ensureLoaded();
-        long nativeHandle = NativeExtensionRegistry.extensionDefinitionCreate(
-                identity.handle(), compatibility.handle(), discriminator.handle(), schema.handle());
+        NativeHandle[] owners = {
+                identity.nativeHandleOwner(), compatibility.nativeHandleOwner(),
+                discriminator.nativeHandleOwner(), schema.nativeHandleOwner()
+        };
+        long nativeHandle = NativeHandle.withValues(owners, handles ->
+                NativeExtensionRegistry.extensionDefinitionCreate(
+                        handles[0], handles[1], handles[2], handles[3]));
         return new ExtensionDefinition(identity, compatibility, discriminator, schema, null, nativeHandle);
     }
 
     public static ValidatedExtensionValue validate(
             ExtensionDefinition definition, TtlvStructure value, CodecLimits limits) {
         NativeExtensionRegistry.ensureLoaded();
-        long nativeHandle = NativeExtensionRegistry.extensionDefinitionValidate(
-                definition.handle(), value.handle(), NativeExtensionRegistry.codecLimitValues(limits));
+        long nativeHandle = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.extensionDefinitionValidate(
+                        definition.handle.get(), value.handle(),
+                        NativeExtensionRegistry.codecLimitValues(limits)));
         return new ValidatedExtensionValue(nativeHandle, definition.identity, value);
     }
 
     public static ExtensionDefinition withInformation(
             ExtensionDefinition definition, ExtensionInformation information) {
         NativeExtensionRegistry.ensureLoaded();
-        long nativeHandle = NativeExtensionRegistry.extensionDefinitionWithInformation(
-                definition.handle.transfer(), information.handle());
+        long definitionHandle = definition.handle.transfer();
+        long nativeHandle = information.nativeHandleOwner().withValue(infoHandle ->
+                NativeExtensionRegistry.extensionDefinitionWithInformation(definitionHandle, infoHandle));
         return new ExtensionDefinition(definition.identity, definition.compatibility,
                 definition.discriminator, definition.schema, information, nativeHandle);
     }
@@ -64,6 +72,10 @@ public final class ExtensionDefinition {
 
     long handle() {
         return handle.get();
+    }
+
+    NativeHandle nativeHandleOwner() {
+        return handle;
     }
 
     ExtensionIdentity identityValue() {

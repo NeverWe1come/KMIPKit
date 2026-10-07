@@ -21,4 +21,8 @@ public final class Discriminator {
     long handle() {
         return handle.get();
     }
+
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
 }

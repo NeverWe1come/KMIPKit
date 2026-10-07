@@ -76,6 +76,10 @@ public final class ExtensionIdentity {
         return handle.get();
     }
 
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     public String vendorIdentifier() {
         return vendorIdentifier;
     }

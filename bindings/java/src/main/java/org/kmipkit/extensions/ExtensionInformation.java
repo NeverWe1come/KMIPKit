@@ -62,12 +62,16 @@ public final class ExtensionInformation {
 
     public static TtlvStructure toTtlv(ExtensionInformation information) {
         NativeExtensionRegistry.ensureLoaded();
-        return TtlvStructure.fromNative(
-                NativeExtensionRegistry.extensionInformationToTtlv(information.handle()), information);
+        return information.handle.withValue(value -> TtlvStructure.fromNative(
+                NativeExtensionRegistry.extensionInformationToTtlv(value), information));
     }
 
     long handle() {
         return handle.get();
+    }
+
+    NativeHandle nativeHandleOwner() {
+        return handle;
     }
 
     private static void requireText(String value) {

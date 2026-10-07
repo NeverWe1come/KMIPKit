@@ -1,5 +1,6 @@
 package org.kmipkit.extensions;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.kmipkit.NativeExtensionRegistry;
@@ -21,11 +22,21 @@ public final class ExtensionSchema {
 
     public static ExtensionSchema structure(List<ExtensionChildRule> children,
             List<ExtensionOrderConstraint> orderConstraints, boolean preserveUndeclaredChildren) {
-        long[] childHandles = children.stream().mapToLong(ExtensionChildRule::handle).toArray();
-        long[] orderHandles = orderConstraints.stream().mapToLong(ExtensionOrderConstraint::handle).toArray();
+        NativeHandle[] owners = new NativeHandle[children.size() + orderConstraints.size()];
+        for (int index = 0; index < children.size(); index++) {
+            owners[index] = children.get(index).nativeHandleOwner();
+        }
+        for (int index = 0; index < orderConstraints.size(); index++) {
+            owners[children.size() + index] = orderConstraints.get(index).nativeHandleOwner();
+        }
         NativeExtensionRegistry.ensureLoaded();
-        return new ExtensionSchema(NativeExtensionRegistry.extensionSchemaStructure(
-                childHandles, orderHandles, preserveUndeclaredChildren));
+        return NativeHandle.withValues(owners, handles -> {
+            int childCount = children.size();
+            long[] childHandles = Arrays.copyOfRange(handles, 0, childCount);
+            long[] orderHandles = Arrays.copyOfRange(handles, childCount, handles.length);
+            return new ExtensionSchema(NativeExtensionRegistry.extensionSchemaStructure(
+                    childHandles, orderHandles, preserveUndeclaredChildren));
+        });
     }
 
     public static ExtensionSchema with_minimum_length(ExtensionSchema schema, long value) {
@@ -72,5 +83,9 @@ public final class ExtensionSchema {
 
     long handle() {
         return handle.get();
+    }
+
+    NativeHandle nativeHandleOwner() {
+        return handle;
     }
 }

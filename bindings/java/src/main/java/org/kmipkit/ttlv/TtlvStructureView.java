@@ -18,12 +18,12 @@ public final class TtlvStructureView {
     }
 
     public long itemCount() {
-        return NativeExtensionRegistry.ttlvStructureViewItemCount(handle.get());
+        return handle.withValue(NativeExtensionRegistry::ttlvStructureViewItemCount);
     }
 
     public TtlvItemView itemAt(long index) {
-        long itemView = NativeExtensionRegistry.ttlvStructureViewItemAt(handle.get(), index);
-        return TtlvItemView.fromNative(itemView, this);
+        return handle.withValue(value -> TtlvItemView.fromNative(
+                NativeExtensionRegistry.ttlvStructureViewItemAt(value, index), this));
     }
 
     long handle() {

@@ -1,6 +1,10 @@
 package org.kmipkit.internal;
 
 import java.lang.ref.Cleaner;
+import java.lang.ref.Reference;
+import java.util.function.Function;
+import java.util.function.LongFunction;
+import java.util.function.Supplier;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
@@ -8,7 +12,7 @@ import org.kmipkit.NativeExtensionRegistry;
 /** Shared lifecycle state for Java wrappers around opaque native handles. */
 public final class NativeHandle {
     private static final Cleaner CLEANER = Cleaner.create();
-    // Serializes multi-owner transfers and every native-handle invalidation.
+    // Serializes scoped native calls, multi-owner transfers, and invalidation.
     private static final Object STATE_LOCK = new Object();
 
     private final State state;
@@ -27,11 +31,56 @@ public final class NativeHandle {
     }
 
     public long get() {
-        long value = state.value;
-        if (value == 0) {
-            throw new InvalidInputException("native handle is closed");
+        synchronized (STATE_LOCK) {
+            long value = state.value;
+            if (value == 0) {
+                throw new InvalidInputException("native handle is closed");
+            }
+            Reference.reachabilityFence(this);
+            return value;
         }
-        return value;
+    }
+
+    /** Holds lifecycle ownership until a synchronous native operation returns. */
+    public <T> T withValue(LongFunction<T> operation) {
+        if (operation == null) {
+            throw new InvalidInputException("native handle operation is invalid");
+        }
+        return withValues(new NativeHandle[] {this}, values -> operation.apply(values[0]));
+    }
+
+    /** Holds the shared lifecycle lock while wrapper code obtains and uses handles. */
+    public static <T> T withNativeHandles(Supplier<T> operation) {
+        if (operation == null) {
+            throw new InvalidInputException("native handle operation is invalid");
+        }
+        synchronized (STATE_LOCK) {
+            return operation.get();
+        }
+    }
+
+    /** Holds several native handles for one synchronous native operation. */
+    public static <T> T withValues(NativeHandle[] handles, Function<long[], T> operation) {
+        if (handles == null || operation == null) {
+            throw new InvalidInputException("native handle operation is invalid");
+        }
+        synchronized (STATE_LOCK) {
+            long[] values = new long[handles.length];
+            for (int index = 0; index < handles.length; index++) {
+                NativeHandle handle = handles[index];
+                if (handle == null || handle.state.value == 0) {
+                    throw new InvalidInputException("native handle is closed");
+                }
+                values[index] = handle.state.value;
+            }
+            try {
+                return operation.apply(values);
+            } finally {
+                for (NativeHandle handle : handles) {
+                    Reference.reachabilityFence(handle);
+                }
+            }
+        }
     }
 
     /** Transfers the native handle to a consuming native call without releasing it. */

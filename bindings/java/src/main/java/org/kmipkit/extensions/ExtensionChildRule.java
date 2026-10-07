@@ -14,20 +14,27 @@ public final class ExtensionChildRule {
 
     public static ExtensionChildRule required(Tag tag, ExtensionSchema schema) {
         NativeExtensionRegistry.ensureLoaded();
-        return new ExtensionChildRule(NativeExtensionRegistry.extensionChildRuleRequired(tag.handle(), schema.handle()));
+        return NativeHandle.withNativeHandles(() -> new ExtensionChildRule(
+                NativeExtensionRegistry.extensionChildRuleRequired(tag.handle(), schema.handle())));
     }
 
     public static ExtensionChildRule optional(Tag tag, ExtensionSchema schema) {
         NativeExtensionRegistry.ensureLoaded();
-        return new ExtensionChildRule(NativeExtensionRegistry.extensionChildRuleOptional(tag.handle(), schema.handle()));
+        return NativeHandle.withNativeHandles(() -> new ExtensionChildRule(
+                NativeExtensionRegistry.extensionChildRuleOptional(tag.handle(), schema.handle())));
     }
 
     public static ExtensionChildRule repeated(Tag tag, ExtensionSchema schema) {
         NativeExtensionRegistry.ensureLoaded();
-        return new ExtensionChildRule(NativeExtensionRegistry.extensionChildRuleRepeated(tag.handle(), schema.handle()));
+        return NativeHandle.withNativeHandles(() -> new ExtensionChildRule(
+                NativeExtensionRegistry.extensionChildRuleRepeated(tag.handle(), schema.handle())));
     }
 
     long handle() {
         return handle.get();
+    }
+
+    NativeHandle nativeHandleOwner() {
+        return handle;
     }
 }

@@ -18,48 +18,49 @@ public final class TtlvValueView {
     }
 
     public TtlvItemType itemType() {
-        return TtlvItemType.fromCode(NativeExtensionRegistry.ttlvValueViewType(handle.get()));
+        return handle.withValue(value -> TtlvItemType.fromCode(
+                NativeExtensionRegistry.ttlvValueViewType(value)));
     }
 
     public TtlvStructureView structure() {
-        long nativeView = NativeExtensionRegistry.ttlvValueViewStructure(handle.get());
-        return TtlvStructureView.fromNative(nativeView, this);
+        return handle.withValue(value -> TtlvStructureView.fromNative(
+                NativeExtensionRegistry.ttlvValueViewStructure(value), this));
     }
 
     public int integer() {
-        return NativeExtensionRegistry.ttlvValueViewInteger(handle.get());
+        return handle.withValue(NativeExtensionRegistry::ttlvValueViewInteger);
     }
 
     public long longInteger() {
-        return NativeExtensionRegistry.ttlvValueViewLongInteger(handle.get());
+        return handle.withValue(NativeExtensionRegistry::ttlvValueViewLongInteger);
     }
 
     public long enumeration() {
-        return NativeExtensionRegistry.ttlvValueViewEnumeration(handle.get());
+        return handle.withValue(NativeExtensionRegistry::ttlvValueViewEnumeration);
     }
 
     public boolean booleanValue() {
-        return NativeExtensionRegistry.ttlvValueViewBoolean(handle.get());
+        return handle.withValue(NativeExtensionRegistry::ttlvValueViewBoolean);
     }
 
     public long dateTime() {
-        return NativeExtensionRegistry.ttlvValueViewDateTime(handle.get());
+        return handle.withValue(NativeExtensionRegistry::ttlvValueViewDateTime);
     }
 
     public long interval() {
-        return NativeExtensionRegistry.ttlvValueViewInterval(handle.get());
+        return handle.withValue(NativeExtensionRegistry::ttlvValueViewInterval);
     }
 
     public long dateTimeExtended() {
-        return NativeExtensionRegistry.ttlvValueViewDateTimeExtended(handle.get());
+        return handle.withValue(NativeExtensionRegistry::ttlvValueViewDateTimeExtended);
     }
 
     public long byteLength() {
-        return NativeExtensionRegistry.ttlvValueViewByteLength(handle.get());
+        return handle.withValue(NativeExtensionRegistry::ttlvValueViewByteLength);
     }
 
     public short byteAt(long index) {
-        return NativeExtensionRegistry.ttlvValueViewByteAt(handle.get(), index);
+        return handle.withValue(value -> NativeExtensionRegistry.ttlvValueViewByteAt(value, index));
     }
 
     long handle() {

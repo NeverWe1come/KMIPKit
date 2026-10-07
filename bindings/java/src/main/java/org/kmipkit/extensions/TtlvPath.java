@@ -14,13 +14,16 @@ public final class TtlvPath {
 
     public static TtlvPath create(Tag firstTag) {
         NativeExtensionRegistry.ensureLoaded();
-        return new TtlvPath(NativeExtensionRegistry.ttlvPathCreate(firstTag.handle()));
+        return NativeHandle.withNativeHandles(() ->
+                new TtlvPath(NativeExtensionRegistry.ttlvPathCreate(firstTag.handle())));
     }
 
     public static TtlvPath withChildTag(TtlvPath path, Tag tag) {
         NativeExtensionRegistry.ensureLoaded();
-        long pathHandle = path.handle.transfer();
-        return new TtlvPath(NativeExtensionRegistry.ttlvPathWithChildTag(pathHandle, tag.handle()));
+        return NativeHandle.withNativeHandles(() -> {
+            long pathHandle = path.handle.transfer();
+            return new TtlvPath(NativeExtensionRegistry.ttlvPathWithChildTag(pathHandle, tag.handle()));
+        });
     }
 
     long handle() {

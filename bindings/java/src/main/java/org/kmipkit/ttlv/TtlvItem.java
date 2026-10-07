@@ -14,9 +14,11 @@ public final class TtlvItem {
     public static TtlvItem create(Tag tag, TtlvValue value, CodecLimits limits) {
         NativeExtensionRegistry.ensureLoaded();
         long[] limitValues = NativeExtensionRegistry.codecLimitValues(limits);
-        long valueHandle = value.nativeHandleOwner().transfer();
-        return new TtlvItem(NativeExtensionRegistry.ttlvItemCreate(
-                tag.handle(), valueHandle, limitValues));
+        return NativeHandle.withNativeHandles(() -> {
+            long valueHandle = value.nativeHandleOwner().transfer();
+            return new TtlvItem(NativeExtensionRegistry.ttlvItemCreate(
+                    tag.handle(), valueHandle, limitValues));
+        });
     }
 
     long handle() {

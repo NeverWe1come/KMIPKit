@@ -16,10 +16,11 @@ public final class Tag {
     }
 
     public int raw() {
-        return NativeExtensionRegistry.tagValue(handle.get());
+        return handle.withValue(NativeExtensionRegistry::tagValue);
     }
 
     public long handle() {
         return handle.get();
     }
+
 }

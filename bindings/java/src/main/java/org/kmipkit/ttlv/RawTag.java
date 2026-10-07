@@ -17,14 +17,18 @@ public final class RawTag {
     }
 
     public int raw() {
-        return NativeExtensionRegistry.rawTagValue(handle.get());
+        return handle.withValue(NativeExtensionRegistry::rawTagValue);
     }
 
     public Tag checked() {
-        return Tag.fromNative(NativeExtensionRegistry.rawTagChecked(handle.get()));
+        return handle.withValue(value -> Tag.fromNative(NativeExtensionRegistry.rawTagChecked(value)));
     }
 
     long handle() {
         return handle.get();
+    }
+
+    NativeHandle nativeHandleOwner() {
+        return handle;
     }
 }

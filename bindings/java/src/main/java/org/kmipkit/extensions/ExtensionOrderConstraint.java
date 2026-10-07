@@ -14,11 +14,15 @@ public final class ExtensionOrderConstraint {
 
     public static ExtensionOrderConstraint create(Tag beforeTag, Tag afterTag) {
         NativeExtensionRegistry.ensureLoaded();
-        return new ExtensionOrderConstraint(NativeExtensionRegistry.extensionOrderConstraintCreate(
-                beforeTag.handle(), afterTag.handle()));
+        return NativeHandle.withNativeHandles(() -> new ExtensionOrderConstraint(
+                NativeExtensionRegistry.extensionOrderConstraintCreate(beforeTag.handle(), afterTag.handle())));
     }
 
     long handle() {
         return handle.get();
+    }
+
+    NativeHandle nativeHandleOwner() {
+        return handle;
     }
 }

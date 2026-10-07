@@ -28,10 +28,12 @@ public final class ClientExtensionRegistry implements AutoCloseable {
     public static ClientExtensionRegistry create(
             List<ExtensionDefinition> definitions, ExtensionRegistryLimits limits) {
         List<ExtensionDefinition> snapshot = List.copyOf(definitions);
-        long[] definitionHandles = snapshot.stream().mapToLong(ExtensionDefinition::handle).toArray();
         NativeExtensionRegistry.ensureLoaded();
-        long nativeHandle = NativeExtensionRegistry.clientExtensionRegistryCreate(
-                definitionHandles, limits.nativeValues());
+        NativeHandle[] owners = snapshot.stream()
+                .map(ExtensionDefinition::nativeHandleOwner)
+                .toArray(NativeHandle[]::new);
+        long nativeHandle = NativeHandle.withValues(owners, handles ->
+                NativeExtensionRegistry.clientExtensionRegistryCreate(handles, limits.nativeValues()));
         return new ClientExtensionRegistry(nativeHandle, snapshot, limits);
     }
 
@@ -41,18 +43,20 @@ public final class ClientExtensionRegistry implements AutoCloseable {
     }
 
     public ExtensionRecognition inspect(String vendorIdentifier, TtlvStructure value, CodecLimits codecLimits) {
-        long registryHandle = handle.get();
         NativeExtensionRegistry.ensureLoaded();
-        long recognition = NativeExtensionRegistry.clientExtensionRegistryInspect(
-                registryHandle, vendorIdentifier, value.handle(), NativeExtensionRegistry.codecLimitValues(codecLimits));
+        long recognition = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.clientExtensionRegistryInspect(
+                        handle.get(), vendorIdentifier, value.handle(),
+                        NativeExtensionRegistry.codecLimitValues(codecLimits)));
         return new ExtensionRecognition(recognition, this);
     }
 
     public long definitionCount() {
-        long registryHandle = handle.get();
         NativeExtensionRegistry.ensureLoaded();
-        NativeExtensionRegistry.clientExtensionRegistryDefinitionCount(registryHandle);
-        return definitions.size();
+        return handle.withValue(registryHandle -> {
+            NativeExtensionRegistry.clientExtensionRegistryDefinitionCount(registryHandle);
+            return definitions.size();
+        });
     }
 
     public Optional<ExtensionDefinition> definitionAt(long index) {
@@ -66,18 +70,20 @@ public final class ClientExtensionRegistry implements AutoCloseable {
     public RegisteredExtensionValue validateExtensionValue(
             ExtensionIdentity identity, TtlvStructure value, CodecLimits codecLimits) {
         NativeExtensionRegistry.ensureLoaded();
-        long nativeHandle = NativeExtensionRegistry.clientExtensionRegistryValidate(
-                handle.get(), identity.handle(), value.handle(), NativeExtensionRegistry.codecLimitValues(codecLimits));
+        long nativeHandle = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.clientExtensionRegistryValidate(
+                        handle.get(), identity.handle(), value.handle(),
+                        NativeExtensionRegistry.codecLimitValues(codecLimits)));
         return new RegisteredExtensionValue(nativeHandle, identity, this, value);
     }
 
     public static Optional<ExtensionDefinition> definitionForIdentity(
             ClientExtensionRegistry registry, ExtensionIdentity identity) {
-        registry.handle.get();
-        identity.handle();
-        return registry.definitions.stream()
-                .filter(definition -> definition.identityValue().equals(identity))
-                .findFirst();
+        return NativeHandle.withValues(new NativeHandle[] {
+                registry.handle, identity.nativeHandleOwner()
+        }, ignored -> registry.definitions.stream()
+                        .filter(definition -> definition.identityValue().equals(identity))
+                        .findFirst());
     }
 
     public ExtensionRegistryLimits limits() {

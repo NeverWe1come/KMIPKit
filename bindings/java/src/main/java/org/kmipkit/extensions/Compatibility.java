@@ -22,4 +22,8 @@ public final class Compatibility {
     long handle() {
         return handle.get();
     }
+
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
 }

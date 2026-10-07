@@ -18,16 +18,18 @@ public final class TtlvItemView {
     }
 
     public Tag tag() {
-        return RawTag.fromRaw(NativeExtensionRegistry.ttlvItemViewTag(handle.get())).checked();
+        return handle.withValue(value -> RawTag.fromRaw(
+                NativeExtensionRegistry.ttlvItemViewTag(value)).checked());
     }
 
     public TtlvItemType itemType() {
-        return TtlvItemType.fromCode(NativeExtensionRegistry.ttlvItemViewType(handle.get()));
+        return handle.withValue(value -> TtlvItemType.fromCode(
+                NativeExtensionRegistry.ttlvItemViewType(value)));
     }
 
     public TtlvValueView value() {
-        long nativeValueView = NativeExtensionRegistry.ttlvItemViewValue(handle.get());
-        return TtlvValueView.fromNative(nativeValueView, this);
+        return handle.withValue(value -> TtlvValueView.fromNative(
+                NativeExtensionRegistry.ttlvItemViewValue(value), this));
     }
 
     long handle() {

@@ -18,24 +18,26 @@ public final class ExtensionRecognition {
 
     public static boolean isRecognized(ExtensionRecognition recognition) {
         NativeExtensionRegistry.ensureLoaded();
-        return NativeExtensionRegistry.extensionRecognitionIsRecognized(recognition.handle.get());
+        return recognition.handle.withValue(NativeExtensionRegistry::extensionRecognitionIsRecognized);
     }
 
     public static Optional<ValidatedExtensionValue> validatedValue(ExtensionRecognition recognition) {
         NativeExtensionRegistry.ensureLoaded();
-        long value = NativeExtensionRegistry.extensionRecognitionValidatedValue(recognition.handle.get());
-        if (value == 0) {
-            return Optional.empty();
-        }
-        long identityHandle = NativeExtensionRegistry.validatedExtensionValueIdentity(value);
-        return Optional.of(new ValidatedExtensionValue(
-                value, ExtensionIdentity.fromNative(identityHandle), recognition));
+        return recognition.handle.withValue(handle -> {
+            long value = NativeExtensionRegistry.extensionRecognitionValidatedValue(handle);
+            if (value == 0) {
+                return Optional.empty();
+            }
+            long identityHandle = NativeExtensionRegistry.validatedExtensionValueIdentity(value);
+            return Optional.of(new ValidatedExtensionValue(
+                    value, ExtensionIdentity.fromNative(identityHandle), recognition));
+        });
     }
 
     public static TtlvStructureView genericValue(ExtensionRecognition recognition) {
         NativeExtensionRegistry.ensureLoaded();
-        long view = NativeExtensionRegistry.extensionRecognitionGenericValue(recognition.handle.get());
-        return TtlvStructureView.fromNative(view, recognition);
+        return recognition.handle.withValue(value -> TtlvStructureView.fromNative(
+                NativeExtensionRegistry.extensionRecognitionGenericValue(value), recognition));
     }
 
     @Override

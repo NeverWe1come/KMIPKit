@@ -24,8 +24,8 @@ public final class TtlvStructure {
     }
 
     public TtlvStructureView view() {
-        long view = NativeExtensionRegistry.ttlvStructureView(handle.get());
-        return TtlvStructureView.fromNative(view, this);
+        return handle.withValue(value -> TtlvStructureView.fromNative(
+                NativeExtensionRegistry.ttlvStructureView(value), this));
     }
 
     public static TtlvStructure fromNative(long nativeHandle, Object owner) {

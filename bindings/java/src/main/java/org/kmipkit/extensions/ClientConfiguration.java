@@ -28,9 +28,8 @@ public final class ClientConfiguration implements AutoCloseable {
 
     public ClientExtensionRegistry extensionRegistry() {
         NativeExtensionRegistry.ensureLoaded();
-        long registryHandle = NativeExtensionRegistry.clientConfigurationExtensionRegistry(handle.get());
-        return ClientExtensionRegistry.fromNative(
-                registryHandle, definitions, limits);
+        return handle.withValue(value -> ClientExtensionRegistry.fromNative(
+                NativeExtensionRegistry.clientConfigurationExtensionRegistry(value), definitions, limits));
     }
 
     @Override

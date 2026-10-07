@@ -39,19 +39,20 @@ public final class ClientBatchItem {
     /** Returns the number of attached vendor extensions. */
     public long extensionCount() {
         NativeExtensionRegistry.ensureLoaded();
-        return NativeExtensionRegistry.clientBatchItemExtensionCount(handle.get());
+        return handle.withValue(NativeExtensionRegistry::clientBatchItemExtensionCount);
     }
 
     /** Returns a copied identity for the extension at {@code index}. */
     public ExtensionIdentity extensionIdentityAt(long index) {
         NativeExtensionRegistry.ensureLoaded();
-        long identity = NativeExtensionRegistry.clientBatchItemExtensionIdentityAt(handle.get(), index);
-        return ExtensionIdentity.fromNative(identity);
+        return handle.withValue(value -> ExtensionIdentity.fromNative(
+                NativeExtensionRegistry.clientBatchItemExtensionIdentityAt(value, index)));
     }
 
     /** Returns the extension's caller-selected Criticality Indicator. */
     public boolean extensionCriticalityIndicatorAt(long index) {
         NativeExtensionRegistry.ensureLoaded();
-        return NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(handle.get(), index);
+        return handle.withValue(value ->
+                NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(value, index));
     }
 }
