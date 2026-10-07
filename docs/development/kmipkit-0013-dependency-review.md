@@ -204,7 +204,8 @@ their Apple-target transitive constraints require `core-foundation` 0.9.4 and
 Hickory's current proc-macro graph. `syn` 2 is required transitively by
 `jni-macros`/`jni-sys-macros` and `serde_derive`, so changing KMIPKit's direct
 test-only `syn` dependency does not eliminate it. The patched `zerovec`
-0.11.8 and `zerovec-derive` 0.11.6 retain the `syn` 3 path. Keep those patched
+0.11.8 and `zerovec-derive` 0.11.6 retain the `syn` 3 path. The minimum
+patched `zerovec-derive` 0.11.5 also declares `syn` 3. Keep the patched
 versions; the earlier lockfile-only alignment used vulnerable releases.
 
 **Recommended dependency decision:** Retain the approved dependency pins and
