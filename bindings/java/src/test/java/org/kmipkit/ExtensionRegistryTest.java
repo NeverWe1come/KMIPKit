@@ -6,9 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,33 +58,28 @@ final class ExtensionRegistryTest {
             ToLongFunction<ExtensionRegistryLimits> readValue) {}
 
     @Test
-    void sharedValidFixtureIsRecognizedWithItsOriginalTtlvOrderAndUnknownValues() throws Exception {
-        String fixtures = readSharedFixtureCorpus();
-        assertTrue(fixtures.contains("\"id\": \"valid-recognized\""));
-        assertTrue(fixtures.contains("\"vendorIdentification\": \"example.vendor\""));
-        assertTrue(fixtures.contains("\"value\": 4294967295"));
-        assertTrue(fixtures.contains("\"value\": \"preserve-this-child-order\""));
-        assertTrue(fixtures.contains("\"tag\": \"0x540001\""));
-        assertTrue(fixtures.contains("\"value\": \"preserve-vendor-range-tag\""));
-
-        ClientExtensionRegistry registry = registry(List.of(alphaDefinition()), defaults());
-        TtlvStructure payload = alphaPayload("preserve-this-child-order");
-        ExtensionRecognition recognition = registry.inspect(VENDOR, payload, CODEC_LIMITS);
-
-        assertTrue(ExtensionRecognition.isRecognized(recognition));
-        Optional<?> typedValue = ExtensionRecognition.validatedValue(recognition);
-        assertTrue(typedValue.isPresent());
-
-        TtlvStructureView preserved = ExtensionRecognition.genericValue(recognition);
-        assertEquals(5, preserved.itemCount());
-        assertEquals(MARKER_TAG, preserved.itemAt(0).tag().raw());
-        assertEquals(0x420002, preserved.itemAt(1).tag().raw());
-        assertEquals(0x420004, preserved.itemAt(2).tag().raw());
-        assertEquals(0x420006, preserved.itemAt(3).tag().raw());
-        assertEquals(VENDOR_RANGE_TAG, preserved.itemAt(4).tag().raw());
-        assertEquals(4_294_967_295L, preserved.itemAt(1).value().enumeration());
-        assertEquals("preserve-this-child-order", textValue(preserved.itemAt(3).value()));
-        assertEquals("preserve-vendor-range-tag", textValue(preserved.itemAt(4).value()));
+    void everySharedInboundFixtureRunsThroughThePublicJavaAdapterInBothOrders() throws Exception {
+        for (boolean reversed : List.of(false, true)) {
+            List<ExtensionDefinition> definitions = new ArrayList<>();
+            for (int offset = 0; offset < SharedExtensionFixtures.DEFINITIONS.size(); offset++) {
+                int index = reversed
+                        ? SharedExtensionFixtures.DEFINITIONS.size() - offset - 1
+                        : offset;
+                definitions.add(sharedDefinition(SharedExtensionFixtures.DEFINITIONS.get(index)));
+            }
+            ClientExtensionRegistry registry = registry(definitions, defaults());
+            for (SharedExtensionFixtures.Case fixture : SharedExtensionFixtures.CASES) {
+                TtlvStructure payload = sharedPayload(fixture.payload());
+                ExtensionRecognition recognition = registry.inspect(fixture.vendor(), payload, CODEC_LIMITS);
+                boolean expectedRecognized = fixture.outcome().equals("recognized");
+                assertEquals(expectedRecognized, ExtensionRecognition.isRecognized(recognition), fixture.id());
+                Optional<?> typed = ExtensionRecognition.validatedValue(recognition);
+                assertEquals(fixture.typed(), typed.isPresent(), fixture.id());
+                assertEquals(expectedRecognized, typed.isPresent(), fixture.id());
+                TtlvStructureView preserved = ExtensionRecognition.genericValue(recognition);
+                assertSharedStructure(preserved, fixture.payload(), fixture.id());
+            }
+        }
     }
 
     @Test
@@ -316,6 +308,91 @@ final class ExtensionRegistryTest {
         return ExtensionDefinition.withInformation(definition, ExtensionInformation.create(ALPHA_NAME));
     }
 
+    private static ExtensionDefinition sharedDefinition(SharedExtensionFixtures.Definition fixture) throws Exception {
+        ExtensionIdentity identity = ExtensionIdentity.create(
+                fixture.vendor(), fixture.name(), fixture.version());
+        Compatibility compatibility = Compatibility.create(2, 1, 2, 1, "0.0.0", "99.0.0");
+        Tag firstTag = tag(fixture.path().get(0));
+        TtlvPath path = TtlvPath.create(firstTag);
+        for (int index = 1; index < fixture.path().size(); index++) {
+            path = TtlvPath.withChildTag(path, tag(fixture.path().get(index)));
+        }
+        TtlvValue discriminatorValue = sharedScalar(
+                fixture.discriminatorType(), fixture.discriminatorText(), fixture.discriminatorNumber());
+        Discriminator discriminator = Discriminator.create(path, discriminatorValue);
+        ExtensionSchema schema = sharedSchema(fixture.schema());
+        return ExtensionDefinition.create(identity, compatibility, discriminator, schema);
+    }
+
+    private static ExtensionSchema sharedSchema(SharedExtensionFixtures.Schema fixture) throws Exception {
+        TtlvItemType itemType = TtlvItemType.fromCode(fixture.type());
+        if (itemType != TtlvItemType.Structure) {
+            ExtensionSchema scalar = ExtensionSchema.scalar(itemType);
+            return fixture.hasRange()
+                    ? ExtensionSchema.with_signed_range(scalar, fixture.minimum(), fixture.maximum())
+                    : scalar;
+        }
+        List<ExtensionChildRule> children = new ArrayList<>();
+        for (SharedExtensionFixtures.ChildRule child : fixture.children()) {
+            children.add(ExtensionChildRule.required(tag(child.tag()), sharedSchema(child.schema())));
+        }
+        return ExtensionSchema.structure(children, List.of(), true);
+    }
+
+    private static TtlvStructure sharedPayload(List<SharedExtensionFixtures.Item> items) throws Exception {
+        TtlvStructure structure = TtlvStructure.create();
+        for (SharedExtensionFixtures.Item item : items) {
+            TtlvValue value = sharedValue(item);
+            TtlvItem ttlvItem = TtlvItem.create(tag(item.tag()), value, CODEC_LIMITS);
+            structure = TtlvStructure.withItem(structure, ttlvItem, CODEC_LIMITS);
+        }
+        return structure;
+    }
+
+    private static TtlvValue sharedValue(SharedExtensionFixtures.Item item) throws Exception {
+        TtlvItemType itemType = TtlvItemType.fromCode(item.type());
+        if (itemType == TtlvItemType.Structure) {
+            return TtlvValue.structure(sharedPayload(item.children()), CODEC_LIMITS);
+        }
+        return sharedScalar(item.type(), item.text(), item.number());
+    }
+
+    private static TtlvValue sharedScalar(int type, String text, long number) {
+        TtlvItemType itemType = TtlvItemType.fromCode(type);
+        return switch (itemType) {
+            case TextString -> TtlvValue.TextString(text.getBytes(StandardCharsets.UTF_8), CODEC_LIMITS);
+            case Enumeration -> TtlvValue.Enumeration(number);
+            case LongInteger -> TtlvValue.LongInteger(number);
+            default -> throw new IllegalArgumentException("Unsupported generated fixture scalar type");
+        };
+    }
+
+    private static void assertSharedStructure(TtlvStructureView actual,
+            List<SharedExtensionFixtures.Item> expected, String caseId) {
+        assertEquals(expected.size(), actual.itemCount(), caseId);
+        for (int index = 0; index < expected.size(); index++) {
+            SharedExtensionFixtures.Item fixture = expected.get(index);
+            var item = actual.itemAt(index);
+            assertEquals(fixture.tag(), item.tag().raw(), caseId + " item " + index + " tag");
+            assertEquals(fixture.type(), item.itemType().code(), caseId + " item " + index + " type");
+            var value = item.value();
+            TtlvItemType type = TtlvItemType.fromCode(fixture.type());
+            switch (type) {
+                case Structure -> assertSharedStructure(value.structure(), fixture.children(), caseId);
+                case TextString -> {
+                    byte[] bytes = fixture.text().getBytes(StandardCharsets.UTF_8);
+                    assertEquals(bytes.length, value.byteLength(), caseId + " text length");
+                    for (int offset = 0; offset < bytes.length; offset++) {
+                        assertEquals(bytes[offset], (byte) value.byteAt(offset), caseId + " text byte");
+                    }
+                }
+                case Enumeration -> assertEquals(fixture.number(), value.enumeration(), caseId);
+                case LongInteger -> assertEquals(fixture.number(), value.longInteger(), caseId);
+                default -> throw new AssertionError("Unsupported generated fixture TTLV type");
+            }
+        }
+    }
+
     private static TtlvStructure alphaPayload(String trailingText) throws Exception {
         return payloadWithMarker(ALPHA_MARKER, trailingText);
     }
@@ -401,15 +478,4 @@ final class ExtensionRegistryTest {
                 new LimitCase("maxDepth", 64, 64, ExtensionRegistryLimits::maxDepth));
     }
 
-    private static String readSharedFixtureCorpus() throws IOException {
-        Path directory = Path.of("").toAbsolutePath();
-        while (directory != null) {
-            Path fixture = directory.resolve("tests/fixtures/extensions/cases.json");
-            if (Files.isRegularFile(fixture)) {
-                return Files.readString(fixture, StandardCharsets.UTF_8);
-            }
-            directory = directory.getParent();
-        }
-        throw new IOException("Could not locate the shared extension fixture corpus");
-    }
 }

@@ -53,6 +53,24 @@ enum RecognitionValue {
     Unrecognized(Structure),
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum InspectionOutcome {
+    Recognized,
+    SchemaInvalid,
+    Ambiguous,
+    NoMatch,
+}
+
+// The detailed result is consumed by crate-internal contract tests; adapters
+// intentionally expose only the stable recognized/unrecognized surface.
+#[cfg_attr(not(test), allow(dead_code))]
+struct InspectionDetails {
+    recognition: ExtensionRecognition,
+    outcome: InspectionOutcome,
+    matched_definition_indices: [Option<usize>; 2],
+    matched_count: usize,
+}
+
 /// Result of inspecting a generic vendor extension subtree.
 ///
 /// Recognized results own a completely schema-validated value. Unrecognized
@@ -500,6 +518,16 @@ pub fn inspect(
     value: kmipkit_ttlv::Structure,
     limits: &kmipkit_ttlv::codec::CodecLimits,
 ) -> Result<ExtensionRecognition, ClientError> {
+    inspect_with_details(registry, vendor_identifier, value, limits)
+        .map(|details| details.recognition)
+}
+
+fn inspect_with_details(
+    registry: &ClientExtensionRegistry,
+    vendor_identifier: &str,
+    value: kmipkit_ttlv::Structure,
+    limits: &kmipkit_ttlv::codec::CodecLimits,
+) -> Result<InspectionDetails, ClientError> {
     if u64::try_from(vendor_identifier.len()).map_or(true, |length| {
         length > registry.limits.max_text_bytes_per_field()
     }) {
@@ -513,7 +541,8 @@ pub fn inspect(
         .map_err(|error| ClientError::protocol(error, RequestDeliveryState::NotSent))?;
 
     let mut comparisons = 0_u64;
-    let mut exact_match = None;
+    let mut matched_definition_indices = [None, None];
+    let mut matched_count = 0_usize;
     for (definition_index, definition) in registry.definitions.iter().enumerate() {
         let path = definition.discriminator().path().tags();
         let mut lookup_budget = LookupBudget {
@@ -549,19 +578,30 @@ pub fn inspect(
             .map_err(|error| ClientError::protocol(error, RequestDeliveryState::NotSent))?
             .unwrap_or(false);
 
-        if matched && exact_match != Some(definition_index) {
-            if exact_match.is_some() {
-                return Ok(ExtensionRecognition {
-                    value: RecognitionValue::Unrecognized(value),
+        if matched && !matched_definition_indices.contains(&Some(definition_index)) {
+            matched_definition_indices[matched_count] = Some(definition_index);
+            matched_count += 1;
+            if matched_count == matched_definition_indices.len() {
+                return Ok(InspectionDetails {
+                    recognition: ExtensionRecognition {
+                        value: RecognitionValue::Unrecognized(value),
+                    },
+                    outcome: InspectionOutcome::Ambiguous,
+                    matched_definition_indices,
+                    matched_count,
                 });
             }
-            exact_match = Some(definition_index);
         }
     }
 
-    let Some(definition_index) = exact_match else {
-        return Ok(ExtensionRecognition {
-            value: RecognitionValue::Unrecognized(value),
+    let Some(definition_index) = matched_definition_indices[0] else {
+        return Ok(InspectionDetails {
+            recognition: ExtensionRecognition {
+                value: RecognitionValue::Unrecognized(value),
+            },
+            outcome: InspectionOutcome::NoMatch,
+            matched_definition_indices,
+            matched_count,
         });
     };
     let definition = registry.definitions.get(definition_index).ok_or_else(|| {
@@ -570,17 +610,24 @@ pub fn inspect(
             RequestDeliveryState::NotSent,
         )
     })?;
-    let value = match extension::validate_schema_only(definition, value, limits)
+    let (value, outcome) = match extension::validate_schema_only(definition, value, limits)
         .map_err(|error| ClientError::protocol(error, RequestDeliveryState::NotSent))?
     {
-        extension::SchemaValidationOutcome::SchemaValid(value) => {
-            RecognitionValue::Validated(value)
-        }
-        extension::SchemaValidationOutcome::SchemaInvalid(value) => {
-            RecognitionValue::Unrecognized(value)
-        }
+        extension::SchemaValidationOutcome::SchemaValid(value) => (
+            RecognitionValue::Validated(value),
+            InspectionOutcome::Recognized,
+        ),
+        extension::SchemaValidationOutcome::SchemaInvalid(value) => (
+            RecognitionValue::Unrecognized(value),
+            InspectionOutcome::SchemaInvalid,
+        ),
     };
-    Ok(ExtensionRecognition { value })
+    Ok(InspectionDetails {
+        recognition: ExtensionRecognition { value },
+        outcome,
+        matched_definition_indices,
+        matched_count,
+    })
 }
 
 impl PayloadTagIndex {

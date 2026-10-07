@@ -120,6 +120,11 @@ class WorkflowContractTests(unittest.TestCase):
             job,
             "Every supported pull-request platform must reject stale generated API outputs.",
         )
+        self.assertIn(
+            "tools/extension_fixtures/generate.py --check",
+            job,
+            "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
+        )
 
     def test_linux_jobs_route_to_pi_only_for_same_repository_pull_requests(self) -> None:
         contents = self.require_workflow()

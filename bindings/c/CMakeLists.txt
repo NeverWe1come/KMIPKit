@@ -30,7 +30,6 @@ set_target_properties(kmipkit_vendor_extension_example PROPERTIES
 add_test(
     NAME kmipkit_extension_registry_consumer
     COMMAND kmipkit_extension_registry_consumer
-        "${CMAKE_CURRENT_LIST_DIR}/../../tests/fixtures/extensions/cases.json"
 )
 
 add_test(

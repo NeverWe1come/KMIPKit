@@ -16,6 +16,7 @@
  */
 
 #include "kmipkit.h"
+#include "extension_fixtures.generated.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -51,47 +52,6 @@ _Static_assert(sizeof(uint64_t) == 8, "the C ABI requires 64-bit byte lengths");
             return false;                                                         \
         }                                                                         \
     } while (0)
-
-static bool load_fixture_marker(const char *fixture_path, const char *marker)
-{
-    FILE *fixture = fopen(fixture_path, "rb");
-    long file_length;
-    char *contents;
-    size_t bytes_read;
-    bool found;
-
-    if (fixture == NULL || fseek(fixture, 0, SEEK_END) != 0) {
-        if (fixture != NULL) {
-            fclose(fixture);
-        }
-        fprintf(stderr, "FAIL %s: cannot open shared fixture corpus\n", __func__);
-        return false;
-    }
-
-    file_length = ftell(fixture);
-    if (file_length < 0 || fseek(fixture, 0, SEEK_SET) != 0) {
-        fclose(fixture);
-        fprintf(stderr, "FAIL %s: cannot read shared fixture corpus\n", __func__);
-        return false;
-    }
-
-    contents = (char *)malloc((size_t)file_length + 1U);
-    if (contents == NULL) {
-        fclose(fixture);
-        fprintf(stderr, "FAIL %s: cannot allocate fixture buffer\n", __func__);
-        return false;
-    }
-    bytes_read = fread(contents, 1U, (size_t)file_length, fixture);
-    contents[bytes_read] = '\0';
-    found = bytes_read == (size_t)file_length && strstr(contents, marker) != NULL;
-    free(contents);
-    fclose(fixture);
-
-    if (!found) {
-        fprintf(stderr, "FAIL %s: required shared fixture marker is missing\n", __func__);
-    }
-    return found;
-}
 
 static bool load_default_limits(kmipkit_extension_registry_limits_t *limits)
 {
@@ -482,15 +442,6 @@ static bool create_fixture_payload(kmipkit_codec_limits_t *codec_limits,
         (uint64_t)(sizeof(discriminator) - 1U), out_structure);
 }
 
-static bool test_shared_fixture_markers(const char *fixture_path)
-{
-    REQUIRE(load_fixture_marker(fixture_path, "valid-recognized"));
-    REQUIRE(load_fixture_marker(fixture_path, "0x420006"));
-    REQUIRE(load_fixture_marker(fixture_path, "0x540001"));
-    REQUIRE(load_fixture_marker(fixture_path, "genericPayloadPreserved"));
-    return true;
-}
-
 static bool test_typed_length_safety(void)
 {
     static const uint8_t small[] = {'x', 'y'};
@@ -677,81 +628,304 @@ static bool test_configuration_ownership_and_isolation(void)
     return true;
 }
 
-static bool compare_preserved_payload(kmipkit_ttlv_structure_view_t *view)
+static int32_t create_fixture_schema(const kmipkit_fixture_schema_t *fixture,
+                                     kmipkit_extension_schema_t **out_schema)
 {
-    static const uint8_t discriminator[] = "alpha-v1";
-    static const uint8_t order_marker[] = "preserve-this-child-order";
-    static const uint8_t vendor_range_marker[] = "preserve-vendor-range-tag";
-    static const uint32_t expected_tags[5] = {
-        KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR,
-        KMIPKIT_PAYLOAD_TAG_ENUMERATION,
-        KMIPKIT_PAYLOAD_TAG_VALUE,
-        KMIPKIT_PAYLOAD_TAG_ORDER_MARKER,
-        KMIPKIT_EXTENSION_TAG
-    };
-    static const uint8_t expected_types[5] = {
-        KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING,
-        KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION,
-        KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER,
-        KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING,
-        KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING
-    };
-    uint64_t item_count = 0U;
+    kmipkit_extension_schema_t *base = NULL;
+    kmipkit_extension_schema_t *bounded = NULL;
+    kmipkit_extension_child_rule_t **rules = NULL;
     size_t index;
+    int32_t status = KMIPKIT_ERROR_INVALID_INPUT;
 
-    if (kmipkit_ttlv_structure_view_item_count(view, &item_count) != KMIPKIT_SUCCESS ||
-        item_count != 5U) {
-        return false;
+    *out_schema = NULL;
+    if (fixture->type != KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE) {
+        status = kmipkit_extension_schema_scalar(fixture->type, &base);
+        if (status == KMIPKIT_SUCCESS && fixture->has_range) {
+            status = kmipkit_extension_schema_signed_numeric_range(
+                base, fixture->minimum, fixture->maximum, &bounded);
+            base = NULL; /* The range constructor consumes the source schema. */
+            if (status == KMIPKIT_SUCCESS) {
+                *out_schema = bounded;
+                bounded = NULL;
+            }
+        } else if (status == KMIPKIT_SUCCESS) {
+            *out_schema = base;
+            base = NULL;
+        }
+        kmipkit_extension_schema_release(base);
+        kmipkit_extension_schema_release(bounded);
+        return status;
     }
 
-    for (index = 0; index < 5U; ++index) {
+    if (fixture->child_count != 0U) {
+        rules = (kmipkit_extension_child_rule_t **)calloc(
+            fixture->child_count, sizeof(*rules));
+        if (rules == NULL) {
+            return KMIPKIT_ERROR_RESOURCE_LIMIT;
+        }
+    }
+    for (index = 0U; index < fixture->child_count; ++index) {
+        kmipkit_extension_schema_t *child_schema = NULL;
+        status = create_fixture_schema(fixture->children[index].nested, &child_schema);
+        if (status == KMIPKIT_SUCCESS) {
+            status = kmipkit_extension_child_rule_required(
+                fixture->children[index].tag, child_schema, &rules[index]);
+        }
+        kmipkit_extension_schema_release(child_schema);
+        if (status != KMIPKIT_SUCCESS) {
+            break;
+        }
+    }
+    if (status == KMIPKIT_SUCCESS) {
+        status = kmipkit_extension_schema_structure(
+            rules, fixture->child_count, NULL, 0U, 1U, out_schema);
+    }
+    for (index = 0U; index < fixture->child_count; ++index) {
+        kmipkit_extension_child_rule_release(rules[index]);
+    }
+    free(rules);
+    return status;
+}
+
+static int32_t create_fixture_discriminator_value(
+    kmipkit_codec_limits_t *limits, uint8_t type, const char *text,
+    int64_t number, kmipkit_ttlv_value_t **out_value)
+{
+    if (type == KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING) {
+        return kmipkit_ttlv_value_text_string(limits,
+            (const uint8_t *)text, (uint64_t)strlen(text), out_value);
+    }
+    if (type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) {
+        return kmipkit_ttlv_value_enumeration((uint32_t)number, out_value);
+    }
+    if (type == KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER) {
+        return kmipkit_ttlv_value_long_integer(number, out_value);
+    }
+    return KMIPKIT_ERROR_INVALID_INPUT;
+}
+
+static bool create_shared_fixture_definition(
+    kmipkit_codec_limits_t *limits,
+    const kmipkit_fixture_definition_t *fixture,
+    kmipkit_extension_definition_t **out_definition)
+{
+    static const uint8_t compatibility_minimum[] = "0.0.0";
+    static const uint8_t compatibility_maximum[] = "99.0.0";
+    kmipkit_extension_identity_t *identity = NULL;
+    kmipkit_extension_compatibility_t *compatibility = NULL;
+    kmipkit_ttlv_path_t *path = NULL;
+    kmipkit_extension_discriminator_t *discriminator = NULL;
+    kmipkit_ttlv_value_t *discriminator_value = NULL;
+    kmipkit_extension_schema_t *schema = NULL;
+    bool succeeded = false;
+    size_t index;
+
+    *out_definition = NULL;
+    if (kmipkit_extension_identity_create(
+            (const uint8_t *)fixture->vendor, (uint64_t)strlen(fixture->vendor),
+            (const uint8_t *)fixture->name, (uint64_t)strlen(fixture->name),
+            (const uint8_t *)fixture->version, (uint64_t)strlen(fixture->version),
+            &identity) != KMIPKIT_SUCCESS ||
+        kmipkit_extension_compatibility_create(
+            2U, 1U, 2U, 1U, compatibility_minimum,
+            (uint64_t)(sizeof(compatibility_minimum) - 1U), compatibility_maximum,
+            (uint64_t)(sizeof(compatibility_maximum) - 1U), &compatibility) != KMIPKIT_SUCCESS ||
+        kmipkit_ttlv_path_create(fixture->path[0], &path) != KMIPKIT_SUCCESS ||
+        create_fixture_discriminator_value(limits, fixture->discriminator_type,
+            fixture->discriminator_text, fixture->discriminator_number,
+            &discriminator_value) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    for (index = 1U; index < fixture->path_count; ++index) {
+        kmipkit_ttlv_path_t *updated = NULL;
+        const int32_t status = kmipkit_ttlv_path_with_child_tag(
+            path, fixture->path[index], &updated);
+        path = NULL; /* Path extension consumes the previous path handle. */
+        if (status != KMIPKIT_SUCCESS) {
+            goto cleanup;
+        }
+        path = updated;
+    }
+    {
+        const int32_t status = kmipkit_extension_discriminator_create(
+            path, discriminator_value, &discriminator);
+        path = NULL;
+        discriminator_value = NULL;
+        if (status != KMIPKIT_SUCCESS) {
+            goto cleanup;
+        }
+    }
+    if (create_fixture_schema(fixture->schema, &schema) != KMIPKIT_SUCCESS ||
+        kmipkit_extension_definition_create(identity, compatibility, discriminator,
+            schema, out_definition) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    succeeded = true;
+
+cleanup:
+    kmipkit_extension_identity_release(identity);
+    kmipkit_extension_compatibility_release(compatibility);
+    kmipkit_ttlv_path_release(path);
+    kmipkit_extension_discriminator_release(discriminator);
+    kmipkit_ttlv_value_release(discriminator_value);
+    kmipkit_extension_schema_release(schema);
+    if (!succeeded) {
+        kmipkit_extension_definition_release(*out_definition);
+        *out_definition = NULL;
+    }
+    return succeeded;
+}
+
+static int32_t create_fixture_item_value(
+    kmipkit_codec_limits_t *limits, const kmipkit_fixture_item_t *fixture,
+    kmipkit_ttlv_value_t **out_value);
+
+static int32_t create_fixture_structure(
+    kmipkit_codec_limits_t *limits, const kmipkit_fixture_item_t *items,
+    size_t item_count, kmipkit_ttlv_structure_t **out_structure)
+{
+    kmipkit_ttlv_structure_t *structure = NULL;
+    kmipkit_ttlv_structure_t *updated = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_ttlv_item_t *item = NULL;
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    size_t index;
+    int32_t status = kmipkit_ttlv_structure_create(&structure);
+
+    *out_structure = NULL;
+    if (status != KMIPKIT_SUCCESS) {
+        return status;
+    }
+    for (index = 0U; index < item_count; ++index) {
+        status = create_fixture_item_value(limits, &items[index], &value);
+        if (status != KMIPKIT_SUCCESS ||
+            kmipkit_ttlv_raw_tag_create(items[index].tag, &raw_tag) != KMIPKIT_SUCCESS ||
+            kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != KMIPKIT_SUCCESS) {
+            goto cleanup;
+        }
+        status = kmipkit_ttlv_item_create(tag, value, limits, &item);
+        value = NULL; /* Item construction consumes the value. */
+        if (status != KMIPKIT_SUCCESS) {
+            goto cleanup;
+        }
+        status = kmipkit_ttlv_structure_with_item(structure, item, limits, &updated);
+        structure = NULL; /* Appending consumes the prior Structure and Item. */
+        item = NULL;
+        if (status != KMIPKIT_SUCCESS) {
+            goto cleanup;
+        }
+        kmipkit_tag_release(tag);
+        kmipkit_raw_tag_release(raw_tag);
+        tag = NULL;
+        raw_tag = NULL;
+        structure = updated;
+        updated = NULL;
+    }
+    *out_structure = structure;
+    structure = NULL;
+
+cleanup:
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_ttlv_structure_release(updated);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_item_release(item);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    return status;
+}
+
+static int32_t create_fixture_item_value(
+    kmipkit_codec_limits_t *limits, const kmipkit_fixture_item_t *fixture,
+    kmipkit_ttlv_value_t **out_value)
+{
+    if (fixture->type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE) {
+        kmipkit_ttlv_structure_t *nested = NULL;
+        const int32_t status = create_fixture_structure(
+            limits, fixture->children, fixture->child_count, &nested);
+        if (status != KMIPKIT_SUCCESS) {
+            return status;
+        }
+        return kmipkit_ttlv_value_structure(nested, limits, out_value);
+    }
+    if (fixture->type == KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING) {
+        return kmipkit_ttlv_value_text_string(limits,
+            (const uint8_t *)fixture->text, (uint64_t)strlen(fixture->text), out_value);
+    }
+    if (fixture->type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) {
+        return kmipkit_ttlv_value_enumeration(fixture->enum_value, out_value);
+    }
+    if (fixture->type == KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER) {
+        return kmipkit_ttlv_value_long_integer(fixture->signed_value, out_value);
+    }
+    return KMIPKIT_ERROR_INVALID_INPUT;
+}
+
+static bool compare_fixture_structure(kmipkit_ttlv_structure_view_t *view,
+                                      const kmipkit_fixture_item_t *expected,
+                                      size_t expected_count);
+
+static bool compare_fixture_value(kmipkit_ttlv_value_view_t *value,
+                                  const kmipkit_fixture_item_t *expected)
+{
+    uint8_t actual_type = 0U;
+    bool matches = kmipkit_ttlv_value_view_type(value, &actual_type) == KMIPKIT_SUCCESS &&
+        actual_type == expected->type;
+    if (!matches) {
+        return false;
+    }
+    if (expected->type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE) {
+        kmipkit_ttlv_structure_view_t *nested = NULL;
+        matches = kmipkit_ttlv_value_view_structure(value, &nested) == KMIPKIT_SUCCESS &&
+            compare_fixture_structure(nested, expected->children, expected->child_count);
+        kmipkit_ttlv_structure_view_release(nested);
+    } else if (expected->type == KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING) {
+        uint64_t actual_length = 0U;
+        const uint64_t expected_length = (uint64_t)strlen(expected->text);
+        matches = kmipkit_ttlv_value_view_byte_length(value, &actual_length) == KMIPKIT_SUCCESS &&
+            actual_length == expected_length;
+        for (uint64_t index = 0U; matches && index < expected_length; ++index) {
+            uint8_t actual = 0U;
+            matches = kmipkit_ttlv_value_view_byte_at(value, index, &actual) == KMIPKIT_SUCCESS &&
+                actual == (uint8_t)expected->text[index];
+        }
+    } else if (expected->type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) {
+        uint32_t actual = 0U;
+        matches = kmipkit_ttlv_value_view_enumeration(value, &actual) == KMIPKIT_SUCCESS &&
+            actual == expected->enum_value;
+    } else if (expected->type == KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER) {
+        int64_t actual = 0;
+        matches = kmipkit_ttlv_value_view_long_integer(value, &actual) == KMIPKIT_SUCCESS &&
+            actual == expected->signed_value;
+    }
+    return matches;
+}
+
+static bool compare_fixture_structure(kmipkit_ttlv_structure_view_t *view,
+                                      const kmipkit_fixture_item_t *expected,
+                                      size_t expected_count)
+{
+    uint64_t count = 0U;
+    size_t index;
+    if (kmipkit_ttlv_structure_view_item_count(view, &count) != KMIPKIT_SUCCESS ||
+        count != (uint64_t)expected_count) {
+        return false;
+    }
+    for (index = 0U; index < expected_count; ++index) {
         kmipkit_ttlv_item_view_t *item = NULL;
         kmipkit_tag_t *tag = NULL;
         kmipkit_ttlv_value_view_t *value = NULL;
-        uint32_t raw_tag = 0U;
-        uint8_t item_type = 0U;
-        bool matches;
-
-        if (kmipkit_ttlv_structure_view_item_at(view, (uint64_t)index, &item) != KMIPKIT_SUCCESS ||
-            kmipkit_ttlv_item_view_tag(item, &tag) != KMIPKIT_SUCCESS ||
-            kmipkit_ttlv_tag_value(tag, &raw_tag) != KMIPKIT_SUCCESS ||
-            kmipkit_ttlv_item_view_type(item, &item_type) != KMIPKIT_SUCCESS ||
-            kmipkit_ttlv_item_view_value(item, &value) != KMIPKIT_SUCCESS) {
-            kmipkit_tag_release(tag);
-            kmipkit_ttlv_value_view_release(value);
-            kmipkit_ttlv_item_view_release(item);
-            return false;
-        }
-        matches = raw_tag == expected_tags[index] && item_type == expected_types[index];
-        if (matches && (index == 0U || index == 3U || index == 4U)) {
-            const uint8_t *expected = index == 0U ? discriminator
-                : (index == 3U ? order_marker : vendor_range_marker);
-            const uint64_t expected_length = index == 0U
-                ? (uint64_t)(sizeof(discriminator) - 1U)
-                : (index == 3U ? (uint64_t)(sizeof(order_marker) - 1U)
-                    : (uint64_t)(sizeof(vendor_range_marker) - 1U));
-            uint64_t actual_length = 0U;
-            uint64_t byte_index;
-            matches = kmipkit_ttlv_value_view_byte_length(value,
-                &actual_length) == KMIPKIT_SUCCESS && actual_length == expected_length;
-            for (byte_index = 0U; matches && byte_index < expected_length; ++byte_index) {
-                uint8_t actual_byte = 0U;
-                matches = kmipkit_ttlv_value_view_byte_at(value, byte_index,
-                    &actual_byte) == KMIPKIT_SUCCESS && actual_byte == expected[byte_index];
-            }
-        } else if (matches && index == 1U) {
-            uint32_t actual_enumeration = 0U;
-            const uint32_t expected_enumeration = UINT32_MAX;
-            matches = kmipkit_ttlv_value_view_enumeration(value,
-                &actual_enumeration) == KMIPKIT_SUCCESS &&
-                actual_enumeration == expected_enumeration;
-        } else if (matches && index == 2U) {
-            int64_t actual_integer = 0;
-            matches = kmipkit_ttlv_value_view_long_integer(value,
-                &actual_integer) == KMIPKIT_SUCCESS && actual_integer == 42;
-        }
-        kmipkit_tag_release(tag);
+        uint32_t actual_tag = 0U;
+        uint8_t actual_type = 0U;
+        bool matches = kmipkit_ttlv_structure_view_item_at(view, (uint64_t)index, &item) == KMIPKIT_SUCCESS &&
+            kmipkit_ttlv_item_view_tag(item, &tag) == KMIPKIT_SUCCESS &&
+            kmipkit_ttlv_tag_value(tag, &actual_tag) == KMIPKIT_SUCCESS &&
+            kmipkit_ttlv_item_view_type(item, &actual_type) == KMIPKIT_SUCCESS &&
+            actual_tag == expected[index].tag && actual_type == expected[index].type &&
+            kmipkit_ttlv_item_view_value(item, &value) == KMIPKIT_SUCCESS &&
+            compare_fixture_value(value, &expected[index]);
         kmipkit_ttlv_value_view_release(value);
+        kmipkit_tag_release(tag);
         kmipkit_ttlv_item_view_release(item);
         if (!matches) {
             return false;
@@ -760,114 +934,92 @@ static bool compare_preserved_payload(kmipkit_ttlv_structure_view_t *view)
     return true;
 }
 
-static bool test_inbound_inspection_and_generic_preservation(void)
+static bool inspect_shared_fixture_case(kmipkit_client_extension_registry_t *registry,
+                                        kmipkit_codec_limits_t *limits,
+                                        const kmipkit_fixture_case_t *fixture)
 {
-    static const uint8_t name[] = "alpha";
-    static const uint8_t discriminator[] = "alpha-v1";
-    static const uint8_t vendor[] = "example.vendor";
-    kmipkit_codec_limits_t *codec_limits = NULL;
-    kmipkit_extension_identity_t *identity = NULL;
-    kmipkit_extension_definition_t *definition = NULL;
-    kmipkit_extension_definition_t *definitions[1];
-    kmipkit_client_extension_registry_t *registry = NULL;
     kmipkit_ttlv_structure_t *payload = NULL;
     kmipkit_extension_recognition_t *recognition = NULL;
-    kmipkit_validated_extension_value_t *validated = NULL;
+    kmipkit_validated_extension_value_t *typed = NULL;
     kmipkit_ttlv_structure_view_t *generic = NULL;
-    kmipkit_ttlv_path_t *value_path = NULL;
-    kmipkit_ttlv_value_view_t *value_view = NULL;
-    kmipkit_extension_registry_limits_t limits;
     uint32_t recognized = 0U;
-    uint8_t item_type = 0U;
-    int64_t integer_value = 0;
+    bool expected_recognized = strcmp(fixture->outcome, "recognized") == 0;
+    bool succeeded = false;
 
-    REQUIRE_STATUS(kmipkit_codec_limits_defaults(&codec_limits), KMIPKIT_SUCCESS);
-    REQUIRE(load_default_limits(&limits));
-    REQUIRE(create_fixture_definition(codec_limits, name,
-        (uint64_t)(sizeof(name) - 1U), KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR,
-        discriminator, (uint64_t)(sizeof(discriminator) - 1U),
-        &identity, &definition));
-    definitions[0] = definition;
-    REQUIRE(create_registry(definitions, 1U, &limits, &registry));
-    REQUIRE(create_fixture_payload(codec_limits, 42, UINT32_MAX, false, &payload));
-
-    REQUIRE_STATUS(kmipkit_client_extension_registry_inspect(registry,
-        INVALID_INPUT_PTR, UINT64_C(4097), payload, &recognition,
-        codec_limits), KMIPKIT_ERROR_RESOURCE_LIMIT);
-    REQUIRE(recognition == NULL);
-
-    REQUIRE_STATUS(kmipkit_client_extension_registry_inspect(registry,
-        vendor, (uint64_t)(sizeof(vendor) - 1U), payload, &recognition,
-        codec_limits), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_extension_recognition_is_recognized(
-        recognition, &recognized), KMIPKIT_SUCCESS);
-    REQUIRE(recognized == 1U);
-    REQUIRE_STATUS(kmipkit_extension_recognition_validated_value(
-        recognition, &validated), KMIPKIT_SUCCESS);
-    REQUIRE(validated != NULL);
-    REQUIRE_STATUS(kmipkit_extension_recognition_generic_value(
-        recognition, &generic), KMIPKIT_SUCCESS);
-    REQUIRE(compare_preserved_payload(generic));
-
-    REQUIRE_STATUS(kmipkit_ttlv_path_create(KMIPKIT_PAYLOAD_TAG_VALUE,
-        &value_path), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_validated_extension_value_value_at(validated,
-        value_path, &value_view), KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_value_view_type(value_view, &item_type),
-        KMIPKIT_SUCCESS);
-    REQUIRE(item_type == KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER);
-    REQUIRE_STATUS(kmipkit_ttlv_value_view_long_integer(value_view,
-        &integer_value), KMIPKIT_SUCCESS);
-    REQUIRE(integer_value == 42);
-
-    /* A deterministic, lowered lookup budget fails with no partial value. */
-    {
-        kmipkit_client_extension_registry_t *limited_registry = NULL;
-        kmipkit_extension_recognition_t *limited_recognition = NULL;
-        kmipkit_extension_registry_limits_t limited = limits;
-        set_limit_field(&limited, 10U, 1U);
-        REQUIRE(create_registry(definitions, 1U, &limited, &limited_registry));
-        REQUIRE_STATUS(kmipkit_client_extension_registry_inspect(limited_registry,
-            vendor, (uint64_t)(sizeof(vendor) - 1U), payload,
-            &limited_recognition, codec_limits), KMIPKIT_ERROR_RESOURCE_LIMIT);
-        REQUIRE(limited_recognition == NULL);
-        kmipkit_client_extension_registry_release(limited_registry);
-        kmipkit_extension_recognition_release(limited_recognition);
+    if (create_fixture_structure(limits, fixture->payload,
+            fixture->payload_count, &payload) != KMIPKIT_SUCCESS ||
+        kmipkit_client_extension_registry_inspect(registry,
+            (const uint8_t *)fixture->vendor, (uint64_t)strlen(fixture->vendor),
+            payload, &recognition, limits) != KMIPKIT_SUCCESS ||
+        kmipkit_extension_recognition_is_recognized(recognition, &recognized) != KMIPKIT_SUCCESS ||
+        (recognized != 0U) != expected_recognized ||
+        kmipkit_extension_recognition_validated_value(recognition, &typed) != KMIPKIT_SUCCESS ||
+        (typed != NULL) != fixture->typed ||
+        kmipkit_extension_recognition_generic_value(recognition, &generic) != KMIPKIT_SUCCESS ||
+        !compare_fixture_structure(generic, fixture->payload, fixture->payload_count)) {
+        fprintf(stderr, "FAIL shared fixture %s: public C adapter parity mismatch\n", fixture->id);
+        goto cleanup;
     }
+    succeeded = true;
 
-    /* Lower per-Structure and per-rule constraint caps reject this schema. */
-    {
-        kmipkit_client_extension_registry_t *limited_registry = NULL;
-        kmipkit_extension_registry_limits_t limited = limits;
-        set_limit_field(&limited, 2U, 2U);
-        REQUIRE_STATUS(create_registry_status(definitions, 1U, &limited,
-            &limited_registry), KMIPKIT_ERROR_RESOURCE_LIMIT);
-        REQUIRE(limited_registry == NULL);
-
-        set_limit_field(&limited, 2U, limits.max_child_rules_per_structure);
-        set_limit_field(&limited, 7U, 1U);
-        REQUIRE_STATUS(create_registry_status(definitions, 1U, &limited,
-            &limited_registry), KMIPKIT_ERROR_RESOURCE_LIMIT);
-        REQUIRE(limited_registry == NULL);
-
-        set_limit_field(&limited, 7U, limits.max_constraint_members_per_rule);
-        set_limit_field(&limited, 8U, 1U);
-        REQUIRE_STATUS(create_registry_status(definitions, 1U, &limited,
-            &limited_registry), KMIPKIT_ERROR_RESOURCE_LIMIT);
-        REQUIRE(limited_registry == NULL);
-    }
-
-    kmipkit_ttlv_value_view_release(value_view);
-    kmipkit_ttlv_path_release(value_path);
+cleanup:
     kmipkit_ttlv_structure_view_release(generic);
-    kmipkit_validated_extension_value_release(validated);
+    kmipkit_validated_extension_value_release(typed);
     kmipkit_extension_recognition_release(recognition);
     kmipkit_ttlv_structure_release(payload);
+    return succeeded;
+}
+
+static bool test_inbound_inspection_and_generic_preservation(void)
+{
+    kmipkit_extension_definition_t *definitions[KMIPKIT_FIXTURE_DEFINITION_COUNT] = {NULL};
+    kmipkit_client_extension_registry_t *registry = NULL;
+    kmipkit_codec_limits_t *codec_limits = NULL;
+    kmipkit_extension_registry_limits_t limits;
+    bool succeeded = false;
+    size_t index;
+    unsigned int order;
+
+    if (kmipkit_codec_limits_defaults(&codec_limits) != KMIPKIT_SUCCESS ||
+        !load_default_limits(&limits)) {
+        goto cleanup;
+    }
+    for (index = 0U; index < KMIPKIT_FIXTURE_DEFINITION_COUNT; ++index) {
+        if (!create_shared_fixture_definition(codec_limits,
+                &kmipkit_fixture_definitions[index], &definitions[index])) {
+            goto cleanup;
+        }
+    }
+    for (order = 0U; order < 2U; ++order) {
+        kmipkit_extension_definition_t *ordered[KMIPKIT_FIXTURE_DEFINITION_COUNT];
+        if (registry != NULL) {
+            kmipkit_client_extension_registry_release(registry);
+            registry = NULL;
+        }
+        for (index = 0U; index < KMIPKIT_FIXTURE_DEFINITION_COUNT; ++index) {
+            const size_t source = order == 0U ? index : KMIPKIT_FIXTURE_DEFINITION_COUNT - index - 1U;
+            ordered[index] = definitions[source];
+        }
+        if (!create_registry(ordered, KMIPKIT_FIXTURE_DEFINITION_COUNT,
+                &limits, &registry)) {
+            goto cleanup;
+        }
+        for (index = 0U; index < KMIPKIT_FIXTURE_CASE_COUNT; ++index) {
+            if (!inspect_shared_fixture_case(registry, codec_limits,
+                    &kmipkit_fixture_cases[index])) {
+                goto cleanup;
+            }
+        }
+    }
+    succeeded = true;
+
+cleanup:
     kmipkit_client_extension_registry_release(registry);
-    kmipkit_extension_definition_release(definition);
-    kmipkit_extension_identity_release(identity);
+    for (index = 0U; index < KMIPKIT_FIXTURE_DEFINITION_COUNT; ++index) {
+        kmipkit_extension_definition_release(definitions[index]);
+    }
     kmipkit_codec_limits_release(codec_limits);
-    return true;
+    return succeeded;
 }
 
 static bool test_redacted_stable_errors_and_invalid_handles(void)
@@ -1956,9 +2108,8 @@ static bool test_definition_validation_and_ttlv_identity_readback(void)
     return true;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
-    const char *fixture_path = argc > 1 ? argv[1] : "tests/fixtures/extensions/cases.json";
     struct test_case {
         const char *name;
         bool (*run)(void);
@@ -1980,9 +2131,6 @@ int main(int argc, char **argv)
     size_t index;
     size_t failures = 0U;
 
-    if (!test_shared_fixture_markers(fixture_path)) {
-        ++failures;
-    }
     for (index = 0; index < sizeof(tests_without_arguments) / sizeof(tests_without_arguments[0]); ++index) {
         if (!tests_without_arguments[index].run()) {
             ++failures;

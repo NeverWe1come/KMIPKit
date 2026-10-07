@@ -317,90 +317,93 @@ class ExtensionRegistryTests(unittest.TestCase):
                         self.assertEqual(getattr(limits, field), selected)
 
     def test_shared_inbound_fixtures_are_inspected_and_generic_ttlv_is_preserved(self) -> None:
-        registry = registry_api.create_client_extension_registry(
-            list(self.definitions.values()), registry_api.default_extension_registry_limits()
-        )
         codec_limits = _codec_limits()
-        try:
-            expected_recognition = {
-                "valid-recognized": True,
-                "synthetic-secret-bearing": True,
-                "invalid-schema": False,
-                "multiply-matching": False,
-                "unknown-preserved": False,
-            }
-            for case_id, expected_recognized in expected_recognition.items():
-                fixture = self.fixtures[case_id]
-                extension = fixture["extension"]
-                with self.subTest(fixture=case_id):
-                    recognition = registry_api.inspect_extension(
-                        registry,
-                        extension["vendorIdentification"],
-                        _structure_from_fixture(extension["payload"]["children"]),
-                        codec_limits,
-                    )
-                    try:
-                        self.assertEqual(
-                            registry_api.is_recognized(recognition), expected_recognized
+        expected_recognition = {
+            "valid-recognized": True,
+            "synthetic-secret-bearing": True,
+            "invalid-schema": False,
+            "multiply-matching": False,
+            "unknown-preserved": False,
+        }
+        original_definitions = list(self.definitions.values())
+        for reversed_order in (False, True):
+            registration_order = list(reversed(original_definitions)) if reversed_order else original_definitions
+            registry = registry_api.create_client_extension_registry(
+                registration_order, registry_api.default_extension_registry_limits()
+            )
+            try:
+                for case_id, expected_recognized in expected_recognition.items():
+                    fixture = self.fixtures[case_id]
+                    extension = fixture["extension"]
+                    with self.subTest(fixture=case_id, reversed_order=reversed_order):
+                        recognition = registry_api.inspect_extension(
+                            registry,
+                            extension["vendorIdentification"],
+                            _structure_from_fixture(extension["payload"]["children"]),
+                            codec_limits,
                         )
-                        validated = registry_api.validated_value(recognition)
-                        self.assertEqual(
-                            validated is not None,
-                            fixture["expected"]["typedValueAvailable"],
-                        )
-                        generic_view = registry_api.extension_recognition_generic_value(
-                            recognition
-                        )
-                        self.assertEqual(
-                            _normalize_structure(generic_view),
-                            fixture["expected"]["preservedPayload"],
-                        )
-                        if case_id == "valid-recognized":
-                            preserved = _normalize_structure(generic_view)
-                            # KMIP 2.1 §11.56 and ADR-0010 require preserving this tag
-                            # even though the registered schema does not declare it.
+                        try:
                             self.assertEqual(
-                                [child["tag"] for child in preserved["children"]],
-                                [
-                                    "0x420001",
-                                    "0x420002",
-                                    "0x420004",
-                                    "0x420006",
-                                    "0x540001",
-                                ],
+                                registry_api.is_recognized(recognition), expected_recognized
                             )
-                        if validated is not None:
-                            native_identity = registry_api.validated_extension_identity(
-                                validated
-                            )
-                            try:
-                                expected_identity = self.definitions[
-                                    fixture["expected"]["matchedDefinitionIds"][0]
-                                ].identity
-                                self.assertEqual(
-                                    (
-                                        native_identity.vendor_identifier,
-                                        native_identity.name,
-                                        native_identity.version,
-                                    ),
-                                    (
-                                        expected_identity.vendor_identifier,
-                                        expected_identity.name,
-                                        expected_identity.version,
-                                    ),
-                                )
-                            finally:
-                                native_identity.close()
+                            validated = registry_api.validated_value(recognition)
                             self.assertEqual(
-                                _normalize_structure(
-                                    registry_api.validated_extension_value_generic_value(validated)
-                                ),
+                                validated is not None,
+                                fixture["expected"]["typedValueAvailable"],
+                            )
+                            generic_view = registry_api.extension_recognition_generic_value(
+                                recognition
+                            )
+                            self.assertEqual(
+                                _normalize_structure(generic_view),
                                 fixture["expected"]["preservedPayload"],
                             )
-                    finally:
-                        recognition.close()
-        finally:
-            registry.close()
+                            if case_id == "valid-recognized":
+                                preserved = _normalize_structure(generic_view)
+                                # KMIP 2.1 §11.56 and ADR-0010 require preserving this tag
+                                # even though the registered schema does not declare it.
+                                self.assertEqual(
+                                    [child["tag"] for child in preserved["children"]],
+                                    [
+                                        "0x420001",
+                                        "0x420002",
+                                        "0x420004",
+                                        "0x420006",
+                                        "0x540001",
+                                    ],
+                                )
+                            if validated is not None:
+                                native_identity = registry_api.validated_extension_identity(
+                                    validated
+                                )
+                                try:
+                                    expected_identity = self.definitions[
+                                        fixture["expected"]["matchedDefinitionIds"][0]
+                                    ].identity
+                                    self.assertEqual(
+                                        (
+                                            native_identity.vendor_identifier,
+                                            native_identity.name,
+                                            native_identity.version,
+                                        ),
+                                        (
+                                            expected_identity.vendor_identifier,
+                                            expected_identity.name,
+                                            expected_identity.version,
+                                        ),
+                                    )
+                                finally:
+                                    native_identity.close()
+                                self.assertEqual(
+                                    _normalize_structure(
+                                        registry_api.validated_extension_value_generic_value(validated)
+                                    ),
+                                    fixture["expected"]["preservedPayload"],
+                                )
+                        finally:
+                            recognition.close()
+            finally:
+                registry.close()
 
     def test_registry_list_map_and_extension_information_metadata_are_deterministic(self) -> None:
         information = registry_api.create_extension_information("alpha")

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import copy
+import importlib.util
 import subprocess
 import sys
 import unittest
@@ -30,7 +32,25 @@ GENERATED_JAVA_FIXTURES = (
     / "kmipkit"
     / "SharedExtensionFixtures.java"
 )
+GENERATED_RUST_FIXTURES = (
+    ROOT
+    / "crates"
+    / "kmipkit-client"
+    / "tests"
+    / "fixtures"
+    / "extensions"
+    / "extension_fixtures.generated.rs"
+)
 ADAPTERS = ("rust", "c", "java", "python")
+
+_GENERATOR_SPEC = importlib.util.spec_from_file_location(
+    "extension_fixture_generator", ADAPTER_FIXTURE_GENERATOR
+)
+if _GENERATOR_SPEC is None or _GENERATOR_SPEC.loader is None:
+    raise RuntimeError("cannot load the extension fixture generator")
+_GENERATOR = importlib.util.module_from_spec(_GENERATOR_SPEC)
+sys.modules[_GENERATOR_SPEC.name] = _GENERATOR
+_GENERATOR_SPEC.loader.exec_module(_GENERATOR)
 
 
 class ExtensionFixtureCorpusTests(unittest.TestCase):
@@ -95,7 +115,7 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
             except Exception:
                 self.fail("definition payload schema is not valid Draft 2020-12 JSON Schema")
 
-    def test_generated_c_and_java_fixture_adapters_cover_the_shared_corpus(self) -> None:
+    def test_generated_adapter_descriptors_cover_the_shared_corpus(self) -> None:
         self.assertTrue(ADAPTER_FIXTURE_GENERATOR.is_file(), "shared adapter fixture generator is missing")
         result = subprocess.run(
             [sys.executable, "-B", str(ADAPTER_FIXTURE_GENERATOR), "--check"],
@@ -108,12 +128,51 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
 
         corpus, _ = self.corpus_and_schema()
         case_ids = [fixture["id"] for fixture in corpus["cases"]]
-        for generated_path in (GENERATED_C_FIXTURES, GENERATED_JAVA_FIXTURES):
+        for generated_path in (GENERATED_C_FIXTURES, GENERATED_JAVA_FIXTURES, GENERATED_RUST_FIXTURES):
             self.assertTrue(generated_path.is_file(), f"generated adapter fixtures are missing: {generated_path}")
             generated = generated_path.read_text(encoding="utf-8")
             for case_id in case_ids:
                 with self.subTest(path=generated_path.name, fixture=case_id):
                     self.assertIn(case_id, generated)
+
+    def test_rust_fixture_strings_escape_quotes_and_controls(self) -> None:
+        literal = _GENERATOR._rust_string('quote" slash\\ line\n tab\t café \x01')
+        self.assertEqual(literal, '"quote\\" slash\\\\ line\\n tab\\t café \\u{1}"')
+
+    def test_fixture_generator_fails_closed_and_tracks_manifest_metadata(self) -> None:
+        api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
+        corpus, _ = self.corpus_and_schema()
+
+        unsupported_item = copy.deepcopy(corpus)
+        unsupported_item["cases"][0]["extension"]["payload"]["children"][0]["type"] = "Boolean"
+        with self.assertRaises(_GENERATOR.FixtureError):
+            _GENERATOR.render(api, unsupported_item)
+
+        unsupported_schema = copy.deepcopy(corpus)
+        unsupported_schema["definitions"][1]["payloadSchema"]["properties"]["children"]["minItems"] = 1
+        with self.assertRaises(_GENERATOR.FixtureError):
+            _GENERATOR.render(api, unsupported_schema)
+
+        malformed_mapping = copy.deepcopy(api)
+        next(
+            function for function in malformed_mapping["functions"]
+            if function["id"] == "client_extension_registry_inspect"
+        )["c"].pop("symbol")
+        with self.assertRaises(_GENERATOR.FixtureError):
+            _GENERATOR.render(malformed_mapping, corpus)
+
+        changed_mapping = copy.deepcopy(api)
+        next(
+            function for function in changed_mapping["functions"]
+            if function["id"] == "client_extension_registry_inspect"
+        )["python"]["function"] = "changed_inspection_mapping"
+        current_outputs = _GENERATOR.render(api, corpus)
+        changed_outputs = _GENERATOR.render(changed_mapping, corpus)
+        self.assertNotEqual(
+            current_outputs[GENERATED_C_FIXTURES],
+            changed_outputs[GENERATED_C_FIXTURES],
+            "generated descriptors must fingerprint the supported manifest mappings",
+        )
 
     def test_fixture_matrix_uses_stable_adapter_neutral_outcomes(self) -> None:
         corpus, schema = self.corpus_and_schema()

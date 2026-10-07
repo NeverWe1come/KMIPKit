@@ -74,6 +74,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python.Source -B tools/api_manifest/generate.py --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python.Source -B tools/extension_fixtures/generate.py --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run PowerShell contracts
         run: pwsh -File scripts/tests/Test-Wsl.ps1

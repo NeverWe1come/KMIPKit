@@ -7,13 +7,160 @@ use crate::extension_registry_test_support::index_compilation_attempts;
 use kmipkit_protocol::extension;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::CodecLimits;
-use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, StructureView, Tag, Value, ValueView};
+
+#[path = "../fixtures/extensions/extension_fixtures.generated.rs"]
+mod generated_fixtures;
 
 fn vendor_tag() -> Tag {
     RawTag::new(0x42_0001)
         .expect("the test tag fits in the KMIP Tag width")
         .try_checked()
         .expect("the test tag uses the vendor allocation")
+}
+
+fn fixture_tag(raw: u32) -> Tag {
+    RawTag::new(raw)
+        .expect("the generated fixture tag fits in the KMIP Tag width")
+        .try_checked()
+        .expect("the generated fixture tag uses an allocated KMIP range")
+}
+
+fn fixture_schema(schema: &generated_fixtures::Schema) -> extension::ExtensionSchema {
+    if schema.item_type == ItemType::Structure {
+        let children = schema
+            .children
+            .iter()
+            .map(|rule| {
+                extension::required(fixture_tag(rule.tag), fixture_schema(&rule.schema))
+                    .expect("the generated required schema child is valid")
+            })
+            .collect();
+        extension::structure(children, Vec::new(), true)
+            .expect("the generated Structure schema is valid")
+    } else {
+        let scalar = extension::scalar(schema.item_type)
+            .expect("the generated scalar schema has a scalar Item Type");
+        if schema.has_range {
+            extension::with_signed_range(scalar, schema.minimum, schema.maximum)
+                .expect("the generated signed range is valid")
+        } else {
+            scalar
+        }
+    }
+}
+
+fn fixture_scalar(item_type: ItemType, text: &str, number: i64) -> Value {
+    match item_type {
+        ItemType::TextString => Value::text_string(text.to_owned()),
+        ItemType::Enumeration => Value::enumeration(number as u32),
+        ItemType::LongInteger => Value::long_integer(number),
+        _ => panic!("the generated fixture uses an unsupported scalar Item Type"),
+    }
+}
+
+fn fixture_value(item: &generated_fixtures::Item) -> Value {
+    if item.item_type == ItemType::Structure {
+        Value::structure(fixture_payload(item.children))
+    } else {
+        fixture_scalar(item.item_type, item.text, item.number)
+    }
+}
+
+fn fixture_payload(items: &[generated_fixtures::Item]) -> Structure {
+    let mut structure = Structure::new();
+    for item in items {
+        structure
+            .try_push(
+                Item::new(fixture_tag(item.tag), fixture_value(item))
+                    .expect("the generated fixture Item is valid"),
+            )
+            .expect("the generated fixture fits in a TTLV Structure");
+    }
+    structure
+}
+
+fn fixture_definition(fixture: &generated_fixtures::Definition) -> extension::ExtensionDefinition {
+    let identity = extension::extension_identity(fixture.vendor, fixture.name, fixture.version)
+        .expect("the generated extension identity is valid");
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+        .expect("the generated compatibility range includes KMIP 2.1");
+    let mut tags = fixture.path.iter().copied();
+    let first = fixture_tag(tags.next().expect("discriminator path is not empty"));
+    let mut path = extension::ttlv_path(first).expect("the generated discriminator path is valid");
+    for raw_tag in tags {
+        path = extension::with_child_tag(path, fixture_tag(raw_tag))
+            .expect("the generated discriminator path remains bounded");
+    }
+    let discriminator = extension::discriminator(
+        path,
+        fixture_scalar(
+            fixture.discriminator_type,
+            fixture.discriminator_text,
+            fixture.discriminator_number,
+        ),
+    )
+    .expect("the generated discriminator is a scalar");
+    extension::extension_definition(
+        identity,
+        compatibility,
+        discriminator,
+        fixture_schema(&fixture.schema),
+    )
+    .expect("the generated definition is valid")
+}
+
+fn assert_fixture_structure(
+    actual: &Structure,
+    expected: &[generated_fixtures::Item],
+    fixture_id: &str,
+) {
+    assert_fixture_view(actual.view(), expected, fixture_id);
+}
+
+fn assert_fixture_view(
+    actual: StructureView<'_>,
+    expected: &[generated_fixtures::Item],
+    fixture_id: &str,
+) {
+    let children = actual.children();
+    assert_eq!(children.len(), expected.len(), "{fixture_id} item count");
+    for (index, (actual, expected)) in children.iter().zip(expected).enumerate() {
+        assert_eq!(
+            actual.tag().raw(),
+            expected.tag,
+            "{fixture_id} item {index} tag"
+        );
+        assert_eq!(
+            actual.item_type(),
+            expected.item_type,
+            "{fixture_id} item {index} type"
+        );
+        actual.with_value(|value| match value {
+            ValueView::Structure(nested) if expected.item_type == ItemType::Structure => {
+                assert_fixture_view(nested, expected.children, fixture_id);
+            }
+            ValueView::TextString(text) if expected.item_type == ItemType::TextString => {
+                assert_eq!(text, expected.text, "{fixture_id} item {index} text");
+            }
+            ValueView::Enumeration(number) if expected.item_type == ItemType::Enumeration => {
+                assert_eq!(
+                    i64::from(*number),
+                    expected.number,
+                    "{fixture_id} item {index} enumeration"
+                );
+            }
+            ValueView::LongInteger(number) if expected.item_type == ItemType::LongInteger => {
+                assert_eq!(
+                    *number, expected.number,
+                    "{fixture_id} item {index} integer"
+                );
+            }
+            _ => {
+                panic!("generated fixture value type does not match its Item Type in {fixture_id}")
+            }
+        });
+    }
 }
 
 fn definition(name: &str, discriminator_value: &str) -> extension::ExtensionDefinition {
@@ -387,4 +534,90 @@ fn candidate_match_checks_the_full_vendor_path_and_scalar_tuple() {
     });
 
     assert_eq!(outcomes, (true, false, false, false, false, false));
+}
+
+#[test]
+fn every_shared_inbound_fixture_matches_internal_outcome_ids_and_preserved_ttlv_in_both_orders() {
+    for reversed in [false, true] {
+        let definitions = (0..generated_fixtures::DEFINITIONS.len())
+            .map(|offset| {
+                let index = if reversed {
+                    generated_fixtures::DEFINITIONS.len() - offset - 1
+                } else {
+                    offset
+                };
+                fixture_definition(&generated_fixtures::DEFINITIONS[index])
+            })
+            .collect();
+        let registry = client_extension_registry(definitions, extension::defaults())
+            .expect("the shared fixture definitions produce a valid registry");
+
+        for fixture in generated_fixtures::CASES {
+            let details = super::inspect_with_details(
+                &registry,
+                fixture.vendor,
+                fixture_payload(fixture.payload),
+                &CodecLimits::defaults(),
+            )
+            .expect("the shared inbound fixture is within all inspection limits");
+            let expected_outcome = match fixture.outcome {
+                "recognized" => super::InspectionOutcome::Recognized,
+                "unrecognized.schema_invalid" => super::InspectionOutcome::SchemaInvalid,
+                "unrecognized.ambiguous" => super::InspectionOutcome::Ambiguous,
+                "unrecognized.no_match" => super::InspectionOutcome::NoMatch,
+                _ => panic!("unsupported generated inbound outcome code"),
+            };
+            assert_eq!(details.outcome, expected_outcome, "{} outcome", fixture.id);
+            assert_eq!(
+                details.matched_count,
+                fixture.matched_ids.len(),
+                "{} matched count",
+                fixture.id
+            );
+            assert_eq!(
+                details.recognition.is_recognized(),
+                fixture.typed,
+                "{} recognized",
+                fixture.id
+            );
+            assert_eq!(
+                details.recognition.validated_value().is_some(),
+                fixture.typed,
+                "{} typed value",
+                fixture.id
+            );
+
+            let mut matched_ids = details.matched_definition_indices[..details.matched_count]
+                .iter()
+                .flatten()
+                .map(|index| {
+                    let definition = registry
+                        .definitions
+                        .get(*index)
+                        .expect("internal match index names a registered definition");
+                    let identity = extension::identity(definition);
+                    generated_fixtures::DEFINITIONS
+                        .iter()
+                        .find(|candidate| {
+                            candidate.vendor == identity.vendor_identifier()
+                                && candidate.name == identity.name()
+                                && candidate.version == identity.version()
+                        })
+                        .expect("registered identity maps to one generated fixture definition")
+                        .id
+                })
+                .collect::<Vec<_>>();
+            matched_ids.sort_unstable();
+            assert_eq!(
+                matched_ids, fixture.matched_ids,
+                "{} matched IDs",
+                fixture.id
+            );
+            assert_fixture_structure(
+                super::generic_value(&details.recognition),
+                fixture.payload,
+                fixture.id,
+            );
+        }
+    }
 }
