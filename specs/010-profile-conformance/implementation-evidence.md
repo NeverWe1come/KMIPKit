@@ -104,6 +104,10 @@ The coverage preflight initially exceeded 30 seconds on `profiles_generated.rs` 
 
 The offline inventory found 203 official Test Cases records, all with `fixture_availability: unavailable` and no `fixture_path`; `rg --files | rg '(fixtures?|test-cases?)/'` found no local pinned fixture files. The Baseline subset remains 16 unavailable mandatory cases. Therefore zero official profile fixtures were executable in this worktree; no missing case was reconstructed or counted as passing. `python -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_baseline_catalog_state_is_incomplete_while_required_fixtures_are_unavailable` passed (1 test), and `python tools/normative_catalog/validate.py --repo-root .` passed (4 sources, 1,411 clauses, 4,026 records). This records the fixture gate result only and makes no conformance claim.
 
+### T032–T035 — guidance, Rustdoc, and generated outputs
+
+The English and Spanish guides and compliance/catalog guidance explain target selection, runtime-rule availability, evidence state, mandatory fixture blockers, and the absence of a public claim; neither guide presents a currently usable profile-validation API. `cargo test -p kmipkit-protocol --doc` passed all 3 Rustdoc tests, including the readiness example. `python tools/normative_catalog/generate_profiles.py --check --repo-root .` and `python tools/normative_catalog/report.py --check --repo-root .` both passed. A search of committed generated Rust, catalog, and report outputs found no CI run IDs, attempts, job conclusions, or ephemeral manifest fields.
+
 ### T042 — independent security diff review
 
 The completed read-only Codex Security diff scan `eaa09705-1a0c-42b3-b607-b75e30a0f512` reviewed the feature range `f3b4247789ad987c97e0874c81238e79b427eb9a..ee34f2c00d9197f1997f2f08c2dbabdb1a42073a`. It reported one validated low-severity CWE-200 issue: `_SENSITIVE_ASSIGNMENT` stopped at whitespace, so `credential="alpha beta"` rendered as `credential=[redacted] beta"` in a diagnostic report. No remediation was applied during that read-only scan, and the checked-in catalog contained no known secret.
