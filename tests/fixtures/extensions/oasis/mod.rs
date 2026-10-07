@@ -2,6 +2,8 @@
 //!
 //! These are project-authored vectors, not official OASIS test cases. They
 //! preserve the source table's declared tags, Item Types, and field order.
+//! Tag allocations are cross-checked against §11.56 where the structure table
+//! specifies an object without repeating its numeric tag.
 
 use kmipkit_protocol::{RequestMessage, extension};
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value};
@@ -50,10 +52,7 @@ pub fn message_extension(vendor: &str, critical: bool, payload_tag: u32) -> Item
     item(
         MESSAGE_EXTENSION,
         Value::structure(structure([
-            item(
-                VENDOR_IDENTIFICATION,
-                Value::text_string(vendor.to_owned()),
-            ),
+            item(VENDOR_IDENTIFICATION, Value::text_string(vendor.to_owned())),
             item(CRITICALITY_INDICATOR, Value::boolean(critical)),
             item(VENDOR_EXTENSION, Value::structure(vendor_extension)),
         ])),
@@ -91,10 +90,9 @@ pub fn extension_information_with_all_fields() -> extension::ExtensionInformatio
         .expect("Extension Tag is represented by a non-negative Integer");
     let value = extension::with_type(value, ItemType::TextString)
         .expect("Extension Type is an Item Type Enumeration");
-    let value = extension::with_enumeration(value, 17)
-        .expect("Extension Enumeration is an Integer");
-    let value = extension::with_attribute(value, false)
-        .expect("Extension Attribute is Boolean");
+    let value =
+        extension::with_enumeration(value, 17).expect("Extension Enumeration is an Integer");
+    let value = extension::with_attribute(value, false).expect("Extension Attribute is Boolean");
     let value = extension::with_parent_structure_tag(value, 0x0054_0002)
         .expect("Extension Parent Structure Tag is an Integer");
     extension::with_description(value, "fixture description")

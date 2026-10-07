@@ -54,6 +54,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "kmipkit-protocol"
+version = "0.1.0"
+dependencies = [
+ "kmipkit-ttlv",
+ "zeroize",
+]
+
+[[package]]
 name = "kmipkit-ttlv"
 version = "0.1.0"
 dependencies = [
@@ -64,6 +72,7 @@ dependencies = [
 name = "kmipkit-ttlv-fuzz"
 version = "0.0.0"
 dependencies = [
+ "kmipkit-protocol",
  "kmipkit-ttlv",
  "libfuzzer-sys",
 ]

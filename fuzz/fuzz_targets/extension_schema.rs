@@ -1,0 +1,115 @@
+#![no_main]
+#![forbid(unsafe_code)]
+
+use kmipkit_protocol::extension::{
+    self, ExtensionDefinition, ExtensionOrderConstraint, ExtensionSchema,
+};
+use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
+use libfuzzer_sys::fuzz_target;
+
+const MAX_INPUT_BYTES: usize = 4 * 1024;
+const MAX_STRUCTURE_DEPTH: usize = 64;
+const MAX_ITEMS: usize = 512;
+const NESTED_STRUCTURE_TAG: u32 = 0x0054_0010;
+const DISCRIMINATOR_TAG: u32 = 0x0054_0011;
+const INTEGER_TAG: u32 = 0x0054_0012;
+const ENUMERATION_TAG: u32 = 0x0054_0013;
+
+fn tag(raw: u32) -> Option<Tag> {
+    RawTag::new(raw).ok()?.try_checked().ok()
+}
+
+fn schema() -> Option<ExtensionSchema> {
+    let discriminator = extension::required(
+        tag(DISCRIMINATOR_TAG)?,
+        extension::scalar(ItemType::TextString).ok()?,
+    )
+    .ok()?;
+    let integer = extension::optional(
+        tag(INTEGER_TAG)?,
+        extension::with_unsigned_range(
+            extension::scalar(ItemType::Integer).ok()?,
+            0,
+            i32::MAX as u64,
+        )
+        .ok()?,
+    )
+    .ok()?;
+    let mut enumeration_schema = extension::scalar(ItemType::Enumeration).ok()?;
+    for value in [1, 2, 5, u32::MAX] {
+        enumeration_schema = extension::with_allowed_enumeration(enumeration_schema, value).ok()?;
+    }
+    let enumeration = extension::repeated(tag(ENUMERATION_TAG)?, enumeration_schema).ok()?;
+    let order: Vec<ExtensionOrderConstraint> =
+        vec![extension::extension_order_constraint(tag(INTEGER_TAG)?, tag(ENUMERATION_TAG)?).ok()?];
+    let nested =
+        extension::structure(vec![discriminator, integer, enumeration], order, true).ok()?;
+    let child = extension::required(tag(NESTED_STRUCTURE_TAG)?, nested).ok()?;
+    extension::structure(vec![child], Vec::new(), false).ok()
+}
+
+fn definition() -> Option<ExtensionDefinition> {
+    let identity = extension::extension_identity("fuzz.vendor", "bounded-schema", "1").ok()?;
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0").ok()?;
+    let path = extension::with_child_tag(
+        extension::ttlv_path(tag(NESTED_STRUCTURE_TAG)?).ok()?,
+        tag(DISCRIMINATOR_TAG)?,
+    )
+    .ok()?;
+    let discriminator =
+        extension::discriminator(path, Value::text_string("fuzz-v1".to_owned())).ok()?;
+    extension::extension_definition(identity, compatibility, discriminator, schema()?).ok()
+}
+
+fn clone_structure(source: &kmipkit_ttlv::StructureView<'_>) -> Option<Structure> {
+    let mut copy = Structure::new();
+    for child in source.children() {
+        let value = child.with_value(clone_value)?;
+        copy.try_push(Item::new(child.tag(), value).ok()?).ok()?;
+    }
+    Some(copy)
+}
+
+fn clone_value(source: ValueView<'_>) -> Option<Value> {
+    match source {
+        ValueView::Structure(value) => Some(Value::structure(clone_structure(&value)?)),
+        ValueView::Integer(value) => Some(Value::integer(*value)),
+        ValueView::LongInteger(value) => Some(Value::long_integer(*value)),
+        ValueView::BigInteger(value) => Some(Value::big_integer(value.to_vec())),
+        ValueView::Enumeration(value) => Some(Value::enumeration(*value)),
+        ValueView::Boolean(value) => Some(Value::boolean(*value)),
+        ValueView::TextString(value) => Some(Value::text_string((*value).to_owned())),
+        ValueView::ByteString(value) => Some(Value::byte_string(value.to_vec())),
+        ValueView::DateTime(value) => Some(Value::date_time(*value)),
+        ValueView::Interval(value) => Some(Value::interval(*value)),
+        ValueView::DateTimeExtended(value) => Some(Value::date_time_extended(*value)),
+        _ => None,
+    }
+}
+
+fuzz_target!(|data: &[u8]| {
+    if data.len() > MAX_INPUT_BYTES {
+        return;
+    }
+
+    let Some(definition) = definition() else {
+        return;
+    };
+    let Ok(limits) = CodecLimits::new(MAX_INPUT_BYTES, MAX_STRUCTURE_DEPTH, MAX_ITEMS) else {
+        return;
+    };
+    let Ok(decoded) = decode_with_limits(data, &limits) else {
+        return;
+    };
+    let Some(payload) = decoded.with_value(|value| match value {
+        ValueView::Structure(structure) => clone_structure(&structure),
+        _ => None,
+    }) else {
+        return;
+    };
+
+    // Schema failures are expected. The target asserts robustness: arbitrary,
+    // bounded TTLV input must not panic, over-allocate, or produce partial state.
+    let _ = extension::validate(&definition, payload, &limits);
+});

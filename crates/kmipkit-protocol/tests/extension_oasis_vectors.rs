@@ -1,7 +1,8 @@
 //! Project-authored conformance vectors from OASIS KMIP Specification v2.1.
 //!
 //! Traceability: §7.13 Table 365; §8.3 Table 396; §9.13 Table 418;
-//! §11.44 Table 476; KMIPKIT-0012-FR-009 and KMIPKIT-0012-FR-012.
+//! §11.44 Table 476; §11.56 tag allocations; KMIPKIT-0012-FR-009 and
+//! KMIPKIT-0012-FR-012.
 
 #[path = "../../../tests/fixtures/extensions/oasis/mod.rs"]
 mod oasis;
@@ -33,7 +34,7 @@ fn table_365_extension_information_uses_exact_tags_types_order_and_requiredness(
             0x0042_00A5, // Extension Name
             0x0042_00A6, // Extension Tag
             0x0042_00A7, // Extension Type
-            0x0042_0129, // Extension Enumeration (Table 476 assigns this tag)
+            0x0042_0129, // Extension Enumeration (tag allocation in §11.56)
             0x0042_012A, // Extension Attribute
             0x0042_012B, // Extension Parent Structure Tag
             0x0042_012C, // Extension Description
@@ -42,7 +43,7 @@ fn table_365_extension_information_uses_exact_tags_types_order_and_requiredness(
     assert_eq!(
         view.children()
             .iter()
-            .map(|child| child.item_type())
+            .map(kmipkit_ttlv::Item::item_type)
             .collect::<Vec<_>>(),
         [
             ItemType::TextString,
@@ -109,8 +110,11 @@ fn table_476_query_extension_functions_are_enumeration_values_five_and_six() {
         let query_function = oasis::query_extension_function(value);
         assert_eq!(query_function.tag().raw(), 0x0042_0074);
         assert_eq!(query_function.item_type(), ItemType::Enumeration);
-        assert!(query_function.with_value(|actual| {
-            matches!(actual, ValueView::Enumeration(actual) if *actual == value)
-        }), "Table 476 value for {name} is preserved exactly");
+        assert!(
+            query_function.with_value(|actual| {
+                matches!(actual, ValueView::Enumeration(actual) if *actual == value)
+            }),
+            "Table 476 value for {name} is preserved exactly"
+        );
     }
 }

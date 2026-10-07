@@ -9,7 +9,7 @@ const TABLE_365_TAGS_IN_ORDER: [u32; 7] = [
     0x0042_00A5, // Extension Name
     0x0042_00A6, // Extension Tag
     0x0042_00A7, // Extension Type
-    0x0042_00A8, // Extension Enumeration
+    0x0042_0129, // Extension Enumeration (Tag allocation in §11.56)
     0x0042_012A, // Extension Attribute
     0x0042_012B, // Extension Parent Structure Tag
     0x0042_012C, // Extension Description

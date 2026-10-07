@@ -10,12 +10,20 @@ license = "Apache-2.0"
 cargo-fuzz = true
 
 [dependencies]
+kmipkit-protocol = { path = "../crates/kmipkit-protocol", version = "0.1.0" }
 kmipkit-ttlv = { path = "../crates/kmipkit-ttlv", version = "0.1.0" }
 libfuzzer-sys = "=0.4.12"
 
 [[bin]]
 name = "ttlv_decode"
 path = "fuzz_targets/ttlv_decode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "extension_schema"
+path = "fuzz_targets/extension_schema.rs"
 test = false
 doc = false
 bench = false
