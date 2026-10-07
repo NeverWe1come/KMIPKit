@@ -3,7 +3,7 @@ use std::io;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, UdpSocket};
 use std::time::Duration;
 
-use kmipkit_test_support::{EphemeralPki, LocalDnsFixture, LoopbackTcpListener};
+use kmipkit_test_support::{EphemeralPki, LocalDnsFixture, LoopbackTcpListener, PkiFixtureError};
 
 #[test]
 fn ephemeral_pki_generates_distinct_client_and_server_credentials_without_debugging_keys() {
@@ -44,6 +44,14 @@ fn ephemeral_pki_generates_distinct_client_and_server_credentials_without_debugg
     assert!(formatted.contains("[REDACTED]"));
     assert!(!formatted.contains(&hex(first.server_identity().private_key_der())));
     assert!(!formatted.contains(&hex(first.client_identity().private_key_der())));
+}
+
+#[test]
+fn ephemeral_pki_generation_errors_are_redacted() {
+    assert_eq!(
+        PkiFixtureError.to_string(),
+        "ephemeral test PKI generation failed"
+    );
 }
 
 #[test]

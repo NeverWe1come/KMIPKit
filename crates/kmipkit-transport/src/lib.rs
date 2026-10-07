@@ -15,6 +15,11 @@
 
 mod error;
 mod response;
+#[cfg(test)]
+mod tls_policy;
+#[cfg(test)]
+#[path = "tls_policy_tests.rs"]
+mod tls_policy_tests;
 
 pub use error::{RequestDeliveryState, TransportCauseCategory, TransportError};
 pub use response::TransportResponse;
