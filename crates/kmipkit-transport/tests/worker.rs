@@ -1,3 +1,4 @@
+use std::convert::Infallible;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Barrier, mpsc};
 use std::thread;
@@ -6,9 +7,10 @@ use std::time::{Duration, Instant};
 use kmipkit_transport::RequestDeliveryState;
 
 #[path = "../src/worker.rs"]
+#[allow(dead_code)]
 mod worker;
 
-use worker::{ClientWorker, ExchangeControl, WorkerError};
+use worker::{ClientWorker, ExchangeControl, WorkerError, WorkerStartError};
 
 #[test]
 fn constructing_worker_does_not_start_network_activity() {
@@ -22,7 +24,7 @@ fn constructing_worker_does_not_start_network_activity() {
         .exchange(None, move |control| async move {
             assert!(control.commit_dispatch());
             observed_starts.fetch_add(1, Ordering::SeqCst);
-            Ok(())
+            Ok::<_, Infallible>(())
         })
         .expect("the first exchange may start the network operation");
 
@@ -43,7 +45,7 @@ fn worker_serializes_one_in_flight_exchange_and_one_queued_exchange() {
                 .send(())
                 .expect("test receiver remains open");
             let _ = first_release_rx.await;
-            Ok::<_, WorkerError>(1)
+            Ok::<_, Infallible>(1)
         })
     });
 
@@ -59,7 +61,7 @@ fn worker_serializes_one_in_flight_exchange_and_one_queued_exchange() {
             second_started_tx
                 .send(())
                 .expect("test receiver remains open");
-            Ok::<_, WorkerError>(2)
+            Ok::<_, Infallible>(2)
         })
     });
 
@@ -89,7 +91,7 @@ fn synchronous_exchange_is_safe_inside_a_tokio_runtime() {
     let result = caller_runtime.block_on(async {
         worker.exchange(None, |control| async move {
             assert!(control.commit_dispatch());
-            Ok::<_, WorkerError>(())
+            Ok::<_, Infallible>(())
         })
     });
 
@@ -99,13 +101,10 @@ fn synchronous_exchange_is_safe_inside_a_tokio_runtime() {
 #[test]
 fn worker_start_failure_is_returned_without_panicking() {
     let result = ClientWorker::start_with_spawner(|_task| {
-        Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "deterministic thread-start failure",
-        ))
+        Err(std::io::Error::other("deterministic thread-start failure"))
     });
 
-    assert!(matches!(result, Err(WorkerError::Start)));
+    assert!(matches!(result, Err(WorkerStartError::Thread)));
 }
 
 #[test]
@@ -121,7 +120,7 @@ fn an_expired_queued_exchange_returns_not_sent_and_never_dispatches_later() {
                 .send(())
                 .expect("test receiver remains open");
             let _ = active_release_rx.await;
-            Ok::<_, WorkerError>(())
+            Ok::<_, Infallible>(())
         })
     });
     active_started_rx
@@ -137,7 +136,7 @@ fn an_expired_queued_exchange_returns_not_sent_and_never_dispatches_later() {
             move |control| async move {
                 assert!(control.commit_dispatch());
                 observed_dispatches.fetch_add(1, Ordering::SeqCst);
-                Ok::<_, WorkerError>(())
+                Ok::<_, Infallible>(())
             },
         )
     });
@@ -158,7 +157,7 @@ fn an_expired_queued_exchange_returns_not_sent_and_never_dispatches_later() {
             Some(Instant::now() + Duration::from_secs(1)),
             |control| async move {
                 assert!(control.commit_dispatch());
-                Ok::<_, WorkerError>(())
+                Ok::<_, Infallible>(())
             },
         )
         .expect("a later barrier exchange drains the expired queue entry");
@@ -210,7 +209,7 @@ fn close_cancels_active_and_queued_work_with_bounded_shutdown() {
             active_started_tx
                 .send(())
                 .expect("test receiver remains open");
-            std::future::pending::<Result<(), WorkerError>>().await
+            std::future::pending::<Result<(), Infallible>>().await
         })
     });
     active_started_rx
@@ -223,7 +222,7 @@ fn close_cancels_active_and_queued_work_with_bounded_shutdown() {
         queued_worker.exchange(None, move |control| async move {
             assert!(control.commit_dispatch());
             observed_dispatches.fetch_add(1, Ordering::SeqCst);
-            Ok::<_, WorkerError>(())
+            Ok::<_, Infallible>(())
         })
     });
 

@@ -15,11 +15,14 @@
 
 mod error;
 mod response;
+// The private worker is introduced before its transport adapters consume it.
 #[cfg(test)]
 mod tls_policy;
 #[cfg(test)]
 #[path = "tls_policy_tests.rs"]
 mod tls_policy_tests;
+#[allow(dead_code)]
+mod worker;
 
 pub use error::{RequestDeliveryState, TransportCauseCategory, TransportError};
 pub use response::TransportResponse;
