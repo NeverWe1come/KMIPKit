@@ -221,6 +221,7 @@ def _validated_spdx_expression(value: Any) -> str | None:
         if index >= len(tokens):
             return False
         token = tokens[index]
+        parenthesized = token == "("
         if token == "(":
             index += 1
             if not parse_or_expression() or index >= len(tokens) or tokens[index] != ")":
@@ -234,6 +235,8 @@ def _validated_spdx_expression(value: Any) -> str | None:
             return False
 
         if index < len(tokens) and tokens[index] == "WITH":
+            if parenthesized:
+                return False
             index += 1
             if index >= len(tokens):
                 return False
