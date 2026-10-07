@@ -812,3 +812,11 @@ The Python adapter's Extension Information test expectation was also corrected t
   reported that the job failed to be acquired after five attempts. This is a
   runner-acquisition failure, not a coverage-threshold result, and must be rerun.
 - No source implementation changes are included in this Red evidence.
+## 2026-10-07 — Rust 1.94 FFI coverage-harness Clippy fix (Green)
+
+- `crates/kmipkit-ffi/tests/c_api_coverage.rs` now passes an explicit `&raw mut`
+  output pointer and converts the C `argc` with checked `i32::try_from`.
+- WSL Ubuntu / Rust 1.94.1:
+  `cargo +1.94 clippy -p kmipkit-ffi --test c_api_coverage --all-features -- -D warnings` — passed.
+- WSL Ubuntu / Rust 1.94.1:
+  `cargo +1.94 test -p kmipkit-ffi --test c_api_coverage --all-features -- --nocapture` — passed (1 Rust test); the linked C consumer passed all 13 groups.

@@ -28,17 +28,19 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
     let fixture = CString::new(fixture.to_str().expect("fixture path is UTF-8"))
         .expect("fixture path has no NUL byte");
     let mut arguments = [executable.as_ptr().cast_mut(), fixture.as_ptr().cast_mut()];
+    let argument_count =
+        i32::try_from(arguments.len()).expect("the C consumer argument count fits in i32");
     let mut limits = std::ptr::null_mut();
 
     // SAFETY: `limits` is a valid writable output slot and every C string and argument pointer
     // remains live for each call; the C consumer reads these arguments and uses valid handles.
     let result = unsafe {
-        let status = kmipkit_codec_limits_defaults(&mut limits);
+        let status = kmipkit_codec_limits_defaults(&raw mut limits);
         if status != 0 || limits.is_null() {
             return assert_eq!(status, 0, "codec limits defaults must succeed");
         }
         kmipkit_codec_limits_release(limits);
-        kmipkit_extension_registry_c_consumer_main(arguments.len() as i32, arguments.as_mut_ptr())
+        kmipkit_extension_registry_c_consumer_main(argument_count, arguments.as_mut_ptr())
     };
 
     assert_eq!(result, 0, "the existing C ABI behavior suite must pass");
