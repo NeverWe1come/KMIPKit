@@ -7,11 +7,35 @@ return Python-owned values and never return CFFI pointers.
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import wraps
 from threading import RLock
+from types import FunctionType
 from typing import Any, Self
 
 from . import errors
 from ._ffi import ffi, lib
+
+
+_NATIVE_CALL_LOCK = RLock()
+
+
+def synchronized_native_call(function: Callable[..., Any]) -> Callable[..., Any]:
+    """Keep wrapper handles alive while one public operation crosses CFFI."""
+
+    @wraps(function)
+    def invoke(*arguments: object, **keywords: object) -> Any:
+        with _NATIVE_CALL_LOCK:
+            return function(*arguments, **keywords)
+
+    return invoke
+
+
+def synchronize_public_functions(namespace: dict[str, object], names: list[str]) -> None:
+    """Serialize exported CFFI operations against native-handle release."""
+    for name in names:
+        function = namespace.get(name)
+        if isinstance(function, FunctionType):
+            namespace[name] = synchronized_native_call(function)
 
 
 class NativeHandle:
@@ -63,15 +87,16 @@ class NativeHandle:
             return self.__handle == ffi.NULL
 
     def close(self) -> None:
-        with self.__lock:
-            handle = self.__handle
-            if handle == ffi.NULL:
-                return
-            self.__handle = ffi.NULL
-            owner = self._owner
-            self._owner = None
-        getattr(lib, self._release_name)(handle)
-        del owner
+        with _NATIVE_CALL_LOCK:
+            with self.__lock:
+                handle = self.__handle
+                if handle == ffi.NULL:
+                    return
+                self.__handle = ffi.NULL
+                owner = self._owner
+                self._owner = None
+            getattr(lib, self._release_name)(handle)
+            del owner
 
     def __enter__(self) -> Self:
         self._pointer()

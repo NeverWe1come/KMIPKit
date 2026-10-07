@@ -17,7 +17,14 @@ from typing import Any, overload
 
 from . import errors, ttlv
 from ._ffi import ffi, lib
-from ._handles import NativeHandle, _invoke, _invoke_consuming, _owned_bytes, _scalar
+from ._handles import (
+    NativeHandle,
+    _invoke,
+    _invoke_consuming,
+    _owned_bytes,
+    _scalar,
+    synchronize_public_functions,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -1223,3 +1230,5 @@ __all__ = [
     "with_type",
     "with_unsigned_range",
 ]
+
+synchronize_public_functions(globals(), __all__)

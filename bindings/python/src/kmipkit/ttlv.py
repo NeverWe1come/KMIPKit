@@ -6,7 +6,13 @@ from enum import IntEnum
 
 from . import errors
 from ._ffi import ffi, lib
-from ._handles import NativeHandle, _invoke, _new_handle, _scalar
+from ._handles import (
+    NativeHandle,
+    _invoke,
+    _new_handle,
+    _scalar,
+    synchronize_public_functions,
+)
 
 
 class ItemType(IntEnum):
@@ -367,3 +373,5 @@ __all__ = [
     "TtlvItemView",
     "TtlvValueView",
 ]
+
+synchronize_public_functions(globals(), __all__)
