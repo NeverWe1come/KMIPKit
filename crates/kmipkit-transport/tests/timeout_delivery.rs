@@ -7,6 +7,7 @@
 //! missing production module before runtime assertions can execute.
 
 use std::convert::Infallible;
+use std::error::Error as StdError;
 use std::io::{self, IoSlice};
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
@@ -354,9 +355,8 @@ async fn hyper_sender_readiness_timeout_is_not_sent_before_dispatch_commit() {
             Some(target_deadline),
         )
         .await;
-        let first_error = match first_attempt {
-            Ok(_) => panic!("the actual request remains blocked at sender readiness"),
-            Err(error) => error,
+        let Err(first_error) = first_attempt else {
+            panic!("the actual request remains blocked at sender readiness");
         };
 
         assert_eq!(first_error.kind(), io::ErrorKind::TimedOut);
@@ -520,6 +520,7 @@ async fn hyper_header_write_can_timeout_before_any_ttlv_body_byte() {
         .send_request(request(OneChunkBody::new(b"TTLV")))
         .await
         .expect_err("the body write blocks after Hyper has emitted its headers");
+    assert!(error_chain_has_io_kind(&error, io::ErrorKind::TimedOut));
 
     let bytes = observed.written_bytes();
     let body_start = bytes
@@ -528,7 +529,7 @@ async fn hyper_header_write_can_timeout_before_any_ttlv_body_byte() {
         .map(|position| position + 4)
         .expect("Hyper emitted the request headers");
     assert!(bytes[..body_start].starts_with(b"POST /kmip HTTP/1.1\r\n"));
-    assert!(bytes[body_start..].is_empty());
+    assert_eq!(bytes[body_start..], []);
     assert_eq!(control.cancel(), RequestDeliveryState::PossiblySent);
     connection.abort();
 }
@@ -613,7 +614,7 @@ async fn a_positive_wrapped_read_wins_before_timeout_finalization() {
         .expect("response body does not end before bytes arrive")
         .expect_err("the response body read hits its inactivity deadline");
 
-    assert!(error.is_timeout());
+    assert!(error_chain_has_io_kind(&error, io::ErrorKind::TimedOut));
     let finalizing_control = control.clone();
     let (cleanup_started_tx, cleanup_started_rx) = tokio::sync::oneshot::channel();
     let (release_cleanup_tx, release_cleanup_rx) = tokio::sync::oneshot::channel();
@@ -663,7 +664,7 @@ async fn vectored_writes_are_subject_to_the_same_write_deadline() {
     let second = IoSlice::new(b"body");
 
     let error =
-        poll_fn(|cx| Pin::new(&mut io).poll_write_vectored(cx, &[first.clone(), second.clone()]))
+        poll_fn(|cx| Pin::new(&mut io).poll_write_vectored(cx, &[first, second]))
             .await
             .expect_err("a blocked vectored write is bounded by the write deadline");
 
@@ -774,6 +775,20 @@ async fn read_http_headers<R: AsyncRead + Unpin>(reader: &mut R) -> Vec<u8> {
             return bytes;
         }
     }
+}
+
+fn error_chain_has_io_kind(error: &(dyn StdError + 'static), kind: io::ErrorKind) -> bool {
+    let mut source = Some(error);
+    while let Some(current) = source {
+        if current
+            .downcast_ref::<io::Error>()
+            .is_some_and(|source| source.kind() == kind)
+        {
+            return true;
+        }
+        source = current.source();
+    }
+    false
 }
 
 fn request(body: impl Into<TestBody>) -> Request<TestBody> {
