@@ -479,6 +479,7 @@ class CoverageReportTests(unittest.TestCase):
             if line.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
         )
         self.assertIn("| selected | false |", baseline_row)
+        self.assertIn("| selected | false | evidence\\_incomplete |", baseline_row)
         self.assertIn("No typed rule mapping", report)
         self.assertIn("No category-appropriate rule test", report)
         self.assertIn("mandatory fixtures unavailable: 16", report)

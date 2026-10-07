@@ -2037,7 +2037,17 @@ class CatalogValidationTests(unittest.TestCase):
         profiles = document["profiles"]
         self.assertEqual(len(profiles), 35)
         self.assertTrue({"client", "server"}.issubset({profile["role"] for profile in profiles}))
-        self.assertTrue(all(profile["claim_state"] == "not_claimed" for profile in profiles))
+        baseline_state = next(
+            profile["claim_state"]
+            for profile in profiles
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        self.assertEqual("evidence_incomplete", baseline_state)
+        self.assertTrue(all(
+            profile["claim_state"] == "not_claimed"
+            for profile in profiles
+            if profile["profile_id"] != "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        ))
         self.assertTrue(all(profile["source_refs"] for profile in profiles))
         self.assertTrue(all(profile["source_clause_ids"] for profile in profiles))
         self.assertTrue(all(profile["requirement_ids"] for profile in profiles))

@@ -8785,7 +8785,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         profile_id: "KMIPKIT-PROFILE-BASELINE-CLIENT",
         name: "Baseline Client",
         applicability: "client_1_0",
-        claim_state: "not_claimed",
+        claim_state: "evidence_incomplete",
         selected_target: true,
         direct_source_clause_ids: &[
             "KMIPKIT-CLAUSE-PROF-3.1-001",

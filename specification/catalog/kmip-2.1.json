@@ -97414,7 +97414,7 @@
       "transport_requirements": [],
       "encoding_requirements": [],
       "applicability": "client_1_0",
-      "claim_state": "not_claimed",
+      "claim_state": "evidence_incomplete",
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-3.1.1-002",
