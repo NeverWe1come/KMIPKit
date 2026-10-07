@@ -144,6 +144,19 @@ limits, and deadlines on Linux, Windows, and macOS. Replacing Hickory with a
 blocking system lookup would not implement the bounded asynchronous resolver
 contract in `spec.md` and `research.md`.
 
+An isolated Apple-target graph was also checked with
+`rustls-native-certs` 0.7.3, the latest 0.7 release, alongside Hickory 0.26.3.
+That candidate resolves both platform dependencies through
+`core-foundation` 0.9.4 and removes the `core-foundation` 0.10.1 duplicate for
+that dependency pair. It does not remove the workspace's `syn` 2/3 duplicate,
+which remains reachable through Hickory's macro and ICU/IDNA dependency graph.
+The candidate also changes the security-framework major version from 3 to 2
+and downgrades the explicitly selected native-certificate loader. KMIPKIT-0013
+pins `rustls-native-certs` 0.8.4 in its accepted spec and TLS contract, so this
+alternative is not compatible with the approved dependency set without a
+specification review. The probe ran in a temporary project; it did not modify
+the repository manifests or lockfile.
+
 An attempted lockfile-only alignment pinned compatible releases of
 `async-trait`, `displaydoc`, `futures-util`, `thiserror`, `tokio-macros`, and
 the ICU derive chain so the reachable proc-macro graph used `syn` 2.0.119.
