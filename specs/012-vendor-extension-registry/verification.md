@@ -148,6 +148,37 @@ This is feature-level incremental evidence, not the T061 release-readiness gate;
 cross-language parity, coverage, fuzzing, sanitizer jobs, and interoperability
 remain open.
 
+## 2026-10-07 — registry provenance seal (partial cross-spec correction)
+
+Independent QA found that a registry-validated outbound value did not retain
+which immutable client registry produced it. Added a private per-registry
+identity token, cloned into each `RegisteredExtensionValue` and retained by
+the request-use wrapper. The regression test proves that configuration A
+recognizes a value validated by A and configuration B does not.
+
+This closes the provenance-loss portion of the finding. The current KMIPKIT-0007
+`Client::execute` has no client-configuration field, so it cannot yet reject a
+cross-configuration request before encoding or exchange. KMIPKIT-0013 owns the
+production client constructor; its integration must retain the registry
+configuration and perform this token comparison at the start of execution,
+returning sanitized `InvalidInput` with `NotSent` before message construction.
+That cross-spec execution check remains open and must be covered by a public
+client test before the finding is closed.
+
+Red/Green evidence:
+
+- Red: `de93ace`; the provenance regression test failed to compile because the
+  request wrapper had no registry-ownership check.
+- Green: recorded in the following implementation commit; the private token is
+  checked by the wrapper against the configuration's immutable registry.
+
+### Verification
+
+- `cargo fmt --all --check` — passed.
+- `cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo test -p kmipkit-client -p kmipkit-protocol --all-features --quiet` — passed, including the new provenance regression test.
+- `git diff --check` — passed.
+
 ## 2026-10-07 — registry total accounting refactor
 
 Extracted checked, bounded accumulation of registry text bytes, schema nodes,

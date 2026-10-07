@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::hash::{DefaultHasher, Hasher};
+use std::sync::Arc;
 
 use crate::ClientError;
 use kmipkit_protocol::extension::{
@@ -89,6 +90,7 @@ pub struct ClientExtensionRegistry {
     metadata_order: Vec<usize>,
     discriminator_index: DiscriminatorIndex,
     limits: ExtensionRegistryLimits,
+    identity: Arc<()>,
 }
 
 /// An extension value validated against one exact definition in a client registry.
@@ -98,6 +100,7 @@ pub struct ClientExtensionRegistry {
 /// definition. Only [`validate_extension_value`] can create it.
 pub struct RegisteredExtensionValue {
     value: ValidatedExtensionValue,
+    registry_identity: Arc<()>,
 }
 
 impl fmt::Debug for RegisteredExtensionValue {
@@ -143,6 +146,16 @@ impl ClientRequestMessageExtension {
 
     pub(crate) const fn criticality_indicator(&self) -> bool {
         self.criticality_indicator
+    }
+
+    /// Checks whether this request value was sealed by the given client configuration.
+    // KMIPKIT-0013 consumes this when the production client retains its configuration.
+    #[allow(dead_code)]
+    pub(crate) fn is_owned_by(&self, configuration: &ClientConfiguration) -> bool {
+        Arc::ptr_eq(
+            &self.value.registry_identity,
+            &configuration.extension_registry.identity,
+        )
     }
 }
 
@@ -233,6 +246,7 @@ fn build_registry(
         metadata_order: indexes.metadata_order,
         discriminator_index: indexes.discriminator,
         limits,
+        identity: Arc::new(()),
     })
 }
 
@@ -295,7 +309,10 @@ pub fn validate_extension_value(
     };
     let value = extension::validate(definition, value, limits)
         .map_err(|error| ClientError::protocol(error, RequestDeliveryState::NotSent))?;
-    Ok(RegisteredExtensionValue { value })
+    Ok(RegisteredExtensionValue {
+        value,
+        registry_identity: Arc::clone(&registry.identity),
+    })
 }
 
 /// Returns the candidate definition indexes for one discriminator fingerprint.
@@ -552,8 +569,8 @@ impl Error for UnregisteredExtension {}
 #[cfg(test)]
 mod tests {
     use super::{
-        candidate_matches_discriminator, client_extension_registry, client_request_message_extension,
-        discriminator_candidates, validate_extension_value, ClientConfiguration,
+        ClientConfiguration, candidate_matches_discriminator, client_extension_registry,
+        client_request_message_extension, discriminator_candidates, validate_extension_value,
     };
     use crate::extension_registry_test_support::index_compilation_attempts;
     use kmipkit_protocol::extension;
@@ -674,16 +691,12 @@ mod tests {
 
     #[test]
     fn registered_request_values_retain_their_source_registry_identity() {
-        let registry_a = client_extension_registry(
-            vec![definition("alpha", "alpha-v1")],
-            extension::defaults(),
-        )
-        .expect("registry A is valid");
-        let registry_b = client_extension_registry(
-            vec![definition("alpha", "alpha-v1")],
-            extension::defaults(),
-        )
-        .expect("registry B is independently valid");
+        let registry_a =
+            client_extension_registry(vec![definition("alpha", "alpha-v1")], extension::defaults())
+                .expect("registry A is valid");
+        let registry_b =
+            client_extension_registry(vec![definition("alpha", "alpha-v1")], extension::defaults())
+                .expect("registry B is independently valid");
         let configuration_a = ClientConfiguration::new(registry_a);
         let configuration_b = ClientConfiguration::new(registry_b);
         let identity = extension::extension_identity("example.vendor", "alpha", "1")
