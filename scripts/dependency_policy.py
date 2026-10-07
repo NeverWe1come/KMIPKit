@@ -20,7 +20,6 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 CRATES_IO_SOURCE = "registry+https://github.com/rust-lang/crates.io-index"
 ADR_0005_BANNED_PACKAGES = frozenset({"native-tls", "openssl", "openssl-sys"})
 EXCEPTION_ID_PATTERN = re.compile(r"KMIPKIT-0011-EX-[0-9]{3,}")
-MAX_EXCEPTION_DIAGNOSTICS = 20
 PACKAGE_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 VERSION_PATTERN = re.compile(
     r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
@@ -910,13 +909,8 @@ def _finding_matches(entry: dict[str, Any], item: dict[str, Any]) -> bool:
 
 
 def _format_exception_diagnostics(diagnostics: list[str]) -> str:
-    """Bound the exact-exception report so CI output stays concise."""
-    visible_diagnostics = diagnostics[:MAX_EXCEPTION_DIAGNOSTICS]
-    details = "; ".join(visible_diagnostics)
-    omitted = len(diagnostics) - len(visible_diagnostics)
-    if omitted:
-        details += f"; and {omitted} additional exception validation finding(s)"
-    return details
+    """Keep every exact-exception finding visible in the policy report."""
+    return "; ".join(diagnostics)
 
 
 def validate_exceptions(register: Any, findings: list[dict], *, today: date | None = None) -> list[str]:
@@ -948,7 +942,10 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
         if "source" in item:
             finding_copy["source"] = _validate_source(item["source"], require_immutable_git=False)
         if "advisory_id" in item:
-            finding_copy["advisory_id"] = _text(item["advisory_id"], "finding advisory ID", maximum=64)
+            advisory_id = _text(item["advisory_id"], "finding advisory ID", maximum=64)
+            if not ADVISORY_ID_PATTERN.fullmatch(advisory_id):
+                raise PolicyError("dependency finding advisory ID is malformed")
+            finding_copy["advisory_id"] = advisory_id
         normalized_findings.append(finding_copy)
 
     matched_entry_indexes: set[int] = set()
@@ -965,9 +962,12 @@ def validate_exceptions(register: Any, findings: list[dict], *, today: date | No
                 if not matches
                 else "matches multiple registered exceptions"
             )
+            source = _redact_diagnostic_source(finding_item.get("source"))
+            advisory = finding_item.get("advisory_id")
+            advisory_detail = f" advisory={advisory}" if advisory is not None else ""
             exception_diagnostics.append(
-                f"{finding_item['kind']} finding "
-                f"{finding_item['package']}@{finding_item['version']} {match_status}"
+                f"finding {finding_item['package']}@{finding_item['version']} "
+                f"source={source} rule={finding_item['kind']}{advisory_detail} {match_status}"
             )
             continue
         index, entry = matches[0]
@@ -1435,14 +1435,12 @@ def main(argv: list[str] | None = None) -> int:
             additional_findings = _read_json(arguments.findings, "dependency findings")
             if not isinstance(additional_findings, list):
                 raise PolicyError("dependency findings must be a JSON array")
-            if not exceptions and additional_findings:
-                raise PolicyError("dependency findings were supplied without registered exceptions")
             unique_findings = {
                 json.dumps(item, sort_keys=True, separators=(",", ":")): item
                 for item in additional_findings
             }
             findings.extend(unique_findings.values())
-        if exceptions:
+        if exceptions or arguments.findings is not None:
             matched_exception_ids = validate_exceptions(register, findings)
     except PolicyError as error:
         print(f"dependency policy: {error}", file=sys.stderr)
