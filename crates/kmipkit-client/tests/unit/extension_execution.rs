@@ -326,6 +326,7 @@ fn a_registered_critical_response_extension_is_accepted_by_typed_execution() {
 
 #[test]
 fn a_registered_critical_async_response_extension_is_accepted() {
+    let registered = registry();
     let (mut client, transport) = client_for_configuration(
         response_with_extension_for_operation(true, 0x0000_001A),
         ClientConfiguration::new(registry()),
@@ -338,6 +339,14 @@ fn a_registered_critical_async_response_extension_is_accepted() {
         .expect("a registered critical extension is recognized in an async response");
 
     assert_eq!(outcome.operation(), crate::ClientOperation::Poll);
+    let extension = &outcome.extensions()[0];
+    let (vendor, criticality, payload) = extension_parts(extension);
+    let recognition =
+        extension_registry::inspect(&registered, &vendor, payload, &CodecLimits::defaults())
+            .expect("the returned async generic payload remains inspectable");
+    assert!(criticality);
+    assert!(extension_registry::is_recognized(&recognition));
+    assert!(!format!("{extension:?}").contains(VENDOR));
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
