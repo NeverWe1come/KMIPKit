@@ -342,8 +342,13 @@ class DependencyPolicyApiTests(unittest.TestCase):
         baseline = tomllib.loads(
             (REPOSITORY_ROOT / ".cargo" / "deny-baseline.toml").read_text(encoding="utf-8")
         )
+        register = json.loads(
+            (REPOSITORY_ROOT / "specification" / "compliance" / "dependency-policy-exceptions.json").read_text(
+                encoding="utf-8"
+            )
+        )
         policy.validate_exception_config(
-            {"schema_version": 1, "exceptions": []},
+            register,
             configured,
             baseline_config=baseline,
         )
@@ -626,7 +631,7 @@ class DependencyExceptionTests(unittest.TestCase):
                     "--license-identifiers",
                     str(license_identifiers),
                     "--deny-config",
-                    str(REPOSITORY_ROOT / ".cargo" / "deny.toml"),
+                    str(REPOSITORY_ROOT / ".cargo" / "deny-baseline.toml"),
                     "--baseline-deny-config",
                     str(REPOSITORY_ROOT / ".cargo" / "deny-baseline.toml"),
                     "--exceptions",
