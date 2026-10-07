@@ -21,7 +21,7 @@ skip = []
 
 [licenses]
 include-dev = true
-allow = ["Apache-2.0", "MIT", "NCSA", "Unicode-3.0", "Unlicense"]
+allow = ["Apache-2.0", "BSD-3-Clause", "ISC", "MIT", "NCSA", "Unicode-3.0", "Unlicense"]
 exceptions = []
 clarify = []
 

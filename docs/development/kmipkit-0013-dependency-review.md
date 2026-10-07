@@ -194,11 +194,12 @@ syn@2.0.119` and `cargo tree --locked --workspace -i syn@3.0.6`. The version
 and graph findings supplement, but do not replace, the required human review.
 T003 remains unchecked.
 
-## Proposed disposition for independent human review
+## Dependency disposition and license policy approval
 
 The maintainer requested a concrete way to clear the remaining dependency
-gate. The following is a review proposal, not an approved policy change. The
-current specification pins Hickory 0.26.3 and `rustls-native-certs` 0.8.4;
+gate. The duplicate-version disposition below remains a review proposal; the
+license allowlist decision is recorded as approved below. The current
+specification pins Hickory 0.26.3 and `rustls-native-certs` 0.8.4;
 their Apple-target transitive constraints require `core-foundation` 0.9.4 and
 0.10.1 respectively. The two `syn` major versions are also reachable through
 Hickory's current proc-macro graph. `syn` 2 is required transitively by
@@ -218,18 +219,24 @@ macro dependencies that remove the `syn` split, while preserving patched
 `zerovec` versions. An alternative version or DNS design requires review of
 the accepted KMIPKIT-0013 specification and platform-trust contract.
 
-**Recommended license decision:** Have the reviewer assess a finite expansion
-of the SPDX allowlist by `ISC` and `BSD-3-Clause`, with the corresponding
-third-party notices retained for distribution. The [SPDX ISC text](https://spdx.org/licenses/ISC.html)
-and [SPDX BSD-3-Clause text](https://spdx.org/licenses/BSD-3-Clause.html)
-provide the standard identifiers and terms. A temporary cargo-deny 0.20.2
-config, differing from `.cargo/deny.toml` only by these two identifiers, was
-checked offline for the license rule. The root workspace changed from five
-license errors to zero; fuzz remained at zero. This probe did not alter either
-checked-in config and does not replace the online advisory check or a human
-license disposition. If the reviewer declines an allowlist expansion, the
-policy instead requires five package/version-specific clarifications with
-reviewed license-file evidence.
+**Approved license decision (2026-10-07):** The KMIPKit maintainer
+(@NeverWe1come) reviewed the locked package license evidence and the standard
+[SPDX ISC text](https://spdx.org/licenses/ISC.html) and
+[SPDX BSD-3-Clause text](https://spdx.org/licenses/BSD-3-Clause.html), and
+approved adding both identifiers to the finite dependency license allowlist.
+This approval covers dependencies in both root and fuzz graphs whose declared
+SPDX expressions use these identifiers. The allowlist is synchronized in
+`.cargo/deny.toml` and `.cargo/deny-baseline.toml`; the package license files
+and third-party notices remain the distribution evidence. The approval was
+given directly by the maintainer in the Codex task on 2026-10-07 and is
+recorded here in the reviewed PR commit.
+
+A temporary cargo-deny 0.20.2 config, differing from the previous
+`.cargo/deny.toml` only by these two identifiers, was checked offline for the
+license rule. The root workspace changed from five license errors to zero;
+fuzz remained at zero. This probe did not alter either checked-in config and
+does not replace the online advisory check. The checked-in allowlist change
+applies that approved decision.
 
 The exact locked package archives expose these top-level license files. The
 hashes below are SHA-256 of the files extracted from the crates.io packages;
@@ -245,7 +252,8 @@ the native library and others that are not compiled:
 | `subtle@2.6.1` | `LICENSE` | `d1fc1bc0d155df60b2e7705b6b2ae02a05c96f948e1cec6e2fb86360b09f346b` |
 | `untrusted@0.9.0` | `LICENSE.txt` | `7abd9b6960dcf7d4d0a48606a5b71bfe37d472db68d70637f3a58a56785f1621` |
 
-No machine-readable exception or allowlist change should be represented as
-approved until that human decision is recorded. Once it is, update the
-register, cargo-deny configuration, and this review together, then rerun the
-official policy command and the full CI matrix. T003 remains incomplete.
+The license allowlist decision above is approved. The four duplicate-version
+exceptions remain proposals and still require their own independent human
+review before registration. Run the official policy command and CI after this
+configuration change; T003 remains incomplete until the dependency review is
+complete.
