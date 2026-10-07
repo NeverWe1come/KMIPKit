@@ -136,28 +136,6 @@
       "minLength": 1,
       "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
     },
-    "signatureType": {
-      "type": "string",
-      "minLength": 1,
-      "pattern": "^(?:\\(\\)|(?:&(?:'[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?|)[A-Za-z_][A-Za-z0-9_]*(?:[A-Za-z0-9_:.<> ,&|?|'\\[\\]]*)?)$",
-      "description": "A source-language type expression only, without a value expression or declaration body. Used for complete binding parameter and return types."
-    },
-    "bindingParameter": {
-      "type": "object",
-      "required": [
-        "name",
-        "type"
-      ],
-      "properties": {
-        "name": {
-          "$ref": "#/$defs/identifier"
-        },
-        "type": {
-          "$ref": "#/$defs/signatureType"
-        }
-      },
-      "additionalProperties": false
-    },
     "rustOwner": {
       "type": "string",
       "enum": [
@@ -549,10 +527,16 @@
             "type": {
               "type": "string",
               "enum": [
+                "int8_t *",
+                "uint8_t *",
+                "int16_t *",
+                "uint16_t *",
                 "int32_t *",
                 "uint32_t *",
+                "int64_t *",
                 "uint64_t *"
-              ]
+              ],
+              "description": "Pointer to one fixed-width integer result; not nullable."
             },
             "ownership": {
               "const": "none"
@@ -720,13 +704,12 @@
             "parameters": {
               "type": "array",
               "items": {
-                "$ref": "#/$defs/bindingParameter"
+                "$ref": "#/$defs/rustParameter"
               },
               "description": "Rust parameter names and types, in declaration order."
             },
             "returnType": {
-              "$ref": "#/$defs/signatureType",
-              "description": "Complete Rust return type, including a Result<T, E> wrapper when the public function returns errors."
+              "$ref": "#/$defs/rustType"
             }
           },
           "additionalProperties": false
@@ -787,7 +770,7 @@
             "parameters": {
               "type": "array",
               "items": {
-                "$ref": "#/$defs/bindingParameter"
+                "$ref": "#/$defs/javaParameter"
               },
               "description": "Java parameter names and types, in declaration order."
             },
@@ -799,8 +782,7 @@
               "$ref": "#/$defs/errorCategoryIds"
             },
             "returnType": {
-              "$ref": "#/$defs/signatureType",
-              "description": "Complete Java method return type."
+              "$ref": "#/$defs/javaType"
             }
           },
           "additionalProperties": false
@@ -827,7 +809,7 @@
             "parameters": {
               "type": "array",
               "items": {
-                "$ref": "#/$defs/bindingParameter"
+                "$ref": "#/$defs/pythonParameter"
               },
               "description": "Python parameter names and types, in declaration order."
             },
@@ -839,8 +821,7 @@
               "$ref": "#/$defs/errorCategoryIds"
             },
             "returnType": {
-              "$ref": "#/$defs/signatureType",
-              "description": "Complete Python function return type."
+              "$ref": "#/$defs/pythonType"
             }
           },
           "additionalProperties": false
@@ -1406,6 +1387,110 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 18446744073709551615
+        }
+      },
+      "additionalProperties": false
+    },
+    "rustType": {
+      "type": "string",
+      "minLength": 1,
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?)*\\s*>$"
+        },
+        {
+          "pattern": "^\\(\\)$"
+        },
+        {
+          "pattern": "^\\(\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*,(?:\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*)?\\s*\\)$"
+        },
+        {
+          "pattern": "^\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*;\\s*[0-9]+\\s*\\]$"
+        },
+        {
+          "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        {
+          "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>$"
+        },
+        {
+          "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*\\]$"
+        }
+      ],
+      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty arguments, unit and tuple types, fixed arrays, references, and borrowed slices."
+    },
+    "javaType": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\[\\])*$",
+      "description": "Java type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty type arguments. Wildcards are unsupported."
+    },
+    "pythonType": {
+      "type": "string",
+      "minLength": 1,
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.)(?:\\s*,\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.))*\\s*\\]$"
+        },
+        {
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.)(?:\\s*,\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.))*\\s*\\])(?:\\s*\\|\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.)(?:\\s*,\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.))*\\s*\\]))+$"
+        }
+      ],
+      "description": "Python 3 type subset: simple or dotted names, one-level subscripted generics (including tuple ellipsis), and PEP 604 unions."
+    },
+    "rustParameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "$ref": "#/$defs/rustType"
+        }
+      },
+      "additionalProperties": false
+    },
+    "javaParameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "$ref": "#/$defs/javaType"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pythonParameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "$ref": "#/$defs/pythonType"
         }
       },
       "additionalProperties": false
