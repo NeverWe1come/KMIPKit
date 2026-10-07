@@ -33,7 +33,14 @@ if [[ ! -f "${source_file}" ]]; then
 fi
 
 # Keep cargo-llvm-cov's target and merged profile from the workspace collection.
-cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked
+readonly cargo_output="${report_dir}/cargo-llvm-cov.log"
+cargo_status=0
+CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked \
+    > "${cargo_output}" 2>&1 || cargo_status=$?
+cat "${cargo_output}"
+if [[ "${cargo_status}" -ne 0 ]]; then
+    exit "${cargo_status}"
+fi
 
 readonly profile_data="${llvm_cov_target}/KMIPKit.profdata"
 readonly ffi_dso="${llvm_cov_target}/debug/deps/libkmipkit_ffi.so"
@@ -43,19 +50,17 @@ if [[ ! -f "${profile_data}" || ! -f "${ffi_dso}" || ! -f "${ffi_staticlib}" ]];
     exit 1
 fi
 
-test_binaries=("${llvm_cov_target}"/debug/deps/c_api_coverage-*)
-test_binary=""
-for candidate in "${test_binaries[@]}"; do
-    if [[ -f "${candidate}" && -x "${candidate}" && "${candidate}" != *.d ]]; then
-        if [[ -n "${test_binary}" ]]; then
-            printf 'Multiple C ABI coverage test binaries found; expected one under %s.\n' "${llvm_cov_target}/debug/deps" >&2
-            exit 1
-        fi
-        test_binary="${candidate}"
-    fi
-done
-if [[ -z "${test_binary}" ]]; then
-    printf 'The C ABI coverage test executable is missing under %s.\n' "${llvm_cov_target}/debug/deps" >&2
+test_binary_name="$(
+    sed -nE '/Running tests\/c_api_coverage\.rs /s@.*(c_api_coverage-[[:xdigit:]]+).*@\1@p' \
+        "${cargo_output}" | tail -n 1
+)"
+if [[ -z "${test_binary_name}" ]]; then
+    printf 'Cargo did not report the C ABI coverage test executable in %s.\n' "${cargo_output}" >&2
+    exit 1
+fi
+readonly test_binary="${llvm_cov_target}/debug/deps/${test_binary_name}"
+if [[ ! -f "${test_binary}" || ! -x "${test_binary}" ]]; then
+    printf 'The C ABI coverage test executable is missing under %s.\n' "${test_binary}" >&2
     exit 1
 fi
 

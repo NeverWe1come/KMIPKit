@@ -431,14 +431,14 @@ jobs:
         run: rustup toolchain install 1.94 --profile minimal
 
       - name: Set up Java 17
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2 # actions/setup-java v6.0.1
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # actions/setup-java v6.0.1
         with:
           distribution: temurin
           java-version: '17'
           cache: maven
 
       - name: Set up Maven 3.9.16
-        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5ce4 # stCarolas/setup-maven v5.1
+        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # stCarolas/setup-maven v5.1
         with:
           maven-version: '3.9.16'
 
