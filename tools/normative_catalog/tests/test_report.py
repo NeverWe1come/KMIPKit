@@ -303,6 +303,32 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("KMIPKIT-REQ-PROF-5.1-001", report)
         self.assertIn("KMIPKIT-PROFILE-OTHER", report)
         self.assertIn("KMIPKIT-TEST-PROF-5-1-1", report)
+
+    def test_profile_report_separates_selected_target_from_claim_state(self) -> None:
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE",
+                "name": "Baseline",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_refs": [],
+                "source_clause_ids": [],
+                "requirement_ids": [],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+
+        report = render_report(catalog, selected_profile_ids={"KMIPKIT-PROFILE-BASELINE"})
+
+        self.assertIn("Selected target", report)
+        self.assertIn("not_claimed", report)
+        self.assertIn("selected", report)
         self.assertIn("BL-M-1-21", report)
         self.assertIn("mandatory", report)
         self.assertIn("BL-O-1-21", report)
