@@ -4,6 +4,10 @@
 **Base**: `f3b4247789ad987c97e0874c81238e79b427eb9a` (`release/1.0.0`)  
 **Status**: In progress; no profile conformance claim is made.
 
+## Authorization and scope
+
+Implementation is authorized by the human task dispatch for KMIPKIT-0010, which directs work to proceed without approval prompts in the assigned worktree. Scope is limited to the approved feature specification, its plan/contracts/tasks, and the stated fail-closed audit rulings. Human review and approval before merge remain required.
+
 ## Independent audit rulings
 
 | Finding | Resolution | Evidence location/status |
