@@ -4,6 +4,7 @@
 //! KMIPKIT-0012-SC-002.
 
 use kmipkit_client::extension_registry;
+use kmipkit_client::{ClientError, ClientErrorCategory};
 use kmipkit_protocol::extension;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Tag, ValueView};
 
@@ -48,26 +49,40 @@ fn tag(raw: u32) -> Tag {
 }
 
 fn definition(fixture: &FixtureDefinition) -> extension::ExtensionDefinition {
-    let identity = extension::extension_identity(VENDOR_IDENTIFIER, fixture.name, fixture.version)
+    definition_with(
+        fixture.name,
+        fixture.version,
+        fixture.discriminator_path,
+        fixture.discriminator_value,
+    )
+}
+
+fn definition_with(
+    name: &str,
+    version: &str,
+    discriminator_path: &[u32],
+    discriminator_value: &str,
+) -> extension::ExtensionDefinition {
+    let identity = extension::extension_identity(VENDOR_IDENTIFIER, name, version)
         .expect("the shared fixture identity is valid");
     let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
         .expect("the shared fixture is compatible with this client");
 
-    let mut path = extension::ttlv_path(tag(fixture.discriminator_path[0]))
+    let mut path = extension::ttlv_path(tag(discriminator_path[0]))
         .expect("the fixture discriminator path is non-empty");
-    for raw_tag in &fixture.discriminator_path[1..] {
+    for raw_tag in &discriminator_path[1..] {
         path = extension::with_child_tag(path, tag(*raw_tag))
             .expect("the fixture discriminator path is valid");
     }
     let discriminator = extension::discriminator(
         path,
-        kmipkit_ttlv::Value::text_string(fixture.discriminator_value.to_owned()),
+        kmipkit_ttlv::Value::text_string(discriminator_value.to_owned()),
     )
     .expect("the fixture discriminator is a text scalar");
 
     let mut schema =
         extension::scalar(ItemType::TextString).expect("Text String is a supported schema scalar");
-    for raw_tag in fixture.discriminator_path.iter().rev() {
+    for raw_tag in discriminator_path.iter().rev() {
         let child = extension::required(tag(*raw_tag), schema)
             .expect("the fixture discriminator child rule is valid");
         schema = extension::structure(vec![child], Vec::new(), false)
@@ -77,7 +92,7 @@ fn definition(fixture: &FixtureDefinition) -> extension::ExtensionDefinition {
     let definition =
         extension::extension_definition(identity, compatibility, discriminator, schema)
             .expect("the shared fixture definition is internally consistent");
-    let information = extension::extension_information(fixture.name)
+    let information = extension::extension_information(name)
         .expect("the shared fixture metadata name is non-empty");
     extension::with_information(definition, information)
         .expect("the shared fixture metadata is valid")
@@ -151,7 +166,7 @@ fn client_registries_keep_definition_snapshots_isolated() {
     let alpha_definition =
         extension_registry::definition_for_identity(&alpha_registry, identity(alpha))
             .expect("the first registry contains its own definition");
-    assert!(extension::identity(alpha_definition) == identity(alpha));
+    assert_eq!(extension::identity(alpha_definition), identity(alpha));
     assert!(
         extension_registry::definition_for_identity(&alpha_registry, identity(beta)).is_none(),
         "the first registry does not expose the second registry's definition"
@@ -160,7 +175,7 @@ fn client_registries_keep_definition_snapshots_isolated() {
     let beta_definition =
         extension_registry::definition_for_identity(&beta_registry, identity(beta))
             .expect("the second registry contains its own definition");
-    assert!(extension::identity(beta_definition) == identity(beta));
+    assert_eq!(extension::identity(beta_definition), identity(beta));
     assert!(
         extension_registry::definition_for_identity(&beta_registry, identity(alpha)).is_none(),
         "the second registry does not expose the first registry's definition"
@@ -177,7 +192,7 @@ fn registry_read_operations_leave_the_constructed_snapshot_unchanged() {
     for fixture in selected {
         let found = extension_registry::definition_for_identity(&registry, identity(fixture))
             .expect("every registered identity remains addressable");
-        assert!(extension::identity(found) == identity(fixture));
+        assert_eq!(extension::identity(found), identity(fixture));
     }
     assert!(
         extension_registry::definition_for_identity(&registry, identity(&FIXTURES[2])).is_none(),
@@ -214,7 +229,101 @@ fn definition_and_metadata_views_ignore_registration_order() {
         for registry in [&forward, &reverse] {
             let found = extension_registry::definition_for_identity(registry, identity(fixture))
                 .expect("identity lookup is independent of registration order");
-            assert!(extension::identity(found) == expected);
+            assert_eq!(extension::identity(found), expected);
         }
     }
+}
+
+#[test]
+fn registry_rejects_duplicate_exact_discriminator_keys() {
+    let first = definition_with("alpha", "1", &[0x42_0001], "alpha-v1");
+    let second = definition_with("renamed-alpha", "1", &[0x42_0001], "alpha-v1");
+
+    let result: Result<_, ClientError> =
+        extension_registry::client_extension_registry(vec![first, second], extension::defaults());
+    let error = result.expect_err("one vendor cannot register the same exact discriminator twice");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert!(matches!(
+        error,
+        ClientError::Protocol { error, .. }
+            if error.kind() == kmipkit_protocol::ProtocolErrorKind::DuplicateKey
+    ));
+}
+
+#[test]
+fn client_configurations_own_isolated_immutable_registries() {
+    let alpha = definition_with("alpha", "1", &[0x42_0001], "alpha-v1");
+    let beta = definition_with("beta", "1", &[0x42_0002], "beta-v1");
+    let alpha_identity = extension::identity(&alpha);
+    let beta_identity = extension::identity(&beta);
+
+    let alpha_registry = extension_registry::client_extension_registry(
+        vec![alpha],
+        extension::defaults(),
+    )
+    .expect("alpha registry is valid");
+    let beta_registry = extension_registry::client_extension_registry(
+        vec![beta],
+        extension::defaults(),
+    )
+    .expect("beta registry is valid");
+    let alpha_configuration =
+        extension_registry::ClientConfiguration::new(alpha_registry);
+    let beta_configuration =
+        extension_registry::ClientConfiguration::new(beta_registry);
+
+    let alpha_registry = alpha_configuration.extension_registry();
+    let beta_registry = beta_configuration.extension_registry();
+    assert_eq!(extension_registry::definition_count(alpha_registry), 1);
+    assert_eq!(extension_registry::definition_count(beta_registry), 1);
+    assert!(
+        extension_registry::definition_for_identity(alpha_registry, alpha_identity).is_some()
+    );
+    assert!(
+        extension_registry::definition_for_identity(alpha_registry, beta_identity.clone())
+            .is_none(),
+        "one configuration must not observe another configuration's definitions"
+    );
+    assert!(
+        extension_registry::definition_for_identity(beta_registry, beta_identity).is_some()
+    );
+    assert!(
+        extension_registry::definition_for_identity(beta_registry, alpha_identity).is_none(),
+        "configuration registries stay isolated after attachment"
+    );
+}
+
+#[test]
+fn registry_accepts_distinct_discriminator_values_at_one_path() {
+    let alpha = definition_with("alpha", "1", &[0x42_0001], "alpha-v1");
+    let beta = definition_with("beta", "1", &[0x42_0001], "beta-v1");
+    let registry =
+        extension_registry::client_extension_registry(vec![alpha, beta], extension::defaults())
+            .expect("one vendor may use distinct exact values at the same path");
+    assert_eq!(extension_registry::definition_count(&registry), 2);
+}
+
+#[test]
+fn registry_rejects_a_definition_that_exceeds_configured_text_limits() {
+    let definition = definition(&FIXTURES[0]);
+    let limits = extension::with_values(
+        256, 16_384, 256, 1, 1_048_576, 4_096, 1_048_576, 256, 16_384, 200_000, 1_048_576, 64,
+    )
+    .expect("the reduced text limit remains below every hard maximum");
+
+    let result: Result<_, ClientError> =
+        extension_registry::client_extension_registry(vec![definition], limits);
+    let error = result.expect_err("the fixture identity is longer than the configured text limit");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert!(matches!(
+        error,
+        ClientError::Protocol { error, .. }
+            if error.kind() == kmipkit_protocol::ProtocolErrorKind::ResourceLimit
+    ));
 }
