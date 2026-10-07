@@ -106,12 +106,14 @@ class CoverageGateTests(unittest.TestCase):
                     raise AssertionError("Rust source scans must not copy source suffixes")
                 return super().__getitem__(key)
 
-        source = NoSliceString('let value = r##"literal"##;\nfn visible() {}\n')
+        for raw_literal in ('r##"literal"##', 'br"literal"', 'cr###"literal"###'):
+            with self.subTest(raw_literal=raw_literal):
+                source = NoSliceString(f"let value = {raw_literal};\nfn visible() {{}}\n")
 
-        masked = GATE._mask_rust_non_code(source)
+                masked = GATE._mask_rust_non_code(source)
 
-        self.assertNotIn("literal", masked)
-        self.assertIn("fn visible() {}", masked)
+                self.assertNotIn("literal", masked)
+                self.assertIn("fn visible() {}", masked)
 
     def test_code_regions_produce_executable_lines_but_gap_regions_do_not(self) -> None:
         self.require_gate()
