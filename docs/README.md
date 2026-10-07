@@ -40,6 +40,7 @@ tests, and the conformance matrix.
 - [Agent and specification workflow](development/workflow.md)
 - [Rust workspace and PowerShell commands](development/rust-workspace.md)
 - [Testing strategy](development/testing.md)
+- [KMIP server interoperability matrix](development/kmip-interoperability.md)
 - [Coding standards](development/coding-standards.md)
 - [Git, versioning, and releases](development/git-and-releases.md)
 
