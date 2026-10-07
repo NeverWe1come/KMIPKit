@@ -58,8 +58,8 @@ replacement to hide it.
 The five denied package license expressions are:
 
 - `aws-lc-rs` 1.18.1: `ISC AND (Apache-2.0 OR ISC)`.
-- `aws-lc-sys` 0.45.0: includes `ISC`, `BSD-3-Clause`, and `MIT-0` alongside
-  Apache-2.0 and MIT alternatives.
+- `aws-lc-sys` 0.45.0:
+  `ISC AND (Apache-2.0 OR ISC) AND Apache-2.0 AND MIT AND BSD-3-Clause AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR ISC OR MIT-0)`.
 - `rustls-webpki` 0.103.15 and `untrusted` 0.9.0: ISC.
 - `subtle` 2.6.1: BSD-3-Clause.
 
@@ -109,3 +109,62 @@ The standing authorization to continue the roadmap does not claim that the
 maintainer personally reviewed these exact license and duplicate-version
 exceptions. The dependency-policy contract requires a distinct human reviewer
 for each exception; none is represented as approved here.
+
+## Follow-up version and license audit
+
+An additional read-only review on 2026-10-07 checked published dependency
+versions and the exact locked graph. `cargo info hickory-resolver` reports
+0.26.3 as the latest published release (MSRV 1.88); its manifest constrains
+Apple `system-configuration` to version 0.7. The current upstream main
+manifest labels its workspace `0.27.0-alpha.1` and has updated
+`system-configuration` to 0.8, which is compatible with `core-foundation`
+0.10. This appears to address the Hickory side of the Core Foundation
+duplicate once a reviewed, published release is available, but
+`cargo info hickory-resolver@0.27.0-alpha.1` cannot resolve that version from
+crates.io today. A git dependency is prohibited by KMIPKIT-0011. The upstream
+references checked were [Hickory releases](https://github.com/hickory-dns/hickory-dns/releases),
+the [Hickory 0.26.3 manifest](https://github.com/hickory-dns/hickory-dns/blob/v0.26.3/Cargo.toml),
+the [current Hickory manifest](https://github.com/hickory-dns/hickory-dns/blob/main/Cargo.toml),
+and [`system-configuration` 0.8.0](https://docs.rs/crate/system-configuration/0.8.0/source/Cargo.toml).
+
+The Apple-target Cargo graph for the currently pinned 0.26.3 confirms both
+duplicate paths directly:
+
+```text
+hickory-resolver 0.26.3 -> system-configuration 0.7.0 -> core-foundation 0.9.4
+rustls-native-certs 0.8.4 -> security-framework 3.7.0 -> core-foundation 0.10.1
+```
+
+Removing Hickory's `system-config` feature and loading resolver settings with
+separate platform code is a possible design alternative, but it is not a
+lockfile or feature-only cleanup: it would need a reviewed design update and
+tests for system DNS, hosts, search domains, split DNS/VPN behavior, request
+limits, and deadlines on Linux, Windows, and macOS. Replacing Hickory with a
+blocking system lookup would not implement the bounded asynchronous resolver
+contract in `spec.md` and `research.md`.
+
+The locked `syn` duplicate is independent of the Core Foundation target
+duplicate and also remains. In the current graph, `syn` 2.0.119 is used by
+`serde_derive` 1.0.228; `syn` 3.0.6 is used by separate proc-macro families
+including `async-trait`, `displaydoc`, `futures-macro`, `synstructure`,
+`thiserror-impl`, and `tokio-macros`. These major versions cannot be unified
+by lockfile resolution. Therefore, the Hickory upstream manifest update alone
+would not make the duplicate-version scan pass.
+
+The independent package-source review confirmed the published license
+expressions recorded above in the versions fixed by `Cargo.lock`. The ISC and
+BSD-3-Clause declarations are required by the active Rustls and AWS-LC
+dependency graph; no selected feature toggle removes them while retaining the
+accepted `rustls` + `aws-lc-rs` architecture. For `aws-lc-sys`, the package's
+complete `LICENSE` and bundled third-party notices are needed for any human
+disposition; the SPDX expression alone is not a legal analysis. The review
+did not make a legal determination or approve an exception.
+
+Commands used for this follow-up included `cargo info hickory-resolver`,
+`cargo info rustls-native-certs`, `cargo info system-configuration`, and
+`cargo tree --locked --workspace --target aarch64-apple-darwin -i
+core-foundation@0.9.4` / `core-foundation@0.10.1`. The `syn` paths were
+checked with `cargo tree --locked --workspace -i syn@2.0.119` and
+`cargo tree --locked --workspace -i syn@3.0.6`. The version and graph
+findings supplement, but do not replace, the required human review. T003
+remains unchecked.
