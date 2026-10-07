@@ -336,6 +336,74 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn(r"not\_claimed", report)
         self.assertIn("selected", report)
 
+    def test_profile_requirement_coverage_reports_missing_typed_rule_and_test(self) -> None:
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                "name": "Baseline Client",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "evidence_incomplete",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+
+        report = render_report(catalog, typed_rule_mappings=[])
+
+        self.assertIn("## Profile requirement rule coverage", report)
+        self.assertIn("KMIPKIT-PROFILE-BASELINE-CLIENT", report)
+        self.assertIn("KMIPKIT-REQ-SPEC-8.1-001", report)
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-8.1-001", report)
+        self.assertIn("RequiredBehavior", report)
+        self.assertIn("No typed rule mapping", report)
+        self.assertIn("No category-appropriate rule test", report)
+        self.assertIn("evidence_incomplete", report)
+        self.assertIn("No public claim", report)
+
+    def test_profile_requirement_coverage_links_typed_rule_to_category_test(self) -> None:
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                "name": "Baseline Client",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+        mapping = {
+            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "verification_category": "RequiredBehavior",
+            "evaluator_present": True,
+            "test_kind": "PositiveBehavior",
+            "test_id": "profile_validation::required_rule_enforces_clause",
+        }
+
+        report = render_report(catalog, typed_rule_mappings=[mapping])
+
+        self.assertIn("Typed rule mapping: present", report)
+        self.assertIn("Category test reference: present", report)
+        self.assertIn("profile_validation::required_rule_enforces_clause", report)
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", report)
+        self.assertIn("current pass/fail is not evaluated", report)
+
     def test_report_omits_secret_markers_from_untrusted_diagnostic_text(self) -> None:
         catalog = report_catalog()
         credential_marker = "credential=report-secret-sentinel-731"
