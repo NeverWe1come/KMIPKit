@@ -145,6 +145,17 @@ class WorkflowContractTests(unittest.TestCase):
             "Fixture contract tests must install their pinned jsonschema dependency.",
         )
 
+    def test_script_contract_job_uses_the_uv_environment_python(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        self.assertIn("$env:VIRTUAL_ENV", job)
+        self.assertIn("$IsWindows", job)
+        self.assertNotIn(
+            "Get-Command -Name 'python3'",
+            job,
+            "The contract step must not select a system Python ahead of the uv environment.",
+        )
+
     def test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "ffi-sanitizer")
