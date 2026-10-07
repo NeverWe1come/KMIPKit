@@ -371,39 +371,26 @@ fn validate_totals(
         {
             return Err(registry_error(ProtocolErrorKind::ResourceLimit));
         }
-        let fields = [
-            (
-                &mut text_bytes,
-                accounting.text_bytes,
-                limits.max_registry_text_bytes(),
-            ),
-            (
-                &mut schema_nodes,
-                accounting.schema_nodes,
-                limits.max_schema_nodes(),
-            ),
-            (
-                &mut discriminator_bytes,
-                accounting.discriminator_bytes,
-                limits.max_total_discriminator_scalar_bytes(),
-            ),
-            (
-                &mut constraint_members,
-                accounting.constraint_members,
-                limits.max_total_constraint_members(),
-            ),
-        ];
-        for (total, increment, maximum) in fields {
-            *total = checked_registry_counter_add(
-                *total,
-                u64::try_from(increment)
-                    .map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?,
-            )
-            .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
-            if *total > maximum {
-                return Err(registry_error(ProtocolErrorKind::ResourceLimit));
-            }
-        }
+        add_bounded_total(
+            &mut text_bytes,
+            accounting.text_bytes,
+            limits.max_registry_text_bytes(),
+        )?;
+        add_bounded_total(
+            &mut schema_nodes,
+            accounting.schema_nodes,
+            limits.max_schema_nodes(),
+        )?;
+        add_bounded_total(
+            &mut discriminator_bytes,
+            accounting.discriminator_bytes,
+            limits.max_total_discriminator_scalar_bytes(),
+        )?;
+        add_bounded_total(
+            &mut constraint_members,
+            accounting.constraint_members,
+            limits.max_total_constraint_members(),
+        )?;
         if exceeds_limit(
             accounting.discriminator_bytes,
             limits.max_discriminator_scalar_bytes(),
@@ -418,8 +405,16 @@ fn exceeds_limit(value: usize, maximum: u64) -> bool {
     u64::try_from(value).map_or(true, |value| value > maximum)
 }
 
-fn checked_registry_counter_add(left: u64, right: u64) -> Option<u64> {
-    left.checked_add(right)
+fn add_bounded_total(total: &mut u64, increment: usize, maximum: u64) -> Result<(), ProtocolError> {
+    let increment =
+        u64::try_from(increment).map_err(|_| registry_error(ProtocolErrorKind::ResourceLimit))?;
+    *total = total
+        .checked_add(increment)
+        .ok_or_else(|| registry_error(ProtocolErrorKind::ResourceLimit))?;
+    if *total > maximum {
+        return Err(registry_error(ProtocolErrorKind::ResourceLimit));
+    }
+    Ok(())
 }
 
 fn index_discriminator(

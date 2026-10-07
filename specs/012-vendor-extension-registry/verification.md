@@ -147,3 +147,17 @@ Red/Green evidence:
 This is feature-level incremental evidence, not the T061 release-readiness gate;
 cross-language parity, coverage, fuzzing, sanitizer jobs, and interoperability
 remain open.
+
+## 2026-10-07 — registry total accounting refactor
+
+Extracted checked, bounded accumulation of registry text bytes, schema nodes,
+discriminator bytes, and constraint members into one helper. Each category
+still uses checked `usize`-to-`u64` conversion, checked addition, and its own
+configured maximum; error categories and fail-fast order are unchanged.
+
+- Red/Green evidence: the full KMIPKIT-0012 US1 boundary suite passed before
+  this behavior-preserving refactor; no acceptance behavior changed.
+- `cargo test -p kmipkit-client -p kmipkit-protocol --all-features --quiet` — passed after refactor (all unit, integration, UI compile-fail, and doctest targets).
+- `cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo fmt --all --check` — passed.
+- `git diff --check` — passed.
