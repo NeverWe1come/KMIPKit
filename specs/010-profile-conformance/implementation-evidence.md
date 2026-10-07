@@ -35,6 +35,7 @@ Record one row per distinct signed development commit. Keep Red, Green, and Refa
 | Red — profile-specific conditional requirements | `e77bc0c` | `python -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_conditional_requirement_applies_only_to_profiles_linked_by_the_catalog` | Expected failure: `TypeError` because closure expansion had no profile identity and could not filter `profile_conditional` requirements to their linked profile. |
 | Green — profile-specific conditional requirements | `0035160` | `python -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: 4 tests, 0 failures. |
 | Refactor — source-indexed closure expansion | `0187c28` | `python -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: 4 tests, 0 failures after replacing repeated whole-catalog scans with source-indexed lookup. |
+| Red — Baseline inherited Basic Authentication requirements | Pending at record time | `python -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_baseline_profile_links_normative_basic_auth_subclauses` | Expected assertion failure lists five requirements absent from Baseline: `KMIPKIT-REQ-PROF-3.1.1-002`, `-004`, `-005`, `KMIPKIT-REQ-PROF-3.1.2-002`, and `-005`. |
 
 ## Verification status
 

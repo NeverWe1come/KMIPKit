@@ -2706,6 +2706,28 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "profile.*evidence"):
             validate(document)
 
+    def test_baseline_profile_links_normative_basic_auth_subclauses(self) -> None:
+        """Profiles v2.1 §6.1 item 2 incorporates §§3.1.1 and 3.1.2."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        inherited_requirement_ids = {
+            "KMIPKIT-REQ-PROF-3.1.1-002",
+            "KMIPKIT-REQ-PROF-3.1.1-004",
+            "KMIPKIT-REQ-PROF-3.1.1-005",
+            "KMIPKIT-REQ-PROF-3.1.2-002",
+            "KMIPKIT-REQ-PROF-3.1.2-005",
+        }
+
+        missing = sorted(inherited_requirement_ids - set(baseline["requirement_ids"]))
+
+        self.assertFalse(missing, f"Baseline closure omits incorporated requirements: {missing}")
+
     def test_discrepancy_authority_must_derive_from_cited_source(self) -> None:
         document = minimal_catalog()
         document["discrepancies"] = [
