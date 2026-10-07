@@ -176,13 +176,15 @@ Python uses the single exact-pinned test/build requirements set in
 `bindings/python/requirements-coverage.txt`: coverage 7.10.6, pytest-cov
 6.2.1, pytest 8.4.2, CFFI 1.17.1, and Maturin 1.9.4. The committed
 coverage.py configuration selects `kmipkit` as the measured source package
-with no omissions, so handwritten and generated files under
+and excludes only `*/kmipkit/_ffi/__init__.py`, the transient CFFI loader that
+Maturin generates during installation. Its binding behavior is exercised by
+the Python tests; handwritten and checked-in generated files under
 `bindings/python/src/kmipkit` remain in the 85 percent gate. Tests and example
 consumers live outside that package and are not measured as product code.
 Cross-platform adapter CI pins uv 0.12.23, installs CPython 3.12 through uv,
 and activates a clean virtual environment before installing this requirements
-set. This provides the same Python minor version on the self-hosted Debian
-ARM64 runner and GitHub-hosted platforms. The C consumer CI pins CMake 3.31.6
+set. This provides the same Python minor version across GitHub-hosted
+platforms. The C consumer CI pins CMake 3.31.6
 and Ninja 1.13.2 and selects Ninja explicitly on every platform, so the build
 does not depend on the runner image's default CMake generator.
 
@@ -198,8 +200,7 @@ executable lines. The handwritten JNI implementation in
 `bindings/java/native/kmipkit_jni.cpp` is compiled with LLVM source-based
 coverage instrumentation and measured from its own report; JaCoCo and Rust
 coverage do not count those C++ lines. The JNI collector is Linux-only and
-requires LLVM/Clang 20.1.8. There are no generated-source coverage exclusions
-in the current configuration.
+requires LLVM/Clang 20.1.8.
 
 The aggregate job requires these inputs at the report root:
 
