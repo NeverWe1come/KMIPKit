@@ -698,8 +698,10 @@ async fn a_late_positive_read_cannot_change_delivery_after_finalization_wins() {
     .expect("sender readiness succeeds before dispatch");
     assert!(control.commit_dispatch());
 
+    let (response_observed_tx, response_observed_rx) = tokio::sync::oneshot::channel();
     let response = tokio::spawn(async move {
         if let Ok(mut response) = sender.send_request(request(EmptyBody)).await {
+            let _ = response_observed_tx.send(());
             let _ = poll_fn(|cx| Pin::new(response.body_mut()).poll_frame(cx)).await;
         }
     });
@@ -718,10 +720,10 @@ async fn a_late_positive_read_cannot_change_delivery_after_finalization_wins() {
         timeout::finalize_timeout(&finalizing_control, async move {
             // finalize_timeout must close response observation before it polls
             // this cancellation/driver-invalidation future.
-            let _ = cleanup_started_tx.send(());
-            let _ = release_cleanup_rx.await;
             response.abort();
             connection.abort();
+            let _ = cleanup_started_tx.send(());
+            let _ = release_cleanup_rx.await;
             let _ = response.await;
             let _ = connection.await;
         })
@@ -735,16 +737,22 @@ async fn a_late_positive_read_cannot_change_delivery_after_finalization_wins() {
     // Make a complete positive HTTP response available only after the gate is
     // finalized. This deliberately exercises late-I/O suppression: it must
     // not revise delivery evidence while cleanup still holds the finalizer.
-    inner.release_read(b"HTTP/1.1 200 OK\r\ncontent-length: 4\r\n\r\nTTLV".to_vec());
-    let late_read_was_polled = tokio::time::timeout(Duration::from_millis(100), late_positive_read)
-        .await
-        .is_ok();
+    let late_response = b"HTTP/1.1 200 OK\r\ncontent-length: 4\r\n\r\nTTLV";
+    inner.release_read(late_response.to_vec());
+    let late_read = tokio::time::timeout(Duration::from_millis(100), late_positive_read).await;
+    assert!(
+        late_read.is_err(),
+        "the aborted driver must not perform a late positive read"
+    );
+    let response_observed =
+        tokio::time::timeout(Duration::from_millis(100), response_observed_rx).await;
+    assert!(
+        !matches!(response_observed, Ok(Ok(()))),
+        "the aborted request task must not receive the late response"
+    );
+    assert_eq!(inner.queued_read_bytes(), late_response.len());
     assert_eq!(control.delivery_state(), RequestDeliveryState::PossiblySent);
     assert!(!finalizer.is_finished());
-    assert!(
-        late_read_was_polled || inner.queued_read_bytes() > 0,
-        "the late response was either suppressed by the gate or observed by the wrapped reader"
-    );
 
     let _ = release_cleanup_tx.send(());
     let final_delivery = finalizer
