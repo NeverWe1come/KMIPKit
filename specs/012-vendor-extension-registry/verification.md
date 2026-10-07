@@ -907,3 +907,15 @@ The Python adapter's Extension Information test expectation was also corrected t
   message_validation` passed (15 tests); `cargo +1.94 fmt --all --check` and
   `git diff --check` passed. Coverage totals are unchanged from the Green
   report, and T060/T061 remain open.
+
+## 2026-10-07 — repeated-child clone-order QA correction
+
+- Independent QA found that the original clone-order fixture contained one
+  nested child, so its sequence comparison could not detect reordering.
+- Added a separate case with three same-tag children carrying distinct text
+  values. A mutation experiment temporarily reversed the production clone
+  iteration; the new test failed on the first-versus-third value comparison.
+  The production source was restored without a retained change.
+- After restoration, `cargo +1.94 test -p kmipkit-ttlv --test value_clone`
+  passed both tests. `cargo +1.94 fmt --all --check` and `git diff --check`
+  passed. No production behavior changed.

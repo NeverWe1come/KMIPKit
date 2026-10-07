@@ -41,7 +41,7 @@ fn assert_views_equal(left: ValueView<'_>, right: ValueView<'_>) {
 }
 
 #[test]
-fn deep_clone_preserves_every_scalar_variant_and_nested_child_order() {
+fn deep_clone_preserves_every_scalar_variant() {
     let mut nested = Structure::default();
     nested
         .try_push(
@@ -82,4 +82,22 @@ fn deep_clone_preserves_every_scalar_variant_and_nested_child_order() {
         assert_eq!(cloned.item_type(), expected_type);
         value.with_value(|left| cloned.with_value(|right| assert_views_equal(left, right)));
     }
+}
+
+#[test]
+fn deep_clone_preserves_order_of_repeated_nested_children() {
+    let repeated_tag = tag();
+    let mut nested = Structure::default();
+    for value in ["first", "second", "third"] {
+        nested
+            .try_push(
+                Item::new(repeated_tag, Value::text_string(value.to_owned()))
+                    .expect("a checked Tag and Text String form an Item"),
+            )
+            .expect("the nested Structure is within the depth limit");
+    }
+
+    let original = Value::structure(nested);
+    let cloned = try_clone_value(&original).expect("the nested value can be cloned");
+    original.with_value(|left| cloned.with_value(|right| assert_views_equal(left, right)));
 }
