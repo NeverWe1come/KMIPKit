@@ -1004,3 +1004,48 @@ The Python adapter's Extension Information test expectation was also corrected t
   80.21% region coverage. This is a single-platform summary, not the repository
   aggregate: the 90% workspace gate merges Linux, Windows, and macOS reports.
   T060 and T061 remain open pending the aggregate CI result.
+
+## 2026-10-07 — security remediation for schema clones and Java byte copies
+
+- The independent diff scan `49ad7ef4-80d1-489d-8625-9c849c642ab4` reported
+  two findings: repeated deep clones of caller-composed extension schemas in
+  the C ABI before aggregate schema-budget enforcement, and Java factory
+  temporaries that retained KMIPKit-owned secret bytes after synchronous JNI
+  calls. This entry records the remediation; a fresh diff scan is still
+  required for the final branch head.
+- Red evidence is separated into commits: `501e476` adds the pointer-sized
+  schema-clone regression; `7b33026` adds aggregate node/constraint hard-limit
+  regressions; `5dc9276` adds Java temporary-copy success/failure probes. The
+  Rust tests failed before the shared immutable schema/preflight fix, and the
+  Java test failed before the zeroizing JNI-copy helper existed.
+- Green evidence: `96cc464` changes `ExtensionSchema` to a shared immutable
+  handle, caches checked depth/node/constraint counts, and rejects aggregate
+  construction limits before compiling indexes; `30c5e44` clears KMIPKit-owned
+  temporary Java byte arrays in `finally` after synchronous JNI success or
+  failure. Caller arrays remain unchanged, and documentation describes the
+  JVM-copy boundary. Signed Green commit `4c8b2df` handles Java copies.
+- Refactor evidence: signed commit `d77b7fd` simplifies cached metric access,
+  makes the new Java helper test direct instead of reflective, applies strict
+  Clippy `let-else` style to the boundary tests, and updates English/Spanish
+  guidance, FR-011/FR-012 traceability, and tasks T066/T067. Its SSH signature
+  was verified with the loaded ED25519 key.
+- Final local checks on Windows, Rust 1.94.1: `cargo +1.94 fmt --all --check`,
+  `cargo +1.94 clippy --workspace --all-targets --all-features -- -D warnings`,
+  and `cargo +1.94 test --workspace --all-features` passed. The first Clippy
+  pass identified four `manual_let_else` test lints; those were corrected and
+  the complete Clippy command passed afterward. The workspace test command
+  exited 0, including the schema hard-boundary and clone-handle regressions.
+- `cargo +1.94 llvm-cov --workspace --all-features --summary-only` exited 0
+  with 77.80% Windows line coverage (76.27% functions; 80.30% regions). On
+  this exact Windows report, all 111/111 changed executable Rust lines and
+  all 12/12 changed executable Java lines were covered. The local Rust FFI
+  report does not include the Linux-only C-consumer coverage feature, and a
+  single-platform total does not establish the required three-platform 90%
+  workspace gate; T060 remains open for the aggregate CI result.
+- `mvn -f bindings/java/pom.xml verify` passed all 29 Java tests, the runnable
+  vendor-extension example, and the configured JaCoCo coverage check.
+  `PYTHONPATH=bindings/python/src bindings/python/.venv/Scripts/python.exe -m
+  pytest -q bindings/python/tests` passed all 25 tests. The Python API manifest
+  check verified all six generated files. Python, C-consumer, FFI-sanitizer,
+  fuzz, dependency-policy, and supported-platform coverage for the corrected
+  head remain subject to the fresh pull-request CI run; T061 remains open.
