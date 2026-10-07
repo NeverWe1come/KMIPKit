@@ -107,13 +107,24 @@ def _reverse_object_keys(value: object) -> object:
     return value
 
 
+def _find_function(manifest: dict[str, object], function_id: str) -> dict[str, object]:
+    return next(function for function in manifest["functions"] if function["id"] == function_id)
+
+
+def _find_c_parameter(
+    manifest: dict[str, object], function_id: str, parameter_name: str
+) -> dict[str, object]:
+    function = _find_function(manifest, function_id)
+    return next(
+        parameter
+        for parameter in function["c"]["parameters"]
+        if parameter["name"] == parameter_name
+    )
+
+
 def _apply_handle_array_contract(manifest: dict[str, object]) -> None:
-    functions = {function["id"]: function for function in manifest["functions"]}
     for function_id, parameter_name, handle_type, count_parameter in HANDLE_ARRAY_CONTRACTS:
-        function = functions[function_id]
-        parameter = next(
-            item for item in function["c"]["parameters"] if item["name"] == parameter_name
-        )
+        parameter = _find_c_parameter(manifest, function_id, parameter_name)
         parameter.update(
             {
                 "kind": "handle-array",
@@ -246,9 +257,8 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             root = _create_repo(Path(directory))
             manifest = self._load_manifest(root)
             _apply_handle_array_contract(manifest)
-            functions = {function["id"]: function for function in manifest["functions"]}
             for function_id, _, _, _ in HANDLE_ARRAY_CONTRACTS:
-                function = functions[function_id]
+                function = _find_function(manifest, function_id)
                 for language in ("c", "java", "python"):
                     self.assertIn("invalid_input", function[language]["errorCategories"])
             self._write_manifest(root, manifest)
@@ -265,57 +275,47 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 self.assertIn(f"{parameter_name}: *mut *mut {handle_type}", rust_ffi)
 
     def test_handle_arrays_require_known_types_counts_and_invalid_input_mappings(self) -> None:
+        def missing_invalid_input(language: str):
+            def mutate(manifest: dict[str, object]) -> None:
+                _find_function(manifest, "extension_schema_structure")[language][
+                    "errorCategories"
+                ].remove("invalid_input")
+
+            return mutate
+
         mutations = (
             (
                 "unknown handle type",
-                lambda manifest: next(
-                    item for item in next(
-                        record for record in manifest["functions"]
-                        if record["id"] == "extension_schema_structure"
-                    )["c"]["parameters"] if item["name"] == "children"
+                lambda manifest: _find_c_parameter(
+                    manifest, "extension_schema_structure", "children"
                 ).update(
-                    {
-                        "type": "kmipkit_unknown_handle_t **",
-                        "handleType": "kmipkit_unknown_handle_t",
-                    }
+                    {"type": "kmipkit_unknown_handle_t **", "handleType": "kmipkit_unknown_handle_t"}
                 ),
             ),
             (
                 "array pointer does not match handle type",
-                lambda manifest: next(
-                    item for item in next(
-                        record for record in manifest["functions"]
-                        if record["id"] == "extension_schema_structure"
-                    )["c"]["parameters"] if item["name"] == "children"
+                lambda manifest: _find_c_parameter(
+                    manifest, "extension_schema_structure", "children"
                 ).update({"type": "kmipkit_extension_order_constraint_t **"}),
             ),
             (
                 "unresolved count parameter",
-                lambda manifest: next(
-                    item for item in next(
-                        record for record in manifest["functions"]
-                        if record["id"] == "extension_schema_structure"
-                    )["c"]["parameters"] if item["name"] == "children"
+                lambda manifest: _find_c_parameter(
+                    manifest, "extension_schema_structure", "children"
                 ).update({"countParameter": "missing_count"}),
             ),
             (
                 "count parameter is not uint64",
-                lambda manifest: next(
-                    item for item in next(
-                        record for record in manifest["functions"]
-                        if record["id"] == "extension_schema_structure"
-                    )["c"]["parameters"] if item["name"] == "child_count"
+                lambda manifest: _find_c_parameter(
+                    manifest, "extension_schema_structure", "child_count"
                 ).update({"type": "uint32_t"}),
             ),
             *(
                 (
                     f"{language} invalid_input mapping",
-                    lambda manifest, language=language: next(
-                        record for record in manifest["functions"]
-                        if record["id"] == function_id
-                    )[language]["errorCategories"].remove("invalid_input"),
+                    missing_invalid_input(language),
                 )
-                for function_id, _, _, _ in HANDLE_ARRAY_CONTRACTS[:1]
+                for _ in HANDLE_ARRAY_CONTRACTS[:1]
                 for language in ("c", "java", "python")
             ),
         )
