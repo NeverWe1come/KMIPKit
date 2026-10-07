@@ -96,6 +96,9 @@ result, date, and any explicit compatibility option. Passing a server test is
 evidence of interoperability, not proof that the server or client implements
 the entire standard.
 
+See the [KMIP server interoperability matrix](../development/kmip-interoperability.md)
+for the current research inventory and the pending integration-test ledger.
+
 ## Maintenance
 
 Every protocol PR updates the matrix. CI validates references and rejects

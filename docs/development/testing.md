@@ -82,6 +82,10 @@ open source implementation runs in CI. A second may use a licensed or manual
 environment. Record server product, version, transport, profile, operation,
 result, and known workaround.
 
+The [KMIP server interoperability matrix](kmip-interoperability.md) records
+published operation claims and candidate servers separately from executed
+KMIPKit integration-test results.
+
 ## Coverage
 
 - TTLV/protocol: 95 percent line minimum.
