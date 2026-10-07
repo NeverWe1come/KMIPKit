@@ -165,6 +165,37 @@ returning sanitized `InvalidInput` with `NotSent` before message construction.
 That cross-spec execution check remains open and must be covered by a public
 client test before the finding is closed.
 
+Independent review also confirmed that the current accepted KMIPKIT-0013
+specification does not yet require that composition or rejection test. The
+KMIPKIT-0013 contract and task plan must be amended before implementation can
+claim to close this cross-client isolation finding.
+
+## 2026-10-07 — User Story 2 test-only Red stage
+
+Added recognition contract tests for exact discriminator lookup, missing,
+repeated, and wrong-type nested paths, wide structures and bounded index work,
+schema rejection after a unique match, duplicate registration keys, ambiguous
+matches, and absence of partial typed output. Added fake-transport assertions
+that keep unknown-critical rejection and unknown-noncritical preservation in
+KMIPKIT-0007, plus generic TTLV preservation/property and redaction regressions.
+
+Red/baseline evidence:
+
+- `cargo test -p kmipkit-client --test extension_recognition` — expected Red
+  (exit 101): `ExtensionRecognition` and the `inspect`, `is_recognized`,
+  `validated_value`, and `generic_value` APIs are not implemented.
+- `cargo test -p kmipkit-client --lib extension_execution_tests -- --nocapture`
+  — expected Red (exit 101) for the same missing recognition APIs; response
+  integration assertions did not run yet.
+- `cargo test -p kmipkit-protocol --test extension_preservation` — baseline
+  passed (6 tests); these generic preservation and codec-boundary behaviors
+  already exist below the new client recognition layer.
+- `cargo test -p kmipkit-protocol --test extension_redaction` — baseline
+  passed (2 tests); current schema values and diagnostics already redact the
+  sentinel data.
+- Runtime payload-index accounting is asserted at the client layer because
+  `kmipkit-protocol` deliberately has no dependency on `kmipkit-client`.
+
 Red/Green evidence:
 
 - Red: `de93ace`; the provenance regression test failed to compile because the

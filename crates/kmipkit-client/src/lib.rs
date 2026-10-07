@@ -29,6 +29,10 @@ pub mod extension_registry;
 #[path = "../tests/unit/extension_registry_test_support.rs"]
 mod extension_registry_test_support;
 
+#[cfg(test)]
+#[path = "../tests/extension_execution.rs"]
+mod extension_execution_tests;
+
 mod execute;
 
 #[cfg(test)]

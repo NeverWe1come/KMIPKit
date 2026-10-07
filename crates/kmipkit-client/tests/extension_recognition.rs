@@ -4,6 +4,7 @@
 //! KMIPKIT-0012-FR-012, and KMIP 2.1 §9.13, Table 418.
 
 use kmipkit_client::extension_registry::{self, ClientExtensionRegistry, ExtensionRecognition};
+use kmipkit_client::{ClientError, ClientErrorCategory};
 use kmipkit_protocol::extension;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value};
@@ -72,6 +73,28 @@ fn definition(
 fn registry(definitions: Vec<extension::ExtensionDefinition>) -> ClientExtensionRegistry {
     extension_registry::client_extension_registry(definitions, extension::defaults())
         .expect("the test definitions form a valid immutable registry")
+}
+
+fn registry_limits(
+    max_index_records: u64,
+    max_lookup_comparisons: u64,
+) -> extension::ExtensionRegistryLimits {
+    let defaults = extension::defaults();
+    extension::with_values(
+        defaults.max_definitions(),
+        defaults.max_schema_nodes(),
+        defaults.max_child_rules_per_structure(),
+        defaults.max_text_bytes_per_field(),
+        defaults.max_registry_text_bytes(),
+        defaults.max_discriminator_scalar_bytes(),
+        defaults.max_total_discriminator_scalar_bytes(),
+        defaults.max_constraint_members_per_rule(),
+        defaults.max_total_constraint_members(),
+        max_index_records,
+        max_lookup_comparisons,
+        defaults.max_depth(),
+    )
+    .expect("the requested registry work budgets are below their hard maxima")
 }
 
 fn payload(path: &[u32], value: Value) -> Structure {
@@ -166,6 +189,32 @@ fn missing_repeated_and_wrong_type_discriminator_paths_are_unrecognized() {
 }
 
 #[test]
+fn absent_repeated_and_wrong_type_nested_path_steps_are_non_matches() {
+    let path = [FIRST_PATH_TAG, SECOND_PATH_TAG];
+    let registry = registry(vec![definition("nested", &path, "nested-v1", false)]);
+
+    let missing = payload(&[FIRST_PATH_TAG], Value::structure(Structure::new()));
+    let mut repeated_leaf = Structure::new();
+    for _ in 0..2 {
+        repeated_leaf
+            .try_push(
+                Item::new(
+                    tag(SECOND_PATH_TAG),
+                    Value::text_string("nested-v1".to_owned()),
+                )
+                .expect("the repeated nested path item is valid"),
+            )
+            .expect("the repeated child fits the nested Structure");
+    }
+    let repeated = payload(&[FIRST_PATH_TAG], Value::structure(repeated_leaf));
+    let wrong_type = payload(&[FIRST_PATH_TAG], Value::integer(3));
+
+    for value in [missing, repeated, wrong_type] {
+        assert_unrecognized(&inspect(&registry, value, &CodecLimits::defaults()));
+    }
+}
+
+#[test]
 fn schema_failure_after_unique_discriminator_hit_has_no_partial_typed_value() {
     let registry = registry(vec![definition(
         "alpha",
@@ -239,6 +288,71 @@ fn duplicate_exact_discriminator_keys_are_rejected_during_registry_construction(
         result.is_err(),
         "one vendor cannot register duplicate exact keys"
     );
+}
+
+#[test]
+fn shared_payload_index_and_comparison_limits_have_exact_success_boundaries() {
+    let exact_definition = definition("alpha", &[FIRST_PATH_TAG], "alpha-v1", false);
+    let exact_value = payload(&[FIRST_PATH_TAG], Value::text_string("alpha-v1".to_owned()));
+    let exact_registry = extension_registry::client_extension_registry(
+        vec![exact_definition],
+        registry_limits(2, 2),
+    )
+    .expect("the exact two-record index and two tag-comparison budget are valid");
+    let recognized = extension_registry::inspect(
+        &exact_registry,
+        VENDOR,
+        exact_value,
+        &CodecLimits::defaults(),
+    )
+    .expect("one Structure plus one child fits the exact index budget");
+    assert!(extension_registry::is_recognized(&recognized));
+
+    let under_index_registry = extension_registry::client_extension_registry(
+        vec![definition("alpha", &[FIRST_PATH_TAG], "alpha-v1", false)],
+        registry_limits(1, 2),
+    )
+    .expect("the lowered index limit remains a valid registry configuration");
+    let index_error = extension_registry::inspect(
+        &under_index_registry,
+        VENDOR,
+        payload(&[FIRST_PATH_TAG], Value::text_string("alpha-v1".to_owned())),
+        &CodecLimits::defaults(),
+    )
+    .expect_err("the second required payload-index record exceeds the exact boundary");
+    assert_eq!(index_error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        index_error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert!(matches!(
+        index_error,
+        ClientError::Protocol { ref error, .. }
+            if error.kind() == kmipkit_protocol::ProtocolErrorKind::ResourceLimit
+    ));
+
+    let under_comparison_registry = extension_registry::client_extension_registry(
+        vec![definition("alpha", &[FIRST_PATH_TAG], "alpha-v1", false)],
+        registry_limits(2, 1),
+    )
+    .expect("the lowered comparison limit remains a valid registry configuration");
+    let comparison_error = extension_registry::inspect(
+        &under_comparison_registry,
+        VENDOR,
+        payload(&[FIRST_PATH_TAG], Value::text_string("alpha-v1".to_owned())),
+        &CodecLimits::defaults(),
+    )
+    .expect_err("the second binary-search tag comparison exceeds the exact boundary");
+    assert_eq!(comparison_error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        comparison_error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert!(matches!(
+        comparison_error,
+        ClientError::Protocol { ref error, .. }
+            if error.kind() == kmipkit_protocol::ProtocolErrorKind::ResourceLimit
+    ));
 }
 
 #[test]
