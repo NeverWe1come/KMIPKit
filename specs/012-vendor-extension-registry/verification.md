@@ -996,3 +996,10 @@ The Python adapter's Extension Information test expectation was also corrected t
 - T065 evidence is separated into commits: Red `f4eec99`, Green `f702bbd` and
   `3e83d04`, Refactor `3c41a77`. The wider T060 coverage gate and T061 final
   release validation remain open.
+
+## 2026-10-07 — full post-fix workspace coverage
+
+- Windows Rust 1.94: `cargo +1.94 llvm-cov --workspace --all-features
+  --summary-only` exited successfully, with 77.74% line, 76.27% function, and
+  80.21% region coverage. The line total remains below the 90% workspace gate;
+  T060 and T061 therefore remain open.
