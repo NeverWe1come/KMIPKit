@@ -285,6 +285,30 @@ def rust_string_literal(value: str) -> str:
     return f'"{"".join(escaped)}"'
 
 
+def _rust_string_field(record: Mapping[str, Any], field: str) -> str:
+    value = record.get(field)
+    if not isinstance(value, str) or not value:
+        raise ProfileGenerationError(f"profile metadata field {field} must be non-empty text")
+    return rust_string_literal(value)
+
+
+def _rust_string_array(record: Mapping[str, Any], field: str) -> str:
+    values = record.get(field)
+    if (
+        not isinstance(values, list)
+        or any(not isinstance(value, str) or not value for value in values)
+        or len(values) != len(set(values))
+    ):
+        raise ProfileGenerationError(f"profile metadata field {field} must contain unique text values")
+    if not values:
+        return "&[]"
+    encoded = [rust_string_literal(value) for value in values]
+    if len(encoded) == 1:
+        return f"&[{encoded[0]}]"
+    encoded_values = ",\n            ".join(encoded) + ","
+    return f"&[\n            {encoded_values}\n        ]"
+
+
 def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) -> str:
     """Render deterministic immutable client metadata without executable rules."""
     raw_profiles = catalog.get("profiles")
@@ -302,28 +326,6 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
     )
     if not profiles:
         raise ProfileGenerationError("catalog contains no client profiles")
-
-    def string_field(record: Mapping[str, Any], field: str) -> str:
-        value = record.get(field)
-        if not isinstance(value, str) or not value:
-            raise ProfileGenerationError(f"profile metadata field {field} must be non-empty text")
-        return rust_string_literal(value)
-
-    def string_array(record: Mapping[str, Any], field: str) -> str:
-        values = record.get(field)
-        if (
-            not isinstance(values, list)
-            or any(not isinstance(value, str) or not value for value in values)
-            or len(values) != len(set(values))
-        ):
-            raise ProfileGenerationError(f"profile metadata field {field} must contain unique text values")
-        if not values:
-            return "&[]"
-        encoded = [rust_string_literal(value) for value in values]
-        if len(encoded) == 1:
-            return f"&[{encoded[0]}]"
-        encoded_values = ",\n            ".join(encoded) + ","
-        return f"&[\n            {encoded_values}\n        ]"
 
     lines = [
         "//! Generated from the reviewed normative catalog and fixed profile target manifest.",
@@ -394,9 +396,9 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
                     [
                         "            GeneratedProfileTestCase {",
                         f"                test_id: {rust_string_literal(test_id)},",
-                        f"                official_case_id: {string_field(test_case, 'official_case_id')},",
-                        f"                mandatory_status: {string_field(test_case, 'mandatory_status')},",
-                        f"                fixture_availability: {string_field(test_case, 'fixture_availability')},",
+                        f"                official_case_id: {_rust_string_field(test_case, 'official_case_id')},",
+                        f"                mandatory_status: {_rust_string_field(test_case, 'mandatory_status')},",
+                        f"                fixture_availability: {_rust_string_field(test_case, 'fixture_availability')},",
                         "            },",
                     ]
                 )
@@ -405,16 +407,16 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
             [
                 "    GeneratedClientProfile {",
                 f"        profile_id: {rust_string_literal(profile_id)},",
-                f"        name: {string_field(profile, 'name')},",
-                f"        applicability: {string_field(profile, 'applicability')},",
-                f"        claim_state: {string_field(profile, 'claim_state')},",
+                f"        name: {_rust_string_field(profile, 'name')},",
+                f"        applicability: {_rust_string_field(profile, 'applicability')},",
+                f"        claim_state: {_rust_string_field(profile, 'claim_state')},",
                 f"        selected_target: {str(profile_id in selected_ids).lower()},",
-                f"        direct_source_clause_ids: {string_array(profile, 'direct_source_clause_ids')},",
-                f"        source_clause_ids: {string_array(profile, 'source_clause_ids')},",
-                f"        requirement_ids: {string_array(profile, 'requirement_ids')},",
-                f"        dependency_profile_ids: {string_array(profile, 'dependency_profile_ids')},",
-                f"        transport_requirements: {string_array(profile, 'transport_requirements')},",
-                f"        encoding_requirements: {string_array(profile, 'encoding_requirements')},",
+                f"        direct_source_clause_ids: {_rust_string_array(profile, 'direct_source_clause_ids')},",
+                f"        source_clause_ids: {_rust_string_array(profile, 'source_clause_ids')},",
+                f"        requirement_ids: {_rust_string_array(profile, 'requirement_ids')},",
+                f"        dependency_profile_ids: {_rust_string_array(profile, 'dependency_profile_ids')},",
+                f"        transport_requirements: {_rust_string_array(profile, 'transport_requirements')},",
+                f"        encoding_requirements: {_rust_string_array(profile, 'encoding_requirements')},",
                 "        test_cases: &[",
                 *tests,
                 "        ],",
