@@ -73,6 +73,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         closure = compute_profile_closure(
             catalog,
             ["KMIPKIT-CLAUSE-PROF-6.1-001"],
+            profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
         )
 
         self.assertEqual(
@@ -127,7 +128,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(ProfileGenerationError, "cyclic normative inclusion"):
-            compute_profile_closure(catalog, ["KMIPKIT-CLAUSE-PROF-6.1-001"])
+            compute_profile_closure(
+                catalog,
+                ["KMIPKIT-CLAUSE-PROF-6.1-001"],
+                profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
+            )
 
     def test_rust_string_literal_escapes_syntax_and_control_characters(self) -> None:
         value = 'quote" slash\\ line\n tab\t control\x01 snowman ☃'

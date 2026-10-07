@@ -9,7 +9,6 @@ from typing import Any
 
 
 _SECTION = re.compile(r"[0-9]+(?:\.[0-9]+)*\Z")
-_APPLICABLE_CLIENT_SCOPES = {"client_1_0", "profile_conditional"}
 
 
 class ProfileGenerationError(ValueError):
@@ -31,6 +30,8 @@ def _section_in_scope(section: str, included_section: str | None) -> bool:
 def compute_profile_closure(
     catalog: Mapping[str, Any],
     direct_source_clause_ids: Sequence[str],
+    *,
+    profile_id: str,
 ) -> ProfileClosure:
     """Expand direct clauses through same-source descendants and normative inclusions.
 
@@ -45,7 +46,13 @@ def compute_profile_closure(
         raise ProfileGenerationError("catalog has invalid source clause or inclusion records")
     if not isinstance(raw_requirements, list):
         raise ProfileGenerationError("catalog has invalid requirement records")
-    if not direct_source_clause_ids or any(not isinstance(value, str) or not value for value in direct_source_clause_ids):
+    if not isinstance(profile_id, str) or not profile_id:
+        raise ProfileGenerationError("profile closure requires a stable profile identity")
+    if (
+        not direct_source_clause_ids
+        or isinstance(direct_source_clause_ids, (str, bytes))
+        or any(not isinstance(value, str) or not value for value in direct_source_clause_ids)
+    ):
         raise ProfileGenerationError("profile has no valid direct source clauses")
 
     clauses_by_id: dict[str, dict[str, Any]] = {}
@@ -134,9 +141,14 @@ def compute_profile_closure(
         linked_clauses = requirement.get("source_clause_ids")
         if not isinstance(requirement_id, str) or not requirement_id or not isinstance(linked_clauses, list):
             raise ProfileGenerationError("catalog has an invalid requirement identity or clause links")
+        scope_state = requirement.get("scope_state")
+        in_scope = scope_state == "client_1_0" or (
+            scope_state == "profile_conditional"
+            and profile_id in requirement.get("profile_ids", [])
+        )
         if (
             requirement.get("role") in {"client", "both"}
-            and requirement.get("scope_state") in _APPLICABLE_CLIENT_SCOPES
+            and in_scope
             and any(clause_id in source_clause_ids for clause_id in linked_clauses)
         ):
             requirement_ids.add(requirement_id)

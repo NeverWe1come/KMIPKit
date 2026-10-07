@@ -32,7 +32,8 @@ Record one row per distinct signed development commit. Keep Red, Green, and Refa
 |---|---|---|---|
 | Red — initial closure and literal-encoding test slice | `43679b2` | `python -m unittest tools.normative_catalog.tests.test_generate_profiles` | Expected failure: `ModuleNotFoundError` because `tools.normative_catalog.generate_profiles` did not exist. The module contained three intended behavior cases; test loading stopped before their execution. Full T003 remains in progress. |
 | Green — initial closure and literal encoding | `4956887` | `python -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: 3 tests, 0 failures. |
-| Red — profile-specific conditional requirements | Pending at record time | `python -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_conditional_requirement_applies_only_to_profiles_linked_by_the_catalog` | Expected failure: `TypeError` because closure expansion has no profile identity and cannot filter `profile_conditional` requirements to their linked profile. |
+| Red — profile-specific conditional requirements | `e77bc0c` | `python -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_conditional_requirement_applies_only_to_profiles_linked_by_the_catalog` | Expected failure: `TypeError` because closure expansion had no profile identity and could not filter `profile_conditional` requirements to their linked profile. |
+| Green — profile-specific conditional requirements | Pending at record time | `python -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: 4 tests, 0 failures. |
 | Refactor | Pending | Pending | Pending |
 
 ## Verification status
