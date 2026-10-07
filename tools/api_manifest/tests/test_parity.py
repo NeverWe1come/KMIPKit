@@ -55,6 +55,22 @@ class PublicApiParityTests(unittest.TestCase):
         for item in [*self.manifest["types"], *self.manifest["functions"]]:
             self.assertTrue(set(item["requirementIds"]).issubset(REQUIREMENT_IDS), item["id"])
 
+    def test_manifest_exposes_identity_fields_and_ordered_batch_extension_views(self) -> None:
+        function_ids = {function["id"] for function in self.manifest["functions"]}
+        required_functions = {
+            "extension_identity_vendor_identifier",
+            "extension_identity_name",
+            "extension_identity_version",
+            "client_batch_item_discover_versions",
+            "client_batch_item_extension_count",
+            "client_batch_item_extension_at",
+            "client_request_message_extension_criticality_indicator",
+            "client_request_message_extension_value",
+            "registered_extension_value_identity",
+        }
+
+        self.assertTrue(required_functions.issubset(function_ids), sorted(required_functions - function_ids))
+
     def test_limit_names_defaults_and_hard_maxima_are_ordered_and_equivalent(self) -> None:
         limits = self.manifest["limits"]
         self.assertEqual([limit["id"] for limit in limits], list(LIMIT_IDS))
