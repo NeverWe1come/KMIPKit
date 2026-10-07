@@ -176,8 +176,8 @@ Python uses the single exact-pinned test/build requirements set in
 `bindings/python/requirements-coverage.txt`: coverage 7.10.6, pytest-cov
 6.2.1, pytest 8.4.2, CFFI 1.17.1, and Maturin 1.9.4. The committed
 coverage.py configuration selects `kmipkit` as the measured source package
-and excludes only `*/kmipkit/_ffi/__init__.py`, the transient CFFI loader that
-Maturin generates during installation. Its binding behavior is exercised by
+and excludes only `*/kmipkit/_ffi/*.py`, the transient CFFI modules that
+Maturin generates during installation. Their binding behavior is exercised by
 the Python tests; handwritten and checked-in generated files under
 `bindings/python/src/kmipkit` remain in the 85 percent gate. Tests and example
 consumers live outside that package and are not measured as product code.

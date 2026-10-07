@@ -20,8 +20,8 @@ bindings = "cffi"
 branch = false
 relative_files = true
 source = ["kmipkit"]
-# Maturin generates this CFFI loader during installation; it is not maintained source.
-omit = ["*/kmipkit/_ffi/__init__.py"]
+# Maturin generates these CFFI modules during installation; they are not maintained source.
+omit = ["*/kmipkit/_ffi/*.py"]
 
 [tool.coverage.report]
 fail_under = 85
