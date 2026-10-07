@@ -126,6 +126,15 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
         )
 
+    def test_script_contract_job_runs_negative_extension_fixture_generator_tests(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        self.assertIn(
+            "unittest discover -s tools/api_manifest/tests -p test_extension_fixtures.py -v",
+            job,
+            "Every supported pull-request platform must run fixture generator rejection tests.",
+        )
+
     def test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "ffi-sanitizer")
