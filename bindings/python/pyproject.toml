@@ -1,0 +1,17 @@
+[build-system]
+requires = ["maturin>=1.8,<2.0", "cffi>=1.15"]
+build-backend = "maturin"
+
+[project]
+name = "kmipkit"
+version = "1.0.0"
+description = "KMIP 2.1 client bindings for Python 3.12"
+requires-python = ">=3.12,<3.13"
+license = { text = "Apache-2.0" }
+dependencies = ["cffi>=1.15"]
+
+[tool.maturin]
+manifest-path = "../../crates/kmipkit-ffi/Cargo.toml"
+python-source = "src"
+module-name = "kmipkit._ffi"
+bindings = "cffi"
