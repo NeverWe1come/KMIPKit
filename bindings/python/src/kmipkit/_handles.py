@@ -176,7 +176,7 @@ def _owned_bytes(value: str | bytes | bytearray | memoryview) -> tuple[bytes, An
         try:
             raw = value.encode("utf-8")
         except UnicodeEncodeError:
-            errors.raise_for_status(4)
+            raise errors.InvalidInputError() from None
     elif isinstance(value, (bytes, bytearray, memoryview)):
         raw = bytes(value)
     else:

@@ -751,16 +751,13 @@ def _identity_text(identity: ExtensionIdentity, symbol: str) -> str:
         )
     )
     try:
-        view = ttlv.ttlv_value_view(value)
-        try:
+        with ttlv.ttlv_value_view(value) as view:
             if ttlv.ttlv_value_view_type(view) is not ttlv.ItemType.TextString:
                 errors.raise_for_status(4)
             try:
                 return _view_bytes(view).decode("utf-8")
             except UnicodeDecodeError:
-                errors.raise_for_status(4)
-        finally:
-            view.close()
+                raise errors.InvalidInputError() from None
     finally:
         value.close()
 
@@ -778,6 +775,13 @@ def extension_identity_name(identity: ExtensionIdentity) -> str:
 def extension_identity_version(identity: ExtensionIdentity) -> str:
     """Return a copied version from an opaque native identity."""
     return _identity_text(identity, "kmipkit_extension_identity_version")
+
+
+def _populate_identity_fields(identity: ExtensionIdentity) -> ExtensionIdentity:
+    identity.vendor_identifier = extension_identity_vendor_identifier(identity)
+    identity.name = extension_identity_name(identity)
+    identity.version = extension_identity_version(identity)
+    return identity
 
 
 def extension_definition_information(
@@ -1043,11 +1047,7 @@ def validated_extension_identity(value: ValidatedExtensionValue) -> ExtensionIde
         "kmipkit_validated_extension_value_identity",
         (value._pointer(),),
     )
-    identity = ExtensionIdentity(handle, None, None, None)
-    identity.vendor_identifier = extension_identity_vendor_identifier(identity)
-    identity.name = extension_identity_name(identity)
-    identity.version = extension_identity_version(identity)
-    return identity
+    return _populate_identity_fields(ExtensionIdentity(handle, None, None, None))
 
 
 def validated_extension_value_generic_value(
@@ -1126,11 +1126,7 @@ def client_batch_item_extension_identity_at(
         "kmipkit_client_batch_item_extension_identity_at",
         (item._pointer(), index),
     )
-    identity = ExtensionIdentity(handle, None, None, None)
-    identity.vendor_identifier = extension_identity_vendor_identifier(identity)
-    identity.name = extension_identity_name(identity)
-    identity.version = extension_identity_version(identity)
-    return identity
+    return _populate_identity_fields(ExtensionIdentity(handle, None, None, None))
 
 
 def client_batch_item_extension_criticality_indicator_at(
