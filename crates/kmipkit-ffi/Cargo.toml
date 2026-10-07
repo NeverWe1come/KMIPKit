@@ -13,6 +13,9 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
 kmipkit.workspace = true
+kmipkit-client.workspace = true
+kmipkit-protocol.workspace = true
+kmipkit-ttlv.workspace = true
 
 [lints]
 workspace = true

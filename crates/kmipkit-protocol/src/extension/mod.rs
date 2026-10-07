@@ -11,7 +11,8 @@ mod value;
 
 pub use definition::{
     Compatibility, Discriminator, ExtensionDefinition, ExtensionDefinitionAccounting,
-    ExtensionIdentity, TtlvPath, accounting, compatibility, discriminator, extension_definition,
+    ExtensionIdentity, TtlvPath, accounting, clone_extension_definition,
+    clone_extension_discriminator, compatibility, discriminator, extension_definition,
     extension_identity, identity, scalar_value_fingerprint, ttlv_path, validate_schema_limits,
     with_child_tag,
 };

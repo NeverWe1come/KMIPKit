@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
 
+use kmipkit_protocol::extension::ExtensionIdentity;
 use kmipkit_protocol::{
     AsynchronousOperationError, CancelRequest, CancelResponse, CancellationResult,
     DiscoverVersionsRequest, DiscoverVersionsResponse, MessageExtensionView, PollRequest,
@@ -103,6 +104,12 @@ pub struct ClientBatchItem {
 }
 
 impl ClientBatchItem {
+    /// Creates a batch item that issues the KMIP 2.1 Discover Versions operation.
+    #[must_use]
+    pub const fn discover_versions() -> Self {
+        Self::new(ClientRequest::discover_versions())
+    }
+
     /// Creates a batch item from an admitted typed request.
     #[must_use]
     pub const fn new(request: ClientRequest) -> Self {
@@ -127,6 +134,28 @@ impl ClientBatchItem {
     pub fn with_extension(mut self, extension: ClientRequestMessageExtension) -> Self {
         self.message_extensions.push(extension);
         self
+    }
+
+    /// Returns the number of attached Message Extensions.
+    #[must_use]
+    pub fn extension_count(&self) -> usize {
+        self.message_extensions.len()
+    }
+
+    /// Returns a copy of the registered identity at `index`, if present.
+    #[must_use]
+    pub fn extension_identity_at(&self, index: usize) -> Option<ExtensionIdentity> {
+        self.message_extensions
+            .get(index)
+            .map(ClientRequestMessageExtension::identity)
+    }
+
+    /// Returns the explicit Criticality Indicator at `index`, if present.
+    #[must_use]
+    pub fn extension_criticality_indicator_at(&self, index: usize) -> Option<bool> {
+        self.message_extensions
+            .get(index)
+            .map(ClientRequestMessageExtension::criticality_indicator)
     }
 
     /// Returns the typed operation request.

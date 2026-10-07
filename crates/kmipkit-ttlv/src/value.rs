@@ -254,7 +254,9 @@ impl Value {
         }
     }
 
-    pub(crate) fn item_type(&self) -> ItemType {
+    /// Returns the Item Type represented by this value.
+    #[must_use]
+    pub fn item_type(&self) -> ItemType {
         match self.inner.boxed.as_ref() {
             ValueRepr::Structure(_) => ItemType::Structure,
             ValueRepr::Integer(_) => ItemType::Integer,
@@ -286,7 +288,41 @@ impl Value {
         }
     }
 
+    /// Lends a read-only value view for the duration of `callback`.
+    pub fn with_value<R>(&self, callback: impl for<'a> FnOnce(ValueView<'a>) -> R) -> R {
+        callback(self.as_view())
+    }
+
     pub(crate) fn zeroize_payloads(&mut self) {
         self.inner.boxed.as_mut().zeroize();
+    }
+}
+
+/// Creates a zeroizing owned copy of an opaque value for language bindings.
+#[doc(hidden)]
+pub fn try_clone_value(value: &Value) -> Result<Value, crate::ModelError> {
+    clone_value_view(value.as_view())
+}
+
+fn clone_value_view(value: ValueView<'_>) -> Result<Value, crate::ModelError> {
+    match value {
+        ValueView::Structure(structure) => {
+            let mut clone = Structure::new();
+            for item in structure.children() {
+                let value = item.with_value(clone_value_view)?;
+                clone.try_push(crate::Item::new(item.tag(), value)?)?;
+            }
+            Ok(Value::structure(clone))
+        }
+        ValueView::Integer(value) => Ok(Value::integer(*value)),
+        ValueView::LongInteger(value) => Ok(Value::long_integer(*value)),
+        ValueView::BigInteger(value) => Ok(Value::big_integer(value.to_vec())),
+        ValueView::Enumeration(value) => Ok(Value::enumeration(*value)),
+        ValueView::Boolean(value) => Ok(Value::boolean(*value)),
+        ValueView::TextString(value) => Ok(Value::text_string((*value).to_owned())),
+        ValueView::ByteString(value) => Ok(Value::byte_string(value.to_vec())),
+        ValueView::DateTime(value) => Ok(Value::date_time(*value)),
+        ValueView::Interval(value) => Ok(Value::interval(*value)),
+        ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
     }
 }

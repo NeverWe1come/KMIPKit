@@ -284,6 +284,79 @@ pub fn extension_definition(
     })
 }
 
+/// Creates an owned copy of a complete extension definition for a language binding.
+///
+/// Variable-length discriminator values are copied into the TTLV model's
+/// zeroizing storage. The copy preserves the schema, identity, compatibility,
+/// discriminator, and optional Extension Information without exposing any
+/// payload formatting.
+#[doc(hidden)]
+pub fn clone_extension_definition(
+    definition: &ExtensionDefinition,
+) -> Result<ExtensionDefinition, ProtocolError> {
+    let discriminator = clone_extension_discriminator(&definition.discriminator)?;
+    let mut cloned = extension_definition(
+        definition.identity.clone(),
+        definition.compatibility,
+        discriminator,
+        definition.schema.clone(),
+    )?;
+    if let Some(information) = &definition.information {
+        cloned.information = Some(information.clone());
+    }
+    Ok(cloned)
+}
+
+/// Creates an owned copy of a discriminator with zeroizing scalar storage.
+#[doc(hidden)]
+pub fn clone_extension_discriminator(
+    source: &Discriminator,
+) -> Result<Discriminator, ProtocolError> {
+    let scalar = source.scalar_value.with_value(clone_value)?;
+    discriminator(source.path.clone(), scalar)
+}
+
+fn clone_value(value: ValueView<'_>) -> Result<Value, ProtocolError> {
+    match value {
+        ValueView::Structure(structure) => Ok(Value::structure(clone_structure(&structure)?)),
+        ValueView::Integer(value) => Ok(Value::integer(*value)),
+        ValueView::LongInteger(value) => Ok(Value::long_integer(*value)),
+        ValueView::BigInteger(value) => Ok(Value::big_integer(value.to_vec())),
+        ValueView::Enumeration(value) => Ok(Value::enumeration(*value)),
+        ValueView::Boolean(value) => Ok(Value::boolean(*value)),
+        ValueView::TextString(value) => Ok(Value::text_string((*value).to_owned())),
+        ValueView::ByteString(value) => Ok(Value::byte_string(value.to_vec())),
+        ValueView::DateTime(value) => Ok(Value::date_time(*value)),
+        ValueView::Interval(value) => Ok(Value::interval(*value)),
+        ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
+        _ => Err(categorized_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn clone_structure(
+    structure: &kmipkit_ttlv::StructureView<'_>,
+) -> Result<kmipkit_ttlv::Structure, ProtocolError> {
+    let mut cloned = kmipkit_ttlv::Structure::new();
+    for item in structure.children() {
+        let value = item.with_value(clone_value)?;
+        let cloned_item = Item::new(item.tag(), value).map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidSchema,
+                crate::ProtocolCauseCategory::InvalidValue,
+                error,
+            )
+        })?;
+        cloned.try_push(cloned_item).map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidSchema,
+                crate::ProtocolCauseCategory::InvalidValue,
+                error,
+            )
+        })?;
+    }
+    Ok(cloned)
+}
+
 /// Returns a compact resource-accounting snapshot for client registry checks.
 ///
 /// This hidden workspace bridge exposes counts only. It does not expose schema

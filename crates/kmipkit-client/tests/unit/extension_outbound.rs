@@ -376,7 +376,10 @@ fn repeated_message_extensions_keep_explicit_criticality_and_caller_order() {
     assert_eq!(first_identity.name(), "alpha");
     assert_eq!(second_identity.name(), "beta");
     assert_eq!(batch_item.extension_criticality_indicator_at(0), Some(true));
-    assert_eq!(batch_item.extension_criticality_indicator_at(1), Some(false));
+    assert_eq!(
+        batch_item.extension_criticality_indicator_at(1),
+        Some(false)
+    );
     assert_eq!(batch_item.extension_identity_at(2), None);
     assert_eq!(batch_item.extension_criticality_indicator_at(2), None);
 

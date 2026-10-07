@@ -220,7 +220,7 @@ impl RegisteredExtensionValue {
 /// The production transport constructor can consume this configuration
 /// without rebuilding or sharing registry state between clients.
 pub struct ClientConfiguration {
-    extension_registry: ClientExtensionRegistry,
+    extension_registry: Arc<ClientExtensionRegistry>,
 }
 
 /// A registry-validated extension and its caller-selected request criticality.
@@ -246,6 +246,10 @@ impl ClientRequestMessageExtension {
 
     pub(crate) const fn criticality_indicator(&self) -> bool {
         self.criticality_indicator
+    }
+
+    pub(crate) fn identity(&self) -> ExtensionIdentity {
+        extension::validated_extension_value_identity(self.value.value())
     }
 
     /// Checks whether this request value was sealed by the given client configuration.
@@ -282,13 +286,29 @@ impl ClientConfiguration {
     /// Creates a client configuration from one immutable extension registry.
     #[must_use]
     pub fn new(extension_registry: ClientExtensionRegistry) -> Self {
+        Self {
+            extension_registry: Arc::new(extension_registry),
+        }
+    }
+
+    /// Creates a configuration that shares one immutable registry snapshot.
+    #[doc(hidden)]
+    #[must_use]
+    pub fn from_shared_registry(extension_registry: Arc<ClientExtensionRegistry>) -> Self {
         Self { extension_registry }
     }
 
     /// Returns the registry owned by this client configuration.
     #[must_use]
-    pub const fn extension_registry(&self) -> &ClientExtensionRegistry {
+    pub fn extension_registry(&self) -> &ClientExtensionRegistry {
         &self.extension_registry
+    }
+
+    /// Returns a shared owner for language-binding accessors.
+    #[doc(hidden)]
+    #[must_use]
+    pub fn shared_extension_registry(&self) -> Arc<ClientExtensionRegistry> {
+        Arc::clone(&self.extension_registry)
     }
 }
 

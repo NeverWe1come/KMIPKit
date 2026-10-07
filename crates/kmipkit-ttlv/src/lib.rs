@@ -56,4 +56,4 @@ pub use error::ModelError;
 pub use item::Item;
 pub use structure::{Structure, StructureView};
 pub use tag::{RawTag, Tag};
-pub use value::{ItemType, Value, ValueView};
+pub use value::{ItemType, Value, ValueView, try_clone_value};
