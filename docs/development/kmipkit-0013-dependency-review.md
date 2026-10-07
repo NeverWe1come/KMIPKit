@@ -46,6 +46,15 @@ The root duplicate sets are:
 - `syn` 2.0.119 and 3.0.6, required by distinct proc-macro dependency families
   in the combined workspace graph.
 
+An upstream update to `system-configuration` 0.8.0 would use
+`core-foundation` 0.10, but Hickory resolver 0.26.3 constrains its Apple-only
+`system-configuration` dependency to the incompatible 0.7 line. Avoiding this
+duplicate therefore requires a Hickory release that updates that constraint
+or a different system-DNS design; no lockfile-only update can unify it. The
+`syn` duplicate is likewise across incompatible major versions and multiple
+independent proc-macro families; do not force an unreviewed dependency
+replacement to hide it.
+
 The five denied package license expressions are:
 
 - `aws-lc-rs` 1.18.1: `ISC AND (Apache-2.0 OR ISC)`.
@@ -56,11 +65,23 @@ The five denied package license expressions are:
 
 The feature graph review found no Hyper HTTP/2, TLS 1.2, rustls early-data,
 compression, or `ring` feature enabled. AWS-LC is the only selected TLS
-provider. Dependency metadata inspected for the resolved graph reports no
-crate requiring a Rust version newer than 1.94. AWS-LC builds native C/C++
-code; the Linux, Windows MSVC, and macOS CI jobs must have their respective
-native toolchains. The metadata review is not evidence that all three target
-builds have passed.
+provider. Hickory's `tokio` feature does enable `tokio/rt-multi-thread`
+transitively through `hickory-net`, despite KMIPKit directly selecting only
+Tokio's `rt` feature; it does not alter the specified current-thread worker
+design. Dependency metadata inspected for the resolved graph reports no crate
+requiring a Rust version newer than 1.94. AWS-LC builds native C/C++ code.
+
+The dependency set compiled successfully on two hosts:
+
+| Host | Command | Result |
+|---|---|---|
+| Windows `x86_64-pc-windows-msvc` | `cargo check --manifest-path Cargo.toml --locked -p kmipkit-transport` | Pass; AWS-LC native build and the selected transport dependency graph compiled. |
+| Ubuntu 26.04 WSL, Rust 1.94.0 `x86_64-unknown-linux-gnu` | `cargo check --manifest-path /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0013-transport/KMIPKit/Cargo.toml --locked -p kmipkit-transport` | Pass; AWS-LC native build and the selected transport dependency graph compiled. |
+
+The macOS target has not yet been compiled locally. Its Apple-target dependency
+graph was checked with `cargo tree --target all`; the macOS CI job remains the
+verification point for the `system-configuration` and Security Framework
+native build path.
 
 ## Disposition still required
 
@@ -83,3 +104,8 @@ be retained in any distributed third-party notices.
 Until these dispositions are recorded and the official script passes for both
 workspaces, T003 remains unchecked and implementation tasks T004 onward must
 not start.
+
+The standing authorization to continue the roadmap does not claim that the
+maintainer personally reviewed these exact license and duplicate-version
+exceptions. The dependency-policy contract requires a distinct human reviewer
+for each exception; none is represented as approved here.
