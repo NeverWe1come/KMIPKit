@@ -56,7 +56,7 @@ def compute_profile_closure(
         raise ProfileGenerationError("profile has no valid direct source clauses")
 
     clauses_by_id: dict[str, dict[str, Any]] = {}
-    clauses: list[dict[str, Any]] = []
+    clauses_by_source: dict[str, list[dict[str, Any]]] = {}
     for clause in raw_clauses:
         if not isinstance(clause, dict):
             raise ProfileGenerationError("catalog has an invalid source clause record")
@@ -74,7 +74,7 @@ def compute_profile_closure(
         ):
             raise ProfileGenerationError("catalog has an invalid or duplicate source clause identity")
         clauses_by_id[clause_id] = clause
-        clauses.append(clause)
+        clauses_by_source.setdefault(source_id, []).append(clause)
 
     inclusions_by_clause: dict[str, list[dict[str, Any]]] = {}
     inclusion_ids: set[str] = set()
@@ -111,8 +111,9 @@ def compute_profile_closure(
         if scope in active_scopes:
             raise ProfileGenerationError("cyclic normative inclusion")
         matching = [
-            clause for clause in clauses
-            if clause["source_id"] == source_id and _section_in_scope(clause["section"], included_section)
+            clause
+            for clause in clauses_by_source.get(source_id, ())
+            if _section_in_scope(clause["section"], included_section)
         ]
         if not matching:
             raise ProfileGenerationError("normative inclusion does not resolve to a source clause")
