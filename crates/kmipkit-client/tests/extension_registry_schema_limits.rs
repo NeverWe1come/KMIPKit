@@ -1,7 +1,7 @@
 //! Client registry enforcement for schema-specific resource limits.
 //!
 //! Traceability: KMIPKIT-0012-FR-012. These configured registry limits are
-//! KMIPKit policy. OASIS KMIP v2.1 §9.13, Table 418 defines the enclosing
+//! `KMIPKit` policy. OASIS KMIP v2.1 §9.13, Table 418 defines the enclosing
 //! Message Extension and Vendor Extension Structure, not schema resource
 //! limits for vendor payloads.
 

@@ -7,6 +7,18 @@ use std::fmt;
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ProtocolErrorKind {
+    /// An extension identity is invalid or violates a local identity invariant.
+    InvalidIdentity,
+    /// A registry key conflicts with another declared key.
+    DuplicateKey,
+    /// A declared compatibility range does not support this client.
+    CompatibilityMismatch,
+    /// An extension schema or value does not satisfy its declared rules.
+    InvalidSchema,
+    /// A configured or encountered resource limit has been exceeded.
+    ResourceLimit,
+    /// A public operation received an invalid local input.
+    InvalidInput,
     /// A represented KMIP value violates a local invariant.
     InvalidValue,
     /// A message could not be processed as a complete protocol value.
@@ -18,6 +30,12 @@ pub enum ProtocolErrorKind {
 impl fmt::Display for ProtocolErrorKind {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::InvalidIdentity => formatter.write_str("invalid extension identity"),
+            Self::DuplicateKey => formatter.write_str("duplicate extension key"),
+            Self::CompatibilityMismatch => formatter.write_str("extension compatibility mismatch"),
+            Self::InvalidSchema => formatter.write_str("invalid extension schema"),
+            Self::ResourceLimit => formatter.write_str("extension resource limit exceeded"),
+            Self::InvalidInput => formatter.write_str("invalid protocol input"),
             Self::InvalidValue => formatter.write_str("invalid protocol value"),
             Self::MalformedMessage => formatter.write_str("malformed protocol message"),
             Self::UnsupportedValue => formatter.write_str("unsupported protocol value"),
@@ -50,10 +68,11 @@ impl fmt::Display for ProtocolCauseCategory {
 impl Error for ProtocolCauseCategory {}
 
 /// A protocol-processing error whose source text and payload are discarded.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ProtocolError {
     kind: ProtocolErrorKind,
     cause: ProtocolCauseCategory,
+    tag_path: Option<Vec<kmipkit_ttlv::Tag>>,
 }
 
 impl ProtocolError {
@@ -63,7 +82,33 @@ impl ProtocolError {
         E: Error + 'static,
     {
         drop(source);
-        Self { kind, cause }
+        Self {
+            kind,
+            cause,
+            tag_path: None,
+        }
+    }
+
+    /// Creates an error with a safe structural tag path and no untrusted source.
+    pub(crate) fn with_tag_path(
+        kind: ProtocolErrorKind,
+        cause: ProtocolCauseCategory,
+        tag_path: Vec<kmipkit_ttlv::Tag>,
+    ) -> Self {
+        Self {
+            kind,
+            cause,
+            tag_path: Some(tag_path),
+        }
+    }
+
+    /// Creates a categorized error without retaining any caller-provided text.
+    pub(crate) const fn categorized(kind: ProtocolErrorKind, cause: ProtocolCauseCategory) -> Self {
+        Self {
+            kind,
+            cause,
+            tag_path: None,
+        }
     }
 
     /// Returns the safe protocol error category.
@@ -81,7 +126,12 @@ impl ProtocolError {
 
 impl fmt::Display for ProtocolError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{} ({})", self.kind, self.cause)
+        write!(formatter, "{}", self.kind)?;
+        if let Some(tag_path) = &self.tag_path {
+            formatter.write_str(" at tag path ")?;
+            fmt::Debug::fmt(tag_path, formatter)?;
+        }
+        write!(formatter, " ({})", self.cause)
     }
 }
 

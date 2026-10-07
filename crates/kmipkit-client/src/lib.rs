@@ -23,6 +23,7 @@
 #![forbid(unsafe_code)]
 
 mod error;
+pub mod extension_registry;
 
 mod execute;
 

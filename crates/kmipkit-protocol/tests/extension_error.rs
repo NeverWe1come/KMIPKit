@@ -3,7 +3,7 @@
 //! Traceability: KMIPKIT-0012-FR-011 and KMIPKIT-0012-FR-012.
 
 use std::error::Error;
-use std::fmt::{Debug, Display};
+use std::fmt::Write as _;
 
 use kmipkit_protocol::ProtocolErrorKind;
 use kmipkit_protocol::extension;
@@ -101,24 +101,24 @@ fn extension_value(payload: Value) -> Structure {
     )])
 }
 
-fn all_diagnostics(error: &(impl Debug + Display + Error)) -> String {
+fn all_diagnostics(error: &dyn Error) -> String {
     let mut diagnostics = format!("debug={error:?}; display={error}");
     let mut source = error.source();
     while let Some(cause) = source {
-        diagnostics.push_str("; source-debug=");
-        diagnostics.push_str(&format!("{cause:?}"));
-        diagnostics.push_str("; source-display=");
-        diagnostics.push_str(&cause.to_string());
+        let _ = write!(
+            diagnostics,
+            "; source-debug={cause:?}; source-display={cause}"
+        );
         source = cause.source();
     }
     diagnostics
 }
 
 fn compact_hex(payload: &[u8], uppercase: bool) -> String {
-    let encoded = payload
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect::<String>();
+    let mut encoded = String::with_capacity(payload.len().saturating_mul(2));
+    for byte in payload {
+        let _ = write!(encoded, "{byte:02x}");
+    }
     if uppercase {
         encoded.to_ascii_uppercase()
     } else {
@@ -140,10 +140,10 @@ fn spaced_hex(payload: &[u8], uppercase: bool) -> String {
 }
 
 fn escaped_bytes(payload: &[u8], uppercase: bool) -> String {
-    let encoded = payload
-        .iter()
-        .map(|byte| format!(r"\x{byte:02x}"))
-        .collect::<String>();
+    let mut encoded = String::with_capacity(payload.len().saturating_mul(4));
+    for byte in payload {
+        let _ = write!(encoded, r"\x{byte:02x}");
+    }
     if uppercase {
         encoded.to_ascii_uppercase()
     } else {
@@ -221,7 +221,7 @@ fn invalid_schema_diagnostics_identify_the_path_without_payload_content() {
     let integer_sentinel = PAYLOAD_INTEGER_SENTINEL.to_string();
     let definition = extension_definition();
     let error = extension::validate(
-        definition,
+        &definition,
         extension_value(Value::text_string(PAYLOAD_TEXT_SENTINEL.to_owned())),
         &CodecLimits::defaults(),
     )
@@ -242,7 +242,7 @@ fn invalid_schema_diagnostics_identify_the_path_without_payload_content() {
 
     let definition = extension_definition();
     let error = extension::validate(
-        definition,
+        &definition,
         extension_value(Value::byte_string(PAYLOAD_BYTES_SENTINEL.to_vec())),
         &CodecLimits::defaults(),
     )
@@ -262,7 +262,7 @@ fn invalid_schema_diagnostics_identify_the_path_without_payload_content() {
 fn configured_ttlv_limit_returns_resource_limit_without_a_partial_value() {
     let integer_sentinel = PAYLOAD_INTEGER_SENTINEL.to_string();
     let result = extension::validate(
-        extension_definition(),
+        &extension_definition(),
         extension_value(Value::integer(PAYLOAD_INTEGER_SENTINEL)),
         &CodecLimits::new(1_024, 64, 3)
             .expect("the configured element limit is within the TTLV hard maximum"),
@@ -275,4 +275,17 @@ fn configured_ttlv_limit_returns_resource_limit_without_a_partial_value() {
         &[DISCRIMINATOR_TEXT_SENTINEL, &integer_sentinel],
         &[],
     );
+}
+
+#[test]
+fn zero_element_limit_rejects_the_empty_root_structure() {
+    let definition = extension_definition();
+    let error = extension::validate(
+        &definition,
+        Structure::new(),
+        &CodecLimits::new(1_024, 64, 0).expect("a zero element limit is a valid configured limit"),
+    )
+    .expect_err("the root Structure counts as one element");
+
+    assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
 }

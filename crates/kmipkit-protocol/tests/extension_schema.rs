@@ -1,7 +1,7 @@
 //! Complete vendor-schema validation tests.
 //!
 //! Traceability: KMIPKIT-0012-FR-005 through FR-007 and FR-012. The schema
-//! grammar and its resource limits are KMIPKit commitments. OASIS KMIP v2.1
+//! grammar and its resource limits are `KMIPKit` commitments. OASIS KMIP v2.1
 //! §9.13, Table 418 defines the enclosing Message Extension and
 //! Vendor Extension Structure; it does not define vendor-specific child
 //! schemas or these validation rules.
@@ -32,7 +32,7 @@ fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
     for item in items {
         result
             .try_push(item)
-            .expect("schema fixture stays within the TTLV model depth")
+            .expect("schema fixture stays within the TTLV model depth");
     }
     result
 }
@@ -533,7 +533,7 @@ fn signed_and_unsigned_numeric_ranges_are_inclusive_and_reject_outliers() {
     }
 
     for item_type in [ItemType::Enumeration, ItemType::Interval] {
-        for value in [3, 5, 7] {
+        for value in [3_i32, 5, 7] {
             let schema = extension::with_unsigned_range(
                 extension::scalar(item_type).expect("unsigned scalar type is supported"),
                 3,
@@ -541,8 +541,8 @@ fn signed_and_unsigned_numeric_ranges_are_inclusive_and_reject_outliers() {
             )
             .expect("the unsigned range is ordered");
             let value = match item_type {
-                ItemType::Enumeration => Value::enumeration(value as u32),
-                ItemType::Interval => Value::interval(value as u32),
+                ItemType::Enumeration => Value::enumeration(value.cast_unsigned()),
+                ItemType::Interval => Value::interval(value.cast_unsigned()),
                 _ => unreachable!("the table contains unsigned range types only"),
             };
             assert!(validate_one(schema, value).is_ok());
