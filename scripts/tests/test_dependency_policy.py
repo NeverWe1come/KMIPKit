@@ -462,6 +462,20 @@ class DependencyExceptionTests(unittest.TestCase):
             finding("duplicate", "syn", "2.0.119"),
             finding("duplicate", "syn", "3.0.6"),
             finding("license", "aws-lc-rs", "1.18.1"),
+            finding(
+                "advisory",
+                "advisory-crate",
+                "1.0.0",
+                source="registry+https://packages.example.invalid/index",
+                advisory_id="RUSTSEC-2026-0001",
+            ),
+            finding(
+                "advisory",
+                "advisory-crate",
+                "1.0.0",
+                source="registry+https://packages.example.invalid/index",
+                advisory_id="RUSTSEC-2026-0002",
+            ),
         ]
 
         with self.assertRaises(self.policy_error()) as context:
@@ -469,6 +483,9 @@ class DependencyExceptionTests(unittest.TestCase):
 
         diagnostic = str(context.exception)
         self.assertIn("has no exact registered exception", diagnostic)
+        self.assertIn("advisory=RUSTSEC-2026-0001", diagnostic)
+        self.assertIn("advisory=RUSTSEC-2026-0002", diagnostic)
+        self.assertIn("source=registry+https://packages.example.invalid/<redacted>", diagnostic)
         for package_name, version in (
             ("core-foundation", "0.9.4"),
             ("core-foundation", "0.10.1"),
@@ -478,6 +495,96 @@ class DependencyExceptionTests(unittest.TestCase):
         ):
             with self.subTest(package=package_name, version=version):
                 self.assertIn(f"{package_name}@{version}", diagnostic)
+
+    def test_exception_validation_identifies_every_finding_beyond_twenty(self) -> None:
+        findings = [
+            finding("duplicate", f"dependency-{index:02d}", "1.0.0")
+            for index in range(25)
+        ]
+
+        with self.assertRaises(self.policy_error()) as context:
+            self.validate([], findings)
+
+        diagnostic = str(context.exception)
+        for index in range(25):
+            with self.subTest(index=index):
+                self.assertIn(f"dependency-{index:02d}@1.0.0", diagnostic)
+
+    def test_cli_reports_findings_when_exception_register_is_empty(self) -> None:
+        self.require_policy()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Cargo.toml").write_text("[workspace]\n", encoding="utf-8")
+            ttlv_manifest = root / "crates" / "kmipkit-ttlv" / "Cargo.toml"
+            ttlv_manifest.parent.mkdir(parents=True)
+            ttlv_manifest.write_text("[package]\nname = 'kmipkit-ttlv'\n", encoding="utf-8")
+            fuzz_manifest = root / "fuzz" / "Cargo.toml"
+            fuzz_manifest.parent.mkdir(parents=True)
+            fuzz_manifest.write_text("[package]\nname = 'kmipkit-ttlv-fuzz'\n", encoding="utf-8")
+            root_package = package("kmipkit", "1.0.0", root / "Cargo.toml")
+            ttlv_package = package("kmipkit-ttlv", "1.0.0", ttlv_manifest)
+            fuzz_package = package("kmipkit-ttlv-fuzz", "0.0.0", fuzz_manifest)
+            metadata = {
+                "root": workspace_metadata(
+                    root, [root_package, ttlv_package], [root_package, ttlv_package]
+                ),
+                "fuzz": workspace_metadata(root / "fuzz", [fuzz_package, ttlv_package], [fuzz_package]),
+            }
+            root_metadata = root / "root.json"
+            fuzz_metadata = root / "fuzz.json"
+            exception_register = root / "exceptions.json"
+            findings_path = root / "findings.json"
+            root_metadata.write_text(json.dumps(metadata["root"]), encoding="utf-8")
+            fuzz_metadata.write_text(json.dumps(metadata["fuzz"]), encoding="utf-8")
+            exception_register.write_text(
+                json.dumps({"schema_version": 1, "exceptions": []}), encoding="utf-8"
+            )
+            findings_path.write_text(
+                json.dumps(
+                    [
+                        finding("duplicate", "unreviewed-crate", "2.4.0"),
+                        finding(
+                            "advisory",
+                            "advisory-crate",
+                            "1.0.0",
+                            source="registry+https://packages.example.invalid/index",
+                            advisory_id="RUSTSEC-2026-0001",
+                        ),
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(POLICY_PATH),
+                    "--checkout-root",
+                    str(root),
+                    "--root-metadata",
+                    str(root_metadata),
+                    "--fuzz-metadata",
+                    str(fuzz_metadata),
+                    "--deny-config",
+                    str(REPOSITORY_ROOT / ".cargo" / "deny.toml"),
+                    "--baseline-deny-config",
+                    str(REPOSITORY_ROOT / ".cargo" / "deny-baseline.toml"),
+                    "--exceptions",
+                    str(exception_register),
+                    "--findings",
+                    str(findings_path),
+                ],
+                cwd=REPOSITORY_ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        self.assertNotEqual(0, completed.returncode)
+        report = completed.stderr
+        self.assertNotIn("findings were supplied without registered exceptions", report)
+        self.assertIn("unreviewed-crate@2.4.0", report)
+        self.assertIn("advisory=RUSTSEC-2026-0001", report)
+        self.assertIn("source=registry+https://packages.example.invalid/<redacted>", report)
 
     def test_registered_exception_must_have_a_matching_policy_config_waiver(self) -> None:
         policy = self.require_policy()
