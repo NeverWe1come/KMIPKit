@@ -126,7 +126,22 @@ enum ViewTarget {
     Value,
 }
 
-const MAX_VIEW_PATH_STEPS: usize = 128;
+// Each of the 64 supported nesting levels records one item selection and its value.
+const MAX_VIEW_PATH_STEPS: usize = 2 * 64;
+
+fn copy_view_steps(steps: &[ViewStep], additional_steps: usize) -> FfiResult<Vec<ViewStep>> {
+    let required_len = steps
+        .len()
+        .checked_add(additional_steps)
+        .filter(|length| *length <= MAX_VIEW_PATH_STEPS)
+        .ok_or(ERROR_RESOURCE_LIMIT)?;
+    let mut copied = Vec::new();
+    copied
+        .try_reserve_exact(required_len)
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    copied.extend_from_slice(steps);
+    Ok(copied)
+}
 
 /// A C read-only view resolves into an immutable, Arc-retained TTLV owner.
 ///
@@ -150,17 +165,7 @@ impl TtlvView {
     }
 
     fn append(&self, step: ViewStep, target: ViewTarget) -> FfiResult<Self> {
-        let next_len = self
-            .steps
-            .len()
-            .checked_add(1)
-            .filter(|length| *length <= MAX_VIEW_PATH_STEPS)
-            .ok_or(ERROR_RESOURCE_LIMIT)?;
-        let mut steps = Vec::new();
-        steps
-            .try_reserve_exact(next_len)
-            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
-        steps.extend_from_slice(&self.steps);
+        let mut steps = copy_view_steps(&self.steps, 1)?;
         steps.push(step);
         Ok(Self {
             owner: Arc::clone(&self.owner),
@@ -283,12 +288,7 @@ impl TtlvView {
         if !is_structure {
             return Err(mismatch_status);
         }
-        let steps_len = self.steps.len();
-        let mut steps = Vec::new();
-        steps
-            .try_reserve_exact(steps_len)
-            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
-        steps.extend_from_slice(&self.steps);
+        let steps = copy_view_steps(&self.steps, 0)?;
         Ok(Self {
             owner: Arc::clone(&self.owner),
             root: self.root,
@@ -324,11 +324,7 @@ impl TtlvView {
     }
 
     fn duplicate(&self) -> FfiResult<Self> {
-        let mut steps = Vec::new();
-        steps
-            .try_reserve_exact(self.steps.len())
-            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
-        steps.extend_from_slice(&self.steps);
+        let steps = copy_view_steps(&self.steps, 0)?;
         Ok(Self {
             owner: Arc::clone(&self.owner),
             root: self.root,

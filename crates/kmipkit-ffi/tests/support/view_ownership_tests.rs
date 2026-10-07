@@ -426,6 +426,76 @@ fn structure_view_rejects_an_out_of_range_item_index() {
 }
 
 #[test]
+fn repeated_tags_keep_index_selected_views_on_the_same_item() {
+    let tag = checked_tag(0x0042_0002);
+    let mut structure = Structure::new();
+    structure
+        .try_push(Item::new(tag, Value::byte_string(vec![0x11])).unwrap())
+        .unwrap();
+    structure
+        .try_push(Item::new(tag, Value::byte_string(vec![0x22])).unwrap())
+        .unwrap();
+    let source_data = structure.view().children()[1].with_value(|value| match value {
+        ValueView::ByteString(bytes) => bytes.as_ptr(),
+        _ => ptr::null(),
+    });
+    let source = make_handle(Kind::Structure, HandleValue::Structure(structure));
+    let mut structure_view = ptr::null_mut();
+    let mut item_view = ptr::null_mut();
+    let mut value_view = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_ttlv_structure_view(source, &raw mut structure_view),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_at(structure_view, 1, &raw mut item_view),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_ttlv_item_view_value(item_view, &raw mut value_view),
+        SUCCESS
+    );
+    let value = reference_handle(&value_view, Kind::ValueView).unwrap();
+    let shares_second_payload = value_view_byte_string_data(&value.value) == source_data;
+
+    kmipkit_ttlv_structure_release(source);
+    kmipkit_ttlv_structure_view_release(structure_view);
+    kmipkit_ttlv_item_view_release(item_view);
+    let mut last_byte = 0;
+    assert_eq!(
+        kmipkit_ttlv_value_view_byte_at(value_view, 0, &raw mut last_byte),
+        SUCCESS
+    );
+    kmipkit_ttlv_value_view_release(value_view);
+
+    assert!(shares_second_payload);
+    assert_eq!(last_byte, 0x22);
+}
+
+#[test]
+fn view_path_accepts_exactly_sixty_four_ttlv_levels() {
+    let source = make_handle::<kmipkit_ttlv_structure_t>(
+        Kind::Structure,
+        HandleValue::Structure(Structure::new()),
+    );
+    let owner = clone_handle_owner(source, Kind::Structure).unwrap();
+    let mut view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
+
+    for index in 0..64 {
+        view = view
+            .append(ViewStep::Item(index), ViewTarget::Item)
+            .unwrap();
+        view = view.append(ViewStep::Value, ViewTarget::Value).unwrap();
+    }
+    let beyond_limit = view.append(ViewStep::Item(64), ViewTarget::Item).err();
+    kmipkit_ttlv_structure_release(source);
+
+    assert_eq!(view.steps.len(), MAX_VIEW_PATH_STEPS);
+    assert_eq!(beyond_limit, Some(ERROR_RESOURCE_LIMIT));
+}
+
+#[test]
 fn wrong_item_type_accessors_return_invalid_input() {
     let byte_value = make_handle(
         Kind::Value,
