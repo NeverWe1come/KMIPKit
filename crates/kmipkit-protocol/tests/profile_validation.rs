@@ -1,3 +1,7 @@
+//! Selection regressions trace Baseline Client's KMIP Profiles v2.1 §§3.1,
+//! 3.1.1, 3.1.2, and 6.1 closure and the KMIP Specification v2.1 §14.1 client
+//! profile prerequisite through the checked-in normative catalog.
+
 use kmipkit_protocol::{
     ProfileValidationErrorCode, ProfileValidationSelection,
     profiles_generated::{CLIENT_PROFILES, GeneratedVerificationCategory},
@@ -7,6 +11,7 @@ const BASELINE: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 const AES_XTS: &str = "KMIPKIT-PROFILE-AES-XTS-CLIENT";
 const HTTPS: &str = "KMIPKIT-PROFILE-HTTPS-CLIENT";
 const JSON: &str = "KMIPKIT-PROFILE-JSON-CLIENT";
+const BASELINE_SERVER: &str = "KMIPKIT-PROFILE-BASELINE-SERVER";
 
 #[test]
 fn baseline_target_membership_does_not_make_runtime_selection_available() {
@@ -15,6 +20,15 @@ fn baseline_target_membership_does_not_make_runtime_selection_available() {
         .find(|profile| profile.profile_id == BASELINE)
         .expect("the generated catalog includes Baseline Client");
     assert!(target.selected_target);
+    for inherited_requirement in [
+        "KMIPKIT-REQ-PROF-3.1.1-002",
+        "KMIPKIT-REQ-PROF-3.1.1-004",
+        "KMIPKIT-REQ-PROF-3.1.1-005",
+        "KMIPKIT-REQ-PROF-3.1.2-002",
+        "KMIPKIT-REQ-PROF-3.1.2-005",
+    ] {
+        assert!(target.requirement_ids.contains(&inherited_requirement));
+    }
 
     let error = ProfileValidationSelection::new([BASELINE])
         .validate()
@@ -23,7 +37,10 @@ fn baseline_target_membership_does_not_make_runtime_selection_available() {
     assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
     assert_eq!(error.profile_id(), Some(BASELINE));
     assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-PROF-3.1-001"));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-PROF-3.1-001"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-PROF-3.1-001")
+    );
 }
 
 #[test]
@@ -57,24 +74,43 @@ fn conditional_and_out_of_scope_profiles_fail_closed() {
     let out_of_scope = ProfileValidationSelection::new([JSON])
         .validate()
         .expect_err("JSON is outside the KMIPKit 1.0 product boundary");
-    assert_eq!(out_of_scope.code(), ProfileValidationErrorCode::ProfileUnavailable);
+    assert_eq!(
+        out_of_scope.code(),
+        ProfileValidationErrorCode::ProfileUnavailable
+    );
     assert_eq!(out_of_scope.profile_id(), Some(JSON));
 }
 
 #[test]
 fn unknown_and_duplicate_profile_ids_return_stable_validation_codes() {
+    let empty = ProfileValidationSelection::new(std::iter::empty::<&str>())
+        .validate()
+        .expect_err("an empty selection cannot activate hidden defaults");
+    assert_eq!(empty.code(), ProfileValidationErrorCode::EmptySelection);
+
     let secret_marker = "private-key-sentinel";
-    let unknown = ProfileValidationSelection::new([secret_marker])
+    let selection = ProfileValidationSelection::new([secret_marker]);
+    let unknown = selection
         .validate()
         .expect_err("unknown IDs cannot resolve to catalog metadata");
     assert_eq!(unknown.code(), ProfileValidationErrorCode::UnknownProfile);
     assert!(!unknown.to_string().contains(secret_marker));
     assert!(!format!("{unknown:?}").contains(secret_marker));
+    assert!(!format!("{selection:?}").contains(secret_marker));
+
+    let server = ProfileValidationSelection::new([BASELINE_SERVER])
+        .validate()
+        .expect_err("server profiles cannot be selected by a KMIPKit client");
+    assert_eq!(server.code(), ProfileValidationErrorCode::UnknownProfile);
+    assert_eq!(server.profile_id(), None);
 
     let duplicate = ProfileValidationSelection::new([BASELINE, BASELINE])
         .validate()
         .expect_err("duplicate selection IDs are ambiguous");
-    assert_eq!(duplicate.code(), ProfileValidationErrorCode::DuplicateProfile);
+    assert_eq!(
+        duplicate.code(),
+        ProfileValidationErrorCode::DuplicateProfile
+    );
 }
 
 #[test]
@@ -97,6 +133,9 @@ fn generated_client_keywords_retain_all_five_verification_obligations() {
         GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation,
         GeneratedVerificationCategory::OptionalCapability,
     ] {
-        assert!(categories.contains(&expected), "missing category {expected:?}");
+        assert!(
+            categories.contains(&expected),
+            "missing category {expected:?}"
+        );
     }
 }

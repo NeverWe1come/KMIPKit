@@ -9,10 +9,11 @@ mod error;
 mod message;
 mod poll;
 mod process;
-mod query_async_requests;
-mod result;
+mod profile;
 /// Generated source and evidence metadata for catalogued client profiles.
 pub mod profiles_generated;
+mod query_async_requests;
+mod result;
 
 pub use asynchronous::AsynchronousOperationError;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
@@ -33,6 +34,10 @@ pub use message::{
 };
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
+pub use profile::{
+    ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
+    ProfileValidationSelection,
+};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
