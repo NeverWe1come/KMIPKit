@@ -259,6 +259,24 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertIn('"KMIPKIT-REQ-SPEC-2.1-001"', generated)
         self.assertNotIn("ProfileRuleMapping", generated)
 
+    def test_generated_requirement_metadata_preserves_exact_normative_keywords(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
+        targets = ProfileTargets(
+            "1.0",
+            ("KMIPKIT-PROFILE-BASELINE-CLIENT",),
+            "KMIPKIT-0010/FR-003",
+        )
+
+        generated = render_profiles_source(catalog, targets)
+
+        self.assertTrue("pub struct GeneratedClientRequirement" in generated)
+        self.assertTrue("pub const CLIENT_REQUIREMENTS" in generated)
+        for keyword in ("MUST", "SHALL", "REQUIRED", "MUST NOT", "SHALL NOT", "SHOULD", "RECOMMENDED", "SHOULD NOT", "MAY", "OPTIONAL"):
+            with self.subTest(keyword=keyword):
+                self.assertIn(f'source_keyword: "{keyword}"', generated)
+        self.assertNotIn("ProfileRuleMapping", generated)
+
 
 if __name__ == "__main__":
     unittest.main()
