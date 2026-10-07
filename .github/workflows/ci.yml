@@ -112,9 +112,12 @@ jobs:
           maven-version: '3.9.16'
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # actions/setup-python v7.0.0
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
         with:
+          version: '0.12.23'
           python-version: '3.12'
+          activate-environment: true
+          no-project: true
 
       - name: Set up CMake 3.31.6
         uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # lukka/get-cmake v4.4.2
@@ -125,7 +128,7 @@ jobs:
       - name: Build the C consumer and example
         run: |
           cargo build --locked -p kmipkit-ffi
-          cmake -S bindings/c -B build/c-consumer
+          cmake -G Ninja -S bindings/c -B build/c-consumer
           cmake --build build/c-consumer --config Release
 
       - name: Run the C consumer and example
@@ -143,8 +146,8 @@ jobs:
 
       - name: Build the Python Maturin CFFI package and run tests and example
         run: |
-          python -m pip install --requirement bindings/python/requirements-coverage.txt
-          python -m pip install --no-build-isolation bindings/python
+          uv pip install --requirement bindings/python/requirements-coverage.txt
+          uv pip install --no-build-isolation bindings/python
           python -m pytest -q bindings/python/tests
           python bindings/python/examples/vendor_extension_registry.py
 
@@ -359,9 +362,12 @@ jobs:
           maven-version: '3.9.16'
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # actions/setup-python v7.0.0
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
         with:
+          version: '0.12.23'
           python-version: '3.12'
+          activate-environment: true
+          no-project: true
 
       - name: Install LLVM 20.1.8 for JNI coverage
         uses: KyleMayes/install-llvm-action@ebc0426251bc40c7cd31162802432c68818ab8f0 # KyleMayes/install-llvm-action v2.0.9
@@ -388,8 +394,8 @@ jobs:
       - name: Run Python coverage suite
         shell: bash
         run: |
-          python -m pip install --requirement bindings/python/requirements-coverage.txt
-          python -m pip install --no-build-isolation --editable bindings/python
+          uv pip install --requirement bindings/python/requirements-coverage.txt
+          uv pip install --no-build-isolation --editable bindings/python
           mkdir -p coverage-python
           python -m pytest -q bindings/python/tests \
             --cov=kmipkit \
