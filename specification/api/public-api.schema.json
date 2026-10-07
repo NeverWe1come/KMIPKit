@@ -782,7 +782,7 @@
               "$ref": "#/$defs/errorCategoryIds"
             },
             "returnType": {
-              "$ref": "#/$defs/javaType"
+              "$ref": "#/$defs/javaReturnType"
             }
           },
           "additionalProperties": false
@@ -1405,6 +1405,9 @@
           "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?)*\\s*>$"
         },
         {
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*::)*Result\\s*<\\s*\\(\\)\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*>$"
+        },
+        {
           "pattern": "^\\(\\)$"
         },
         {
@@ -1423,13 +1426,24 @@
           "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*\\]$"
         }
       ],
-      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty arguments, unit and tuple types, fixed arrays, references, and borrowed slices."
+      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, and borrowed slices."
     },
     "javaType": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\[\\])*$",
-      "description": "Java type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty type arguments. Wildcards are unsupported."
+      "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\[\\])*$",
+      "description": "Java parameter/type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty reference-type arguments. Primitive and void arguments are not allowed; wildcards are unsupported."
+    },
+    "javaReturnType": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/javaType"
+        },
+        {
+          "const": "void"
+        }
+      ],
+      "description": "Java method result type: a javaType or void."
     },
     "pythonType": {
       "type": "string",
