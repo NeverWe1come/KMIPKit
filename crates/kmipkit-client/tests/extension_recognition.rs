@@ -1,0 +1,296 @@
+//! Registered extension recognition and inspection behavior.
+//!
+//! Traceability: KMIPKIT-0012-FR-006, KMIPKIT-0012-FR-007,
+//! KMIPKIT-0012-FR-012, and KMIP 2.1 §9.13, Table 418.
+
+use kmipkit_client::extension_registry::{self, ClientExtensionRegistry, ExtensionRecognition};
+use kmipkit_protocol::extension;
+use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value};
+
+const VENDOR: &str = "example.vendor";
+const FIRST_PATH_TAG: u32 = 0x42_0001;
+const SECOND_PATH_TAG: u32 = 0x42_0002;
+const UNKNOWN_TAG: u32 = 0x42_0003;
+const REQUIRED_EXTRA_TAG: u32 = 0x42_0004;
+
+fn tag(raw: u32) -> Tag {
+    RawTag::new(raw)
+        .expect("the test tag fits in the KMIP Tag width")
+        .try_checked()
+        .expect("the test tag uses the vendor allocation")
+}
+
+fn definition(
+    name: &str,
+    discriminator_path: &[u32],
+    discriminator_value: &str,
+    require_extra: bool,
+) -> extension::ExtensionDefinition {
+    let identity = extension::extension_identity(VENDOR, name, "1")
+        .expect("the test extension identity is valid");
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+        .expect("the test extension supports this client");
+    let mut path = extension::ttlv_path(tag(discriminator_path[0]))
+        .expect("the discriminator path is non-empty");
+    for raw_tag in &discriminator_path[1..] {
+        path = extension::with_child_tag(path, tag(*raw_tag))
+            .expect("the discriminator path is valid");
+    }
+    let discriminator =
+        extension::discriminator(path, Value::text_string(discriminator_value.to_owned()))
+            .expect("the discriminator is a valid scalar");
+
+    let mut schema = extension::scalar(ItemType::TextString)
+        .expect("Text String is supported by the extension schema");
+    for raw_tag in discriminator_path.iter().rev() {
+        let mut children = vec![
+            extension::required(tag(*raw_tag), schema)
+                .expect("the discriminator schema child is valid"),
+        ];
+        if require_extra && *raw_tag == discriminator_path[0] {
+            children.push(
+                extension::required(
+                    tag(REQUIRED_EXTRA_TAG),
+                    extension::scalar(ItemType::ByteString)
+                        .expect("Byte String is supported by the extension schema"),
+                )
+                .expect("the required extra schema child is valid"),
+            );
+        }
+        schema = extension::structure(children, Vec::new(), true)
+            .expect("the extension Structure schema is valid");
+    }
+    let definition =
+        extension::extension_definition(identity, compatibility, discriminator, schema)
+            .expect("the test extension definition is valid");
+    let information =
+        extension::extension_information(name).expect("the extension information name is valid");
+    extension::with_information(definition, information).expect("the extension metadata is valid")
+}
+
+fn registry(definitions: Vec<extension::ExtensionDefinition>) -> ClientExtensionRegistry {
+    extension_registry::client_extension_registry(definitions, extension::defaults())
+        .expect("the test definitions form a valid immutable registry")
+}
+
+fn payload(path: &[u32], value: Value) -> Structure {
+    let mut nested = Structure::new();
+    nested
+        .try_push(
+            Item::new(tag(*path.last().expect("path is non-empty")), value)
+                .expect("leaf item is valid"),
+        )
+        .expect("leaf fits the payload Structure");
+
+    for raw_tag in path[..path.len() - 1].iter().rev() {
+        let mut parent = Structure::new();
+        parent
+            .try_push(
+                Item::new(tag(*raw_tag), Value::structure(nested))
+                    .expect("nested Structure item is valid"),
+            )
+            .expect("nested child fits the payload Structure");
+        nested = parent;
+    }
+    nested
+}
+
+fn inspect(
+    registry: &ClientExtensionRegistry,
+    value: Structure,
+    limits: &CodecLimits,
+) -> ExtensionRecognition {
+    extension_registry::inspect(registry, VENDOR, value, limits)
+        .expect("the generic payload is within configured resource limits")
+}
+
+fn assert_unrecognized(recognition: &ExtensionRecognition) {
+    assert!(!extension_registry::is_recognized(recognition));
+    assert!(extension_registry::validated_value(recognition).is_none());
+}
+
+#[test]
+fn exact_discriminator_hit_is_fully_schema_validated_and_keeps_generic_payload() {
+    let registry = registry(vec![definition(
+        "alpha",
+        &[FIRST_PATH_TAG],
+        "alpha-v1",
+        false,
+    )]);
+    let value = payload(&[FIRST_PATH_TAG], Value::text_string("alpha-v1".to_owned()));
+
+    let recognition = inspect(&registry, value, &CodecLimits::defaults());
+
+    assert!(extension_registry::is_recognized(&recognition));
+    let validated = extension_registry::validated_value(&recognition)
+        .expect("one exact match that passes the complete schema yields a typed value");
+    assert_eq!(
+        extension::validated_extension_value_identity(&validated).name(),
+        "alpha"
+    );
+    assert_eq!(
+        extension_registry::generic_value(&recognition)
+            .view()
+            .children()[0]
+            .tag(),
+        tag(FIRST_PATH_TAG),
+        "inspection preserves the original generic subtree"
+    );
+}
+
+#[test]
+fn missing_repeated_and_wrong_type_discriminator_paths_are_unrecognized() {
+    let registry = registry(vec![definition(
+        "alpha",
+        &[FIRST_PATH_TAG],
+        "alpha-v1",
+        false,
+    )]);
+    let missing = Structure::new();
+    let mut repeated = payload(&[FIRST_PATH_TAG], Value::text_string("alpha-v1".to_owned()));
+    repeated
+        .try_push(
+            Item::new(
+                tag(FIRST_PATH_TAG),
+                Value::text_string("alpha-v1".to_owned()),
+            )
+            .expect("the repeated discriminator item is valid"),
+        )
+        .expect("the repeated discriminator fits the payload");
+    let wrong_type = payload(&[FIRST_PATH_TAG], Value::integer(7));
+
+    for value in [missing, repeated, wrong_type] {
+        assert_unrecognized(&inspect(&registry, value, &CodecLimits::defaults()));
+    }
+}
+
+#[test]
+fn schema_failure_after_unique_discriminator_hit_has_no_partial_typed_value() {
+    let registry = registry(vec![definition(
+        "alpha",
+        &[FIRST_PATH_TAG],
+        "alpha-v1",
+        true,
+    )]);
+    let value = payload(&[FIRST_PATH_TAG], Value::text_string("alpha-v1".to_owned()));
+
+    let recognition = inspect(&registry, value, &CodecLimits::defaults());
+
+    assert_unrecognized(&recognition);
+    assert_eq!(
+        extension_registry::generic_value(&recognition)
+            .view()
+            .children()
+            .len(),
+        1,
+        "a failed typed projection still retains the unmodified generic value"
+    );
+}
+
+#[test]
+fn ambiguous_exact_matches_are_unrecognized_independent_of_registration_order() {
+    let forward = inspect(
+        &registry(vec![
+            definition("alpha", &[FIRST_PATH_TAG], "alpha-v1", false),
+            definition("beta", &[SECOND_PATH_TAG], "beta-v1", false),
+        ]),
+        ambiguous_payload(),
+        &CodecLimits::defaults(),
+    );
+    let reverse = inspect(
+        &registry(vec![
+            definition("beta", &[SECOND_PATH_TAG], "beta-v1", false),
+            definition("alpha", &[FIRST_PATH_TAG], "alpha-v1", false),
+        ]),
+        ambiguous_payload(),
+        &CodecLimits::defaults(),
+    );
+
+    assert_unrecognized(&forward);
+    assert_unrecognized(&reverse);
+}
+
+fn ambiguous_payload() -> Structure {
+    let mut value = payload(&[FIRST_PATH_TAG], Value::text_string("alpha-v1".to_owned()));
+    value
+        .try_push(
+            Item::new(
+                tag(SECOND_PATH_TAG),
+                Value::text_string("beta-v1".to_owned()),
+            )
+            .expect("the second matching discriminator is valid"),
+        )
+        .expect("the second discriminator fits the payload");
+    value
+}
+
+#[test]
+fn duplicate_exact_discriminator_keys_are_rejected_during_registry_construction() {
+    let result = extension_registry::client_extension_registry(
+        vec![
+            definition("alpha", &[FIRST_PATH_TAG], "same-v1", false),
+            definition("beta", &[FIRST_PATH_TAG], "same-v1", false),
+        ],
+        extension::defaults(),
+    );
+
+    assert!(
+        result.is_err(),
+        "one vendor cannot register duplicate exact keys"
+    );
+}
+
+#[test]
+fn wide_payload_with_last_child_match_stays_within_tag_comparison_budget() {
+    let defaults = extension::defaults();
+    let limits = extension::with_values(
+        defaults.max_definitions(),
+        defaults.max_schema_nodes(),
+        defaults.max_child_rules_per_structure(),
+        defaults.max_text_bytes_per_field(),
+        defaults.max_registry_text_bytes(),
+        defaults.max_discriminator_scalar_bytes(),
+        defaults.max_total_discriminator_scalar_bytes(),
+        defaults.max_constraint_members_per_rule(),
+        defaults.max_total_constraint_members(),
+        defaults.max_payload_index_records(),
+        35,
+        defaults.max_depth(),
+    )
+    .expect("35 comparisons stays under the hard lookup maximum");
+    let registry = extension_registry::client_extension_registry(
+        vec![definition("alpha", &[FIRST_PATH_TAG], "alpha-v1", false)],
+        limits,
+    )
+    .expect("the single-definition registry is valid");
+    let mut value = Structure::new();
+    for _ in 0..99_999 {
+        value
+            .try_push(
+                Item::new(tag(UNKNOWN_TAG), Value::text_string("x".to_owned()))
+                    .expect("an unknown generic field is a valid Item"),
+            )
+            .expect("the wide payload remains a valid Structure");
+    }
+    value
+        .try_push(
+            Item::new(
+                tag(FIRST_PATH_TAG),
+                Value::text_string("alpha-v1".to_owned()),
+            )
+            .expect("the last discriminator item is valid"),
+        )
+        .expect("the last discriminator fits the wide payload");
+    let codec_limits = CodecLimits::new(
+        CodecLimits::DEFAULT_MAX_MESSAGE_BYTES,
+        CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
+        CodecLimits::DEFAULT_MAX_ELEMENTS + 1,
+    )
+    .expect("the model depth remains within its hard maximum");
+
+    let recognition = extension_registry::inspect(&registry, VENDOR, value, &codec_limits)
+        .expect("the 100,000-child lookup stays within the configured comparison budget");
+
+    assert!(extension_registry::is_recognized(&recognition));
+}
