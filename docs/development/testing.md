@@ -176,15 +176,17 @@ Python uses the single exact-pinned test/build requirements set in
 `bindings/python/requirements-coverage.txt`: coverage 7.10.6, pytest-cov
 6.2.1, pytest 8.4.2, CFFI 1.17.1, and Maturin 1.9.4. The committed
 coverage.py configuration selects `kmipkit` as the measured source package
-and excludes only `*/kmipkit/_ffi/*.py`, the transient CFFI modules that
-Maturin generates during installation. Their binding behavior is exercised by
-the Python tests; handwritten and checked-in generated files under
+and excludes only the two Maturin-generated CFFI wrappers:
+`kmipkit/_ffi/__init__.py` and `kmipkit/_ffi/ffi.py`. They are created during
+package installation, ignored by Git, and absent from the clean checkout used
+by the aggregate job. Their behavior remains exercised through Python API
+parity tests and the CFFI, C consumer, and JNI integration suites. All
+handwritten and checked-in generated Python modules under
 `bindings/python/src/kmipkit` remain in the 85 percent gate. Tests and example
 consumers live outside that package and are not measured as product code.
 Cross-platform adapter CI pins uv 0.12.23, installs CPython 3.12 through uv,
 and activates a clean virtual environment before installing this requirements
-set. This provides the same Python minor version across GitHub-hosted
-platforms. The C consumer CI pins CMake 3.31.6
+set. This provides the same Python minor version across GitHub-hosted platforms. The C consumer CI pins CMake 3.31.6
 and Ninja 1.13.2 and selects Ninja explicitly on every platform, so the build
 does not depend on the runner image's default CMake generator.
 
@@ -200,7 +202,8 @@ executable lines. The handwritten JNI implementation in
 `bindings/java/native/kmipkit_jni.cpp` is compiled with LLVM source-based
 coverage instrumentation and measured from its own report; JaCoCo and Rust
 coverage do not count those C++ lines. The JNI collector is Linux-only and
-requires LLVM/Clang 20.1.8.
+requires LLVM/Clang 20.1.8. The two Python CFFI wrappers above are the only
+generated-source exclusions in the current configuration.
 
 The aggregate job requires these inputs at the report root:
 
