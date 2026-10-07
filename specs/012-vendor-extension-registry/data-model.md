@@ -109,9 +109,11 @@ A sealed value created only by successful validation of an ExtensionSchema. It c
 
 Inbound content produces this value only if exactly one registered discriminator key matches and its complete schema validates. Zero or multiple matching discriminator keys, or schema failure for the sole candidate, return an unrecognized generic value with no partial typed projection; multiple keys never select by registration order.
 
-## ClientMessageExtension
+## ClientRequestMessageExtension
 
 Typed request wrapper containing one ValidatedExtensionValue and the caller-selected Criticality Indicator Boolean for this specific request use. Construction requires the Boolean; no KMIPKit default is applied. Multiple wrappers may be attached to one typed Request Batch Item in caller order as permitted by §8.3/Table 396. Encoding uses the standard Message Extension structure with the registered Vendor Identification and validated Vendor Extension Structure through the existing private request writer.
+
+This name is specific to outbound request use. KMIPKIT-0007's existing `ClientMessageExtension` continues to represent preserved inbound Message Extension content.
 
 ## State transitions
 
@@ -119,4 +121,4 @@ Definition: unvalidated input -> validated immutable registration -> client regi
 
 Extension value: generic TTLV subtree -> bounded discriminator scan (zero or multiple hits -> unrecognized generic value) -> full schema validation of the sole candidate within CodecLimits and ExtensionRegistryLimits -> sealed ValidatedExtensionValue, or unrecognized generic value. Schema failure never yields a partially typed value.
 
-Outbound use: schema-validated value + explicit Criticality Indicator -> ClientMessageExtension -> typed Request Batch Item -> existing private encoding permit -> zeroizing byte owner retained through all partial transport writes and until success/error return, then initialized bytes are zeroized and the correct delivery state is reported without retry.
+Outbound use: schema-validated value + explicit Criticality Indicator -> ClientRequestMessageExtension -> typed Request Batch Item -> existing private encoding permit -> zeroizing byte owner retained through all partial transport writes and until success/error return, then initialized bytes are zeroized and the correct delivery state is reported without retry.

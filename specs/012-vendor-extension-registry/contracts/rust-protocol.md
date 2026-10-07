@@ -3,7 +3,7 @@
 ## Ownership
 
 - kmipkit-protocol owns ExtensionIdentity, ExtensionInformation, ExtensionSchema, ExtensionDefinition, and sealed ValidatedExtensionValue.
-- kmipkit-client owns ClientExtensionRegistry, attachment to immutable client configuration, and ClientMessageExtension request use.
+- kmipkit-client owns ClientExtensionRegistry, attachment to immutable client configuration, and ClientRequestMessageExtension request use.
 - kmipkit-protocol owns the public ExtensionRegistryLimits value type; kmipkit-client enforces per-registry definition, schema-node, constraint-member, discriminator-byte, metadata, payload-index, and lookup-comparison totals when assembling or inspecting a snapshot.
 - kmipkit-ffi owns all unsafe opaque-handle conversion. Other crates retain forbid(unsafe_code).
 - The protocol crate depends only on TTLV and existing approved workspace dependencies. Registry code has no transport/TLS handle.
@@ -28,4 +28,4 @@ The discriminator is an exact tag path and scalar type/value. Every path step mu
 
 Client execution attaches or validates an extension only through a closed typed request variant and a sealed ValidatedExtensionValue. Unknown critical/non-critical behavior remains in KMIPKIT-0007. No generic Item, raw body, transport implementation, or caller conversion trait is accepted as a request substitute.
 
-For outbound use, the caller must construct ClientMessageExtension with an explicit Criticality Indicator Boolean and attach it to one typed ClientBatchItem. Encoding emits the standard Message Extension fields and validated payload through the existing private OperationEncodingPermit/zeroizing writer path. No criticality default or second writer callsite is added.
+For outbound use, the caller must construct ClientRequestMessageExtension with an explicit Criticality Indicator Boolean and attach it to one typed ClientBatchItem. Encoding emits the standard Message Extension fields and validated payload through the existing private OperationEncodingPermit/zeroizing writer path. No criticality default or second writer callsite is added. This outbound type name preserves KMIPKIT-0007's existing inbound ClientMessageExtension type and its preserved-content semantics.
