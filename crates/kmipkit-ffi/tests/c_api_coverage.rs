@@ -32,14 +32,21 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
         i32::try_from(arguments.len()).expect("the C consumer argument count fits in i32");
     let mut limits = std::ptr::null_mut();
 
-    // SAFETY: `limits` is a valid writable output slot and every C string and argument pointer
-    // remains live for each call; the C consumer reads these arguments and uses valid handles.
-    let result = unsafe {
-        let status = kmipkit_codec_limits_defaults(&raw mut limits);
-        if status != 0 || limits.is_null() {
-            return assert_eq!(status, 0, "codec limits defaults must succeed");
-        }
+    // SAFETY: `limits` is a valid writable output slot for the duration of this call.
+    let status = unsafe { kmipkit_codec_limits_defaults(&raw mut limits) };
+    assert_eq!(status, 0, "codec limits defaults must succeed");
+    assert!(
+        !limits.is_null(),
+        "codec limits defaults must return an owned handle"
+    );
+
+    // SAFETY: a successful defaults call returned this live owned handle, which is released once.
+    unsafe {
         kmipkit_codec_limits_release(limits);
+    }
+
+    // SAFETY: both C strings and the mutable argument array remain live for the entire call.
+    let result = unsafe {
         kmipkit_extension_registry_c_consumer_main(argument_count, arguments.as_mut_ptr())
     };
 

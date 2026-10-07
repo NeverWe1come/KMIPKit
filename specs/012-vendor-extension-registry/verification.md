@@ -820,3 +820,12 @@ The Python adapter's Extension Information test expectation was also corrected t
   `cargo +1.94 clippy -p kmipkit-ffi --test c_api_coverage --all-features -- -D warnings` — passed.
 - WSL Ubuntu / Rust 1.94.1:
   `cargo +1.94 test -p kmipkit-ffi --test c_api_coverage --all-features -- --nocapture` — passed (1 Rust test); the linked C consumer passed all 13 groups.
+## 2026-10-07 — FFI coverage-harness unsafe-scope Refactor
+
+- Split the FFI defaults, release, and C-consumer calls into individual unsafe
+  blocks with one `SAFETY` explanation per call. Assert successful status and
+  non-null handle separately so the test fails if the C API returns no handle.
+- Rust 1.94.1 verification: `cargo +1.94 fmt --all --check` — passed;
+  `cargo +1.94 clippy -p kmipkit-ffi --test c_api_coverage --all-features -- -D warnings`
+  — passed; `cargo +1.94 test -p kmipkit-ffi --test c_api_coverage --all-features -- --nocapture`
+  — passed (1 test; 13 C consumer groups).
