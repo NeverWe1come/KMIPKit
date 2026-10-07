@@ -404,6 +404,31 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", report)
         self.assertIn("current pass/fail is not evaluated", report)
 
+    def test_full_profile_report_fails_closed_on_empty_runtime_registry_and_fixtures(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        target_ids = {"KMIPKIT-PROFILE-BASELINE-CLIENT"}
+        typed_rule_mappings = report_module.load_typed_rule_mappings(ROOT)
+
+        report = render_report(
+            catalog,
+            selected_profile_ids=target_ids,
+            typed_rule_mappings=typed_rule_mappings,
+        )
+
+        self.assertEqual(typed_rule_mappings, [])
+        baseline_row = next(
+            line for line in report.splitlines()
+            if line.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
+        )
+        self.assertIn("| selected | false |", baseline_row)
+        self.assertIn("No typed rule mapping", report)
+        self.assertIn("No category-appropriate rule test", report)
+        self.assertIn("mandatory fixtures unavailable: 16", report)
+        self.assertIn("KMIPKIT-TEST-PROF-5-1-3-1", report)
+        self.assertIn("No public claim", report)
+
     def test_report_omits_secret_markers_from_untrusted_diagnostic_text(self) -> None:
         catalog = report_catalog()
         credential_marker = "credential=report-secret-sentinel-731"
