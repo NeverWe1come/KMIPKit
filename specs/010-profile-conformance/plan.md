@@ -73,7 +73,13 @@ crates/kmipkit-client/tests/unit/
 └── profile_preflight_tests.rs
 tools/normative_catalog/
 ├── generate_profiles.py
-└── tests/test_generate_profiles.py
+└── tests/
+    ├── test_generate_profiles.py
+    ├── test_validate.py                 # normative-inclusion closure validation
+    └── fixtures/profile-closure-v2.1.json # independent pinned-source test oracle
+scripts/
+├── ci_summary.py                   # creates and consumes only ephemeral same-run evidence
+└── tests/test_ci_summary.py
 specification/catalog/
 ├── kmip-2.1.json
 ├── profile-targets.json
@@ -84,14 +90,18 @@ docs/compliance/
 
 **Structure Decision**: Keep profile validation beside shared KMIP protocol rules, generate immutable Rust profile records from the checked-in catalog, and extend the existing offline normative report path. Operation-specific generated public bindings remain the responsibility of the later API manifest/parity work.
 
+Runtime validation is an explicit per-exchange opt-in through `Client::execute_with_profiles(request, selection)`; the existing `execute` path remains unchanged and no production constructor or hidden client-wide selection state is introduced. Generated profile records must carry the full recursively normative clause/subclause closure and every applicable requirement ID. Validation errors expose stable codes and source IDs while preserving request delivery state, never free-form causes.
+
+Readiness may treat test results as verified only when a same-run aggregate job in `.github/workflows/ci.yml` creates a strict manifest during a `push` to `refs/heads/release/1.0.0` and GitHub reports `ref_protected: true`. A PR workflow can change its own workflow or manifest producer, so pull-request runs cannot certify evidence; scheduled runs also remain ineligible. Every eligible run must query the live branch-protection API with a short-lived read-only Administration GitHub App token and verify that review is required, stale approvals are dismissed, the `bypass_pull_request_allowances` object is present with empty `users`, `teams`, and `apps` arrays, admins are subject to the policy, and force pushes/deletions are disabled. Missing or malformed bypass policy, any bypass actor, a missing token, API error, or insufficient policy blocks readiness. The token is not available to PR/schedule jobs or logged. The manifest is not downloaded from or replaced by user-supplied artifacts. This manifest and the resulting readiness evaluation are ephemeral; the committed coverage report and catalog contain no run-specific data and remain deterministic from checked-in inputs. Local reports without this context remain evidence-incomplete.
+
 ## Design and execution phases
 
-1. **Phase 0 - Research and invariants**: lock catalog fields, dependency/claim states, minimum-capability semantics, and current fixture blockers. No unresolved interpretation is silently selected.
-2. **Phase 1 - Data and contracts**: define bounded generated profile records, runtime selection/validation results, readiness evidence, deterministic report fields, and exact source traceability.
-3. **Phase 2 - Red tests**: add failing tests for selection/conditions/dependencies, typed-rule completeness, no allowlist behavior, default preservation, no network side effects on invalid requests, missing-fixture blockers, Query/Discover non-inference, and report determinism.
-4. **Phase 3 - Green implementation**: generate Rust records from the catalog; implement explicit profile selection, requirement/capability checks, redacted errors, and readiness aggregation.
+1. **Phase 0 - Research and invariants**: lock catalog fields, transitive normative clause closure, dependency/claim states, minimum-capability semantics, current fixture blockers, per-call selection, and current-CI evidence provenance. No unresolved interpretation is silently selected.
+2. **Phase 1 - Data and contracts**: define complete generated profile clause/requirement closure (including whole-source normative inclusions), explicit per-call runtime selection, stable source-backed validation errors, a strict same-run protected-release-push verification manifest, readiness results, deterministic report fields, and exact source traceability.
+3. **Phase 2 - Red tests**: add failing tests for inherited clause/subclause closure, per-call selection, selection conditions/dependencies, typed-rule completeness, no allowlist behavior, default preservation, no network side effects on invalid requests, missing-fixture blockers, Query/Discover non-inference, report determinism, and stale/forged/mismatched CI evidence.
+4. **Phase 3 - Green implementation**: generate Rust records from the catalog; implement explicit per-call profile selection, requirement/capability checks, redacted source-backed errors, strict protected-release-push same-run evidence-manifest generation/validation, and readiness aggregation.
 5. **Phase 4 - Refactor and generated outputs**: centralize repeated profile metadata/rules; regenerate report and Rust outputs; verify byte-identical generation and workspace lint.
-6. **Phase 5 - Conformance and review**: execute every available pinned profile fixture, mark absent official fixtures as blocked, update catalog traceability, then run independent QA/security review and CI. Do not claim Baseline conformance while required fixtures are unavailable.
+6. **Phase 5 - Conformance and review**: execute every available pinned profile fixture, mark absent official fixtures as blocked, verify every selected profile's full normative clause closure and catalog traceability, then run independent QA/security review and CI. Do not claim Baseline conformance while required fixtures are unavailable.
 
 ## Complexity Tracking
 

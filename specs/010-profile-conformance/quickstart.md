@@ -11,10 +11,11 @@ This guide defines acceptance scenarios for the implementation phase. It does no
 
 ## Scenario 1: Validate a profile-specific message constraint
 
-1. Configure a test client with Baseline Client explicitly selected for validation.
+1. Construct a test client without profile state and choose Baseline Client in a per-call `ProfileValidationSelection`.
 2. Construct a request that violates a concrete mapped message/transport rule.
-3. Submit it through the client.
+3. Submit it with `Client::execute_with_profiles(request, selection)`.
 4. Confirm a stable error names the profile requirement ID and exact source section, and the fake transport records zero writes.
+5. Submit a valid request through the existing `Client::execute` method and confirm it remains unprofiled.
 
 ## Scenario 2: Preserve an additional valid operation
 
@@ -67,6 +68,25 @@ This guide defines acceptance scenarios for the implementation phase. It does no
 
 1. Render a report from malformed evidence/diagnostic inputs containing credential, private-key, and raw KMIP-body sentinel strings.
 2. Confirm neither the report nor any returned error contains those sentinels or raw payload text; output uses only stable identifiers and validated repository-relative references.
+
+## Scenario 11: Close inherited profile subclauses
+
+1. Generate or validate every catalogued client profile against the pinned OASIS clause hierarchy and normative-inclusion references.
+2. Confirm Baseline Client includes every KMIP Specification v2.1 clause and every client-applicable `KMIPKIT-REQ-SPEC-*` in the approved 1.0 scope through Profiles §6.1 item 1, while retaining server-only/out-of-scope dispositions.
+3. Confirm §6.1 item 2 includes applicable §3.1.1 and §3.1.2 requirements `KMIPKIT-REQ-PROF-3.1.1-002`, `-004`, `-005`, `KMIPKIT-REQ-PROF-3.1.2-002`, and `-005`.
+4. Remove one oracle-listed inherited clause or requirement from a test catalog and confirm validation fails with its exact IDs and readiness stays incomplete.
+
+## Scenario 12: Reject untrusted, stale, or caller-asserted verification evidence
+
+1. Run the required CI matrix for a pull request and confirm the run remains ineligible to certify evidence; after the reviewed change is present on the protected `release/1.0.0` branch, produce a manifest from its same-run `push` aggregate and fresh branch-protection API response.
+2. Repeat with `pull_request`, `schedule`, or another event; an unprotected or wrong ref; a previous commit/run attempt; another repository or workflow; each missing/failing required job including `coverage-gate`; a duplicate verification ID; malformed metadata; missing token/API access; a protection response with too few reviews, stale approvals not dismissed, missing/malformed `bypass_pull_request_allowances`, any user/team/app bypass entry, admins not enforced, force pushes or deletions enabled; and a locally supplied `verified` status.
+3. Confirm only the valid same-run `push` manifest for the protected release ref with sufficient current policy and all six required job IDs verifies results; every other input leaves evidence incomplete and names the stable verification/check ID without exposing logs or arbitrary paths.
+
+## Scenario 13: Keep committed reports independent of CI run IDs
+
+1. Generate the committed coverage report from the same catalog, profile-target, and assignment inputs under two different CI run IDs and attempts.
+2. Confirm the committed report is byte-identical and contains no run ID, attempt, job conclusion, temporary manifest path, or raw workflow output.
+3. Confirm the aggregate job may display separate ephemeral readiness results for each manifest without editing or uploading generated repository files.
 
 ## Expected result
 

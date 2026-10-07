@@ -32,6 +32,8 @@
 - [ ] CHK016 Are branch freshness, required checks, independent reviews, and draft-only PR handling required before review? [Review Gate, Spec §SC-010]
 - [ ] CHK017 Is readiness recomputed from current evidence, with stale `evidence_complete` downgraded and a lower catalog state never silently advanced? [Consistency, Spec §FR-017]
 - [ ] CHK018 Do report tests prove that secret-bearing evidence/diagnostic inputs and raw KMIP-body markers never appear in reports or errors? [Security, Spec §FR-012]
+- [ ] CHK019 Is current verification evidence bound to the exact repository, commit, workflow, run, and attempt, with missing, failed, duplicate, stale, and caller-asserted checks blocking readiness? [Evidence, Spec §FR-017]
+- [ ] CHK020 Are run-specific manifests and readiness results excluded from committed generated reports and catalog lifecycle state? [Determinism, Spec §FR-018]
 
 ## Notes
 

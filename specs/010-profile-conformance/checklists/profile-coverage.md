@@ -38,6 +38,11 @@
 - [ ] CHK019 Is every runtime-selectable profile backed by explicit typed mappings and executable tests for all applicable requirements, with no interpretation of catalog prose? [Fail Closed, Spec §FR-014]
 - [ ] CHK020 Is target-manifest input fixed-path, bounded, strict, duplicate-safe, semantically valid, and confined to in-scope client profiles? [Security, Spec §FR-015]
 - [ ] CHK021 Are catalog-derived Rust strings encoded by a tested Rust-literal encoder that cannot inject syntax? [Security, Spec §FR-016]
+- [ ] CHK022 Does every client profile include its complete transitive normative clause/subclause and requirement closure, including Baseline Client's entire KMIP Specification v2.1 inclusion and inherited §§3.1.1 and 3.1.2 requirements? [Completeness, Spec §FR-004]
+- [ ] CHK023 Are informative references excluded from normative closure, with oracle-backed tests that fail on any omitted applicable Baseline clause or requirement? [Traceability, Spec §FR-004, §SC-012]
+- [ ] CHK024 Does the verification manifest record and require `event_name: push`, `ref: refs/heads/release/1.0.0`, and `ref_protected: true`, rejecting PR, scheduled, other-event, wrong-ref, and unprotected runs? [Evidence validity, Spec §FR-017]
+- [ ] CHK025 Does every eligible run query the current branch-protection API and verify required human review, stale-review dismissal, a present `bypass_pull_request_allowances` object with empty `users`, `teams`, and `apps` arrays, admin enforcement, and disabled force pushes/deletions, failing closed on absent/malformed policy, any bypass entry, or unavailable short-lived read-only app token/API response? [Security, Spec §FR-017]
+- [ ] CHK026 Does the manifest require every exact check ID `core`, `script-contracts`, `normative-inventory`, `coverage`, `coverage-gate`, and `dependency-policy` to succeed? [Evidence completeness, Spec §FR-017]
 
 ## Notes
 
