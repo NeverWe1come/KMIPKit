@@ -476,6 +476,13 @@ class DependencyExceptionTests(unittest.TestCase):
                 source="registry+https://packages.example.invalid/index",
                 advisory_id="RUSTSEC-2026-0002",
             ),
+            finding(
+                "license",
+                "licensed-crate",
+                "4.2.0",
+                source="registry+https://packages.example.invalid/index",
+                license_expression="ISC AND (Apache-2.0 OR ISC)",
+            ),
         ]
 
         with self.assertRaises(self.policy_error()) as context:
@@ -486,6 +493,7 @@ class DependencyExceptionTests(unittest.TestCase):
         self.assertIn("advisory=RUSTSEC-2026-0001", diagnostic)
         self.assertIn("advisory=RUSTSEC-2026-0002", diagnostic)
         self.assertIn("source=registry+https://packages.example.invalid/<redacted>", diagnostic)
+        self.assertIn("license=ISC AND (Apache-2.0 OR ISC)", diagnostic)
         for package_name, version in (
             ("core-foundation", "0.9.4"),
             ("core-foundation", "0.10.1"),
@@ -550,6 +558,13 @@ class DependencyExceptionTests(unittest.TestCase):
                             source="registry+https://packages.example.invalid/index",
                             advisory_id="RUSTSEC-2026-0001",
                         ),
+                        finding(
+                            "license",
+                            "licensed-crate",
+                            "4.2.0",
+                            source="registry+https://packages.example.invalid/index",
+                            license_expression="ISC AND (Apache-2.0 OR ISC)",
+                        ),
                     ]
                 ),
                 encoding="utf-8",
@@ -585,6 +600,7 @@ class DependencyExceptionTests(unittest.TestCase):
         self.assertIn("unreviewed-crate@2.4.0", report)
         self.assertIn("advisory=RUSTSEC-2026-0001", report)
         self.assertIn("source=registry+https://packages.example.invalid/<redacted>", report)
+        self.assertIn("license=ISC AND (Apache-2.0 OR ISC)", report)
 
     def test_registered_exception_must_have_a_matching_policy_config_waiver(self) -> None:
         policy = self.require_policy()
@@ -1240,6 +1256,84 @@ class CargoDenyDiagnosticTests(unittest.TestCase):
         report = formatter(raw_output, {"root": {"packages": []}, "fuzz": {"packages": []}})
 
         self.assertNotIn("LicenseRef-SENTINELSECRET00000000", report)
+
+    def test_failure_report_includes_a_validated_metadata_license_expression(self) -> None:
+        formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
+        self.assertTrue(callable(formatter), "cargo-deny diagnostic formatter must be implemented")
+        raw_output = (
+            '{"type":"diagnostic","fields":{"severity":"error","code":"rejected",'
+            '"labels":[{"span":"LicenseRef-SENTINELSECRET00000000"}],'
+            '"graphs":[{"Krate":{"name":"licensed-crate","version":"4.2.0"}}]}}'
+        )
+        metadata = {
+            "root": {
+                "packages": [
+                    {
+                        "name": "licensed-crate",
+                        "version": "4.2.0",
+                        "source": "registry+https://packages.example.invalid/index",
+                        "license": "ISC AND (Apache-2.0 OR ISC)",
+                    }
+                ]
+            },
+            "fuzz": {"packages": []},
+        }
+
+        report = formatter(raw_output, metadata)
+
+        self.assertIn("license=ISC AND (Apache-2.0 OR ISC)", report)
+        self.assertNotIn("LicenseRef-SENTINELSECRET00000000", report)
+
+    def test_baseline_parser_carries_safe_license_metadata_into_findings(self) -> None:
+        parser = getattr(POLICY, "parse_cargo_deny_findings", None)
+        self.assertTrue(callable(parser), "waiver-free cargo-deny parser must be implemented")
+        raw = "\n".join(
+            (
+                json.dumps(
+                    {
+                        "type": "diagnostic",
+                        "fields": {
+                            "code": "rejected",
+                            "severity": "error",
+                            "graphs": [
+                                {"Krate": {"name": "licensed-crate", "version": "4.2.0"}}
+                            ],
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "summary",
+                        "fields": {
+                            check: {
+                                "errors": int(check == "licenses"),
+                                "warnings": 0,
+                                "notes": 0,
+                                "helps": 0,
+                            }
+                            for check in ("advisories", "bans", "licenses", "sources")
+                        },
+                    }
+                ),
+            )
+        )
+        metadata = {
+            "root": {
+                "packages": [
+                    {
+                        "name": "licensed-crate",
+                        "version": "4.2.0",
+                        "source": "registry+https://packages.example.invalid/index",
+                        "license": "ISC AND (Apache-2.0 OR ISC)",
+                    }
+                ]
+            },
+            "fuzz": {"packages": []},
+        }
+
+        findings = parser(raw, metadata, "root", 4)
+
+        self.assertEqual("ISC AND (Apache-2.0 OR ISC)", findings[0]["license_expression"])
 
     def test_untrusted_json_field_shapes_fail_safely(self) -> None:
         formatter = getattr(POLICY, "format_cargo_deny_diagnostics", None)
