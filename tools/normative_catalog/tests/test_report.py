@@ -435,6 +435,67 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("KMIPKIT-TEST-PROF-5-1-3-1", report)
         self.assertIn("No public claim", report)
 
+    def test_stale_complete_claim_is_downgraded_without_publishing(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
+        profile["claim_state"] = "evidence_complete"
+        evaluator = getattr(report_module, "evaluate_profile_readiness", None)
+        self.assertTrue(callable(evaluator), "report.py must expose profile readiness evaluation")
+
+        readiness = evaluator(
+            catalog,
+            profile_id,
+            selected_profile_ids={profile_id},
+            typed_rule_mappings=report_module.load_typed_rule_mappings(ROOT),
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIs(readiness["target_selected"], True)
+        self.assertIs(readiness["runtime_validation_available"], False)
+        self.assertEqual("evidence_incomplete", readiness["effective_state"])
+        self.assertIn("catalog claim_state evidence_complete is stale", readiness["blockers"])
+        self.assertIs(readiness["published_claim"], False)
+
+    def test_conditional_profile_readiness_requires_explicit_configuration(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        profile_id = "KMIPKIT-PROFILE-HTTPS-CLIENT"
+        readiness = report_module.evaluate_profile_readiness(
+            catalog,
+            profile_id,
+            selected_profile_ids={profile_id},
+            typed_rule_mappings=[],
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIs(readiness["runtime_validation_available"], False)
+        self.assertTrue(any("conditional" in blocker for blocker in readiness["blockers"]))
+        self.assertIs(readiness["published_claim"], False)
+
+    def test_dependency_readiness_failure_blocks_dependent_profile(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        profile_id = "KMIPKIT-PROFILE-AES-XTS-CLIENT"
+        readiness = report_module.evaluate_profile_readiness(
+            catalog,
+            profile_id,
+            selected_profile_ids={profile_id},
+            typed_rule_mappings=[],
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIs(readiness["runtime_validation_available"], False)
+        self.assertTrue(any("KMIPKIT-PROFILE-BASELINE-CLIENT" in blocker for blocker in readiness["blockers"]))
+        self.assertIs(readiness["published_claim"], False)
+
     def test_report_omits_secret_markers_from_untrusted_diagnostic_text(self) -> None:
         catalog = report_catalog()
         credential_marker = "credential=report-secret-sentinel-731"
