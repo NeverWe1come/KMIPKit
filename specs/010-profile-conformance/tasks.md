@@ -60,7 +60,7 @@
 - [ ] T033 Update `docs/compliance/conformance.md` and `specification/catalog/README.md` with the explicit profile-readiness workflow, Baseline fixture blocker, distinction between catalog `claim_state` and public claims, and no-claim status.
 - [ ] T034 Add an executable Rustdoc example to `crates/kmipkit-protocol/src/profile.rs` and run it through the existing documentation test command.
 - [ ] T035 Regenerate `crates/kmipkit-protocol/src/profiles_generated.rs` and `specification/catalog/coverage-report.md`; verify the pinned generator produces no diff on a second run, preserves target/lifecycle separation, and never embeds CI run IDs, attempts, job conclusions, or temporary manifest data in committed output.
-- [ ] T036 Run all available pinned client-profile test fixtures and map each result to the exact official case ID; retain unavailable fixture statuses and do not reconstruct missing cases.
+- [x] T036 Run all available pinned client-profile test fixtures and map each result to the exact official case ID; retain unavailable fixture statuses and do not reconstruct missing cases.
 - [ ] T037 Run `cargo fmt --all --check`, workspace Clippy with `-D warnings`, all relevant Rust tests, Python catalog tests, documentation tests, and the repository CI matrix; confirm the aggregate job's manifest/readiness output remains ephemeral and committed generated artifacts stay deterministic; record exact commands/results in the PR.
 - [x] T038 Measure changed-code and protocol/profile coverage against the approved thresholds; document any generated-code exclusion and its behavioral tests.
 - [x] T039 Run dependency/license, supply-chain, FFI-surface, and parser/catalog security checks affected by the feature; document redaction and security effects.
