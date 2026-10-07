@@ -23,6 +23,10 @@ use kmipkit_protocol::{ProtocolError, ProtocolErrorKind};
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
+#[cfg(test)]
+#[path = "../tests/support/view_ownership_tests.rs"]
+mod view_ownership_tests;
+
 const SUCCESS: i32 = 0;
 const ERROR_COMPATIBILITY_MISMATCH: i32 = 1;
 const ERROR_DUPLICATE_KEY: i32 = 2;
@@ -91,14 +95,292 @@ enum HandleValue {
     Tag(Tag),
     Item(Item),
     CodecLimits(CodecLimits),
-    StructureView(Structure),
-    ItemView(Item),
-    ValueView(Value),
+    StructureView(TtlvView),
+    ItemView(TtlvView),
+    ValueView(TtlvView),
 }
 
 struct Handle {
     kind: Kind,
     value: HandleValue,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum ViewRoot {
+    Structure,
+    Value,
+    RecognitionGeneric,
+    ValidatedGeneric,
+}
+
+#[derive(Clone, Copy)]
+enum ViewStep {
+    Item(usize),
+    Value,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum ViewTarget {
+    Structure,
+    Item,
+    Value,
+}
+
+const MAX_VIEW_PATH_STEPS: usize = 128;
+
+/// A C read-only view resolves into an immutable, Arc-retained TTLV owner.
+///
+/// The path stores item indexes rather than tags so repeated tags retain their
+/// original order and the same selected item across descendant views.
+struct TtlvView {
+    owner: Arc<Handle>,
+    root: ViewRoot,
+    steps: Vec<ViewStep>,
+    target: ViewTarget,
+}
+
+impl TtlvView {
+    fn new(owner: Arc<Handle>, root: ViewRoot, target: ViewTarget) -> Self {
+        Self {
+            owner,
+            root,
+            steps: Vec::new(),
+            target,
+        }
+    }
+
+    fn append(&self, step: ViewStep, target: ViewTarget) -> FfiResult<Self> {
+        let next_len = self
+            .steps
+            .len()
+            .checked_add(1)
+            .filter(|length| *length <= MAX_VIEW_PATH_STEPS)
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        let mut steps = Vec::new();
+        steps
+            .try_reserve_exact(next_len)
+            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        steps.extend_from_slice(&self.steps);
+        steps.push(step);
+        Ok(Self {
+            owner: Arc::clone(&self.owner),
+            root: self.root,
+            steps,
+            target,
+        })
+    }
+
+    fn with_structure_at<R>(
+        &self,
+        steps: &[ViewStep],
+        callback: impl for<'a> FnOnce(&kmipkit_ttlv::StructureView<'a>) -> R,
+    ) -> FfiResult<R> {
+        match self.root {
+            ViewRoot::Structure => {
+                let HandleValue::Structure(structure) = &self.owner.value else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                resolve_structure_path(&structure.view(), steps, callback)
+            }
+            ViewRoot::Value => {
+                let HandleValue::Value(value) = &self.owner.value else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                value.with_value(|value| match value {
+                    ValueView::Structure(structure) => {
+                        resolve_structure_path(&structure, steps, callback)
+                    }
+                    _ => Err(ERROR_INVALID_INPUT),
+                })
+            }
+            ViewRoot::RecognitionGeneric => {
+                let HandleValue::Recognition(recognition) = &self.owner.value else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                resolve_structure_path(
+                    &client_extension::generic_value(recognition).view(),
+                    steps,
+                    callback,
+                )
+            }
+            ViewRoot::ValidatedGeneric => {
+                let validated = validated_from_handle(&self.owner)?;
+                resolve_structure_path(&extension::generic_value(validated).view(), steps, callback)
+            }
+        }
+    }
+
+    fn with_structure<R>(
+        &self,
+        callback: impl for<'a> FnOnce(&kmipkit_ttlv::StructureView<'a>) -> R,
+    ) -> FfiResult<R> {
+        if self.target != ViewTarget::Structure {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        self.with_structure_at(&self.steps, callback)
+    }
+
+    fn with_item<R>(&self, callback: impl FnOnce(&Item) -> R) -> FfiResult<R> {
+        if self.target != ViewTarget::Item {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        let Some((ViewStep::Item(index), parent_steps)) = self.steps.split_last() else {
+            return Err(ERROR_INVALID_INPUT);
+        };
+        self.with_structure_at(parent_steps, |structure| {
+            let item = structure
+                .children()
+                .get(*index)
+                .ok_or(ERROR_INVALID_INPUT)?;
+            Ok(callback(item))
+        })?
+    }
+
+    fn with_value<R>(
+        &self,
+        callback: impl for<'a> FnOnce(ValueView<'a>) -> FfiResult<R>,
+    ) -> FfiResult<R> {
+        if self.target != ViewTarget::Value {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        if self.root == ViewRoot::Value && self.steps.is_empty() {
+            let HandleValue::Value(value) = &self.owner.value else {
+                return Err(ERROR_INVALID_INPUT);
+            };
+            return value.with_value(callback);
+        }
+
+        self.with_structure_at(&[], |structure| {
+            resolve_value_path(structure, &self.steps, callback)
+        })?
+    }
+
+    fn item_at(&self, index: usize) -> FfiResult<Self> {
+        let count = self.with_structure(|structure| structure.children().len())?;
+        if index >= count {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        self.append(ViewStep::Item(index), ViewTarget::Item)
+    }
+
+    fn item_value(&self) -> FfiResult<Self> {
+        if self.target != ViewTarget::Item {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        self.append(ViewStep::Value, ViewTarget::Value)
+    }
+
+    fn structure_from_value(&self) -> FfiResult<Self> {
+        self.as_structure(ERROR_INVALID_INPUT)
+    }
+
+    fn nested_structure_from_value(&self) -> FfiResult<Self> {
+        self.as_structure(ERROR_INVALID_INPUT)
+    }
+
+    fn as_structure(&self, mismatch_status: i32) -> FfiResult<Self> {
+        let is_structure = self.with_value(|value| Ok(matches!(value, ValueView::Structure(_))))?;
+        if !is_structure {
+            return Err(mismatch_status);
+        }
+        let steps_len = self.steps.len();
+        let mut steps = Vec::new();
+        steps
+            .try_reserve_exact(steps_len)
+            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        steps.extend_from_slice(&self.steps);
+        Ok(Self {
+            owner: Arc::clone(&self.owner),
+            root: self.root,
+            steps,
+            target: ViewTarget::Structure,
+        })
+    }
+
+    fn value_at_tags(&self, tags: &[Tag]) -> FfiResult<Self> {
+        if self.target != ViewTarget::Structure {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        if tags.is_empty() {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        let mut selected = self.duplicate()?;
+        for (index, tag) in tags.iter().enumerate() {
+            let child_index = selected.with_structure(|structure| {
+                structure
+                    .children()
+                    .iter()
+                    .position(|item| item.tag() == *tag)
+            })?;
+            let child_index = child_index.ok_or(ERROR_INVALID_INPUT)?;
+            selected = selected.item_at(child_index)?;
+            if index + 1 < tags.len() {
+                selected = selected.item_value()?.nested_structure_from_value()?;
+            } else {
+                selected = selected.item_value()?;
+            }
+        }
+        Ok(selected)
+    }
+
+    fn duplicate(&self) -> FfiResult<Self> {
+        let mut steps = Vec::new();
+        steps
+            .try_reserve_exact(self.steps.len())
+            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        steps.extend_from_slice(&self.steps);
+        Ok(Self {
+            owner: Arc::clone(&self.owner),
+            root: self.root,
+            steps,
+            target: self.target,
+        })
+    }
+}
+
+fn resolve_structure_path<R>(
+    structure: &kmipkit_ttlv::StructureView<'_>,
+    steps: &[ViewStep],
+    callback: impl for<'a> FnOnce(&kmipkit_ttlv::StructureView<'a>) -> R,
+) -> FfiResult<R> {
+    if steps.is_empty() {
+        return Ok(callback(structure));
+    }
+    let [ViewStep::Item(index), ViewStep::Value, remaining @ ..] = steps else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let item = structure
+        .children()
+        .get(*index)
+        .ok_or(ERROR_INVALID_INPUT)?;
+    item.with_value(|value| match value {
+        ValueView::Structure(nested) => resolve_structure_path(&nested, remaining, callback),
+        _ => Err(ERROR_INVALID_INPUT),
+    })
+}
+
+fn resolve_value_path<R>(
+    structure: &kmipkit_ttlv::StructureView<'_>,
+    steps: &[ViewStep],
+    callback: impl for<'a> FnOnce(ValueView<'a>) -> FfiResult<R>,
+) -> FfiResult<R> {
+    let [ViewStep::Item(index), ViewStep::Value, remaining @ ..] = steps else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let item = structure
+        .children()
+        .get(*index)
+        .ok_or(ERROR_INVALID_INPUT)?;
+    item.with_value(|value| {
+        if remaining.is_empty() {
+            callback(value)
+        } else {
+            match value {
+                ValueView::Structure(nested) => resolve_value_path(&nested, remaining, callback),
+                _ => Err(ERROR_INVALID_INPUT),
+            }
+        }
+    })
 }
 
 type FfiResult<T> = Result<T, i32>;
@@ -289,137 +571,20 @@ fn item_type_code(value: ItemType) -> u8 {
     }
 }
 
-#[cfg(test)]
-mod view_ownership_tests {
-    use super::*;
-
-    fn byte_string_data(value: &Value) -> *const u8 {
-        value
-            .with_value(|value| {
-                Ok::<*const u8, i32>(match value {
-                    ValueView::ByteString(bytes) => bytes.as_ptr(),
-                    _ => ptr::null(),
-                })
-            })
-            .unwrap()
-    }
-
-    fn value_view_byte_string_data(value: &HandleValue) -> *const u8 {
-        let HandleValue::ValueView(value) = value else {
-            return ptr::null();
-        };
-        value
-            .with_value(|value| {
-                Ok::<*const u8, i32>(match value {
-                    ValueView::ByteString(bytes) => bytes.as_ptr(),
-                    _ => ptr::null(),
-                })
-            })
-            .unwrap()
-    }
-
-    #[test]
-    fn value_view_retains_the_existing_payload_allocation() {
-        let source_value = Value::byte_string(vec![0x11, 0x22, 0x33, 0x44]);
-        let source_data = byte_string_data(&source_value);
-        let source = make_handle(
-            Kind::Value,
-            HandleValue::Value(source_value),
-        );
-        let mut view = ptr::null_mut();
-
-        assert_eq!(kmipkit_ttlv_value_view(source, &mut view), SUCCESS);
-        let view_handle = reference_handle(&view, Kind::ValueView).unwrap();
-        let view_data = value_view_byte_string_data(&view_handle.value);
-        let shares_payload = view_data == source_data;
-
-        kmipkit_ttlv_value_release(source);
-        let mut length = 0;
-        let mut last_byte = 0;
-        assert_eq!(
-            kmipkit_ttlv_value_view_byte_length(view, &mut length),
-            SUCCESS
-        );
-        assert_eq!(length, 4);
-        assert_eq!(
-            kmipkit_ttlv_value_view_byte_at(view, 3, &mut last_byte),
-            SUCCESS
-        );
-        kmipkit_ttlv_value_view_release(view);
-
-        assert!(shares_payload);
-        assert_eq!(last_byte, 0x44);
-    }
-
-    #[test]
-    fn structure_item_and_value_views_retain_the_original_payload_allocation() {
-        let tag = RawTag::new(0x0042_0001)
-            .and_then(|raw| raw.try_checked())
-            .unwrap();
-        let source_value = Value::byte_string(vec![0xA1, 0xB2, 0xC3]);
-        let source_data = byte_string_data(&source_value);
-        let item = Item::new(tag, source_value).unwrap();
-        let mut source_structure = Structure::new();
-        source_structure.try_push(item).unwrap();
-        let source = make_handle(
-            Kind::Structure,
-            HandleValue::Structure(source_structure),
-        );
-        let mut structure_view = ptr::null_mut();
-        let mut item_view = ptr::null_mut();
-        let mut value_view = ptr::null_mut();
-
-        assert_eq!(
-            kmipkit_ttlv_structure_view(source, &mut structure_view),
-            SUCCESS
-        );
-        assert_eq!(
-            kmipkit_ttlv_structure_view_item_at(structure_view, 0, &mut item_view),
-            SUCCESS
-        );
-        assert_eq!(
-            kmipkit_ttlv_item_view_value(item_view, &mut value_view),
-            SUCCESS
-        );
-        let value_handle = reference_handle(&value_view, Kind::ValueView).unwrap();
-        let view_data = value_view_byte_string_data(&value_handle.value);
-        let shares_payload = view_data == source_data;
-
-        kmipkit_ttlv_structure_release(source);
-        kmipkit_ttlv_item_view_release(item_view);
-        kmipkit_ttlv_structure_view_release(structure_view);
-        let mut last_byte = 0;
-        assert_eq!(
-            kmipkit_ttlv_value_view_byte_at(value_view, 2, &mut last_byte),
-            SUCCESS
-        );
-        kmipkit_ttlv_value_view_release(value_view);
-
-        assert!(shares_payload);
-        assert_eq!(last_byte, 0xC3);
-    }
-
-    #[test]
-    fn structure_view_rejects_an_out_of_range_item_index() {
-        let source = make_handle(
-            Kind::Structure,
-            HandleValue::Structure(Structure::new()),
-        );
-        let mut structure_view = ptr::null_mut();
-        let mut item_view = ptr::null_mut();
-
-        assert_eq!(
-            kmipkit_ttlv_structure_view(source, &mut structure_view),
-            SUCCESS
-        );
-        let status =
-            kmipkit_ttlv_structure_view_item_at(structure_view, 0, &mut item_view);
-
-        kmipkit_ttlv_structure_view_release(structure_view);
-        kmipkit_ttlv_structure_release(source);
-
-        assert_eq!(status, ERROR_INVALID_INPUT);
-        assert!(item_view.is_null());
+fn value_view_type_code(value: &ValueView<'_>) -> u8 {
+    match value {
+        ValueView::Structure(_) => 1,
+        ValueView::Integer(_) => 2,
+        ValueView::LongInteger(_) => 3,
+        ValueView::BigInteger(_) => 4,
+        ValueView::Enumeration(_) => 5,
+        ValueView::Boolean(_) => 6,
+        ValueView::TextString(_) => 7,
+        ValueView::ByteString(_) => 8,
+        ValueView::DateTime(_) => 9,
+        ValueView::Interval(_) => 10,
+        ValueView::DateTimeExtended(_) => 11,
+        _ => 0,
     }
 }
 
@@ -1808,14 +1973,13 @@ pub extern "C" fn kmipkit_extension_recognition_generic_value(
     out_value: *mut *mut kmipkit_ttlv_structure_view_t,
 ) -> i32 {
     let out = out_slot!(out_value);
-    let recognition = read_handle!(recognition, Recognition);
-    let HandleValue::Recognition(recognition) = &recognition.value else {
+    let _ = read_handle!(recognition, Recognition);
+    let owner = try_ffi!(clone_handle_owner(recognition, Kind::Recognition));
+    if !matches!(owner.value, HandleValue::Recognition(_)) {
         return ERROR_INVALID_INPUT;
-    };
-    let value = try_ffi!(clone_structure(client_extension::generic_value(
-        recognition
-    )));
-    *out = make_handle(Kind::StructureView, HandleValue::StructureView(value));
+    }
+    let view = TtlvView::new(owner, ViewRoot::RecognitionGeneric, ViewTarget::Structure);
+    *out = make_handle(Kind::StructureView, HandleValue::StructureView(view));
     SUCCESS
 }
 
@@ -1840,47 +2004,12 @@ pub extern "C" fn kmipkit_validated_extension_value_generic_value(
     out_structure: *mut *mut kmipkit_ttlv_structure_view_t,
 ) -> i32 {
     let out = out_slot!(out_structure);
-    let value = read_handle!(value, Validated);
-    let value = try_ffi!(validated_from_handle(value));
-    let structure = try_ffi!(clone_structure(extension::generic_value(value)));
+    let value_handle = read_handle!(value, Validated);
+    let _ = try_ffi!(validated_from_handle(value_handle));
+    let owner = try_ffi!(clone_handle_owner(value, Kind::Validated));
+    let structure = TtlvView::new(owner, ViewRoot::ValidatedGeneric, ViewTarget::Structure);
     *out = make_handle(Kind::StructureView, HandleValue::StructureView(structure));
     SUCCESS
-}
-
-fn value_at_path(structure: &Structure, path: &[Tag]) -> FfiResult<Value> {
-    let (tag, remaining) = path.split_first().ok_or(ERROR_INVALID_INPUT)?;
-    let view = structure.view();
-    let item = view
-        .children()
-        .iter()
-        .find(|item| item.tag() == *tag)
-        .ok_or(ERROR_INVALID_INPUT)?;
-    item.with_value(|value| match value {
-        ValueView::Structure(nested) if !remaining.is_empty() => {
-            value_at_path_view(&nested, remaining)
-        }
-        value if remaining.is_empty() => clone_value(value),
-        _ => Err(ERROR_INVALID_INPUT),
-    })
-}
-
-fn value_at_path_view(
-    structure: &kmipkit_ttlv::StructureView<'_>,
-    path: &[Tag],
-) -> FfiResult<Value> {
-    let (tag, remaining) = path.split_first().ok_or(ERROR_INVALID_INPUT)?;
-    let item = structure
-        .children()
-        .iter()
-        .find(|item| item.tag() == *tag)
-        .ok_or(ERROR_INVALID_INPUT)?;
-    item.with_value(|value| match value {
-        ValueView::Structure(nested) if !remaining.is_empty() => {
-            value_at_path_view(&nested, remaining)
-        }
-        value if remaining.is_empty() => clone_value(value),
-        _ => Err(ERROR_INVALID_INPUT),
-    })
 }
 
 #[unsafe(no_mangle)]
@@ -1890,15 +2019,15 @@ pub extern "C" fn kmipkit_validated_extension_value_value_at(
     out_value: *mut *mut kmipkit_ttlv_value_view_t,
 ) -> i32 {
     let out = out_slot!(out_value);
-    let value_handle = read_handle!(value, Validated);
+    let _value_handle = read_handle!(value, Validated);
     let path_handle = read_handle!(path, Path);
-    let value = try_ffi!(validated_from_handle(value_handle));
     let HandleValue::Path(path) = &path_handle.value else {
         return ERROR_INVALID_INPUT;
     };
-    let structure = extension::generic_value(value);
-    let value = try_ffi!(value_at_path(structure, path.tags()));
-    *out = make_handle(Kind::ValueView, HandleValue::ValueView(value));
+    let owner = try_ffi!(clone_handle_owner(value, Kind::Validated));
+    let structure = TtlvView::new(owner, ViewRoot::ValidatedGeneric, ViewTarget::Structure);
+    let value_view = try_ffi!(structure.value_at_tags(path.tags()));
+    *out = make_handle(Kind::ValueView, HandleValue::ValueView(value_view));
     SUCCESS
 }
 
@@ -2328,11 +2457,9 @@ pub extern "C" fn kmipkit_ttlv_structure_view(
     out_view: *mut *mut kmipkit_ttlv_structure_view_t,
 ) -> i32 {
     let out = out_slot!(out_view);
-    let structure = read_handle!(structure, Structure);
-    let HandleValue::Structure(structure) = &structure.value else {
-        return ERROR_INVALID_INPUT;
-    };
-    let view = try_ffi!(clone_structure(structure));
+    let _ = read_handle!(structure, Structure);
+    let owner = try_ffi!(clone_handle_owner(structure, Kind::Structure));
+    let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
     *out = make_handle(Kind::StructureView, HandleValue::StructureView(view));
     SUCCESS
 }
@@ -2347,7 +2474,8 @@ pub extern "C" fn kmipkit_ttlv_structure_view_item_count(
     let HandleValue::StructureView(view) = &view.value else {
         return ERROR_INVALID_INPUT;
     };
-    *out = try_ffi!(u64::try_from(view.view().children().len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+    let count = try_ffi!(view.with_structure(|structure| structure.children().len()));
+    *out = try_ffi!(u64::try_from(count).map_err(|_| ERROR_RESOURCE_LIMIT));
     SUCCESS
 }
 
@@ -2362,15 +2490,9 @@ pub extern "C" fn kmipkit_ttlv_structure_view_item_at(
     let HandleValue::StructureView(view) = &view.value else {
         return ERROR_INVALID_INPUT;
     };
-    let Some(index) = usize::try_from(index).ok() else {
-        return SUCCESS;
-    };
-    if let Some(item) = view.view().children().get(index) {
-        *out = make_handle(
-            Kind::ItemView,
-            HandleValue::ItemView(try_ffi!(clone_item(item))),
-        );
-    }
+    let index = try_ffi!(usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT));
+    let item = try_ffi!(view.item_at(index));
+    *out = make_handle(Kind::ItemView, HandleValue::ItemView(item));
     SUCCESS
 }
 
@@ -2384,7 +2506,8 @@ pub extern "C" fn kmipkit_ttlv_item_view_tag(
     let HandleValue::ItemView(item) = &view.value else {
         return ERROR_INVALID_INPUT;
     };
-    *out = make_handle(Kind::Tag, HandleValue::Tag(item.tag()));
+    let tag = try_ffi!(item.with_item(Item::tag));
+    *out = make_handle(Kind::Tag, HandleValue::Tag(tag));
     SUCCESS
 }
 
@@ -2398,7 +2521,8 @@ pub extern "C" fn kmipkit_ttlv_item_view_type(
     let HandleValue::ItemView(item) = &view.value else {
         return ERROR_INVALID_INPUT;
     };
-    *out = item_type_code(item.item_type());
+    let item_type = try_ffi!(item.with_item(Item::item_type));
+    *out = item_type_code(item_type);
     SUCCESS
 }
 
@@ -2412,7 +2536,7 @@ pub extern "C" fn kmipkit_ttlv_item_view_value(
     let HandleValue::ItemView(item) = &view.value else {
         return ERROR_INVALID_INPUT;
     };
-    let value = try_ffi!(item.with_value(clone_value));
+    let value = try_ffi!(item.item_value());
     *out = make_handle(Kind::ValueView, HandleValue::ValueView(value));
     SUCCESS
 }
@@ -2423,11 +2547,9 @@ pub extern "C" fn kmipkit_ttlv_value_view(
     out_view: *mut *mut kmipkit_ttlv_value_view_t,
 ) -> i32 {
     let out = out_slot!(out_view);
-    let value = read_handle!(value, Value);
-    let HandleValue::Value(value) = &value.value else {
-        return ERROR_INVALID_INPUT;
-    };
-    let view = try_ffi!(kmipkit_ttlv::try_clone_value(value).map_err(model_status));
+    let _ = read_handle!(value, Value);
+    let owner = try_ffi!(clone_handle_owner(value, Kind::Value));
+    let view = TtlvView::new(owner, ViewRoot::Value, ViewTarget::Value);
     *out = make_handle(Kind::ValueView, HandleValue::ValueView(view));
     SUCCESS
 }
@@ -2442,7 +2564,7 @@ pub extern "C" fn kmipkit_ttlv_value_view_type(
     let HandleValue::ValueView(value) = &view.value else {
         return ERROR_INVALID_INPUT;
     };
-    *out = item_type_code(value.item_type());
+    *out = try_ffi!(value.with_value(|value| Ok(value_view_type_code(&value))));
     SUCCESS
 }
 
@@ -2456,19 +2578,16 @@ pub extern "C" fn kmipkit_ttlv_value_view_structure(
     let HandleValue::ValueView(value) = &view.value else {
         return ERROR_INVALID_INPUT;
     };
-    let structure = try_ffi!(value.with_value(|view| match view {
-        ValueView::Structure(structure) => clone_structure_view(&structure),
-        _ => Err(ERROR_INVALID_SCHEMA),
-    }));
+    let structure = try_ffi!(value.structure_from_value());
     *out = make_handle(Kind::StructureView, HandleValue::StructureView(structure));
     SUCCESS
 }
 
 fn extract_value<T: Copy>(
-    value: &Value,
+    value: &TtlvView,
     extract: impl FnOnce(ValueView<'_>) -> Option<T>,
 ) -> FfiResult<T> {
-    value.with_value(extract).ok_or(ERROR_INVALID_SCHEMA)
+    value.with_value(|value| extract(value).ok_or(ERROR_INVALID_INPUT))
 }
 
 #[unsafe(no_mangle)]

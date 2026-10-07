@@ -427,7 +427,10 @@ fn structure_view_rejects_an_out_of_range_item_index() {
 
 #[test]
 fn wrong_item_type_accessors_return_invalid_input() {
-    let byte_value = make_handle(Kind::Value, HandleValue::Value(Value::byte_string(vec![0xA5])));
+    let byte_value = make_handle(
+        Kind::Value,
+        HandleValue::Value(Value::byte_string(vec![0xA5])),
+    );
     let mut byte_view = ptr::null_mut();
     assert_eq!(
         kmipkit_ttlv_value_view(byte_value, &raw mut byte_view),
