@@ -346,13 +346,19 @@ fn validate_order_edges(
         .and_then(|count| count.checked_div(2))
         .ok_or_else(resource_limit)?;
     let pair_search_count = pair_count.checked_mul(2).ok_or_else(resource_limit)?;
+    let maximum_search_comparisons =
+        usize::try_from(usize::BITS - order_edges.len().leading_zeros())
+            .map_err(|_| resource_limit())?;
+    let pair_work_bound = pair_search_count
+        .checked_mul(maximum_search_comparisons)
+        .ok_or_else(resource_limit)?;
     let mut checks = 0_usize;
     let mut work = 0_usize;
     let mut first_invalid_edge: Option<usize> = None;
 
     // Search present pairs for sparse structures; scan the compiled edge list
-    // when that is the smaller bounded candidate set.
-    if pair_search_count < order_edges.len() {
+    // only when the binary-search comparison bound is smaller.
+    if pair_work_bound < order_edges.len() {
         for before_position in 0..present_rule_indices.len() {
             let before_index = *present_rule_indices
                 .get(before_position)
