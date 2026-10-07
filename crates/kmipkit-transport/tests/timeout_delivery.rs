@@ -404,11 +404,15 @@ async fn hyper_sender_readiness_timeout_is_not_sent_before_dispatch_commit() {
             RequestDeliveryState::NotSent
         );
 
-        let second_request =
-            tokio::time::timeout(Duration::from_secs(1), read_http_headers(&mut server_io)).await;
+        let mut second_request_byte = [0_u8; 1];
+        let second_request = tokio::time::timeout(
+            Duration::from_secs(1),
+            server_io.read(&mut second_request_byte),
+        )
+        .await;
         assert!(
-            second_request.is_err(),
-            "the timed-out request was not sent later"
+            matches!(second_request, Err(_) | Ok(Ok(0))),
+            "the timed-out request was not sent later; observed {second_request:?}"
         );
         connection.abort();
         let _ = connection.await;
