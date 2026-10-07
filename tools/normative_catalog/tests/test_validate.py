@@ -2056,6 +2056,28 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(conformance_sections, {f"6.{section}" for section in range(1, 36)})
 
+    def test_baseline_catalog_state_is_incomplete_while_required_fixtures_are_unavailable(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        target_manifest = json.loads(
+            (ROOT / "specification/catalog/profile-targets.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        required_tests = [
+            test_case
+            for test_case in catalog["test_cases"]
+            if test_case["test_id"] in baseline["test_case_ids"]
+            and test_case["mandatory_status"] == "mandatory"
+        ]
+
+        self.assertIn(baseline["profile_id"], target_manifest["profile_ids"])
+        self.assertEqual(16, len(required_tests))
+        self.assertTrue(all(test["fixture_availability"] == "unavailable" for test in required_tests))
+        self.assertEqual("evidence_incomplete", baseline["claim_state"])
+
     def test_checked_in_catalog_preserves_pinned_source_discrepancies(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
