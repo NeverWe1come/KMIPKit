@@ -663,10 +663,9 @@ async fn vectored_writes_are_subject_to_the_same_write_deadline() {
     let first = IoSlice::new(b"header");
     let second = IoSlice::new(b"body");
 
-    let error =
-        poll_fn(|cx| Pin::new(&mut io).poll_write_vectored(cx, &[first, second]))
-            .await
-            .expect_err("a blocked vectored write is bounded by the write deadline");
+    let error = poll_fn(|cx| Pin::new(&mut io).poll_write_vectored(cx, &[first, second]))
+        .await
+        .expect_err("a blocked vectored write is bounded by the write deadline");
 
     assert_eq!(error.kind(), io::ErrorKind::TimedOut);
     assert_eq!(observed.vectored_write_calls(), 1);
