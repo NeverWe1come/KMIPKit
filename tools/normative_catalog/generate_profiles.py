@@ -309,6 +309,25 @@ def _rust_string_array(record: Mapping[str, Any], field: str) -> str:
     return f"&[\n            {encoded_values}\n        ]"
 
 
+def _verification_category(source_keyword: str) -> str:
+    categories = {
+        "MUST": "RequiredBehavior",
+        "SHALL": "RequiredBehavior",
+        "REQUIRED": "RequiredBehavior",
+        "MUST NOT": "ProhibitedBehavior",
+        "SHALL NOT": "ProhibitedBehavior",
+        "SHOULD": "RecommendedBehaviorOrDeviation",
+        "RECOMMENDED": "RecommendedBehaviorOrDeviation",
+        "SHOULD NOT": "DiscouragedAbsenceOrDeviation",
+        "MAY": "OptionalCapability",
+        "OPTIONAL": "OptionalCapability",
+    }
+    category = categories.get(source_keyword)
+    if category is None:
+        raise ProfileGenerationError("client requirement has an unsupported normative keyword")
+    return category
+
+
 def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) -> str:
     """Render deterministic immutable client metadata without executable rules."""
     raw_profiles = catalog.get("profiles")
@@ -366,6 +385,21 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub fixture_availability: &'static str,",
         "}",
         "",
+        "/// Verification obligation derived from an exact normative keyword.",
+        "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
+        "pub enum GeneratedVerificationCategory {",
+        "    /// Positive tests must show that required behavior is provided.",
+        "    RequiredBehavior,",
+        "    /// Negative tests must show that prohibited behavior is rejected or absent.",
+        "    ProhibitedBehavior,",
+        "    /// Behavior must be tested or an accepted deviation must exist.",
+        "    RecommendedBehaviorOrDeviation,",
+        "    /// Discouraged behavior must be absent or have an accepted deviation.",
+        "    DiscouragedAbsenceOrDeviation,",
+        "    /// Optional capability must be represented, usable, and positively tested.",
+        "    OptionalCapability,",
+        "}",
+        "",
         "/// Source-backed normative metadata for a client-applicable requirement.",
         "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
         "pub struct GeneratedClientRequirement {",
@@ -373,6 +407,8 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub requirement_id: &'static str,",
         "    /// Exact OASIS keyword used by the requirement.",
         "    pub source_keyword: &'static str,",
+        "    /// Category-specific verification obligation derived from the keyword.",
+        "    pub verification_category: GeneratedVerificationCategory,",
         "    /// Catalogued client applicability state.",
         "    pub scope_state: &'static str,",
         "    /// Stable source clauses that contain this requirement.",
@@ -438,6 +474,10 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
                 "    GeneratedClientRequirement {",
                 f"        requirement_id: {rust_string_literal(requirement_id)},",
                 f"        source_keyword: {rust_string_literal(source_keyword)},",
+                (
+                    "        verification_category: GeneratedVerificationCategory::"
+                    f"{_verification_category(source_keyword)},"
+                ),
                 f"        scope_state: {_rust_string_field(requirement, 'scope_state')},",
                 f"        source_clause_ids: {_rust_string_array(requirement, 'source_clause_ids')},",
                 f"        profile_ids: {_rust_string_array(requirement, 'profile_ids')},",

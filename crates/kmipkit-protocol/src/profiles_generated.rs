@@ -14,6 +14,21 @@ pub struct GeneratedProfileTestCase {
     pub fixture_availability: &'static str,
 }
 
+/// Verification obligation derived from an exact normative keyword.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum GeneratedVerificationCategory {
+    /// Positive tests must show that required behavior is provided.
+    RequiredBehavior,
+    /// Negative tests must show that prohibited behavior is rejected or absent.
+    ProhibitedBehavior,
+    /// Behavior must be tested or an accepted deviation must exist.
+    RecommendedBehaviorOrDeviation,
+    /// Discouraged behavior must be absent or have an accepted deviation.
+    DiscouragedAbsenceOrDeviation,
+    /// Optional capability must be represented, usable, and positively tested.
+    OptionalCapability,
+}
+
 /// Source-backed normative metadata for a client-applicable requirement.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct GeneratedClientRequirement {
@@ -21,6 +36,8 @@ pub struct GeneratedClientRequirement {
     pub requirement_id: &'static str,
     /// Exact OASIS keyword used by the requirement.
     pub source_keyword: &'static str,
+    /// Category-specific verification obligation derived from the keyword.
+    pub verification_category: GeneratedVerificationCategory,
     /// Catalogued client applicability state.
     pub scope_state: &'static str,
     /// Stable source clauses that contain this requirement.
@@ -67,6 +84,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3-002"],
         profile_ids: &[],
@@ -76,6 +94,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3-003"],
         profile_ids: &[],
@@ -85,6 +104,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3-004"],
         profile_ids: &[],
@@ -94,6 +114,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3-006",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3-006"],
         profile_ids: &[],
@@ -103,6 +124,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.1-001"],
         profile_ids: &[
@@ -148,6 +170,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.1-002",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.1.1-002"],
         profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
@@ -157,6 +180,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.1-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.1.1-004"],
         profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
@@ -166,6 +190,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.1-005",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.1.1-005"],
         profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
@@ -175,6 +200,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.2-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.1.2-002"],
         profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
@@ -184,6 +210,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.2-005",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.1.2-005"],
         profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
@@ -193,6 +220,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.2-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.2-001"],
         profile_ids: &[
@@ -206,6 +234,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.2.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.2.1-001"],
         profile_ids: &[],
@@ -215,6 +244,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.2.2-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.2.2-001"],
         profile_ids: &[],
@@ -224,6 +254,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.2.3-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.2.3-001"],
         profile_ids: &[],
@@ -233,6 +264,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-3.2.4-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-3.2.4-002"],
         profile_ids: &[],
@@ -242,6 +274,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-4.1-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-4.1-001"],
         profile_ids: &[],
@@ -251,6 +284,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-4.1-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-4.1-003"],
         profile_ids: &[],
@@ -260,6 +294,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-4.1.2-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-4.1.2-001"],
         profile_ids: &[],
@@ -269,6 +304,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-4.1.2-005",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-4.1.2-005"],
         profile_ids: &[],
@@ -278,6 +314,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-4.1.2-007",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-4.1.2-007"],
         profile_ids: &[],
@@ -287,6 +324,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-4.1.2-008",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-4.1.2-008"],
         profile_ids: &[],
@@ -296,6 +334,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-4.1.2-009",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-4.1.2-009"],
         profile_ids: &[],
@@ -305,6 +344,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.10.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.10.1-001"],
         profile_ids: &["KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT"],
@@ -314,6 +354,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.10.1-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.10.1-002"],
         profile_ids: &["KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT"],
@@ -323,6 +364,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.10.1-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.10.1-003"],
         profile_ids: &["KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT"],
@@ -332,6 +374,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.11.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.11.1-001"],
         profile_ids: &["KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT"],
@@ -341,6 +384,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.11.1-002",
         source_keyword: "SHOULD NOT",
+        verification_category: GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.11.1-002"],
         profile_ids: &["KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT"],
@@ -350,6 +394,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.11.1-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.11.1-003"],
         profile_ids: &["KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT"],
@@ -359,6 +404,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.11.1-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.11.1-004"],
         profile_ids: &["KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT"],
@@ -368,6 +414,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.2-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.2-002"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -377,6 +424,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.2-003",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.2-003"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -386,6 +434,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.2-004-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.2-004"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -395,6 +444,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.2-004-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.2-004"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -404,6 +454,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.2-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.2-005"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -413,6 +464,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.2-007-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.2-007"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -422,6 +474,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.2-007-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.2-007"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -431,6 +484,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.3-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.3-001"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -440,6 +494,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.3-003",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.3-003"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -449,6 +504,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.4-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.4-001"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -458,6 +514,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.4-002",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.4-002"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -467,6 +524,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.4-003",
         source_keyword: "SHOULD NOT",
+        verification_category: GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.4-003"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -476,6 +534,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.4-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.4-004"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -485,6 +544,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.4-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.4-005"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -494,6 +554,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.4-006",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.4-006"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -503,6 +564,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.4-007",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.4-007"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -512,6 +574,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.4-008",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.4-008"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -521,6 +584,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.4-009",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.4-009"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -530,6 +594,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.6.1-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.6.1-001"],
         profile_ids: &[],
@@ -539,6 +604,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.6.2-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.6.2-002"],
         profile_ids: &[],
@@ -548,6 +614,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.6.2-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.6.2-003"],
         profile_ids: &[],
@@ -557,6 +624,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.6.2-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.6.2-004"],
         profile_ids: &[],
@@ -566,6 +634,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.6.3-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.6.3-001"],
         profile_ids: &[],
@@ -575,6 +644,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.6.3-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.6.3-002"],
         profile_ids: &[],
@@ -584,6 +654,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.6.3-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.6.3-003"],
         profile_ids: &[],
@@ -593,6 +664,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.12.6.3-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.12.6.3-004"],
         profile_ids: &[],
@@ -602,6 +674,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.13.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.13.1-001"],
         profile_ids: &["KMIPKIT-PROFILE-AES-XTS-CLIENT"],
@@ -611,6 +684,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.13.1-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.13.1-003"],
         profile_ids: &["KMIPKIT-PROFILE-AES-XTS-CLIENT"],
@@ -620,6 +694,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.15-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.15-001"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -629,6 +704,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.15-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.15-002"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -638,6 +714,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.15-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.15-003"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -647,6 +724,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.15-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.15-004"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -656,6 +734,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.17-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.17-001"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -665,6 +744,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.17.1-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.17.1-001"],
         profile_ids: &[],
@@ -674,6 +754,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.17.1-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.17.1-002"],
         profile_ids: &[],
@@ -683,6 +764,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.17.2-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.17.2-002"],
         profile_ids: &[],
@@ -692,6 +774,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.18.1-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.18.1-004"],
         profile_ids: &[],
@@ -701,6 +784,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.18.1-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.18.1-005"],
         profile_ids: &[],
@@ -710,6 +794,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.18.3-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.18.3-001"],
         profile_ids: &["KMIPKIT-PROFILE-PKCS11-CLIENT"],
@@ -719,6 +804,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.18.3-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.18.3-002"],
         profile_ids: &["KMIPKIT-PROFILE-PKCS11-CLIENT"],
@@ -728,6 +814,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.18.3-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.18.3-003"],
         profile_ids: &["KMIPKIT-PROFILE-PKCS11-CLIENT"],
@@ -737,6 +824,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.18.3-005",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.18.3-005"],
         profile_ids: &["KMIPKIT-PROFILE-PKCS11-CLIENT"],
@@ -746,6 +834,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.3.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.3.1-001"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -755,6 +844,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.3.1-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.3.1-002"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -764,6 +854,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.3.1-003",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.3.1-003"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -773,6 +864,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.3.1-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.3.1-004"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -782,6 +874,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.3.1-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.3.1-005"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -791,6 +884,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.3.1-008",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.3.1-008"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -800,6 +894,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.3.1-009",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.3.1-009"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -809,6 +904,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.3.1-010",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.3.1-010"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -818,6 +914,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.6.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.6.1-001"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -827,6 +924,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.6.1-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.6.1-002"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -836,6 +934,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.6.1-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.6.1-003"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -845,6 +944,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.7.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.7.1-001"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT"],
@@ -854,6 +954,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.7.1-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.7.1-002"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT"],
@@ -863,6 +964,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.7.1-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.7.1-003"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT"],
@@ -872,6 +974,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.7.2-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.7.2-001"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"],
@@ -881,6 +984,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.7.2-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.7.2-002"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"],
@@ -890,6 +994,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.7.2-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.7.2-003"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"],
@@ -899,6 +1004,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.7.3-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.7.3-001"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT"],
@@ -908,6 +1014,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.7.3-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.7.3-002"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT"],
@@ -917,6 +1024,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.7.3-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.7.3-003"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT"],
@@ -926,6 +1034,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.8.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.8.1-001"],
         profile_ids: &["KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -935,6 +1044,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.8.1-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.8.1-002"],
         profile_ids: &["KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -944,6 +1054,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.8.1-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.8.1-003"],
         profile_ids: &["KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -953,6 +1064,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.1-001"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT"],
@@ -962,6 +1074,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.1-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.1-002"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT"],
@@ -971,6 +1084,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.1-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.1-003"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT"],
@@ -980,6 +1094,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.1-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.1-004"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT"],
@@ -989,6 +1104,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.2-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.2-001"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT"],
@@ -998,6 +1114,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.2-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.2-002"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT"],
@@ -1007,6 +1124,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.2-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.2-003"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT"],
@@ -1016,6 +1134,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.2-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.2-004"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT"],
@@ -1025,6 +1144,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.3-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.3-001"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT"],
@@ -1034,6 +1154,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.3-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.3-002"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT"],
@@ -1043,6 +1164,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.3-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.3-003"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT"],
@@ -1052,6 +1174,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-5.9.3-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-5.9.3-004"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT"],
@@ -1061,6 +1184,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6-001"],
         profile_ids: &[],
@@ -1070,6 +1194,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.1-001"],
         profile_ids: &[
@@ -1098,6 +1223,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.1-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.1-002"],
         profile_ids: &[
@@ -1126,6 +1252,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.1-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.1-003"],
         profile_ids: &[
@@ -1154,6 +1281,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.1-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.1-004"],
         profile_ids: &[
@@ -1199,6 +1327,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.10-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.10-001"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1208,6 +1337,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.10-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.10-002"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1217,6 +1347,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.10-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.10-003"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1226,6 +1357,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.10-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.10-004"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1239,6 +1371,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.10-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.10-005"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1248,6 +1381,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.12-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.12-001"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT"],
@@ -1257,6 +1391,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.12-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.12-002"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT"],
@@ -1266,6 +1401,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.12-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.12-003"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT"],
@@ -1275,6 +1411,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.12-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.12-004"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT"],
@@ -1289,6 +1426,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.12-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.12-005"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT"],
@@ -1298,6 +1436,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.13-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.13-001"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"],
@@ -1307,6 +1446,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.13-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.13-002"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"],
@@ -1316,6 +1456,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.13-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.13-004"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"],
@@ -1330,6 +1471,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.13-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.13-005"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT"],
@@ -1339,6 +1481,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.14-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.14-001"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT"],
@@ -1348,6 +1491,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.14-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.14-002"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT"],
@@ -1357,6 +1501,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.14-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.14-004"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT"],
@@ -1371,6 +1516,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.14-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.14-005"],
         profile_ids: &["KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT"],
@@ -1380,6 +1526,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.16-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.16-001"],
         profile_ids: &["KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1389,6 +1536,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.16-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.16-002"],
         profile_ids: &["KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1398,6 +1546,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.16-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.16-003"],
         profile_ids: &["KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1407,6 +1556,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.16-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.16-004"],
         profile_ids: &["KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1420,6 +1570,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.16-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.16-005"],
         profile_ids: &["KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT"],
@@ -1429,6 +1580,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.18-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.18-001"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT"],
@@ -1438,6 +1590,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.18-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.18-002"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT"],
@@ -1447,6 +1600,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.18-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.18-003"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT"],
@@ -1456,6 +1610,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.18-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.18-004"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT"],
@@ -1487,6 +1642,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.18-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.18-005"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT"],
@@ -1496,6 +1652,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.19-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.19-001"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT"],
@@ -1505,6 +1662,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.19-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.19-002"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT"],
@@ -1514,6 +1672,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.19-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.19-003"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT"],
@@ -1523,6 +1682,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.19-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.19-004"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT"],
@@ -1551,6 +1711,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.19-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.19-005"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT"],
@@ -1560,6 +1721,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.20-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.20-001"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT"],
@@ -1569,6 +1731,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.20-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.20-002"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT"],
@@ -1578,6 +1741,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.20-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.20-003"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT"],
@@ -1587,6 +1751,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.20-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.20-004"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT"],
@@ -1596,6 +1761,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.20-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.20-005"],
         profile_ids: &["KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT"],
@@ -1605,6 +1771,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.24-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.24-001"],
         profile_ids: &["KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT"],
@@ -1614,6 +1781,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.24-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.24-002"],
         profile_ids: &["KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT"],
@@ -1623,6 +1791,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.24-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.24-003"],
         profile_ids: &["KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT"],
@@ -1632,6 +1801,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.24-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.24-004"],
         profile_ids: &["KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT"],
@@ -1641,6 +1811,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.24-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.24-005"],
         profile_ids: &["KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT"],
@@ -1650,6 +1821,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.26-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.26-001"],
         profile_ids: &["KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT"],
@@ -1659,6 +1831,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.26-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.26-002"],
         profile_ids: &["KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT"],
@@ -1668,6 +1841,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.26-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.26-003"],
         profile_ids: &["KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT"],
@@ -1677,6 +1851,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.26-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.26-004"],
         profile_ids: &["KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT"],
@@ -1690,6 +1865,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.26-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.26-005"],
         profile_ids: &["KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT"],
@@ -1699,6 +1875,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.28-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.28-001"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -1708,6 +1885,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.28-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.28-002"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -1717,6 +1895,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.28-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.28-003"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -1726,6 +1905,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.28-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.28-004"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -1735,6 +1915,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.28-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.28-005"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -1744,6 +1925,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.28-006",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.28-006"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -1757,6 +1939,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.28-007",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.28-007"],
         profile_ids: &["KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"],
@@ -1766,6 +1949,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.30-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.30-001"],
         profile_ids: &["KMIPKIT-PROFILE-AES-XTS-CLIENT"],
@@ -1775,6 +1959,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.30-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.30-002"],
         profile_ids: &["KMIPKIT-PROFILE-AES-XTS-CLIENT"],
@@ -1784,6 +1969,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.30-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.30-003"],
         profile_ids: &["KMIPKIT-PROFILE-AES-XTS-CLIENT"],
@@ -1793,6 +1979,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.30-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.30-004"],
         profile_ids: &["KMIPKIT-PROFILE-AES-XTS-CLIENT"],
@@ -1802,6 +1989,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.30-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.30-005"],
         profile_ids: &["KMIPKIT-PROFILE-AES-XTS-CLIENT"],
@@ -1811,6 +1999,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.32-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.32-001"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -1820,6 +2009,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.32-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.32-002"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -1829,6 +2019,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.32-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.32-003"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -1838,6 +2029,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.32-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.32-004"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -1847,6 +2039,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.32-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.32-005"],
         profile_ids: &["KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT"],
@@ -1856,6 +2049,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.34-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.34-001"],
         profile_ids: &["KMIPKIT-PROFILE-PKCS11-CLIENT"],
@@ -1865,6 +2059,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.34-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.34-002"],
         profile_ids: &["KMIPKIT-PROFILE-PKCS11-CLIENT"],
@@ -1874,6 +2069,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.34-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.34-003"],
         profile_ids: &["KMIPKIT-PROFILE-PKCS11-CLIENT"],
@@ -1883,6 +2079,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.34-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.34-004"],
         profile_ids: &["KMIPKIT-PROFILE-PKCS11-CLIENT"],
@@ -1892,6 +2089,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.34-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.34-005"],
         profile_ids: &["KMIPKIT-PROFILE-PKCS11-CLIENT"],
@@ -1901,6 +2099,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.4-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.4-001"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -1910,6 +2109,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.4-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.4-002"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -1919,6 +2119,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.4-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.4-003"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -1928,6 +2129,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.4-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.4-004"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -1937,6 +2139,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-PROF-6.4-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-PROF-6.4-005"],
         profile_ids: &["KMIPKIT-PROFILE-HTTPS-CLIENT"],
@@ -1946,6 +2149,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-10.1.2-001"],
         profile_ids: &[],
@@ -1955,6 +2159,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-002-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-10.1.2-002"],
         profile_ids: &[],
@@ -1964,6 +2169,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-002-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-10.1.2-002"],
         profile_ids: &[],
@@ -1973,6 +2179,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-10.1.5-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-10.1.5-001"],
         profile_ids: &[],
@@ -1982,6 +2189,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-10.1.5-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-10.1.5-001"],
         profile_ids: &[],
@@ -1991,6 +2199,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-10.4-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-10.4-001"],
         profile_ids: &[],
@@ -2000,6 +2209,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-10.4-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-10.4-001"],
         profile_ids: &[],
@@ -2009,6 +2219,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-10.4-001-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-10.4-001"],
         profile_ids: &[],
@@ -2018,6 +2229,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-11-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-11-001"],
         profile_ids: &[],
@@ -2027,6 +2239,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-11.56-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-11.56-001"],
         profile_ids: &[],
@@ -2036,6 +2249,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-12-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-12-001"],
         profile_ids: &[],
@@ -2045,6 +2259,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-14.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-14.1-001"],
         profile_ids: &[],
@@ -2054,6 +2269,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-14.1-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-14.1-002"],
         profile_ids: &[],
@@ -2063,6 +2279,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.1-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.1-001"],
         profile_ids: &[],
@@ -2072,6 +2289,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.2-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.2-001"],
         profile_ids: &[],
@@ -2081,6 +2299,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.3-001"],
         profile_ids: &[],
@@ -2090,6 +2309,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.3-002"],
         profile_ids: &[],
@@ -2099,6 +2319,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-003",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.3-003"],
         profile_ids: &[],
@@ -2108,6 +2329,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.4-001"],
         profile_ids: &[],
@@ -2117,6 +2339,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.4-001"],
         profile_ids: &[],
@@ -2126,6 +2349,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-002-001",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.4-002"],
         profile_ids: &[],
@@ -2135,6 +2359,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-002-002",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.4-002"],
         profile_ids: &[],
@@ -2144,6 +2369,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-003",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.4-003"],
         profile_ids: &[],
@@ -2153,6 +2379,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.5-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.5-001"],
         profile_ids: &[],
@@ -2162,6 +2389,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.6-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.6-001"],
         profile_ids: &[],
@@ -2171,6 +2399,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.7-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.7-001"],
         profile_ids: &[],
@@ -2180,6 +2409,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.7-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.7-002"],
         profile_ids: &[],
@@ -2189,6 +2419,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.8-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.8-001"],
         profile_ids: &[],
@@ -2198,6 +2429,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.8-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.8-001"],
         profile_ids: &[],
@@ -2207,6 +2439,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.8-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.8-002"],
         profile_ids: &[],
@@ -2216,6 +2449,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.8-003",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.8-003"],
         profile_ids: &[],
@@ -2225,6 +2459,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-2.9-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-2.9-001"],
         profile_ids: &[],
@@ -2234,6 +2469,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.1-001"],
         profile_ids: &[],
@@ -2243,6 +2479,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.1-002"],
         profile_ids: &[],
@@ -2252,6 +2489,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-003",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.1-003"],
         profile_ids: &[],
@@ -2261,6 +2499,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-004-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.1-004"],
         profile_ids: &[],
@@ -2270,6 +2509,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-004-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.1-004"],
         profile_ids: &[],
@@ -2279,6 +2519,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-005-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.1-005"],
         profile_ids: &[],
@@ -2288,6 +2529,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-005-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.1-005"],
         profile_ids: &[],
@@ -2297,6 +2539,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-006",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.1-006"],
         profile_ids: &[],
@@ -2306,6 +2549,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.10-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.10-001"],
         profile_ids: &[],
@@ -2315,6 +2559,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.11-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.11-001"],
         profile_ids: &[],
@@ -2324,6 +2569,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.12-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.12-001"],
         profile_ids: &[],
@@ -2333,6 +2579,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.2-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.2-001"],
         profile_ids: &[],
@@ -2342,6 +2589,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.2-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.2-002"],
         profile_ids: &[],
@@ -2351,6 +2599,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-001"],
         profile_ids: &[],
@@ -2360,6 +2609,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-001-002",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-001"],
         profile_ids: &[],
@@ -2369,6 +2619,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-002"],
         profile_ids: &[],
@@ -2378,6 +2629,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-003",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-003"],
         profile_ids: &[],
@@ -2387,6 +2639,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-004"],
         profile_ids: &[],
@@ -2396,6 +2649,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-005",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-005"],
         profile_ids: &[],
@@ -2405,6 +2659,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-006",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-006"],
         profile_ids: &[],
@@ -2414,6 +2669,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-007",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-007"],
         profile_ids: &[],
@@ -2423,6 +2679,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-008",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-008"],
         profile_ids: &[],
@@ -2432,6 +2689,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-009",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.3-009"],
         profile_ids: &[],
@@ -2441,6 +2699,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.4-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.4-001"],
         profile_ids: &[],
@@ -2450,6 +2709,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.5-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.5-001"],
         profile_ids: &[],
@@ -2459,6 +2719,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.6-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.6-001"],
         profile_ids: &[],
@@ -2468,6 +2729,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.7-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.7-001"],
         profile_ids: &[],
@@ -2477,6 +2739,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.7-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.7-002"],
         profile_ids: &[],
@@ -2486,6 +2749,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.8-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.8-001"],
         profile_ids: &[],
@@ -2495,6 +2759,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-3.9-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-3.9-001"],
         profile_ids: &[],
@@ -2504,6 +2769,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4-001"],
         profile_ids: &[],
@@ -2513,6 +2779,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4-001-002",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4-001"],
         profile_ids: &[],
@@ -2522,6 +2789,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4-001-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4-001"],
         profile_ids: &[],
@@ -2531,6 +2799,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4-001-004",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4-001"],
         profile_ids: &[],
@@ -2540,6 +2809,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4-001-005",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4-001"],
         profile_ids: &[],
@@ -2549,6 +2819,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.1-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.1-001"],
         profile_ids: &[],
@@ -2558,6 +2829,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.1-001-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.1-001"],
         profile_ids: &[],
@@ -2567,6 +2839,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.1-001-003",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.1-001"],
         profile_ids: &[],
@@ -2576,6 +2849,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.11-001",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.11-001"],
         profile_ids: &[],
@@ -2585,6 +2859,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.14-001"],
         profile_ids: &[],
@@ -2594,6 +2869,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.14-001"],
         profile_ids: &[],
@@ -2603,6 +2879,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.16-001"],
         profile_ids: &[],
@@ -2612,6 +2889,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.16-001"],
         profile_ids: &[],
@@ -2621,6 +2899,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.16-002"],
         profile_ids: &[],
@@ -2630,6 +2909,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.16-003"],
         profile_ids: &[],
@@ -2639,6 +2919,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-004",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.16-004"],
         profile_ids: &[],
@@ -2648,6 +2929,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.17-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.17-001"],
         profile_ids: &[],
@@ -2657,6 +2939,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.17-001-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.17-001"],
         profile_ids: &[],
@@ -2666,6 +2949,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.18-001-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.18-001"],
         profile_ids: &[],
@@ -2675,6 +2959,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.18-001-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.18-001"],
         profile_ids: &[],
@@ -2684,6 +2969,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.2-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.2-002"],
         profile_ids: &[],
@@ -2693,6 +2979,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.21-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.21-002"],
         profile_ids: &[],
@@ -2702,6 +2989,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.26-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.26-001"],
         profile_ids: &[],
@@ -2711,6 +2999,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.27-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.27-001"],
         profile_ids: &[],
@@ -2720,6 +3009,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.27-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.27-002"],
         profile_ids: &[],
@@ -2729,6 +3019,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.28-001"],
         profile_ids: &[],
@@ -2738,6 +3029,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.28-001"],
         profile_ids: &[],
@@ -2747,6 +3039,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.28-001"],
         profile_ids: &[],
@@ -2756,6 +3049,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.28-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.28-002"],
         profile_ids: &[],
@@ -2765,6 +3059,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.30-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.30-001"],
         profile_ids: &[],
@@ -2774,6 +3069,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.31-003",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.31-003"],
         profile_ids: &[],
@@ -2783,6 +3079,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.32-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.32-001"],
         profile_ids: &[],
@@ -2792,6 +3089,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.32-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.32-002"],
         profile_ids: &[],
@@ -2801,6 +3099,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.34-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.34-001"],
         profile_ids: &[],
@@ -2810,6 +3109,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.34-001-002",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.34-001"],
         profile_ids: &[],
@@ -2819,6 +3119,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.35-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.35-001"],
         profile_ids: &[],
@@ -2828,6 +3129,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.35-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.35-001"],
         profile_ids: &[],
@@ -2837,6 +3139,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.35-001-003",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.35-001"],
         profile_ids: &[],
@@ -2846,6 +3149,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.38-001"],
         profile_ids: &[],
@@ -2855,6 +3159,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.38-001"],
         profile_ids: &[],
@@ -2864,6 +3169,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.38-001"],
         profile_ids: &[],
@@ -2873,6 +3179,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.38-003",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.38-003"],
         profile_ids: &[],
@@ -2882,6 +3189,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.4-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.4-001"],
         profile_ids: &[],
@@ -2891,6 +3199,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.4-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.4-002"],
         profile_ids: &[],
@@ -2900,6 +3209,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.40-001"],
         profile_ids: &[],
@@ -2909,6 +3219,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.40-001"],
         profile_ids: &[],
@@ -2918,6 +3229,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.40-001"],
         profile_ids: &[],
@@ -2927,6 +3239,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-004",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.40-001"],
         profile_ids: &[],
@@ -2936,6 +3249,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-005",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.40-001"],
         profile_ids: &[],
@@ -2945,6 +3259,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.41-001"],
         profile_ids: &[],
@@ -2954,6 +3269,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.41-001"],
         profile_ids: &[],
@@ -2963,6 +3279,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-003",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.41-001"],
         profile_ids: &[],
@@ -2972,6 +3289,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-004",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.41-001"],
         profile_ids: &[],
@@ -2981,6 +3299,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.46-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.46-001"],
         profile_ids: &[],
@@ -2990,6 +3309,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.46-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.46-001"],
         profile_ids: &[],
@@ -2999,6 +3319,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.47-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.47-001"],
         profile_ids: &[],
@@ -3008,6 +3329,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.47-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.47-001"],
         profile_ids: &[],
@@ -3017,6 +3339,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.47-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.47-002"],
         profile_ids: &[],
@@ -3026,6 +3349,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-001"],
         profile_ids: &[],
@@ -3035,6 +3359,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-002"],
         profile_ids: &[],
@@ -3044,6 +3369,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-003-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-003"],
         profile_ids: &[],
@@ -3053,6 +3379,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-003-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-003"],
         profile_ids: &[],
@@ -3062,6 +3389,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-003-003",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-003"],
         profile_ids: &[],
@@ -3071,6 +3399,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-004-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-004"],
         profile_ids: &[],
@@ -3080,6 +3409,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-004-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-004"],
         profile_ids: &[],
@@ -3089,6 +3419,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-004-003",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-004"],
         profile_ids: &[],
@@ -3098,6 +3429,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-005-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-005"],
         profile_ids: &[],
@@ -3107,6 +3439,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-005-002",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-005"],
         profile_ids: &[],
@@ -3116,6 +3449,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-005-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-005"],
         profile_ids: &[],
@@ -3125,6 +3459,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-006",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-006"],
         profile_ids: &[],
@@ -3134,6 +3469,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.57-007",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-007"],
         profile_ids: &[],
@@ -3143,6 +3479,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.59-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.59-002"],
         profile_ids: &[],
@@ -3152,6 +3489,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.59-003"],
         profile_ids: &[],
@@ -3161,6 +3499,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.59-003"],
         profile_ids: &[],
@@ -3170,6 +3509,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.60-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.60-001"],
         profile_ids: &[],
@@ -3179,6 +3519,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.61-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.61-002"],
         profile_ids: &[],
@@ -3188,6 +3529,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.62-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.62-002"],
         profile_ids: &[],
@@ -3197,6 +3539,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.62-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.62-003"],
         profile_ids: &[],
@@ -3206,6 +3549,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.63-003",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.63-003"],
         profile_ids: &[],
@@ -3215,6 +3559,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.63-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.63-004"],
         profile_ids: &[],
@@ -3224,6 +3569,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.63-005",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.63-005"],
         profile_ids: &[],
@@ -3233,6 +3579,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.1-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.1-001"],
         profile_ids: &[],
@@ -3242,6 +3589,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.1-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.1-002"],
         profile_ids: &[],
@@ -3251,6 +3599,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.2-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.2-001"],
         profile_ids: &[],
@@ -3260,6 +3609,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.2-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.2-002"],
         profile_ids: &[],
@@ -3269,6 +3619,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.3-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.3-001"],
         profile_ids: &[],
@@ -3278,6 +3629,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.3-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.3-002"],
         profile_ids: &[],
@@ -3287,6 +3639,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.4-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.4-001"],
         profile_ids: &[],
@@ -3296,6 +3649,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.4-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.4-002"],
         profile_ids: &[],
@@ -3305,6 +3659,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.5-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.5-001"],
         profile_ids: &[],
@@ -3314,6 +3669,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.5-002",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.5-002"],
         profile_ids: &[],
@@ -3323,6 +3679,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.6-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.6-001"],
         profile_ids: &[],
@@ -3332,6 +3689,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-5.7-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-5.7-001"],
         profile_ids: &[],
@@ -3341,6 +3699,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1-001"],
         profile_ids: &[],
@@ -3350,6 +3709,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1-001"],
         profile_ids: &[],
@@ -3359,6 +3719,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1-001-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1-001"],
         profile_ids: &[],
@@ -3368,6 +3729,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1-003-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1-003"],
         profile_ids: &[],
@@ -3377,6 +3739,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1-003-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1-003"],
         profile_ids: &[],
@@ -3386,6 +3749,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1-004"],
         profile_ids: &[],
@@ -3395,6 +3759,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1-005"],
         profile_ids: &[],
@@ -3404,6 +3769,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.10-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.10-001"],
         profile_ids: &[],
@@ -3413,6 +3779,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.11-001"],
         profile_ids: &[],
@@ -3422,6 +3789,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.11-001"],
         profile_ids: &[],
@@ -3431,6 +3799,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.11-003"],
         profile_ids: &[],
@@ -3440,6 +3809,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-004-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.11-004"],
         profile_ids: &[],
@@ -3449,6 +3819,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-004-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.11-004"],
         profile_ids: &[],
@@ -3458,6 +3829,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-005",
         source_keyword: "MUST",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.11-005"],
         profile_ids: &[],
@@ -3467,6 +3839,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-006",
         source_keyword: "MUST",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.11-006"],
         profile_ids: &[],
@@ -3476,6 +3849,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.13-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.13-001"],
         profile_ids: &[],
@@ -3485,6 +3859,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.13-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.13-001"],
         profile_ids: &[],
@@ -3494,6 +3869,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.14-001"],
         profile_ids: &[],
@@ -3503,6 +3879,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.14-001"],
         profile_ids: &[],
@@ -3512,6 +3889,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.14-001"],
         profile_ids: &[],
@@ -3521,6 +3899,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.14-001"],
         profile_ids: &[],
@@ -3530,6 +3909,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.14-002"],
         profile_ids: &[],
@@ -3539,6 +3919,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.14-006"],
         profile_ids: &[],
@@ -3548,6 +3929,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.14-006"],
         profile_ids: &[],
@@ -3557,6 +3939,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-007-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.14-007"],
         profile_ids: &[],
@@ -3566,6 +3949,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-007-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.14-007"],
         profile_ids: &[],
@@ -3575,6 +3959,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.16-001"],
         profile_ids: &[],
@@ -3584,6 +3969,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.16-001"],
         profile_ids: &[],
@@ -3593,6 +3979,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.16-004"],
         profile_ids: &[],
@@ -3602,6 +3989,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.17-001"],
         profile_ids: &[],
@@ -3611,6 +3999,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.17-001"],
         profile_ids: &[],
@@ -3620,6 +4009,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.17-004"],
         profile_ids: &[],
@@ -3629,6 +4019,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-005-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.17-005"],
         profile_ids: &[],
@@ -3638,6 +4029,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-005-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.17-005"],
         profile_ids: &[],
@@ -3647,6 +4039,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-006",
         source_keyword: "MUST",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.17-006"],
         profile_ids: &[],
@@ -3656,6 +4049,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.19-001"],
         profile_ids: &[],
@@ -3665,6 +4059,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.19-002"],
         profile_ids: &[],
@@ -3674,6 +4069,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.2-001-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.2-001"],
         profile_ids: &[],
@@ -3683,6 +4079,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.2-001-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.2-001"],
         profile_ids: &[],
@@ -3692,6 +4089,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.20-001"],
         profile_ids: &[],
@@ -3701,6 +4099,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.20-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.20-001"],
         profile_ids: &[],
@@ -3710,6 +4109,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.20-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.20-004"],
         profile_ids: &[],
@@ -3719,6 +4119,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-001-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.23-001"],
         profile_ids: &[],
@@ -3728,6 +4129,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.23-001"],
         profile_ids: &[],
@@ -3737,6 +4139,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-002-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.23-002"],
         profile_ids: &[],
@@ -3746,6 +4149,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-002-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.23-002"],
         profile_ids: &[],
@@ -3755,6 +4159,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.25-001",
         source_keyword: "MUST",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.25-001"],
         profile_ids: &[],
@@ -3764,6 +4169,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.25-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.25-004"],
         profile_ids: &[],
@@ -3773,6 +4179,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.25-006",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.25-006"],
         profile_ids: &[],
@@ -3782,6 +4189,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.27-001"],
         profile_ids: &[],
@@ -3791,6 +4199,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-002-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.27-002"],
         profile_ids: &[],
@@ -3800,6 +4209,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-002-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.27-002"],
         profile_ids: &[],
@@ -3809,6 +4219,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-005",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.27-005"],
         profile_ids: &[],
@@ -3818,6 +4229,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-001"],
         profile_ids: &[],
@@ -3827,6 +4239,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-002"],
         profile_ids: &[],
@@ -3836,6 +4249,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-004-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-004"],
         profile_ids: &[],
@@ -3845,6 +4259,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-004-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-004"],
         profile_ids: &[],
@@ -3854,6 +4269,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-007",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-007"],
         profile_ids: &[],
@@ -3863,6 +4279,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-008-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-008"],
         profile_ids: &[],
@@ -3872,6 +4289,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-008-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-008"],
         profile_ids: &[],
@@ -3881,6 +4299,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-009-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-009"],
         profile_ids: &[],
@@ -3890,6 +4309,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-009-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-009"],
         profile_ids: &[],
@@ -3899,6 +4319,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-011",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-011"],
         profile_ids: &[],
@@ -3908,6 +4329,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-012",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-012"],
         profile_ids: &[],
@@ -3917,6 +4339,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-013"],
         profile_ids: &[],
@@ -3926,6 +4349,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-013-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.28-013"],
         profile_ids: &[],
@@ -3935,6 +4359,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.3-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.3-001"],
         profile_ids: &[],
@@ -3944,6 +4369,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.32-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.32-001"],
         profile_ids: &[],
@@ -3953,6 +4379,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.32-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.32-003"],
         profile_ids: &[],
@@ -3962,6 +4389,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.32-004-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.32-004"],
         profile_ids: &[],
@@ -3971,6 +4399,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.32-004-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.32-004"],
         profile_ids: &[],
@@ -3980,6 +4409,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.33-001"],
         profile_ids: &[],
@@ -3989,6 +4419,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.33-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.33-001"],
         profile_ids: &[],
@@ -3998,6 +4429,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.33-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.33-004"],
         profile_ids: &[],
@@ -4007,6 +4439,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.33-005-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.33-005"],
         profile_ids: &[],
@@ -4016,6 +4449,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.33-005-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.33-005"],
         profile_ids: &[],
@@ -4025,6 +4459,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.34-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.34-001"],
         profile_ids: &[],
@@ -4034,6 +4469,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.34-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.34-001"],
         profile_ids: &[],
@@ -4043,6 +4479,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.34-001-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.34-001"],
         profile_ids: &[],
@@ -4052,6 +4489,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.34-001-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.34-001"],
         profile_ids: &[],
@@ -4061,6 +4499,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.35-001"],
         profile_ids: &[],
@@ -4070,6 +4509,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-001-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.35-001"],
         profile_ids: &[],
@@ -4079,6 +4519,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.35-002"],
         profile_ids: &[],
@@ -4088,6 +4529,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-005",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.35-005"],
         profile_ids: &[],
@@ -4097,6 +4539,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.38-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.38-001"],
         profile_ids: &[],
@@ -4106,6 +4549,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.38-001-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.38-001"],
         profile_ids: &[],
@@ -4115,6 +4559,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.4-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.4-001"],
         profile_ids: &[],
@@ -4124,6 +4569,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.40-014",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.40-014"],
         profile_ids: &[],
@@ -4133,6 +4579,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.40-016",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.40-016"],
         profile_ids: &[],
@@ -4142,6 +4589,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.42-001"],
         profile_ids: &[],
@@ -4151,6 +4599,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.42-001"],
         profile_ids: &[],
@@ -4160,6 +4609,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.43-001"],
         profile_ids: &[],
@@ -4169,6 +4619,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-005",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.43-005"],
         profile_ids: &[],
@@ -4178,6 +4629,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-007",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.43-007"],
         profile_ids: &[],
@@ -4187,6 +4639,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-009-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.43-009"],
         profile_ids: &[],
@@ -4196,6 +4649,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-009-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.43-009"],
         profile_ids: &[],
@@ -4205,6 +4659,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-010-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.43-010"],
         profile_ids: &[],
@@ -4214,6 +4669,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-010-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.43-010"],
         profile_ids: &[],
@@ -4223,6 +4679,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-011",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.43-011"],
         profile_ids: &[],
@@ -4232,6 +4689,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.44-001",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.44-001"],
         profile_ids: &[],
@@ -4241,6 +4699,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.44-003-001",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.44-003"],
         profile_ids: &[],
@@ -4250,6 +4709,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.44-003"],
         profile_ids: &[],
@@ -4259,6 +4719,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.45-001"],
         profile_ids: &[],
@@ -4268,6 +4729,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-002-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.45-002"],
         profile_ids: &[],
@@ -4277,6 +4739,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-002-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.45-002"],
         profile_ids: &[],
@@ -4286,6 +4749,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-004",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.45-004"],
         profile_ids: &[],
@@ -4295,6 +4759,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.45-006"],
         profile_ids: &[],
@@ -4304,6 +4769,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.45-006"],
         profile_ids: &[],
@@ -4313,6 +4779,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-008",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.45-008"],
         profile_ids: &[],
@@ -4322,6 +4789,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.46-001",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.46-001"],
         profile_ids: &[],
@@ -4331,6 +4799,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.46-004-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.46-004"],
         profile_ids: &[],
@@ -4340,6 +4809,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.46-004-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.46-004"],
         profile_ids: &[],
@@ -4349,6 +4819,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.47-001",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.47-001"],
         profile_ids: &[],
@@ -4358,6 +4829,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.47-004-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.47-004"],
         profile_ids: &[],
@@ -4367,6 +4839,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.47-004-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.47-004"],
         profile_ids: &[],
@@ -4376,6 +4849,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.48-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.48-001"],
         profile_ids: &[],
@@ -4385,6 +4859,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.48-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.48-004"],
         profile_ids: &[],
@@ -4394,6 +4869,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.48-006",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.48-006"],
         profile_ids: &[],
@@ -4403,6 +4879,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.5-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.5-001"],
         profile_ids: &[],
@@ -4412,6 +4889,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.50-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.50-001"],
         profile_ids: &[],
@@ -4421,6 +4899,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.51-001",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.51-001"],
         profile_ids: &[],
@@ -4430,6 +4909,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.55-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.55-001"],
         profile_ids: &[],
@@ -4439,6 +4919,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.55-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.55-004"],
         profile_ids: &[],
@@ -4448,6 +4929,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.55-005-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.55-005"],
         profile_ids: &[],
@@ -4457,6 +4939,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.55-005-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.55-005"],
         profile_ids: &[],
@@ -4466,6 +4949,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.56-001"],
         profile_ids: &[],
@@ -4475,6 +4959,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.56-001"],
         profile_ids: &[],
@@ -4484,6 +4969,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.56-002"],
         profile_ids: &[],
@@ -4493,6 +4979,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-006",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.56-006"],
         profile_ids: &[],
@@ -4502,6 +4989,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-007-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.56-007"],
         profile_ids: &[],
@@ -4511,6 +4999,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-007-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.56-007"],
         profile_ids: &[],
@@ -4520,6 +5009,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.57-001"],
         profile_ids: &[],
@@ -4529,6 +5019,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-002-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.57-002"],
         profile_ids: &[],
@@ -4538,6 +5029,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-002-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.57-002"],
         profile_ids: &[],
@@ -4547,6 +5039,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.57-004"],
         profile_ids: &[],
@@ -4556,6 +5049,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-005",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.57-005"],
         profile_ids: &[],
@@ -4565,6 +5059,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-006",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.57-006"],
         profile_ids: &[],
@@ -4574,6 +5069,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.6-001"],
         profile_ids: &[],
@@ -4583,6 +5079,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.6-002"],
         profile_ids: &[],
@@ -4592,6 +5089,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.6-002"],
         profile_ids: &[],
@@ -4601,6 +5099,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.6-002"],
         profile_ids: &[],
@@ -4610,6 +5109,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.6-003"],
         profile_ids: &[],
@@ -4619,6 +5119,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-007",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.6-007"],
         profile_ids: &[],
@@ -4628,6 +5129,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-001",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.7-001"],
         profile_ids: &[],
@@ -4637,6 +5139,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.7-002"],
         profile_ids: &[],
@@ -4646,6 +5149,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-002-002",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.7-002"],
         profile_ids: &[],
@@ -4655,6 +5159,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.7-003"],
         profile_ids: &[],
@@ -4664,6 +5169,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.7-004"],
         profile_ids: &[],
@@ -4673,6 +5179,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-004-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.7-004"],
         profile_ids: &[],
@@ -4682,6 +5189,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-005",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.7-005"],
         profile_ids: &[],
@@ -4691,6 +5199,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-001-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.9-001"],
         profile_ids: &[],
@@ -4700,6 +5209,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.9-001"],
         profile_ids: &[],
@@ -4709,6 +5219,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-006",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.9-006"],
         profile_ids: &[],
@@ -4718,6 +5229,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-007",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.9-007"],
         profile_ids: &[],
@@ -4727,6 +5239,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.12-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.12-002"],
         profile_ids: &[],
@@ -4736,6 +5249,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.12-003",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.12-003"],
         profile_ids: &[],
@@ -4745,6 +5259,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.12-005-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.12-005"],
         profile_ids: &[],
@@ -4754,6 +5269,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.12-005-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.12-005"],
         profile_ids: &[],
@@ -4763,6 +5279,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.18-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.18-001"],
         profile_ids: &[],
@@ -4772,6 +5289,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.18-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.18-001"],
         profile_ids: &[],
@@ -4781,6 +5299,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.18-002",
         source_keyword: "SHALL NOT",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.18-002"],
         profile_ids: &[],
@@ -4790,6 +5309,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.18-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.18-004"],
         profile_ids: &[],
@@ -4799,6 +5319,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.18-005",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.18-005"],
         profile_ids: &[],
@@ -4808,6 +5329,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.18-006",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.18-006"],
         profile_ids: &[],
@@ -4817,6 +5339,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.26-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.26-001"],
         profile_ids: &[],
@@ -4826,6 +5349,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.27-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.27-001"],
         profile_ids: &[],
@@ -4835,6 +5359,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.28-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.28-001"],
         profile_ids: &[],
@@ -4844,6 +5369,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.29-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.29-001"],
         profile_ids: &[],
@@ -4853,6 +5379,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.30-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.30-001"],
         profile_ids: &[],
@@ -4862,6 +5389,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.31-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.31-001"],
         profile_ids: &[],
@@ -4871,6 +5399,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.32-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "profile_conditional",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.32-001"],
         profile_ids: &[],
@@ -4880,6 +5409,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.33-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.33-001"],
         profile_ids: &[],
@@ -4889,6 +5419,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.35-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.35-002"],
         profile_ids: &[],
@@ -4898,6 +5429,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.36-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.36-001"],
         profile_ids: &[],
@@ -4907,6 +5439,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.36-002-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.36-002"],
         profile_ids: &[],
@@ -4916,6 +5449,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.36-002-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.36-002"],
         profile_ids: &[],
@@ -4925,6 +5459,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.36-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.36-003"],
         profile_ids: &[],
@@ -4934,6 +5469,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.7-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.7-002"],
         profile_ids: &[],
@@ -4943,6 +5479,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-7.8-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-7.8-001"],
         profile_ids: &[],
@@ -4952,6 +5489,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-8-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-8-001"],
         profile_ids: &[],
@@ -4961,6 +5499,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-8-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-8-002"],
         profile_ids: &[],
@@ -4970,6 +5509,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-8-003-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-8-003"],
         profile_ids: &[],
@@ -4979,6 +5519,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-8-003-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-8-003"],
         profile_ids: &[],
@@ -4988,6 +5529,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-8.1-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-8.1-002"],
         profile_ids: &[],
@@ -4997,6 +5539,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-8.2-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-8.2-002"],
         profile_ids: &[],
@@ -5006,6 +5549,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-8.3-003",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-8.3-003"],
         profile_ids: &[],
@@ -5015,6 +5559,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-8.3-004",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-8.3-004"],
         profile_ids: &[],
@@ -5024,6 +5569,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.1-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.1-001"],
         profile_ids: &[],
@@ -5033,6 +5579,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.11-001"],
         profile_ids: &[],
@@ -5042,6 +5589,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.11-004"],
         profile_ids: &[],
@@ -5051,6 +5599,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.11-004"],
         profile_ids: &[],
@@ -5060,6 +5609,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-003",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.11-004"],
         profile_ids: &[],
@@ -5069,6 +5619,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-006",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.11-006"],
         profile_ids: &[],
@@ -5078,6 +5629,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.11-010"],
         profile_ids: &[],
@@ -5087,6 +5639,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.11-010"],
         profile_ids: &[],
@@ -5096,6 +5649,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.12-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.12-001"],
         profile_ids: &[],
@@ -5105,6 +5659,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.12-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.12-001"],
         profile_ids: &[],
@@ -5114,6 +5669,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.12-001-003",
         source_keyword: "SHOULD",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.12-001"],
         profile_ids: &[],
@@ -5123,6 +5679,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.13-001"],
         profile_ids: &[],
@@ -5132,6 +5689,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.13-001"],
         profile_ids: &[],
@@ -5141,6 +5699,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.13-001"],
         profile_ids: &[],
@@ -5150,6 +5709,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-004",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.13-001"],
         profile_ids: &[],
@@ -5159,6 +5719,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-005",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.13-001"],
         profile_ids: &[],
@@ -5168,6 +5729,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.19-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.19-002"],
         profile_ids: &[],
@@ -5177,6 +5739,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.2-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.2-001"],
         profile_ids: &[],
@@ -5186,6 +5749,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.20-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.20-001"],
         profile_ids: &[],
@@ -5195,6 +5759,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.20-001-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.20-001"],
         profile_ids: &[],
@@ -5204,6 +5769,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.21-001"],
         profile_ids: &[],
@@ -5213,6 +5779,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.21-001"],
         profile_ids: &[],
@@ -5222,6 +5789,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.3-001"],
         profile_ids: &[],
@@ -5231,6 +5799,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.3-001"],
         profile_ids: &[],
@@ -5240,6 +5809,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.4-001-001",
         source_keyword: "OPTIONAL",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.4-001"],
         profile_ids: &[],
@@ -5249,6 +5819,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.4-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.4-001"],
         profile_ids: &[],
@@ -5258,6 +5829,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.4-002",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.4-002"],
         profile_ids: &[],
@@ -5267,6 +5839,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.5-001-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.5-001"],
         profile_ids: &[],
@@ -5276,6 +5849,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.5-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.5-001"],
         profile_ids: &[],
@@ -5285,6 +5859,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.6-001"],
         profile_ids: &[],
@@ -5294,6 +5869,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-002",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.6-001"],
         profile_ids: &[],
@@ -5303,6 +5879,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-003",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.6-001"],
         profile_ids: &[],
@@ -5312,6 +5889,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.7-001",
         source_keyword: "REQUIRED",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.7-001"],
         profile_ids: &[],
@@ -5321,6 +5899,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.8-001-001",
         source_keyword: "SHALL",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.8-001"],
         profile_ids: &[],
@@ -5330,6 +5909,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-9.9-001",
         source_keyword: "MAY",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-9.9-001"],
         profile_ids: &[],
