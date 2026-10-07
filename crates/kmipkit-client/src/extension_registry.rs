@@ -13,6 +13,11 @@ use kmipkit_protocol::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::{Tag, ValueView};
 
+#[cfg(test)]
+std::thread_local! {
+    static INDEX_COMPILATION_ATTEMPTS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 #[derive(Default)]
 struct DiscriminatorIndex {
     by_fingerprint: HashMap<u64, Vec<usize>>,
@@ -31,6 +36,9 @@ struct RegistryIndexes {
 
 impl RegistryIndexes {
     fn compile(definitions: &[ExtensionDefinition]) -> Result<Self, ProtocolError> {
+        #[cfg(test)]
+        INDEX_COMPILATION_ATTEMPTS.with(|attempts| attempts.set(attempts.get().saturating_add(1)));
+
         let definition_count = definitions.len();
         let mut metadata_order = Vec::new();
         metadata_order
@@ -446,7 +454,8 @@ impl Error for RegistryConstructionFailure {}
 #[cfg(test)]
 mod tests {
     use super::{
-        candidate_matches_discriminator, client_extension_registry, discriminator_candidates,
+        INDEX_COMPILATION_ATTEMPTS, candidate_matches_discriminator, client_extension_registry,
+        discriminator_candidates,
     };
     use kmipkit_protocol::extension;
     use kmipkit_ttlv::{Item, ItemType, RawTag, Tag, Value};
@@ -476,6 +485,167 @@ mod tests {
 
         extension::extension_definition(identity, compatibility, discriminator, schema)
             .expect("the test definition is valid")
+    }
+
+    fn limits_with_overrides(overrides: [u64; 12]) -> extension::ExtensionRegistryLimits {
+        extension::with_values(
+            overrides[0],
+            overrides[1],
+            overrides[2],
+            overrides[3],
+            overrides[4],
+            overrides[5],
+            overrides[6],
+            overrides[7],
+            overrides[8],
+            overrides[9],
+            overrides[10],
+            overrides[11],
+        )
+        .expect("the test limit overrides remain under every hard maximum")
+    }
+
+    #[test]
+    fn registry_limits_reject_before_compiling_or_reserving_indexes() {
+        let defaults = extension::defaults();
+        let default_values = [
+            defaults.max_definitions(),
+            defaults.max_schema_nodes(),
+            defaults.max_child_rules_per_structure(),
+            defaults.max_text_bytes_per_field(),
+            defaults.max_registry_text_bytes(),
+            defaults.max_discriminator_scalar_bytes(),
+            defaults.max_total_discriminator_scalar_bytes(),
+            defaults.max_constraint_members_per_rule(),
+            defaults.max_total_constraint_members(),
+            defaults.max_payload_index_records(),
+            defaults.max_lookup_comparisons(),
+            defaults.max_depth(),
+        ];
+        let invalid_cases = [
+            (
+                vec![definition("count", "value")],
+                limits_with_overrides([
+                    0,
+                    default_values[1],
+                    default_values[2],
+                    default_values[3],
+                    default_values[4],
+                    default_values[5],
+                    default_values[6],
+                    default_values[7],
+                    default_values[8],
+                    default_values[9],
+                    default_values[10],
+                    default_values[11],
+                ]),
+            ),
+            (
+                vec![definition("name-too-long", "value")],
+                limits_with_overrides([
+                    default_values[0],
+                    default_values[1],
+                    default_values[2],
+                    4,
+                    default_values[4],
+                    default_values[5],
+                    default_values[6],
+                    default_values[7],
+                    default_values[8],
+                    default_values[9],
+                    default_values[10],
+                    default_values[11],
+                ]),
+            ),
+            (
+                vec![definition("aggregate-text", "value")],
+                limits_with_overrides([
+                    default_values[0],
+                    default_values[1],
+                    default_values[2],
+                    default_values[3],
+                    1,
+                    default_values[5],
+                    default_values[6],
+                    default_values[7],
+                    default_values[8],
+                    default_values[9],
+                    default_values[10],
+                    default_values[11],
+                ]),
+            ),
+            (
+                vec![definition("scalar", "too-long")],
+                limits_with_overrides([
+                    default_values[0],
+                    default_values[1],
+                    default_values[2],
+                    default_values[3],
+                    default_values[4],
+                    3,
+                    default_values[6],
+                    default_values[7],
+                    default_values[8],
+                    default_values[9],
+                    default_values[10],
+                    default_values[11],
+                ]),
+            ),
+            (
+                vec![definition("aggregate-scalar", "value")],
+                limits_with_overrides([
+                    default_values[0],
+                    default_values[1],
+                    default_values[2],
+                    default_values[3],
+                    default_values[4],
+                    default_values[5],
+                    3,
+                    default_values[7],
+                    default_values[8],
+                    default_values[9],
+                    default_values[10],
+                    default_values[11],
+                ]),
+            ),
+            (
+                vec![definition("schema-node", "value")],
+                limits_with_overrides([
+                    default_values[0],
+                    1,
+                    default_values[2],
+                    default_values[3],
+                    default_values[4],
+                    default_values[5],
+                    default_values[6],
+                    default_values[7],
+                    default_values[8],
+                    default_values[9],
+                    default_values[10],
+                    default_values[11],
+                ]),
+            ),
+        ];
+
+        let initial = INDEX_COMPILATION_ATTEMPTS.with(std::cell::Cell::get);
+        for (definitions, limits) in invalid_cases {
+            assert!(
+                client_extension_registry(definitions, limits).is_err(),
+                "each over-limit registry is rejected"
+            );
+            assert_eq!(
+                INDEX_COMPILATION_ATTEMPTS.with(std::cell::Cell::get),
+                initial,
+                "rejected registry limits must be checked before index reservations"
+            );
+        }
+
+        client_extension_registry(vec![definition("valid", "value")], defaults)
+            .expect("a valid registry reaches index compilation");
+        assert_eq!(
+            INDEX_COMPILATION_ATTEMPTS.with(std::cell::Cell::get),
+            initial + 1
+        );
     }
 
     #[test]

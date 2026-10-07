@@ -24,6 +24,10 @@ use crate::{ClientCauseCategory, ClientError};
 mod private_wire_writer;
 
 #[cfg(test)]
+#[path = "../tests/extension_outbound.rs"]
+mod extension_outbound_tests;
+
+#[cfg(test)]
 pub(super) use private_wire_writer::ZeroizationObserver;
 
 const MESSAGE: u32 = 0x0042_0078;

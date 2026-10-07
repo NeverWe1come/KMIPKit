@@ -912,5 +912,10 @@ mod t018_work_bound_tests {
             metrics.order_edge_checks_per_structure,
             [usize::try_from(EDGE_COUNT).expect("fixture edge count fits usize")]
         );
+        assert_eq!(
+            metrics.order_edge_work_per_structure,
+            [usize::try_from(EDGE_COUNT).expect("fixture edge count fits usize")],
+            "the dense ordered-field case scans the declared edge list exactly once"
+        );
     }
 }

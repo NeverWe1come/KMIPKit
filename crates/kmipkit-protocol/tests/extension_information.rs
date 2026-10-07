@@ -1,0 +1,95 @@
+//! OASIS KMIP 2.1 §7.13, Table 365 Extension Information model tests.
+//!
+//! Traceability: KMIPKIT-0012-FR-009.
+
+use kmipkit_protocol::extension;
+use kmipkit_ttlv::{ItemType, ValueView};
+
+const TABLE_365_TAGS_IN_ORDER: [u32; 7] = [
+    0x0042_00A5, // Extension Name
+    0x0042_00A6, // Extension Tag
+    0x0042_00A7, // Extension Type
+    0x0042_00A8, // Extension Enumeration
+    0x0042_012A, // Extension Attribute
+    0x0042_012B, // Extension Parent Structure Tag
+    0x0042_012C, // Extension Description
+];
+
+fn item_types(structure: &kmipkit_ttlv::Structure) -> Vec<ItemType> {
+    structure
+        .view()
+        .children()
+        .iter()
+        .map(kmipkit_ttlv::Item::item_type)
+        .collect()
+}
+
+#[test]
+fn extension_information_requires_name_and_omits_each_optional_table_field_by_default() {
+    let information = extension::extension_information("vendor-extension")
+        .expect("Extension Name is the required Table 365 field");
+
+    assert_eq!(information.name(), "vendor-extension");
+    assert_eq!(information.tag(), None);
+    assert_eq!(information.item_type(), None);
+    assert_eq!(information.enumeration(), None);
+    assert_eq!(information.attribute(), None);
+    assert_eq!(information.parent_structure_tag(), None);
+    assert_eq!(information.description(), None);
+
+    let encoded = extension::to_ttlv(information).expect("required metadata encodes as TTLV");
+    assert_eq!(
+        encoded.view().children()[0].tag().raw(),
+        TABLE_365_TAGS_IN_ORDER[0]
+    );
+    assert_eq!(item_types(&encoded), [ItemType::TextString]);
+}
+
+#[test]
+fn extension_information_exposes_every_optional_field_in_table_order_and_type() {
+    let information = extension::extension_information("vendor-extension")
+        .expect("the required Extension Name is valid");
+    let information = extension::with_tag(information, 0x0054_0001)
+        .expect("Extension Tag is representable as a KMIP Integer");
+    let information = extension::with_type(information, ItemType::TextString)
+        .expect("Extension Type names a represented TTLV Item Type");
+    let information = extension::with_enumeration(information, 17)
+        .expect("Extension Enumeration is a non-negative KMIP Integer");
+    let information = extension::with_attribute(information, false)
+        .expect("false is a represented Extension Attribute value");
+    let information = extension::with_parent_structure_tag(information, 0x0054_0002)
+        .expect("Parent Structure Tag is representable as a KMIP Integer");
+    let information = extension::with_description(information, "local metadata")
+        .expect("Extension Description is valid text");
+
+    assert_eq!(information.tag(), Some(0x0054_0001));
+    assert_eq!(information.item_type(), Some(ItemType::TextString));
+    assert_eq!(information.enumeration(), Some(17));
+    assert_eq!(information.attribute(), Some(false));
+    assert_eq!(information.parent_structure_tag(), Some(0x0054_0002));
+    assert_eq!(information.description(), Some("local metadata"));
+
+    let encoded = extension::to_ttlv(information).expect("all Table 365 fields encode");
+    let encoded_view = encoded.view();
+    let items = encoded_view.children();
+    assert_eq!(
+        items
+            .iter()
+            .map(|item| item.tag().raw())
+            .collect::<Vec<_>>(),
+        TABLE_365_TAGS_IN_ORDER
+    );
+    assert_eq!(
+        item_types(&encoded),
+        [
+            ItemType::TextString,
+            ItemType::Integer,
+            ItemType::Enumeration,
+            ItemType::Integer,
+            ItemType::Boolean,
+            ItemType::Integer,
+            ItemType::TextString,
+        ]
+    );
+    assert!(items[4].with_value(|value| matches!(value, ValueView::Boolean(false))));
+}

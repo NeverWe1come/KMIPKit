@@ -1,0 +1,13 @@
+error[E0432]: unresolved import `kmipkit_client::extension_registry::ClientRequestMessageExtension`
+ --> tests/ui/extension_boundary/caller_conversion.rs:1:5
+  |
+1 | use kmipkit_client::extension_registry::ClientRequestMessageExtension;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^-----------------------------
+  |                                         |
+  |                                         no `ClientRequestMessageExtension` in `extension_registry`
+
+error[E0599]: no method named `with_extension` found for struct `ClientBatchItem` in the current scope
+  --> tests/ui/extension_boundary/caller_conversion.rs:14:18
+   |
+14 |     let _ = item.with_extension(CallerValue);
+   |                  ^^^^^^^^^^^^^^ method not found in `ClientBatchItem`

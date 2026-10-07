@@ -63,7 +63,27 @@ fn definition_with(
     discriminator_path: &[u32],
     discriminator_value: &str,
 ) -> extension::ExtensionDefinition {
-    let identity = extension::extension_identity(VENDOR_IDENTIFIER, name, version)
+    definition_with_fields(
+        VENDOR_IDENTIFIER,
+        name,
+        version,
+        name,
+        None,
+        discriminator_path,
+        discriminator_value,
+    )
+}
+
+fn definition_with_fields(
+    vendor_identifier: &str,
+    name: &str,
+    version: &str,
+    information_name: &str,
+    description: Option<&str>,
+    discriminator_path: &[u32],
+    discriminator_value: &str,
+) -> extension::ExtensionDefinition {
+    let identity = extension::extension_identity(vendor_identifier, name, version)
         .expect("the shared fixture identity is valid");
     let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
         .expect("the shared fixture is compatible with this client");
@@ -92,10 +112,47 @@ fn definition_with(
     let definition =
         extension::extension_definition(identity, compatibility, discriminator, schema)
             .expect("the shared fixture definition is internally consistent");
-    let information = extension::extension_information(name)
+    let mut information = extension::extension_information(information_name)
         .expect("the shared fixture metadata name is non-empty");
+    if let Some(description) = description {
+        information = extension::with_description(information, description)
+            .expect("the shared fixture metadata description is valid");
+    }
     extension::with_information(definition, information)
         .expect("the shared fixture metadata is valid")
+}
+
+fn byte_definition_with(
+    name: &str,
+    discriminator_value: Vec<u8>,
+) -> extension::ExtensionDefinition {
+    let identity = extension::extension_identity(VENDOR_IDENTIFIER, name, "1")
+        .expect("the byte extension identity is valid");
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+        .expect("the byte extension is compatible with this client");
+    let path = extension::ttlv_path(tag(0x42_0001)).expect("the byte discriminator path is valid");
+    let discriminator =
+        extension::discriminator(path, kmipkit_ttlv::Value::byte_string(discriminator_value))
+            .expect("the byte discriminator is within the hard scalar limit");
+    let schema = extension::structure(
+        vec![
+            extension::required(
+                tag(0x42_0001),
+                extension::scalar(ItemType::ByteString).expect("Byte String is supported"),
+            )
+            .expect("the byte discriminator rule is valid"),
+        ],
+        Vec::new(),
+        false,
+    )
+    .expect("the byte extension schema is valid");
+    let definition =
+        extension::extension_definition(identity, compatibility, discriminator, schema)
+            .expect("the byte extension definition is valid");
+    let information =
+        extension::extension_information(name).expect("the byte extension metadata name is valid");
+    extension::with_information(definition, information)
+        .expect("the byte extension metadata is valid")
 }
 
 fn identity(fixture: &FixtureDefinition) -> extension::ExtensionIdentity {
@@ -232,6 +289,27 @@ fn definition_and_metadata_views_ignore_registration_order() {
             assert_eq!(extension::identity(found), expected);
         }
     }
+
+    // FR-009: these are deterministic metadata list/map views over the local
+    // registry. They do not indicate that a remote KMIP server supports them.
+    let local_metadata_map = |registry: &extension_registry::ClientExtensionRegistry| {
+        (0..definition_count_as_usize(registry))
+            .filter_map(|index| extension_registry::definition_at(registry, index))
+            .map(|definition| {
+                let identity = extension::identity(definition);
+                (
+                    (
+                        identity.vendor_identifier().to_owned(),
+                        identity.name().to_owned(),
+                        identity.version().to_owned(),
+                    ),
+                    extension::information(definition)
+                        .map(|information| information.name().to_owned()),
+                )
+            })
+            .collect::<std::collections::BTreeMap<_, _>>()
+    };
+    assert_eq!(local_metadata_map(&forward), local_metadata_map(&reverse));
 }
 
 #[test]
@@ -318,5 +396,322 @@ fn registry_rejects_a_definition_that_exceeds_configured_text_limits() {
         error,
         ClientError::Protocol { error, .. }
             if error.kind() == kmipkit_protocol::ProtocolErrorKind::ResourceLimit
+    ));
+}
+
+fn limits_with_registry_text_and_discriminator_bytes(
+    max_definitions: u64,
+    max_text_bytes_per_field: u64,
+    max_registry_text_bytes: u64,
+    max_discriminator_scalar_bytes: u64,
+    max_total_discriminator_scalar_bytes: u64,
+) -> extension::ExtensionRegistryLimits {
+    let defaults = extension::defaults();
+    extension::with_values(
+        max_definitions,
+        defaults.max_schema_nodes(),
+        defaults.max_child_rules_per_structure(),
+        max_text_bytes_per_field,
+        max_registry_text_bytes,
+        max_discriminator_scalar_bytes,
+        max_total_discriminator_scalar_bytes,
+        defaults.max_constraint_members_per_rule(),
+        defaults.max_total_constraint_members(),
+        defaults.max_payload_index_records(),
+        defaults.max_lookup_comparisons(),
+        defaults.max_depth(),
+    )
+    .expect("test registry limits are within the hard maxima")
+}
+
+fn assert_registry_resource_limit(
+    result: Result<extension_registry::ClientExtensionRegistry, ClientError>,
+) {
+    let error = result.expect_err("the configured registry limit rejects this set");
+    assert!(matches!(
+        error,
+        ClientError::Protocol { error, .. }
+            if error.kind() == kmipkit_protocol::ProtocolErrorKind::ResourceLimit
+    ));
+}
+
+#[test]
+fn registry_rejects_duplicate_identities_before_exposing_any_registry() {
+    let first = definition_with("same-identity", "1", &[0x42_0001], "first");
+    let second = definition_with("same-identity", "1", &[0x42_0002], "second");
+    let result =
+        extension_registry::client_extension_registry(vec![first, second], extension::defaults());
+    let error = result.expect_err("duplicate identities cannot form a registry");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert!(matches!(
+        error,
+        ClientError::Protocol { error, .. }
+            if error.kind() == kmipkit_protocol::ProtocolErrorKind::DuplicateKey
+    ));
+}
+
+#[test]
+fn registry_returns_no_partial_snapshot_when_a_later_definition_fails() {
+    let accepted = definition_with("first-valid", "1", &[0x42_0001], "first-value");
+    let rejected = definition_with_fields(
+        VENDOR_IDENTIFIER,
+        &"n".repeat(33),
+        "1",
+        "metadata-too-long-for-configured-field-limit",
+        None,
+        &[0x42_0002],
+        "second-value",
+    );
+    let limits =
+        limits_with_registry_text_and_discriminator_bytes(4, 32, 1_048_576, 4_096, 1_048_576);
+
+    let result = extension_registry::client_extension_registry(vec![accepted, rejected], limits);
+    let error = result.expect_err(
+        "a valid first definition cannot expose a partial registry when a later one exceeds limits",
+    );
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
+fn registry_definition_count_accepts_the_configured_boundary_and_rejects_one_over() {
+    let exact = definition_with("exact-count", "1", &[0x42_0001], "exact");
+    let limits =
+        limits_with_registry_text_and_discriminator_bytes(1, 4_096, 1_048_576, 4_096, 1_048_576);
+    let registry = extension_registry::client_extension_registry(vec![exact], limits)
+        .expect("one definition exactly fits the configured count");
+    assert_eq!(extension_registry::definition_count(&registry), 1);
+
+    let first = definition_with("first-count", "1", &[0x42_0001], "first");
+    let second = definition_with("second-count", "1", &[0x42_0002], "second");
+    assert_registry_resource_limit(extension_registry::client_extension_registry(
+        vec![first, second],
+        limits,
+    ));
+}
+
+#[test]
+fn registry_text_and_discriminator_aggregate_limits_accept_exact_and_reject_one_under() {
+    let first = definition_with("aggregate-a", "1", &[0x42_0001], "value-a");
+    let second = definition_with("aggregate-b", "1", &[0x42_0002], "value-b");
+    let first_accounting = extension::accounting(&first).expect("first definition is bounded");
+    let second_accounting = extension::accounting(&second).expect("second definition is bounded");
+    let total_text = u64::try_from(first_accounting.text_bytes + second_accounting.text_bytes)
+        .expect("text byte count fits u64");
+    let total_discriminator =
+        u64::try_from(first_accounting.discriminator_bytes + second_accounting.discriminator_bytes)
+            .expect("discriminator byte count fits u64");
+
+    let exact_limits = limits_with_registry_text_and_discriminator_bytes(
+        2,
+        4_096,
+        total_text,
+        7,
+        total_discriminator,
+    );
+    let exact = extension_registry::client_extension_registry(
+        vec![
+            definition_with("aggregate-a", "1", &[0x42_0001], "value-a"),
+            definition_with("aggregate-b", "1", &[0x42_0002], "value-b"),
+        ],
+        exact_limits,
+    );
+    assert!(exact.is_ok(), "exact aggregate byte limits are inclusive");
+
+    assert_registry_resource_limit(extension_registry::client_extension_registry(
+        vec![
+            definition_with("aggregate-a", "1", &[0x42_0001], "value-a"),
+            definition_with("aggregate-b", "1", &[0x42_0002], "value-b"),
+        ],
+        limits_with_registry_text_and_discriminator_bytes(
+            2,
+            4_096,
+            total_text - 1,
+            7,
+            total_discriminator,
+        ),
+    ));
+
+    assert_registry_resource_limit(extension_registry::client_extension_registry(
+        vec![definition_with(
+            "single-scalar-over",
+            "1",
+            &[0x42_0001],
+            "value-a",
+        )],
+        limits_with_registry_text_and_discriminator_bytes(1, 4_096, 1_048_576, 6, 1_048_576),
+    ));
+}
+
+#[test]
+fn registry_enforces_configured_text_field_limit_on_every_identity_and_metadata_field() {
+    let limits =
+        || limits_with_registry_text_and_discriminator_bytes(1, 5, 1_048_576, 4_096, 1_048_576);
+    let cases = [
+        ("vendor", "name", "1", "meta5", None),
+        ("vendr", "name66", "1", "meta5", None),
+        ("vendr", "name", "versio", "meta5", None),
+        ("vendr", "name", "1", "meta66", None),
+        ("vendr", "name", "1", "meta5", Some("desc66")),
+    ];
+
+    for (vendor, name, version, metadata_name, description) in cases {
+        let definition = definition_with_fields(
+            vendor,
+            name,
+            version,
+            metadata_name,
+            description,
+            &[0x42_0001],
+            "value",
+        );
+        assert_registry_resource_limit(extension_registry::client_extension_registry(
+            vec![definition],
+            limits(),
+        ));
+    }
+
+    let exact = definition_with_fields(
+        "vendr",
+        "name5",
+        "ver55",
+        "meta5",
+        Some("desc"),
+        &[0x42_0001],
+        "value",
+    );
+    assert!(extension_registry::client_extension_registry(vec![exact], limits()).is_ok());
+}
+
+#[test]
+fn registry_count_hard_boundary_accepts_exact_maximum_and_rejects_one_over() {
+    let hard_maximum = 1_024_u64;
+    let limits = limits_with_registry_text_and_discriminator_bytes(
+        hard_maximum,
+        4_096,
+        16 * 1024 * 1024,
+        4_096,
+        16 * 1024 * 1024,
+    );
+    let definitions = |count: usize| {
+        (0..count)
+            .map(|index| {
+                let identity = format!("definition-{index}");
+                let discriminator = format!("value-{index}");
+                definition_with(&identity, "1", &[0x42_0001], &discriminator)
+            })
+            .collect::<Vec<_>>()
+    };
+
+    let exact = extension_registry::client_extension_registry(
+        definitions(usize::try_from(hard_maximum).expect("hard limit fits usize")),
+        limits,
+    )
+    .expect("the registry accepts exactly its hard definition maximum");
+    assert_eq!(extension_registry::definition_count(&exact), hard_maximum);
+
+    let over = extension_registry::client_extension_registry(
+        definitions(usize::try_from(hard_maximum + 1).expect("hard limit plus one fits usize")),
+        limits,
+    );
+    assert_registry_resource_limit(over);
+}
+
+#[test]
+fn registry_count_default_boundary_accepts_exact_default_and_rejects_one_over() {
+    let limits = extension::defaults();
+    let count = usize::try_from(limits.max_definitions()).expect("default count fits usize");
+    let definitions = |count: usize| {
+        (0..count)
+            .map(|index| {
+                definition_with(
+                    &format!("default-{index}"),
+                    "1",
+                    &[0x42_0001],
+                    &format!("value-{index}"),
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+
+    let exact = extension_registry::client_extension_registry(definitions(count), limits)
+        .expect("the default definition maximum is inclusive");
+    assert_eq!(
+        extension_registry::definition_count(&exact),
+        limits.max_definitions()
+    );
+    assert_registry_resource_limit(extension_registry::client_extension_registry(
+        definitions(count + 1),
+        limits,
+    ));
+}
+
+#[test]
+fn registry_aggregates_binary_discriminator_bytes_at_exact_and_over_limit_boundaries() {
+    let exact = extension_registry::client_extension_registry(
+        vec![
+            byte_definition_with("bytes-a", vec![0xA1; 4]),
+            byte_definition_with("bytes-b", vec![0xB2; 4]),
+        ],
+        limits_with_registry_text_and_discriminator_bytes(2, 4_096, 1_048_576, 4, 8),
+    );
+    assert!(
+        exact.is_ok(),
+        "the exact aggregate binary scalar limit is inclusive"
+    );
+
+    assert_registry_resource_limit(extension_registry::client_extension_registry(
+        vec![
+            byte_definition_with("bytes-a", vec![0xA1; 4]),
+            byte_definition_with("bytes-b", vec![0xB2; 4]),
+        ],
+        limits_with_registry_text_and_discriminator_bytes(2, 4_096, 1_048_576, 4, 7),
+    ));
+
+    assert_registry_resource_limit(extension_registry::client_extension_registry(
+        vec![byte_definition_with("scalar-over", vec![0xA1; 5])],
+        limits_with_registry_text_and_discriminator_bytes(1, 4_096, 1_048_576, 4, 1_048_576),
+    ));
+}
+
+#[test]
+fn registry_rejects_text_totals_over_the_hard_aggregate_limit() {
+    const HARD_TEXT_BYTES: usize = 16 * 1024 * 1024;
+    const TEXT_BYTES_PER_DEFINITION: usize = 5 * 4_096;
+    let count = HARD_TEXT_BYTES / TEXT_BYTES_PER_DEFINITION + 1;
+    let vendor = "v".repeat(4_096);
+    let version = "1".repeat(4_096);
+    let information_name = "i".repeat(4_096);
+    let description = "d".repeat(4_096);
+    let definitions = (0..count)
+        .map(|index| {
+            let name = format!("n{index:04}") + &"x".repeat(4_091);
+            let discriminator = format!("value-{index}");
+            definition_with_fields(
+                &vendor,
+                &name,
+                &version,
+                &information_name,
+                Some(&description),
+                &[0x42_0001],
+                &discriminator,
+            )
+        })
+        .collect();
+    let limits = limits_with_registry_text_and_discriminator_bytes(
+        1_024,
+        4_096,
+        u64::try_from(HARD_TEXT_BYTES).expect("hard text maximum fits u64"),
+        4_096,
+        16 * 1024 * 1024,
+    );
+
+    assert_registry_resource_limit(extension_registry::client_extension_registry(
+        definitions,
+        limits,
     ));
 }

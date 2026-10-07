@@ -1,0 +1,5 @@
+error[E0599]: no method named `with_extension` found for struct `ClientBatchItem` in the current scope
+  --> tests/ui/extension_boundary/arbitrary_item.rs:11:18
+   |
+11 |     let _ = item.with_extension(arbitrary_item);
+   |                  ^^^^^^^^^^^^^^ method not found in `ClientBatchItem`

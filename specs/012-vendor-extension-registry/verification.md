@@ -32,6 +32,30 @@ Red/Green/Refactor commits:
 - `cargo fmt --all --check` — passed.
 - `git diff --check` — passed.
 
+## 2026-10-07 — vendor extension registry user story 1 test Red stage
+
+### Change
+
+Added focused boundary coverage for definition identity and limits, Extension
+Information, aggregate registry accounting, schema work bounds, compile-fail
+request boundaries, and outbound Message Extension ordering and secret-buffer
+lifecycle. Most T017–T019 behavior was already present in the committed
+foundation; those expanded acceptance tests pass against that baseline. The
+new T020 outbound fake-transport tests intentionally expose the unimplemented
+request-use wrapper and `ClientBatchItem::with_extension` API.
+
+### Red evidence
+
+- `cargo test -p kmipkit-protocol --test extension_definition --test extension_information` — passed (9 tests); this confirms the existing foundation satisfies the newly expanded T017/T019 cases.
+- `cargo test -p kmipkit-client --test extension_registry` — passed (16 tests), including every configured text field independently and the pre-index-allocation resource checks.
+- `cargo test -p kmipkit-protocol --lib t018_work_bound_tests` — passed (3 tests), including one order-edge pass for repeated ordered fields.
+- `cargo test -p kmipkit-client --test extension_api_boundary` — passed (1 harness, 4 compile-fail fixtures); arbitrary Items, raw bodies, caller conversions, and executable callbacks remain outside the typed boundary.
+- `cargo test -p kmipkit-client --lib extension_outbound_tests -- --nocapture` — failed to compile as intended: `ClientRequestMessageExtension`, `client_request_message_extension`, and `ClientBatchItem::with_extension` do not exist yet. This is the focused Red for T026.
+
+The per-field text-limit test was corrected after independent QA found an
+all-within-limit entry incorrectly expected to fail. Its targeted rerun passed.
+No production implementation changes are part of this test-only commit.
+
 ### Independent reviews and limits
 
 - Independent security review: PASS for the repeated-work finding. The compiled

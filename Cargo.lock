@@ -76,6 +76,7 @@ dependencies = [
  "serde",
  "static_assertions",
  "syn",
+ "trybuild",
  "zeroize",
 ]
 
