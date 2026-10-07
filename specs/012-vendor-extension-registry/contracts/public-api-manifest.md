@@ -1,39 +1,33 @@
 # Public API Manifest Contract: Registry Slice
 
-## Canonical input
+## Canonical input and scope
 
-The first public API manifest lives at specification/api/public-api.json. It is a reviewed generation input, not generated output. Its format schema and generator are checked in. This feature adds only the registry surface; later approved API specifications extend this manifest and own the complete 1.0 API parity gate.
+The reviewed generation input is `specification/api/public-api.json`; its strict JSON Schema is `specification/api/public-api.schema.json`. The schema uses JSON Schema Draft 2020-12, `$id` `urn:kmipkit:schemas:public-api-manifest:1`, and numeric `formatVersion: 1`.
 
-Each registry entry declares:
+Version 1 has the root fields `formatVersion`, `scope`, `requirementIds`, `types`, `functions`, `errorCategories`, `limits`, `security`, and `generatedOutputs`. All are required. `scope` is the literal `registry-slice`; the manifest covers KMIPKIT-0012 registry capabilities only and MUST NOT claim the complete 1.0 API inventory. Unknown fields are rejected at every object level. Breaking format or meaning changes require a new integer `formatVersion` and schema identifier. Later approved API specifications may add declarations that fit this format; new generated destinations require an approved contract/schema change.
 
-- Manifest format version and feature requirement IDs.
-- Public type/function identifiers and language mapping.
-- Rust and cross-language constructors to validate extension payloads and create a request-use wrapper that requires an explicit Criticality Indicator Boolean.
-- Equivalent ExtensionRegistryLimits fields, defaults, hard maxima, and stable limit-error mapping in each adapter, including identity/Extension Information text bytes, discriminator scalar/aggregate bytes, per-rule/aggregate constraint members, payload-index records, and lookup comparisons. Adapters may raise or lower defaults up to the same hard maxima.
-- Repeatable attachment of typed wrappers to a ClientBatchItem, preserving caller-selected batch and extension order as permitted by §8.3/Table 396.
-- C symbol name, fixed-width parameter/return types, opaque-handle kind, ownership, and release function.
-- All variable-length C byte/string inputs use typed pointers with uint64_t byte lengths; constructors reject over-limit lengths before dereferencing, reading, copying, or scanning input, and never use unbounded NUL scans.
-- Rust protocol/client type ownership and typed request boundary.
-- Java package/class/method, JNI mapping, and error mapping.
-- Python module/function, CFFI mapping, and error mapping.
-- Redaction, zeroization, and runtime-copy notes.
-- Generated source/test/document destinations.
+## Version 1 fields
 
-The manifest contains declarations and metadata only. It contains no executable schema predicate or vendor payload.
+- `requirementIds` is a non-empty array of unique, lexicographically sorted `KMIPKIT-0012-FR-NNN` identifiers. Every declaration carries its own non-empty sorted `requirementIds`; each referenced ID MUST appear at the root.
+- `types` is an ordered array. Each record has `id`, `kind`, `requirementIds`, `rust`, `c`, `java`, and `python`. `kind` is one of `struct`, `enum`, `opaque-handle`, `sealed-value`, or `alias`. Rust maps `module`, `name`, and `owner` (`protocol`, `client`, or `ffi`). C maps a `kmipkit_*_t` name and kind (`fixed-width-value`, `enum`, or `opaque-handle`); an opaque handle additionally declares `handleKind`, ownership (`library-owned`, `caller-owned`, or `borrowed`), and its `kmipkit_*` release function. Java maps `package` and `name`; Python maps `module` and `name`.
+- `functions` is an ordered array. Each record has `id`, `requirementIds`, `rust`, `c`, `java`, `python`, and `ordering`. Rust maps `module`, `name`, `owner`, `requestBoundary`, and ordered `parameters`. `requestBoundary` is `not-applicable`, `validates-generic-ttlv`, `creates-request-use-wrapper`, or `accepts-only-sealed-validated-values`. Generic TTLV, raw bodies, and caller conversions MUST NOT bypass the sealed typed request boundary.
+- A C function mapping has a `kmipkit_*` `symbol`, ordered `parameters`, `returnType: int32_t`, and `errorCategories`. C parameter records are tagged shapes: `scalar` uses a fixed-width integer; `handle` uses a typed opaque pointer and states `borrowed` or `consumed`; `output` uses a typed pointer and declares `none` or `library-owned`; `byte-span` uses `const uint8_t *`, an `encoding` of `octets` or `utf-8`, a named `uint64_t` byte-length parameter, `lengthUnit: bytes`, `limitCheck: before-dereference`, and `nulTerminatedScan: false`. The length name MUST resolve to a `uint64_t` parameter in the same function. Over-limit lengths MUST be rejected before dereferencing, reading, copying, or scanning input. C inputs are borrowed for the duration of the call; KMIPKit-owned opaque handles have an explicit release function.
+- Java maps `package`, `class`, `method`, ordered parameter names/types, a `Java_*` `jniSymbol`, and `errorCategories`. Registry Java names use the `org.kmipkit` namespace. Python maps `module`, `function`, ordered parameter names/types, the corresponding `kmipkit_*` `cffiSymbol`, and `errorCategories`; registry Python modules begin with `kmipkit`.
+- A function that creates a request-use wrapper MUST declare `criticalityIndicator`. It maps Rust `criticality_indicator: bool`, C `criticality_indicator: uint8_t` accepting only `0` or `1`, Java `criticalityIndicator: boolean`, and Python `criticality_indicator: bool`. It has no implicit default. Its `ordering` MUST be `preserves-caller-batch-and-extension-order`; other functions use `not-applicable` unless they also explicitly preserve that order. Repeated attachment accepts only validated wrappers and preserves caller-selected order as permitted by §8.3, Table 396.
+- `errorCategories` is an ordered array of unique records with `id`, `rustVariant`, `cCode`, `cValue`, `javaException`, and `pythonException`. `cValue` is a unique explicit signed `int32_t` value for the named C status code. Function and limit references MUST resolve to a record in this array. Error text and mappings MUST be stable and redacted; the resource-limit category is `resource_limit` in every adapter. C status/error types use fixed-width `int32_t`.
+- `limits` is an ordered array of exactly twelve records in this order: `maxDefinitions`, `maxSchemaNodes`, `maxChildRulesPerStructure`, `maxTextBytesPerField`, `maxRegistryTextBytes`, `maxDiscriminatorScalarBytes`, `maxTotalDiscriminatorScalarBytes`, `maxConstraintMembersPerRule`, `maxTotalConstraintMembers`, `maxPayloadIndexRecords`, `maxLookupComparisons`, and `maxDepth`. Each record has `id`, `rustField`, `cField`, `javaField`, `pythonField`, `default`, `hardMaximum`, `unit`, and `errorCategory: resource_limit`. Rust/C/Python fields use snake case; Java fields use lower camel case. The defaults and hard maxima are fixed by FR-012 and the schema: 256/1,024; 16,384/100,000; 256/4,096; 4,096/4,096 bytes per text field; 1 MiB/16 MiB aggregate text; 4,096/4,096 bytes per discriminator scalar; 1 MiB/16 MiB aggregate discriminator bytes; 256/4,096 constraint members per rule; 16,384/100,000 aggregate constraint members; 200,000/200,000 payload-index records; 1,048,576/4,194,304 lookup comparisons; and 64/64 levels. `maxDepth` applies to both schemas and discriminator paths. T004 records every adapter's field mapping and uses these shared values.
+- `security` has `defaultDiagnostics: redacted`, a `zeroization` note, and `runtimeCopies` notes for C, Java, and Python. Notes describe ownership limits only and contain no payload or secret examples.
+- `generatedOutputs` declares exactly six paths: `rustFfi` → `crates/kmipkit-ffi/src/extension_registry_generated.rs`; `cHeader` → `bindings/c/include/kmipkit.h`; `javaApi` → `bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java`; `javaParityTests` → `bindings/java/src/test/java/org/kmipkit/generated/ExtensionRegistryParityFixtures.java`; `pythonApi` → `bindings/python/src/kmipkit/_generated/extension_registry.py`; `parityFixtures` → `tests/fixtures/extensions/generated/registry_parity.json`. The generator writes only these declared paths and rejects traversal and symlink destinations. These are generated source and test artifacts only: user and API prose documentation remains handwritten under `docs/` and language-package documentation, as specified by the implementation plan.
 
-## Deterministic generation
+## Ordering and determinism
 
-The repository-pinned generator must:
+JSON object member order is not semantic and MUST NOT affect output. Array order is significant for `types`, `functions`, function parameters, and `errorCategories`; the generator preserves it. Requirement-ID lists are lexicographically sorted and unique. The `limits` array uses the fixed FR-012 order above. Generated output processing uses the declared output-field order shown above, independent of JSON object member order. The generator serializes outputs as UTF-8 with LF line endings, a stable property order, and no timestamps or environment-dependent values. Check mode compares expected bytes without rewriting files.
 
-- Validate known format and type names and reject unknown required fields.
-- Emit Rust/C/Java/Python adapter declarations and parity fixture scaffolding deterministically.
-- Preserve manifest-specified stable names and order.
-- Write only declared generated outputs; reject path traversal or symlink destinations.
-- Support check mode that compares expected bytes without changing files.
-- Never scrape OASIS pages or modify pinned upstream copies.
-- Be invoked in CI; a generated diff fails the job.
+## Data-only and generator boundary
 
-Generated files are review artifacts and MUST NOT be hand-edited. Handwritten validation logic and idiomatic facades remain source files.
+The manifest and schema describe identifiers, signatures, mappings, ownership, limits, errors, security notes, and output paths only. They contain no executable schema predicate, callback, script, vendor payload, or runtime manifest-loading instruction. The generator uses Python 3.12 standard-library facilities, validates the known format and cross-references, and never scrapes OASIS pages or modifies pinned upstream copies. It emits the mechanical declarations, handle plumbing, and parity scaffolding described by the plan; handwritten validation, lifecycle, and idiomatic facades remain reviewed source.
+
+Generated files are review artifacts and MUST NOT be hand-edited. CI regeneration fails on a diff. Formal Draft 2020-12 validation is introduced with the manifest-format tests in T001/T002; no validator dependency is added by T003.
 
 ## Required consumer checks
 
@@ -41,4 +35,4 @@ Generated files are review artifacts and MUST NOT be hand-edited. Handwritten va
 - Run Java 17 JNI tests and Python 3.12 CFFI tests on the supported native library path.
 - Use identical definitions, repeated outbound extension fixtures, and inbound values; compare results, error categories, typed inspection, and preserved generic subtrees.
 - Verify outbound request bytes contain the expected registered Vendor Identification, explicit Criticality Indicator, and schema-validated Vendor Extension Structure.
-- Confirm every symbol begins with kmipkit_, opaque handles have explicit lifecycle, and default diagnostics redact payloads.
+- Confirm every symbol begins with `kmipkit_`, opaque handles have explicit lifecycle, C variable inputs use fixed-width byte lengths, and default diagnostics redact payloads.

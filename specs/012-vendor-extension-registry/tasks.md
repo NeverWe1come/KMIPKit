@@ -18,7 +18,7 @@ description: "Dependency-ordered TDD tasks for the KMIP 2.1 vendor extension reg
 
 - [ ] T001 [P] Add failing manifest-generator unit tests for deterministic output, check mode, malformed manifests, unknown required fields, unsafe paths, and symlink destinations in tools/api_manifest/tests/test_generate.py
 - [ ] T002 Add failing manifest-format validation cases and a valid minimal registry fixture, capture the expected failing run, and commit the generator Red stage in tools/api_manifest/tests/test_generate.py and tools/api_manifest/tests/fixtures/registry-manifest.json
-- [ ] T003 Define the versioned registry manifest format and JSON Schema in specification/api/public-api.schema.json
+- [x] T003 Define the versioned registry manifest format and JSON Schema in specification/api/public-api.schema.json
 - [ ] T004 Add the initial registry-only public API manifest with requirement IDs, language mappings, explicit ExtensionRegistryLimits defaults/hard maxima, ownership, redaction, and generated destinations in specification/api/public-api.json
 - [ ] T005 Implement the Python 3.12 standard-library manifest generator and deterministic check mode in tools/api_manifest/generate.py
 - [ ] T006 Run generator tests and check mode, preserve the passing evidence, and commit the generator Green stage in tools/api_manifest/tests/test_generate.py and tools/api_manifest/generate.py

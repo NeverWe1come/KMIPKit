@@ -47,6 +47,6 @@ Do not add external runtime dependencies. This feature pins Python 3.12 for the 
 - Deferring all cross-language surfaces: rejected because the accepted 1.0 plan and ADR-0006 require language equivalence and the roadmap says 0012 must complete before API parity is frozen.
 - Implementing Query transport operations here: rejected because this feature owns registry metadata, while Query operation execution belongs to the all-operations specification family.
 
-## Remaining design constraint
+## Manifest contract resolution
 
-Before code generation is implemented, the public API manifest version and generator output paths must be frozen in the feature contracts. This is the first increment of the later full 1.0 API inventory; it must not claim the overall API is complete.
+The registry-slice manifest contract freezes numeric format version 1 and the Draft 2020-12 schema identifier `urn:kmipkit:schemas:public-api-manifest:1`. It fixes the root fields, strict declaration shapes, requirement and declaration ordering, the twelve FR-012 limit mappings, and six generated source/test destinations. The generator emits declarations, handle plumbing, and parity fixtures only; user and API prose documentation remains handwritten under `docs/` and language-package documentation. The feature-specific C header destination is `bindings/c/include/kmipkit.h`, and Java registry types use the `org.kmipkit` namespace. The manifest is an incremental registry slice and does not claim the complete 1.0 API inventory. See `contracts/public-api-manifest.md` for the canonical field and path definitions.
