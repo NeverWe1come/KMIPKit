@@ -402,7 +402,7 @@ fn raw_tls_rejects_an_unrepresentable_write_phase_before_dispatch() {
 }
 
 #[test]
-fn raw_tls_connect_deadline_discards_a_late_resolver_result() {
+fn raw_tls_connect_deadline_cancels_pending_dns_and_zeroizes_the_staged_request() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind()
         .expect("the passive TCP peer binds loopback")
@@ -415,10 +415,13 @@ fn raw_tls_connect_deadline_discards_a_late_resolver_result() {
     let started_signal = lookup_started.clone();
     let late_lookup = TestGate::default();
     let lookup_gate = late_lookup.clone();
+    let (lookup_returned_sender, lookup_returned_receiver) = std::sync::mpsc::sync_channel(1);
     let resolver = test_resolver(move |_host, _port| {
         started_signal.release();
         let _ = lookup_gate.wait(TLS_TEST_TIMEOUT);
-        Ok(vec![address])
+        let result = Ok(vec![address]);
+        let _ = lookup_returned_sender.send(());
+        result
     });
     let config = client_config_with_timeouts(
         &pki,
@@ -437,21 +440,27 @@ fn raw_tls_connect_deadline_discards_a_late_resolver_result() {
     });
 
     assert!(lookup_started.wait(Duration::from_secs(1)));
-    let result = result_receiver.recv_timeout(Duration::from_secs(1));
+    let result_while_lookup_blocked = result_receiver.recv_timeout(Duration::from_secs(1));
     late_lookup.release();
+    let lookup_returned = lookup_returned_receiver.recv_timeout(TLS_TEST_TIMEOUT);
     caller
         .join()
         .expect("the synchronous exchange thread completes");
 
-    let error = result
-        .expect("the connect timeout returns while the resolver is blocked")
+    assert!(
+        lookup_returned.is_ok(),
+        "the late resolver result completes after its gate is released"
+    );
+    let error = result_while_lookup_blocked
+        .expect("the deadline cancels the exchange while the resolver is blocked")
         .expect_err("the lookup deadline expires before request dispatch");
     assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
     assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
     assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
-    thread::sleep(Duration::from_millis(80));
     assert!(
-        matches!(listener.accept(), Err(ref error) if error.kind() == io::ErrorKind::WouldBlock)
+        !observe_tcp_connection_for(&listener, Duration::from_millis(150))
+            .expect("the bounded late-connection probe succeeds"),
+        "the canceled late resolver result starts no TCP connection"
     );
 }
 
@@ -462,15 +471,9 @@ fn raw_tls_has_no_tcp_side_effect_while_an_uncanceled_lookup_is_pending() {
         .expect("the TLS peer binds loopback")
         .into_inner();
     let address = listener.local_addr().expect("listener has an address");
-    let probe = listener
-        .try_clone()
-        .expect("the test can observe the listener queue");
-    let peer = spawn_peer(
-        listener,
-        server_config(&pki, true),
-        fixtures::REQUEST_SENTINEL.len(),
-        PeerAction::RespondOnce,
-    );
+    listener
+        .set_nonblocking(true)
+        .expect("the test owns the only early TCP accept");
     let lookup_started = TestGate::default();
     let started_signal = lookup_started.clone();
     let pending_lookup = TestGate::default();
@@ -496,14 +499,15 @@ fn raw_tls_has_no_tcp_side_effect_while_an_uncanceled_lookup_is_pending() {
     });
 
     assert!(lookup_started.wait(Duration::from_secs(1)));
-    probe
-        .set_nonblocking(true)
-        .expect("the listener probe can be polled");
-    let no_connection = matches!(
-        probe.accept(),
-        Err(ref error) if error.kind() == io::ErrorKind::WouldBlock
-    );
+    let early_connection = observe_tcp_connection_for(&listener, Duration::from_millis(100))
+        .expect("the bounded early-connection probe succeeds");
     pending_lookup.release();
+    let peer = spawn_peer(
+        listener,
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        PeerAction::RespondOnce,
+    );
     let result = result_receiver.recv_timeout(Duration::from_secs(3));
     caller
         .join()
@@ -511,7 +515,7 @@ fn raw_tls_has_no_tcp_side_effect_while_an_uncanceled_lookup_is_pending() {
     let peer = peer.join().expect("the bounded TLS peer completes");
 
     assert!(
-        no_connection,
+        !early_connection,
         "DNS has no TCP side effect before it completes"
     );
     assert!(result.expect("the lookup completes").is_ok());
@@ -561,8 +565,8 @@ fn raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake
 
     assert!(rejected_peer.accepted);
     assert!(
-        rejected_peer.request_bytes.is_empty(),
-        "application bytes follow a verified TLS handshake"
+        rejected_peer.handshake_failed,
+        "the untrusted candidate is rejected during TLS handshake"
     );
     assert!(
         trusted_peer.accepted,
@@ -1185,6 +1189,7 @@ enum PeerAction {
 struct PeerObservation {
     accepted: bool,
     handshake_completed: bool,
+    handshake_failed: bool,
     protocol_version: Option<rustls::ProtocolVersion>,
     client_identity_present: bool,
     request_bytes: Vec<u8>,
@@ -1227,7 +1232,11 @@ fn run_peer(
     };
     let deadline = Instant::now() + PEER_OPERATION_TIMEOUT;
     while connection.is_handshaking() {
-        if Instant::now() >= deadline || connection.complete_io(&mut stream).is_err() {
+        if Instant::now() >= deadline {
+            return observation;
+        }
+        if connection.complete_io(&mut stream).is_err() {
+            observation.handshake_failed = true;
             return observation;
         }
     }
@@ -1315,6 +1324,28 @@ fn accept_before_deadline(listener: &TcpListener) -> io::Result<(TcpStream, std:
                 }
                 thread::sleep(
                     PEER_ACCEPT_POLL_INTERVAL.min(deadline.saturating_duration_since(now)),
+                );
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+
+fn observe_tcp_connection_for(listener: &TcpListener, duration: Duration) -> io::Result<bool> {
+    let deadline = Instant::now() + duration;
+    loop {
+        match listener.accept() {
+            Ok((stream, _)) => {
+                drop(stream);
+                return Ok(true);
+            }
+            Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                let now = Instant::now();
+                if now >= deadline {
+                    return Ok(false);
+                }
+                thread::sleep(
+                    Duration::from_millis(5).min(deadline.saturating_duration_since(now)),
                 );
             }
             Err(error) => return Err(error),
