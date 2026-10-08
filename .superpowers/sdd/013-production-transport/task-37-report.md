@@ -122,6 +122,28 @@ assertions for the captured request and flushed TLS `close_notify` completed;
 the sole failure is the product assertion that a valid close-delimited body
 without `Content-Length` must be rejected. The adapter returned that body.
 
+## Over-limit harness correction
+
+The over-limit test now retains the result returned by its 250 ms pre-body
+observation. After releasing the gated body, it uses that result if one was
+already received and waits on the result channel only when the observation
+timed out. This preserves the assertion that the declared size is rejected
+before any body bytes arrive and avoids losing a valid early rejection by
+waiting for a second send on a one-result channel.
+
+Focused harness verification command, run with the coordinator's uncommitted
+T038 Green work in `src/https.rs` and `src/timeout.rs` present:
+
+```text
+cargo test -p kmipkit-transport --test https --offline https_rejects_declared_oversize_before_body_arrives_or_response_buffer_grows -- --exact --nocapture
+```
+
+Result: compilation succeeded; 1 passed, 0 failed, 65 filtered out. The
+declared over-limit response was rejected during the pre-body observation,
+and the existing zero-allocation/capacity assertions passed. This run verifies
+that the test harness preserves an early result under the Green WIP; it does
+not replace the Red-baseline run, which the coordinator will verify separately.
+
 Formatting and patch checks:
 
 | Command | Result |

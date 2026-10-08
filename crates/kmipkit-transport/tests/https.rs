@@ -605,14 +605,21 @@ fn https_rejects_declared_oversize_before_body_arrives_or_response_buffer_grows(
         headers_sent.recv_timeout(PEER_TIMEOUT).is_ok(),
         "the peer sent response headers declaring a body above the cap"
     );
+    let early_result = result_rx.recv_timeout(Duration::from_millis(250));
     let rejected_before_body = matches!(
-        result_rx.recv_timeout(Duration::from_millis(250)),
+        &early_result,
         Ok(Err(error)) if error.cause_category() != TransportCauseCategory::Timeout
     );
     let _ = body_release.send(());
-    let result = result_rx
-        .recv_timeout(PEER_TIMEOUT)
-        .expect("the exchange returns after the held response body is released");
+    let result = match early_result {
+        Ok(result) => result,
+        Err(mpsc::RecvTimeoutError::Timeout) => result_rx
+            .recv_timeout(PEER_TIMEOUT)
+            .expect("the exchange returns after the held response body is released"),
+        Err(mpsc::RecvTimeoutError::Disconnected) => {
+            panic!("the exchange result channel remains connected");
+        }
+    };
     let peer = peer.join().expect("the bounded HTTPS peer completes");
 
     assert!(
