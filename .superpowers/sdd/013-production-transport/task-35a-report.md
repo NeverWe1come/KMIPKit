@@ -123,3 +123,51 @@ The next Green correction must make cancellation finalization await the
 Hyper driver's cleanup acknowledgment/join before publishing or snapshotting
 the delivery state, with a bounded cleanup wait. Do not start T037 until this
 Green correction passes and independent QA approves it.
+
+## Cleanup ordering correction — Green implementation
+
+Green source commit `81fe8cd271ee9f584a7293daa54a4cb885adb5ca`
+(`fix(transport): await HTTPS driver cleanup before result`) corrects the
+ordered cleanup gap without changing the public API or TLS policy.
+
+`HyperDriverGuard` now owns the Hyper connection `JoinHandle`. Its `Drop`
+requests abort, then starts a cleanup monitor that joins the actual driver and
+registers that monitor with the exchange control. `ExchangeCommand::run`
+scopes the pinned operation future so cancellation drops it before timeout
+finalization; finalization then waits for registered cleanup before taking the
+delivery-state snapshot and publishing the result. Normal completion also
+waits for driver cleanup before returning the operation result. Cleanup wait
+is bounded to one second; if that acknowledgment window expires, the monitor
+is aborted and given a further 50 ms abort grace. An unsuccessful cleanup
+wait on normal completion is returned as a sanitized stopped-worker error.
+The synchronous caller retains the receiver while an active command
+finalizes, but an exchange that expires while still queued continues to return
+`NotSent` immediately.
+
+The adapter-level regression gates the cleanup monitor after abort and before
+joining the driver. It observes per-adapter `Started`, `Acknowledged`, and
+public `ExchangeReturned` events, keeps the gate closed through a bounded
+observation interval, then releases it and asserts acknowledgment precedes
+public return. This is the same test-only seam accepted in the strengthened
+Red commit; production has no observer or global mutable state.
+
+## Green verification
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --test https --offline https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning -- --exact --nocapture` | Passed, 1/1. |
+| `cargo test -p kmipkit-transport --lib worker::tests --offline` | Passed, 24/24. |
+| `cargo test -p kmipkit-transport --test timeout_delivery --offline -- --test-threads=1` | Passed, 56/56. |
+| `cargo test -p kmipkit-transport --all-targets --all-features --offline` | Passed, 326 tests across 13 targets: lib 56, delivery_state 6, dependency_policy 1, https 58, public_contract 1, raw_tls 81, resolver 13, runtime_policy 2, secret_redaction 22, secret_redaction_current 9, timeout_delivery 56, tls_config 8, tls_policy 13. |
+| `cargo clippy -p kmipkit-transport --all-targets --all-features --offline -- -D warnings` | Passed. |
+| `cargo fmt --all --check` | Passed. |
+| `git diff --check` | Passed. |
+
+The HTTPS cancellation and timeout ordering regression passed after Green; the
+serial timeout/delivery run includes the worker deadline, queued `NotSent`,
+and cancellation/dispatch-state cases. The T021 secret-file symlink test used
+the documented Windows fallback because temporary symlink creation was not
+available on this host; symlink-following remains unverified on this host.
+
+Independent QA re-review of source commit `81fe8cd271ee9f584a7293daa54a4cb885adb5ca`
+is pending. T035a remains unchecked and T037 remains blocked until that review.
