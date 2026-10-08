@@ -19,30 +19,48 @@ before dispatch commit and MUST be bounded by the active write and total
 deadlines; expiry there is `NotSent`. The dispatch commit MUST occur only
 after readiness succeeds.
 
-The per-client worker uses Hickory's asynchronous resolver configured from
-the platform's system DNS settings, with at most one retry after the initial
-query (two attempts total), at most two concurrent nameserver requests per
-query, at most 32 active DNS requests on each multiplexed upstream connection
-(not an aggregate per-client limit), and a per-client response cache of at
-most 128 entries. A lookup returns at most 16 address candidates across A/AAAA
-results, preserving resolver order. Its effective timeout is capped by the
-connect deadline. Returned A/AAAA addresses are
-connect candidates for the one configured hostname; another candidate may be
-tried only before request-dispatch commit and within the
-connect deadline. Server-supplied alternate endpoints are never used. If the
-deadline expires during resolution, KMIPKit returns within the exchange
-deadline, reports `NotSent`, and sends no KMIP request. Canceling an exchange
-cancels its caller-visible lookup future. Client shutdown drops owned async
-lookup tasks and must not wait on a blocking OS resolver call.
+The per-client worker resolves with `ToSocketAddrs` inside Tokio's blocking
+pool. It acquires a permit from the shared 32-permit governor for the loaded
+KMIPKit library instance before submitting the job and retains the permit in
+the closure until the native call exits. If capacity is unavailable, the
+attempt fails immediately as `NotSent`. It makes at most one lookup call for
+the configured host and port per connection-establishment attempt and retains
+at most the first 16 returned addresses in operating-system order and tries
+them sequentially. The OS
+owns address-family behavior, DNS packet retries, upstream concurrency,
+caching and invalidation, hosts/search rules, and split-DNS/VPN routing;
+KMIPKit does not maintain a DNS cache or claim numeric bounds for those OS
+behaviors. Returned addresses are alternatives for only the configured
+endpoint and may be tried only before dispatch and within connect and total
+deadlines. Server-supplied alternate endpoints are never used.
+
+If a caller times out or cancels while native resolution is running, KMIPKit
+returns `NotSent` without waiting for that call; the call and OS DNS traffic
+may continue and retain a governor permit until the call exits. An unstarted
+blocking job is aborted when possible. Any late result is discarded and
+cannot start a TCP/TLS candidate connection or dispatch KMIP data. Client
+shutdown must not wait indefinitely for an already-started native resolver
+call. See [ADR-0016](../../../docs/adr/0016-native-system-name-resolution.md).
 
 The total deadline is created before queue submission. The queue holds at
 most one pending exchange. The worker checks the deadline and cancellation
-token immediately before every new connection. Exchange control then
-atomically commits immediately before handing the request to the HTTP/TLS
-writer. If cancellation wins before that commit, the caller receives
-`NotSent` and the worker cannot write that request. If dispatch wins, later
-failures are conservatively `PossiblySent` even if the writer accepts no
-request bytes. Hyper may serialize headers and body together, so the
+token before resolver admission, after a resolver result, before every
+candidate TCP/TLS connection, and immediately before request dispatch. The
+resolver uses `ToSocketAddrs` inside Tokio `spawn_blocking` after acquiring a
+shared permit for the loaded library instance. A fail-fast admission failure
+is `NotSent`. The permit remains held until the native call exits. A caller
+timeout or cancellation returns without waiting for a started native call;
+its late address list is discarded and cannot open a candidate connection or
+dispatch KMIP data. OS DNS traffic already in progress may continue. Worker
+shutdown does not wait indefinitely for a started native lookup. See
+[ADR-0016](../../../docs/adr/0016-native-system-name-resolution.md) for
+platform-owned retries, caching, routing, and the 16-address limit.
+
+Exchange control atomically commits immediately before handing the request to
+the HTTP/TLS writer. If cancellation wins before that commit, the caller
+receives `NotSent` and the worker cannot write that request. If dispatch wins,
+later failures are conservatively `PossiblySent` even if the writer accepts
+no request bytes. Hyper may serialize headers and body together, so the
 implementation does not infer a body boundary from bytes observed below
 Hyper.
 
@@ -89,5 +107,7 @@ closes its connection after one frame. The public API remains synchronous.
 The bounded command/result channel admits one active exchange and at most one
 waiting exchange. Client shutdown signals the worker; the worker cancels
 async I/O, invalidates/closes the connection, zeroizes KMIPKit-owned
-initialized buffers, releases TLS/key state, and exits. Shutdown does not
-wait on a blocking OS DNS resolver call.
+initialized buffers, releases TLS/key state, and exits without waiting
+indefinitely for an already-started native resolver call. Such a call may
+continue in the blocking pool, retaining its permit, and its result is
+discarded.
