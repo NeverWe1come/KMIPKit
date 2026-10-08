@@ -46,3 +46,4 @@ Thumbs.db
 
 # Test PKI is generated ephemerally.
 test-pki/
+/.local/cosmian-kms/
