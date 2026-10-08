@@ -6,12 +6,13 @@ use std::fmt;
 
 use kmipkit_protocol::extension::ExtensionIdentity;
 use kmipkit_protocol::{
-    AsynchronousOperationError, CancelRequest, CancelResponse, CancellationResult, CreateRequest,
-    CreateResponse, DiscoverVersionsRequest, DiscoverVersionsResponse, KmipOperationResult,
-    MessageExtensionView, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
-    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
-    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus,
+    AsynchronousOperationError, CancelRequest, CancelResponse, CancellationResult,
+    CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
+    DiscoverVersionsRequest, DiscoverVersionsResponse, KmipOperationResult, MessageExtensionView,
+    PollRequest, PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory,
+    ProtocolError, ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest,
+    QueryAsyncRequestsResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus,
 };
 #[cfg(test)]
 use kmipkit_transport::Transport;
@@ -62,6 +63,7 @@ const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const CREATE_OPERATION: u32 = 0x0000_0001;
+const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CANCEL_OPERATION: u32 = 0x0000_0019;
 const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
@@ -85,6 +87,8 @@ pub enum ClientRequest {
     DiscoverVersions(DiscoverVersionsRequest),
     /// An explicit client-to-server Create request.
     Create(CreateRequest),
+    /// An explicit client-to-server Create Key Pair request.
+    CreateKeyPair(CreateKeyPairRequest),
 }
 
 impl ClientRequest {
@@ -98,6 +102,7 @@ impl ClientRequest {
         match self {
             Self::DiscoverVersions(_) => DISCOVER_VERSIONS_OPERATION,
             Self::Create(_) => CREATE_OPERATION,
+            Self::CreateKeyPair(_) => CREATE_KEY_PAIR_OPERATION,
         }
     }
 
@@ -105,6 +110,7 @@ impl ClientRequest {
         match self {
             Self::DiscoverVersions(request) => request.to_ttlv_payload(),
             Self::Create(request) => request.into_ttlv_payload(),
+            Self::CreateKeyPair(request) => request.into_ttlv_payload(),
         }
     }
 }
@@ -114,6 +120,7 @@ impl fmt::Debug for ClientRequest {
         match self {
             Self::DiscoverVersions(_) => formatter.write_str("DiscoverVersions"),
             Self::Create(_) => formatter.write_str("Create([REDACTED])"),
+            Self::CreateKeyPair(_) => formatter.write_str("CreateKeyPair([REDACTED])"),
         }
     }
 }
@@ -408,6 +415,8 @@ pub enum ClientOperation {
     DiscoverVersions,
     /// Create.
     Create,
+    /// Create Key Pair.
+    CreateKeyPair,
     /// Poll one previously Pending operation.
     Poll,
     /// Cancel one previously Pending operation.
@@ -536,6 +545,8 @@ pub enum ClientBatchOutcome {
     Completed(DiscoverVersionsResponse),
     /// The server returned a non-Pending Create result.
     CreateCompleted(CreateResponse),
+    /// The server returned a non-Pending Create Key Pair result.
+    CreateKeyPairCompleted(CreateKeyPairResponse),
     /// The server returned Pending with its required capability-like value.
     Pending(PendingOutcome),
 }
@@ -545,7 +556,7 @@ impl ClientBatchOutcome {
     #[must_use]
     pub fn asynchronous_correlation_value(&self) -> Option<&[u8]> {
         match self {
-            Self::Completed(_) | Self::CreateCompleted(_) => None,
+            Self::Completed(_) | Self::CreateCompleted(_) | Self::CreateKeyPairCompleted(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
     }
@@ -556,6 +567,7 @@ impl ClientBatchOutcome {
         match self {
             Self::Completed(response) => response.result(),
             Self::CreateCompleted(response) => response.result(),
+            Self::CreateKeyPairCompleted(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
     }
@@ -566,6 +578,7 @@ impl ClientBatchOutcome {
         match self {
             Self::Completed(_) => ClientOperation::DiscoverVersions,
             Self::CreateCompleted(_) => ClientOperation::Create,
+            Self::CreateKeyPairCompleted(_) => ClientOperation::CreateKeyPair,
             Self::Pending(pending) => pending.operation(),
         }
     }
@@ -575,7 +588,7 @@ impl ClientBatchOutcome {
     pub const fn discover_versions_response(&self) -> Option<&DiscoverVersionsResponse> {
         match self {
             Self::Completed(response) => Some(response),
-            Self::CreateCompleted(_) | Self::Pending(_) => None,
+            Self::CreateCompleted(_) | Self::CreateKeyPairCompleted(_) | Self::Pending(_) => None,
         }
     }
 
@@ -584,7 +597,16 @@ impl ClientBatchOutcome {
     pub const fn create_response(&self) -> Option<&CreateResponse> {
         match self {
             Self::CreateCompleted(response) => Some(response),
-            Self::Completed(_) | Self::Pending(_) => None,
+            Self::Completed(_) | Self::CreateKeyPairCompleted(_) | Self::Pending(_) => None,
+        }
+    }
+
+    /// Returns the typed Create Key Pair response, when this is one.
+    #[must_use]
+    pub const fn create_key_pair_response(&self) -> Option<&CreateKeyPairResponse> {
+        match self {
+            Self::CreateKeyPairCompleted(response) => Some(response),
+            Self::Completed(_) | Self::CreateCompleted(_) | Self::Pending(_) => None,
         }
     }
 }
@@ -599,6 +621,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 .debug_tuple("CreateCompleted")
                 .field(response)
                 .finish(),
+            Self::CreateKeyPairCompleted(response) => formatter
+                .debug_tuple("CreateKeyPairCompleted")
+                .field(response)
+                .finish(),
             Self::Pending(pending) => formatter.debug_tuple("Pending").field(pending).finish(),
         }
     }
@@ -610,6 +636,9 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Completed(response) => write!(formatter, "Completed({})", response.result()),
             Self::CreateCompleted(response) => {
                 write!(formatter, "CreateCompleted({})", response.result())
+            }
+            Self::CreateKeyPairCompleted(response) => {
+                write!(formatter, "CreateKeyPairCompleted({})", response.result())
             }
             Self::Pending(pending) => write!(formatter, "Pending({})", pending.result()),
         }
@@ -939,6 +968,52 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let mut response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Create(request))),
+            limits,
+            request_options,
+        )?;
+        response.items.pop().ok_or_else(|| {
+            protocol_failure_at(
+                protocol_error(ProtocolErrorKind::MalformedMessage),
+                RequestDeliveryState::ResponseStarted,
+            )
+        })
+    }
+
+    /// Executes one typed Create Key Pair request through the shared batch writer.
+    ///
+    /// Use [`Self::execute`] with a one-item batch and an explicit
+    /// Asynchronous Indicator when the caller wants to accept Operation
+    /// Pending. This convenience method leaves batch options at their defaults.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_key_pair(
+        &mut self,
+        request: CreateKeyPairRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.create_key_pair_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Create Key Pair request with transport timeout overrides.
+    ///
+    /// The request uses the same writer, response bounds, and one-exchange
+    /// lifecycle as [`Self::execute_with_options`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_key_pair_with_options(
+        &mut self,
+        request: CreateKeyPairRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let mut response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::CreateKeyPair(request))),
             limits,
             request_options,
         )?;
@@ -1974,6 +2049,19 @@ fn response_outcome(
                 Ok(ClientBatchOutcome::CreateCompleted(response))
             }
         }
+        CREATE_KEY_PAIR_OPERATION => {
+            let response = CreateKeyPairResponse::try_from_response_item(item)
+                .map_err(invalid_typed_response)?;
+            if response.result().status().raw() == RESULT_STATUS_PENDING {
+                Ok(ClientBatchOutcome::Pending(pending_outcome(
+                    ClientOperation::CreateKeyPair,
+                    response.result().clone(),
+                    item,
+                )?))
+            } else {
+                Ok(ClientBatchOutcome::CreateKeyPairCompleted(response))
+            }
+        }
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }
@@ -2052,7 +2140,9 @@ fn validate_async_response(
     let extensions = preserve_response_extensions(item, registry, limits)?;
 
     let (result, cancellation_result) = match kind {
-        ClientOperation::DiscoverVersions | ClientOperation::Create => {
+        ClientOperation::DiscoverVersions
+        | ClientOperation::Create
+        | ClientOperation::CreateKeyPair => {
             return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
         }
         ClientOperation::Poll => {
