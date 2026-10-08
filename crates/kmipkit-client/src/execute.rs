@@ -679,6 +679,30 @@ enum ClientTransport {
 }
 
 impl ClientTransport {
+    fn from_configuration(configuration: TransportConfig) -> Result<Self, ClientError> {
+        if configuration.target_uri().is_some() {
+            HttpsTransport::new(configuration)
+                .map(Self::Https)
+                .map_err(|error| {
+                    ClientError::validation(
+                        ClientCauseCategory::InvalidInput,
+                        RequestDeliveryState::NotSent,
+                        error,
+                    )
+                })
+        } else {
+            RawTlsTransport::new(configuration)
+                .map(Self::RawTls)
+                .map_err(|error| {
+                    ClientError::validation(
+                        ClientCauseCategory::InvalidInput,
+                        RequestDeliveryState::NotSent,
+                        error,
+                    )
+                })
+        }
+    }
+
     fn exchange(
         &mut self,
         request: &[u8],
@@ -717,27 +741,7 @@ impl Client {
         configuration: ClientConfiguration,
         transport_configuration: TransportConfig,
     ) -> Result<Self, ClientError> {
-        let transport = if transport_configuration.target_uri().is_some() {
-            HttpsTransport::new(transport_configuration)
-                .map(ClientTransport::Https)
-                .map_err(|error| {
-                    ClientError::validation(
-                        ClientCauseCategory::InvalidInput,
-                        RequestDeliveryState::NotSent,
-                        error,
-                    )
-                })?
-        } else {
-            RawTlsTransport::new(transport_configuration)
-                .map(ClientTransport::RawTls)
-                .map_err(|error| {
-                    ClientError::validation(
-                        ClientCauseCategory::InvalidInput,
-                        RequestDeliveryState::NotSent,
-                        error,
-                    )
-                })?
-        };
+        let transport = ClientTransport::from_configuration(transport_configuration)?;
         Ok(Self {
             transport,
             configuration,
