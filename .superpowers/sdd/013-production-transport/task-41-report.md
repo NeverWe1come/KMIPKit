@@ -31,3 +31,27 @@ The T040 tests passed both before and after this change. The Green commit makes
 the ALPN guarantee explicit and documents the policies already enforced by the
 low-level implementation; it does not claim a previously failing behavioral
 test was repaired.
+
+## Review follow-up — ALPN regression coverage
+
+Review observed that the live HTTPS test proves an HTTP/1.1 exchange against a
+peer that offers `h2` and `http/1.1`, but the common source TLS configuration
+starts with an empty ALPN list. That live test therefore would not detect
+removal of the HTTPS-specific ALPN clear. A module-local regression test now
+calls the actual HTTPS config builder with both protocols in its incoming
+configuration, asserts the returned config has no ALPN protocols, and asserts
+the source config retains both entries. No production behavior changed.
+
+The regression test failed at the empty-output assertion when the clear was
+temporarily removed, then passed after it was restored. Follow-up verification:
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --test https --offline -- --test-threads=1` | Passed: 78/78 |
+| `cargo clippy -p kmipkit-transport --test https --all-features --offline -- -D warnings` | Passed |
+| `cargo fmt --all --check` | Passed |
+| `git diff --check` | Passed |
+
+The package-wide all-target Clippy run is currently blocked by an unrelated
+`clippy::map_unwrap_or` warning at `tests/timeout_delivery.rs:1115` in existing
+unstaged worktree changes. It does not involve the HTTPS regression test.
