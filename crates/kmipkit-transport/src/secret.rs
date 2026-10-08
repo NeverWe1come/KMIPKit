@@ -339,8 +339,14 @@ mod tests {
             INITIAL_CAPACITY,
         );
 
-        assert!(result.is_ok(), "the split key reader must complete");
-        drop(result);
+        let Ok(owner) = result else {
+            panic!("the split key reader must complete");
+        };
+        assert!(
+            owner.as_slice() == KEY_SENTINEL.as_slice(),
+            "the read owner must preserve all input bytes"
+        );
+        drop(owner);
 
         assert_eq!(
             observer.initialized_len(),
