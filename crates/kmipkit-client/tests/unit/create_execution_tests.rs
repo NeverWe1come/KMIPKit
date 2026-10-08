@@ -64,18 +64,18 @@ fn item(raw: u32, value: Value) -> Item {
 }
 
 fn response_batch_item(
-    id: &[u8],
+    id: Option<&[u8]>,
     status: u32,
     reason: Option<u32>,
     result_message: Option<&str>,
     correlation: Option<&[u8]>,
     payload: Option<Structure>,
 ) -> Item {
-    let mut fields = vec![
-        item(OPERATION, Value::enumeration(CREATE)),
-        item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(id.to_vec())),
-        item(RESULT_STATUS, Value::enumeration(status)),
-    ];
+    let mut fields = vec![item(OPERATION, Value::enumeration(CREATE))];
+    if let Some(id) = id {
+        fields.push(item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(id.to_vec())));
+    }
+    fields.push(item(RESULT_STATUS, Value::enumeration(status)));
     if let Some(reason) = reason {
         fields.push(item(RESULT_REASON, Value::enumeration(reason)));
     }
@@ -183,7 +183,7 @@ fn create_batch_is_one_exchange_and_associates_reordered_results_by_exact_ids() 
     let second_id = b"create-second";
     let response = response_bytes([
         response_batch_item(
-            second_id,
+            Some(second_id),
             SUCCESS,
             None,
             None,
@@ -191,7 +191,7 @@ fn create_batch_is_one_exchange_and_associates_reordered_results_by_exact_ids() 
             Some(success_payload("object-second")),
         ),
         response_batch_item(
-            first_id,
+            Some(first_id),
             SUCCESS,
             None,
             None,
@@ -240,9 +240,41 @@ fn create_batch_is_one_exchange_and_associates_reordered_results_by_exact_ids() 
 }
 
 #[test]
+fn create_convenience_method_uses_one_exchange_and_returns_typed_result() {
+    let response = response_bytes([response_batch_item(
+        None,
+        SUCCESS,
+        None,
+        None,
+        None,
+        Some(success_payload("object-convenience")),
+    )]);
+    let (mut client, fake) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![4, 5],
+    });
+
+    let response = client
+        .create(empty_request(), &CodecLimits::defaults())
+        .expect("Client::create dispatches through the shared writer");
+
+    let ClientBatchOutcome::CreateCompleted(typed) = response.outcome() else {
+        panic!("the convenience method returns the typed Create outcome");
+    };
+    assert_eq!(typed.result().status().raw(), SUCCESS);
+    assert_eq!(
+        typed.unique_identifier(),
+        Some(&kmipkit_protocol::UniqueIdentifier::TextString(
+            "object-convenience".to_owned()
+        ))
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn create_failure_preserves_result_and_does_not_retry() {
     let response = response_bytes([response_batch_item(
-        b"create-failure",
+        Some(b"create-failure"),
         OPERATION_FAILED,
         Some(RESPONSE_TOO_LARGE),
         Some(RESPONSE_SENTINEL),
@@ -280,7 +312,7 @@ fn create_failure_preserves_result_and_does_not_retry() {
 #[test]
 fn create_pending_retains_operation_result_and_exact_correlation_without_follow_up() {
     let response = response_bytes([response_batch_item(
-        b"create-pending",
+        Some(b"create-pending"),
         OPERATION_PENDING,
         None,
         None,
@@ -315,7 +347,7 @@ fn create_request_owner_is_zeroized_after_success_and_post_write_error() {
         .with_unique_batch_item_id(b"create-secret".to_vec());
     assert!(!format!("{success_item:?}").contains("KMIP_CREATE_SECRET_SENTINEL"));
     let success_response = response_bytes([response_batch_item(
-        b"create-secret",
+        Some(b"create-secret"),
         SUCCESS,
         None,
         None,
@@ -381,7 +413,7 @@ fn malformed_create_response_redacts_raw_payload_sentinel_after_one_exchange() {
         test_item(UNIQUE_IDENTIFIER, Value::text_string("object-1".to_owned())),
     ]);
     let response = response_bytes([response_batch_item(
-        b"create-malformed",
+        Some(b"create-malformed"),
         SUCCESS,
         None,
         None,
@@ -471,7 +503,7 @@ fn registered_extension(
 #[test]
 fn create_keeps_repeated_registered_message_extensions_in_caller_order() {
     let response = response_bytes([response_batch_item(
-        b"create-extensions",
+        Some(b"create-extensions"),
         SUCCESS,
         None,
         None,
