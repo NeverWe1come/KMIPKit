@@ -24,6 +24,10 @@ class ImmutableSourceGateTests(unittest.TestCase):
         source = self.root / "specification/oasis/kmip-2.1/upstream/source.html"
         source.parent.mkdir(parents=True)
         source.write_bytes(b"<html>pinned</html>\n")
+        oasis_docs = self.root / "specification/oasis/kmip-2.1"
+        oasis_docs.mkdir(parents=True, exist_ok=True)
+        (oasis_docs / "README.md").write_text("Project inventory.\n", encoding="utf-8")
+        (oasis_docs / "SOURCES.md").write_text("Pinned source inventory.\n", encoding="utf-8")
         self._git("add", "specification/oasis")
         self._git("commit", "--quiet", "-m", "base")
         self.base_sha = self._git("rev-parse", "HEAD").decode().strip()
@@ -43,6 +47,16 @@ class ImmutableSourceGateTests(unittest.TestCase):
         return result.stdout
 
     def test_accepts_unchanged_oasis_tree_for_exact_base_commit(self) -> None:
+        check_immutable_sources(self.root, self.base_sha)
+
+    def test_accepts_project_inventory_edits_and_new_fixture(self) -> None:
+        oasis_docs = self.root / "specification/oasis/kmip-2.1"
+        (oasis_docs / "README.md").write_text("Updated project inventory.\n", encoding="utf-8")
+        (oasis_docs / "SOURCES.md").write_text("Updated source inventory.\n", encoding="utf-8")
+        fixture = oasis_docs / "fixtures/TC-CREATE-SD-1-21.xml"
+        fixture.parent.mkdir()
+        fixture.write_bytes(b"<TestCase/>\n")
+
         check_immutable_sources(self.root, self.base_sha)
 
     def test_change_detection_uses_quiet_diffs_and_streamed_untracked_paths(self) -> None:
