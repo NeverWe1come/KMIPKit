@@ -440,7 +440,7 @@ fn pem_and_der_credential_file_inputs_build_valid_transport_configs() {
         .next()
         .expect("client identity should have a leaf certificate");
 
-    let pem_certificate = TemporaryCredentialFile::write(&pem("CERTIFICATE", &client_certificate));
+    let pem_certificate = TemporaryCredentialFile::write(&pem("CERTIFICATE", client_certificate));
     let pem_key = TemporaryCredentialFile::write(&pem("PRIVATE KEY", client.private_key_der()));
     let pem_authority =
         TemporaryCredentialFile::write(&pem("CERTIFICATE", pki.authority_certificate_der()));
@@ -458,7 +458,7 @@ fn pem_and_der_credential_file_inputs_build_valid_transport_configs() {
         .expect("PEM credential files should build a config");
     assert_eq!(pem_config.target_uri(), None);
 
-    let der_certificate = TemporaryCredentialFile::write(&client_certificate);
+    let der_certificate = TemporaryCredentialFile::write(client_certificate);
     let der_key = TemporaryCredentialFile::write(client.private_key_der());
     let der_authority = TemporaryCredentialFile::write(pki.authority_certificate_der());
     let der_config = TransportConfig::builder(Endpoint::raw_tls("localhost", 5696))

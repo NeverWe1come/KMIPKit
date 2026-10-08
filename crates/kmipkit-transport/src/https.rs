@@ -347,6 +347,7 @@ pub(crate) fn new_for_test_with_resolver(
 }
 
 #[cfg(test)]
+#[allow(dead_code)] // Source-including integration targets do not include the library test consumer.
 pub(crate) fn new_for_test_with_worker_spawner(
     configuration: TransportConfig,
     resolver: Resolver,

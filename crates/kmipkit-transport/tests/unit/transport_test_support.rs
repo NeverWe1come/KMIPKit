@@ -124,25 +124,6 @@ pub(crate) fn spawn_http_peer_with_response(
     })
 }
 
-pub(crate) fn spawn_http_peer_and_close(
-    listener: TcpListener,
-    config: Arc<ServerConfig>,
-    response: &'static [u8],
-) -> JoinHandle<io::Result<Vec<u8>>> {
-    thread::spawn(move || {
-        let (socket, _) = listener.accept()?;
-        socket.set_read_timeout(Some(Duration::from_secs(5)))?;
-        socket.set_write_timeout(Some(Duration::from_secs(5)))?;
-        let connection = ServerConnection::new(config)
-            .map_err(|_| io::Error::other("the test TLS server initializes"))?;
-        let mut tls = StreamOwned::new(connection, socket);
-        let request = read_http_request(&mut tls)?;
-        tls.write_all(response)?;
-        tls.flush()?;
-        Ok(request)
-    })
-}
-
 fn read_http_request(tls: &mut StreamOwned<ServerConnection, TcpStream>) -> io::Result<Vec<u8>> {
     let mut request = Vec::new();
     let header_end = loop {

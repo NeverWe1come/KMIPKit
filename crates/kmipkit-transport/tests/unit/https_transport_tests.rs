@@ -15,7 +15,7 @@ use crate::resolver::Resolver;
 use crate::secret::SecretBufferObserver;
 use crate::transport_test_support::{
     client_config, fixed_resolver, loopback_listener, server_config, spawn_http_peer,
-    spawn_http_peer_and_close, spawn_http_peer_with_response,
+    spawn_http_peer_with_response,
 };
 
 #[test]
@@ -176,7 +176,7 @@ fn https_truncated_body_is_reported_after_response_started() {
     const TRUNCATED: &[u8] = b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 16\r\n\r\npartial";
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let (listener, address) = loopback_listener();
-    let peer = spawn_http_peer_and_close(listener, server_config(&pki), TRUNCATED);
+    let peer = spawn_http_peer_with_response(listener, server_config(&pki), 1, TRUNCATED);
     let config = client_config(
         &pki,
         Endpoint::https(format!(
@@ -193,11 +193,12 @@ fn https_truncated_body_is_reported_after_response_started() {
         error.delivery_state(),
         crate::RequestDeliveryState::ResponseStarted
     );
-    let request = peer
+    let requests = peer
         .join()
         .expect("the local HTTP peer thread does not panic")
         .expect("the HTTP peer captures the request before truncating the body");
-    assert!(request.ends_with(fixtures::REQUEST_SENTINEL));
+    assert_eq!(requests.len(), 1);
+    assert!(requests[0].ends_with(fixtures::REQUEST_SENTINEL));
 }
 
 #[test]
