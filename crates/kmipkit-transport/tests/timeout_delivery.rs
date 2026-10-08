@@ -1120,6 +1120,70 @@ fn https_total_deadline_after_partial_body_invalidates_and_explicitly_reconnects
     assert_eq!(http_request_body(&peer.requests[1]), b"second-call");
 }
 
+#[test]
+fn https_body_read_timeout_preserves_timeout_cause_and_redacts_payloads() {
+    const REQUEST_SENTINEL: &[u8] = b"REQUEST_SECRET_SENTINEL";
+    const RESPONSE_SENTINEL: &[u8] = b"PARTIAL_RESPONSE_SECRET";
+
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the stalled-body peer binds loopback");
+    let address = listener.local_addr();
+    let configuration = https_client_configuration(&pki, address.port());
+    let resolver = https_resolver(vec![address]);
+    let (peer, partial_sent, release_peer) = spawn_stalled_partial_body_https_peer(
+        listener.into_inner(),
+        https_server_config(&pki, &pki),
+        RESPONSE_SENTINEL,
+    );
+    let adapter = https::new_for_test_with_resolver(configuration, None, resolver);
+    let options = RequestOptions::default()
+        .with_read(TimeoutLimit::Bounded(Duration::from_millis(500)))
+        .with_total(TimeoutLimit::Bounded(Duration::from_secs(5)));
+    let (result_tx, result_rx) = mpsc::sync_channel(1);
+
+    thread::spawn(move || {
+        let mut adapter = adapter;
+        let result = adapter.exchange_with_options(REQUEST_SENTINEL, 256, &options);
+        let _ = result_tx.send((adapter, result));
+    });
+
+    partial_sent
+        .recv_timeout(Duration::from_secs(3))
+        .expect("the peer sends response headers and part of the body");
+    let (adapter, result) = result_rx
+        .recv_timeout(Duration::from_secs(3))
+        .expect("the read inactivity deadline ends the stalled body read");
+    let error = result.expect_err("the response body remains incomplete");
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert_eq!(
+        error.cause_category(),
+        TransportCauseCategory::Timeout,
+        "a Hyper body-read timeout keeps its timeout cause"
+    );
+    let display = error.to_string();
+    let debug = format!("{error:?}");
+    for sentinel in [REQUEST_SENTINEL, RESPONSE_SENTINEL] {
+        let sentinel = std::str::from_utf8(sentinel).expect("the test sentinels are UTF-8");
+        assert!(!display.contains(sentinel), "Display redacts {sentinel}");
+        assert!(!debug.contains(sentinel), "Debug redacts {sentinel}");
+    }
+    assert!(
+        !https::has_cached_connection_for_test(&adapter),
+        "a connection with a timed-out partial body is invalidated"
+    );
+
+    release_peer
+        .send(())
+        .expect("the stalled peer accepts its bounded cleanup release");
+    let peer = peer.join().expect("the partial-body peer exits");
+    assert!(peer.handshake_completed);
+    assert_eq!(peer.requests.len(), 1);
+    assert_eq!(http_request_body(&peer.requests[0]), REQUEST_SENTINEL);
+}
+
 const HTTPS_PEER_TIMEOUT: Duration = Duration::from_secs(6);
 const HTTPS_SERVER_NAME: &str = "server.kmipkit.test";
 
@@ -1523,6 +1587,49 @@ fn spawn_partial_then_success_https_peer(
         observation.requests.push(request);
         let _ = tls.write_all(&complete_http_response(b"done"));
         let _ = tls.flush();
+        observation
+    });
+    (peer, partial_sent_rx, release_peer_tx)
+}
+
+fn spawn_stalled_partial_body_https_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    body_prefix: &'static [u8],
+) -> (
+    JoinHandle<HttpsPeerObservation>,
+    mpsc::Receiver<()>,
+    mpsc::SyncSender<()>,
+) {
+    let (partial_sent_tx, partial_sent_rx) = mpsc::sync_channel(1);
+    let (release_peer_tx, release_peer_rx) = mpsc::sync_channel(1);
+    let peer = thread::spawn(move || {
+        let Ok((stream, _)) = accept_https_connection(&listener) else {
+            return HttpsPeerObservation::default();
+        };
+        let Ok(mut tls) = finish_https_server_handshake(stream, configuration) else {
+            return HttpsPeerObservation::default();
+        };
+        let mut observation = HttpsPeerObservation {
+            handshake_completed: true,
+            requests: Vec::new(),
+        };
+        let Ok(request) = read_https_request(&mut tls) else {
+            return observation;
+        };
+        observation.requests.push(request);
+
+        let declared_length = body_prefix.len() + 8;
+        let mut partial_response = format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {declared_length}\r\n\r\n"
+        )
+        .into_bytes();
+        partial_response.extend_from_slice(body_prefix);
+        if tls.write_all(&partial_response).is_err() || tls.flush().is_err() {
+            return observation;
+        }
+        let _ = partial_sent_tx.send(());
+        let _ = release_peer_rx.recv_timeout(HTTPS_PEER_TIMEOUT);
         observation
     });
     (peer, partial_sent_rx, release_peer_tx)
