@@ -110,18 +110,8 @@ fn validate_https_endpoint(value: &str) -> Result<(), TransportConfigError> {
     Ok(())
 }
 
-/// Encoding explicitly selected for caller-provided certificates or keys.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum CredentialEncoding {
-    /// PEM armor containing one or more objects of the expected kind.
-    Pem,
-    /// DER bytes supplied directly by the caller.
-    Der,
-}
-
 /// Caller-provided certificate chain with an explicit encoding.
 pub struct CertificateInput {
-    encoding: CredentialEncoding,
     bytes: CertificateBytes,
 }
 
@@ -135,7 +125,6 @@ impl CertificateInput {
     #[must_use]
     pub fn from_pem(bytes: impl Into<Vec<u8>>) -> Self {
         Self {
-            encoding: CredentialEncoding::Pem,
             bytes: CertificateBytes::Pem(Zeroizing::new(bytes.into())),
         }
     }
@@ -144,7 +133,6 @@ impl CertificateInput {
     #[must_use]
     pub fn from_der(certificates: Vec<Vec<u8>>) -> Self {
         Self {
-            encoding: CredentialEncoding::Der,
             bytes: CertificateBytes::Der(certificates.into_iter().map(Zeroizing::new).collect()),
         }
     }
@@ -174,16 +162,26 @@ impl fmt::Debug for CertificateInput {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("CertificateInput")
-            .field("encoding", &self.encoding)
+            .field(
+                "encoding",
+                &match &self.bytes {
+                    CertificateBytes::Pem(_) => "PEM",
+                    CertificateBytes::Der(_) => "DER",
+                },
+            )
             .field("bytes", &"[REDACTED]")
             .finish()
     }
 }
 
+enum PrivateKeyBytes {
+    Pem(Zeroizing<Vec<u8>>),
+    Der(Zeroizing<Vec<u8>>),
+}
+
 /// Caller-provided private key with an explicit encoding.
 pub struct PrivateKeyInput {
-    encoding: CredentialEncoding,
-    bytes: Zeroizing<Vec<u8>>,
+    bytes: PrivateKeyBytes,
 }
 
 impl PrivateKeyInput {
@@ -191,8 +189,7 @@ impl PrivateKeyInput {
     #[must_use]
     pub fn from_pem(bytes: impl Into<Vec<u8>>) -> Self {
         Self {
-            encoding: CredentialEncoding::Pem,
-            bytes: Zeroizing::new(bytes.into()),
+            bytes: PrivateKeyBytes::Pem(Zeroizing::new(bytes.into())),
         }
     }
 
@@ -200,15 +197,14 @@ impl PrivateKeyInput {
     #[must_use]
     pub fn from_der(bytes: Vec<u8>) -> Self {
         Self {
-            encoding: CredentialEncoding::Der,
-            bytes: Zeroizing::new(bytes),
+            bytes: PrivateKeyBytes::Der(Zeroizing::new(bytes)),
         }
     }
 
     fn parse(self) -> Result<PrivateKeyDer<'static>, TransportConfigError> {
-        let key = match self.encoding {
-            CredentialEncoding::Pem => {
-                let mut keys = PrivateKeyDer::pem_slice_iter(self.bytes.as_slice())
+        let key = match self.bytes {
+            PrivateKeyBytes::Pem(bytes) => {
+                let mut keys = PrivateKeyDer::pem_slice_iter(bytes.as_slice())
                     .collect::<Result<Vec<_>, _>>()
                     .map_err(|_| TransportConfigError::InvalidCredential)?;
                 if keys.len() != 1 {
@@ -216,7 +212,7 @@ impl PrivateKeyInput {
                 }
                 keys.pop().ok_or(TransportConfigError::InvalidCredential)?
             }
-            CredentialEncoding::Der => PrivateKeyDer::try_from(self.bytes.to_vec())
+            PrivateKeyBytes::Der(bytes) => PrivateKeyDer::try_from(bytes.to_vec())
                 .map_err(|_| TransportConfigError::InvalidCredential)?,
         };
         Ok(key)
@@ -227,7 +223,13 @@ impl fmt::Debug for PrivateKeyInput {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("PrivateKeyInput")
-            .field("encoding", &self.encoding)
+            .field(
+                "encoding",
+                &match &self.bytes {
+                    PrivateKeyBytes::Pem(_) => "PEM",
+                    PrivateKeyBytes::Der(_) => "DER",
+                },
+            )
             .field("bytes", &"[REDACTED]")
             .finish()
     }
@@ -268,6 +270,7 @@ impl fmt::Debug for ClientIdentity {
 }
 
 /// Explicit trust roots selected by the caller.
+#[non_exhaustive]
 pub enum TrustSource {
     /// One or more caller-supplied root certificates.
     CertificateAuthorities(Vec<CertificateInput>),
@@ -332,6 +335,7 @@ impl fmt::Debug for TrustSource {
 }
 
 /// A timeout is either bounded, including zero for an immediate deadline, or unbounded.
+#[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TimeoutLimit {
     /// Use a duration; zero means the deadline is immediate.
@@ -596,14 +600,10 @@ impl TransportConfigBuilder {
             (false, Some(_)) => return Err(TransportConfigError::InvalidTarget),
             (false, None) => None,
         };
-        let identity = self
-            .identity
-            .ok_or(TransportConfigError::MissingIdentity)?
-            .parse()?;
-        let trust = self
-            .trust
-            .ok_or(TransportConfigError::MissingTrust)?
-            .load()?;
+        let identity_input = self.identity.ok_or(TransportConfigError::MissingIdentity)?;
+        let trust_source = self.trust.ok_or(TransportConfigError::MissingTrust)?;
+        let identity = identity_input.parse()?;
+        let trust = trust_source.load()?;
         Ok(TransportConfig {
             endpoint: self.endpoint,
             target_uri,

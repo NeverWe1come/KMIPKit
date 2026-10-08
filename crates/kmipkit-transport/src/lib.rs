@@ -32,9 +32,8 @@ mod resolver;
 mod worker;
 
 pub use config::{
-    CertificateInput, ClientIdentity, CredentialEncoding, Endpoint, PrivateKeyInput,
-    RequestOptions, TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder,
-    TransportConfigError, TrustSource,
+    CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions, TimeoutLimit,
+    TimeoutPolicy, TransportConfig, TransportConfigBuilder, TransportConfigError, TrustSource,
 };
 pub use error::{RequestDeliveryState, TransportCauseCategory, TransportError};
 pub use response::TransportResponse;
