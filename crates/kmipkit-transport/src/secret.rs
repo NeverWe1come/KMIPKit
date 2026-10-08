@@ -28,20 +28,23 @@ impl SecretBuffer {
     }
 
     fn read_from_owned<R: Read>(mut reader: R, mut owner: Self) -> io::Result<Self> {
-        let mut scratch = SecretReadScratch::new();
         loop {
-            let bytes_read = reader
-                .read(&mut scratch.0)
-                .map_err(|_| credential_read_error())?;
+            let bytes_read = {
+                let mut scratch = SecretReadScratch::new();
+                let bytes_read = reader
+                    .read(&mut scratch.0)
+                    .map_err(|_| credential_read_error())?;
+                if bytes_read > scratch.0.len() {
+                    return Err(credential_read_error());
+                }
+                if bytes_read != 0 {
+                    owner.append(&scratch.0[..bytes_read])?;
+                }
+                bytes_read
+            };
             if bytes_read == 0 {
                 break;
             }
-            if bytes_read > scratch.0.len() {
-                return Err(credential_read_error());
-            }
-
-            owner.append(&scratch.0[..bytes_read])?;
-            scratch.0.zeroize();
         }
         Ok(owner)
     }
