@@ -43,3 +43,26 @@ or partial-response bytes.
 
 The targeted test first failed with the expected `Http` category before the
 source change and passed with the corrected `Timeout` category afterward.
+
+## Refactor Evidence
+
+The body-frame error conversion now lives in `response_body_error`, making the
+HTTP response-body phase explicit instead of wrapping its Hyper error through
+the generic I/O mapper at the call site. The shared Hyper classifier detects
+nested `TimedOut` and `UnexpectedEof` I/O causes, while parse and incomplete
+message errors remain HTTP failures. `TransportError` still removes the
+source before formatting.
+
+The first complete HTTPS run after Green caught a regression in the existing
+truncated-body case: a nested `UnexpectedEof` was classified as `Io`. The
+classifier was refined to keep truncated HTTP bodies in category `Http` while
+retaining `Timeout` for read-inactivity expiry.
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --test https https_rejects_http_parser_errors_and_truncated_response_bodies --offline -- --exact --nocapture` | Passed: 1/1 after preserving `UnexpectedEof` as HTTP. |
+| `cargo test -p kmipkit-transport --test https --offline -- --test-threads=1` | Passed: 78/78. |
+| `cargo test -p kmipkit-transport --test timeout_delivery --offline -- --test-threads=1` | Passed: 80/80. |
+| `cargo clippy -p kmipkit-transport --all-targets --all-features --offline -- -D warnings` | Passed. |
+| `cargo fmt --all --check` | Passed. |
+| `git diff --check` | Passed. |

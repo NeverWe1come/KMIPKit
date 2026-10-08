@@ -888,8 +888,7 @@ async fn read_response_body(
             }
             return Ok(TransportResponse::new(response.into_bytes()));
         };
-        let frame =
-            frame.map_err(|error| io_error(io::Error::other(error), control.delivery_state()))?;
+        let frame = frame.map_err(|error| response_body_error(error, control.delivery_state()))?;
         if let Ok(data) = frame.into_data() {
             response
                 .append(&data, max_response_bytes)
@@ -1336,22 +1335,30 @@ fn io_error(error: io::Error, state: RequestDeliveryState) -> TransportError {
     safe_error(state, cause, error)
 }
 
+fn response_body_error(error: hyper::Error, state: RequestDeliveryState) -> TransportError {
+    let cause = hyper_error_cause(&error);
+    safe_error(state, cause, io::Error::other(error))
+}
+
 fn hyper_error_cause(error: &hyper::Error) -> TransportCauseCategory {
-    if error.is_parse() || error.is_incomplete_message() {
+    if error.is_parse()
+        || error.is_incomplete_message()
+        || hyper_error_has_io_kind(error, io::ErrorKind::UnexpectedEof)
+    {
         TransportCauseCategory::Http
-    } else if error.is_timeout() || hyper_error_has_io_timeout(error) {
+    } else if error.is_timeout() || hyper_error_has_io_kind(error, io::ErrorKind::TimedOut) {
         TransportCauseCategory::Timeout
     } else {
         TransportCauseCategory::Io
     }
 }
 
-fn hyper_error_has_io_timeout(error: &hyper::Error) -> bool {
+fn hyper_error_has_io_kind(error: &hyper::Error, expected: io::ErrorKind) -> bool {
     let mut source = std::error::Error::source(error);
     while let Some(current) = source {
         if current
             .downcast_ref::<io::Error>()
-            .is_some_and(|error| error.kind() == io::ErrorKind::TimedOut)
+            .is_some_and(|error| error.kind() == expected)
         {
             return true;
         }
