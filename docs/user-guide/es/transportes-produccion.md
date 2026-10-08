@@ -1,6 +1,6 @@
 # Transportes de producción con TLS y HTTPS
 
-El cliente síncrono de Rust de KMIPKit puede usar TTLV sobre TLS directo o
+El cliente síncrono de Rust de `KMIPKit` puede usar TTLV sobre TLS directo o
 TTLV sobre HTTPS/HTTP 1.1. El cliente envía únicamente la operación solicitada
 por la aplicación; al construirlo no resuelve el endpoint, no se conecta ni
 envía un Discover Versions oculto. El alcance de protocolo de 1.0 es KMIP 2.1
@@ -59,7 +59,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-Los nombres de archivo son rutas administradas por la aplicación. KMIPKit lee
+Los nombres de archivo son rutas administradas por la aplicación. `KMIPKit` lee
 cada archivo seleccionado una sola vez al construir la entrada y no conserva
 la ruta. Las claves privadas deben estar sin cifrar y usar una codificación
 PEM o DER compatible. Limita la lectura de los archivos de clave a la cuenta
@@ -152,7 +152,7 @@ Cada fallo local informa del estado de entrega más preciso disponible:
   aceptó una respuesta completa y válida.
 
 `PossiblySent` y `ResponseStarted` no demuestran que la operación no haya
-tenido efecto. KMIPKit nunca reintenta una petición automáticamente. El
+tenido efecto. `KMIPKit` nunca reintenta una petición automáticamente. El
 llamador debe decidir cómo reconciliar un resultado incierto según la semántica
 de la operación y el estado de la aplicación. Una conexión fallida o cancelada
 no se reutiliza.
@@ -171,13 +171,13 @@ Los errores de configuración y transporte solo exponen categorías seguras
 fijas, no bytes de credenciales, texto de claves privadas, mensajes de
 dependencias, cuerpos KMIP ni valores de ruta/consulta configurados. Las
 aplicaciones deberían registrar la categoría segura y el estado de entrega,
-nunca credenciales ni cuerpos de mensajes. KMIPKit pone a cero los bytes
+nunca credenciales ni cuerpos de mensajes. `KMIPKit` pone a cero los bytes
 inicializados de las asignaciones que posee, incluidas las entradas de claves
 privadas y los buffers de respuesta del transporte. Esto no borra copias del
 llamador ni copias retenidas por las bibliotecas TLS, el sistema operativo o
 runtimes externos.
 
-KMIPKit transporta y administra material criptográfico; no realiza
+`KMIPKit` transporta y administra material criptográfico; no realiza
 operaciones criptográficas locales. El éxito de una operación depende de las
 capacidades, configuración y política del servidor. El rechazo de un servidor
 no demuestra por sí solo que el cliente tenga un defecto de protocolo.
