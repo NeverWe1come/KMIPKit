@@ -229,10 +229,11 @@ fn https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning() {
     };
     let returned_while_gate_was_closed =
         observed_events.contains(&https::DriverCleanupEventForTest::ExchangeReturned);
-    if started && !returned_while_gate_was_closed {
-        if let Ok(event) = events_rx.recv_timeout(CLEANUP_GATE_OBSERVATION_WINDOW) {
-            observed_events.push(event);
-        }
+    if started
+        && !returned_while_gate_was_closed
+        && let Ok(event) = events_rx.recv_timeout(CLEANUP_GATE_OBSERVATION_WINDOW)
+    {
+        observed_events.push(event);
     }
     let returned_during_observation =
         observed_events.contains(&https::DriverCleanupEventForTest::ExchangeReturned);

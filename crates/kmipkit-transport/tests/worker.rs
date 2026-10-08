@@ -782,14 +782,14 @@ fn result_wait_reports_disconnection_with_and_without_a_deadline() {
     let (sender, receiver) = mpsc::sync_channel::<Result<TransportResponse, WorkerError>>(1);
     drop(sender);
     assert!(matches!(
-        super::receive_result(receiver, Some(Instant::now() + Duration::from_secs(1))),
+        super::receive_result(&receiver, Some(Instant::now() + Duration::from_secs(1))),
         Err(super::ReceiveFailure::Disconnected)
     ));
 
     let (sender, receiver) = mpsc::sync_channel::<Result<TransportResponse, WorkerError>>(1);
     drop(sender);
     assert!(matches!(
-        super::receive_result(receiver, None),
+        super::receive_result(&receiver, None),
         Err(super::ReceiveFailure::Disconnected)
     ));
 }

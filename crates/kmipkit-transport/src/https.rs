@@ -76,6 +76,7 @@ pub(crate) struct DriverCleanupGateForTest {
 
 #[cfg(test)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[allow(dead_code)] // The source-included HTTPS integration target records exchange return.
 pub(crate) enum DriverCleanupEventForTest {
     Started,
     Acknowledged,
@@ -386,6 +387,7 @@ async fn exchange_on_worker(
     })?;
     let driver = HyperDriverGuard {
         task: Some(tokio::spawn(connection)),
+        control: control.clone(),
         #[cfg(test)]
         abort_observer: driver_abort_observer,
         #[cfg(test)]
@@ -428,6 +430,7 @@ async fn exchange_on_worker(
 
 struct HyperDriverGuard {
     task: Option<tokio::task::JoinHandle<Result<(), hyper::Error>>>,
+    control: ExchangeControl,
     #[cfg(test)]
     abort_observer: Option<mpsc::SyncSender<()>>,
     #[cfg(test)]
@@ -444,17 +447,25 @@ impl Drop for HyperDriverGuard {
         if let Some(observer) = self.abort_observer.take() {
             let _ = observer.send(());
         }
+        let control = self.control.clone();
         #[cfg(test)]
-        if let Some(gate) = self.cleanup_gate.take() {
-            let _ = gate.events.send(DriverCleanupEventForTest::Started);
-            tokio::spawn(async move {
+        let cleanup_gate = self.cleanup_gate.take();
+        let cleanup = tokio::spawn(async move {
+            #[cfg(test)]
+            let joined = if let Some(gate) = cleanup_gate {
+                let _ = gate.events.send(DriverCleanupEventForTest::Started);
                 let _ = gate.release.await;
-                let _ = task.await;
+                let joined = task.await;
                 let _ = gate.events.send(DriverCleanupEventForTest::Acknowledged);
-            });
-            return;
-        }
-        drop(task);
+                joined
+            } else {
+                task.await
+            };
+            #[cfg(not(test))]
+            let joined = task.await;
+            let _ = joined;
+        });
+        control.register_cleanup(cleanup);
     }
 }
 

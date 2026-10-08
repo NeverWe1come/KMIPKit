@@ -20,6 +20,7 @@ use std::time::{Duration, Instant};
 use tokio::runtime::{Builder, Runtime};
 use tokio::sync::{mpsc as async_mpsc, watch};
 
+use crate::timeout::finalize_timeout;
 use crate::{RequestDeliveryState, TransportError, TransportResponse};
 
 const QUEUED: u8 = 0;
@@ -31,6 +32,8 @@ const FINALIZED_POSSIBLY_SENT: u8 = 5;
 const FINALIZED_RESPONSE_STARTED: u8 = 6;
 const COMMAND_CAPACITY: usize = 1;
 const DROP_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
+const CLEANUP_ACK_TIMEOUT: Duration = Duration::from_secs(1);
+const CLEANUP_ABORT_GRACE: Duration = Duration::from_millis(50);
 
 type BoxedCommand = Box<dyn WorkerCommand>;
 pub(crate) type WorkerTask = Box<dyn FnOnce() + Send + 'static>;
@@ -148,6 +151,7 @@ impl Error for WorkerError {
 pub(crate) struct ExchangeControl {
     state: Arc<AtomicU8>,
     canceled: watch::Sender<bool>,
+    cleanup_tasks: Arc<Mutex<Vec<tokio::task::JoinHandle<()>>>>,
 }
 
 impl ExchangeControl {
@@ -157,7 +161,51 @@ impl ExchangeControl {
         Self {
             state: Arc::new(AtomicU8::new(QUEUED)),
             canceled,
+            cleanup_tasks: Arc::new(Mutex::new(Vec::new())),
         }
+    }
+
+    /// Registers cleanup work that must finish before the exchange result is
+    /// published or its delivery state is snapshotted.
+    pub(crate) fn register_cleanup(&self, cleanup: tokio::task::JoinHandle<()>) {
+        lock_unpoisoned(&self.cleanup_tasks).push(cleanup);
+    }
+
+    /// Waits for registered cleanup tasks within one bounded acknowledgment
+    /// window. Any unfinished task is canceled before this method returns.
+    pub(crate) async fn wait_for_cleanup(&self) -> bool {
+        let mut cleanup_tasks = {
+            let mut registered = lock_unpoisoned(&self.cleanup_tasks);
+            std::mem::take(&mut *registered)
+        };
+        let deadline = tokio::time::Instant::now() + CLEANUP_ACK_TIMEOUT;
+
+        for mut cleanup in cleanup_tasks.drain(..) {
+            let remaining = deadline.saturating_duration_since(tokio::time::Instant::now());
+            if remaining.is_zero() || tokio::time::timeout(remaining, &mut cleanup).await.is_err() {
+                cleanup.abort();
+                let _ = tokio::time::timeout(CLEANUP_ABORT_GRACE, &mut cleanup).await;
+                return false;
+            }
+        }
+        true
+    }
+
+    /// Cancels an exchange only if it remains queued, proving no operation
+    /// future was created and no asynchronous cleanup can be pending.
+    fn cancel_if_queued(&self) -> Option<RequestDeliveryState> {
+        self.state
+            .compare_exchange(
+                QUEUED,
+                FINALIZED_NOT_SENT,
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            )
+            .ok()
+            .map(|_| {
+                self.canceled.send_replace(true);
+                RequestDeliveryState::NotSent
+            })
     }
 
     /// Moves a command from the queue into connection preparation.
@@ -485,9 +533,17 @@ impl ClientWorker {
         });
 
         self.enqueue(command, &control, deadline)?;
-        match receive_result(result_receiver, deadline) {
+        match receive_result(&result_receiver, deadline) {
             Ok(result) => result,
-            Err(ReceiveFailure::Deadline) => Err(WorkerError::Deadline(control.cancel())),
+            Err(ReceiveFailure::Deadline) => {
+                if let Some(state) = control.cancel_if_queued() {
+                    return Err(WorkerError::Deadline(state));
+                }
+                control.cancel();
+                result_receiver
+                    .recv()
+                    .unwrap_or_else(|_| Err(WorkerError::Stopped(control.delivery_state())))
+            }
             Err(ReceiveFailure::Disconnected) => Err(WorkerError::Stopped(control.cancel())),
         }
     }
@@ -553,6 +609,13 @@ struct ExchangeCommand {
     result: SyncSender<Result<TransportResponse, WorkerError>>,
 }
 
+enum ExchangeExit {
+    Closed,
+    Canceled,
+    Deadline,
+    Operation(Result<TransportResponse, TransportError>),
+}
+
 impl WorkerCommand for ExchangeCommand {
     fn run(self: Box<Self>, mut shutdown: watch::Receiver<bool>) -> CommandFuture {
         let ExchangeCommand {
@@ -578,46 +641,76 @@ impl WorkerCommand for ExchangeCommand {
                 return;
             }
 
-            let mut canceled = control.subscribe_cancel();
-            let operation_future = operation(control.clone());
-            tokio::pin!(operation_future);
+            let exit = {
+                let mut canceled = control.subscribe_cancel();
+                let operation_future = operation(control.clone());
+                tokio::pin!(operation_future);
 
-            tokio::select! {
-                biased;
-                changed = shutdown.changed() => {
-                    let _ = changed;
-                    let state = control.cancel();
+                tokio::select! {
+                    biased;
+                    changed = shutdown.changed() => {
+                        let _ = changed;
+                        control.cancel();
+                        ExchangeExit::Closed
+                    }
+                    changed = canceled.changed() => {
+                        let _ = changed;
+                        control.cancel();
+                        ExchangeExit::Canceled
+                    }
+                    () = wait_until(deadline) => {
+                        control.cancel();
+                        ExchangeExit::Deadline
+                    }
+                    operation_result = &mut operation_future => {
+                        if *shutdown.borrow() {
+                            control.cancel();
+                            ExchangeExit::Closed
+                        } else {
+                            ExchangeExit::Operation(operation_result)
+                        }
+                    }
+                }
+            };
+
+            match exit {
+                ExchangeExit::Closed => {
+                    let state = finalize_timeout(&control, async {
+                        let _ = control.wait_for_cleanup().await;
+                    })
+                    .await;
                     let _ = result.send(Err(WorkerError::Closed(state)));
                 }
-                changed = canceled.changed() => {
-                    let _ = changed;
-                    let state = control.delivery_state();
+                ExchangeExit::Canceled | ExchangeExit::Deadline => {
+                    let state = finalize_timeout(&control, async {
+                        let _ = control.wait_for_cleanup().await;
+                    })
+                    .await;
                     let _ = result.send(Err(WorkerError::Deadline(state)));
                 }
-                () = wait_until(deadline) => {
-                    let state = control.cancel();
-                    let _ = result.send(Err(WorkerError::Deadline(state)));
-                }
-                operation_result = &mut operation_future => {
-                    if *shutdown.borrow() {
-                        let state = control.cancel();
-                        let _ = result.send(Err(WorkerError::Closed(state)));
-                    } else {
-                        let (completed, delivery_state) = control.finish();
-                        if completed {
-                            let outcome = operation_result.map_err(|source| {
-                                WorkerError::Operation {
+                ExchangeExit::Operation(operation_result) => {
+                    let (completed, delivery_state) = control.finish();
+                    if completed {
+                        if control.wait_for_cleanup().await {
+                            let outcome =
+                                operation_result.map_err(|source| WorkerError::Operation {
                                     delivery_state: strongest_delivery(
                                         delivery_state,
                                         source.delivery_state(),
                                     ),
                                     source,
-                                }
-                            });
+                                });
                             let _ = result.send(outcome);
                         } else {
-                            let _ = result.send(Err(WorkerError::Deadline(delivery_state)));
+                            let _ =
+                                result.send(Err(WorkerError::Stopped(control.delivery_state())));
                         }
+                    } else {
+                        let state = finalize_timeout(&control, async {
+                            let _ = control.wait_for_cleanup().await;
+                        })
+                        .await;
+                        let _ = result.send(Err(WorkerError::Deadline(state)));
                     }
                 }
             }
@@ -688,10 +781,10 @@ enum ReceiveFailure {
 }
 
 fn receive_result(
-    receiver: Receiver<Result<TransportResponse, WorkerError>>,
+    receiver: &Receiver<Result<TransportResponse, WorkerError>>,
     deadline: Option<Instant>,
 ) -> Result<Result<TransportResponse, WorkerError>, ReceiveFailure> {
-    let result = match deadline {
+    match deadline {
         Some(deadline) => {
             let remaining = deadline.saturating_duration_since(Instant::now());
             match receiver.recv_timeout(remaining) {
@@ -701,9 +794,7 @@ fn receive_result(
             }
         }
         None => receiver.recv().map_err(|_| ReceiveFailure::Disconnected),
-    };
-    drop(receiver);
-    result
+    }
 }
 
 #[derive(Default)]
