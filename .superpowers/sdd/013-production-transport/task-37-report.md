@@ -171,11 +171,10 @@ expires. It preserves the requirement to reject from `Content-Length` before
 body bytes arrive.
 
 With the Green source changes temporarily stashed, the corrected baseline
-command `cargo test -p kmipkit-transport --test https --offline --
---test-threads=1` compiled and reproduced 61 passed / 5 failed. All five
-failures are product assertions: response policy, parser limits, reused
-connection/surplus handling, missing `Content-Length`, and early over-cap
-rejection. The isolated over-cap test passes under the T038 Green work in
-progress. `cargo fmt --all --check` and `git diff --check` passed. Independent
-QA re-review of commit `110c98b5f7310379eb15359198f03a3553ff0861` is pending;
-T037 remains unchecked until that review completes.
+command `cargo test -p kmipkit-transport --test https --offline -- --test-threads=1`
+compiled and reproduced 61 passed / 5 failed. All five failures are product
+assertions: response policy, parser limits, reused connection/surplus handling,
+missing `Content-Length`, and early over-cap rejection. The isolated over-cap
+test passes under the T038 Green work in progress. `cargo fmt --all --check`
+and `git diff --check` passed. Independent QA approved the corrected peer and
+channel behavior; T037 Red is checked in the task ledger.
