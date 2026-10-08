@@ -255,6 +255,7 @@ pub(crate) fn new_for_test_with_resolver(
 }
 
 #[cfg(test)]
+#[allow(dead_code)] // The source-included integration target uses this adapter seam.
 pub(crate) fn new_for_test_with_resolver_and_driver_abort_observer(
     configuration: TransportConfig,
     resolver: Resolver,
@@ -346,7 +347,11 @@ async fn exchange_on_worker(
             io::Error::other("HTTP/1 connection could not be initialized"),
         )
     })?;
-    let driver = tokio::spawn(connection);
+    let driver = HyperDriverGuard {
+        task: tokio::spawn(connection),
+        #[cfg(test)]
+        abort_observer: driver_abort_observer,
+    };
     #[cfg(test)]
     if let Some(cancel_exchange) = cancel_exchange {
         let cancellation_control = control.clone();
@@ -378,12 +383,24 @@ async fn exchange_on_worker(
         read_response_body(response.into_body(), max_response_bytes, &control).await
     }
     .await;
-    driver.abort();
-    #[cfg(test)]
-    if let Some(observer) = driver_abort_observer {
-        let _ = observer.send(());
-    }
+    drop(driver);
     result
+}
+
+struct HyperDriverGuard {
+    task: tokio::task::JoinHandle<Result<(), hyper::Error>>,
+    #[cfg(test)]
+    abort_observer: Option<mpsc::SyncSender<()>>,
+}
+
+impl Drop for HyperDriverGuard {
+    fn drop(&mut self) {
+        self.task.abort();
+        #[cfg(test)]
+        if let Some(observer) = self.abort_observer.take() {
+            let _ = observer.send(());
+        }
+    }
 }
 
 async fn connect_and_handshake(

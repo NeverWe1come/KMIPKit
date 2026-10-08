@@ -413,14 +413,14 @@ fn spawn_stalled_peer(
     configuration: Arc<ServerConfig>,
 ) -> (JoinHandle<PeerObservation>, mpsc::Receiver<()>) {
     let (request_seen, request_receiver) = mpsc::sync_channel(1);
-    let peer = thread::spawn(move || run_stalled_peer(&listener, configuration, request_seen));
+    let peer = thread::spawn(move || run_stalled_peer(&listener, configuration, &request_seen));
     (peer, request_receiver)
 }
 
 fn run_stalled_peer(
     listener: &TcpListener,
     configuration: Arc<ServerConfig>,
-    request_seen: mpsc::SyncSender<()>,
+    request_seen: &mpsc::SyncSender<()>,
 ) -> PeerObservation {
     let Ok((stream, _)) = accept_before_deadline(listener) else {
         return PeerObservation::default();
