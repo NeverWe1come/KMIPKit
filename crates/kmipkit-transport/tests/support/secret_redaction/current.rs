@@ -8,6 +8,7 @@ use kmipkit_transport::{
 };
 
 const PRIVATE_KEY_SENTINEL: &str = "KMIP_PRIVATE_KEY_INPUT_SENTINEL_7F31";
+const ENCRYPTED_KEY_SENTINEL: &str = "S01JUF9FTkNSWVBURURfS0VZX1NFTlRJTkVMXzBGNkQ=";
 const ENDPOINT_PATH_SENTINEL: &str = "KMIP_ENDPOINT_PATH_SENTINEL_8A42";
 const ENDPOINT_QUERY_SENTINEL: &str = "KMIP_ENDPOINT_QUERY_SENTINEL_9B53";
 const TARGET_QUERY_SENTINEL: &str = "KMIP_TARGET_QUERY_SENTINEL_AC64";
@@ -88,8 +89,37 @@ fn malformed_key_error_and_debug_display_diagnostics_omit_key_and_path_sentinels
 #[test]
 fn encrypted_private_key_is_rejected_without_secret_diagnostics() {
     let pki = EphemeralPki::generate().expect("ephemeral test PKI is available");
-    let encrypted = b"-----BEGIN ENCRYPTED PRIVATE KEY-----\nSENTINEL_ONLY\n-----END ENCRYPTED PRIVATE KEY-----\n";
-    assert_invalid_key(&pki, PrivateKeyInput::from_pem(encrypted.to_vec()));
+    let encrypted = format!(
+        "-----BEGIN ENCRYPTED PRIVATE KEY-----\n{ENCRYPTED_KEY_SENTINEL}\n-----END ENCRYPTED PRIVATE KEY-----\n"
+    );
+    let client = pki.client_identity();
+    let identity = ClientIdentity::new(
+        CertificateInput::from_der(vec![client.certificate_der().to_vec()]),
+        PrivateKeyInput::from_pem(encrypted.into_bytes()),
+    );
+    let error = config_builder(&pki, identity)
+        .build()
+        .expect_err("encrypted private key input is rejected");
+    let display = error.to_string();
+    let debug = format!("{error:?}");
+    let source_chain = public_error_chain(&error);
+
+    assert!(matches!(
+        error,
+        kmipkit_transport::TransportConfigError::InvalidCredential
+    ));
+    assert!(
+        !display.contains(ENCRYPTED_KEY_SENTINEL),
+        "encrypted key sentinel leaked into error Display"
+    );
+    assert!(
+        !debug.contains(ENCRYPTED_KEY_SENTINEL),
+        "encrypted key sentinel leaked into error Debug"
+    );
+    assert!(
+        !source_chain.contains(ENCRYPTED_KEY_SENTINEL),
+        "encrypted key sentinel leaked into the public source chain"
+    );
 }
 
 #[test]
