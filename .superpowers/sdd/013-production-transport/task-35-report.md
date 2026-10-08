@@ -82,5 +82,6 @@ assigned to T037–T039. Independent QA found a P2 cancellation gap: the local
 `JoinHandle` was aborted only after `exchange_on_worker` returned normally, so
 worker cancellation could drop the handle and detach the Hyper driver. The
 test-first correction is tracked as T035a in
-`.superpowers/sdd/013-production-transport/task-35a-report.md`; T037 is paused
-until that correction is Green and re-reviewed.
+`.superpowers/sdd/013-production-transport/task-35a-report.md`. Its Green
+guard is committed; T037 remains paused until independent read-only
+re-review.

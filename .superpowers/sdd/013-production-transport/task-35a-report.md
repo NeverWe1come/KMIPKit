@@ -49,6 +49,34 @@ Formatting and patch checks:
 | `cargo fmt --all --check` | Passed |
 | `git diff --check` | Passed |
 
-T035a Green must move driver ownership into a cancellation-safe abort-on-drop
-guard and make this test pass. T037 remains paused until Green and independent
-read-only re-review.
+## Green correction
+
+Green source commit:
+`86dea2ea4526c4cf70e5f5fec781b2a1100ba2cf`
+(`fix(transport): abort HTTPS driver on cancellation (T035a Green)`). It adds
+`HyperDriverGuard`, which owns the Hyper driver's `JoinHandle` and invokes
+`abort()` in `Drop`. Normal completion explicitly drops the guard before
+returning; when worker cancellation drops `exchange_on_worker`, Rust drops
+the guard and aborts the driver. The explicit abort observer is owned by this
+guard in test builds, so the regression verifies the same cleanup path.
+
+The test-only cancellation signal and abort observer remain scoped to each
+adapter. The production path has no observer or additional runtime/task; it
+uses the existing Hyper driver and worker.
+
+## Green verification
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --test https --offline https_cancellation_aborts_the_hyper_connection_driver -- --exact --nocapture` | Passed, 1/1 |
+| `cargo test -p kmipkit-transport --test https --offline -- --test-threads=1` | Passed, 57/57 |
+| `cargo test -p kmipkit-transport --all-targets --all-features --offline` | Passed, 325 tests across 13 targets |
+| `cargo clippy -p kmipkit-transport --all-targets --all-features --offline -- -D warnings` | Passed |
+| `cargo fmt --all --check` | Passed |
+| `git diff --check` | Passed |
+
+All Green commands ran offline on the Windows host. The T021 symlink fixture
+used its documented fallback because temporary symlink creation was
+unavailable on this host; Windows symlink-following remains a platform
+verification gap. Independent read-only review of T035a Green is pending;
+T037 must not start until that review completes.
