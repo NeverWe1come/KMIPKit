@@ -24,7 +24,8 @@ use std::path::{Path, PathBuf};
 use syn::parse::{Parse, ParseStream};
 use syn::visit::{self, Visit};
 use syn::{
-    Attribute, Expr, ExprCall, ExprMethodCall, Item, ItemMod, Macro, Meta, Pat, Type, UseTree,
+    AttrStyle, Attribute, Expr, ExprCall, ExprMethodCall, Item, ItemMod, LitStr, Macro, Meta, Pat,
+    Type, UseTree,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -3133,6 +3134,49 @@ fn query_request_is_dropped_before_exchange_and_not_retained_by_the_client() {
     assert!(
         matches!((request_drop, exchange), (Some(drop), Some(exchange)) if drop < exchange),
         "the consumed Query request and filter values must be dropped before the client exchange"
+    );
+}
+
+#[test]
+fn crate_doc_includes_allow_only_the_two_checked_in_user_guides() {
+    let source_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/lib.rs")
+        .canonicalize()
+        .expect("the client crate root exists");
+    let approved = syn::parse_file(
+        r##"#![doc = include_str!("../../../docs/user-guide/en/production-transports.md")]
+        #![doc = include_str!("../../../docs/user-guide/es/transportes-produccion.md")]"##,
+    )
+    .expect("the approved documentation attributes parse");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&approved, &source_path);
+    assert!(
+        !audit.is_rejected(),
+        "the two static crate-level user-guide includes are inert documentation"
+    );
+
+    let unexpected_path = syn::parse_file(
+        r##"#![doc = include_str!("../../../docs/unreviewed.md")]"##,
+    )
+    .expect("the unexpected documentation attribute parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&unexpected_path, &source_path);
+    assert!(
+        audit.is_rejected(),
+        "unreviewed included source must remain outside the macro allowlist"
+    );
+
+    let runtime_include = syn::parse_file(
+        r##"fn runtime_text() -> &'static str {
+            include_str!("../../../docs/user-guide/en/production-transports.md")
+        }"##,
+    )
+    .expect("the runtime include fixture parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&runtime_include, &source_path);
+    assert!(
+        audit.is_rejected(),
+        "the documentation exception must not whitelist runtime macros"
     );
 }
 
