@@ -119,3 +119,10 @@ observer correction.
   assertion.
 - `crates/kmipkit-transport/src/raw_tls.rs`: `cfg(test)`-only response drop
   and allocation observers; no production code path changed.
+
+## Independent QA review
+
+QA re-reviewed the allocation-order correction range
+`3691b3ca2da82c8cfc573154704509a4ebf6f656..64f78df301ecd8214d62940283107ed65a620b2b`
+and approved it with no actionable findings. This covers the test-only Red,
+per-adapter Green observer, and strict-Clippy follow-up.
