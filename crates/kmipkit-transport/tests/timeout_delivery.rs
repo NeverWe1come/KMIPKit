@@ -6,20 +6,27 @@
 
 use std::convert::Infallible;
 use std::error::Error as StdError;
-use std::io::{self, IoSlice};
+use std::io::{self, IoSlice, Read, Write};
+use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::pin::Pin;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, mpsc};
 use std::task::{Context, Poll, Waker};
+use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 
 use bytes::Bytes;
+pub use config::{RequestOptions, TimeoutLimit, TimeoutPolicy, TransportConfig};
 use hyper::body::{Body, Frame, SizeHint};
 use hyper::client::conn::http1;
 use hyper::http::Request;
 use hyper::rt::{Read as HyperRead, ReadBuf as HyperReadBuf, Write as HyperWrite};
-use kmipkit_transport::{
-    RequestDeliveryState, TransportCauseCategory, TransportError, TransportResponse,
+use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener, fixtures};
+pub use kmipkit_transport::{
+    RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
+use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
+use rustls::server::WebPkiClientVerifier;
+use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 use std::future::poll_fn;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf as TokioReadBuf};
 
@@ -36,6 +43,24 @@ mod worker;
 // private timeout seam rather than a test double.
 #[path = "../src/timeout.rs"]
 mod timeout;
+
+// Include the production HTTPS adapter and its private dependencies so these
+// tests exercise actual TLS, resolver, and HTTP integration boundaries.
+#[path = "../src/config.rs"]
+#[allow(dead_code)]
+mod config;
+#[path = "../src/https.rs"]
+#[allow(dead_code)]
+mod https;
+#[path = "../src/resolver.rs"]
+#[allow(dead_code)]
+mod resolver;
+#[path = "../src/secret.rs"]
+#[allow(dead_code)]
+mod secret;
+#[path = "../src/tls.rs"]
+#[allow(dead_code)]
+mod tls;
 
 use worker::ExchangeControl;
 
@@ -804,6 +829,639 @@ async fn a_late_positive_read_cannot_change_delivery_after_finalization_wins() {
         .expect("the timeout finalizer does not panic");
     assert_eq!(final_delivery, RequestDeliveryState::PossiblySent);
     assert_eq!(control.delivery_state(), RequestDeliveryState::PossiblySent);
+}
+
+#[test]
+fn https_connect_deadline_ignores_a_late_blocked_resolver_result() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the late-result probe binds loopback");
+    let address = listener.local_addr();
+    let listener = listener.into_inner();
+    let configuration = https_client_configuration(&pki, address.port());
+    let (resolver, gate) = gated_https_resolver(vec![address]);
+    let adapter = https::new_for_test_with_resolver(configuration, None, resolver);
+    let options =
+        RequestOptions::default().with_connect(TimeoutLimit::Bounded(Duration::from_millis(250)));
+    let (result_tx, result_rx) = mpsc::sync_channel(1);
+
+    thread::spawn(move || {
+        let mut adapter = adapter;
+        let result = adapter.exchange_with_options(fixtures::REQUEST_SENTINEL, 64, &options);
+        let _ = result_tx.send((adapter, result));
+    });
+
+    gate.wait_until_started();
+    let (_adapter, result) = result_rx
+        .recv_timeout(Duration::from_secs(3))
+        .expect("the connect deadline expires while the native resolver is held");
+    let error = result.expect_err("the unresolved lookup reaches its connect deadline");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+
+    gate.release();
+    gate.wait_until_returned();
+    assert_no_tcp_connection_for(&listener, Duration::from_millis(500));
+}
+
+#[test]
+fn https_unresolved_resolver_sends_no_early_bytes_then_succeeds_after_release() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let configuration = https_client_configuration(&pki, address.port());
+    let (resolver, gate) = gated_https_resolver(vec![address]);
+    let (peer, connected) = spawn_https_peer(
+        listener.into_inner(),
+        https_server_config(&pki, &pki),
+        Some(complete_http_response(b"done")),
+        None,
+    );
+    let adapter = https::new_for_test_with_resolver(configuration, None, resolver);
+    let (result_tx, result_rx) = mpsc::sync_channel(1);
+
+    thread::spawn(move || {
+        let mut adapter = adapter;
+        let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+        let _ = result_tx.send(result);
+    });
+
+    gate.wait_until_started();
+    assert!(
+        matches!(
+            connected.recv_timeout(Duration::from_millis(200)),
+            Err(mpsc::RecvTimeoutError::Timeout)
+        ),
+        "the HTTPS peer sees no TCP connection while DNS resolution is unresolved"
+    );
+    gate.release();
+    gate.wait_until_returned();
+
+    connected
+        .recv_timeout(Duration::from_secs(3))
+        .expect("TCP starts only after the resolver returns its candidate");
+    let response = result_rx
+        .recv_timeout(Duration::from_secs(3))
+        .expect("the released resolver allows the HTTPS exchange to finish")
+        .expect("the verified HTTPS exchange succeeds after lookup release");
+    assert_eq!(response.as_bytes(), b"done");
+    let peer = peer.join().expect("the bounded HTTPS peer completes");
+    assert!(peer.handshake_completed);
+    assert_eq!(peer.requests.len(), 1);
+    assert_eq!(
+        http_request_body(&peer.requests[0]),
+        fixtures::REQUEST_SENTINEL
+    );
+}
+
+#[test]
+fn https_connect_deadline_during_tls_handshake_is_not_sent() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the stalled TLS peer binds loopback");
+    let address = listener.local_addr();
+    let configuration = https_client_configuration(&pki, address.port());
+    let resolver = https_resolver(vec![address]);
+    let (peer, accepted, release) = spawn_stalled_tls_peer(listener.into_inner());
+    let mut adapter = https::new_for_test_with_resolver(configuration, None, resolver);
+    let options =
+        RequestOptions::default().with_connect(TimeoutLimit::Bounded(Duration::from_secs(1)));
+
+    let error = adapter
+        .exchange_with_options(fixtures::REQUEST_SENTINEL, 64, &options)
+        .expect_err("the stalled TLS handshake exceeds the connect deadline");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    accepted
+        .recv_timeout(Duration::from_secs(1))
+        .expect("the stalled peer accepted the TCP connection");
+    release
+        .send(())
+        .expect("the timed-out handshake peer is released for cleanup");
+    let peer = peer.join().expect("the stalled TLS peer completes");
+    assert_eq!(peer.first_tls_record_type, Some(22));
+    assert!(
+        !peer.handshake_completed,
+        "the client deadline expires before TLS completes"
+    );
+    assert!(
+        peer.http_request.is_none(),
+        "HTTP and KMIP bytes are never dispatched before a completed TLS handshake"
+    );
+}
+
+#[test]
+fn https_tries_resolver_candidates_in_order_and_dispatches_only_after_trusted_tls() {
+    let client_pki = EphemeralPki::generate().expect("the trusted client PKI is generated");
+    let untrusted_server_pki =
+        EphemeralPki::generate().expect("the first endpoint has a separate server PKI");
+    let first_listener =
+        LoopbackTcpListener::bind().expect("the untrusted TLS endpoint binds loopback");
+    let first_address = first_listener.local_addr();
+    let second_listener =
+        LoopbackTcpListener::bind().expect("the trusted TLS endpoint binds loopback");
+    let second_address = second_listener.local_addr();
+    let configuration = https_client_configuration(&client_pki, first_address.port());
+    let resolver = https_resolver(vec![first_address, second_address]);
+    let (attempt_tx, attempt_rx) = mpsc::sync_channel(2);
+    let (first_peer, first_connected) = spawn_https_peer(
+        first_listener.into_inner(),
+        https_server_config(&untrusted_server_pki, &client_pki),
+        None,
+        Some((attempt_tx.clone(), 1)),
+    );
+    let (second_peer, second_connected) = spawn_https_peer(
+        second_listener.into_inner(),
+        https_server_config(&client_pki, &client_pki),
+        Some(complete_http_response(b"done")),
+        Some((attempt_tx, 2)),
+    );
+    let mut adapter = https::new_for_test_with_resolver(configuration, None, resolver);
+
+    let response = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the later trusted TLS candidate completes the HTTPS exchange");
+    assert_eq!(response.as_bytes(), b"done");
+    first_connected
+        .recv_timeout(Duration::from_secs(1))
+        .expect("the first resolver candidate is attempted first");
+    second_connected
+        .recv_timeout(Duration::from_secs(1))
+        .expect("the trusted candidate is attempted after the untrusted one");
+    assert_eq!(
+        attempt_rx
+            .recv_timeout(Duration::from_secs(1))
+            .expect("the first candidate acceptance is recorded"),
+        1,
+        "resolver candidates start in returned order"
+    );
+    assert_eq!(
+        attempt_rx
+            .recv_timeout(Duration::from_secs(1))
+            .expect("the later candidate acceptance is recorded"),
+        2,
+        "the second candidate starts only after the first TLS failure"
+    );
+
+    let first_peer = first_peer
+        .join()
+        .expect("the untrusted TLS peer finishes its bounded handshake");
+    let second_peer = second_peer
+        .join()
+        .expect("the trusted HTTPS peer completes");
+    assert!(
+        !first_peer.handshake_completed,
+        "the first endpoint fails server certificate validation"
+    );
+    assert!(
+        first_peer.requests.is_empty(),
+        "no HTTP or KMIP request reaches an untrusted TLS endpoint"
+    );
+    assert!(second_peer.handshake_completed);
+    assert_eq!(second_peer.requests.len(), 1);
+    assert_eq!(
+        http_request_body(&second_peer.requests[0]),
+        fixtures::REQUEST_SENTINEL
+    );
+}
+
+#[test]
+fn https_total_deadline_after_partial_body_invalidates_and_explicitly_reconnects() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the reconnect peer binds loopback");
+    let address = listener.local_addr();
+    let configuration = https_client_configuration(&pki, address.port());
+    let resolver = https_resolver(vec![address]);
+    let (peer, partial_response_sent, release_peer) = spawn_partial_then_success_https_peer(
+        listener.into_inner(),
+        https_server_config(&pki, &pki),
+    );
+    let adapter = https::new_for_test_with_resolver(configuration, None, resolver);
+    let first_options =
+        RequestOptions::default().with_total(TimeoutLimit::Bounded(Duration::from_millis(1_500)));
+    let (result_tx, result_rx) = mpsc::sync_channel(1);
+
+    thread::spawn(move || {
+        let mut adapter = adapter;
+        let result = adapter.exchange_with_options(b"first-call", 64, &first_options);
+        let _ = result_tx.send((adapter, result));
+    });
+
+    partial_response_sent
+        .recv_timeout(Duration::from_secs(3))
+        .expect("the first request receives HTTP headers and a partial body");
+    let (mut adapter, first_result) = result_rx
+        .recv_timeout(Duration::from_secs(3))
+        .expect("the total deadline finalizes the partially received exchange");
+    let first_error =
+        first_result.expect_err("the incomplete first response reaches total timeout");
+    assert_eq!(
+        first_error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert!(
+        !https::has_cached_connection_for_test(&adapter),
+        "a connection with a timed-out partial response is invalidated"
+    );
+
+    release_peer
+        .send(())
+        .expect("the peer advances to an explicit second exchange");
+    let second_response = adapter
+        .exchange_with_options(b"second-call", 64, &RequestOptions::default())
+        .expect("the later explicit exchange reconnects and succeeds");
+    assert_eq!(second_response.as_bytes(), b"done");
+    let peer = peer.join().expect("the two-connection peer completes");
+    assert_eq!(peer.accepted_connections, 2);
+    assert_eq!(peer.requests.len(), 2);
+    assert_eq!(http_request_body(&peer.requests[0]), b"first-call");
+    assert_eq!(http_request_body(&peer.requests[1]), b"second-call");
+}
+
+const HTTPS_PEER_TIMEOUT: Duration = Duration::from_secs(6);
+const HTTPS_SERVER_NAME: &str = "server.kmipkit.test";
+
+struct HttpsResolverGate {
+    started: mpsc::Receiver<()>,
+    release: mpsc::SyncSender<()>,
+    returned: mpsc::Receiver<()>,
+}
+
+impl HttpsResolverGate {
+    fn wait_until_started(&self) {
+        self.started
+            .recv_timeout(Duration::from_secs(2))
+            .expect("the injected native resolver starts");
+    }
+
+    fn release(&self) {
+        self.release
+            .send(())
+            .expect("the held native resolver accepts its release");
+    }
+
+    fn wait_until_returned(&self) {
+        self.returned
+            .recv_timeout(Duration::from_secs(2))
+            .expect("the released native resolver returns its late result");
+    }
+}
+
+fn gated_https_resolver(addresses: Vec<SocketAddr>) -> (resolver::Resolver, HttpsResolverGate) {
+    let (started_tx, started_rx) = mpsc::sync_channel(1);
+    let (release_tx, release_rx) = mpsc::sync_channel(1);
+    let (returned_tx, returned_rx) = mpsc::sync_channel(1);
+    let release_rx = Arc::new(Mutex::new(release_rx));
+    let release_waiter = Arc::clone(&release_rx);
+    let resolver = resolver::Resolver::with_lookup_and_governor(
+        move |_host, _port| {
+            let _ = started_tx.send(());
+            let released = match release_waiter.lock() {
+                Ok(receiver) => receiver.recv_timeout(HTTPS_PEER_TIMEOUT).is_ok(),
+                Err(_) => false,
+            };
+            let _ = returned_tx.send(());
+            if released {
+                Ok(addresses.clone())
+            } else {
+                Err(io::Error::new(
+                    io::ErrorKind::TimedOut,
+                    "test resolver gate expired",
+                ))
+            }
+        },
+        Arc::new(tokio::sync::Semaphore::new(1)),
+    );
+    (
+        resolver,
+        HttpsResolverGate {
+            started: started_rx,
+            release: release_tx,
+            returned: returned_rx,
+        },
+    )
+}
+
+fn https_resolver(addresses: Vec<SocketAddr>) -> resolver::Resolver {
+    resolver::Resolver::with_lookup_and_governor(
+        move |_host, _port| Ok(addresses.clone()),
+        Arc::new(tokio::sync::Semaphore::new(1)),
+    )
+}
+
+fn https_client_configuration(pki: &EphemeralPki, port: u16) -> config::TransportConfig {
+    let client_chain = pki
+        .client_identity()
+        .certificate_chain_der()
+        .into_iter()
+        .map(<[u8]>::to_vec)
+        .collect();
+    config::TransportConfig::builder(config::Endpoint::https(format!(
+        "https://{HTTPS_SERVER_NAME}:{port}"
+    )))
+    .client_identity(config::ClientIdentity::new(
+        config::CertificateInput::from_der(client_chain),
+        config::PrivateKeyInput::from_der(pki.client_identity().private_key_der().to_vec()),
+    ))
+    .trust_source(config::TrustSource::certificate_authorities(vec![
+        config::CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+    ]))
+    .build()
+    .expect("the client identity and server trust inputs build an HTTPS config")
+}
+
+fn https_server_config(server_pki: &EphemeralPki, client_pki: &EphemeralPki) -> Arc<ServerConfig> {
+    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let builder = ServerConfig::builder_with_provider(provider)
+        .with_protocol_versions(&[&rustls::version::TLS13])
+        .expect("the local HTTPS server uses TLS 1.3 only");
+    let mut client_roots = RootCertStore::empty();
+    client_roots
+        .add(CertificateDer::from(
+            client_pki.authority_certificate_der().to_vec(),
+        ))
+        .expect("the client test CA is valid");
+    let verifier = WebPkiClientVerifier::builder(Arc::new(client_roots))
+        .build()
+        .expect("the HTTPS peer requires a verified client certificate");
+    let config = builder
+        .with_client_cert_verifier(verifier)
+        .with_single_cert(
+            vec![CertificateDer::from(
+                server_pki.server_identity().certificate_der().to_vec(),
+            )],
+            PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(
+                server_pki.server_identity().private_key_der().to_vec(),
+            )),
+        )
+        .expect("the local server identity is valid");
+    Arc::new(config)
+}
+
+#[derive(Default)]
+struct HttpsPeerObservation {
+    handshake_completed: bool,
+    requests: Vec<Vec<u8>>,
+}
+
+fn spawn_https_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    response: Option<Vec<u8>>,
+    attempt_event: Option<(mpsc::SyncSender<u8>, u8)>,
+) -> (JoinHandle<HttpsPeerObservation>, mpsc::Receiver<()>) {
+    let (connected_tx, connected_rx) = mpsc::sync_channel(1);
+    let peer = thread::spawn(move || {
+        let Ok((stream, _)) = accept_https_connection(&listener) else {
+            return HttpsPeerObservation::default();
+        };
+        let _ = connected_tx.send(());
+        if let Some((events, candidate)) = attempt_event {
+            let _ = events.send(candidate);
+        }
+        let Ok(mut tls) = finish_https_server_handshake(stream, configuration) else {
+            return HttpsPeerObservation::default();
+        };
+        let mut observation = HttpsPeerObservation {
+            handshake_completed: true,
+            requests: Vec::new(),
+        };
+        let Ok(request) = read_https_request(&mut tls) else {
+            return observation;
+        };
+        observation.requests.push(request);
+        if let Some(response) = response {
+            let _ = tls.write_all(&response);
+            let _ = tls.flush();
+        }
+        observation
+    });
+    (peer, connected_rx)
+}
+
+fn accept_https_connection(listener: &TcpListener) -> io::Result<(TcpStream, SocketAddr)> {
+    listener.set_nonblocking(true)?;
+    let deadline = Instant::now() + HTTPS_PEER_TIMEOUT;
+    loop {
+        match listener.accept() {
+            Ok(connection) => return Ok(connection),
+            Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                if Instant::now() >= deadline {
+                    return Err(io::Error::new(
+                        io::ErrorKind::TimedOut,
+                        "HTTPS test peer accept deadline expired",
+                    ));
+                }
+                thread::sleep(Duration::from_millis(5));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+
+fn finish_https_server_handshake(
+    stream: TcpStream,
+    configuration: Arc<ServerConfig>,
+) -> io::Result<StreamOwned<ServerConnection, TcpStream>> {
+    stream.set_nonblocking(false)?;
+    stream.set_read_timeout(Some(HTTPS_PEER_TIMEOUT))?;
+    stream.set_write_timeout(Some(HTTPS_PEER_TIMEOUT))?;
+    let connection = ServerConnection::new(configuration).map_err(io::Error::other)?;
+    let mut tls = StreamOwned::new(connection, stream);
+    let deadline = Instant::now() + HTTPS_PEER_TIMEOUT;
+    while tls.conn.is_handshaking() {
+        if Instant::now() >= deadline {
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "HTTPS test TLS handshake deadline expired",
+            ));
+        }
+        tls.conn
+            .complete_io(&mut tls.sock)
+            .map_err(io::Error::other)?;
+    }
+    Ok(tls)
+}
+
+fn read_https_request(reader: &mut impl Read) -> io::Result<Vec<u8>> {
+    const MAX_REQUEST: usize = 1024 * 1024;
+    let mut bytes = Vec::new();
+    let mut chunk = [0; 1024];
+    loop {
+        if let Some(expected_len) = https_request_wire_length(&bytes)?
+            && bytes.len() >= expected_len
+        {
+            bytes.truncate(expected_len);
+            return Ok(bytes);
+        }
+        if bytes.len() >= MAX_REQUEST {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "HTTPS test request exceeds its bound",
+            ));
+        }
+        let count = reader.read(&mut chunk)?;
+        if count == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "HTTPS test peer observed an incomplete request",
+            ));
+        }
+        bytes.extend_from_slice(&chunk[..count]);
+    }
+}
+
+fn https_request_wire_length(bytes: &[u8]) -> io::Result<Option<usize>> {
+    let Some(header_end) = https_header_end(bytes) else {
+        return Ok(None);
+    };
+    let headers = String::from_utf8_lossy(&bytes[..header_end]);
+    let content_length = headers
+        .lines()
+        .find_map(|line| {
+            let (name, value) = line.split_once(':')?;
+            name.eq_ignore_ascii_case("content-length")
+                .then(|| value.trim().parse::<usize>().ok())
+                .flatten()
+        })
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Content-Length is missing"))?;
+    header_end
+        .checked_add(content_length)
+        .map(Some)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "request length overflow"))
+}
+
+fn https_header_end(bytes: &[u8]) -> Option<usize> {
+    bytes
+        .windows(4)
+        .position(|window| window == b"\r\n\r\n")
+        .map(|i| i + 4)
+}
+
+fn http_request_body(request: &[u8]) -> &[u8] {
+    let body_start = https_header_end(request).expect("the captured request has HTTP headers");
+    &request[body_start..]
+}
+
+fn complete_http_response(body: &[u8]) -> Vec<u8> {
+    let mut response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+        body.len()
+    )
+    .into_bytes();
+    response.extend_from_slice(body);
+    response
+}
+
+fn spawn_stalled_tls_peer(
+    listener: TcpListener,
+) -> (
+    JoinHandle<StalledTlsObservation>,
+    mpsc::Receiver<()>,
+    mpsc::SyncSender<()>,
+) {
+    let (accepted_tx, accepted_rx) = mpsc::sync_channel(1);
+    let (release_tx, release_rx) = mpsc::sync_channel(1);
+    let peer = thread::spawn(move || {
+        let Ok((mut stream, _)) = accept_https_connection(&listener) else {
+            return StalledTlsObservation::default();
+        };
+        let _ = accepted_tx.send(());
+        let _ = stream.set_nonblocking(false);
+        let _ = stream.set_read_timeout(Some(HTTPS_PEER_TIMEOUT));
+        let mut record_prefix = [0; 5];
+        let first_tls_record_type = match stream.read(&mut record_prefix) {
+            Ok(count) if count > 0 => Some(record_prefix[0]),
+            _ => None,
+        };
+        let _ = release_rx.recv_timeout(HTTPS_PEER_TIMEOUT);
+        StalledTlsObservation {
+            first_tls_record_type,
+            handshake_completed: false,
+            http_request: None,
+        }
+    });
+    (peer, accepted_rx, release_tx)
+}
+
+#[derive(Default)]
+struct StalledTlsObservation {
+    first_tls_record_type: Option<u8>,
+    handshake_completed: bool,
+    http_request: Option<Vec<u8>>,
+}
+
+fn assert_no_tcp_connection_for(listener: &TcpListener, duration: Duration) {
+    listener
+        .set_nonblocking(true)
+        .expect("the resolver late-result probe is nonblocking");
+    let deadline = Instant::now() + duration;
+    while Instant::now() < deadline {
+        match listener.accept() {
+            Ok((stream, _)) => {
+                drop(stream);
+                panic!("a TCP candidate started after the resolver deadline");
+            }
+            Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                thread::sleep(Duration::from_millis(5));
+            }
+            Err(error) => panic!("the TCP probe failed: {error}"),
+        }
+    }
+}
+
+#[derive(Default)]
+struct ReconnectPeerObservation {
+    accepted_connections: usize,
+    requests: Vec<Vec<u8>>,
+}
+
+fn spawn_partial_then_success_https_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+) -> (
+    JoinHandle<ReconnectPeerObservation>,
+    mpsc::Receiver<()>,
+    mpsc::SyncSender<()>,
+) {
+    let (partial_sent_tx, partial_sent_rx) = mpsc::sync_channel(1);
+    let (release_peer_tx, release_peer_rx) = mpsc::sync_channel(1);
+    let peer = thread::spawn(move || {
+        let mut observation = ReconnectPeerObservation::default();
+        let Ok((first_stream, _)) = accept_https_connection(&listener) else {
+            return observation;
+        };
+        observation.accepted_connections += 1;
+        {
+            let Ok(mut tls) =
+                finish_https_server_handshake(first_stream, Arc::clone(&configuration))
+            else {
+                return observation;
+            };
+            let Ok(request) = read_https_request(&mut tls) else {
+                return observation;
+            };
+            observation.requests.push(request);
+            let partial_response = b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\n\r\npart";
+            if tls.write_all(partial_response).is_err() || tls.flush().is_err() {
+                return observation;
+            }
+            let _ = partial_sent_tx.send(());
+            let _ = release_peer_rx.recv_timeout(HTTPS_PEER_TIMEOUT);
+        }
+
+        let Ok((second_stream, _)) = accept_https_connection(&listener) else {
+            return observation;
+        };
+        observation.accepted_connections += 1;
+        let Ok(mut tls) = finish_https_server_handshake(second_stream, configuration) else {
+            return observation;
+        };
+        let Ok(request) = read_https_request(&mut tls) else {
+            return observation;
+        };
+        observation.requests.push(request);
+        let _ = tls.write_all(&complete_http_response(b"done"));
+        let _ = tls.flush();
+        observation
+    });
+    (peer, partial_sent_rx, release_peer_tx)
 }
 
 async fn read_http_headers<R: AsyncRead + Unpin>(reader: &mut R) -> Vec<u8> {
