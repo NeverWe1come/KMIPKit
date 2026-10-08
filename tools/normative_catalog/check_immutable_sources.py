@@ -1,4 +1,4 @@
-"""Compare the complete OASIS source subtree with an exact Git base commit."""
+"""Protect pinned OASIS copies while allowing narrow project-authored additions."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 OASIS_ROOT = "specification/oasis/"
+UPSTREAM_ROOT = "specification/oasis/kmip-2.1/upstream/"
 FIXTURE_ROOT = "specification/oasis/kmip-2.1/fixtures/"
 PROJECT_INVENTORY_PATHS = {
     "specification/oasis/kmip-2.1/README.md",
@@ -34,23 +35,6 @@ def _git(root: Path, *arguments: str) -> bytes:
     except (OSError, subprocess.CalledProcessError) as error:
         raise ImmutableSourceError("could not inspect the repository's Git tree") from error
     return result.stdout
-
-
-def _git_differs(root: Path, *arguments: str) -> bool:
-    """Use Git's status code so changed-path output is never buffered."""
-    try:
-        result = subprocess.run(
-            ["git", "diff", "--quiet", *arguments],
-            cwd=root,
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    except OSError as error:
-        raise ImmutableSourceError("could not inspect the repository's Git tree") from error
-    if result.returncode not in {0, 1}:
-        raise ImmutableSourceError("could not inspect the repository's Git tree")
-    return result.returncode == 1
 
 
 def _changed_paths(root: Path, base_sha: str, *, staged: bool) -> set[str]:
@@ -148,8 +132,11 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
     unsupported_paths = {
         path
         for path in changed_paths
-        if path not in PROJECT_INVENTORY_PATHS
-        and not (path.startswith(FIXTURE_ROOT) and path not in existing_fixture_paths)
+        if path.startswith(UPSTREAM_ROOT)
+        or (
+            path not in PROJECT_INVENTORY_PATHS
+            and not (path.startswith(FIXTURE_ROOT) and path not in existing_fixture_paths)
+        )
     }
     has_unsupported_untracked, untracked_fixture_count = _untracked_fixture_count(root)
     if unsupported_paths or has_unsupported_untracked:
@@ -172,7 +159,7 @@ def main(argv: list[str] | None = None) -> int:
     except ImmutableSourceError as error:
         print(f"immutable-source check failed: {error}", file=sys.stderr)
         return 1
-    print(f"OASIS source tree matches base {result['base_sha']}")
+    print(f"Pinned OASIS upstream sources match base {result['base_sha']}")
     return 0
 
 
