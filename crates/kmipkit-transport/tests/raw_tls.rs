@@ -115,6 +115,8 @@ fn fixed_resolver(addresses: Vec<SocketAddr>) -> resolver::Resolver {
 /// Proves the caller's exact bytes reach a TLS 1.3 peer that requires mTLS,
 /// that one response frame is returned, that the connection closes, and that
 /// the staged request owner is zeroized on success.
+/// The root is a Response Message under OASIS KMIP Specification Version 2.1
+/// §8.4 Table 397 and §11.56.
 #[test]
 fn raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
@@ -770,13 +772,15 @@ fn raw_tls_rejects_a_response_with_an_invalid_root_tag() {
     assert_peer_closed_after_response(&peer);
 }
 
+/// OASIS KMIP Specification Version 2.1 §8.4 Table 397 defines the response
+/// root structure; §11.56 maps Response Message to `0x42007B`, not `0x420078`.
 #[test]
 fn raw_tls_rejects_a_request_message_as_the_response_root() {
     let (result, peer) = exchange_responding(&REQUEST_MESSAGE_ROOT_FRAME, RESPONSE_LIMIT);
 
     assert_response_started(
         &result,
-        "KMIP 2.1 §8.4 Table 397 requires a Response Message root, not Request Message",
+        "a Request Message tag is not a valid Response Message root",
     );
     assert_peer_closed_after_response(&peer);
 }
