@@ -4,6 +4,7 @@
 
 T031 Red source/test commit: `0d20f20c349494c4d6f97d0f7ef75f73a6510adf`.
 Candidate-order assertion correction: `028fa66c765ee17b5b432f0d8001889eb2e321f2`.
+Resolver-peer harness correction: `7ee433aa98627c43ad220714149d5f6bc5f9e526`.
 The worktree started at `cf2085c23c68accbef1c0e66cc5b65cbd5a5f965`, after
 T028's QA result was recorded.
 
@@ -34,18 +35,20 @@ sentinels on failure.
 | Absolute total deadline while waiting for a response | `raw_tls_total_deadline_remains_absolute_while_waiting_for_response` | Pass; `PossiblySent`, owner is zeroized |
 | Dispatch/cancel linearization and delivery-state transitions | Existing `cancellation_and_dispatch_race_has_one_delivery_state_winner`, `cancellation_before_dispatch_makes_a_later_commit_impossible`, `delivery_states_advance_only_at_dispatch_and_first_response_byte`, and worker equivalents | Pass |
 | Invalidation, later reconnect, and no replay | `raw_tls_reconnects_after_a_failed_response_without_replaying_the_first_request` | Pass; each connection receives only its own request |
-| Cancel/expire during pending DNS; discard late candidates and clean request owner | `raw_tls_connect_deadline_discards_a_late_resolver_result` | Pass; exchange returns `NotSent` before lookup release, observer sees zeroized owner, listener receives no late connection |
-| No TCP connection while an uncanceled lookup is pending | `raw_tls_has_no_tcp_side_effect_while_an_uncanceled_lookup_is_pending` | Pass; listener queue is empty until resolver release |
-| Ordered candidates and TLS before application write | `raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake` | Red: first untrusted TLS peer is reached and receives no KMIP bytes; the next resolver candidate is not attempted |
+| Deadline cancellation during pending DNS; late-result isolation and owner cleanup | `raw_tls_connect_deadline_cancels_pending_dns_and_zeroizes_the_staged_request` | Pass; the caller receives timeout/`NotSent` while the resolver gate is still closed, proving worker cancellation; the staged owner is zeroized. After gate release, a completion channel confirms the resolver closure returned, then a bounded listener probe sees no late TCP connection |
+| No TCP connection while an uncanceled lookup is pending | `raw_tls_has_no_tcp_side_effect_while_an_uncanceled_lookup_is_pending` | Pass; the test thread is the only accept owner during a 100 ms resolver gate probe; it transfers the listener to the TLS peer only after releasing DNS |
+| Ordered candidates and TLS-before-request behavior | `raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake` | Red: the first server records a TLS handshake failure for its untrusted certificate; the test does not claim that peer observed application bytes. The expected next-candidate accept assertion fails; following assertions require the trusted peer to complete TLS and receive the exact request |
 | Total deadline includes lazy worker readiness from public entry | `raw_tls_total_deadline_covers_lazy_worker_readiness` | Red: public `exchange` remains blocked beyond the 120 ms total duration while readiness is gated |
 | Reject finite read/write phase durations outside `Instant` range | Adapter cases `raw_tls_rejects_an_unrepresentable_{read,write}_phase_before_dispatch`; lower-level `an_unrepresentable_finite_read_phase_is_rejected_as_invalid_input` | Red: adapter reports `PossiblySent` instead of `NotSent`; lower-level test reaches its 100 ms outer timeout instead of `InvalidInput` |
 
 The adapter-level DNS tests use injected lookup gates rather than OS DNS. The
-late-result case expires the exchange while the lookup is blocked, then releases
-the lookup and observes the listener for a late TCP connection. The uncanceled
-case probes the listener while lookup is still blocked, then releases it and
-verifies the normal exchange. The readiness test releases its worker gate on
-every path and bounds peer/worker waits.
+late-result case observes a result from the resolver closure through a bounded
+channel after releasing its gate; only then does it probe the listener for a
+bounded interval. The caller result is sampled before gate release, and the
+request observer proves the worker cancellation path dropped the staged owner.
+The uncanceled case gives the listener one accept owner during its probe, then
+transfers it to the TLS peer after resolver release. The readiness test releases
+its worker gate on every path and bounds peer/worker waits.
 
 ## Red verification
 
@@ -60,6 +63,19 @@ It compiled and failed at the intended assertion:
 ```text
 the next resolver candidate is attempted after TLS rejection
 ```
+
+The peer reports an actual handshake failure for the first untrusted
+certificate before this assertion. The test contains subsequent assertions for
+the trusted peer's completed handshake and exact request bytes, which remain
+unreached in Red because the adapter does not attempt that candidate.
+
+Focused DNS/candidate reruns after the harness correction:
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --test raw_tls raw_tls_connect_deadline_cancels_pending_dns_and_zeroizes_the_staged_request --offline -- --exact` | 1 passed, 0 failed |
+| `cargo test -p kmipkit-transport --test raw_tls raw_tls_has_no_tcp_side_effect_while_an_uncanceled_lookup_is_pending --offline -- --exact` | 1 passed, 0 failed |
+| `cargo test -p kmipkit-transport --test raw_tls raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake --offline -- --exact` | Expected Red: first handshake-failure assertion passes; next-candidate accept assertion fails |
 
 Final serial target commands:
 
