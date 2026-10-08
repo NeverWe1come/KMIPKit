@@ -188,6 +188,36 @@ impl ExchangeControl {
             .is_ok()
     }
 
+    /// Records or confirms a positive response read unless finalization won.
+    pub(crate) fn observe_response_byte(&self) -> bool {
+        loop {
+            let current = self.state.load(Ordering::Acquire);
+            match current {
+                DISPATCH_COMMITTED => {
+                    if self
+                        .state
+                        .compare_exchange(
+                            DISPATCH_COMMITTED,
+                            RESPONSE_STARTED,
+                            Ordering::AcqRel,
+                            Ordering::Acquire,
+                        )
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                }
+                RESPONSE_STARTED => return true,
+                _ => return false,
+            }
+        }
+    }
+
+    /// Returns whether request I/O may still be observed by the active exchange.
+    pub(crate) fn is_finalized(&self) -> bool {
+        is_final(self.state.load(Ordering::Acquire))
+    }
+
     /// Finalizes cancellation without moving delivery evidence backwards.
     pub(crate) fn cancel(&self) -> RequestDeliveryState {
         loop {

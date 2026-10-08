@@ -15,12 +15,15 @@
 
 mod error;
 mod response;
-// The private worker is introduced before its transport adapters consume it.
+// T010 introduces the private timeout seam before later adapter tasks consume it.
+#[allow(dead_code)]
+mod timeout;
 #[cfg(test)]
 mod tls_policy;
 #[cfg(test)]
 #[path = "tls_policy_tests.rs"]
 mod tls_policy_tests;
+// The worker precedes the production adapters that consume it in later tasks.
 #[allow(dead_code)]
 mod worker;
 
