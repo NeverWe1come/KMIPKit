@@ -138,10 +138,7 @@ fn local_dns_fixture_tracks_multiplexed_tcp_requests_per_connection() {
     let query = dns_question(name, 1);
     let mut requests = Vec::new();
     for _ in 0..2 {
-        let length =
-            u16::try_from(query.len()).expect("the test DNS question length fits in the TCP frame");
-        requests.extend_from_slice(&length.to_be_bytes());
-        requests.extend_from_slice(&query);
+        append_tcp_dns_frame(&mut requests, &query);
     }
     stream
         .write_all(&requests)
@@ -212,6 +209,12 @@ fn dns_question(hostname: &str, record_type: u16) -> Vec<u8> {
     query.extend_from_slice(&record_type.to_be_bytes());
     query.extend_from_slice(&1_u16.to_be_bytes());
     query
+}
+
+fn append_tcp_dns_frame(frames: &mut Vec<u8>, query: &[u8]) {
+    let length = u16::try_from(query.len()).expect("the test DNS question fits in a TCP frame");
+    frames.extend_from_slice(&length.to_be_bytes());
+    frames.extend_from_slice(query);
 }
 
 fn receive_dns_response(socket: &UdpSocket) -> io::Result<Vec<u8>> {
