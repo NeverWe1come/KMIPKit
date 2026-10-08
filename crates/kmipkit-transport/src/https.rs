@@ -888,13 +888,8 @@ async fn read_response_body(
             }
             return Ok(TransportResponse::new(response.into_bytes()));
         };
-        let frame = frame.map_err(|_| {
-            safe_error(
-                control.delivery_state(),
-                TransportCauseCategory::Http,
-                io::Error::other("HTTP response body failed"),
-            )
-        })?;
+        let frame =
+            frame.map_err(|error| io_error(io::Error::other(error), control.delivery_state()))?;
         if let Ok(data) = frame.into_data() {
             response
                 .append(&data, max_response_bytes)
@@ -1344,11 +1339,25 @@ fn io_error(error: io::Error, state: RequestDeliveryState) -> TransportError {
 fn hyper_error_cause(error: &hyper::Error) -> TransportCauseCategory {
     if error.is_parse() || error.is_incomplete_message() {
         TransportCauseCategory::Http
-    } else if error.is_timeout() {
+    } else if error.is_timeout() || hyper_error_has_io_timeout(error) {
         TransportCauseCategory::Timeout
     } else {
         TransportCauseCategory::Io
     }
+}
+
+fn hyper_error_has_io_timeout(error: &hyper::Error) -> bool {
+    let mut source = std::error::Error::source(error);
+    while let Some(current) = source {
+        if current
+            .downcast_ref::<io::Error>()
+            .is_some_and(|error| error.kind() == io::ErrorKind::TimedOut)
+        {
+            return true;
+        }
+        source = std::error::Error::source(current);
+    }
+    false
 }
 
 fn io_error_cause(kind: io::ErrorKind) -> TransportCauseCategory {
