@@ -78,5 +78,9 @@ this host; Windows symlink-following remains a platform verification gap.
 
 T035 establishes the direct HTTPS HTTP/1 request path. It does not complete
 the response validation, parser hardening, or connection reuse test matrix
-assigned to T037–T039. Independent read-only review of the T035 source range
-is pending.
+assigned to T037–T039. Independent QA found a P2 cancellation gap: the local
+`JoinHandle` was aborted only after `exchange_on_worker` returned normally, so
+worker cancellation could drop the handle and detach the Hyper driver. The
+test-first correction is tracked as T035a in
+`.superpowers/sdd/013-production-transport/task-35a-report.md`; T037 is paused
+until that correction is Green and re-reviewed.
