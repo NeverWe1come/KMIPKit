@@ -27,6 +27,7 @@ jobs:
       RUSTDOCFLAGS: -D warnings
     steps:
       - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
@@ -34,19 +35,57 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust toolchain and components
+        id: install-rust-toolchain-and-components
         run: rustup toolchain install "${{ matrix.rust }}" --profile minimal --component rustfmt --component clippy
 
       - name: Check formatting
+        id: check-formatting
         run: cargo fmt --all --check
 
       - name: Run Clippy
+        id: run-clippy
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
       - name: Run workspace tests
+        id: run-workspace-tests
         run: cargo test --workspace --all-features --locked
 
       - name: Build documentation
+        id: build-documentation
         run: cargo doc --workspace --all-features --no-deps --locked
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
 
   script-contracts:
     if: github.event_name == 'pull_request'
@@ -58,12 +97,14 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Set up Python 3.12
+        id: set-up-python-3-12
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
         with:
           version: '0.12.23'
@@ -72,9 +113,11 @@ jobs:
           no-project: true
 
       - name: Install pinned Python contract dependencies
+        id: install-pinned-python-contract-dependencies
         run: uv pip install --requirement tools/api_manifest/requirements-test.txt
 
       - name: Run Python contracts
+        id: run-python-contracts
         shell: pwsh
         run: |
           $pythonRelativePath = if ($IsWindows) { 'Scripts/python.exe' } else { 'bin/python' }
@@ -92,7 +135,41 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run PowerShell contracts
+        id: run-powershell-contracts
         run: pwsh -File scripts/tests/Test-Wsl.ps1
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
 
   language-bindings:
     if: github.event_name == 'pull_request'
@@ -108,15 +185,18 @@ jobs:
       RUSTUP_TOOLCHAIN: '1.94'
     steps:
       - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Install Rust 1.94
+        id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
 
       - name: Set up Java 17
+        id: set-up-java-17
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # actions/setup-java v6.0.1
         with:
           distribution: temurin
@@ -124,11 +204,13 @@ jobs:
           cache: maven
 
       - name: Set up Maven 3.9.16
+        id: set-up-maven-3-9-16
         uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # stCarolas/setup-maven v5.1
         with:
           maven-version: '3.9.16'
 
       - name: Set up Python 3.12
+        id: set-up-python-3-12
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
         with:
           version: '0.12.23'
@@ -137,28 +219,34 @@ jobs:
           no-project: true
 
       - name: Set up CMake 3.31.6
+        id: set-up-cmake-3-31-6
         uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # lukka/get-cmake v4.4.2
         with:
           cmakeVersion: '3.31.6'
           ninjaVersion: '1.13.2'
 
       - name: Build the C consumer and example
+        id: build-the-c-consumer-and-example
         run: |
           cargo build --locked -p kmipkit-ffi
 
       - name: Configure the C consumer with MSVC
+        id: configure-the-c-consumer-with-msvc
         if: runner.os == 'Windows'
         run: cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer
 
       - name: Configure the C consumer with Ninja
+        id: configure-the-c-consumer-with-ninja
         if: runner.os != 'Windows'
         run: cmake -G Ninja -S bindings/c -B build/c-consumer
 
       - name: Compile the C consumer and example
+        id: compile-the-c-consumer-and-example
         run: |
           cmake --build build/c-consumer --config Release
 
       - name: Run the C consumer and example
+        id: run-the-c-consumer-and-example
         shell: pwsh
         run: |
           if ($IsWindows) {
@@ -169,14 +257,54 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run Java 17 JNI tests and example
+        id: run-java-17-jni-tests-and-example
         run: mvn --batch-mode --file bindings/java/pom.xml test
 
       - name: Build the Python Maturin CFFI package and run tests and example
+        id: build-the-python-maturin-cffi-package-and-run-tests-and-exam
+        shell: pwsh
         run: |
           uv pip install --requirement bindings/python/requirements-coverage.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           uv pip install --no-build-isolation bindings/python
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m pytest -q bindings/python/tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python bindings/python/examples/vendor_extension_registry.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
 
   ffi-sanitizer:
     if: github.event_name == 'pull_request'
@@ -187,57 +315,139 @@ jobs:
       RUSTUP_TOOLCHAIN: nightly
       ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+    outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
       - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Install nightly Rust
+        id: install-nightly-rust
         run: rustup toolchain install nightly --profile minimal
 
       - name: Build the Rust C ABI under AddressSanitizer
+        id: build-the-rust-c-abi-under-addresssanitizer
         run: cargo +nightly rustc --locked -p kmipkit-ffi --lib -- -Zsanitizer=address
 
       - name: Run the C consumer against the instrumented Rust FFI
+        id: run-the-c-consumer-against-the-instrumented-rust-ffi
         run: |
           mkdir -p target/sanitizers
           cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include bindings/c/tests/extension_registry.c -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi -o target/sanitizers/extension_registry_consumer
           target/sanitizers/extension_registry_consumer
 
       - name: Run the JNI zeroization owner test under native sanitizers
+        id: run-the-jni-zeroization-owner-test-under-native-sanitizers
         run: |
           mkdir -p target/sanitizers
           c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer bindings/java/native/tests/zeroizing_bytes_test.cpp -o target/sanitizers/zeroizing_bytes_test
           target/sanitizers/zeroizing_bytes_test
 
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
+
   fuzz-smoke:
     if: github.event_name == 'pull_request'
     name: Fuzz smoke / extension schema
     runs-on: ubuntu-latest
+    outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
       - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Install nightly Rust
+        id: install-nightly-rust
         run: rustup toolchain install nightly --profile minimal
 
       - name: Install pinned cargo-fuzz
+        id: install-pinned-cargo-fuzz
         run: cargo +nightly install cargo-fuzz --version 0.13.2 --locked
 
       - name: Fuzz the bounded extension schema target
+        id: fuzz-the-bounded-extension-schema-target
         run: cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
 
   normative-inventory:
     if: github.event_name == 'pull_request'
     name: Normative inventory / immutable sources and coverage
     runs-on: ubuntu-latest
+    outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
       - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
@@ -245,22 +455,61 @@ jobs:
           persist-credentials: false
 
       - name: Check pinned OASIS tree against exact PR base
+        id: check-pinned-oasis-tree-against-exact-pr-base
         run: python3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha '${{ github.event.pull_request.base.sha }}'
 
       - name: Compare source candidates with reviewed clause ledger
+        id: compare-source-candidates-with-reviewed-clause-ledger
         run: python3 -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha '${{ github.event.pull_request.base.sha }}' --check
 
       - name: Validate complete normative catalog
+        id: validate-complete-normative-catalog
         run: python3 -B tools/normative_catalog/validate.py --repo-root .
 
       - name: Verify generated coverage report
+        id: verify-generated-coverage-report
         run: python3 -B tools/normative_catalog/report.py --repo-root . --check
 
       - name: Verify generated TTLV tag allocations
+        id: verify-generated-ttlv-tag-allocations
         run: python3 -B tools/normative_catalog/generate_ttlv_tags.py --repo-root . --check
 
       - name: Verify generated result mappings
+        id: verify-generated-result-mappings
         run: python3 -B tools/normative_catalog/generate_result_values.py --repo-root . --check
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
 
   coverage:
     if: github.event_name == 'pull_request'
@@ -281,6 +530,7 @@ jobs:
       RUSTUP_TOOLCHAIN: stable
     steps:
       - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
@@ -288,13 +538,16 @@ jobs:
           persist-credentials: false
 
       - name: Install stable Rust
+        id: install-stable-rust
         run: rustup toolchain install stable --profile minimal
 
       - name: Install matching LLVM coverage tools
+        id: install-matching-llvm-coverage-tools
         if: matrix.platform == 'ubuntu'
         run: rustup component add llvm-tools-preview --toolchain stable
 
       - name: Install pinned coverage tool
+        id: install-pinned-coverage-tool
         run: cargo install cargo-llvm-cov --version 0.9.1 --locked
 
       - name: Check production source eligibility
@@ -307,10 +560,12 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Export LLVM JSON coverage
+        id: export-llvm-json-coverage
         if: steps.source.outputs.eligible == 'true'
         run: cargo llvm-cov --workspace --all-features --locked --json --output-path coverage-raw.json
 
       - name: Normalize coverage paths
+        id: normalize-coverage-paths
         if: steps.source.outputs.eligible == 'true'
         shell: pwsh
         run: |
@@ -320,11 +575,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Collect C consumer FFI coverage
+        id: collect-c-consumer-ffi-coverage
         if: steps.source.outputs.eligible == 'true' && matrix.platform == 'ubuntu'
         shell: bash
         run: bash scripts/collect_ffi_coverage.sh coverage-ffi
 
       - name: Upload platform coverage report
+        id: upload-platform-coverage-report
         if: steps.source.outputs.eligible == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
@@ -333,6 +590,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload C consumer FFI coverage report
+        id: upload-c-consumer-ffi-coverage-report
         if: steps.source.outputs.eligible == 'true' && matrix.platform == 'ubuntu'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
@@ -341,12 +599,46 @@ jobs:
           if-no-files-found: error
 
       - name: Upload explicit unavailable status
+        id: upload-explicit-unavailable-status
         if: steps.source.outputs.eligible == 'false'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
           name: coverage-${{ matrix.platform }}
           path: coverage-status.json
           if-no-files-found: error
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
 
   coverage-gate:
     if: always() && github.event_name == 'pull_request'
@@ -355,14 +647,18 @@ jobs:
     needs:
       - coverage
       - adapter-coverage
+    outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
       - name: Require successful platform and adapter coverage collection
+        id: require-successful-platform-and-adapter-coverage-collection
         if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')
         run: |
           echo "Coverage matrix result: ${{ needs.coverage.result }}; adapter coverage result: ${{ needs.adapter-coverage.result }}" >&2
           exit 1
 
       - name: Summarize failed platform or adapter collection
+        id: summarize-failed-platform-or-adapter-collection
         if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')
         env:
           COVERAGE_RESULT: ${{ needs.coverage.result }}
@@ -391,12 +687,46 @@ jobs:
         run: python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base "${{ github.event.pull_request.base.sha }}" --merge "${{ github.sha }}" --summary-file "$GITHUB_STEP_SUMMARY"
 
       - name: Summarize skipped coverage aggregation
+        id: summarize-skipped-coverage-aggregation
         if: always() && needs.coverage.result == 'success' && needs.adapter-coverage.result == 'success' && steps.enforce.outcome == 'skipped'
         env:
           CHECKOUT_RESULT: ${{ steps.checkout.outcome }}
           DOWNLOAD_RESULT: ${{ steps.download.outcome }}
         run: |
           printf '### Coverage gate\n\n**Result:** ❌ FAIL — aggregation did not run.\n\n- Checkout result: `%s`.\n- Download result: `%s`.\n\n' "$CHECKOUT_RESULT" "$DOWNLOAD_RESULT" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
 
   adapter-coverage:
     if: github.event_name == 'pull_request'
@@ -407,17 +737,22 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
       RUSTUP_TOOLCHAIN: '1.94'
+    outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
       - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Install Rust 1.94
+        id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
 
       - name: Set up Java 17
+        id: set-up-java-17
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # actions/setup-java v6.0.1
         with:
           distribution: temurin
@@ -425,11 +760,13 @@ jobs:
           cache: maven
 
       - name: Set up Maven 3.9.16
+        id: set-up-maven-3-9-16
         uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # stCarolas/setup-maven v5.1
         with:
           maven-version: '3.9.16'
 
       - name: Set up Python 3.12
+        id: set-up-python-3-12
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
         with:
           version: '0.12.23'
@@ -438,12 +775,14 @@ jobs:
           no-project: true
 
       - name: Install LLVM 20.1.8 for JNI coverage
+        id: install-llvm-20-1-8-for-jni-coverage
         uses: KyleMayes/install-llvm-action@ebc0426251bc40c7cd31162802432c68818ab8f0 # KyleMayes/install-llvm-action v2.0.9
         with:
           version: '20.1.8'
           directory: ${{ runner.temp }}/llvm-20
 
       - name: Add versioned LLVM tool names
+        id: add-versioned-llvm-tool-names
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/llvm-20-tools"
@@ -453,6 +792,7 @@ jobs:
           echo "$RUNNER_TEMP/llvm-20-tools" >> "$GITHUB_PATH"
 
       - name: Run Java tests and collect JaCoCo report
+        id: run-java-tests-and-collect-jacoco-report
         shell: bash
         run: |
           mvn --batch-mode --file bindings/java/pom.xml clean verify
@@ -460,6 +800,7 @@ jobs:
           cp bindings/java/target/site/jacoco/jacoco.xml coverage-java/jacoco.xml
 
       - name: Run Python coverage suite
+        id: run-python-coverage-suite
         shell: bash
         run: |
           uv pip install --requirement bindings/python/requirements-coverage.txt
@@ -471,6 +812,7 @@ jobs:
             --cov-report=xml:coverage-python/coverage.xml
 
       - name: Run JNI coverage suite
+        id: run-jni-coverage-suite
         shell: bash
         run: |
           bash scripts/collect_jni_coverage.sh target/coverage-jni
@@ -478,6 +820,7 @@ jobs:
           cp target/coverage-jni/coverage.json coverage-jni/coverage.json
 
       - name: Upload Java coverage report
+        id: upload-java-coverage-report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
           name: coverage-java
@@ -485,6 +828,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Python coverage report
+        id: upload-python-coverage-report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
           name: coverage-python
@@ -492,38 +836,111 @@ jobs:
           if-no-files-found: error
 
       - name: Upload JNI coverage report
+        id: upload-jni-coverage-report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
           name: coverage-jni
           path: coverage-jni/coverage.json
           if-no-files-found: error
 
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
+
   dependency-policy:
     name: Dependency policy / pull request
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
       - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Run root and fuzz dependency policy
+        id: run-root-and-fuzz-dependency-policy
         shell: pwsh
         run: ./scripts/Test-DependencyPolicy.ps1
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
 
   scheduled-dependency-policy:
     name: Dependency policy / active release schedule
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
       release_ref: ${{ steps.active-release.outputs.release_ref }}
       scanned_commit: ${{ steps.scanned-commit.outputs.scanned_commit }}
     env:
       ACTIVE_RELEASE_REF: release/1.0.0
     steps:
       - name: Checkout configured active release
+        id: checkout-configured-active-release
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ env.ACTIVE_RELEASE_REF }}
@@ -540,8 +957,42 @@ jobs:
         run: 'sha="$(git rev-parse HEAD)"; echo "Scanned commit: $sha"; echo "scanned_commit=$sha" >> "$GITHUB_OUTPUT"'
 
       - name: Run root and fuzz dependency policy
+        id: run-root-and-fuzz-dependency-policy
         shell: pwsh
         run: ./scripts/Test-DependencyPolicy.ps1
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
 
   branch-coverage:
     name: Informational branch coverage / nightly
@@ -549,9 +1000,11 @@ jobs:
     if: github.event_name == 'schedule'
     continue-on-error: true
     outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
       summary_status: ${{ steps.summarize.outputs.status }}
     steps:
       - name: Checkout workflow commit
+        id: checkout-workflow-commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
@@ -600,6 +1053,39 @@ jobs:
           printf '### Informational branch coverage\n\n- Result: `%s`\n- This check is informational and does not gate pull-request CI.\n' "$status" >> "$GITHUB_STEP_SUMMARY"
           printf 'status=%s\n' "$status" >> "$GITHUB_OUTPUT"
 
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
+
   run-summary:
     name: CI summary / at a glance
     if: always()
@@ -619,12 +1105,58 @@ jobs:
       - branch-coverage
     steps:
       - name: Checkout workflow commit
+        id: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Write run summary
+        id: write-summary
         env:
           CI_NEEDS_JSON: ${{ toJSON(needs) }}
         run: python3 scripts/ci_summary.py
+
+      - name: Fallback summary when checkout or rendering fails
+        id: fallback-summary
+        if: always() && (steps.checkout.outcome != 'success' || steps.write-summary.outputs.summary_written != 'true')
+        shell: pwsh
+        run: |
+          '### ❌ Normal CI run summary could not be rendered' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          '' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          'Checkout or the normal summary renderer failed. Open this job log and the failed upstream job summaries for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          Write-Error 'Normal CI run summary could not be rendered.'
+          exit 1
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }

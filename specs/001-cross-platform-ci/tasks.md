@@ -23,6 +23,9 @@
 | FR-012 | T009, T011 |
 | FR-013 | T040, T041 |
 | FR-014 | T043, T044, T045, T046, T047 |
+| FR-015 | T049, T050, T051, T052 |
+| FR-016 | T049, T050, T051, T052 |
+| FR-017 | T049, T050, T051, T052 |
 | SC-001 | T010, T011 |
 | SC-002 | T010, T011 |
 | SC-003 | T013, T014, T015 |
@@ -33,6 +36,7 @@
 | SC-008 | T008, T009, T011 |
 | SC-009 | T040, T041, T042 |
 | SC-010 | T043, T044, T045, T046, T047 |
+| SC-011 | T049, T050, T051, T052 |
 
 ## Phase 1: Setup
 
@@ -128,6 +132,14 @@
 - [x] T046 [US4] Run the complete Python, normative catalog, PowerShell, Rust, workflow, and diff checks; review summary correctness and evidence before requesting review. Evidence: Python script suite 156 passed (25 skipped because the pinned cargo-deny binary or Windows symlink privileges were unavailable); normative catalog suite 169 passed (7 Windows symlink skips); catalog validate/report/generated checks passed; PowerShell WSL suite passed 8 contracts; `pwsh -File scripts/Test-Wsl.ps1` passed; Rust 1.94.0 fmt, Clippy, and rustdoc passed; isolated-target `cargo llvm-cov --workspace --all-features --locked --summary-only` passed with 95.69% line coverage; `git diff --check` passed. Workflow syntax was reviewed through workflow contract tests; standalone actionlint/YAML parser was not installed.
 - [x] T047 [US4] Refactor the summary implementation without changing its output contract; rerun relevant checks and record separate Refactor evidence. Refactor evidence: `python -m unittest discover -s scripts/tests -p 'test_*.py'` passed 156 tests (25 environment/tool skips); `git diff --check` passed.
 - [x] T048 [US4] Push the feature branch and prepare the draft PR against `release/1.0.0` with rationale, verification, risks, and Red/Green/Refactor evidence. Draft PR: [#42](https://github.com/NeverWe1come/KMIPKit/pull/42).
+
+## Phase 10: Per-job CI failure diagnostics
+
+- [x] T049 [US5] Extend summary and workflow contracts to require actionable final diagnostics for every job and complete required-job accounting in the run Summary. RED evidence: commit `a43c51a`; running the focused contracts from that commit archive produced the expected 31 failures and 2 errors across 51 tests.
+- [x] T050 [US5] Add a tested diagnostic renderer for failed steps, wire an always-running final diagnostic step into each job, and include all event-required jobs and available diagnostics in the run Summary. GREEN evidence: commits `e7152ac`, `aeffe68`, and `91e68f8`; the focused diagnostic/summary/workflow suite passed 54 tests and the full script suite passed 216 tests (26 skipped). Follow-up RED commits `b770e6a` and `b7c00df` captured GitHub's null matrix context and specific normative/coverage failure guidance.
+- [x] T051 [US5] Update the testing guide and approved CI specification/task traceability; add a fallback Summary if run-summary checkout/rendering fails; verify Markdown escaping, exit-status preservation, event-specific skips, matrix failures, and scheduled informational behavior. The approved specification and traceability were included with RED; the testing guide documents the job summaries, step logs, matrix behavior, and fallback.
+- [x] T052 Run the complete Python script contracts, normative catalog suite and generated checks, PowerShell contracts, relevant Rust checks, and `git diff --check`; record Refactor evidence and prepare a draft PR from `feature/001-ci-failure-diagnostics` to `release/1.0.0`. Verification: `python -B -m unittest discover -s scripts/tests -p 'test_*.py'` passed 216 tests (26 skipped); normative catalog tests passed 170 (7 skipped); catalog validation, generated report/tag/result checks, and immutable OASIS source check passed; `pwsh -File scripts/tests/Test-Wsl.ps1` passed 8 contracts; `cargo fmt --all --check`, workspace Clippy, tests, rustdoc, and `cargo llvm-cov --workspace --all-features --locked --summary-only` passed (77.84% aggregate; this command does not enforce the multi-platform CI gate); workflow contracts passed; `git diff --check` passed. No standalone YAML parser or actionlint is installed in this environment. Draft PR: [#54](https://github.com/NeverWe1come/KMIPKit/pull/54).
+- [x] T053 Fix run-summary fallback ordering so it runs only after the normal renderer had a chance to set `summary_written`; regression RED: commit `5f32a44` failed because fallback preceded the renderer; GREEN: commit `afea0a3` moved fallback after rendering; REFACTOR evidence commit updates this record. The focused workflow contract passed; `python -m unittest discover -s scripts/tests -v` passed 216 tests (26 skipped); `git diff --check` passed. GitHub run `37741079314` passed all required PR checks; `CI summary / at a glance` succeeded and its fallback was skipped.
 
 ## Dependencies
 
