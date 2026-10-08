@@ -6,10 +6,10 @@
 //! only during the synchronous call, must not log or retain it, and must not
 //! retry automatically. The typed client remains a separate API and does not
 //! accept an arbitrary caller-provided [`Transport`].
-//! This crate revision exposes the config types and byte-exchange trait but
-//! does not yet provide concrete raw-TLS or HTTPS adapters. The top-level
-//! `kmipkit` facade does not re-export this crate, and
-//! `kmipkit-client::Client` does not accept a caller-implemented transport.
+//! [`RawTlsTransport`] provides the concrete raw-TLS adapter. The HTTPS
+//! adapter is introduced separately. The top-level `kmipkit` facade does not
+//! re-export this crate, and `kmipkit-client::Client` does not accept a
+//! caller-implemented transport.
 //!
 //! # Validated transport configuration
 //!
@@ -52,11 +52,9 @@
 //! connect, 30 s for write inactivity, 30 s for read inactivity, and 60 s for
 //! the absolute exchange deadline. [`RequestOptions`] carries optional
 //! per-exchange overrides, and [`TimeoutPolicy::with_overrides`] shows how
-//! those values compose with client defaults. When the concrete raw-TLS and
-//! HTTPS adapters are added, each exposes an additive `exchange_with_options`
-//! entry point accepting these options; those concrete methods are not yet
-//! available in this crate revision. Unspecified phases inherit the config's
-//! [`TimeoutPolicy`].
+//! those values compose with client defaults. [`RawTlsTransport`] exposes an
+//! additive `exchange_with_options` entry point accepting these options;
+//! unspecified phases inherit the config's [`TimeoutPolicy`].
 //!
 //! # Credential files and diagnostics
 //!
@@ -228,6 +226,7 @@
 
 mod config;
 mod error;
+mod raw_tls;
 mod response;
 mod secret;
 // T019 exercises this private builder before T023 connects production adapters.
@@ -254,6 +253,7 @@ pub use config::{
     TransportConfigError, TrustSource,
 };
 pub use error::{RequestDeliveryState, TransportCauseCategory, TransportError};
+pub use raw_tls::RawTlsTransport;
 pub use response::TransportResponse;
 
 /// A synchronous, bounded exchange of caller-supplied request bytes.

@@ -157,7 +157,7 @@ fn raw_tls_rejects_unknown_server_ca() {
 
     let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
     assert_not_sent(
-        result,
+        &result,
         "an unknown server CA is rejected before request dispatch",
     );
     let peer = peer.join().expect("the local TLS peer thread completes");
@@ -185,7 +185,7 @@ fn raw_tls_rejects_expired_server_certificate() {
 
     let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
     assert_not_sent(
-        result,
+        &result,
         "an expired server certificate is rejected before request dispatch",
     );
     let peer = peer.join().expect("the local TLS peer thread completes");
@@ -218,7 +218,7 @@ fn raw_tls_rejects_server_name_mismatch() {
 
     let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
     assert_not_sent(
-        result,
+        &result,
         "a hostname mismatch is rejected before request dispatch",
     );
     let peer = peer.join().expect("the local TLS peer thread completes");
@@ -251,7 +251,7 @@ fn raw_tls_rejects_server_certificate_revoked_by_caller_crl() {
 
     let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
     assert_not_sent(
-        result,
+        &result,
         "a caller-revoked server certificate is rejected before request dispatch",
     );
     let peer = peer.join().expect("the local TLS peer thread completes");
@@ -283,10 +283,9 @@ fn assert_request_owner_zeroized(observer: &secret::SecretBufferObserver, reques
     );
 }
 
-fn assert_not_sent(result: Result<TransportResponse, TransportError>, message: &str) {
-    let error = match result {
-        Ok(_) => panic!("{message}"),
-        Err(error) => error,
+fn assert_not_sent(result: &Result<TransportResponse, TransportError>, message: &str) {
+    let Err(error) = result else {
+        panic!("{message}");
     };
     assert_eq!(
         error.delivery_state(),
@@ -376,6 +375,7 @@ fn server_config(pki: &impl PkiMaterial, require_client_auth: bool) -> Arc<Serve
     Arc::new(config)
 }
 
+#[derive(Clone, Copy)]
 enum PeerAction {
     RespondOnce,
     CloseWithoutResponse,
@@ -383,6 +383,7 @@ enum PeerAction {
 }
 
 #[derive(Default)]
+#[allow(clippy::struct_excessive_bools)] // These fields record independent peer observations.
 struct PeerObservation {
     accepted: bool,
     handshake_completed: bool,
@@ -398,16 +399,16 @@ fn spawn_peer(
     request_len: usize,
     action: PeerAction,
 ) -> thread::JoinHandle<PeerObservation> {
-    thread::spawn(move || run_peer(listener, config, request_len, action))
+    thread::spawn(move || run_peer(&listener, config, request_len, action))
 }
 
 fn run_peer(
-    listener: TcpListener,
+    listener: &TcpListener,
     config: Arc<ServerConfig>,
     request_len: usize,
     action: PeerAction,
 ) -> PeerObservation {
-    let Ok((mut stream, _)) = accept_before_deadline(&listener) else {
+    let Ok((mut stream, _)) = accept_before_deadline(listener) else {
         return PeerObservation::default();
     };
     let mut observation = PeerObservation {

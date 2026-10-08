@@ -23,6 +23,20 @@ impl SecretBuffer {
         }
     }
 
+    #[allow(dead_code)] // Raw TLS consumes this in a separate source-including test target.
+    pub(crate) fn try_copy_from_slice(bytes: &[u8]) -> io::Result<Self> {
+        Ok(Self::new(copy_secret_bytes(bytes)?))
+    }
+
+    #[cfg(test)]
+    #[allow(dead_code)] // The source-including raw TLS contract supplies this observer.
+    pub(crate) fn try_copy_from_slice_with_observer_for_test(
+        bytes: &[u8],
+        observer: SecretBufferObserver,
+    ) -> io::Result<Self> {
+        Ok(Self::with_observer(copy_secret_bytes(bytes)?, observer))
+    }
+
     pub(crate) fn read_from<R: Read>(reader: R) -> io::Result<Self> {
         Self::read_from_owned(reader, Self::new(Vec::new()))
     }
@@ -106,6 +120,14 @@ impl SecretBuffer {
     pub(crate) fn as_slice(&self) -> &[u8] {
         &self.bytes
     }
+}
+
+fn copy_secret_bytes(bytes: &[u8]) -> io::Result<Vec<u8>> {
+    let mut copy = Vec::new();
+    copy.try_reserve_exact(bytes.len())
+        .map_err(|_| credential_read_error())?;
+    copy.extend_from_slice(bytes);
+    Ok(copy)
 }
 
 fn credential_read_error() -> io::Error {

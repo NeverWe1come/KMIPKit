@@ -12,7 +12,7 @@ use hyper::http::Request;
 use hyper::rt::{Read as HyperRead, ReadBufCursor as HyperReadBufCursor, Write as HyperWrite};
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf as TokioReadBuf};
 use tokio::time::{Instant as TokioInstant, Sleep};
-use zeroize::Zeroize;
+use zeroize::{Zeroize, Zeroizing};
 
 use crate::RequestDeliveryState;
 use crate::worker::ExchangeControl;
@@ -99,6 +99,40 @@ where
                 scratch.zeroize();
                 Poll::Pending
             }
+        }
+    }
+}
+
+// Tokio's extension traits are convenient for the raw-TLS adapter. Forward
+// their polls through the Hyper traits so both adapters share one deadline
+// state and the same response-delivery observation path.
+impl<I> AsyncRead for DeadlineIo<I>
+where
+    I: AsyncRead + AsyncWrite,
+{
+    fn poll_read(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buffer: &mut TokioReadBuf<'_>,
+    ) -> Poll<io::Result<()>> {
+        let this = self.get_mut();
+        let capacity = buffer.remaining().min(READ_BUFFER_SIZE);
+        if capacity == 0 {
+            return Poll::Ready(Ok(()));
+        }
+
+        let mut scratch = Zeroizing::new([0_u8; READ_BUFFER_SIZE]);
+        let mut hyper_buffer = hyper::rt::ReadBuf::new(&mut scratch[..capacity]);
+        match HyperRead::poll_read(Pin::new(this), cx, hyper_buffer.unfilled()) {
+            Poll::Ready(Ok(())) => {
+                let bytes_read = hyper_buffer.filled().len();
+                if bytes_read > 0 {
+                    buffer.put_slice(&scratch[..bytes_read]);
+                }
+                Poll::Ready(Ok(()))
+            }
+            Poll::Ready(Err(error)) => Poll::Ready(Err(error)),
+            Poll::Pending => Poll::Pending,
         }
     }
 }
@@ -210,6 +244,27 @@ where
             Poll::Ready(Err(error)) => Poll::Ready(Err(sanitize_io_error(error))),
             Poll::Pending => Poll::Pending,
         }
+    }
+}
+
+impl<I> AsyncWrite for DeadlineIo<I>
+where
+    I: AsyncRead + AsyncWrite,
+{
+    fn poll_write(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buffer: &[u8],
+    ) -> Poll<io::Result<usize>> {
+        HyperWrite::poll_write(self, cx, buffer)
+    }
+
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        HyperWrite::poll_flush(self, cx)
+    }
+
+    fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        HyperWrite::poll_shutdown(self, cx)
     }
 }
 

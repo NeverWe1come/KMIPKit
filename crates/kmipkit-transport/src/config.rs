@@ -75,6 +75,19 @@ impl Endpoint {
         }
     }
 
+    pub(crate) fn raw_tls_address(&self) -> Result<(String, u16), TransportConfigError> {
+        match &self.0 {
+            EndpointInput::RawTls { host, port } => {
+                let host = host
+                    .strip_prefix('[')
+                    .and_then(|value| value.strip_suffix(']'))
+                    .unwrap_or(host);
+                Ok((host.to_owned(), *port))
+            }
+            EndpointInput::Https { .. } => Err(TransportConfigError::InvalidEndpoint),
+        }
+    }
+
     fn server_name(
         &self,
         override_name: Option<String>,

@@ -69,12 +69,24 @@ impl Resolver {
         host: &str,
         port: u16,
         deadline: Instant,
+        canceled: watch::Receiver<bool>,
+    ) -> Result<Vec<SocketAddr>, ResolveFailure> {
+        self.lookup_candidates_until(host, port, Some(deadline), canceled)
+            .await
+    }
+
+    /// Resolves a host while honoring cancellation and an optional deadline.
+    pub(crate) async fn lookup_candidates_until(
+        &self,
+        host: &str,
+        port: u16,
+        deadline: Option<Instant>,
         mut canceled: watch::Receiver<bool>,
     ) -> Result<Vec<SocketAddr>, ResolveFailure> {
         if *canceled.borrow() {
             return Err(ResolveFailure::Cancelled);
         }
-        if Instant::now() >= deadline {
+        if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
             return Err(ResolveFailure::Deadline);
         }
 
@@ -98,7 +110,7 @@ impl Resolver {
             () = wait_for_cancel(&mut canceled) => {
                 return Err(ResolveFailure::Cancelled);
             }
-            () = tokio::time::sleep_until(deadline.into()) => {
+            () = wait_until(deadline) => {
                 return Err(ResolveFailure::Deadline);
             }
             result = task.join() => result,
@@ -107,7 +119,7 @@ impl Resolver {
         let addresses = result
             .map_err(map_join_error)?
             .map_err(|_| ResolveFailure::Lookup)?;
-        finish_lookup(addresses, deadline, *canceled.borrow(), Instant::now())
+        finish_lookup_until(addresses, deadline, *canceled.borrow(), Instant::now())
     }
 }
 
@@ -120,6 +132,14 @@ async fn wait_for_cancel(canceled: &mut watch::Receiver<bool>) {
         if canceled.changed().await.is_err() {
             return;
         }
+    }
+}
+
+async fn wait_until(deadline: Option<Instant>) {
+    if let Some(deadline) = deadline {
+        tokio::time::sleep_until(deadline.into()).await;
+    } else {
+        std::future::pending::<()>().await;
     }
 }
 
@@ -192,7 +212,16 @@ fn finish_lookup(
     canceled: bool,
     now: Instant,
 ) -> Result<Vec<SocketAddr>, ResolveFailure> {
-    if now >= deadline {
+    finish_lookup_until(addresses, Some(deadline), canceled, now)
+}
+
+fn finish_lookup_until(
+    addresses: Vec<SocketAddr>,
+    deadline: Option<Instant>,
+    canceled: bool,
+    now: Instant,
+) -> Result<Vec<SocketAddr>, ResolveFailure> {
+    if deadline.is_some_and(|deadline| now >= deadline) {
         return Err(ResolveFailure::Deadline);
     }
     if canceled {

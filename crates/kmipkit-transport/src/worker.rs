@@ -264,7 +264,7 @@ impl ExchangeControl {
         delivery_for_state(self.state.load(Ordering::Acquire))
     }
 
-    fn subscribe_cancel(&self) -> watch::Receiver<bool> {
+    pub(crate) fn subscribe_cancel(&self) -> watch::Receiver<bool> {
         self.canceled.subscribe()
     }
 }

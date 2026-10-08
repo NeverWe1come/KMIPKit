@@ -312,7 +312,7 @@ async fn deadline_io_stops_reads_that_cannot_be_observed() {
     assert_eq!(error.kind(), io::ErrorKind::Interrupted);
 
     let mut empty_cursor = HyperReadBuf::new(&mut []);
-    poll_fn(|cx| Pin::new(&mut io).poll_read(cx, empty_cursor.unfilled()))
+    poll_fn(|cx| HyperRead::poll_read(Pin::new(&mut io), cx, empty_cursor.unfilled()))
         .await
         .expect("an empty Hyper cursor needs no read");
     assert_eq!(
@@ -514,7 +514,7 @@ async fn progress_resets_phase_deadlines_and_vectored_write_uses_the_inner_path(
     assert_eq!(read_once(&mut io, &mut byte).await.expect("read one"), 1);
     assert_eq!(read_once(&mut io, &mut byte).await.expect("read two"), 1);
     assert_eq!(write_once(&mut io, b"W").await.expect("write"), 1);
-    assert!(io.is_write_vectored());
+    assert!(HyperWrite::is_write_vectored(&io));
     let first = IoSlice::new(b"V");
     let second = IoSlice::new(b"X");
     assert_eq!(

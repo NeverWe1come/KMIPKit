@@ -168,6 +168,11 @@ impl TlsClientConfig {
         &self.rustls_config
     }
 
+    #[allow(dead_code)] // The raw TLS source-including contract is a separate test target.
+    pub(crate) fn rustls_config_arc(&self) -> &Arc<ClientConfig> {
+        &self.rustls_config
+    }
+
     pub(crate) fn server_name(&self) -> &ServerName<'static> {
         &self.server_name
     }
