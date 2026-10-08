@@ -75,6 +75,42 @@ class CiDiagnosticsTests(unittest.TestCase):
         self.assertIn("open the failed step's log", markdown.lower())
         self.assertNotIn("raw output", markdown.lower())
 
+    def test_normative_and_generated_checks_explain_the_specific_validation_failure(self) -> None:
+        diagnostics = self.require_diagnostics()
+
+        markdown, records = diagnostics.build_diagnostics(
+            job_id="normative-inventory",
+            matrix={},
+            steps={
+                "compare-source-candidates-with-reviewed-clause-ledger": {"outcome": "failure"},
+                "verify-generated-result-mappings": {"outcome": "failure"},
+            },
+        )
+
+        self.assertEqual(2, len(records))
+        self.assertIn("reviewed clause ledger", markdown.lower())
+        self.assertIn("generated result mappings are stale", markdown.lower())
+
+    def test_coverage_failure_steps_name_preflight_and_gate_reasons(self) -> None:
+        diagnostics = self.require_diagnostics()
+
+        markdown, records = diagnostics.build_diagnostics(
+            job_id="coverage-gate",
+            matrix={},
+            steps={
+                "source": {"outcome": "failure"},
+                "enforce": {"outcome": "failure"},
+                "summarize-failed-platform-or-adapter-collection": {"outcome": "failure"},
+                "summarize": {"outcome": "failure"},
+            },
+        )
+
+        self.assertEqual(4, len(records))
+        self.assertIn("Check production source eligibility", markdown)
+        self.assertIn("Enforce coverage thresholds", markdown)
+        self.assertIn("production source preflight failed", markdown.lower())
+        self.assertIn("upstream coverage collection failed", markdown.lower())
+
     def test_continue_on_error_step_is_still_described_without_gating_the_job(self) -> None:
         diagnostics = self.require_diagnostics()
 
