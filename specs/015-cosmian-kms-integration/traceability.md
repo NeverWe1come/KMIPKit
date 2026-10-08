@@ -20,5 +20,10 @@
 | KMIP Specification v2.1 §6.1.16, Table 213 | Operation Result Status is asserted to be Success | No failure/policy scenarios are included in this first test |
 | KMIP Specification v2.1 §9.16, Table 421 | Supported version contains `(2, 1)` | Does not establish all KMIP 2.1 behavior |
 
-The live integration assertion remains pending and must not be marked successful
-until it is actually executed against the pinned local server.
+The live integration assertion passed on 2026-10-08 against the local
+Cosmian KMS 5.28.0 image pinned by Compose (resolved digest
+`sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`):
+`cargo test -p kmipkit-client --test cosmian_kms -- --ignored` reported 1
+passed and 0 failed. This is evidence only for the typed Discover Versions
+exchange described above. The multiplatform coverage/CI gate and future
+operation coverage remain pending under T017.
