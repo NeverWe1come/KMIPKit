@@ -2,16 +2,16 @@
 
 Status: implementation snapshot and design baseline
 Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV and KMIPKIT-0007 client execution
-Last reviewed: 2026-10-06
+Last reviewed: 2026-10-08
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
 current executable controls from planned components. The repository includes
 the kmipkit-ttlv in-memory value model and public bounded decoder, the typed
-KMIPKIT-0007 execution path, and the public low-level exchange contract. The
-client supports explicit Discover Versions execution through a deterministic
-test fake but has no production constructor or live TLS/HTTPS backend.
-Additional protocol operations, production transports, FFI, and language
-bindings remain design scope unless their source and tests establish
+KMIPKIT-0007 execution path, the public low-level exchange contract, and
+production low-level raw TLS and HTTPS transports. The typed client supports
+explicit Discover Versions execution through a deterministic test fake but
+still has no production constructor. Additional protocol operations, FFI, and
+language bindings remain design scope unless their source and tests establish
 otherwise. Scenarios below remain hypotheses and security requirements unless
 a control is explicitly tied to executable evidence. The model must be
 revised as each executable boundary is introduced.
@@ -21,12 +21,14 @@ remains a release requirement before 1.0.
 
 ## 1. Overview
 
-KMIPKit is a client library that accepts application requests through Rust,
-C, Java, or Python APIs, converts them into KMIP 2.1 TTLV messages, and sends
-them to a configured KMIP server through raw TLS or HTTPS. One Rust core owns
-the wire model and protocol behavior; the C ABI and language adapters translate
-types and lifecycle conventions without reimplementing KMIP
-([architecture](../architecture/overview.md#system-shape)).
+KMIPKit is designed as a client library for Rust, C, Java, and Python. Its
+target architecture converts typed KMIP 2.1 operations into TTLV and sends
+them to a configured server through raw TLS or HTTPS. One Rust core owns the
+wire model and protocol behavior; the C ABI and language adapters are planned
+to translate types and lifecycle conventions without reimplementing KMIP
+([architecture](../architecture/overview.md#system-shape)). The current
+implemented surface is distinguished from that target in the evidence table
+below.
 
 ```mermaid
 flowchart LR
@@ -60,18 +62,18 @@ flowchart LR
 ### Components and evidence
 
 The generic TTLV value model, bounded public decoder, typed client execution
-foundation, and low-level transport contract are implemented. KMIPKIT-0007
-provides a test fake but no production Client constructor or live TLS/HTTPS
-backend. Other product component rows describe target design unless marked
-implemented; CI validation is implemented while package publication remains
-planned.
+foundation, low-level transport contract, and production low-level raw TLS and
+HTTPS adapters are implemented. KMIPKIT-0007 provides a test fake but no
+production typed Client constructor. Other product component rows describe
+target design unless marked implemented; CI validation is implemented while
+package publication remains planned.
 | Component | Responsibility | Security relevance | Evidence |
 |---|---|---|---|
 | Generic TTLV value model (implemented) | Construct and inspect typed in-memory values; preserve ordered Structures; check tag allocation and depth | Payload redaction and zeroization, bounded nesting, tag allocation; this model does not establish wire validity | `crates/kmipkit-ttlv/src/lib.rs:1-11`; `docs/architecture/public-api.md:34-49` |
 | Public TTLV decoder (implemented) | Decode one bounded untrusted item into the public generic tree | Memory and CPU bounds, malformed-input rejection, unknown value preservation, no raw-byte retention | `crates/kmipkit-ttlv/src/codec/decoder.rs:29-162`; `crates/kmipkit-ttlv/src/codec/mod.rs:18-24,181-209` |
 | Private client outbound writer (implemented; 0007 execute callsite) | Encodes only the closed typed request set through Client::execute; no general-purpose or public encoder | Execute-owned permit, one writer callsite, request owner through synchronous exchange, zeroization on drop, redacted diagnostics; this slice has no secret-bearing request operation | crates/kmipkit-client/src/wire_encoder.rs; crates/kmipkit-client/src/execute.rs; ADR-0012; specs/007-client-execution |
 | Protocol and client | Validate requests and correlate responses | Prevent semantic confusion, wrong-result delivery, and implicit retry | docs/architecture/overview.md |
-| Raw TLS and HTTPS transports (planned; not implemented) | Authenticate peers and carry messages | Server identity, client identity, confidentiality, framing, delivery state | docs/architecture/transport-security.md |
+| Raw TLS and HTTPS transports (implemented low-level adapters) | Authenticate peers and carry messages | Server identity, client identity, confidentiality, framing, delivery state; typed Client construction remains pending | `crates/kmipkit-transport/src/raw_tls.rs`; `crates/kmipkit-transport/src/https.rs`; `docs/architecture/transport-security.md` |
 | C ABI | Expose native functionality to foreign runtimes | Pointer validity, ownership, panic containment, stable layouts | `docs/architecture/ffi-and-bindings.md:3-33` |
 | Java and Python adapters | Offer idiomatic APIs and load native code | Native package integrity, secret copies, lifecycle and concurrency | `docs/architecture/ffi-and-bindings.md:46-81` |
 | Extension registry | Interpret optional vendor data | Untrusted schemas, semantic ambiguity, denial of service | `docs/architecture/extensions.md:18-59` |
@@ -81,9 +83,9 @@ planned.
 
 | Deployment or workflow | Resource or capability | Configuration and precedence | Safe effective value or location | Readers, writers, or recipients | Enforcing control | Evidence or unknowns |
 |---|---|---|---|---|---|---|
-| KMIP connection | Server endpoint and HTTPS path | Immutable client configuration; request cannot silently replace it | One explicit endpoint; `/kmip` is only the default HTTPS path | Caller, transport, configured server | URL validation, HTTPS-only policy, no redirects, no automatic alternative endpoint | Designed in `docs/architecture/transport-security.md:14-21,45-52`; implementation pending |
-| TLS authentication | Trust roots, server name, client certificate, private key, CRLs | Explicit caller values; platform trust only by explicit selection | Caller-provided memory or file reference; secrets must not enter logs | Caller and rustls transport | TLS 1.3, chain/validity/name verification, mTLS, no insecure switch | Designed in `docs/architecture/transport-security.md:23-43`; secure file permissions remain a caller duty |
-| KMIP authentication | Message credentials, OTPs, and tickets | Client defaults may be replaced per request or batch | No secret-bearing operation in KMIPKIT-0007; later typed operations must use explicit secret types | Caller, test-only typed execution path, authenticated KMIP server after approved transport exists | Redaction and initialized-byte zeroization are implemented for the typed execution lifecycle; a future secret-bearing operation requires its own owner-through-transport test before enablement | KMIPKIT-0007 uses Discover Versions only; foreign-runtime copies and external transport copies remain outside current evidence |
+| KMIP connection | Server endpoint and HTTPS path | Immutable client configuration; request cannot silently replace it | One explicit endpoint; `/kmip` is only the default HTTPS path | Caller, transport, configured server | URL validation, HTTPS-only policy, no redirects, no automatic alternative endpoint | Implemented in the low-level transport adapters; production typed Client construction remains pending. Evidence: `crates/kmipkit-transport/src/config.rs:91-184`; `crates/kmipkit-transport/src/https.rs:95-124` |
+| TLS authentication | Trust roots, server name, client certificate, private key, CRLs | Explicit caller values; platform trust only by explicit selection | Caller-provided memory or file reference; secrets must not enter logs | Caller and rustls transport | TLS 1.3, chain/validity/name verification, mTLS, no insecure switch | Implemented for the low-level transport with TLS 1.3, mandatory WebPKI verification, mTLS, and no early data or key logging; secure source-file permissions remain a caller duty. Evidence: `crates/kmipkit-transport/src/config.rs:461-544`; `crates/kmipkit-transport/src/tls.rs:196-259` |
+| KMIP authentication | Message credentials, OTPs, and tickets | No secret-bearing operation is present in KMIPKIT-0007; future typed operations must make credentials explicit | No current KMIP message credentials are in use; low-level transports carry caller-supplied bytes without defining KMIP authentication | Caller and a configured KMIP peer when a production typed operation path is available | Redaction and initialized-byte zeroization are implemented for the typed execution lifecycle; each future secret-bearing operation needs an owner-through-transport test before enablement | KMIPKIT-0007 uses Discover Versions only; foreign-runtime copies and external transport copies remain outside current evidence |
 | Native bindings | Rust-owned handles and result buffers | ABI version and structure size are checked at entry | Opaque handles; matching KMIPKit release functions own deallocation | C, JNI, CFFI callers | Fixed-width ABI, explicit lengths, panic containment, dedicated free functions | Designed in `docs/architecture/ffi-and-bindings.md:3-24`; implementation and sanitizer evidence pending |
 | Native package loading | Platform binary bundled with Java or Python package | Bundled binary first; explicit administrator path may override | Package-adjacent binary or private atomic extraction directory | Language runtime and current user | Package hash verification and ABI check; no runtime download | Designed in `docs/architecture/ffi-and-bindings.md:73-81`; exact extraction permissions and anti-swap procedure remain to be specified |
 | Vendor extensions | Data-only definitions in an immutable client registry | Explicit registration during client construction | Parsed, size-bounded in-memory schema | Caller, core validator, KMIP peer | Duplicate rejection, deterministic registration, core invariants cannot be disabled | Designed in `docs/architecture/extensions.md:18-59`; manifest format and complexity limits remain to be specified |

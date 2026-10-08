@@ -93,3 +93,36 @@ The Hyper parser explanation in `task-37-report.md` was corrected to distinguish
 `max_buf_size` from `max_header_size`. The Green configuration and passing
 boundary result are recorded there; the original T037 Red evidence remains
 intact.
+
+
+## Completion race correction and independent review
+
+The post-Green review found a race in which a successful HTTPS response could
+be cached before the worker committed exchange completion. Cancellation or the
+total deadline could then win while the connection remained reusable. The
+fix makes HTTPS completion and cancellation compete through the shared atomic
+terminal state and publishes the session only when completion wins. The worker
+also preserves a completion that committed before a later shutdown signal;
+when cancellation wins, dropping the session invalidates it and registers
+Hyper-driver cleanup before the worker snapshots delivery state.
+
+The fix kept Red and Green evidence in distinct commits:
+
+- Red `42c9185`: added a deterministic test for cancellation after complete
+  response receipt but before finalization. Before the fix, the assertion
+  failed because the canceled connection remained cached.
+- Red `80540b0`: added the completion-before-shutdown regression. Before the
+  worker change, shutdown replaced the committed response with `Closed`.
+- Green `28fc993`: commits completion before session publication and resolves
+  terminal worker events against the winning atomic state. The change also
+  verifies driver-cleanup acknowledgment before the canceled exchange returns.
+
+Independent QA reviewed `42c9185..28fc993` and reported no findings. It passed
+HTTPS 69/69, worker 25/25, `cargo fmt --all --check`, and `git diff --check`.
+The completed Codex Security diff scan for `fe9d886..28fc993` recorded complete
+coverage of both changed production files and both regression-test files, with
+zero security candidates; scan ID `83ffa0af-927d-4d63-8a1d-df8a2bd2246b`.
+
+The review also exposed stale status text in `docs/security/threat-model.md`.
+That document now distinguishes the implemented low-level raw TLS/HTTPS
+adapters from the still-unavailable production typed `Client` constructor.
