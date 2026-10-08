@@ -97,6 +97,32 @@ class ImmutableSourceGateTests(unittest.TestCase):
         with self.assertRaises(ImmutableSourceError):
             check_immutable_sources(self.root, self.base_sha)
 
+    def test_rejects_deleting_project_inventory(self) -> None:
+        self._git("rm", "--quiet", "specification/oasis/kmip-2.1/README.md")
+        with self.assertRaises(ImmutableSourceError):
+            check_immutable_sources(self.root, self.base_sha)
+
+    def test_rejects_adding_project_inventory_not_present_in_base(self) -> None:
+        path = "specification/oasis/kmip-2.1/README.md"
+        self._git("rm", "--quiet", path)
+        self._git("commit", "--quiet", "-m", "base without project inventory")
+        self.base_sha = self._git("rev-parse", "HEAD").decode().strip()
+        (self.root / path).write_text("New project inventory.\n", encoding="utf-8")
+        self._git("add", path)
+
+        with self.assertRaises(ImmutableSourceError):
+            check_immutable_sources(self.root, self.base_sha)
+
+    def test_rejects_renaming_project_inventory_to_other_allowlisted_path(self) -> None:
+        self._git("rm", "--quiet", "specification/oasis/kmip-2.1/SOURCES.md")
+        self._git(
+            "mv",
+            "specification/oasis/kmip-2.1/README.md",
+            "specification/oasis/kmip-2.1/SOURCES.md",
+        )
+        with self.assertRaises(ImmutableSourceError):
+            check_immutable_sources(self.root, self.base_sha)
+
     def test_rejects_modifying_fixture_that_already_exists_in_base(self) -> None:
         fixture = self.root / "specification/oasis/kmip-2.1/fixtures/TC-CREATE-SD-1-21.xml"
         fixture.parent.mkdir()
