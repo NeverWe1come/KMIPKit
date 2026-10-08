@@ -84,6 +84,26 @@ def _base_inventory_paths(root: Path, base_sha: str) -> set[str]:
     return {os.fsdecode(path) for path in output.split(b"\0") if path}
 
 
+def _is_permitted_change(
+    path: str,
+    statuses: set[str],
+    existing_fixture_paths: set[str],
+    existing_inventory_paths: set[str],
+) -> bool:
+    """Allow only edits to tracked inventories and additions of new fixtures."""
+    if path.startswith(UPSTREAM_ROOT):
+        return False
+    if path in PROJECT_INVENTORY_PATHS:
+        return path in existing_inventory_paths and statuses == {"M"}
+    if path.startswith(FIXTURE_ROOT):
+        return (
+            path not in existing_fixture_paths
+            and "A" in statuses
+            and statuses <= {"A", "M"}
+        )
+    return False
+
+
 def _base_fixture_paths(root: Path, base_sha: str) -> set[str]:
     """Return fixture paths already present in the exact base commit."""
     output = _git(
@@ -163,16 +183,12 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
     unsupported_paths = {
         path
         for path, statuses in changed_statuses.items()
-        if path.startswith(UPSTREAM_ROOT)
-        or (
-            path in PROJECT_INVENTORY_PATHS
-            and (path not in existing_inventory_paths or statuses != {"M"})
+        if not _is_permitted_change(
+            path,
+            statuses,
+            existing_fixture_paths,
+            existing_inventory_paths,
         )
-        or (
-            path.startswith(FIXTURE_ROOT)
-            and (path in existing_fixture_paths or "A" not in statuses or not statuses <= {"A", "M"})
-        )
-        or (path not in PROJECT_INVENTORY_PATHS and not path.startswith(FIXTURE_ROOT))
     }
     has_unsupported_untracked, untracked_fixture_count = _untracked_fixture_count(root)
     if unsupported_paths or has_unsupported_untracked:
