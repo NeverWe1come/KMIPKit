@@ -175,8 +175,10 @@ def main() -> int:
     try:
         steps = json.loads(os.environ.get("CI_STEPS_JSON", "{}"))
         matrix = json.loads(os.environ.get("CI_MATRIX_JSON", "{}"))
-        if not isinstance(steps, dict) or not isinstance(matrix, dict):
+        if not isinstance(steps, dict) or (matrix is not None and not isinstance(matrix, dict)):
             raise ValueError("CI_STEPS_JSON and CI_MATRIX_JSON must contain JSON objects.")
+        if matrix is None:
+            matrix = {}
         markdown, records = build_diagnostics(
             job_id=os.environ.get("CI_JOB_ID", "unknown"),
             matrix=matrix,
