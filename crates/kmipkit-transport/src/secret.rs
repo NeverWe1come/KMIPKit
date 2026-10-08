@@ -98,6 +98,8 @@ struct ObserverState {
     expected_initialized_len: usize,
     initialized_len: std::sync::atomic::AtomicUsize,
     initialized_range_was_zero: std::sync::atomic::AtomicBool,
+    replaced_allocation_count: std::sync::atomic::AtomicUsize,
+    all_replaced_allocations_were_zero: std::sync::atomic::AtomicBool,
 }
 
 #[cfg(test)]
@@ -109,6 +111,8 @@ impl SecretBufferObserver {
                 expected_initialized_len,
                 initialized_len: std::sync::atomic::AtomicUsize::new(0),
                 initialized_range_was_zero: std::sync::atomic::AtomicBool::new(false),
+                replaced_allocation_count: std::sync::atomic::AtomicUsize::new(0),
+                all_replaced_allocations_were_zero: std::sync::atomic::AtomicBool::new(true),
             }),
         }
     }
@@ -123,6 +127,28 @@ impl SecretBufferObserver {
         self.state
             .initialized_range_was_zero
             .load(std::sync::atomic::Ordering::Acquire)
+    }
+
+    pub(crate) fn replaced_allocation_count(&self) -> usize {
+        self.state
+            .replaced_allocation_count
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
+    pub(crate) fn all_replaced_allocations_were_zero(&self) -> bool {
+        self.state
+            .all_replaced_allocations_were_zero
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
+    fn record_replaced_allocation(&self, initialized_range_was_zero: bool) {
+        self.state
+            .replaced_allocation_count
+            .fetch_add(1, std::sync::atomic::Ordering::AcqRel);
+        self.state.all_replaced_allocations_were_zero.fetch_and(
+            initialized_range_was_zero,
+            std::sync::atomic::Ordering::AcqRel,
+        );
     }
 
     fn record(&self, initialized_len: usize, initialized_range_was_zero: bool) {
@@ -141,6 +167,8 @@ mod tests {
     use std::io::{self, Read};
 
     use super::{SecretBuffer, SecretBufferObserver};
+
+    static KEY_SENTINEL: [u8; 65_536] = [0xa7; 65_536];
 
     struct FailsAfterBytes {
         bytes: &'static [u8],
@@ -162,6 +190,28 @@ mod tests {
             }
 
             Err(io::Error::other("injected read failure"))
+        }
+    }
+
+    struct SplitKeyReader {
+        offset: usize,
+    }
+
+    impl Read for SplitKeyReader {
+        fn read(&mut self, destination: &mut [u8]) -> io::Result<usize> {
+            if destination.is_empty() || self.offset == KEY_SENTINEL.len() {
+                return Ok(0);
+            }
+
+            let remaining = &KEY_SENTINEL[self.offset..];
+            let count = if self.offset == 0 {
+                1
+            } else {
+                remaining.len().min(destination.len())
+            };
+            destination[..count].copy_from_slice(&remaining[..count]);
+            self.offset += count;
+            Ok(count)
         }
     }
 
@@ -188,6 +238,34 @@ mod tests {
         assert!(
             observer.initialized_range_was_zero(),
             "the read owner must zero initialized bytes before release"
+        );
+    }
+
+    #[test]
+    fn key_buffer_growth_zeroizes_each_replaced_allocation_before_release() {
+        let observer = SecretBufferObserver::new(KEY_SENTINEL.len());
+        let mut reader = SplitKeyReader { offset: 0 };
+        let result = SecretBuffer::read_from_with_observer_for_test(&mut reader, observer.clone());
+
+        assert!(result.is_ok(), "the split key reader must complete");
+        drop(result);
+
+        assert_eq!(
+            observer.initialized_len(),
+            KEY_SENTINEL.len(),
+            "the final owner must observe the complete initialized range"
+        );
+        assert!(
+            observer.initialized_range_was_zero(),
+            "the final allocation must be zeroized before release"
+        );
+        assert!(
+            observer.replaced_allocation_count() > 0,
+            "the read owner must report at least one replaced allocation"
+        );
+        assert!(
+            observer.all_replaced_allocations_were_zero(),
+            "every replaced allocation must be zeroized before release"
         );
     }
 }
