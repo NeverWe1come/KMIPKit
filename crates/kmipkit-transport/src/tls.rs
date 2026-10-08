@@ -26,6 +26,10 @@ use rustls::{DigitallySignedStruct, Error, SignatureScheme};
 use crate::config::TransportConfig;
 use crate::config::TransportConfigError;
 
+#[cfg(test)]
+#[path = "../tests/unit/tls_session_store_tests.rs"]
+mod session_store_tests;
+
 const MAX_TICKETS: usize = 16;
 const MAX_LOCAL_TICKET_AGE: Duration = Duration::from_hours(1);
 

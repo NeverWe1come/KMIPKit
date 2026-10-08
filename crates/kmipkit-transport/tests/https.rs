@@ -14,7 +14,8 @@ use std::time::{Duration, Instant};
 
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener, fixtures};
 pub use kmipkit_transport::{
-    RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
+    HttpsTransport, RequestDeliveryState, Transport, TransportCauseCategory, TransportError,
+    TransportResponse,
 };
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
@@ -71,13 +72,7 @@ fn https_redirects_do_not_follow_server_supplied_endpoint() {
         server_config(&pki),
         response.into_bytes(),
     );
-    let config = client_config(
-        &pki,
-        format!("https://{SERVER_NAME}:{}", source_address.port()),
-        None,
-        None,
-    );
-    let mut adapter = https::new_for_test_with_resolver(config, None, loopback_port_resolver());
+    let mut adapter = public_local_https_adapter(&pki, source_address);
 
     let error = adapter
         .exchange(fixtures::REQUEST_SENTINEL, 64)
@@ -154,13 +149,7 @@ fn https_proxy_environment_child() {
     let listener = LoopbackTcpListener::bind().expect("the direct HTTPS peer binds loopback");
     let address = listener.local_addr();
     let peer = spawn_peer(listener.into_inner(), server_config(&pki), true);
-    let config = client_config(
-        &pki,
-        format!("https://{SERVER_NAME}:{}", address.port()),
-        None,
-        None,
-    );
-    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+    let mut adapter = public_local_https_adapter(&pki, address);
 
     let response = adapter
         .exchange(fixtures::REQUEST_SENTINEL, 64)
@@ -183,18 +172,11 @@ fn https_does_not_store_cookies_negotiate_http2_or_request_compression() {
             b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\n\r\n".to_vec(),
         ],
     );
-    let config = client_config(
-        &pki,
-        format!("https://{SERVER_NAME}:{}", address.port()),
-        None,
-        None,
-    );
-    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+    let mut adapter = public_local_https_adapter(&pki, address);
 
     adapter
         .exchange(fixtures::REQUEST_SENTINEL, 64)
         .expect("the first HTTP/1 exchange succeeds");
-    assert!(https::has_cached_connection_for_test(&adapter));
     adapter
         .exchange(fixtures::REQUEST_SENTINEL, 64)
         .expect("the second HTTP/1 exchange reuses the direct session");
@@ -225,13 +207,7 @@ fn https_does_not_retry_a_server_error_response() {
     let listener = LoopbackTcpListener::bind().expect("the retry probe binds loopback");
     let address = listener.local_addr();
     let peer = spawn_retry_probe_peer(listener.into_inner(), server_config(&pki));
-    let config = client_config(
-        &pki,
-        format!("https://{SERVER_NAME}:{}", address.port()),
-        None,
-        None,
-    );
-    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+    let mut adapter = public_local_https_adapter(&pki, address);
 
     let error = adapter
         .exchange(fixtures::REQUEST_SENTINEL, 64)
@@ -248,13 +224,7 @@ fn https_does_not_retry_after_a_dispatched_request_loses_its_response() {
     let listener = LoopbackTcpListener::bind().expect("the retry probe binds loopback");
     let address = listener.local_addr();
     let peer = spawn_drop_response_probe_peer(listener.into_inner(), server_config(&pki));
-    let config = client_config(
-        &pki,
-        format!("https://{SERVER_NAME}:{}", address.port()),
-        None,
-        None,
-    );
-    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+    let mut adapter = public_local_https_adapter(&pki, address);
 
     let error = adapter
         .exchange(fixtures::REQUEST_SENTINEL, 64)
@@ -752,7 +722,7 @@ fn https_request_host_serializes_bracketed_ipv6_authority_and_explicit_port() {
 
 #[test]
 fn https_rejects_invalid_status_response_headers_and_encodings() {
-    let cases: [(&str, &[u8]); 12] = [
+    let cases: [(&str, &[u8]); 13] = [
         (
             "non-200 status",
             b"HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\n\r\nresponse",
@@ -776,6 +746,10 @@ fn https_rejects_invalid_status_response_headers_and_encodings() {
         (
             "invalid media type",
             b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 8\r\n\r\nresponse",
+        ),
+        (
+            "non-ASCII Content-Type",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\xFF\r\nContent-Length: 0\r\n\r\n",
         ),
         (
             "invalid Content-Length",
@@ -808,7 +782,9 @@ fn https_rejects_invalid_status_response_headers_and_encodings() {
     for (name, response) in cases {
         let result = exchange_raw_response(&pki, response, 64);
         match result {
-            Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted => {}
+            Err(error)
+                if error.delivery_state() == RequestDeliveryState::ResponseStarted
+                    && error.cause_category() == TransportCauseCategory::Http => {}
             Err(error) => failures.push(format!(
                 "{name}: rejected with delivery state {:?}",
                 error.delivery_state()
@@ -824,6 +800,163 @@ fn https_rejects_invalid_status_response_headers_and_encodings() {
 }
 
 #[test]
+fn https_reports_a_refused_tcp_candidate_before_dispatch() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let refused_listener = LoopbackTcpListener::bind().expect("the refused candidate binds");
+    let refused_address = refused_listener.local_addr();
+    drop(refused_listener);
+    let config = public_config_builder(
+        &pki,
+        format!("https://127.0.0.1:{}", refused_address.port()),
+    )
+    .tls_server_name(SERVER_NAME)
+    .build()
+    .expect("the refused loopback endpoint has valid TLS inputs");
+    let mut adapter = HttpsTransport::new(config).expect("the HTTPS adapter initializes");
+
+    let error = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect_err("a refused TCP connection cannot dispatch the request");
+
+    assert_eq!(error.cause_category(), TransportCauseCategory::Io);
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+}
+
+#[test]
+fn public_https_adapter_rejects_non_ascii_content_type() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_raw_response_peer(
+        listener.into_inner(),
+        server_config(&pki),
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\xFF\r\nContent-Length: 0\r\n\r\n"
+            .to_vec(),
+    );
+    let config = public_config_builder(&pki, format!("https://127.0.0.1:{}", address.port()))
+        .tls_server_name(SERVER_NAME)
+        .build()
+        .expect("the local HTTPS endpoint has valid TLS inputs");
+    let mut adapter = HttpsTransport::new(config).expect("the HTTPS adapter initializes");
+
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+    let peer = peer.join().expect("the HTTP peer completes");
+    assert!(peer.accepted, "the production adapter connects to the peer");
+    assert!(peer.request.is_some(), "the peer captures the HTTP request");
+    let error = result.expect_err("non-ASCII Content-Type values are rejected");
+
+    assert_eq!(error.cause_category(), TransportCauseCategory::Http);
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+}
+
+#[test]
+fn public_https_adapter_rejects_unsupported_media_type() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_raw_response_peer(
+        listener.into_inner(),
+        server_config(&pki),
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 0\r\n\r\n".to_vec(),
+    );
+    let config = public_config_builder(&pki, format!("https://127.0.0.1:{}", address.port()))
+        .tls_server_name(SERVER_NAME)
+        .build()
+        .expect("the local HTTPS endpoint has valid TLS inputs");
+    let mut adapter = HttpsTransport::new(config).expect("the HTTPS adapter initializes");
+
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+    let peer = peer.join().expect("the HTTP peer completes");
+    assert!(peer.accepted, "the production adapter connects to the peer");
+    assert!(peer.request.is_some(), "the peer captures the HTTP request");
+    let error = result.expect_err("unsupported media types are rejected");
+
+    assert_eq!(error.cause_category(), TransportCauseCategory::Http);
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+}
+
+#[test]
+fn public_https_rejects_request_and_response_limits_before_connection() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_raw_response_peer(
+        listener.into_inner(),
+        server_config(&pki),
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\n\r\n"
+            .to_vec(),
+    );
+    let config = public_config_builder(&pki, format!("https://127.0.0.1:{}", address.port()))
+        .tls_server_name(SERVER_NAME)
+        .max_request_bytes(1)
+        .build()
+        .expect("the local HTTPS endpoint has valid TLS inputs");
+    let mut adapter = HttpsTransport::new(config).expect("the HTTPS adapter initializes");
+
+    let oversized_request = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect_err("an oversized request is rejected before transport startup");
+    let zero_response_limit = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 0)
+        .expect_err("a zero response limit is rejected before transport startup");
+    let peer = peer.join().expect("the bounded HTTPS peer completes");
+
+    for error in [oversized_request, zero_response_limit] {
+        assert_eq!(error.cause_category(), TransportCauseCategory::Other);
+        assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    }
+    assert!(
+        !peer.accepted,
+        "prevalidation must not open a TCP connection"
+    );
+}
+
+#[test]
+fn public_https_rejects_an_untrusted_server_ca_before_request_dispatch() {
+    let pki = EphemeralPki::generate().expect("the ephemeral server and client PKI is generated");
+    let unknown_ca = EphemeralPki::generate().expect("the unrelated trust PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_raw_response_peer(
+        listener.into_inner(),
+        server_config(&pki),
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\n\r\n"
+            .to_vec(),
+    );
+    let config = public_config_builder(&pki, format!("https://127.0.0.1:{}", address.port()))
+        .tls_server_name(SERVER_NAME)
+        .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+            vec![kmipkit_transport::CertificateInput::from_der(vec![
+                unknown_ca.authority_certificate_der().to_vec(),
+            ])],
+        ))
+        .build()
+        .expect("the local HTTPS endpoint has a valid but unrelated trust anchor");
+    let mut adapter = HttpsTransport::new(config).expect("the HTTPS adapter initializes");
+
+    let error = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect_err("an unrelated server CA is rejected during the TLS handshake");
+    let peer = peer
+        .join()
+        .expect("the HTTPS peer completes its handshake attempt");
+
+    assert!(peer.accepted, "the client reaches the configured endpoint");
+    assert!(
+        peer.request.is_none(),
+        "TLS rejection precedes HTTP request dispatch"
+    );
+    assert_eq!(error.cause_category(), TransportCauseCategory::Tls);
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+}
+
+#[test]
 fn https_rejects_close_delimited_response_without_content_length() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
@@ -834,13 +967,7 @@ fn https_rejects_close_delimited_response_without_content_length() {
         b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nConnection: close\r\n\r\nresponse"
             .to_vec(),
     );
-    let config = client_config(
-        &pki,
-        format!("https://{SERVER_NAME}:{}", address.port()),
-        None,
-        None,
-    );
-    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+    let mut adapter = public_local_https_adapter(&pki, address);
 
     let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
     let peer = peer
@@ -912,18 +1039,15 @@ fn malformed_http_parser_error_invalidates_the_reusable_session() {
     let address = listener.local_addr();
     let malformed =
         b"HTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\n\r\n";
-    let (peer, release_peer) = spawn_held_raw_response_peer(
+    let peer = spawn_reconnection_response_peer(
         listener.into_inner(),
         server_config(&pki),
-        malformed.to_vec(),
+        vec![
+            malformed.to_vec(),
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 2\r\n\r\nok".to_vec(),
+        ],
     );
-    let config = client_config(
-        &pki,
-        format!("https://{SERVER_NAME}:{}", address.port()),
-        None,
-        None,
-    );
-    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+    let mut adapter = public_local_https_adapter(&pki, address);
 
     let error = adapter
         .exchange(fixtures::REQUEST_SENTINEL, 64)
@@ -933,20 +1057,15 @@ fn malformed_http_parser_error_invalidates_the_reusable_session() {
         error.delivery_state(),
         RequestDeliveryState::ResponseStarted
     );
-    assert!(
-        !https::has_cached_connection_for_test(&adapter),
-        "a session that produced a parser error is not reusable"
-    );
+    let response = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the next exchange succeeds on a fresh HTTPS connection");
+    assert_eq!(response.as_bytes(), b"ok");
 
-    let _ = release_peer.send(());
-    let peer = peer
-        .join()
-        .expect("the bounded malformed-response peer completes");
-    assert!(peer.accepted, "the peer accepted one TLS connection");
-    assert!(
-        peer.request.is_some(),
-        "the peer captured the HTTPS request"
-    );
+    drop(adapter);
+    let peer = peer.join().expect("the bounded reconnect peer completes");
+    assert_eq!(peer.accepted_connections, 2);
+    assert_eq!(peer.requests.len(), 2, "both exchanges reached the peer");
 }
 
 #[test]
@@ -1090,6 +1209,35 @@ fn https_rejects_declared_oversize_before_body_arrives_or_response_buffer_grows(
     assert!(
         rejected_before_body,
         "declared oversize is rejected from Content-Length before the peer sends body bytes"
+    );
+}
+
+#[test]
+fn public_https_rejects_declared_content_length_above_response_limit() {
+    const LIMIT: usize = 8;
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\noversize!",
+        LIMIT + 1
+    );
+    let peer = spawn_raw_response_peer(
+        listener.into_inner(),
+        server_config(&pki),
+        response.into_bytes(),
+    );
+    let mut adapter = public_local_https_adapter(&pki, address);
+
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, LIMIT);
+    let peer = peer.join().expect("the bounded HTTPS peer completes");
+    let error = result.expect_err("a declared response body above the cap is rejected");
+
+    assert!(peer.accepted, "the client reaches the configured endpoint");
+    assert!(peer.request.is_some(), "the peer captures the HTTP request");
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
     );
 }
 
@@ -1303,20 +1451,39 @@ fn config_builder(pki: &EphemeralPki, endpoint: String) -> config::TransportConf
         ]))
 }
 
+fn public_config_builder(
+    pki: &EphemeralPki,
+    endpoint: String,
+) -> kmipkit_transport::TransportConfigBuilder {
+    let client = pki.client_identity();
+    let client_chain = client
+        .certificate_chain_der()
+        .into_iter()
+        .map(<[u8]>::to_vec)
+        .collect();
+    kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::https(endpoint))
+        .client_identity(kmipkit_transport::ClientIdentity::new(
+            kmipkit_transport::CertificateInput::from_der(client_chain),
+            kmipkit_transport::PrivateKeyInput::from_der(client.private_key_der().to_vec()),
+        ))
+        .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+            vec![kmipkit_transport::CertificateInput::from_der(vec![
+                pki.authority_certificate_der().to_vec(),
+            ])],
+        ))
+}
+
+fn public_local_https_adapter(pki: &EphemeralPki, address: SocketAddr) -> HttpsTransport {
+    let config = public_config_builder(pki, format!("https://127.0.0.1:{}", address.port()))
+        .tls_server_name(SERVER_NAME)
+        .build()
+        .expect("the local HTTPS endpoint has valid TLS inputs");
+    HttpsTransport::new(config).expect("the HTTPS adapter initializes")
+}
+
 fn fixed_resolver(address: SocketAddr) -> resolver::Resolver {
     resolver::Resolver::with_lookup_and_governor(
         move |_host, _port| Ok(vec![address]),
-        Arc::new(tokio::sync::Semaphore::new(1)),
-    )
-}
-
-fn loopback_port_resolver() -> resolver::Resolver {
-    resolver::Resolver::with_lookup_and_governor(
-        move |_host, port| {
-            Ok(vec![format!("127.0.0.1:{port}").parse().expect(
-                "the supplied endpoint port forms a loopback address",
-            )])
-        },
         Arc::new(tokio::sync::Semaphore::new(1)),
     )
 }
@@ -1403,13 +1570,11 @@ fn exchange_raw_response(
     let address = listener.local_addr();
     let peer =
         spawn_raw_response_peer(listener.into_inner(), server_config(pki), response.to_vec());
-    let config = client_config(
-        pki,
-        format!("https://{SERVER_NAME}:{}", address.port()),
-        None,
-        None,
-    );
-    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+    let config = public_config_builder(pki, format!("https://127.0.0.1:{}", address.port()))
+        .tls_server_name(SERVER_NAME)
+        .build()
+        .expect("the local HTTPS endpoint has valid TLS inputs");
+    let mut adapter = HttpsTransport::new(config).expect("the HTTPS adapter initializes");
     let result = adapter.exchange(fixtures::REQUEST_SENTINEL, max_response_bytes);
     let peer = peer
         .join()
@@ -1461,22 +1626,6 @@ fn spawn_clean_tls_close_response_peer(
     response: Vec<u8>,
 ) -> JoinHandle<PeerObservation> {
     spawn_response_peer(listener, configuration, response, true, None)
-}
-
-fn spawn_held_raw_response_peer(
-    listener: TcpListener,
-    configuration: Arc<ServerConfig>,
-    response: Vec<u8>,
-) -> (JoinHandle<PeerObservation>, mpsc::SyncSender<()>) {
-    let (release_peer, release_peer_rx) = mpsc::sync_channel(1);
-    let peer = spawn_response_peer(
-        listener,
-        configuration,
-        response,
-        false,
-        Some(release_peer_rx),
-    );
-    (peer, release_peer)
 }
 
 fn spawn_response_peer(
@@ -1626,6 +1775,66 @@ fn spawn_retry_probe_peer(
                 let _ = tls.write_all(response);
                 tls.conn.send_close_notify();
                 let _ = tls.flush();
+            }
+        }
+        observation
+    })
+}
+
+fn spawn_reconnection_response_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    responses: Vec<Vec<u8>>,
+) -> JoinHandle<RetryPeerObservation> {
+    thread::spawn(move || {
+        let _ = listener.set_nonblocking(true);
+        let accept_deadline = Instant::now() + PEER_TIMEOUT;
+        let mut observation = RetryPeerObservation::default();
+        for response in responses {
+            loop {
+                if Instant::now() >= accept_deadline {
+                    return observation;
+                }
+                let (stream, _) = match listener.accept() {
+                    Ok(connection) => connection,
+                    Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                        thread::sleep(Duration::from_millis(10));
+                        continue;
+                    }
+                    Err(_) => return observation,
+                };
+                observation.accepted_connections += 1;
+                if stream.set_nonblocking(false).is_err()
+                    || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
+                    || stream.set_write_timeout(Some(PEER_TIMEOUT)).is_err()
+                {
+                    continue;
+                }
+                let Ok(connection) = ServerConnection::new(Arc::clone(&configuration)) else {
+                    continue;
+                };
+                let mut tls = StreamOwned::new(connection, stream);
+                let handshake_deadline = Instant::now() + PEER_TIMEOUT;
+                let mut handshake_failed = false;
+                while tls.conn.is_handshaking() {
+                    if Instant::now() >= handshake_deadline
+                        || tls.conn.complete_io(&mut tls.sock).is_err()
+                    {
+                        handshake_failed = true;
+                        break;
+                    }
+                }
+                if handshake_failed {
+                    continue;
+                }
+                let Some(request) = read_request(&mut tls) else {
+                    continue;
+                };
+                observation.requests.push(request);
+                let _ = tls.write_all(&response);
+                tls.conn.send_close_notify();
+                let _ = tls.flush();
+                break;
             }
         }
         observation

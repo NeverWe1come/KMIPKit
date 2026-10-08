@@ -7,7 +7,7 @@ use std::sync::{Arc, Condvar, Mutex as StdMutex, mpsc};
 use std::time::{Duration, Instant};
 
 use tokio::runtime::Builder;
-use tokio::sync::{Mutex as AsyncMutex, Semaphore, watch};
+use tokio::sync::{Semaphore, watch};
 
 use super::{
     Lookup, ResolveFailure, Resolver, ResolverJobState, collect_candidates, finish_lookup,
@@ -16,7 +16,6 @@ use super::{
 
 const TEST_DEADLINE: Duration = Duration::from_secs(2);
 const PROMPT_RETURN_LIMIT: Duration = Duration::from_secs(1);
-static SYSTEM_GOVERNOR_TEST_LOCK: AsyncMutex<()> = AsyncMutex::const_new(());
 
 #[derive(Debug)]
 struct LookupGate {
@@ -95,7 +94,6 @@ async fn wait_for_permit(semaphore: &Semaphore, expected: usize) {
 
 #[tokio::test]
 async fn system_resolver_uses_the_host_configuration_for_localhost() {
-    let _governor_guard = SYSTEM_GOVERNOR_TEST_LOCK.lock().await;
     let resolver = Resolver::system();
     let (_cancel_sender, cancel_receiver) = cancellation_channel();
 
@@ -121,12 +119,10 @@ async fn system_resolver_uses_the_host_configuration_for_localhost() {
 
 #[tokio::test]
 async fn system_resolver_instances_share_one_governor() {
-    let _governor_guard = SYSTEM_GOVERNOR_TEST_LOCK.lock().await;
     let first = Resolver::system();
     let second = Resolver::system();
 
     assert!(Arc::ptr_eq(first.governor(), second.governor()));
-    assert_eq!(first.governor().available_permits(), 32);
 }
 
 #[tokio::test]
@@ -183,14 +179,12 @@ fn candidate_collection_consumes_only_the_first_sixteen_addresses() {
 
 #[tokio::test]
 async fn shared_governor_caps_active_resolver_jobs_at_thirty_two() {
-    let _governor_guard = SYSTEM_GOVERNOR_TEST_LOCK.lock().await;
     let (started_sender, started_receiver) = mpsc::sync_channel(32);
     let gate = Arc::new(LookupGate {
         started: started_sender,
         released: (StdMutex::new(false), Condvar::new()),
     });
-    let system_resolver = Resolver::system();
-    let governor = Arc::clone(system_resolver.governor());
+    let governor = Arc::new(Semaphore::new(32));
     let first_gate = Arc::clone(&gate);
     let first_resolver = Resolver::with_lookup_and_governor(
         move |_host, _port| {

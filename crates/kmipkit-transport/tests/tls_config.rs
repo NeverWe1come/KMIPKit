@@ -7,8 +7,9 @@ use std::time::Duration;
 
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
-    CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions, TimeoutLimit,
-    TimeoutPolicy, TransportConfig, TransportConfigBuilder, TrustSource,
+    CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions,
+    RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder,
+    TransportConfigError, TrustSource,
 };
 
 const DEFAULT_MAX_REQUEST_BYTES: usize = 16 * 1024 * 1024;
@@ -201,6 +202,32 @@ fn explicit_pem_and_der_inputs_build_without_automatic_format_detection() {
             .build()
             .is_ok()
     );
+}
+
+#[test]
+fn empty_and_malformed_revocation_list_inputs_are_rejected() {
+    let cases = [
+        ("empty PEM", RevocationListInput::from_pem(Vec::new())),
+        (
+            "malformed PEM",
+            RevocationListInput::from_pem(b"not a PEM revocation list".to_vec()),
+        ),
+        ("empty DER list", RevocationListInput::from_der(Vec::new())),
+        (
+            "empty DER entry",
+            RevocationListInput::from_der(vec![Vec::new()]),
+        ),
+    ];
+
+    for (name, revocation_list) in cases {
+        let result = valid_builder(Endpoint::raw_tls("localhost", 5696), false)
+            .revocation_lists(vec![revocation_list])
+            .build();
+        assert!(
+            matches!(result, Err(TransportConfigError::InvalidRevocationList)),
+            "{name} must be rejected as an invalid revocation list"
+        );
+    }
 }
 
 #[test]

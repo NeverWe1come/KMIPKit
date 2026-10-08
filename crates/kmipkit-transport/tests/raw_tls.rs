@@ -14,7 +14,8 @@ use std::time::{Duration, Instant};
 
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener, fixtures};
 pub use kmipkit_transport::{
-    RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
+    RawTlsTransport, RequestDeliveryState, Transport, TransportCauseCategory, TransportError,
+    TransportResponse,
 };
 use rcgen::{
     BasicConstraints, Certificate, CertificateParams, CertificateRevocationListParams, DnType,
@@ -199,16 +200,21 @@ fn raw_tls_connect_deadline_covers_tls_handshake_before_dispatch() {
         0,
         PeerAction::HoldBeforeHandshake,
     );
-    let config = client_config_with_timeouts(
+    let config = public_client_config_with_timeouts(
         &pki,
         &pki,
         address.port(),
         SERVER_NAME,
-        Vec::new(),
-        short_timeout_policy(Duration::from_millis(120), Duration::from_secs(2)),
+        kmipkit_transport::TimeoutPolicy::default()
+            .with_connect(kmipkit_transport::TimeoutLimit::Bounded(
+                Duration::from_millis(120),
+            ))
+            .with_total(kmipkit_transport::TimeoutLimit::Bounded(
+                Duration::from_secs(2),
+            )),
     );
 
-    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let result = exchange_public(config, fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     let peer = peer.join().expect("the bounded TLS peer thread completes");
 
     let error = result.expect_err("the connect deadline expires during the TLS handshake");
@@ -346,18 +352,19 @@ fn raw_tls_rejects_an_unrepresentable_read_phase_before_dispatch() {
         fixtures::REQUEST_SENTINEL.len(),
         PeerAction::HoldAfterRequest,
     );
-    let config = client_config_with_timeouts(
+    let config = public_client_config_with_timeouts(
         &pki,
         &pki,
         address.port(),
         SERVER_NAME,
-        Vec::new(),
-        TimeoutPolicy::default()
-            .with_read(TimeoutLimit::Bounded(Duration::MAX))
-            .with_total(TimeoutLimit::Bounded(Duration::from_millis(250))),
+        kmipkit_transport::TimeoutPolicy::default()
+            .with_read(kmipkit_transport::TimeoutLimit::Bounded(Duration::MAX))
+            .with_total(kmipkit_transport::TimeoutLimit::Bounded(
+                Duration::from_millis(250),
+            )),
     );
 
-    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let result = exchange_public(config, fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     let peer = peer.join().expect("the bounded TLS peer thread completes");
 
     let error = result.expect_err("an unrepresentable phase duration is invalid input");
@@ -379,18 +386,19 @@ fn raw_tls_rejects_an_unrepresentable_write_phase_before_dispatch() {
         fixtures::REQUEST_SENTINEL.len(),
         PeerAction::HoldAfterRequest,
     );
-    let config = client_config_with_timeouts(
+    let config = public_client_config_with_timeouts(
         &pki,
         &pki,
         address.port(),
         SERVER_NAME,
-        Vec::new(),
-        TimeoutPolicy::default()
-            .with_write(TimeoutLimit::Bounded(Duration::MAX))
-            .with_total(TimeoutLimit::Bounded(Duration::from_millis(250))),
+        kmipkit_transport::TimeoutPolicy::default()
+            .with_write(kmipkit_transport::TimeoutLimit::Bounded(Duration::MAX))
+            .with_total(kmipkit_transport::TimeoutLimit::Bounded(
+                Duration::from_millis(250),
+            )),
     );
 
-    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let result = exchange_public(config, fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     let peer = peer.join().expect("the bounded TLS peer thread completes");
 
     let error = result.expect_err("an unrepresentable phase duration is invalid input");
@@ -561,6 +569,51 @@ fn raw_tls_candidate_observer_records_success_before_request_dispatch() {
             raw_tls::CandidateEvent::RequestDispatch(address),
         ],
         "the verified candidate is recorded before dispatch"
+    );
+}
+
+#[test]
+fn raw_tls_reports_a_refused_tcp_candidate_before_dispatch() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let unavailable_listener =
+        LoopbackTcpListener::bind().expect("the unavailable candidate binds");
+    let unavailable_address = unavailable_listener.local_addr();
+    drop(unavailable_listener);
+    let config = public_client_config(&pki, unavailable_address.port(), SERVER_NAME);
+    let mut unavailable = RawTlsTransport::new(config).expect("the raw TLS adapter initializes");
+
+    let error = unavailable
+        .exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT)
+        .expect_err("a refused TCP candidate fails before request dispatch");
+
+    assert_eq!(error.cause_category(), TransportCauseCategory::Io);
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+}
+
+#[test]
+fn public_raw_tls_rejects_response_limit_smaller_than_ttlv_header_before_connection() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, false),
+        0,
+        PeerAction::RespondOnce,
+    );
+    let mut adapter = RawTlsTransport::new(public_client_config(&pki, address.port(), SERVER_NAME))
+        .expect("the raw TLS adapter initializes");
+
+    let error = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, RESPONSE_FRAME.len() - 1)
+        .expect_err("a response cap smaller than a TTLV header is rejected locally");
+    let peer = peer.join().expect("the bounded TLS peer completes");
+
+    assert_eq!(error.cause_category(), TransportCauseCategory::Other);
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert!(
+        !peer.accepted,
+        "prevalidation must not open a TCP connection"
     );
 }
 
@@ -845,8 +898,8 @@ fn raw_tls_reconnects_after_a_failed_response_without_replaying_the_first_reques
         );
         (first, second)
     });
-    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
-    let mut adapter = raw_tls::new_for_test(config, None);
+    let config = public_client_config(&pki, address.port(), SERVER_NAME);
+    let mut adapter = RawTlsTransport::new(config).expect("the public adapter initializes");
 
     let first_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     assert_response_started(&first_result, "the malformed first response is rejected");
@@ -895,15 +948,16 @@ fn raw_tls_rejects_unknown_server_ca() {
         0,
         PeerAction::CloseAfterHandshake,
     );
-    let config = client_config(
+    let config = public_client_config_with_options(
         &server_pki,
         &untrusted_pki,
         address.port(),
         SERVER_NAME,
         Vec::new(),
+        kmipkit_transport::TimeoutPolicy::default(),
     );
 
-    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let result = exchange_public(config, fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     assert_not_sent(
         &result,
         "an unknown server CA is rejected before request dispatch",
@@ -929,9 +983,16 @@ fn raw_tls_rejects_expired_server_certificate() {
         0,
         PeerAction::CloseAfterHandshake,
     );
-    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
+    let config = public_client_config_with_options(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        kmipkit_transport::TimeoutPolicy::default(),
+    );
 
-    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let result = exchange_public(config, fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     assert_not_sent(
         &result,
         "an expired server certificate is rejected before request dispatch",
@@ -941,6 +1002,83 @@ fn raw_tls_rejects_expired_server_certificate() {
     assert!(
         !peer.handshake_completed,
         "the expired server certificate prevents handshake completion"
+    );
+}
+
+/// Proves the adapter rejects a server certificate whose validity has not
+/// started yet.
+#[test]
+fn raw_tls_rejects_not_yet_valid_server_certificate() {
+    let pki = PolicyPki::generate_not_yet_valid(SERVER_NAME);
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        0,
+        PeerAction::CloseAfterHandshake,
+    );
+    let config = public_client_config_with_options(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        kmipkit_transport::TimeoutPolicy::default(),
+    );
+
+    let result = exchange_public(config, fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    assert_not_sent(
+        &result,
+        "a not-yet-valid server certificate is rejected before request dispatch",
+    );
+    let peer = peer.join().expect("the local TLS peer thread completes");
+    assert!(peer.accepted, "the local peer accepted the TLS connection");
+    assert!(
+        !peer.handshake_completed,
+        "the not-yet-valid server certificate prevents handshake completion"
+    );
+}
+
+/// Proves the transport rejects a peer that selects TLS 1.2 before sending
+/// any KMIP application data.
+#[test]
+fn raw_tls_rejects_tls12_server_hello_before_request_dispatch() {
+    let pki = PolicyPki::generate(SERVER_NAME, false);
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_tls12_only_peer(listener.into_inner());
+    let config = public_client_config_with_options(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        kmipkit_transport::TimeoutPolicy::default(),
+    );
+
+    let result = exchange_public(config, fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    assert_not_sent(
+        &result,
+        "a TLS 1.2-only peer is rejected before request dispatch",
+    );
+    let error = result
+        .as_ref()
+        .expect_err("a TLS 1.2 ServerHello fails the TLS handshake");
+    assert_eq!(error.cause_category(), TransportCauseCategory::Tls);
+    let peer = peer.join().expect("the TLS 1.2 peer thread completes");
+    assert!(
+        peer.client_hello_received,
+        "the peer received a TLS ClientHello"
+    );
+    assert!(
+        peer.client_hello_offers_tls13_only,
+        "the client offered exactly TLS 1.3 in supported_versions"
+    );
+    assert!(peer.server_hello_sent, "the peer selected TLS 1.2");
+    assert!(
+        !peer.application_data_received,
+        "the client sent no TLS application data after the TLS 1.2 ServerHello"
     );
 }
 
@@ -956,15 +1094,16 @@ fn raw_tls_rejects_server_name_mismatch() {
         0,
         PeerAction::CloseAfterHandshake,
     );
-    let config = client_config(
+    let config = public_client_config_with_options(
         &pki,
         &pki,
         address.port(),
         "wrong-server.kmipkit.test",
         Vec::new(),
+        kmipkit_transport::TimeoutPolicy::default(),
     );
 
-    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let result = exchange_public(config, fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     assert_not_sent(
         &result,
         "a hostname mismatch is rejected before request dispatch",
@@ -989,15 +1128,18 @@ fn raw_tls_rejects_server_certificate_revoked_by_caller_crl() {
         0,
         PeerAction::CloseAfterHandshake,
     );
-    let config = client_config(
+    let config = public_client_config_with_options(
         &pki,
         &pki,
         address.port(),
         SERVER_NAME,
-        vec![pki.revoking_server_crl()],
+        vec![kmipkit_transport::RevocationListInput::from_der(vec![
+            pki.revoking_server_crl_der(),
+        ])],
+        kmipkit_transport::TimeoutPolicy::default(),
     );
 
-    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let result = exchange_public(config, fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     assert_not_sent(
         &result,
         "a caller-revoked server certificate is rejected before request dispatch",
@@ -1025,6 +1167,15 @@ fn exchange_with_limit(
     max_response_bytes: usize,
 ) -> Result<TransportResponse, TransportError> {
     let mut adapter = raw_tls::new_for_test(config, observer);
+    adapter.exchange(request, max_response_bytes)
+}
+
+fn exchange_public(
+    config: kmipkit_transport::TransportConfig,
+    request: &[u8],
+    max_response_bytes: usize,
+) -> Result<TransportResponse, TransportError> {
+    let mut adapter = RawTlsTransport::new(config).expect("the public raw TLS adapter initializes");
     adapter.exchange(request, max_response_bytes)
 }
 
@@ -1056,13 +1207,15 @@ fn exchange_action_with_response_allocation_observer(
         fixtures::REQUEST_SENTINEL.len(),
         action,
     );
-    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
-    let mut adapter = if let Some(observer) = allocation_observer {
-        raw_tls::new_for_test_with_response_allocation_observer(config, observer)
+    let result = if let Some(observer) = allocation_observer {
+        let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
+        let mut adapter = raw_tls::new_for_test_with_response_allocation_observer(config, observer);
+        adapter.exchange(fixtures::REQUEST_SENTINEL, max_response_bytes)
     } else {
-        raw_tls::new_for_test(config, None)
+        let config = public_client_config(&pki, address.port(), SERVER_NAME);
+        let mut adapter = RawTlsTransport::new(config).expect("the raw TLS adapter initializes");
+        adapter.exchange(fixtures::REQUEST_SENTINEL, max_response_bytes)
     };
-    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, max_response_bytes);
     let peer = peer.join().expect("the bounded local TLS peer completes");
     assert!(peer.handshake_completed, "the mTLS handshake completes");
     assert_eq!(
@@ -1155,6 +1308,66 @@ fn client_config_with_timeouts(
         .expect("the explicit identity and trust inputs build a valid config")
 }
 
+fn public_client_config(
+    pki: &impl PkiMaterial,
+    port: u16,
+    server_name: &str,
+) -> kmipkit_transport::TransportConfig {
+    public_client_config_with_options(
+        pki,
+        pki,
+        port,
+        server_name,
+        Vec::new(),
+        kmipkit_transport::TimeoutPolicy::default(),
+    )
+}
+
+fn public_client_config_with_timeouts(
+    identity_pki: &impl PkiMaterial,
+    trust_pki: &impl PkiMaterial,
+    port: u16,
+    server_name: &str,
+    timeouts: kmipkit_transport::TimeoutPolicy,
+) -> kmipkit_transport::TransportConfig {
+    public_client_config_with_options(
+        identity_pki,
+        trust_pki,
+        port,
+        server_name,
+        Vec::new(),
+        timeouts,
+    )
+}
+
+fn public_client_config_with_options(
+    identity_pki: &impl PkiMaterial,
+    trust_pki: &impl PkiMaterial,
+    port: u16,
+    server_name: &str,
+    revocation_lists: Vec<kmipkit_transport::RevocationListInput>,
+    timeouts: kmipkit_transport::TimeoutPolicy,
+) -> kmipkit_transport::TransportConfig {
+    kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls(
+        "127.0.0.1",
+        port,
+    ))
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_der(identity_pki.client_chain_der()),
+        kmipkit_transport::PrivateKeyInput::from_der(identity_pki.client_key_der()),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_der(vec![
+            trust_pki.authority_der(),
+        ])],
+    ))
+    .revocation_lists(revocation_lists)
+    .tls_server_name(server_name)
+    .timeouts(timeouts)
+    .build()
+    .expect("the explicit public TLS inputs build a valid configuration")
+}
+
 fn short_timeout_policy(connect: Duration, total: Duration) -> TimeoutPolicy {
     TimeoutPolicy::default()
         .with_connect(TimeoutLimit::Bounded(connect))
@@ -1243,6 +1456,146 @@ struct PeerObservation {
     client_identity_present: bool,
     request_bytes: Vec<u8>,
     closed_after_response: bool,
+}
+
+#[derive(Default)]
+#[allow(clippy::struct_excessive_bools)] // These fields record independent peer observations.
+struct Tls12PeerObservation {
+    client_hello_received: bool,
+    client_hello_offers_tls13_only: bool,
+    server_hello_sent: bool,
+    application_data_received: bool,
+}
+
+fn spawn_tls12_only_peer(listener: TcpListener) -> thread::JoinHandle<Tls12PeerObservation> {
+    thread::spawn(move || {
+        let Ok((mut stream, _)) = accept_before_deadline(&listener) else {
+            return Tls12PeerObservation::default();
+        };
+        if stream
+            .set_read_timeout(Some(Duration::from_secs(2)))
+            .is_err()
+            || stream
+                .set_write_timeout(Some(Duration::from_secs(2)))
+                .is_err()
+        {
+            return Tls12PeerObservation::default();
+        }
+        let Ok(Some((record_type, client_hello))) = read_tls_record(&mut stream) else {
+            return Tls12PeerObservation::default();
+        };
+        let observation = Tls12PeerObservation {
+            client_hello_received: record_type == 22
+                && client_hello
+                    .first()
+                    .is_some_and(|message_type| *message_type == 1),
+            client_hello_offers_tls13_only: offered_tls_versions(&client_hello)
+                .is_some_and(|versions| versions == [0x0304]),
+            server_hello_sent: false,
+            application_data_received: false,
+        };
+        if !observation.client_hello_received {
+            return observation;
+        }
+
+        // TLS 1.2 is selected by a ServerHello with legacy_version 0x0303 and
+        // no supported_versions extension. The client rejects it before any
+        // certificate or application-data message is needed.
+        let mut server_hello = vec![
+            0x16, 0x03, 0x03, 0x00, 0x2c, // TLS handshake record, 44 bytes
+            0x02, 0x00, 0x00, 0x28, // ServerHello handshake message, 40-byte body
+            0x03, 0x03, // TLS 1.2
+        ];
+        server_hello.extend_from_slice(&[0x42; 32]); // server random
+        server_hello.extend_from_slice(&[
+            0x00, // empty session id
+            0xc0, 0x2b, // ECDHE-ECDSA-AES128-GCM-SHA256
+            0x00, // null compression
+            0x00, 0x00, // no extensions, so TLS 1.2 is selected
+        ]);
+        if stream.write_all(&server_hello).is_err() {
+            return observation;
+        }
+
+        let application_data_received = matches!(read_tls_record(&mut stream), Ok(Some((23, _))));
+        Tls12PeerObservation {
+            server_hello_sent: true,
+            application_data_received,
+            ..observation
+        }
+    })
+}
+
+fn offered_tls_versions(client_hello: &[u8]) -> Option<Vec<u16>> {
+    if client_hello.first().copied()? != 1 {
+        return None;
+    }
+    let message_len = usize::try_from(u32::from_be_bytes([
+        0,
+        *client_hello.get(1)?,
+        *client_hello.get(2)?,
+        *client_hello.get(3)?,
+    ]))
+    .ok()?;
+    if message_len != client_hello.len().checked_sub(4)? {
+        return None;
+    }
+
+    let mut cursor = 4_usize.checked_add(2 + 32)?;
+    let session_id_len = usize::from(*client_hello.get(cursor)?);
+    cursor = cursor.checked_add(1 + session_id_len)?;
+    let cipher_suites_len = read_u16(client_hello, &mut cursor)?;
+    cursor = cursor.checked_add(cipher_suites_len)?;
+    let compression_methods_len = usize::from(*client_hello.get(cursor)?);
+    cursor = cursor.checked_add(1 + compression_methods_len)?;
+    let all_extensions_len = read_u16(client_hello, &mut cursor)?;
+    let all_extensions_end = cursor.checked_add(all_extensions_len)?;
+    if all_extensions_end != client_hello.len() {
+        return None;
+    }
+
+    while cursor < all_extensions_end {
+        let extension_type = read_u16(client_hello, &mut cursor)?;
+        let one_extension_len = read_u16(client_hello, &mut cursor)?;
+        let one_extension_end = cursor.checked_add(one_extension_len)?;
+        let extension = client_hello.get(cursor..one_extension_end)?;
+        if extension_type == 0x002b {
+            let versions_len = usize::from(*extension.first()?);
+            if versions_len != extension.len().checked_sub(1)? || versions_len % 2 != 0 {
+                return None;
+            }
+            return Some(
+                extension[1..]
+                    .as_chunks::<2>()
+                    .0
+                    .iter()
+                    .map(|version| u16::from_be_bytes([version[0], version[1]]))
+                    .collect(),
+            );
+        }
+        cursor = one_extension_end;
+    }
+    None
+}
+
+fn read_u16(bytes: &[u8], cursor: &mut usize) -> Option<usize> {
+    let next = cursor.checked_add(1)?;
+    let value = u16::from_be_bytes([*bytes.get(*cursor)?, *bytes.get(next)?]);
+    *cursor = cursor.checked_add(2)?;
+    Some(usize::from(value))
+}
+
+fn read_tls_record(stream: &mut TcpStream) -> io::Result<Option<(u8, Vec<u8>)>> {
+    let mut header = [0_u8; 5];
+    match stream.read_exact(&mut header) {
+        Ok(()) => {}
+        Err(error) if error.kind() == io::ErrorKind::UnexpectedEof => return Ok(None),
+        Err(error) => return Err(error),
+    }
+    let payload_len = usize::from(u16::from_be_bytes([header[3], header[4]]));
+    let mut payload = vec![0_u8; payload_len];
+    stream.read_exact(&mut payload)?;
+    Ok(Some((header[0], payload)))
 }
 
 fn spawn_peer(
@@ -1446,6 +1799,19 @@ struct PolicyPki {
 
 impl PolicyPki {
     fn generate(server_name: &str, expired_server: bool) -> Self {
+        let validity = if expired_server {
+            CertificateValidity::Expired
+        } else {
+            CertificateValidity::Current
+        };
+        Self::generate_with_validity(server_name, validity)
+    }
+
+    fn generate_not_yet_valid(server_name: &str) -> Self {
+        Self::generate_with_validity(server_name, CertificateValidity::NotYetValid)
+    }
+
+    fn generate_with_validity(server_name: &str, validity: CertificateValidity) -> Self {
         let ca_key = KeyPair::generate().expect("test CA key generation succeeds");
         let mut ca_params = CertificateParams::default();
         ca_params
@@ -1464,14 +1830,14 @@ impl PolicyPki {
             server_name,
             ExtendedKeyUsagePurpose::ServerAuth,
             server_serial.clone(),
-            expired_server,
+            validity,
             &issuer,
         );
         let (client, client_key) = policy_leaf(
             "client.kmipkit.test",
             ExtendedKeyUsagePurpose::ClientAuth,
             SerialNumber::from(CLIENT_SERIAL),
-            false,
+            CertificateValidity::Current,
             &issuer,
         );
         Self {
@@ -1486,7 +1852,7 @@ impl PolicyPki {
         }
     }
 
-    fn revoking_server_crl(&self) -> config::RevocationListInput {
+    fn revoking_server_crl_der(&self) -> Vec<u8> {
         let issuer = Issuer::from_params(&self.ca_params, &self.ca_key);
         let crl = CertificateRevocationListParams {
             this_update: date_time_ymd(2020, 1, 1),
@@ -1503,8 +1869,15 @@ impl PolicyPki {
         }
         .signed_by(&issuer)
         .expect("test CRL signing succeeds");
-        config::RevocationListInput::from_der(vec![crl.der().as_ref().to_vec()])
+        crl.der().as_ref().to_vec()
     }
+}
+
+#[derive(Clone, Copy)]
+enum CertificateValidity {
+    Current,
+    Expired,
+    NotYetValid,
 }
 
 impl PkiMaterial for PolicyPki {
@@ -1536,7 +1909,7 @@ fn policy_leaf(
     name: &str,
     usage: ExtendedKeyUsagePurpose,
     serial_number: SerialNumber,
-    expired: bool,
+    validity: CertificateValidity,
     issuer: &Issuer<'_, &KeyPair>,
 ) -> (Certificate, KeyPair) {
     let key = KeyPair::generate().expect("test leaf key generation succeeds");
@@ -1546,12 +1919,19 @@ fn policy_leaf(
     params.key_usages = vec![KeyUsagePurpose::DigitalSignature];
     params.extended_key_usages = vec![usage];
     params.serial_number = Some(serial_number);
-    if expired {
-        params.not_before = date_time_ymd(1998, 1, 1);
-        params.not_after = date_time_ymd(1999, 1, 1);
-    } else {
-        params.not_before = date_time_ymd(2020, 1, 1);
-        params.not_after = date_time_ymd(2099, 1, 1);
+    match validity {
+        CertificateValidity::Current => {
+            params.not_before = date_time_ymd(2020, 1, 1);
+            params.not_after = date_time_ymd(2099, 1, 1);
+        }
+        CertificateValidity::Expired => {
+            params.not_before = date_time_ymd(1998, 1, 1);
+            params.not_after = date_time_ymd(1999, 1, 1);
+        }
+        CertificateValidity::NotYetValid => {
+            params.not_before = date_time_ymd(2098, 1, 1);
+            params.not_after = date_time_ymd(2099, 1, 1);
+        }
     }
     let certificate = params
         .signed_by(&key, issuer)

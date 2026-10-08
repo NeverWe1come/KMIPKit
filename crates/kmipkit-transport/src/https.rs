@@ -139,6 +139,15 @@ fn build_http1_tls_config(tls_config: &Arc<rustls::ClientConfig>) -> Arc<rustls:
 #[cfg(test)]
 #[path = "../tests/unit/https_alpn_tests.rs"]
 mod alpn_tests;
+#[cfg(test)]
+#[path = "../tests/unit/https_error_tests.rs"]
+mod error_tests;
+#[cfg(test)]
+#[path = "../tests/unit/https_request_tests.rs"]
+mod request_tests;
+#[cfg(test)]
+#[path = "../tests/unit/https_response_tests.rs"]
+mod response_tests;
 
 #[cfg(test)]
 type WorkerSpawnerForTest =

@@ -48,10 +48,6 @@ name = "tls_config"
 path = "tests/tls_config.rs"
 
 [[test]]
-name = "tls_policy"
-path = "tests/tls_policy.rs"
-
-[[test]]
 name = "raw_tls"
 path = "tests/raw_tls.rs"
 

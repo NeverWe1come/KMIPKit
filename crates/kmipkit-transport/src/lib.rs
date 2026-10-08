@@ -242,6 +242,9 @@ mod tls_policy;
 #[cfg(test)]
 #[path = "../tests/unit/tls_policy_tests.rs"]
 mod tls_policy_tests;
+#[cfg(test)]
+#[path = "../tests/unit/tls_safety_tests.rs"]
+mod tls_safety_tests;
 // The resolver precedes the production adapters that consume it in later tasks.
 #[allow(dead_code)]
 mod resolver;

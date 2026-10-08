@@ -340,6 +340,70 @@ async fn deadline_io_stops_reads_that_cannot_be_observed() {
 }
 
 #[tokio::test]
+async fn reusable_deadline_io_invalidates_after_unsolicited_idle_read() {
+    let inner = ScriptIo::ready();
+    inner.push_read(b"late response");
+    let (mut io, io_control) =
+        DeadlineIo::new_reusable(inner, None, None, None, dispatched_control());
+    io_control.finish_exchange();
+
+    let mut byte = [0_u8; 1];
+    let error = read_once(&mut io, &mut byte)
+        .await
+        .expect_err("idle response bytes are unsolicited");
+
+    assert_eq!(error.kind(), io::ErrorKind::Other);
+    assert!(io_control.is_invalid());
+    assert!(
+        io_control
+            .begin_exchange(None, None, None, dispatched_control())
+            .is_err()
+    );
+}
+
+#[tokio::test]
+async fn reusable_deadline_io_invalidates_after_idle_read_error() {
+    let inner = ScriptIo::new(
+        Mode::Error(io::ErrorKind::ConnectionReset),
+        Mode::Ready,
+        Mode::Ready,
+        Mode::Ready,
+    );
+    let (mut io, io_control) =
+        DeadlineIo::new_reusable(inner, None, None, None, dispatched_control());
+    io_control.finish_exchange();
+
+    let mut byte = [0_u8; 1];
+    let _error = read_once(&mut io, &mut byte)
+        .await
+        .expect_err("idle socket read errors invalidate the connection");
+
+    assert!(io_control.is_invalid());
+    assert!(
+        io_control
+            .begin_exchange(None, None, None, dispatched_control())
+            .is_err()
+    );
+}
+
+#[tokio::test]
+async fn reusable_deadline_io_rejects_idle_writes_and_vectored_writes() {
+    let (mut io, io_control) =
+        DeadlineIo::new_reusable(ScriptIo::ready(), None, None, None, dispatched_control());
+    io_control.finish_exchange();
+
+    assert!(write_once(&mut io, b"unsolicited").await.is_err());
+    assert!(io_control.is_invalid());
+
+    let (mut vectored_io, vectored_control) =
+        DeadlineIo::new_reusable(ScriptIo::ready(), None, None, None, dispatched_control());
+    vectored_control.finish_exchange();
+    let segment = IoSlice::new(b"unsolicited");
+    assert!(write_vectored(&mut vectored_io, &[segment]).await.is_err());
+    assert!(vectored_control.is_invalid());
+}
+
+#[tokio::test]
 async fn read_and_write_phase_and_total_deadlines_expire() {
     let mut read_io = DeadlineIo::new(
         ScriptIo::new(Mode::Pending, Mode::Ready, Mode::Ready, Mode::Ready),
