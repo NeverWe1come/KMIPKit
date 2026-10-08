@@ -10,7 +10,8 @@ use tokio::runtime::Builder;
 use tokio::sync::{Mutex as AsyncMutex, Semaphore, watch};
 
 use super::{
-    Lookup, ResolveFailure, Resolver, ResolverJobState, finish_lookup, run_lookup, wait_for_cancel,
+    Lookup, ResolveFailure, Resolver, ResolverJobState, collect_candidates, finish_lookup,
+    run_lookup, wait_for_cancel,
 };
 
 const TEST_DEADLINE: Duration = Duration::from_secs(2);
@@ -55,6 +56,27 @@ impl LookupGate {
 
 fn address(last_octet: u8, port: u16) -> SocketAddr {
     SocketAddr::new(IpAddr::V4(Ipv4Addr::new(192, 0, 2, last_octet)), port)
+}
+
+struct CountingSocketAddresses {
+    next_octet: u8,
+    end_octet: u8,
+    next_calls: Arc<AtomicUsize>,
+}
+
+impl Iterator for CountingSocketAddresses {
+    type Item = SocketAddr;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_calls.fetch_add(1, Ordering::Relaxed);
+        if self.next_octet > self.end_octet {
+            return None;
+        }
+
+        let address = address(self.next_octet, 5696);
+        self.next_octet += 1;
+        Some(address)
+    }
 }
 
 fn cancellation_channel() -> (watch::Sender<bool>, watch::Receiver<bool>) {
@@ -138,6 +160,25 @@ async fn returned_addresses_keep_os_order_and_are_capped_at_sixteen() {
 
     assert_eq!(candidates, expected[..16].to_vec());
     assert_eq!(calls.load(Ordering::Relaxed), 1);
+}
+
+#[test]
+fn candidate_collection_consumes_only_the_first_sixteen_addresses() {
+    let next_calls = Arc::new(AtomicUsize::new(0));
+    let candidates = collect_candidates(CountingSocketAddresses {
+        next_octet: 1,
+        end_octet: 20,
+        next_calls: Arc::clone(&next_calls),
+    });
+    let expected = (1..=16)
+        .map(|octet| address(octet, 5696))
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        candidates, expected,
+        "the first sixteen addresses retain OS order"
+    );
+    assert_eq!(next_calls.load(Ordering::Relaxed), 16);
 }
 
 #[tokio::test]
