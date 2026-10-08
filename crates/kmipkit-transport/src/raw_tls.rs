@@ -237,70 +237,101 @@ async fn exchange_on_worker(
     )
     .await?;
 
-    let mut deadline_io = DeadlineIo::new(
-        tls_stream,
-        timeout_duration(policy.read()),
-        timeout_duration(policy.write()),
-        total_deadline,
-        control.clone(),
-    );
-    if !control.commit_dispatch() {
-        return Err(safe_error(
-            control.delivery_state(),
-            TransportCauseCategory::Timeout,
-            io::Error::new(io::ErrorKind::Interrupted, "request dispatch was canceled"),
-        ));
+    RawTlsConnection::new(tls_stream, policy, total_deadline, control)
+        .exchange(request.as_slice(), max_response_bytes)
+        .await
+}
+
+/// Owns one raw TLS stream for one request/response exchange.
+struct RawTlsConnection {
+    io: DeadlineIo<TlsStream<TcpStream>>,
+    control: ExchangeControl,
+}
+
+impl RawTlsConnection {
+    fn new(
+        stream: TlsStream<TcpStream>,
+        policy: TimeoutPolicy,
+        total_deadline: Option<Instant>,
+        control: ExchangeControl,
+    ) -> Self {
+        Self {
+            io: DeadlineIo::new(
+                stream,
+                timeout_duration(policy.read()),
+                timeout_duration(policy.write()),
+                total_deadline,
+                control.clone(),
+            ),
+            control,
+        }
     }
 
-    tokio::io::AsyncWriteExt::write_all(&mut deadline_io, request.as_slice())
-        .await
-        .map_err(|error| io_error(error, control.delivery_state()))?;
-    tokio::io::AsyncWriteExt::flush(&mut deadline_io)
-        .await
-        .map_err(|error| io_error(error, control.delivery_state()))?;
+    /// Consumes this connection so every return path drops the raw TLS stream.
+    async fn exchange(
+        mut self,
+        request: &[u8],
+        max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        if !self.control.commit_dispatch() {
+            return Err(safe_error(
+                self.control.delivery_state(),
+                TransportCauseCategory::Timeout,
+                io::Error::new(io::ErrorKind::Interrupted, "request dispatch was canceled"),
+            ));
+        }
 
-    let mut header = Zeroizing::new([0_u8; RESPONSE_HEADER_LEN]);
-    tokio::io::AsyncReadExt::read_exact(&mut deadline_io, header.as_mut())
-        .await
-        .map_err(|error| io_error(error, control.delivery_state()))?;
+        tokio::io::AsyncWriteExt::write_all(&mut self.io, request)
+            .await
+            .map_err(|error| io_error(error, self.control.delivery_state()))?;
+        tokio::io::AsyncWriteExt::flush(&mut self.io)
+            .await
+            .map_err(|error| io_error(error, self.control.delivery_state()))?;
 
-    let response_value_len = response_value_length(&header[..]).ok_or_else(|| {
-        safe_error(
-            control.delivery_state(),
-            TransportCauseCategory::Other,
-            io::Error::new(io::ErrorKind::InvalidData, "invalid TTLV response header"),
-        )
-    })?;
-    let response_len = RESPONSE_HEADER_LEN
-        .checked_add(response_value_len)
-        .filter(|length| *length <= max_response_bytes)
-        .ok_or_else(|| {
+        let mut header = Zeroizing::new([0_u8; RESPONSE_HEADER_LEN]);
+        tokio::io::AsyncReadExt::read_exact(&mut self.io, header.as_mut())
+            .await
+            .map_err(|error| io_error(error, self.control.delivery_state()))?;
+
+        let response_value_len = response_value_length(&header[..]).ok_or_else(|| {
             safe_error(
-                control.delivery_state(),
+                self.control.delivery_state(),
                 TransportCauseCategory::Other,
-                io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "response exceeds configured limit",
-                ),
+                io::Error::new(io::ErrorKind::InvalidData, "invalid TTLV response header"),
             )
         })?;
+        let response_len = RESPONSE_HEADER_LEN
+            .checked_add(response_value_len)
+            .filter(|length| *length <= max_response_bytes)
+            .ok_or_else(|| {
+                safe_error(
+                    self.control.delivery_state(),
+                    TransportCauseCategory::Other,
+                    io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "response exceeds configured limit",
+                    ),
+                )
+            })?;
 
-    let mut response = ResponseBuffer::with_header(response_len, &header[..]).map_err(|error| {
-        safe_error(
-            control.delivery_state(),
-            TransportCauseCategory::Other,
-            error,
-        )
-    })?;
-    if response_len > RESPONSE_HEADER_LEN {
-        tokio::io::AsyncReadExt::read_exact(
-            &mut deadline_io,
-            &mut response.bytes[RESPONSE_HEADER_LEN..],
-        )
-        .await
-        .map_err(|error| io_error(error, control.delivery_state()))?;
+        let mut response =
+            ResponseBuffer::with_header(response_len, &header[..]).map_err(|error| {
+                safe_error(
+                    self.control.delivery_state(),
+                    TransportCauseCategory::Other,
+                    error,
+                )
+            })?;
+        if response_len > RESPONSE_HEADER_LEN {
+            tokio::io::AsyncReadExt::read_exact(
+                &mut self.io,
+                &mut response.bytes[RESPONSE_HEADER_LEN..],
+            )
+            .await
+            .map_err(|error| io_error(error, self.control.delivery_state()))?;
+        }
+        Ok(response.into_transport_response())
     }
-    Ok(response.into_transport_response())
 }
 
 async fn connect_and_handshake(
