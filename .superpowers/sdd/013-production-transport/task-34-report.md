@@ -78,3 +78,10 @@ The direct rustfmt command skips child-module loading because the expected
 HTTPS source module is intentionally absent in Red. A normal rustfmt invocation
 also stops while resolving that missing `#[path]` child. T035 must compile and
 run the entire target before this request matrix can be considered green.
+
+## Green follow-up
+
+T035 added the adapter in source commit
+`366ae182490f676d9a9f12e7a64fb7579b8ee332`. The HTTPS target now passes 56/56,
+including these T034 assertions. Full verification and design evidence are in
+`.superpowers/sdd/013-production-transport/task-35-report.md`.
