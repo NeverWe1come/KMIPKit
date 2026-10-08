@@ -165,29 +165,14 @@ fn validate_vendor_attribute(structure: &StructureView<'_>) -> Result<(), Attrib
                     return Err(AttributeSetError::DuplicateVendorIdentification);
                 }
                 vendor_identification = true;
-                let valid_identifier = field.with_value(|value| match value {
-                    ValueView::TextString(identifier) => {
-                        Some(identifier.chars().all(|character| {
-                            character.is_ascii_alphanumeric() || matches!(character, '_' | '.')
-                        }))
-                    }
-                    _ => None,
-                });
-                match valid_identifier {
-                    Some(true) => {}
-                    Some(false) => return Err(AttributeSetError::InvalidVendorIdentification),
-                    None => return Err(AttributeSetError::VendorIdentificationMustBeTextString),
-                }
+                validate_vendor_identification(field)?;
             }
             ATTRIBUTE_NAME_TAG => {
                 if attribute_name {
                     return Err(AttributeSetError::DuplicateAttributeName);
                 }
                 attribute_name = true;
-                let is_text = field.with_value(|value| matches!(value, ValueView::TextString(_)));
-                if !is_text {
-                    return Err(AttributeSetError::AttributeNameMustBeTextString);
-                }
+                validate_attribute_name(field)?;
             }
             ATTRIBUTE_VALUE_TAG => {
                 if attribute_value {
@@ -209,4 +194,28 @@ fn validate_vendor_attribute(structure: &StructureView<'_>) -> Result<(), Attrib
         return Err(AttributeSetError::MissingAttributeValue);
     }
     Ok(())
+}
+
+fn validate_vendor_identification(field: &Item) -> Result<(), AttributeSetError> {
+    let valid_identifier =
+        field.with_value(|value| match value {
+            ValueView::TextString(identifier) => Some(identifier.chars().all(|character| {
+                character.is_ascii_alphanumeric() || matches!(character, '_' | '.')
+            })),
+            _ => None,
+        });
+    match valid_identifier {
+        Some(true) => Ok(()),
+        Some(false) => Err(AttributeSetError::InvalidVendorIdentification),
+        None => Err(AttributeSetError::VendorIdentificationMustBeTextString),
+    }
+}
+
+fn validate_attribute_name(field: &Item) -> Result<(), AttributeSetError> {
+    let is_text = field.with_value(|value| matches!(value, ValueView::TextString(_)));
+    if is_text {
+        Ok(())
+    } else {
+        Err(AttributeSetError::AttributeNameMustBeTextString)
+    }
 }

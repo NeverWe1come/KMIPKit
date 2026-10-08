@@ -4,7 +4,7 @@
 //! Tables 150 and 157–160. Generic direct attribute items preserve their
 //! original tags, typed values, repetitions, and order under KMIPKIT-0014-FR-014.
 
-use crate::AttributeSet;
+use crate::{AttributeSet, AttributeSetError};
 use kmipkit_ttlv::codec::decode;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, StructureView, Tag, Value, ValueView};
 use quickcheck::{Arbitrary, Gen, QuickCheck};
@@ -62,6 +62,21 @@ fn valid_vendor_attribute() -> Item {
     ])
 }
 
+fn vendor_identification() -> Item {
+    item(
+        VENDOR_IDENTIFICATION_TAG,
+        Value::text_string("KMIPKit.TestVendor".to_owned()),
+    )
+}
+
+fn attribute_name() -> Item {
+    item(ATTRIBUTE_NAME_TAG, Value::text_string("name".to_owned()))
+}
+
+fn attribute_value() -> Item {
+    item(ATTRIBUTE_VALUE_TAG, Value::integer(7))
+}
+
 #[test]
 fn attribute_set_preserves_unknown_standard_and_vendor_item_tags() {
     let attributes = AttributeSet::try_new([
@@ -92,6 +107,7 @@ fn attribute_set_preserves_unknown_standard_and_vendor_item_tags() {
     assert_eq!(attributes.as_items()[0].item_type(), ItemType::DateTime);
     assert_eq!(attributes.as_items()[1].item_type(), ItemType::Integer);
     assert_eq!(attributes.as_items()[3].item_type(), ItemType::ByteString);
+    assert_eq!(attributes.into_items().len(), 4);
 }
 
 #[test]
@@ -124,28 +140,36 @@ fn attribute_set_preserves_the_distinct_vendor_attribute_structure() {
 
 #[test]
 fn attribute_set_rejects_malformed_vendor_attribute_fields() {
-    let missing_vendor = vendor_attribute([
-        item(ATTRIBUTE_NAME_TAG, Value::text_string("name".to_owned())),
-        item(ATTRIBUTE_VALUE_TAG, Value::integer(7)),
-    ]);
+    let missing_vendor = vendor_attribute([attribute_name(), attribute_value()]);
     let wrong_vendor_type = vendor_attribute([
         item(VENDOR_IDENTIFICATION_TAG, Value::integer(7)),
         item(ATTRIBUTE_NAME_TAG, Value::text_string("name".to_owned())),
         item(ATTRIBUTE_VALUE_TAG, Value::integer(7)),
     ]);
-    let missing_attribute_name = vendor_attribute([
-        item(
-            VENDOR_IDENTIFICATION_TAG,
-            Value::text_string("KMIPKit.TestVendor".to_owned()),
-        ),
-        item(ATTRIBUTE_VALUE_TAG, Value::integer(7)),
+    let duplicate_vendor = vendor_attribute([
+        vendor_identification(),
+        vendor_identification(),
+        attribute_name(),
+        attribute_value(),
     ]);
-    let missing_attribute_value = vendor_attribute([
-        item(
-            VENDOR_IDENTIFICATION_TAG,
-            Value::text_string("KMIPKit.TestVendor".to_owned()),
-        ),
-        item(ATTRIBUTE_NAME_TAG, Value::text_string("name".to_owned())),
+    let duplicate_name = vendor_attribute([
+        vendor_identification(),
+        attribute_name(),
+        attribute_name(),
+        attribute_value(),
+    ]);
+    let duplicate_value = vendor_attribute([
+        vendor_identification(),
+        attribute_name(),
+        attribute_value(),
+        attribute_value(),
+    ]);
+    let missing_attribute_name = vendor_attribute([vendor_identification(), attribute_value()]);
+    let missing_attribute_value = vendor_attribute([vendor_identification(), attribute_name()]);
+    let wrong_attribute_name_type = vendor_attribute([
+        vendor_identification(),
+        item(ATTRIBUTE_NAME_TAG, Value::integer(7)),
+        attribute_value(),
     ]);
     let invalid_vendor_identifier = vendor_attribute([
         item(
@@ -155,15 +179,49 @@ fn attribute_set_rejects_malformed_vendor_attribute_fields() {
         item(ATTRIBUTE_NAME_TAG, Value::text_string("name".to_owned())),
         item(ATTRIBUTE_VALUE_TAG, Value::integer(7)),
     ]);
+    let non_structure_vendor_attribute = item(VENDOR_ATTRIBUTE_TAG, Value::integer(7));
 
-    for malformed in [
-        missing_vendor,
-        wrong_vendor_type,
-        missing_attribute_name,
-        missing_attribute_value,
-        invalid_vendor_identifier,
+    for (malformed, expected) in [
+        (
+            non_structure_vendor_attribute,
+            AttributeSetError::VendorAttributeMustBeStructure,
+        ),
+        (
+            missing_vendor,
+            AttributeSetError::MissingVendorIdentification,
+        ),
+        (
+            duplicate_vendor,
+            AttributeSetError::DuplicateVendorIdentification,
+        ),
+        (
+            wrong_vendor_type,
+            AttributeSetError::VendorIdentificationMustBeTextString,
+        ),
+        (
+            invalid_vendor_identifier,
+            AttributeSetError::InvalidVendorIdentification,
+        ),
+        (
+            missing_attribute_name,
+            AttributeSetError::MissingAttributeName,
+        ),
+        (duplicate_name, AttributeSetError::DuplicateAttributeName),
+        (
+            wrong_attribute_name_type,
+            AttributeSetError::AttributeNameMustBeTextString,
+        ),
+        (
+            missing_attribute_value,
+            AttributeSetError::MissingAttributeValue,
+        ),
+        (duplicate_value, AttributeSetError::DuplicateAttributeValue),
     ] {
-        assert!(AttributeSet::try_new([malformed]).is_err());
+        let error =
+            AttributeSet::try_new([malformed]).expect_err("malformed Vendor Attribute is rejected");
+        assert_eq!(error, expected);
+        let diagnostic = format!("{error:?} {error}");
+        assert!(!diagnostic.contains("KMIPKit.TestVendor"));
     }
 }
 
