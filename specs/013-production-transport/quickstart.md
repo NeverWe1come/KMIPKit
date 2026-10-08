@@ -16,6 +16,7 @@ claim that a public server or a formal OASIS profile test is available.
 
 ```powershell
 cargo test -p kmipkit-transport --test tls_policy
+cargo test -p kmipkit-transport --test resolver
 cargo test -p kmipkit-transport --test raw_tls
 cargo test -p kmipkit-transport --test https
 cargo test -p kmipkit-transport --test timeout_delivery

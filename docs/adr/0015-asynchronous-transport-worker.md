@@ -3,7 +3,8 @@
 **Status**: Accepted
 **Date**: 2026-10-07
 **Decision owner**: KMIPKit maintainer
-**Related ADRs**: [ADR-0005](0005-transport-and-tls.md), [ADR-0014](0014-public-transport-exchange-contract.md)
+**Related ADRs**: [ADR-0005](0005-transport-and-tls.md), [ADR-0014](0014-public-transport-exchange-contract.md), [ADR-0016](0016-native-system-name-resolution.md)
+**Supersession**: Resolver decision superseded by ADR-0016
 **Specification**: [KMIPKIT-0013](../../specs/013-production-transport/spec.md)
 
 ## Context

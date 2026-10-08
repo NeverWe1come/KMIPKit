@@ -18,8 +18,8 @@
 - [x] All four user stories have independent test criteria and acceptance scenarios.
 - [x] Edge cases cover TLS, identity/trust, request/response limits, parser bounds, delivery states, cancellation, and recovery.
 - [x] Scope and exclusions preserve the accepted KMIP 2.1, TTLV-only, synchronous-client, TLS 1.3/mTLS boundaries.
-- [x] Dependencies, existing architecture decisions, accepted ADR-0015 changes, and platform assumptions are identified.
-- [x] DNS retries, concurrency, cache entries, and returned address candidates have explicit numeric caps and executable checks.
+- [x] Dependencies, accepted ADR-0015/ADR-0016 decisions, and platform-owned resolver assumptions are identified.
+- [x] KMIPKit-owned resolver admissions and retained candidates have explicit caps and executable checks, while OS-owned DNS retries, concurrency, cache, and routing are not given unsupported numeric guarantees.
 - [x] TLS session resumption has a bounded per-client lifetime and explicitly states which full-handshake trust decisions are inherited.
 - [x] The HTTPS `Host` header is derived from endpoint authority and tested independently of request target and TLS verification name.
 - [x] Platform trust explains and tests the `SSL_CERT_FILE` override independently of the ambient process environment.

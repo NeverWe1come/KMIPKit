@@ -1,6 +1,11 @@
 //! Test-only fixtures and helpers shared by `KMIPKit` crates.
 #![forbid(unsafe_code)]
 
+mod dns;
+mod local_transport;
+#[cfg(feature = "fixtures")]
+mod pki;
+#[cfg(feature = "scripted-transport")]
 mod transport;
 
 /// Stable byte fixtures for transport boundary tests.
@@ -15,4 +20,9 @@ pub mod fixtures {
     pub const PARTIAL_RESPONSE: &[u8] = b"KMIPKIT_PARTIAL_RESPONSE_FIXTURE";
 }
 
+pub use dns::{DnsQueryType, LocalDnsFixture};
+pub use local_transport::LoopbackTcpListener;
+#[cfg(feature = "fixtures")]
+pub use pki::{EphemeralIdentity, EphemeralPki, PkiFixtureError};
+#[cfg(feature = "scripted-transport")]
 pub use transport::{ExchangeScript, ResponseDropObserver, ScriptedTransport};

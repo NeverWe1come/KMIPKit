@@ -1,13 +1,12 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
-//! The current request enum supports an explicit Discover Versions operation
-//! only. The client does not perform implicit version discovery, and this
-//! feature provides no production [`Client`] constructor or live TLS/HTTPS
-//! transport. Applications can prepare typed request batches, but cannot yet
-//! construct a usable network client from this crate.
+//! The current typed request enum supports an explicit Discover Versions
+//! operation. The synchronous [`Client`] is constructed from an immutable
+//! client configuration and validated production transport configuration;
+//! callers cannot inject an arbitrary transport or submit raw KMIP bytes.
+//! Timeout overrides are available through the options-bearing typed methods.
 //!
-//! The following example prepares a typed batch without constructing a client
-//! or sending a request:
+//! The following example prepares a typed batch without sending a request:
 //!
 //! ```
 //! use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
@@ -20,6 +19,8 @@
 //! See the repository guide at `docs/user-guide/en/client-execution.md` for
 //! resource limits, redaction, the low-level transport contract, and current
 //! implementation boundaries.
+#![doc = include_str!("../../../docs/user-guide/en/production-transports.md")]
+#![doc = include_str!("../../../docs/user-guide/es/transportes-produccion.md")]
 #![forbid(unsafe_code)]
 
 mod error;
@@ -105,3 +106,4 @@ pub use execute::{
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
     ClientRequest, PendingOutcome,
 };
+pub use kmipkit_transport::RequestOptions;

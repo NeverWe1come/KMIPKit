@@ -1,9 +1,27 @@
 //! Shared, deterministic TTLV fixtures for client execution tests.
 
+use kmipkit_transport::{RequestOptions, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
 use crate::execute::encode_message_for_test;
+
+pub(crate) struct TestTransport(Box<dyn Transport>);
+
+impl TestTransport {
+    pub(crate) fn new<T: Transport + 'static>(transport: T) -> Self {
+        Self(Box::new(transport))
+    }
+
+    pub(crate) fn exchange_with_options(
+        &mut self,
+        request: &[u8],
+        max_response_bytes: usize,
+        _options: &RequestOptions,
+    ) -> Result<TransportResponse, TransportError> {
+        self.0.exchange(request, max_response_bytes)
+    }
+}
 
 pub(crate) const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const RESPONSE_HEADER: u32 = 0x0042_007A;

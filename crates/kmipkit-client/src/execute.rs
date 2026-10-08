@@ -12,13 +12,20 @@ use kmipkit_protocol::{
     ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
     RequestMessage, ResponseBatchItemView, ResponseMessage, ResultStatus,
 };
-use kmipkit_transport::{RequestDeliveryState, Transport};
+#[cfg(test)]
+use kmipkit_transport::Transport;
+use kmipkit_transport::{
+    HttpsTransport, RawTlsTransport, RequestDeliveryState, RequestOptions, TransportConfig,
+    TransportConfigError,
+};
 use kmipkit_ttlv::codec::{CodecLimits, DecodeError, decode_with_limits};
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
 #[cfg(test)]
 use zeroize::Zeroize;
 use zeroize::Zeroizing;
 
+#[cfg(test)]
+use crate::execute_test_support::TestTransport;
 use crate::extension_registry::{
     self, ClientConfiguration, ClientExtensionRegistry, ClientRequestMessageExtension,
 };
@@ -648,15 +655,14 @@ impl fmt::Debug for ClientBatchResponse {
 /// Synchronous typed KMIP client execution foundation.
 ///
 /// The only admitted operation in this feature is an explicit Discover
-/// Versions request. This feature intentionally defines no production
-/// constructor or live network backend. A separately approved
-/// transport-configuration feature supplies construction from validated
-/// configuration without accepting arbitrary caller-implemented transports.
+/// Versions request. Production construction accepts validated transport
+/// configuration and retains the immutable client extension configuration;
+/// callers cannot inject an arbitrary transport implementation.
 ///
 /// See `docs/user-guide/en/client-execution.md` in the repository for current
 /// scope, limits, redaction, and transport boundaries.
 pub struct Client {
-    transport: Box<dyn Transport>,
+    transport: ClientTransport,
     configuration: ClientConfiguration,
     #[cfg(test)]
     request_owner_observer: Option<private_wire_writer::ZeroizationObserver>,
@@ -666,7 +672,89 @@ pub struct Client {
     limits_identity_observer: Option<LimitsIdentityObserver>,
 }
 
+enum ClientTransport {
+    RawTls(RawTlsTransport),
+    Https(HttpsTransport),
+    #[cfg(test)]
+    Test(TestTransport),
+}
+
+#[cfg(test)]
+#[path = "../tests/unit/production_transport_selection_tests.rs"]
+mod production_transport_selection_tests;
+
+impl ClientTransport {
+    fn from_configuration(configuration: TransportConfig) -> Result<Self, ClientError> {
+        if configuration.target_uri().is_some() {
+            HttpsTransport::new(configuration)
+                .map(Self::Https)
+                .map_err(transport_configuration_error)
+        } else {
+            RawTlsTransport::new(configuration)
+                .map(Self::RawTls)
+                .map_err(transport_configuration_error)
+        }
+    }
+
+    fn exchange(
+        &mut self,
+        request: &[u8],
+        max_response_bytes: usize,
+        options: &RequestOptions,
+    ) -> Result<kmipkit_transport::TransportResponse, kmipkit_transport::TransportError> {
+        match self {
+            Self::RawTls(transport) => {
+                transport.exchange_with_options(request, max_response_bytes, options)
+            }
+            Self::Https(transport) => {
+                transport.exchange_with_options(request, max_response_bytes, options)
+            }
+            #[cfg(test)]
+            Self::Test(transport) => {
+                transport.exchange_with_options(request, max_response_bytes, options)
+            }
+        }
+    }
+}
+
+fn transport_configuration_error(error: TransportConfigError) -> ClientError {
+    ClientError::validation(
+        ClientCauseCategory::InvalidInput,
+        RequestDeliveryState::NotSent,
+        error,
+    )
+}
+
 impl Client {
+    /// Creates a typed client from its immutable extension configuration and
+    /// one validated production transport configuration.
+    ///
+    /// The endpoint selects raw TLS or HTTPS. Construction completes TLS
+    /// policy setup without resolving the endpoint or opening a socket. The
+    /// client does not accept caller-implemented transports or raw request
+    /// bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns sanitized `InvalidInput`/`NotSent` if the selected adapter
+    /// cannot be created from the supplied validated configuration.
+    pub fn new(
+        configuration: ClientConfiguration,
+        transport_configuration: TransportConfig,
+    ) -> Result<Self, ClientError> {
+        let transport = ClientTransport::from_configuration(transport_configuration)?;
+        Ok(Self {
+            transport,
+            configuration,
+            #[cfg(test)]
+            request_owner_observer: None,
+            #[cfg(test)]
+            pending_owner_observer: None,
+            #[cfg(test)]
+            limits_identity_observer: None,
+        })
+    }
+
     /// Executes one explicitly supplied typed request batch and performs one exchange.
     ///
     /// The same borrowed `limits` value reaches the private request writer and
@@ -693,6 +781,27 @@ impl Client {
         batch: ClientBatch,
         limits: &CodecLimits,
     ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_with_options(batch, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed request batch with per-exchange timeout overrides.
+    ///
+    /// Unspecified timeout phases inherit the validated transport
+    /// configuration's timeout policy. The same borrowed `limits` value
+    /// bounds request encoding and response decoding, and exactly
+    /// `limits.max_message_bytes()` is passed as the response byte cap.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_with_options(
+        &mut self,
+        batch: ClientBatch,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchResponse, ClientError> {
         let options = validate_batch(&batch).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -711,7 +820,7 @@ impl Client {
         let request_message = build_request_message(&batch, &options)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
         let (response_message, response_delivery_state) =
-            self.exchange_operation(request_message, limits)?;
+            self.exchange_operation(request_message, limits, request_options)?;
 
         validate_response(
             &batch,
@@ -729,6 +838,7 @@ impl Client {
         &mut self,
         request_message: RequestMessage,
         limits: &CodecLimits,
+        request_options: &RequestOptions,
     ) -> Result<(ResponseMessage, RequestDeliveryState), ClientError> {
         let request_item = root_message_item(request_message.into_ttlv())
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
@@ -758,34 +868,20 @@ impl Client {
             protocol_failure_at(protocol, RequestDeliveryState::NotSent)
         })?;
 
-        let transport_result = self
-            .transport
-            .exchange(encoded.as_bytes(), limits.max_message_bytes());
+        let transport_result = self.transport.exchange(
+            encoded.as_bytes(),
+            limits.max_message_bytes(),
+            request_options,
+        );
         drop(encoded);
 
         let response = transport_result.map_err(ClientError::transport)?;
-        let response_delivery_state =
-            RequestDeliveryState::PossiblySent.response_bytes_received(response.as_bytes().len());
-        let response_message = decode_bounded_response(
-            response.as_bytes(),
+        decode_transport_response(
+            response,
             limits,
-            decode_response_message,
             #[cfg(test)]
             self.limits_identity_observer.as_ref(),
         )
-        .map_err(|error| {
-            let protocol = match error {
-                BoundedResponseError::TooLarge => ProtocolError::new(
-                    ProtocolErrorKind::MalformedMessage,
-                    ProtocolCauseCategory::InvalidEncoding,
-                    ResponseLimitExceeded,
-                ),
-                BoundedResponseError::Decode(error) => error,
-            };
-            protocol_failure_at(protocol, response_delivery_state)
-        })?;
-        drop(response);
-        Ok((response_message, response_delivery_state))
     }
 
     /// Executes one explicit Poll request and returns the original operation's
@@ -826,6 +922,21 @@ impl Client {
         request: PollRequest,
         limits: &CodecLimits,
     ) -> Result<ClientOperationOutcome, ClientError> {
+        self.execute_poll_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Poll request with per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// request delivery state when available.
+    pub fn execute_poll_with_options(
+        &mut self,
+        request: PollRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientOperationOutcome, ClientError> {
         let payload = request
             .to_ttlv_payload()
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
@@ -837,6 +948,7 @@ impl Client {
             None,
             None,
             limits,
+            request_options,
         )
     }
 
@@ -855,6 +967,21 @@ impl Client {
         request: CancelRequest,
         limits: &CodecLimits,
     ) -> Result<ClientOperationOutcome, ClientError> {
+        self.execute_cancel_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Cancel request with per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// request delivery state when available.
+    pub fn execute_cancel_with_options(
+        &mut self,
+        request: CancelRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientOperationOutcome, ClientError> {
         let correlation = request.asynchronous_correlation_value();
         let payload = request
             .to_ttlv_payload()
@@ -866,6 +993,7 @@ impl Client {
             None,
             Some(correlation),
             limits,
+            request_options,
         )?;
         drop(request);
         Ok(outcome)
@@ -887,6 +1015,27 @@ impl Client {
         asynchronous_indicator: Option<u32>,
         limits: &CodecLimits,
     ) -> Result<ClientOperationOutcome, ClientError> {
+        self.execute_process_with_options(
+            request,
+            asynchronous_indicator,
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one Process request with per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// request delivery state when available.
+    pub fn execute_process_with_options(
+        &mut self,
+        request: ProcessRequest,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientOperationOutcome, ClientError> {
         validate_follow_up_indicator(asynchronous_indicator)?;
         let payload = request
             .to_ttlv_payload()
@@ -899,6 +1048,7 @@ impl Client {
             asynchronous_indicator,
             None,
             limits,
+            request_options,
         )
     }
 
@@ -915,6 +1065,28 @@ impl Client {
         asynchronous_indicator: Option<u32>,
         limits: &CodecLimits,
     ) -> Result<ClientOperationOutcome, ClientError> {
+        self.execute_query_async_requests_with_options(
+            request,
+            asynchronous_indicator,
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one Query Asynchronous Requests operation with per-exchange
+    /// timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// request delivery state when available.
+    pub fn execute_query_async_requests_with_options(
+        &mut self,
+        request: QueryAsyncRequestsRequest,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientOperationOutcome, ClientError> {
         validate_follow_up_indicator(asynchronous_indicator)?;
         let payload = request
             .to_ttlv_payload()
@@ -927,9 +1099,11 @@ impl Client {
             asynchronous_indicator,
             None,
             limits,
+            request_options,
         )
     }
 
+    #[allow(clippy::too_many_arguments)] // Keeps each validated async-operation field explicit.
     fn execute_async_request(
         &mut self,
         operation: u32,
@@ -938,11 +1112,13 @@ impl Client {
         asynchronous_indicator: Option<u32>,
         expected_cancel_correlation: Option<&[u8]>,
         limits: &CodecLimits,
+        request_options: &RequestOptions,
     ) -> Result<ClientOperationOutcome, ClientError> {
         let request_message =
             build_async_request_message(operation, payload, asynchronous_indicator)
                 .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
-        let (response, delivery_state) = self.exchange_operation(request_message, limits)?;
+        let (response, delivery_state) =
+            self.exchange_operation(request_message, limits, request_options)?;
         validate_async_response(
             response,
             operation,
@@ -966,7 +1142,7 @@ impl Client {
         configuration: ClientConfiguration,
     ) -> Self {
         Self {
-            transport: Box::new(transport),
+            transport: ClientTransport::Test(TestTransport::new(transport)),
             configuration,
             request_owner_observer: None,
             pending_owner_observer: None,
@@ -980,7 +1156,7 @@ impl Client {
         observer: private_wire_writer::ZeroizationObserver,
     ) -> Self {
         Self {
-            transport: Box::new(transport),
+            transport: ClientTransport::Test(TestTransport::new(transport)),
             configuration: empty_test_configuration(),
             request_owner_observer: Some(observer),
             pending_owner_observer: None,
@@ -995,7 +1171,7 @@ impl Client {
         observer: private_wire_writer::ZeroizationObserver,
     ) -> Self {
         Self {
-            transport: Box::new(transport),
+            transport: ClientTransport::Test(TestTransport::new(transport)),
             configuration,
             request_owner_observer: Some(observer),
             pending_owner_observer: None,
@@ -1009,7 +1185,7 @@ impl Client {
         observer: LimitsIdentityObserver,
     ) -> Self {
         Self {
-            transport: Box::new(transport),
+            transport: ClientTransport::Test(TestTransport::new(transport)),
             configuration: empty_test_configuration(),
             request_owner_observer: None,
             pending_owner_observer: None,
@@ -1024,7 +1200,7 @@ impl Client {
         pending_observer: ZeroizationObserver,
     ) -> Self {
         Self {
-            transport: Box::new(transport),
+            transport: ClientTransport::Test(TestTransport::new(transport)),
             configuration: empty_test_configuration(),
             request_owner_observer: Some(request_observer),
             pending_owner_observer: Some(pending_observer),
@@ -1861,6 +2037,36 @@ pub(super) fn decode_bounded_response<T, E>(
     decoder(bytes, limits).map_err(BoundedResponseError::Decode)
 }
 
+fn decode_transport_response(
+    response: kmipkit_transport::TransportResponse,
+    limits: &CodecLimits,
+    #[cfg(test)] observer: Option<&LimitsIdentityObserver>,
+) -> Result<(ResponseMessage, RequestDeliveryState), ClientError> {
+    let response_delivery_state =
+        RequestDeliveryState::PossiblySent.response_bytes_received(response.as_bytes().len());
+    let decode_result = decode_bounded_response(
+        response.as_bytes(),
+        limits,
+        decode_response_message,
+        #[cfg(test)]
+        observer,
+    );
+    drop(response);
+
+    let response_message = decode_result.map_err(|error| {
+        let protocol = match error {
+            BoundedResponseError::TooLarge => ProtocolError::new(
+                ProtocolErrorKind::MalformedMessage,
+                ProtocolCauseCategory::InvalidEncoding,
+                ResponseLimitExceeded,
+            ),
+            BoundedResponseError::Decode(error) => error,
+        };
+        protocol_failure_at(protocol, response_delivery_state)
+    })?;
+    Ok((response_message, response_delivery_state))
+}
+
 fn protocol_failure_at(error: ProtocolError, delivery_state: RequestDeliveryState) -> ClientError {
     ClientError::protocol(error, delivery_state)
 }
@@ -1954,3 +2160,7 @@ pub(super) use validate_unknown_extension as validate_unknown_extension_for_test
 #[cfg(test)]
 #[path = "../tests/unit/execute_private_error_tests.rs"]
 mod private_error_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/execute_provenance_order_tests.rs"]
+mod provenance_order_tests;

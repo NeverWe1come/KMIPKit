@@ -19,10 +19,8 @@ deny = [
     "openssl-sys",
 ]
 skip = [
-    { crate = "core-foundation@0.9.4", reason = "KMIPKIT-0011-EX-001: approved Apple DNS dependency split" },
-    { crate = "core-foundation@0.10.1", reason = "KMIPKIT-0011-EX-002: approved Apple trust-store dependency split" },
     { crate = "syn@2.0.119", reason = "KMIPKIT-0011-EX-003: approved proc-macro dependency split" },
-    { crate = "syn@3.0.6", reason = "KMIPKIT-0011-EX-004: approved patched ICU proc-macro dependency" },
+    { crate = "syn@3.0.6", reason = "KMIPKIT-0011-EX-004: approved Tokio proc-macro dependency" },
 ]
 
 [licenses]

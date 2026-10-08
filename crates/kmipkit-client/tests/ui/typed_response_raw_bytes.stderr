@@ -1,0 +1,5 @@
+error[E0599]: no method named `as_bytes` found for struct `ClientBatchResponse` in the current scope
+ --> tests/ui/typed_response_raw_bytes.rs:4:22
+  |
+4 |     let _ = response.as_bytes();
+  |                      ^^^^^^^^ method not found in `ClientBatchResponse`

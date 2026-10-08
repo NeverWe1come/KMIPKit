@@ -1,7 +1,12 @@
 # KMIPKIT-0013 dependency review
 
+The initial dependency assessments below are historical and include Hickory.
+See [T003a current-graph re-review](#t003a-current-graph-re-review-2026-10-08)
+for the resolver dependency removal, updated exception register, and latest
+policy evidence.
+
 **Review date:** 2026-10-07  
-**Status:** In progress; T003 is not complete and implementation remains gated.
+**Status:** T003 completed on 2026-10-07 for the original production graph, then reopened and re-completed for T004's test-only PKI dependency graph. The closure records below distinguish the original review from the T004 extension.
 
 ## Scope and current graph
 
@@ -9,6 +14,17 @@ The transport dependency set adds Tokio, Hyper HTTP/1, rustls with AWS-LC,
 tokio-rustls, Hickory system DNS, native certificate loading, and bytes. Direct
 dependencies are exact-pinned, and the root lockfile is committed with the
 dependency update. No Git dependency or alternate TLS provider is introduced.
+
+The T004 extension adds exact-pinned `rcgen` 0.14.10 to
+`kmipkit-test-support` with default features disabled and `aws_lc_rs` selected.
+It adds exact-pinned `aws-lc-rs` 1.18.1 with default features disabled and only
+`prebuilt-nasm` enabled so standalone Windows fixture builds use the already
+selected provider without requiring a system NASM executable. Test-support's
+`fixtures` and `scripted-transport` features are separate; transport opts into
+fixtures without activating the optional edge back to `kmipkit-transport`.
+`kmipkit-client` explicitly opts into `scripted-transport` for its existing
+test doubles. No production package depends on `kmipkit-test-support` or
+`rcgen`.
 
 The initial `rustls = 0.23.43` pin was affected by RUSTSEC-2026-0285. The
 upstream fixed release is 0.23.45; its release notes identify 0.23.13 through
@@ -83,6 +99,35 @@ The macOS target has not yet been compiled locally. Its Apple-target dependency
 graph was checked with `cargo tree --target all`; the macOS CI job remains the
 verification point for the `system-configuration` and Security Framework
 native build path.
+
+## T004 test-fixture dependency review
+
+The exact T004 graph was re-reviewed after adding the test-only PKI generator.
+The original T003 findings, maintainer-approved policy exceptions, and PR #50
+evidence apply to the earlier graph; they do not substitute for these checks.
+
+- `pwsh -File scripts/Test-DependencyPolicy.ps1` passed on 2026-10-07 with host
+  `x86_64-pc-windows-msvc`. It validated all four existing exact exception IDs,
+  refreshed both RustSec scans to commit
+  `b8a1a33e246a0a9a3b5f377248c41a503defec74`, and confirmed the root and fuzz
+  lockfiles remained unchanged during the check. The dependency closure is
+  covered by the existing finite license allowlist; no new exception or
+  advisory waiver was added.
+- `cargo tree --manifest-path Cargo.toml -p kmipkit-transport --all-targets -e features --locked --offline --prefix none`
+  confirmed Hyper enables `client` and `http1`; rustls/tokio-rustls and rcgen
+  use AWS-LC; `aws-lc-rs` enables `prebuilt-nasm`; and the graph has no `ring`
+  provider, TLS 1.2, HTTP/2, proxy, or compression feature.
+- `cargo tree --manifest-path Cargo.toml -p kmipkit-transport -e normal --locked --offline --prefix none`
+  confirmed the production transport dependency path does not include
+  `kmipkit-test-support`, `rcgen`, `reqwest`, or `hyper-util`.
+- A first Windows build probe before adding the explicit `prebuilt-nasm`
+  feature failed because the rcgen-only AWS-LC path attempted to invoke NASM.
+  The test-support dependency now enables `prebuilt-nasm` with AWS-LC's
+  defaults still disabled. The full platform build matrix remains a CI gate.
+
+This review covers the T004 dependency addition and closes the reopened T003
+gate. CI must still compile the test-support fixture and its AWS-LC build path
+on the supported Linux, Windows, and macOS targets.
 
 ## Disposition still required
 
@@ -273,3 +318,81 @@ workspace checks refreshed RustSec to commit
 `f246cde705ecb3a6b421d6d5462c6d88f317db5f`; the runner validated all four
 exception IDs and confirmed that `Cargo.lock` and `fuzz/Cargo.lock` were
 unchanged.
+
+## Original T003 closure evidence
+
+The following final evidence supersedes the earlier historical statements in
+this note that T003 remained open:
+
+- The maintainer-reviewed exact duplicate exceptions and finite ISC/BSD-3-Clause
+  license allowlist are recorded above and were merged in [PR #50](https://github.com/NeverWe1come/KMIPKit/pull/50).
+- The official command `pwsh -File scripts/Test-DependencyPolicy.ps1` passed
+  from the updated production-transport branch on 2026-10-07. It validated all
+  four exception IDs, refreshed both RustSec scans to commit
+  `b8a1a33e246a0a9a3b5f377248c41a503defec74`, and confirmed that `Cargo.lock`
+  and `fuzz/Cargo.lock` were unchanged.
+- [CI run 37604245540](https://github.com/NeverWe1come/KMIPKit/actions/runs/37604245540)
+  passed dependency policy, coverage and coverage-gate checks, script contracts,
+  and workspace formatting, Clippy, tests, and documentation builds on Ubuntu,
+  Windows, and macOS with both Rust 1.94 and stable. Those platform builds
+  cover the selected AWS-LC native dependency path; the CI run also passed the
+  normative inventory and immutable-source checks.
+- The locked feature graph, MSRV metadata, native build requirements, and
+  supported-target dependency paths are documented in this review. No
+  unresolved dependency-policy finding remains for the accepted design.
+
+The original T003 review passed before adding the T004 certificate fixture
+dependency. It no longer closes the reopened dependency gate. The client-
+execution task gaps identified by the independent audit must be reconciled
+before starting T046 through T051. Historical audit notes remain here so
+future dependency reviews can reuse their evidence.
+
+## T003a current-graph re-review (2026-10-08)
+
+The corrected resolver design removes Hickory from the root and transport
+manifests. The root `Cargo.lock` was regenerated by Cargo; the transport's
+locked library check passes. Hickory and its now-unused transitive packages
+are absent from the active graph. Tokio still enables `net`, `rt`, `sync`,
+and `time` for the planned `ToSocketAddrs`/`spawn_blocking` implementation.
+
+The Hickory removal eliminated the two duplicated `core-foundation` versions
+that had motivated exception IDs `KMIPKIT-0011-EX-001` and `EX-002`. Both
+records were removed from the canonical exception register and `.cargo/deny.toml`
+because cargo-deny no longer reports either finding. No new exception was
+added. The current graph still requires the exact `syn` 2 and 3 versions;
+`cargo tree --workspace -i syn@2.0.119 --locked --offline` reaches syn 2
+through `serde_derive` and a test-only dependency, while
+`cargo tree --workspace -i syn@3.0.6 --locked --offline` reaches syn 3 through
+`tokio-macros`. The active EX-003 and EX-004 records now describe those paths.
+Their original approval remains the PR #50 decision; the two resolved
+exceptions are no longer active.
+
+An independent dependency review found stale `zerovec` mitigation text in the
+two remaining records after Hickory's transitive graph was pruned. The
+mitigations now name only the active `serde`/test and Tokio proc-macro paths
+and require re-evaluation when those dependencies change.
+
+Verification after the manifest and lockfile change:
+
+- `pwsh -File scripts/Test-DependencyPolicy.ps1` passed on
+  `x86_64-pc-windows-msvc` with cargo-deny 0.20.2. Root and fuzz scans both
+  refreshed the RustSec database to
+  `b8a1a33e246a0a9a3b5f377248c41a503defec74` (2026-10-07T16:40:27+02:00),
+  validated only `KMIPKIT-0011-EX-003` and `EX-004`, and confirmed both
+  lockfiles were unchanged during the policy run.
+- `cargo check -p kmipkit-transport --lib --locked --offline` passed on
+  Windows using rustc 1.99.0 and the AWS-LC native build path.
+- `cargo metadata --locked --offline --format-version 1 --all-features`
+  resolved 126 packages; none declares an MSRV newer than Rust 1.94. The
+  local host compiler is 1.99.0, so this is dependency metadata evidence, not
+  a local compile with the 1.94 toolchain.
+- Locked feature trees for `x86_64-unknown-linux-gnu`,
+  `x86_64-pc-windows-msvc`, and `aarch64-apple-darwin` show Hyper client plus
+  HTTP/1, rustls/tokio-rustls with AWS-LC only, and Tokio `net`, `rt`, `sync`,
+  and `time`. They contain no Hickory, `ring`, TLS 1.2, HTTP/2, or compression
+  feature. These target trees are metadata checks; macOS was not compiled
+  locally and remains covered by the required CI matrix.
+
+T003a closes the dependency re-review gate for T013 Green. The active 0013
+feature tests and implementation remain subject to the Linux, Windows, and
+macOS CI checks later in this specification.

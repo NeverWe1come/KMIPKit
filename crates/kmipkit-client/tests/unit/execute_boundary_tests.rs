@@ -24,7 +24,8 @@ use std::path::{Path, PathBuf};
 use syn::parse::{Parse, ParseStream};
 use syn::visit::{self, Visit};
 use syn::{
-    Attribute, Expr, ExprCall, ExprMethodCall, Item, ItemMod, Macro, Meta, Pat, Type, UseTree,
+    AttrStyle, Attribute, Expr, ExprCall, ExprMethodCall, Item, ItemMod, LitStr, Macro, Meta, Pat,
+    Type, UseTree,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -1020,6 +1021,10 @@ impl BoundaryAudit {
 impl<'ast> Visit<'ast> for BoundaryAudit {
     fn visit_attribute(&mut self, attribute: &'ast Attribute) {
         self.check_attributes(std::slice::from_ref(attribute));
+        if is_approved_user_guide_doc_include(attribute, self.current_source_path.as_deref()) {
+            // Root-level guide text is inert documentation, not production macro code.
+            return;
+        }
         visit::visit_attribute(self, attribute);
     }
 
@@ -3087,6 +3092,32 @@ fn supported_cfg(attribute: &Attribute) -> bool {
     )
 }
 
+fn is_approved_user_guide_doc_include(attribute: &Attribute, source_path: Option<&Path>) -> bool {
+    if !matches!(&attribute.style, AttrStyle::Inner(_)) || !attribute.path().is_ident("doc") {
+        return false;
+    }
+    if source_path != Some(Path::new("lib.rs")) {
+        return false;
+    }
+    let Meta::NameValue(doc) = &attribute.meta else {
+        return false;
+    };
+    let Expr::Macro(doc_macro) = &doc.value else {
+        return false;
+    };
+    if !doc_macro.mac.path.is_ident("include_str") {
+        return false;
+    }
+    let Ok(path) = syn::parse2::<LitStr>(doc_macro.mac.tokens.clone()) else {
+        return false;
+    };
+    matches!(
+        path.value().as_str(),
+        "../../../docs/user-guide/en/production-transports.md"
+            | "../../../docs/user-guide/es/transportes-produccion.md"
+    )
+}
+
 #[test]
 fn query_request_is_dropped_before_exchange_and_not_retained_by_the_client() {
     let source_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/execute.rs");
@@ -3101,7 +3132,9 @@ fn query_request_is_dropped_before_exchange_and_not_retained_by_the_client() {
         })
         .flatten()
         .find_map(|item| match item {
-            syn::ImplItem::Fn(function) if function.sig.ident == "execute_query_async_requests" => {
+            syn::ImplItem::Fn(function)
+                if function.sig.ident == "execute_query_async_requests_with_options" =>
+            {
                 Some(&function.block)
             }
             _ => None,
@@ -3131,6 +3164,45 @@ fn query_request_is_dropped_before_exchange_and_not_retained_by_the_client() {
     assert!(
         matches!((request_drop, exchange), (Some(drop), Some(exchange)) if drop < exchange),
         "the consumed Query request and filter values must be dropped before the client exchange"
+    );
+}
+
+#[test]
+fn crate_doc_includes_allow_only_the_two_checked_in_user_guides() {
+    let source_path = Path::new("lib.rs");
+    let approved = syn::parse_file(
+        r#"#![doc = include_str!("../../../docs/user-guide/en/production-transports.md")]
+        #![doc = include_str!("../../../docs/user-guide/es/transportes-produccion.md")]"#,
+    )
+    .expect("the approved documentation attributes parse");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&approved, source_path);
+    assert!(
+        !audit.is_rejected(),
+        "the two static crate-level user-guide includes are inert documentation"
+    );
+
+    let unexpected_path =
+        syn::parse_file(r#"#![doc = include_str!("../../../docs/unreviewed.md")]"#)
+            .expect("the unexpected documentation attribute parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&unexpected_path, source_path);
+    assert!(
+        audit.is_rejected(),
+        "unreviewed included source must remain outside the macro allowlist"
+    );
+
+    let runtime_include = syn::parse_file(
+        r#"fn runtime_text() -> &'static str {
+            include_str!("../../../docs/user-guide/en/production-transports.md")
+        }"#,
+    )
+    .expect("the runtime include fixture parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&runtime_include, source_path);
+    assert!(
+        audit.is_rejected(),
+        "the documentation exception must not whitelist runtime macros"
     );
 }
 

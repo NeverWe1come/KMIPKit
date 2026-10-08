@@ -6,16 +6,75 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Secure KMIP transports for KMIPKit"
+# Compile worker lifecycle tests inside the private module so they can verify
+# its state machine without turning those tests into a public integration API.
+autotests = false
 
 [dependencies]
 bytes.workspace = true
-hickory-resolver.workspace = true
 hyper.workspace = true
 rustls.workspace = true
 rustls-native-certs.workspace = true
 tokio.workspace = true
 tokio-rustls.workspace = true
 zeroize.workspace = true
+
+[[test]]
+name = "delivery_state"
+path = "tests/delivery_state.rs"
+
+[[test]]
+name = "dependency_policy"
+path = "tests/dependency_policy.rs"
+
+[[test]]
+name = "public_contract"
+path = "tests/public_contract.rs"
+
+[[test]]
+name = "runtime_policy"
+path = "tests/runtime_policy.rs"
+
+[[test]]
+name = "timeout_delivery"
+path = "tests/timeout_delivery.rs"
+
+[[test]]
+name = "resolver"
+path = "tests/resolver.rs"
+
+[[test]]
+name = "tls_config"
+path = "tests/tls_config.rs"
+
+[[test]]
+name = "raw_tls"
+path = "tests/raw_tls.rs"
+
+[[test]]
+name = "https"
+path = "tests/https.rs"
+
+[[test]]
+name = "tls_integrity"
+path = "tests/tls_integrity.rs"
+
+[[test]]
+name = "secret_redaction"
+path = "tests/secret_redaction.rs"
+
+[[test]]
+name = "secret_redaction_current"
+path = "tests/secret_redaction_current.rs"
+
+[[bench]]
+name = "production_transport"
+path = "benches/production_transport.rs"
+harness = false
+
+[dev-dependencies]
+kmipkit-test-support = { workspace = true, features = ["fixtures"] }
+rcgen.workspace = true
 
 [lints]
 workspace = true

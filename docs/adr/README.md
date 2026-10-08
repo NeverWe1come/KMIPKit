@@ -27,6 +27,8 @@ one and links both directions.
 - [ADR-0012: Conditional caller-requested TTLV wire encoding](0012-caller-requested-wire-encoding-policy.md) (Accepted)
 - [ADR-0013: Client extension registry ownership](0013-client-extension-registry-ownership.md) (Accepted)
 - [ADR-0014: Public low-level transport exchange contract](0014-public-transport-exchange-contract.md) (Accepted)
+- [ADR-0015: Tokio worker for synchronous TLS and HTTPS transports](0015-asynchronous-transport-worker.md) (Accepted; resolver decision superseded by ADR-0016)
+- [ADR-0016: Preserve native system name-resolution policy](0016-native-system-name-resolution.md) (Accepted)
 
 ## Template
 

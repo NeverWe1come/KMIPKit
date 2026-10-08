@@ -120,15 +120,20 @@ exchange reported `NotSent` cannot be sent later.
 ### `ClientWorker`
 
 Private per-client state running on one owned OS thread. It owns the current-
-thread Tokio runtime, a Hickory resolver initialized from system configuration,
-TLS config, one endpoint connection, and the bounded command/result channels.
-It processes no more than one exchange for a client at a time and admits at
-most one waiting exchange. The worker connects lazily, reuses a healthy HTTPS
-connection, closes raw-TLS connections after one response frame, invalidates
-connections after timeout or protocol/network error, and never resends an
-exchange. It accepts shutdown, cancels pending async I/O, closes the socket,
-releases secret configuration, and exits without waiting on a blocking OS
-resolver call.
+thread Tokio runtime, the system-resolver operation, TLS config, one endpoint
+connection, and the bounded command/result channels. Its runtime limits the
+blocking pool to one thread; resolver submissions also acquire the shared
+32-permit governor defined by ADR-0016 before entering that pool. The permit is
+held until the native resolver call exits, including after the caller returns
+from timeout or cancellation. It processes no more than one exchange for a
+client at a time and admits at most one waiting exchange. The worker connects
+lazily, retains no more than 16 addresses in OS order for one connection
+attempt and tries them sequentially, reuses a healthy HTTPS connection, closes raw-TLS connections after
+one response frame, invalidates connections after timeout or protocol/network
+error, and never resends an exchange. It accepts shutdown, cancels pending
+async I/O, closes the socket, releases secret configuration, and exits without
+waiting indefinitely on an already-started blocking OS resolver call. A late
+resolver result is discarded and cannot start TCP/TLS or KMIP dispatch.
 
 ### `ConnectionState`
 

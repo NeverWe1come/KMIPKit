@@ -22,7 +22,7 @@
 - [ ] CHK008 Are DNS resolution, TCP connect, and TLS handshake included in the connect deadline and total deadline without sending KMIP bytes early?
 - [ ] CHK009 Are the raw low-level caller-byte contract and typed client's validated encode path clearly distinguished?
 - [ ] CHK010 Are HTTP parser responsibilities separated from KMIPKit's status/header/body checks without promising detection the parser cannot provide?
-- [ ] CHK011 Are proposed Hyper/Tokio/Hickory dependencies and the per-client worker lifecycle clearly marked as a change to ADR-0005 rather than already accepted architecture?
+- [ ] CHK011 Are Hyper/Tokio, the standard-library system resolver, and the per-client worker lifecycle linked to the accepted ADR changes rather than treated as implicit ADR-0005 behavior?
 
 ## Acceptance Criteria and Edge Coverage
 
@@ -30,7 +30,7 @@
 - [ ] CHK013 Do response-cap and TTLV-length criteria establish checking before allocation/growth, including arithmetic overflow and exact boundary behavior?
 - [ ] CHK014 Do timeout, HTTPS reuse, and raw-TLS close-after-frame criteria define whether a timed-out or malformed request can ever be replayed or a surplus frame misattributed?
 - [ ] CHK015 Do HTTPS criteria cover duplicate/conflicting headers, transfer/content encoding, non-200 status, truncation, and parser errors?
-- [ ] CHK016 Are system resolver configuration, lookup limits, and cross-platform DNS behavior sufficiently specified and testable?
+- [ ] CHK016 Are OS-owned resolver routing/retry/cache behavior, the KMIPKit governor and candidate caps, timeout/cancellation limits, and cross-platform system-resolver smoke tests sufficiently specified?
 - [ ] CHK017 Are all failure results tied to `NotSent`, `PossiblySent`, or `ResponseStarted` with no raw payload or dependency error text?
 - [ ] CHK021 Does the delivery-state commit occur at a defined dispatch boundary that does not depend on distinguishing HTTP headers from body bytes below Hyper?
 - [ ] CHK022 Are direct production-adapter timeout overrides specified and tested separately from typed operation options?

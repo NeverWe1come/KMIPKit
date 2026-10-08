@@ -17,7 +17,9 @@ zeroize.workspace = true
 static_assertions = { version = "=1.1.0", default-features = false }
 serde = "=1.0.228"
 quickcheck = { version = "=1.1.0", default-features = false }
-kmipkit-test-support.workspace = true
+kmipkit-test-support = { workspace = true, features = ["fixtures", "scripted-transport"] }
+rustls.workspace = true
+tokio.workspace = true
 syn = { version = "=2.0.119", default-features = false, features = ["full", "parsing", "visit"] }
 trybuild = "=1.0.121"
 

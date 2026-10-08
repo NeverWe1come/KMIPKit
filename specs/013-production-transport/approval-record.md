@@ -102,3 +102,46 @@ contains 18 functional requirements and 63 task entries. Existing FR/SC
 identifiers and T001–T062 identifiers remain stable; T046a is the only added
 task identifier. No transport behavior is added by this clarification, and
 no code or tests were run for this documentation update.
+
+## Resolver architecture correction: native system resolution
+
+**Recorded**: 2026-10-08
+
+The maintainer's standing direct instruction to continue autonomously and not
+request manual approval also delegates acceptance of the narrowly scoped
+resolver correction described here. It does not waive the human-only merge,
+eventual qualified human security audit, or release-publication constraints
+recorded above.
+
+Independent architecture review confirmed that Hickory 0.26.3 flattens
+configured upstream DNS servers and cannot preserve per-interface split-DNS
+and VPN routing. The same review examined a replacement using
+`std::net::ToSocketAddrs` within Tokio `spawn_blocking` and found it coherent
+under the conditions captured in ADR-0016: acquire a shared permit before
+submission; keep that permit until the native call exits; scope the 32-permit
+limit to one loaded KMIPKit library instance; make admission fail fast; retain
+at most 16 OS-ordered addresses; and discard late results before candidate
+TCP/TLS connection or KMIP dispatch. A started native lookup cannot be
+interrupted and OS DNS work may continue after the KMIPKit caller returns.
+
+Under the delegated authorization:
+
+- ADR-0016 is accepted and supersedes only ADR-0015's resolver choice and
+  packet/cache limits. ADR-0015 remains accepted for its other decisions.
+- KMIPKIT-0013 FR-013, research, plan, data model, timeout contract, tests, and
+  dependency review will use the native system resolver contract. The
+  dependency-review record is completed by T003a after T002a changes the lockfile.
+- T002a removes Hickory from production dependencies; cross-platform
+  system-resolver behavior remains an implementation and CI verification gate.
+- The 32-permit shared governor is a narrow exception to the preference
+  against global mutable state and must receive independent security/lifecycle
+  review.
+- T012a, T002a, and T003a extend the implementation plan from 63 to 66 task
+  entries; Red/Green/Refactor boundaries remain separate.
+
+No platform-specific split-DNS test environment is available in CI by default;
+the feature claims delegation to the operating system's resolver, while
+deterministic injected-resolver tests verify KMIPKit-owned admission,
+cancellation, result isolation, candidate ordering/caps, and bounded shutdown.
+This design acceptance does not claim implementation completion or an external
+human security review.

@@ -1,0 +1,13 @@
+error[E0308]: mismatched types
+  --> tests/ui/production_transport_injection.rs:22:40
+   |
+22 |     let _ = Client::new(configuration, transport);
+   |             -----------                ^^^^^^^^^ expected `TransportConfig`, found `CallerTransport`
+   |             |
+   |             arguments to this function are incorrect
+   |
+note: associated function defined here
+  --> src/execute.rs
+   |
+   |     pub fn new(
+   |            ^^^

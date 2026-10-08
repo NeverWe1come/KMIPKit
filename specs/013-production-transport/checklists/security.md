@@ -29,12 +29,12 @@
 - [ ] CHK011 Are response size and decoder depth/element limits enforced before growth or nested allocation?
 - [ ] CHK012 Does the design define cancellation and teardown for the worker, resolver, TLS stream, and HTTP connection?
 - [ ] CHK013 Does every timeout and protocol failure invalidate the connection and preserve delivery state without replaying the KMIP operation?
-- [ ] CHK014 Are Hickory system-DNS behavior, query caps, and platform-specific resolver configuration reviewable without introducing a request-routing bypass?
+- [ ] CHK014 Does the resolver contract preserve OS-owned split-DNS/VPN policy, limit KMIPKit-submitted work with a shared governor, and avoid claims about OS packet retries, caching, or routing internals?
 - [ ] CHK016 Does the delivery contract define a race-safe dispatch commit so `NotSent` can never be transmitted later, without guessing the HTTPS header/body boundary below Hyper?
 - [ ] CHK017 Are platform-root loading semantics, `SSL_CERT_FILE`, lack of OS distrust/revocation handling, and caller-CRL behavior explicit and fail-closed?
 - [ ] CHK018 Are TLS session resumption capacity, one-hour local expiry, same-client reuse, cross-identity isolation, inherited full-handshake trust decisions, rebuilt-client cache invalidation after trust changes, and 0-RTT disablement independently testable?
 - [ ] CHK019 Are raw-TLS surplus frames prevented from being attributed to a later exchange, and are HTTPS parser-owned copies excluded accurately from zeroization claims?
-- [ ] CHK020 Are resolver retries, parallel upstream queries, the per-upstream-connection in-flight request cap, cache responses, and A/AAAA candidates capped to the documented numeric limits with scope stated precisely?
+- [ ] CHK020 Are the 32-permit governor scope, permit lifetime, fail-fast admission, 16-address cap, cancellation limits, late-result isolation, and background native-call effects stated and tested precisely?
 - [ ] CHK021 Is `SSL_CERT_FILE` precedence tested in an isolated process and included in the platform-trust threat boundary?
 - [ ] CHK022 Does the HTTP reuse test prevent an unsolicited response from being assigned to a later operation?
 - [ ] CHK023 Is the race between first decrypted response-byte observation and timeout finalization resolved monotonically and tested?
