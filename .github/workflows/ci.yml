@@ -1111,6 +1111,12 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Write run summary
+        id: write-summary
+        env:
+          CI_NEEDS_JSON: ${{ toJSON(needs) }}
+        run: python3 scripts/ci_summary.py
+
       - name: Fallback summary when checkout or rendering fails
         id: fallback-summary
         if: always() && (steps.checkout.outcome != 'success' || steps.write-summary.outputs.summary_written != 'true')
@@ -1122,11 +1128,6 @@ jobs:
           Write-Error 'Normal CI run summary could not be rendered.'
           exit 1
 
-      - name: Write run summary
-        id: write-summary
-        env:
-          CI_NEEDS_JSON: ${{ toJSON(needs) }}
-        run: python3 scripts/ci_summary.py
       - name: Diagnose job result
         id: ci-diagnostics
         if: always()
