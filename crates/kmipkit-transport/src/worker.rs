@@ -332,7 +332,10 @@ impl ClientWorker {
         spawner: impl FnOnce(WorkerTask) -> io::Result<JoinHandle<()>>,
     ) -> Result<Self, WorkerStartError> {
         Self::start_with_factories(spawner, || {
-            Builder::new_current_thread().enable_all().build()
+            Builder::new_current_thread()
+                .enable_all()
+                .max_blocking_threads(1)
+                .build()
         })
     }
 
@@ -565,7 +568,9 @@ fn run_runtime(
     queue_space: Arc<QueueSpace>,
 ) {
     runtime.block_on(runtime_loop(commands, shutdown, queue_space));
-    drop(runtime);
+    // A started `spawn_blocking` resolver call cannot be interrupted. Detach such
+    // calls after the async worker has shut down instead of blocking client close.
+    runtime.shutdown_timeout(Duration::ZERO);
 }
 
 async fn runtime_loop(

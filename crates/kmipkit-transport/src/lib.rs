@@ -23,6 +23,9 @@ mod tls_policy;
 #[cfg(test)]
 #[path = "tls_policy_tests.rs"]
 mod tls_policy_tests;
+// The resolver precedes the production adapters that consume it in later tasks.
+#[allow(dead_code)]
+mod resolver;
 // The worker precedes the production adapters that consume it in later tasks.
 #[allow(dead_code)]
 mod worker;
