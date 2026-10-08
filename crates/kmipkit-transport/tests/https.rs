@@ -7,6 +7,7 @@
 
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
+use std::process::Command;
 use std::sync::{Arc, mpsc};
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
@@ -52,6 +53,274 @@ const PEER_TIMEOUT: Duration = Duration::from_secs(6);
 const ACCEPT_TIMEOUT: Duration = Duration::from_secs(2);
 const CLEANUP_GATE_OBSERVATION_WINDOW: Duration = Duration::from_millis(250);
 const MAX_CAPTURED_REQUEST: usize = 1024 * 1024;
+
+#[test]
+fn https_redirects_do_not_follow_server_supplied_endpoint() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let source_listener = LoopbackTcpListener::bind().expect("the source peer binds loopback");
+    let source_address = source_listener.local_addr();
+    let target_listener = LoopbackTcpListener::bind().expect("the redirect target binds loopback");
+    let target_address = target_listener.local_addr();
+    let target_peer = spawn_peer(target_listener.into_inner(), server_config(&pki), true);
+    let response = format!(
+        "HTTP/1.1 307 Temporary Redirect\r\nLocation: https://{SERVER_NAME}:{}/kmip\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\n\r\n",
+        target_address.port()
+    );
+    let source_peer = spawn_raw_response_peer(
+        source_listener.into_inner(),
+        server_config(&pki),
+        response.into_bytes(),
+    );
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", source_address.port()),
+        None,
+        None,
+    );
+    let mut adapter = https::new_for_test_with_resolver(config, None, loopback_port_resolver());
+
+    let error = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect_err("a redirect response is rejected without following Location");
+    assert_eq!(error.cause_category(), TransportCauseCategory::Http);
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+
+    let source = source_peer
+        .join()
+        .expect("the source response peer completes");
+    let target = target_peer
+        .join()
+        .expect("the redirect target observes no connection");
+    assert!(
+        source.accepted,
+        "the configured source endpoint is contacted"
+    );
+    assert!(
+        source.request.is_some(),
+        "one request reaches the configured endpoint"
+    );
+    assert!(
+        !target.accepted,
+        "a server-supplied Location cannot select another endpoint"
+    );
+}
+
+#[test]
+fn https_ignores_proxy_environment_variables_in_an_isolated_process() {
+    let proxy = LoopbackTcpListener::bind().expect("the proxy probe binds loopback");
+    let proxy_address = proxy.local_addr();
+    let proxy_listener = proxy.into_inner();
+    proxy_listener
+        .set_nonblocking(true)
+        .expect("the proxy probe checks accepts without blocking");
+    let proxy_url = format!("http://{proxy_address}");
+    let output = Command::new(std::env::current_exe().expect("the HTTPS test binary exists"))
+        .arg("--exact")
+        .arg("https_proxy_environment_child")
+        .arg("--nocapture")
+        .env("HTTP_PROXY", &proxy_url)
+        .env("HTTPS_PROXY", &proxy_url)
+        .env("ALL_PROXY", &proxy_url)
+        .env("http_proxy", &proxy_url)
+        .env("https_proxy", &proxy_url)
+        .env("all_proxy", &proxy_url)
+        .env("NO_PROXY", "")
+        .env("no_proxy", "")
+        .env("KMIPKIT_HTTPS_PROXY_CHILD", "1")
+        .output()
+        .expect("the isolated proxy-policy test process starts");
+
+    assert!(
+        output.status.success(),
+        "the direct HTTPS child failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(
+        matches!(proxy_listener.accept(), Err(error) if error.kind() == io::ErrorKind::WouldBlock),
+        "the HTTPS transport never connects to environment-selected proxies"
+    );
+}
+
+#[test]
+fn https_proxy_environment_child() {
+    if std::env::var_os("KMIPKIT_HTTPS_PROXY_CHILD").is_none() {
+        return;
+    }
+
+    let pki = EphemeralPki::generate().expect("the child test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the direct HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(listener.into_inner(), server_config(&pki), true);
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+
+    let response = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the request reaches the configured endpoint directly");
+    assert_eq!(response.as_bytes(), RESPONSE_BODY);
+    let peer = peer.join().expect("the direct peer completes");
+    assert!(peer.accepted, "the configured endpoint is contacted");
+}
+
+#[test]
+fn https_does_not_store_cookies_negotiate_http2_or_request_compression() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_response_sequence_peer(
+        listener.into_inner(),
+        server_config_with_alpn(&pki, &[b"h2", b"http/1.1"]),
+        vec![
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\nSet-Cookie: session=server-value; Secure; HttpOnly\r\n\r\n".to_vec(),
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\n\r\n".to_vec(),
+        ],
+    );
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+
+    adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the first HTTP/1 exchange succeeds");
+    assert!(https::has_cached_connection_for_test(&adapter));
+    adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the second HTTP/1 exchange reuses the direct session");
+    let peer = peer.join().expect("the two-exchange peer completes");
+
+    assert_eq!(
+        peer.requests.len(),
+        2,
+        "both exchanges use one peer session"
+    );
+    assert_ne!(peer.alpn_protocol.as_deref(), Some(b"h2".as_slice()));
+    for request in &peer.requests {
+        assert_eq!(request.version, "HTTP/1.1");
+        assert!(header_values(request, "accept-encoding").is_empty());
+    }
+    assert!(
+        header_values(&peer.requests[1], "cookie").is_empty(),
+        "Set-Cookie from a server response is not retained or sent later"
+    );
+}
+
+#[test]
+fn https_does_not_retry_a_server_error_response() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the retry probe binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_retry_probe_peer(listener.into_inner(), server_config(&pki));
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+
+    let error = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect_err("a server error is returned without retry");
+    assert_eq!(error.cause_category(), TransportCauseCategory::Http);
+    let peer = peer.join().expect("the bounded retry probe completes");
+    assert_eq!(peer.accepted_connections, 1);
+    assert_eq!(peer.requests.len(), 1, "the KMIP request is sent once");
+}
+
+#[test]
+fn https_does_not_retry_after_a_dispatched_request_loses_its_response() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the retry probe binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_drop_response_probe_peer(listener.into_inner(), server_config(&pki));
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+
+    let error = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect_err("a dispatched request whose response is lost is not replayed");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::PossiblySent);
+    let peer = peer.join().expect("the bounded retry probe completes");
+    assert_eq!(peer.accepted_connections, 1);
+    assert_eq!(peer.requests.len(), 1, "the KMIP request is sent once");
+}
+
+#[test]
+fn https_cancellation_before_dispatch_is_not_sent() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(listener.into_inner(), server_config(&pki), true);
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let (lookup_started, lookup_started_rx) = mpsc::sync_channel(1);
+    let (lookup_release, lookup_release_rx) = mpsc::sync_channel(1);
+    let lookup_release_rx = Arc::new(std::sync::Mutex::new(lookup_release_rx));
+    let lookup_release_waiter = Arc::clone(&lookup_release_rx);
+    let resolver = resolver::Resolver::with_lookup_and_governor(
+        move |_host, _port| {
+            let _ = lookup_started.send(());
+            if let Ok(receiver) = lookup_release_waiter.lock() {
+                let _ = receiver.recv_timeout(PEER_TIMEOUT);
+            }
+            Ok(vec![address])
+        },
+        Arc::new(tokio::sync::Semaphore::new(1)),
+    );
+    let (cancel_tx, cancel_rx) = tokio::sync::oneshot::channel();
+    let adapter = https::new_for_test_with_resolver_and_driver_abort_observer(
+        config,
+        resolver,
+        mpsc::sync_channel(1).0,
+        cancel_rx,
+    );
+    let (exchange_tx, exchange_rx) = mpsc::sync_channel(1);
+
+    thread::spawn(move || {
+        let mut adapter = adapter;
+        let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+        let _ = exchange_tx.send((adapter, result));
+    });
+    lookup_started_rx
+        .recv_timeout(PEER_TIMEOUT)
+        .expect("the injected resolver is held before TCP dispatch");
+    cancel_tx
+        .send(())
+        .expect("the in-flight exchange accepts cancellation");
+    let (adapter, result) = exchange_rx
+        .recv_timeout(ACCEPT_TIMEOUT)
+        .expect("cancellation completes before the held lookup is released");
+    let error = result.expect_err("the canceled exchange returns an error");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    let _ = lookup_release.send(());
+    drop(adapter);
+    let peer = peer.join().expect("the bounded HTTPS peer completes");
+    assert!(
+        !peer.accepted,
+        "no TCP/TLS peer was contacted before dispatch"
+    );
+}
 
 #[test]
 fn https_configuration_rejects_absolute_or_different_authority_targets() {
@@ -1038,7 +1307,22 @@ fn fixed_resolver(address: SocketAddr) -> resolver::Resolver {
     )
 }
 
+fn loopback_port_resolver() -> resolver::Resolver {
+    resolver::Resolver::with_lookup_and_governor(
+        move |_host, port| {
+            Ok(vec![format!("127.0.0.1:{port}").parse().expect(
+                "the supplied endpoint port forms a loopback address",
+            )])
+        },
+        Arc::new(tokio::sync::Semaphore::new(1)),
+    )
+}
+
 fn server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
+    server_config_with_alpn(pki, &[])
+}
+
+fn server_config_with_alpn(pki: &EphemeralPki, alpn_protocols: &[&[u8]]) -> Arc<ServerConfig> {
     let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
     let builder = ServerConfig::builder_with_provider(provider)
         .with_protocol_versions(&[&rustls::version::TLS13])
@@ -1052,7 +1336,7 @@ fn server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
     let verifier = WebPkiClientVerifier::builder(Arc::new(client_roots))
         .build()
         .expect("the peer requires a verified client certificate");
-    let config = builder
+    let mut config = builder
         .with_client_cert_verifier(verifier)
         .with_single_cert(
             vec![CertificateDer::from(
@@ -1063,6 +1347,10 @@ fn server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
             )),
         )
         .expect("the local server identity is valid");
+    config.alpn_protocols = alpn_protocols
+        .iter()
+        .map(|protocol| protocol.to_vec())
+        .collect();
     Arc::new(config)
 }
 
@@ -1081,6 +1369,18 @@ struct PeerObservation {
     client_identity_present: bool,
     close_notify_sent: bool,
     request: Option<CapturedRequest>,
+}
+
+#[derive(Default)]
+struct SequencePeerObservation {
+    requests: Vec<CapturedRequest>,
+    alpn_protocol: Option<Vec<u8>>,
+}
+
+#[derive(Default)]
+struct RetryPeerObservation {
+    accepted_connections: usize,
+    requests: Vec<CapturedRequest>,
 }
 
 fn spawn_peer(
@@ -1227,6 +1527,153 @@ fn spawn_response_peer(
             }
             if let Some(release) = hold_after_response {
                 let _ = release.recv_timeout(PEER_TIMEOUT);
+            }
+        }
+        observation
+    })
+}
+
+fn spawn_response_sequence_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    responses: Vec<Vec<u8>>,
+) -> JoinHandle<SequencePeerObservation> {
+    thread::spawn(move || {
+        let Ok((stream, _)) = accept_before_deadline(&listener) else {
+            return SequencePeerObservation::default();
+        };
+        if stream.set_nonblocking(false).is_err()
+            || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
+            || stream.set_write_timeout(Some(PEER_TIMEOUT)).is_err()
+        {
+            return SequencePeerObservation::default();
+        }
+        let Ok(connection) = ServerConnection::new(configuration) else {
+            return SequencePeerObservation::default();
+        };
+        let mut tls = StreamOwned::new(connection, stream);
+        let handshake_deadline = Instant::now() + PEER_TIMEOUT;
+        while tls.conn.is_handshaking() {
+            if Instant::now() >= handshake_deadline || tls.conn.complete_io(&mut tls.sock).is_err()
+            {
+                return SequencePeerObservation::default();
+            }
+        }
+        let mut observation = SequencePeerObservation {
+            requests: Vec::with_capacity(responses.len()),
+            alpn_protocol: tls.conn.alpn_protocol().map(<[u8]>::to_vec),
+        };
+        for response in responses {
+            let Some(request) = read_request(&mut tls) else {
+                break;
+            };
+            observation.requests.push(request);
+            if tls.write_all(&response).is_err() || tls.flush().is_err() {
+                break;
+            }
+        }
+        observation
+    })
+}
+
+fn spawn_retry_probe_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+) -> JoinHandle<RetryPeerObservation> {
+    thread::spawn(move || {
+        let _ = listener.set_nonblocking(true);
+        let accept_deadline = Instant::now() + Duration::from_millis(750);
+        let mut observation = RetryPeerObservation::default();
+        while Instant::now() < accept_deadline && observation.accepted_connections < 2 {
+            let (stream, _) = match listener.accept() {
+                Ok(connection) => connection,
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    thread::sleep(Duration::from_millis(10));
+                    continue;
+                }
+                Err(_) => break,
+            };
+            observation.accepted_connections += 1;
+            if stream.set_nonblocking(false).is_err()
+                || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
+                || stream.set_write_timeout(Some(PEER_TIMEOUT)).is_err()
+            {
+                continue;
+            }
+            let Ok(connection) = ServerConnection::new(Arc::clone(&configuration)) else {
+                continue;
+            };
+            let mut tls = StreamOwned::new(connection, stream);
+            let handshake_deadline = Instant::now() + PEER_TIMEOUT;
+            let mut handshake_failed = false;
+            while tls.conn.is_handshaking() {
+                if Instant::now() >= handshake_deadline
+                    || tls.conn.complete_io(&mut tls.sock).is_err()
+                {
+                    handshake_failed = true;
+                    break;
+                }
+            }
+            if handshake_failed {
+                continue;
+            }
+            if let Some(request) = read_request(&mut tls) {
+                observation.requests.push(request);
+                let response = b"HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+                let _ = tls.write_all(response);
+                tls.conn.send_close_notify();
+                let _ = tls.flush();
+            }
+        }
+        observation
+    })
+}
+
+fn spawn_drop_response_probe_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+) -> JoinHandle<RetryPeerObservation> {
+    thread::spawn(move || {
+        let _ = listener.set_nonblocking(true);
+        let accept_deadline = Instant::now() + Duration::from_millis(750);
+        let mut observation = RetryPeerObservation::default();
+        while Instant::now() < accept_deadline && observation.accepted_connections < 2 {
+            let (stream, _) = match listener.accept() {
+                Ok(connection) => connection,
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    thread::sleep(Duration::from_millis(10));
+                    continue;
+                }
+                Err(_) => break,
+            };
+            observation.accepted_connections += 1;
+            if stream.set_nonblocking(false).is_err()
+                || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
+                || stream.set_write_timeout(Some(PEER_TIMEOUT)).is_err()
+            {
+                continue;
+            }
+            let Ok(connection) = ServerConnection::new(Arc::clone(&configuration)) else {
+                continue;
+            };
+            let mut tls = StreamOwned::new(connection, stream);
+            let handshake_deadline = Instant::now() + PEER_TIMEOUT;
+            let mut handshake_failed = false;
+            while tls.conn.is_handshaking() {
+                if Instant::now() >= handshake_deadline
+                    || tls.conn.complete_io(&mut tls.sock).is_err()
+                {
+                    handshake_failed = true;
+                    break;
+                }
+            }
+            if handshake_failed {
+                continue;
+            }
+            if let Some(request) = read_request(&mut tls) {
+                observation.requests.push(request);
+                // Dropping the TLS stream after a complete request simulates a
+                // peer that disappears before it can return any HTTP response.
             }
         }
         observation
