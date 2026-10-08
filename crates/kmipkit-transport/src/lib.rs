@@ -6,8 +6,8 @@
 //! only during the synchronous call, must not log or retain it, and must not
 //! retry automatically. The typed client remains a separate API and does not
 //! accept an arbitrary caller-provided [`Transport`].
-//! [`RawTlsTransport`] provides the concrete raw-TLS adapter. The HTTPS
-//! adapter is introduced separately. The top-level `kmipkit` facade does not
+//! [`RawTlsTransport`] provides the raw-TLS adapter and [`HttpsTransport`]
+//! provides the HTTPS/HTTP 1.1 adapter. The top-level `kmipkit` facade does not
 //! re-export this crate, and `kmipkit-client::Client` does not accept a
 //! caller-implemented transport.
 //!
@@ -226,6 +226,7 @@
 
 mod config;
 mod error;
+mod https;
 mod raw_tls;
 mod response;
 mod secret;
@@ -253,6 +254,7 @@ pub use config::{
     TransportConfigError, TrustSource,
 };
 pub use error::{RequestDeliveryState, TransportCauseCategory, TransportError};
+pub use https::HttpsTransport;
 pub use raw_tls::RawTlsTransport;
 pub use response::TransportResponse;
 

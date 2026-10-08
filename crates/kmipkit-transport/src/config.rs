@@ -88,6 +88,29 @@ impl Endpoint {
         }
     }
 
+    pub(crate) fn https_connection_details(
+        &self,
+    ) -> Result<(String, u16, String), TransportConfigError> {
+        let Self(EndpointInput::Https { uri }) = self else {
+            return Err(TransportConfigError::InvalidEndpoint);
+        };
+        let parsed =
+            Uri::try_from(uri.as_str()).map_err(|_| TransportConfigError::InvalidEndpoint)?;
+        let authority = parsed
+            .authority()
+            .ok_or(TransportConfigError::InvalidEndpoint)?;
+        let authority_host = authority.host();
+        let host = authority_host
+            .strip_prefix('[')
+            .and_then(|value| value.strip_suffix(']'))
+            .unwrap_or(authority_host);
+        Ok((
+            host.to_owned(),
+            authority.port_u16().unwrap_or(443),
+            authority.as_str().to_owned(),
+        ))
+    }
+
     fn server_name(
         &self,
         override_name: Option<String>,

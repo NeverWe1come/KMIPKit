@@ -12,7 +12,9 @@ use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener, fixtures};
-use kmipkit_transport::{RequestDeliveryState, Transport};
+pub use kmipkit_transport::{
+    RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
+};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
@@ -37,6 +39,12 @@ mod tls;
 #[path = "../src/worker.rs"]
 #[allow(dead_code)]
 mod worker;
+
+pub use config::{
+    CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions,
+    RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder,
+    TransportConfigError, TrustSource,
+};
 
 const SERVER_NAME: &str = "server.kmipkit.test";
 const RESPONSE_BODY: &[u8] = b"response";
