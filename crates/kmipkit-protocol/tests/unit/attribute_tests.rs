@@ -14,10 +14,10 @@ const STANDARD_ATTRIBUTE_TAG: u32 = 0x0042_0001;
 const SECOND_STANDARD_ATTRIBUTE_TAG: u32 = 0x0042_0028;
 const VENDOR_EXTENSION_TAG: u32 = 0x0054_1234;
 const TTLV_ENVELOPE_TAG: u32 = 0x0054_1235;
-const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0053;
-const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_006E;
-const ATTRIBUTE_NAME_TAG: u32 = 0x0042_0008;
-const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000A;
+const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
+const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 const VALUE_SENTINEL: &[u8] = b"attribute-value-secret-sentinel";
 
 fn tag(raw: u32) -> Tag {
@@ -51,8 +51,14 @@ fn valid_vendor_attribute() -> Item {
             VENDOR_IDENTIFICATION_TAG,
             Value::text_string("KMIPKit.TestVendor_1".to_owned()),
         ),
-        item(ATTRIBUTE_NAME_TAG, Value::text_string("Opaque.Attribute".to_owned())),
-        item(ATTRIBUTE_VALUE_TAG, Value::byte_string(VALUE_SENTINEL.to_vec())),
+        item(
+            ATTRIBUTE_NAME_TAG,
+            Value::text_string("Opaque.Attribute".to_owned()),
+        ),
+        item(
+            ATTRIBUTE_VALUE_TAG,
+            Value::byte_string(VALUE_SENTINEL.to_vec()),
+        ),
     ])
 }
 
@@ -62,7 +68,10 @@ fn attribute_set_preserves_unknown_standard_and_vendor_item_tags() {
         item(STANDARD_ATTRIBUTE_TAG, Value::date_time(1_760_000_000)),
         item(SECOND_STANDARD_ATTRIBUTE_TAG, Value::integer(256)),
         item(STANDARD_ATTRIBUTE_TAG, Value::date_time(1_760_000_001)),
-        item(VENDOR_EXTENSION_TAG, Value::byte_string(vec![0, 0x80, 0xff])),
+        item(
+            VENDOR_EXTENSION_TAG,
+            Value::byte_string(vec![0, 0x80, 0xff]),
+        ),
     ])
     .expect("generic direct attribute items remain lossless");
 
@@ -191,9 +200,8 @@ fn vendor_attribute_error_debug_redacts_invalid_vendor_text() {
         item(ATTRIBUTE_NAME_TAG, Value::text_string("name".to_owned())),
         item(ATTRIBUTE_VALUE_TAG, Value::integer(7)),
     ]);
-    let error = AttributeSet::try_new([invalid])
-        .err()
-        .expect("invalid Vendor Identification is rejected");
+    let error =
+        AttributeSet::try_new([invalid]).expect_err("invalid Vendor Identification is rejected");
     let diagnostic = format!("{error:?} {error}");
 
     assert!(!diagnostic.contains("secret-vendor-sentinel"));

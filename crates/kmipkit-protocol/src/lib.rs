@@ -2,6 +2,7 @@
 #![forbid(unsafe_code)]
 
 mod asynchronous;
+pub mod attribute;
 mod cancel;
 mod credential;
 mod discover_versions;
@@ -14,6 +15,7 @@ mod query_async_requests;
 mod result;
 
 pub use asynchronous::AsynchronousOperationError;
+pub use attribute::{AttributeSet, AttributeSetError};
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use credential::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
