@@ -47,3 +47,18 @@ The new policy tests pass before T041 because the production path is already
 structurally constrained. T041 should make any remaining policy explicit in
 the HTTPS configuration/documentation; it should not add redundant behavior
 or broaden the API.
+
+## Independent review and ruling
+
+Independent QA reviewed `10597d1..aacaee1` and found no functional issues.
+It confirmed that delivery-state tests for headers without a TTLV body and
+partial writes exercise the production `DeadlineIo`/Hyper path in
+`timeout_delivery.rs`, and that the T041/T042 changes preserve policy scope
+and error categories.
+
+**Ruling:** retain T040 as completed policy-contract coverage despite the lack
+of a failing baseline assertion, because the existing implementation already
+meets the specified behavior. This avoids manufacturing a failure and keeps
+the regression tests useful. Cost if this ruling is wrong: an untested policy
+gap could remain hidden; T043 adds HTTPS/TLS integration checks for resolver,
+candidate ordering, deadlines, and reconnect behavior to reduce that risk.
