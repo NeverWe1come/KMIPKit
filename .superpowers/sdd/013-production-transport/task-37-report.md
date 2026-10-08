@@ -160,6 +160,22 @@ an abrupt TLS EOF instead of the HTTP policy. Correction commit
 reproduced 61 passed and 5 expected product failures, including the clean
 close-delimited response that the current adapter incorrectly accepts.
 
-T037 Red is checked in `specs/013-production-transport/tasks.md` with the
-evidence above. No production implementation, Green changes, push, or PR is
-included in this task.
+## Oversize test harness correction
+
+The first T038 Green run exposed a test-harness issue in the over-cap early
+rejection case: it consumed the exchange's only result when rejection arrived
+inside the 250 ms observation window, then waited for a second result after
+releasing the gated body. Commit `110c98b5f7310379eb15359198f03a3553ff0861`
+retains that early result and waits for one only when the observation window
+expires. It preserves the requirement to reject from `Content-Length` before
+body bytes arrive.
+
+With the Green source changes temporarily stashed, the corrected baseline
+command `cargo test -p kmipkit-transport --test https --offline --
+--test-threads=1` compiled and reproduced 61 passed / 5 failed. All five
+failures are product assertions: response policy, parser limits, reused
+connection/surplus handling, missing `Content-Length`, and early over-cap
+rejection. The isolated over-cap test passes under the T038 Green work in
+progress. `cargo fmt --all --check` and `git diff --check` passed. Independent
+QA re-review of commit `110c98b5f7310379eb15359198f03a3553ff0861` is pending;
+T037 remains unchecked until that review completes.
