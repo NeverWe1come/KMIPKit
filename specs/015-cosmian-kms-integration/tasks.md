@@ -28,4 +28,5 @@
 - [x] T013 Diagnose the failed response as KMIPKit expecting the Request Message root tag on the response path; add regression coverage and correct it to require the OASIS Response Message tag. Do not weaken the live assertion.
 - [x] T014 Verify the focused raw-TLS and production-client suites and the live Cosmian test.
 - [x] T015 Retain distinct Red, Green, and Refactor commits: `c74dbd1` (Red), `7094217` (Green), and `30c8fea` (Refactor).
-- [ ] T016 Run the required workspace quality and coverage checks before opening a draft PR.
+- [x] T016 Run local workspace verification: `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`, `cargo test --workspace --all-features --locked --quiet`, and `git diff --check` all passed. The explicitly selected Cosmian integration test passed (1/1).
+- [ ] T017 Run the required multiplatform coverage and CI gates, then extend the Cosmian test target as additional typed operations are implemented. Keep the PR in draft until the planned operation coverage and gates are complete.
