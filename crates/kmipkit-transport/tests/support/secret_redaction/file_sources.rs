@@ -99,7 +99,7 @@ fn public_error_chain(error: &dyn Error) -> String {
     let mut rendered = String::new();
     let mut current = Some(error);
     while let Some(cause) = current {
-        let _ = writeln!(rendered, "{} {:?}", cause, cause);
+        let _ = writeln!(rendered, "{cause} {cause:?}");
         current = cause.source();
     }
     rendered

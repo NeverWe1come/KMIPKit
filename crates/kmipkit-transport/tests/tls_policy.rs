@@ -31,6 +31,10 @@ use tls::{MonotonicClock, TlsClientConfig};
 #[path = "../src/config.rs"]
 #[allow(dead_code)]
 mod config;
+// `config.rs` requires this module; key-owner behavior is covered separately.
+#[path = "../src/secret.rs"]
+#[allow(dead_code)]
+mod secret;
 #[path = "../src/tls.rs"]
 mod tls;
 

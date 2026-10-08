@@ -225,7 +225,7 @@ fn public_error_chain(error: &dyn Error) -> String {
     let mut current = Some(error);
     while let Some(cause) = current {
         use fmt::Write as _;
-        let _ = writeln!(rendered, "{} {:?}", cause, cause);
+        let _ = writeln!(rendered, "{cause} {cause:?}");
         current = cause.source();
     }
     rendered

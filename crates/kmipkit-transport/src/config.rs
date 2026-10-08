@@ -3,6 +3,7 @@
 use std::error::Error;
 use std::fmt;
 use std::net::IpAddr;
+use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -13,6 +14,8 @@ use rustls::pki_types::pem::PemObject;
 use rustls::pki_types::{CertificateDer, CertificateRevocationListDer, PrivateKeyDer, ServerName};
 use rustls::sign::CertifiedKey;
 use zeroize::Zeroizing;
+
+use crate::secret::{SecretBuffer, SecretPrivateKeyDer};
 
 const DEFAULT_MAX_REQUEST_BYTES: usize = 16 * 1024 * 1024;
 
@@ -164,12 +167,40 @@ impl CertificateInput {
         }
     }
 
+    /// Reads one PEM-encoded certificate chain from the selected path.
+    ///
+    /// The path is read once during construction and is not retained. File
+    /// errors use the same redacted category as malformed certificate input.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`TransportConfigError::InvalidCredential`] if the file cannot
+    /// be read.
+    pub fn from_pem_file(path: impl AsRef<Path>) -> Result<Self, TransportConfigError> {
+        let bytes = std::fs::read(path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        Ok(Self::from_pem(bytes))
+    }
+
     /// Creates a DER-encoded certificate chain in leaf-to-root order.
     #[must_use]
     pub fn from_der(certificates: Vec<Vec<u8>>) -> Self {
         Self {
             bytes: CertificateBytes::Der(certificates.into_iter().map(Zeroizing::new).collect()),
         }
+    }
+
+    /// Reads one DER-encoded certificate from the selected path.
+    ///
+    /// The path is read once during construction and is not retained. File
+    /// errors use the same redacted category as malformed certificate input.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`TransportConfigError::InvalidCredential`] if the file cannot
+    /// be read.
+    pub fn from_der_file(path: impl AsRef<Path>) -> Result<Self, TransportConfigError> {
+        let bytes = std::fs::read(path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        Ok(Self::from_der(vec![bytes]))
     }
 
     fn parse(self) -> Result<Vec<CertificateDer<'static>>, TransportConfigError> {
@@ -274,8 +305,8 @@ impl fmt::Debug for RevocationListInput {
 }
 
 enum PrivateKeyBytes {
-    Pem(Zeroizing<Vec<u8>>),
-    Der(Zeroizing<Vec<u8>>),
+    Pem(SecretBuffer),
+    Der(SecretBuffer),
 }
 
 /// Caller-provided private key with an explicit encoding.
@@ -288,15 +319,58 @@ impl PrivateKeyInput {
     #[must_use]
     pub fn from_pem(bytes: impl Into<Vec<u8>>) -> Self {
         Self {
-            bytes: PrivateKeyBytes::Pem(Zeroizing::new(bytes.into())),
+            bytes: PrivateKeyBytes::Pem(SecretBuffer::new(bytes.into())),
         }
+    }
+
+    /// Reads a PEM-encoded unencrypted private key from the selected path.
+    ///
+    /// The path is read once during construction and is not retained. File
+    /// errors use the same redacted category as malformed key input.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`TransportConfigError::InvalidCredential`] if the file cannot
+    /// be read.
+    pub fn from_pem_file(path: impl AsRef<Path>) -> Result<Self, TransportConfigError> {
+        let bytes = std::fs::read(path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        Ok(Self {
+            bytes: PrivateKeyBytes::Pem(SecretBuffer::new(bytes)),
+        })
     }
 
     /// Creates a DER-encoded unencrypted private key.
     #[must_use]
     pub fn from_der(bytes: Vec<u8>) -> Self {
         Self {
-            bytes: PrivateKeyBytes::Der(Zeroizing::new(bytes)),
+            bytes: PrivateKeyBytes::Der(SecretBuffer::new(bytes)),
+        }
+    }
+
+    /// Reads a DER-encoded unencrypted private key from the selected path.
+    ///
+    /// The path is read once during construction and is not retained. File
+    /// errors use the same redacted category as malformed key input.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`TransportConfigError::InvalidCredential`] if the file cannot
+    /// be read.
+    pub fn from_der_file(path: impl AsRef<Path>) -> Result<Self, TransportConfigError> {
+        let bytes = std::fs::read(path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        Ok(Self {
+            bytes: PrivateKeyBytes::Der(SecretBuffer::new(bytes)),
+        })
+    }
+
+    #[cfg(test)]
+    #[allow(dead_code)] // Called only by the source-including secret-redaction contract target.
+    pub(crate) fn from_pem_with_observer_for_test(
+        bytes: Vec<u8>,
+        observer: crate::secret::SecretBufferObserver,
+    ) -> Self {
+        Self {
+            bytes: PrivateKeyBytes::Pem(SecretBuffer::with_observer(bytes, observer)),
         }
     }
 
@@ -304,15 +378,23 @@ impl PrivateKeyInput {
         let key = match self.bytes {
             PrivateKeyBytes::Pem(bytes) => {
                 let mut keys = PrivateKeyDer::pem_slice_iter(bytes.as_slice())
+                    .map(|key| key.map(SecretPrivateKeyDer::new))
                     .collect::<Result<Vec<_>, _>>()
                     .map_err(|_| TransportConfigError::InvalidCredential)?;
                 if keys.len() != 1 {
                     return Err(TransportConfigError::InvalidCredential);
                 }
-                keys.pop().ok_or(TransportConfigError::InvalidCredential)?
+                keys.pop()
+                    .and_then(SecretPrivateKeyDer::into_inner)
+                    .ok_or(TransportConfigError::InvalidCredential)?
             }
-            PrivateKeyBytes::Der(bytes) => PrivateKeyDer::try_from(bytes.to_vec())
-                .map_err(|_| TransportConfigError::InvalidCredential)?,
+            PrivateKeyBytes::Der(bytes) => {
+                let key = PrivateKeyDer::try_from(bytes.as_slice())
+                    .map_err(|_| TransportConfigError::InvalidCredential)?;
+                SecretPrivateKeyDer::new(key.clone_key())
+                    .into_inner()
+                    .ok_or(TransportConfigError::InvalidCredential)?
+            }
         };
         Ok(key)
     }

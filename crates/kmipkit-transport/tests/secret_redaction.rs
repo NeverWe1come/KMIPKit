@@ -1,15 +1,17 @@
 //! Red-phase contract tests for KMIPKIT-0013 FR-004/FR-005 and SC-006.
 //!
-//! The file-source and test-only secret-owner observer APIs below are the
-//! smallest additive surface implied by the approved TLS Configuration
-//! contract. This target intentionally cannot compile until T022 implements
-//! them. Current public-surface checks also live in secret_redaction_current
-//! so they remain independently runnable during this Red phase.
+//! File-source behavior and the crate-internal test-only secret-owner observer
+//! are covered alongside current public-surface checks in
+//! `secret_redaction_current`.
 
+// This focused contract target uses only configuration and key-handling APIs.
+#[allow(dead_code)]
 #[path = "../src/config.rs"]
 mod config;
 #[path = "../src/secret.rs"]
 mod secret;
+// `config.rs` references the AWS-LC provider; TLS behavior is covered elsewhere.
+#[allow(dead_code)]
 #[path = "../src/tls.rs"]
 mod tls;
 

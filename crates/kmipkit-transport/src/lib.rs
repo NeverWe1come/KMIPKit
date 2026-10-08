@@ -16,6 +16,7 @@
 mod config;
 mod error;
 mod response;
+mod secret;
 // T019 exercises this private builder before T023 connects production adapters.
 #[allow(dead_code)]
 mod tls;
