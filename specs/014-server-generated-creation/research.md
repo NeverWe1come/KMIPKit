@@ -4,6 +4,23 @@
 
 The human maintainer accepted KMIPKIT-0014 by merging [PR #53](https://github.com/NeverWe1come/KMIPKit/pull/53) into `release/1.0.0` on 2026-10-08 (merge commit `a2572084d3d6f42019bed13234598e6d77478796`). The source and catalog corrections were merged in [PR #57](https://github.com/NeverWe1come/KMIPKit/pull/57) on 2026-10-08 (merge commit `55c0c0cc42a6422cee72183a3532fc1e169f297c`). Both commits are ancestors of implementation base `0e50e4b9859532cf7a0832deb2d510a3af4563de`. GitHub metadata reports no review decision or submitted reviews for those PRs; this record treats the maintainer merge as the acceptance event and does not claim a separate review.
 
+## T003–T005 Red/Green/Refactor evidence
+
+- **Red** — Signed-off commit `9fc022c` adds `crates/kmipkit-protocol/tests/unit/attribute_tests.rs`, including `property_roundtrips_ordered_repeated_direct_attribute_items`. Before `AttributeSet` existed, `cargo test -p kmipkit-protocol --lib attribute_tests` failed to compile with unresolved `crate::AttributeSet`, as expected.
+- **Green** — Signed-off commit `a8d8171` adds and exports the ordered `AttributeSet`, preserves generic item tags/types/repetition/order, validates the Table 150 Vendor Attribute fields, and redacts Debug output. The focused attribute tests passed (7/7), and `cargo test -p kmipkit-protocol --all-features` passed before refactoring.
+- **Refactor** — Signed-off commit `bbce620` extracts the Vendor Identification and Attribute Name checks from the cardinality scan, preserves the behavior, and asserts each payload-free malformed-field category, including duplicate and wrong-type fields.
+
+The normative tag values were checked against the pinned OASIS v2.1 Specification §4.60/Table 150 and the catalog’s §11.56 records: outer `Attribute` 0x420008, `Vendor Identification` 0x42009D, `Attribute Name` 0x42000A, and `Attribute Value` 0x42000B. No normative conflict was found.
+
+Final Phase 1 verification on the implementation branch:
+
+- `cargo fmt --all --check` passed.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` passed.
+- `cargo test -p kmipkit-protocol --all-features` passed: 78 library unit tests, all protocol integration suites, and 2 doctests. The seven focused attribute tests, including the property roundtrip, passed.
+- `cargo llvm-cov -p kmipkit-protocol --lib --all-features --json --summary-only` passed; `attribute.rs` has 109/110 covered lines (99.09%).
+- `python -m unittest discover -s tools/normative_catalog/tests -p test_immutable_sources.py -q` passed (15 tests); catalog validation passed with 4 sources, 1,411 clauses, and 4,024 records; `report.py --check` passed; the immutable-source checker passed against base `0e50e4b9859532cf7a0832deb2d510a3af4563de`; `audit_sources.py --check` audited 1,411 candidates successfully.
+- The pinned upstream immutability check confirms all OASIS upstream bytes match the base. No T006 or later operation task was started, and no KMIPKIT-0016 or language-binding API was changed.
+
 ## Decision 1 — Use the pinned OASIS v2.1 operation tables as the schema
 
 **Decision**: Implement payloads from Specification §§6.1.8–6.1.10 and Tables 186–195. Use §§5.1–5.4 and Tables 157–160 for operation attribute groups and direct §4 Object Attribute items. Use §4.60/Table 150 only for the distinct Vendor Attribute structure. Shared message/result behavior follows the applicable shared sections.
