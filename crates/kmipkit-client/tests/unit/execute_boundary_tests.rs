@@ -3101,7 +3101,9 @@ fn query_request_is_dropped_before_exchange_and_not_retained_by_the_client() {
         })
         .flatten()
         .find_map(|item| match item {
-            syn::ImplItem::Fn(function) if function.sig.ident == "execute_query_async_requests" => {
+            syn::ImplItem::Fn(function)
+                if function.sig.ident == "execute_query_async_requests_with_options" =>
+            {
                 Some(&function.block)
             }
             _ => None,

@@ -21,3 +21,5 @@ fn caller_cannot_inject_transport(
 ) {
     let _ = Client::new(configuration, transport);
 }
+
+fn main() {}
