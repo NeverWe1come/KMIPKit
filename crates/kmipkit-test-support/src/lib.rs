@@ -20,7 +20,7 @@ pub mod fixtures {
     pub const PARTIAL_RESPONSE: &[u8] = b"KMIPKIT_PARTIAL_RESPONSE_FIXTURE";
 }
 
-pub use dns::LocalDnsFixture;
+pub use dns::{DnsQueryType, LocalDnsFixture};
 pub use local_transport::LoopbackTcpListener;
 #[cfg(feature = "fixtures")]
 pub use pki::{EphemeralIdentity, EphemeralPki, PkiFixtureError};

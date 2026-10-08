@@ -40,6 +40,10 @@ path = "tests/runtime_policy.rs"
 name = "timeout_delivery"
 path = "tests/timeout_delivery.rs"
 
+[[test]]
+name = "resolver"
+path = "tests/resolver.rs"
+
 [dev-dependencies]
 kmipkit-test-support = { workspace = true, default-features = false, features = ["fixtures"] }
 
