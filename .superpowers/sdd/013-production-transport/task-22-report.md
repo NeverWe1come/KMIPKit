@@ -63,14 +63,14 @@ Review identified that the original `std::fs::read` constructors only create
 `SecretBuffer` after a successful read. If a read fails after yielding bytes,
 the partially initialized `Vec` is released before it enters the zeroizing
 owner, so the original Green evidence did not cover this error path. The
-correction adds `SecretBuffer::read_from<R: Read>` and a shared private reader
-that constructs the zeroizing owner before calling `read_to_end`. Its `?`
-error path drops that owner, whose destructor zeros the initialized range.
-Both private-key PEM and DER file constructors open the selected path once and
-pass that `File` through the production helper; file and read errors still map
-to the fixed `InvalidCredential` category. The test-only observer wrapper uses
-the same private reader, so the regression exercises the owner used by the
-production constructors.
+partial-read correction added `SecretBuffer::read_from<R: Read>` and routed
+both private-key file constructors through that owner before attempting the
+read. Its first implementation used `read_to_end`; the subsequent growth
+correction below replaces that implementation with fixed scratch reads and
+controlled zeroizing growth. Both PEM and DER constructors still open the
+selected path once and pass that `File` through the same production helper;
+file and read errors map to the fixed `InvalidCredential` category. The
+observer wrapper exercises this same private reader.
 
 - Red test commit: `991796eb30259ace813e47ea2f07369562869911`.
 - The `#[cfg(test)]` regression uses an injected reader that yields a private
@@ -92,39 +92,57 @@ production constructors.
 - Strict package Clippy, `cargo fmt --all --check`, and `git diff --check`:
   passed.
 
-## P2 replaced-allocation cleanup correction — Red, pending review
+## P2 replaced-allocation cleanup correction — Red and Green complete
 
 Final review found that `read_to_end(&mut Vec)` can grow the key buffer after
 bytes are initialized. `SecretBuffer::drop` clears only the current allocation,
-so any allocation released during implicit `Vec` growth is outside that
-cleanup. The new regression extends only the `cfg(test)` observer with a
-replacement count and cumulative zero-status; it never exposes buffer bytes.
-Its reader yields the first byte separately, then the remaining 64 KiB input,
-and the test asserts that at least one replaced allocation was observed and
-that every replacement was zeroized before release.
+so an allocation released during implicit `Vec` growth could remain uncleared.
+The Green correction removes `read_to_end` from key reads. It reads through a
+fixed 4 KiB scratch owner that zeroizes each consumed chunk and clears its full
+array on success, error, or unwind. When the current owner lacks capacity, it
+computes the new length with checked arithmetic, fallibly reserves a new
+`SecretBuffer` while the old allocation remains live, copies the initialized
+bytes and new chunk, zeroizes the old initialized range, synchronously passes
+that now-zero borrowed range to the test-only observer, and then replaces the
+old `Vec`. The temporary replacement is itself a zeroizing owner, including
+reserve/error and unwind paths. Reader, overflow, and reservation errors map to
+a fixed generic I/O error; the public file constructors continue mapping those
+to `InvalidCredential` without a source or path.
+
+Both private-key PEM and DER constructors use `SecretBuffer::read_from`, which
+routes through this same controlled reader. The accepted test seam starts with
+one byte of capacity; its reader fills that byte and then supplies the other
+64 KiB, forcing replacement after initialized key data exists. The cfg(test)
+observer callback examines the borrowed old range synchronously and stores
+only an event count and cumulative zero-status. Its status begins false, so a
+missing observer event cannot pass; the test requires at least one replacement
+and verifies every observed old range was zero before release. The observer
+never retains, exposes, or formats key bytes.
 
 - Initial Red test commit: `8a79a63903c67cfb0de0d458f737cd1eff60e249`.
-- Red test refinement commit: `f49f229c876ccf7953993b79936978ba6aa77f22`.
-  The test-only reader seam now creates the observed owner with one byte of
-  initial capacity; the reader fills that byte, then supplies the remaining
-  input.
-- Observer assertion refinement commit: `ce9c42f80b435f5f702433b4ab22207b3d48f136`.
-  The test-only observer callback accepts a borrowed old initialized range,
-  checks whether all bytes are zero while the allocation is still live, and
-  records only count/status. Its status starts false and the test requires
-  both at least one event and an all-zero result, so no event cannot pass.
-  The current read path does not call this callback; Green must invoke it from
-  the controlled replacement helper after zeroing and before releasing the old
-  allocation. No key bytes are retained, exposed, or formatted.
-- Expected Red:
+- One-byte-capacity Red refinement: `f49f229c876ccf7953993b79936978ba6aa77f22`.
+- Borrowed-range observer Red refinement: `ce9c42f80b435f5f702433b4ab22207b3d48f136`.
+- Final Red evidence commit: `4d01e8bdbabece4a3fb5907f9bc41d623cb1dd00`.
+- Red command before the controlled replacement hook:
   `cargo test -p kmipkit-transport --lib secret::tests::key_buffer_growth_zeroizes_each_replaced_allocation_before_release --offline`
-  exits 1 at the runtime assertion that the read owner must report a replaced
-  allocation. The current `read_to_end` path has no per-replacement observer
-  or zeroization step. No production code changed in either Red commit.
-- `rustfmt --edition 2024 --check crates/kmipkit-transport/src/secret.rs` and
-  `git diff --check` passed.
+  exited 1 at `the read owner must report at least one replaced allocation`.
+  This proves the regression stays Red when the controlled growth callback is
+  omitted.
+- Green source commit: `7c4ba929a53fec960f93f879f5696a6220423e3a`.
+- `cargo test -p kmipkit-transport --lib secret::tests::key_buffer_growth_zeroizes_each_replaced_allocation_before_release --offline`:
+  1 passed, 0 failed.
 - `cargo test -p kmipkit-transport --lib secret::tests::partially_read_private_key_is_zeroized_when_reader_fails --offline`:
   1 passed, 0 failed.
-- Green correction and full verification remain pending review of this Red
-  test. T022 is incomplete until production reads use explicit zeroizing
-  growth and this regression passes.
+- `cargo test -p kmipkit-transport --test secret_redaction_current --offline`:
+  9 passed, 0 failed.
+- `cargo test -p kmipkit-transport --test secret_redaction --offline`:
+  22 passed, 0 failed.
+- `cargo test -p kmipkit-transport --all-targets --all-features --offline`:
+  183 passed, 0 failed.
+- `cargo clippy -p kmipkit-transport --all-targets --all-features --offline -- -D warnings`,
+  `cargo fmt --all --check`, and `git diff --check`: passed.
+
+The T021 symlink fixture used its documented fallback on this host, so actual
+symlink following still needs platform verification where symlink creation
+succeeds. External caller copies and key bytes transferred to rustls/AWS-LC or
+held by the OS and other dependencies remain outside this zeroization claim.
