@@ -94,6 +94,51 @@ default. A bounded zero duration means an immediate deadline. Use
 `TimeoutLimit::Unbounded` only when the application intentionally wants no
 deadline for that phase.
 
+For a single slower operation, apply an override to that call. The returned
+delivery state helps the application decide whether it needs to reconcile
+server state; it is not a retry recommendation.
+
+```rust,no_run
+use std::time::Duration;
+
+use kmipkit_client::{Client, ClientBatch, ClientError};
+use kmipkit_transport::{RequestDeliveryState, RequestOptions, TimeoutLimit};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn execute_with_deadline(
+    client: &mut Client,
+    request: ClientBatch,
+) -> Result<(), ClientError> {
+    let limits = CodecLimits::defaults();
+    let options = RequestOptions::default()
+        .with_total(TimeoutLimit::Bounded(Duration::from_secs(90)));
+
+    match client.execute_with_options(request, &limits, &options) {
+        Ok(_response) => Ok(()),
+        Err(error) => {
+            match error.delivery_state() {
+                Some(RequestDeliveryState::NotSent) => {
+                    // The transport observed no request bytes on the wire.
+                }
+                Some(
+                    RequestDeliveryState::PossiblySent
+                    | RequestDeliveryState::ResponseStarted,
+                ) => {
+                    // Reconcile using operation semantics before any new request.
+                }
+                None => {
+                    // This error has no local transport-delivery state.
+                }
+                Some(_) => {
+                    // Preserve future states as uncertain; do not retry them blindly.
+                }
+            }
+            Err(error)
+        }
+    }
+}
+```
+
 Every local failure reports the strongest available request-delivery state:
 
 - `NotSent`: no request bytes were sent.

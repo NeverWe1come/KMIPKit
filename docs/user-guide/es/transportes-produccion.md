@@ -98,6 +98,51 @@ acotada de cero significa vencimiento inmediato. Usa
 `TimeoutLimit::Unbounded` solo cuando la aplicación quiera intencionadamente
 no limitar esa fase.
 
+Para una operación que pueda tardar más, aplica un reemplazo solo a esa
+llamada. El estado de entrega ayuda a la aplicación a decidir si debe
+reconciliar el estado del servidor; no recomienda reintentar.
+
+```rust,no_run
+use std::time::Duration;
+
+use kmipkit_client::{Client, ClientBatch, ClientError};
+use kmipkit_transport::{RequestDeliveryState, RequestOptions, TimeoutLimit};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn execute_with_deadline(
+    client: &mut Client,
+    request: ClientBatch,
+) -> Result<(), ClientError> {
+    let limits = CodecLimits::defaults();
+    let options = RequestOptions::default()
+        .with_total(TimeoutLimit::Bounded(Duration::from_secs(90)));
+
+    match client.execute_with_options(request, &limits, &options) {
+        Ok(_response) => Ok(()),
+        Err(error) => {
+            match error.delivery_state() {
+                Some(RequestDeliveryState::NotSent) => {
+                    // El transporte no observó bytes de petición en la red.
+                }
+                Some(
+                    RequestDeliveryState::PossiblySent
+                    | RequestDeliveryState::ResponseStarted,
+                ) => {
+                    // Reconcilia la operación antes de enviar otra petición.
+                }
+                None => {
+                    // Este error no contiene estado local de entrega.
+                }
+                Some(_) => {
+                    // Trata futuros estados como inciertos; no reintentes a ciegas.
+                }
+            }
+            Err(error)
+        }
+    }
+}
+```
+
 Cada fallo local informa del estado de entrega más preciso disponible:
 
 - `NotSent`: no se enviaron bytes de la petición.
