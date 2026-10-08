@@ -1,0 +1,1676 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kmipkit:schemas:public-api-manifest:1",
+  "title": "KMIPKit Public API Manifest",
+  "description": "Version 1 of the reviewed, registry-slice API manifest. It declares API metadata and generated destinations only; it cannot carry vendor payloads or executable validation logic.",
+  "type": "object",
+  "required": [
+    "formatVersion",
+    "scope",
+    "requirementIds",
+    "types",
+    "functions",
+    "errorCategories",
+    "limits",
+    "security",
+    "generatedOutputs"
+  ],
+  "properties": {
+    "formatVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "The manifest data format version. Breaking field or meaning changes require a new version and schema identifier."
+    },
+    "scope": {
+      "type": "string",
+      "const": "registry-slice",
+      "description": "This manifest covers the KMIPKIT-0012 registry surface only; it is not the complete KMIPKit 1.0 API inventory."
+    },
+    "requirementIds": {
+      "$ref": "#/$defs/requirementIds"
+    },
+    "types": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/typeDeclaration"
+      },
+      "description": "Type declarations are emitted in this array order."
+    },
+    "functions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/functionDeclaration"
+      },
+      "description": "Function declarations and each function's parameters are emitted in their declared array order."
+    },
+    "errorCategories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/errorCategory"
+      },
+      "description": "Stable cross-language error mappings. Entries are emitted in this array order."
+    },
+    "limits": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/limitMaxDefinitions"
+        },
+        {
+          "$ref": "#/$defs/limitMaxSchemaNodes"
+        },
+        {
+          "$ref": "#/$defs/limitMaxChildRulesPerStructure"
+        },
+        {
+          "$ref": "#/$defs/limitMaxTextBytesPerField"
+        },
+        {
+          "$ref": "#/$defs/limitMaxRegistryTextBytes"
+        },
+        {
+          "$ref": "#/$defs/limitMaxDiscriminatorScalarBytes"
+        },
+        {
+          "$ref": "#/$defs/limitMaxTotalDiscriminatorScalarBytes"
+        },
+        {
+          "$ref": "#/$defs/limitMaxConstraintMembersPerRule"
+        },
+        {
+          "$ref": "#/$defs/limitMaxTotalConstraintMembers"
+        },
+        {
+          "$ref": "#/$defs/limitMaxPayloadIndexRecords"
+        },
+        {
+          "$ref": "#/$defs/limitMaxLookupComparisons"
+        },
+        {
+          "$ref": "#/$defs/limitMaxDepth"
+        }
+      ],
+      "items": false,
+      "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from FR-012. Each language maps the same logical limit to its declared field name."
+    },
+    "security": {
+      "$ref": "#/$defs/security"
+    },
+    "generatedOutputs": {
+      "$ref": "#/$defs/generatedOutputs"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "requirementId": {
+      "type": "string",
+      "pattern": "^KMIPKIT-0012-FR-[0-9]{3}$",
+      "description": "Stable functional-requirement identifier from the approved KMIPKIT-0012 specification."
+    },
+    "requirementIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/requirementId"
+      },
+      "description": "Requirement identifiers are unique and lexicographically sorted."
+    },
+    "qualifiedName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_.]*$"
+    },
+    "rustPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+    },
+    "rustOwner": {
+      "type": "string",
+      "enum": [
+        "protocol",
+        "client",
+        "ffi"
+      ]
+    },
+    "typeDeclaration": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "requirementIds",
+        "rust",
+        "c",
+        "java",
+        "python"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "struct",
+            "enum",
+            "opaque-handle",
+            "sealed-value",
+            "alias"
+          ]
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/requirementIds"
+        },
+        "enumRepresentation": {
+          "$ref": "#/$defs/enumRepresentation"
+        },
+        "rust": {
+          "type": "object",
+          "required": [
+            "module",
+            "name",
+            "owner"
+          ],
+          "properties": {
+            "module": {
+              "$ref": "#/$defs/rustPath"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "owner": {
+              "$ref": "#/$defs/rustOwner"
+            }
+          },
+          "additionalProperties": false
+        },
+        "c": {
+          "$ref": "#/$defs/cType"
+        },
+        "java": {
+          "type": "object",
+          "required": [
+            "package",
+            "name"
+          ],
+          "properties": {
+            "package": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^org\\.kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            }
+          },
+          "additionalProperties": false
+        },
+        "python": {
+          "type": "object",
+          "required": [
+            "module",
+            "name"
+          ],
+          "properties": {
+            "module": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "enum"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "enumRepresentation"
+            ],
+            "properties": {
+              "c": {
+                "properties": {
+                  "kind": {
+                    "const": "enum"
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "enumRepresentation"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "enumRepresentation": {
+                "properties": {
+                  "shape": {
+                    "const": "open-numeric"
+                  }
+                },
+                "required": [
+                  "shape"
+                ]
+              }
+            },
+            "required": [
+              "enumRepresentation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "c": {
+                "properties": {
+                  "unknownValuePolicy": {
+                    "const": "preserve-raw"
+                  }
+                },
+                "required": [
+                  "unknownValuePolicy"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "enumRepresentation": {
+                "properties": {
+                  "shape": {
+                    "const": "closed-numeric"
+                  }
+                },
+                "required": [
+                  "shape"
+                ]
+              }
+            },
+            "required": [
+              "enumRepresentation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "c": {
+                "properties": {
+                  "unknownValuePolicy": {
+                    "const": "reject-unsupported"
+                  }
+                },
+                "required": [
+                  "unknownValuePolicy"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "enumRepresentation": {
+      "type": "object",
+      "required": [
+        "shape",
+        "unknownValuePolicy",
+        "values"
+      ],
+      "properties": {
+        "shape": {
+          "type": "string",
+          "enum": [
+            "open-numeric",
+            "closed-numeric"
+          ]
+        },
+        "unknownValuePolicy": {
+          "type": "string",
+          "enum": [
+            "preserve-raw",
+            "reject-unsupported"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/enumValue"
+          },
+          "description": "Known symbolic names and numeric codes in deterministic declaration order. Each code fits the declared unsigned C storage type. The generator also checks that names and codes are individually unique. The shape and unknownValuePolicy jointly state whether unknown codes are preserved or rejected.",
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "shape": {
+                "const": "open-numeric"
+              }
+            },
+            "required": [
+              "shape"
+            ]
+          },
+          "then": {
+            "properties": {
+              "unknownValuePolicy": {
+                "const": "preserve-raw"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "shape": {
+                "const": "closed-numeric"
+              }
+            },
+            "required": [
+              "shape"
+            ]
+          },
+          "then": {
+            "properties": {
+              "unknownValuePolicy": {
+                "const": "reject-unsupported"
+              }
+            }
+          }
+        }
+      ],
+      "description": "A numeric enum with an explicit list of known values and a policy matched to its open or closed shape."
+    },
+    "cType": {
+      "type": "object",
+      "required": [
+        "name",
+        "kind"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^kmipkit_[a-z0-9_]+_t$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "fixed-width-value",
+            "enum",
+            "opaque-handle"
+          ]
+        },
+        "handleKind": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "ownership": {
+          "type": "string",
+          "enum": [
+            "library-owned",
+            "caller-owned",
+            "borrowed"
+          ]
+        },
+        "releaseFunction": {
+          "type": "string",
+          "pattern": "^kmipkit_[a-z0-9_]+$"
+        },
+        "underlyingType": {
+          "type": "string",
+          "enum": [
+            "uint8_t",
+            "uint16_t",
+            "uint32_t",
+            "uint64_t"
+          ]
+        },
+        "unknownValuePolicy": {
+          "type": "string",
+          "enum": [
+            "preserve-raw",
+            "reject-unsupported"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "opaque-handle"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "handleKind",
+              "ownership",
+              "releaseFunction"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "handleKind"
+                  ]
+                },
+                {
+                  "required": [
+                    "ownership"
+                  ]
+                },
+                {
+                  "required": [
+                    "releaseFunction"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "enum"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "underlyingType",
+              "unknownValuePolicy"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "underlyingType"
+                  ]
+                },
+                {
+                  "required": [
+                    "unknownValuePolicy"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "errorCategoryId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "errorCategoryIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/errorCategoryId"
+      },
+      "description": "Each identifier must resolve to one errorCategories entry."
+    },
+    "errorCategory": {
+      "type": "object",
+      "required": [
+        "id",
+        "rustVariant",
+        "cCode",
+        "cValue",
+        "javaException",
+        "pythonException"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/errorCategoryId"
+        },
+        "rustVariant": {
+          "$ref": "#/$defs/identifier"
+        },
+        "cCode": {
+          "type": "string",
+          "pattern": "^KMIPKIT_ERROR_[A-Z0-9_]+$",
+          "description": "Stable C error-code name; status values use int32_t."
+        },
+        "cValue": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647,
+          "description": "Explicit stable numeric value for the named int32_t C error code."
+        },
+        "javaException": {
+          "$ref": "#/$defs/qualifiedName"
+        },
+        "pythonException": {
+          "$ref": "#/$defs/qualifiedName"
+        }
+      },
+      "additionalProperties": false
+    },
+    "cParameter": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "scalar"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "int8_t",
+                "uint8_t",
+                "int16_t",
+                "uint16_t",
+                "int32_t",
+                "uint32_t",
+                "int64_t",
+                "uint64_t"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "handleType",
+            "ownership",
+            "countParameter",
+            "nullable"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "handle-array"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$",
+              "description": "Pointer-to-pointer array of opaque C handles."
+            },
+            "handleType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$",
+              "description": "Opaque handle type of each array element; must match the declared pointer type."
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "countParameter": {
+              "$ref": "#/$defs/identifier",
+              "description": "Name of the uint64_t scalar parameter that counts array elements."
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether the array pointer may be NULL. When true, NULL is valid only when the linked count is zero; implementations must check the count before reading elements."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "int8_t *",
+                "uint8_t *",
+                "int16_t *",
+                "uint16_t *",
+                "int32_t *",
+                "uint32_t *",
+                "int64_t *",
+                "uint64_t *"
+              ],
+              "description": "Pointer to one fixed-width integer result; not nullable."
+            },
+            "ownership": {
+              "const": "none"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership",
+            "nullable"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$"
+            },
+            "ownership": {
+              "const": "library-owned"
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether successful status may return no handle. Required explicitly for every output handle."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "handle"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*$"
+            },
+            "ownership": {
+              "type": "string",
+              "enum": [
+                "borrowed",
+                "consumed"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "encoding",
+            "byteLengthParameter",
+            "byteLengthType",
+            "lengthUnit",
+            "limitCheck",
+            "nulTerminatedScan"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "byte-span"
+            },
+            "type": {
+              "const": "const uint8_t *"
+            },
+            "encoding": {
+              "type": "string",
+              "enum": [
+                "octets",
+                "utf-8"
+              ]
+            },
+            "byteLengthParameter": {
+              "$ref": "#/$defs/identifier"
+            },
+            "byteLengthType": {
+              "const": "uint64_t"
+            },
+            "lengthUnit": {
+              "const": "bytes"
+            },
+            "limitCheck": {
+              "const": "before-dereference"
+            },
+            "nulTerminatedScan": {
+              "const": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "functionDeclaration": {
+      "type": "object",
+      "required": [
+        "id",
+        "requirementIds",
+        "rust",
+        "c",
+        "java",
+        "python",
+        "ordering"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/requirementIds"
+        },
+        "rust": {
+          "type": "object",
+          "required": [
+            "module",
+            "name",
+            "owner",
+            "requestBoundary",
+            "parameters",
+            "returnType"
+          ],
+          "properties": {
+            "module": {
+              "$ref": "#/$defs/rustPath"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "owner": {
+              "$ref": "#/$defs/rustOwner"
+            },
+            "requestBoundary": {
+              "type": "string",
+              "enum": [
+                "not-applicable",
+                "validates-generic-ttlv",
+                "creates-request-use-wrapper",
+                "accepts-only-sealed-validated-values"
+              ],
+              "description": "States how the function relates to typed requests. Generic TTLV and raw bodies never cross the execute boundary."
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/rustParameter"
+              },
+              "description": "Rust parameter names and types, in declaration order."
+            },
+            "returnType": {
+              "$ref": "#/$defs/rustType"
+            }
+          },
+          "additionalProperties": false
+        },
+        "c": {
+          "type": "object",
+          "required": [
+            "symbol",
+            "parameters",
+            "returnType",
+            "errorCategories"
+          ],
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+$"
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/cParameter"
+              },
+              "description": "Parameter order is the exact C ABI order. Variable-length byte inputs are byte-span pointers paired with uint64_t byte lengths; handle arrays use explicit uint64_t element counts. Version 1 does not describe variable-length output buffers."
+            },
+            "returnType": {
+              "const": "int32_t",
+              "description": "Every exported function returns a fixed-width status code; values and handles are written through explicit output parameters."
+            },
+            "errorCategories": {
+              "$ref": "#/$defs/errorCategoryIds"
+            }
+          },
+          "additionalProperties": false
+        },
+        "java": {
+          "type": "object",
+          "required": [
+            "package",
+            "class",
+            "method",
+            "parameters",
+            "returnType",
+            "jniSymbol",
+            "errorCategories"
+          ],
+          "properties": {
+            "package": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^org\\.kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
+            },
+            "class": {
+              "$ref": "#/$defs/identifier"
+            },
+            "method": {
+              "$ref": "#/$defs/identifier"
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/javaParameter"
+              },
+              "description": "Java parameter names and types, in declaration order."
+            },
+            "jniSymbol": {
+              "type": "string",
+              "pattern": "^Java_[A-Za-z0-9_]+$"
+            },
+            "errorCategories": {
+              "$ref": "#/$defs/errorCategoryIds"
+            },
+            "returnType": {
+              "$ref": "#/$defs/javaReturnType"
+            }
+          },
+          "additionalProperties": false
+        },
+        "python": {
+          "type": "object",
+          "required": [
+            "module",
+            "function",
+            "parameters",
+            "returnType",
+            "cffiSymbol",
+            "errorCategories"
+          ],
+          "properties": {
+            "module": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
+            },
+            "function": {
+              "$ref": "#/$defs/identifier"
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/pythonParameter"
+              },
+              "description": "Python parameter names and types, in declaration order."
+            },
+            "cffiSymbol": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+$"
+            },
+            "errorCategories": {
+              "$ref": "#/$defs/errorCategoryIds"
+            },
+            "returnType": {
+              "$ref": "#/$defs/pythonType"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ordering": {
+          "type": "string",
+          "enum": [
+            "not-applicable",
+            "preserves-caller-batch-and-extension-order"
+          ],
+          "description": "For repeatable extension attachment, declare preservation of caller-selected batch and extension order."
+        },
+        "criticalityIndicator": {
+          "$ref": "#/$defs/criticalityIndicator"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "rust": {
+                "properties": {
+                  "requestBoundary": {
+                    "const": "creates-request-use-wrapper"
+                  }
+                },
+                "required": [
+                  "requestBoundary"
+                ]
+              }
+            },
+            "required": [
+              "rust"
+            ]
+          },
+          "then": {
+            "required": [
+              "criticalityIndicator"
+            ],
+            "properties": {
+              "ordering": {
+                "const": "preserves-caller-batch-and-extension-order"
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "criticalityIndicator"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "criticalityIndicator": {
+      "type": "object",
+      "required": [
+        "rustParameter",
+        "cParameter",
+        "javaParameter",
+        "pythonParameter"
+      ],
+      "properties": {
+        "rustParameter": {
+          "type": "object",
+          "required": [
+            "name",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "const": "criticality_indicator"
+            },
+            "type": {
+              "const": "bool"
+            }
+          },
+          "additionalProperties": false
+        },
+        "cParameter": {
+          "type": "object",
+          "required": [
+            "name",
+            "type",
+            "acceptedValues"
+          ],
+          "properties": {
+            "name": {
+              "const": "criticality_indicator"
+            },
+            "type": {
+              "const": "uint8_t"
+            },
+            "acceptedValues": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "const": 0
+                },
+                {
+                  "const": 1
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "additionalProperties": false
+        },
+        "javaParameter": {
+          "type": "object",
+          "required": [
+            "name",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "const": "criticalityIndicator"
+            },
+            "type": {
+              "const": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "pythonParameter": {
+          "type": "object",
+          "required": [
+            "name",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "const": "criticality_indicator"
+            },
+            "type": {
+              "const": "bool"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "limitRecord": {
+      "type": "object",
+      "required": [
+        "id",
+        "rustField",
+        "cField",
+        "javaField",
+        "pythonField",
+        "default",
+        "hardMaximum",
+        "unit",
+        "errorCategory"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rustField": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "cField": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "javaField": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9]*$"
+        },
+        "pythonField": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "default": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hardMaximum": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "errorCategory": {
+          "const": "resource_limit"
+        }
+      },
+      "additionalProperties": false
+    },
+    "limitMaxDefinitions": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxDefinitions"
+            },
+            "default": {
+              "const": 256
+            },
+            "hardMaximum": {
+              "const": 1024
+            },
+            "unit": {
+              "const": "definitions"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxSchemaNodes": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxSchemaNodes"
+            },
+            "default": {
+              "const": 16384
+            },
+            "hardMaximum": {
+              "const": 100000
+            },
+            "unit": {
+              "const": "schema-nodes"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxChildRulesPerStructure": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxChildRulesPerStructure"
+            },
+            "default": {
+              "const": 256
+            },
+            "hardMaximum": {
+              "const": 4096
+            },
+            "unit": {
+              "const": "rules-per-structure"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxTextBytesPerField": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxTextBytesPerField"
+            },
+            "default": {
+              "const": 4096
+            },
+            "hardMaximum": {
+              "const": 4096
+            },
+            "unit": {
+              "const": "bytes-per-text-field"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxRegistryTextBytes": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxRegistryTextBytes"
+            },
+            "default": {
+              "const": 1048576
+            },
+            "hardMaximum": {
+              "const": 16777216
+            },
+            "unit": {
+              "const": "aggregate-text-bytes"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxDiscriminatorScalarBytes": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxDiscriminatorScalarBytes"
+            },
+            "default": {
+              "const": 4096
+            },
+            "hardMaximum": {
+              "const": 4096
+            },
+            "unit": {
+              "const": "bytes-per-discriminator-scalar"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxTotalDiscriminatorScalarBytes": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxTotalDiscriminatorScalarBytes"
+            },
+            "default": {
+              "const": 1048576
+            },
+            "hardMaximum": {
+              "const": 16777216
+            },
+            "unit": {
+              "const": "aggregate-discriminator-bytes"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxConstraintMembersPerRule": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxConstraintMembersPerRule"
+            },
+            "default": {
+              "const": 256
+            },
+            "hardMaximum": {
+              "const": 4096
+            },
+            "unit": {
+              "const": "constraint-members-per-rule"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxTotalConstraintMembers": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxTotalConstraintMembers"
+            },
+            "default": {
+              "const": 16384
+            },
+            "hardMaximum": {
+              "const": 100000
+            },
+            "unit": {
+              "const": "aggregate-constraint-members"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxPayloadIndexRecords": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxPayloadIndexRecords"
+            },
+            "default": {
+              "const": 200000
+            },
+            "hardMaximum": {
+              "const": 200000
+            },
+            "unit": {
+              "const": "payload-index-records"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxLookupComparisons": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxLookupComparisons"
+            },
+            "default": {
+              "const": 1048576
+            },
+            "hardMaximum": {
+              "const": 4194304
+            },
+            "unit": {
+              "const": "tag-comparisons"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxDepth": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxDepth"
+            },
+            "default": {
+              "const": 64
+            },
+            "hardMaximum": {
+              "const": 64
+            },
+            "unit": {
+              "const": "levels"
+            }
+          }
+        }
+      ]
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "defaultDiagnostics",
+        "zeroization",
+        "runtimeCopies"
+      ],
+      "properties": {
+        "defaultDiagnostics": {
+          "type": "string",
+          "const": "redacted",
+          "description": "Logs, errors, and default debug/display representations exclude extension payloads and secrets. Do not include sample payloads in manifest text."
+        },
+        "zeroization": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Describe KMIPKit-owned secret-memory cleanup without including secret values."
+        },
+        "runtimeCopies": {
+          "type": "object",
+          "required": [
+            "c",
+            "java",
+            "python"
+          ],
+          "properties": {
+            "c": {
+              "type": "string",
+              "minLength": 1
+            },
+            "java": {
+              "type": "string",
+              "minLength": 1
+            },
+            "python": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "generatedOutputs": {
+      "type": "object",
+      "required": [
+        "rustFfi",
+        "cHeader",
+        "javaApi",
+        "javaParityTests",
+        "pythonApi",
+        "parityFixtures"
+      ],
+      "properties": {
+        "rustFfi": {
+          "const": "crates/kmipkit-ffi/src/extension_registry_generated.rs"
+        },
+        "cHeader": {
+          "const": "bindings/c/include/kmipkit.h"
+        },
+        "javaApi": {
+          "const": "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java"
+        },
+        "javaParityTests": {
+          "const": "bindings/java/src/test/java/org/kmipkit/generated/ExtensionRegistryParityFixtures.java"
+        },
+        "pythonApi": {
+          "const": "bindings/python/src/kmipkit/_generated/extension_registry.py"
+        },
+        "parityFixtures": {
+          "const": "tests/fixtures/extensions/generated/registry_parity.json"
+        }
+      },
+      "additionalProperties": false,
+      "description": "The generator writes only these source and test destinations, in the property order above. Documentation remains handwritten under the plan's docs/ and language-package docs."
+    },
+    "enumValue": {
+      "type": "object",
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      },
+      "additionalProperties": false
+    },
+    "rustType": {
+      "type": "string",
+      "minLength": 1,
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*>$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?)*\\s*>$"
+        },
+        {
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*::)*Result\\s*<\\s*\\(\\)\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*>$"
+        },
+        {
+          "pattern": "^\\(\\)$"
+        },
+        {
+          "pattern": "^\\(\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*,(?:\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*)?\\s*\\)$"
+        },
+        {
+          "pattern": "^\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*;\\s*[0-9]+\\s*\\]$"
+        },
+        {
+          "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        {
+          "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>$"
+        },
+        {
+          "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*\\]$"
+        }
+      ],
+      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, and borrowed slices."
+    },
+    "javaType": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\[\\])*$",
+      "description": "Java parameter/type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty reference-type arguments. Primitive and void arguments are not allowed; wildcards are unsupported."
+    },
+    "javaReturnType": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/javaType"
+        },
+        {
+          "const": "void"
+        }
+      ],
+      "description": "Java method result type: a javaType or void."
+    },
+    "pythonType": {
+      "type": "string",
+      "minLength": 1,
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.)(?:\\s*,\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.))*\\s*\\]$"
+        },
+        {
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.)(?:\\s*,\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.))*\\s*\\])(?:\\s*\\|\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.)(?:\\s*,\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.))*\\s*\\]))+$"
+        }
+      ],
+      "description": "Python 3 type subset: simple or dotted names, one-level subscripted generics (including tuple ellipsis), and PEP 604 unions."
+    },
+    "rustParameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "$ref": "#/$defs/rustType"
+        }
+      },
+      "additionalProperties": false
+    },
+    "javaParameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "$ref": "#/$defs/javaType"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pythonParameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "$ref": "#/$defs/pythonType"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

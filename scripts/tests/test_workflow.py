@@ -14,6 +14,17 @@ POLICY_RUNNER = REPOSITORY_ROOT / "scripts" / "Test-DependencyPolicy.ps1"
 
 
 class WorkflowContractTests(unittest.TestCase):
+    COVERAGE_COLLECTION_GUARD = (
+        "if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')"
+    )
+    UV_PYTHON_SETUP = (
+        "astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0",
+        "version: '0.12.23'",
+        "python-version: '3.12'",
+        "activate-environment: true",
+        "no-project: true",
+    )
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.contents = WORKFLOW.read_text(encoding="utf-8") if WORKFLOW.is_file() else None
@@ -27,10 +38,14 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
 
-    def assert_pi_runner_with_hosted_fallback(self, body: str, fallback: str) -> None:
-        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", body)
-        self.assertIn("fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')", body)
-        self.assertIn(fallback, body)
+    def assert_github_hosted_runner(self, body: str, runner: str = "ubuntu-latest") -> None:
+        self.assertRegex(body, rf"(?m)^    runs-on: {re.escape(runner)}$")
+
+    def assert_uv_managed_python_312(self, job: str) -> None:
+        for required in self.UV_PYTHON_SETUP:
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+        self.assertNotIn("actions/setup-python@", job)
 
     def require_policy_job(self, contents: str, job: str) -> str:
         return self.require_job(contents, job)
@@ -95,22 +110,268 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(contents, r"(?ms)^  branch-coverage:.*?continue-on-error:\s*true")
         self.assertIn("--branch --json --summary-only", contents)
 
-    def test_linux_jobs_route_to_pi_only_for_same_repository_pull_requests(self) -> None:
+    def test_script_contract_job_checks_public_api_generated_outputs(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        self.assertIn(
+            "tools/api_manifest/generate.py --check",
+            job,
+            "Every supported pull-request platform must reject stale generated API outputs.",
+        )
+        self.assertIn(
+            "tools/extension_fixtures/generate.py --check",
+            job,
+            "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
+        )
+
+    def test_script_contract_job_runs_negative_extension_fixture_generator_tests(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        self.assertIn(
+            "unittest discover -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v",
+            job,
+            "Every supported pull-request platform must run fixture generator rejection tests.",
+        )
+
+    def test_script_contract_job_installs_pinned_fixture_test_dependencies(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        self.assert_uv_managed_python_312(job)
+        self.assertIn(
+            "uv pip install --requirement tools/api_manifest/requirements-test.txt",
+            job,
+            "Fixture contract tests must install their pinned jsonschema dependency.",
+        )
+
+    def test_script_contract_job_uses_the_uv_environment_python(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        self.assertIn("$env:VIRTUAL_ENV", job)
+        self.assertIn("$IsWindows", job)
+        self.assertNotIn(
+            "Get-Command -Name 'python3'",
+            job,
+            "The contract step must not select a system Python ahead of the uv environment.",
+        )
+
+    def test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "ffi-sanitizer")
+        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        self.assertIn("runs-on: ubuntu-latest", job)
+
+        for required in (
+            "rustup toolchain install nightly --profile minimal",
+            "cargo +nightly rustc --locked -p kmipkit-ffi --lib -- -Zsanitizer=address",
+            "cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include",
+            "bindings/c/tests/extension_registry.c",
+            "ASAN_OPTIONS: detect_leaks=1:halt_on_error=1",
+            "-fsanitize=address,undefined -fno-omit-frame-pointer",
+            "bindings/java/native/tests/zeroizing_bytes_test.cpp",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+
+    def test_fuzz_smoke_job_runs_the_bounded_extension_schema_target(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "fuzz-smoke")
+        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        self.assertIn("runs-on: ubuntu-latest", job)
+
+        for required in (
+            "rustup toolchain install nightly --profile minimal",
+            "cargo +nightly install cargo-fuzz --version 0.13.2 --locked",
+            "cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+
+    def test_ci_jobs_use_github_hosted_runners(self) -> None:
         contents = self.require_workflow()
 
-        for job in ("core", "script-contracts", "coverage"):
+        for job in ("core", "script-contracts", "language-bindings", "coverage"):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
-                self.assertIn("matrix.os == 'ubuntu-latest'", body)
-                self.assert_pi_runner_with_hosted_fallback(body, "|| matrix.os")
+                self.assertIn("runs-on: ${{ matrix.os }}", body)
 
-        for job in ("normative-inventory", "coverage-gate"):
+        for job in (
+            "ffi-sanitizer",
+            "fuzz-smoke",
+            "normative-inventory",
+            "coverage-gate",
+            "adapter-coverage",
+            "dependency-policy",
+            "scheduled-dependency-policy",
+            "run-summary",
+        ):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
-                self.assert_pi_runner_with_hosted_fallback(body, "|| 'ubuntu-latest'")
+                self.assert_github_hosted_runner(body)
 
         branch_coverage = self.require_job(contents, "branch-coverage")
-        self.assertRegex(branch_coverage, r"(?m)^    runs-on: \[self-hosted, Linux, ARM64\]$")
+        self.assert_github_hosted_runner(branch_coverage, "ubuntu-24.04-arm")
+        self.assertNotRegex(contents, r"(?m)^\s*runs-on:.*self-hosted")
+
+    def test_binding_toolchains_are_pinned_for_pull_requests(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-bindings")
+
+        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", job)
+
+        for required in (
+            "RUSTUP_TOOLCHAIN: '1.94'",
+            "rustup toolchain install 1.94 --profile minimal",
+            "actions/setup-java@",
+            "java-version: '17'",
+            "stCarolas/setup-maven@",
+            "maven-version: '3.9.16'",
+            "lukka/get-cmake@",
+            "cmakeVersion: '3.31.6'",
+            "ninjaVersion: '1.13.2'",
+            "uv pip install --requirement bindings/python/requirements-coverage.txt",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+        self.assert_uv_managed_python_312(job)
+
+    def test_binding_consumers_run_on_all_platforms(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-bindings")
+
+        for required in (
+            "cargo build --locked -p kmipkit-ffi",
+            "cmake -G Ninja -S bindings/c -B build/c-consumer",
+            "cmake --build build/c-consumer --config Release",
+            "ctest --test-dir build/c-consumer -C Release --output-on-failure",
+            "mvn --batch-mode --file bindings/java/pom.xml test",
+            "uv pip install --no-build-isolation bindings/python",
+            "python -m pytest -q bindings/python/tests",
+            "python bindings/python/examples/vendor_extension_registry.py",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+
+        python_project = (REPOSITORY_ROOT / "bindings" / "python" / "pyproject.toml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('build-backend = "maturin"', python_project)
+        self.assertIn('bindings = "cffi"', python_project)
+
+    def test_windows_c_consumer_uses_the_msvc_compatible_generator(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-bindings")
+
+        self.assertIn(
+            'cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer',
+            job,
+            "The Windows Rust library uses the MSVC ABI, so the C consumer must use MSVC too.",
+        )
+
+    def test_python_example_smoke_test_uses_the_installed_native_package(self) -> None:
+        example_test = (
+            REPOSITORY_ROOT / "bindings" / "python" / "tests" / "test_vendor_extension_example.py"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("environment.pop(\"PYTHONPATH\", None)", example_test)
+        self.assertNotIn('environment["PYTHONPATH"] =', example_test)
+
+    def test_adapter_coverage_job_collects_and_uploads_aggregate_inputs(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "adapter-coverage")
+
+        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        self.assert_github_hosted_runner(job)
+        self.assertRegex(job, r"(?ms)^    needs:\s*\n\s+- language-bindings$")
+        self.assert_uv_managed_python_312(job)
+
+        for required in (
+            "KyleMayes/install-llvm-action@",
+            "version: '20.1.8'",
+            "ln -s \"$LLVM_PATH/bin/$tool\" \"$RUNNER_TEMP/llvm-20-tools/${tool}-20\"",
+            "mvn --batch-mode --file bindings/java/pom.xml clean verify",
+            "bindings/java/target/site/jacoco/jacoco.xml",
+            "coverage-java/jacoco.xml",
+            "uv pip install --requirement bindings/python/requirements-coverage.txt",
+            "uv pip install --no-build-isolation --editable bindings/python",
+            "--cov-report=xml:coverage-python/coverage.xml",
+            "bash scripts/collect_jni_coverage.sh target/coverage-jni",
+            "target/coverage-jni/coverage.json",
+            "coverage-jni/coverage.json",
+            "name: coverage-java",
+            "path: coverage-java/jacoco.xml",
+            "name: coverage-python",
+            "path: coverage-python/coverage.xml",
+            "name: coverage-jni",
+            "path: coverage-jni/coverage.json",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, job)
+
+    def test_linux_coverage_job_collects_and_uploads_the_ffi_c_consumer_report(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "coverage")
+        collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertRegex(job, r"(?ms)^\s+- platform: ubuntu\s*\n\s+os: ubuntu-latest")
+        self.assertIn("- name: Collect C consumer FFI coverage", job)
+        self.assertIn("if: steps.source.outputs.eligible == 'true' && matrix.platform == 'ubuntu'", job)
+        self.assertIn("bash scripts/collect_ffi_coverage.sh coverage-ffi", job)
+        self.assertIn("name: coverage-ffi", job)
+        self.assertIn("path: coverage-ffi/coverage.json", job)
+        self.assertIn(
+            "CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked",
+            collector,
+        )
+        self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked", collector)
+        self.assertIn('cargo_output="${report_dir}/cargo-llvm-cov.log"', collector)
+        self.assertIn("c_api_coverage\\.rs", collector)
+        self.assertIn(
+            'test_binary_name="$(',
+            collector,
+        )
+        self.assertIn("sed -nE '/Running tests", collector)
+        self.assertIn("c_api_coverage-[[:xdigit:]]+", collector)
+        self.assertIn("| tail -n 1", collector)
+        self.assertIn('test_binary="${llvm_cov_target}/debug/deps/${test_binary_name}"', collector)
+        self.assertNotIn('test_binaries=("${llvm_cov_target}"/debug/deps/c_api_coverage-*)', collector)
+        self.assertIn('rustc --print sysroot', collector)
+        self.assertIn('rustc -vV', collector)
+        self.assertIn('"${llvm_cov}" export -format=text', collector)
+        self.assertNotIn('llvm-cov-20', collector)
+        self.assertIn('rustup component add llvm-tools-preview --toolchain stable', job)
+        self.assertIn("KMIPKit.profdata", collector)
+        self.assertIn("libkmipkit_ffi.so", collector)
+        self.assertIn("--sources", collector)
+        self.assertIn("crates/kmipkit-ffi/src/extension_registry.rs", collector)
+        self.assertIn('--output "${report_dir}/coverage.json"', collector)
+        self.assertNotIn("Install LLVM 20.1.8 for Linux FFI coverage export", job)
+        self.assertNotIn('directory: ${{ runner.temp }}/llvm-20', job)
+
+        gate = self.require_job(contents, "coverage-gate")
+        self.assertIn("coverage", gate)
+        self.assertIn("pattern: coverage-*", gate)
+
+    def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "coverage-gate")
+        self.assertRegex(
+            job,
+            r"(?ms)^    needs:\s*\n\s+- coverage\s*\n\s+- adapter-coverage$",
+        )
+        self.assertIn(self.COVERAGE_COLLECTION_GUARD, job)
+        self.assertIn("needs.adapter-coverage.result", job)
+        self.assertIn("pattern: coverage-*", job)
+        self.assertIn("scripts/coverage_gate.py aggregate", job)
+
+    def test_testing_guide_lists_the_ffi_report_and_local_collector_command(self) -> None:
+        guide = TESTING_GUIDE.read_text(encoding="utf-8")
+        normalized_guide = " ".join(guide.split())
+        self.assertIn("coverage-ffi/coverage.json", normalized_guide)
+        self.assertIn("bash scripts/collect_ffi_coverage.sh target/coverage-ffi", normalized_guide)
+        self.assertIn("downloads all seven coverage artifacts", normalized_guide)
 
     def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
         contents = self.require_workflow()
@@ -125,7 +386,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(branch_coverage, r"(?m)^    if: github\.event_name == 'schedule'$")
         gate = self.require_job(contents, "coverage-gate")
         self.assertRegex(gate, r"(?m)^    if: always\(\) && github\.event_name == 'pull_request'$")
-        self.assertIn("if: always() && needs.coverage.result != 'success'", gate)
+        self.assertIn(self.COVERAGE_COLLECTION_GUARD, gate)
 
     def test_branch_coverage_documentation_matches_schedule_only_workflow(self) -> None:
         guide = TESTING_GUIDE.read_text(encoding="utf-8")
@@ -149,7 +410,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotRegex(job, r"(?m)^\s*if:.*(?:paths|changed-files)")
         self.assertRegex(job, r"(?i)Test-DependencyPolicy\.ps1")
 
-    def test_dependency_policy_job_is_read_only_and_routes_fork_runs_to_hosted_linux(self) -> None:
+    def test_dependency_policy_job_is_read_only_and_uses_hosted_linux(self) -> None:
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?ms)^permissions:\s*\n\s*contents:\s*read\b")
         self.assertNotRegex(contents, r"(?m)^\s*(?:contents|pull-requests|packages):\s*write\b")
@@ -157,7 +418,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotRegex(contents, r"(?m)^\s*pull_request_target\s*:")
 
         job = self.require_policy_job(contents, "dependency-policy")
-        self.assert_pi_runner_with_hosted_fallback(job, "|| 'ubuntu-latest'")
+        self.assert_github_hosted_runner(job)
 
     def test_dependency_policy_job_pins_tool_and_checks_both_workspaces(self) -> None:
         contents = self.require_workflow()
@@ -260,9 +521,13 @@ class WorkflowContractTests(unittest.TestCase):
         for dependency in (
             "core",
             "script-contracts",
+            "language-bindings",
+            "ffi-sanitizer",
+            "fuzz-smoke",
             "normative-inventory",
             "coverage",
             "coverage-gate",
+            "adapter-coverage",
             "dependency-policy",
             "scheduled-dependency-policy",
             "branch-coverage",
@@ -273,18 +538,16 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("${{ toJSON(needs) }}", job)
         summary_script = (REPOSITORY_ROOT / "scripts" / "ci_summary.py").read_text(encoding="utf-8")
         self.assertIn("GITHUB_STEP_SUMMARY", summary_script)
-        self.assertIn("github.event_name == 'schedule'", job)
-        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", job)
-        self.assertIn("fromJSON('[\"self-hosted\",\"Linux\",\"ARM64\"]')", job)
-        self.assertIn("|| 'ubuntu-latest'", job)
+        self.assert_github_hosted_runner(job)
 
     def test_coverage_gate_adds_its_result_and_metrics_to_the_job_summary(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "coverage-gate")
         self.assertIn("--summary-file", job)
         self.assertIn("$GITHUB_STEP_SUMMARY", job)
-        self.assertIn("Summarize failed platform collection", job)
-        self.assertIn("if: always() && needs.coverage.result != 'success'", job)
+        self.assertIn("Summarize failed platform or adapter collection", job)
+        self.assertIn(self.COVERAGE_COLLECTION_GUARD, job)
+        self.assertIn("ADAPTER_COVERAGE_RESULT: ${{ needs.adapter-coverage.result }}", job)
         self.assertIn("Summarize skipped coverage aggregation", job)
         self.assertIn("steps.enforce.outcome == 'skipped'", job)
 

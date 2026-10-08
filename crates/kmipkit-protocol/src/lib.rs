@@ -6,6 +6,7 @@ mod cancel;
 mod credential;
 mod discover_versions;
 mod error;
+pub mod extension;
 mod message;
 mod poll;
 mod process;

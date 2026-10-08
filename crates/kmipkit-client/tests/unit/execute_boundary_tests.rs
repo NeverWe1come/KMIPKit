@@ -106,6 +106,94 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Reject,
     },
     Fixture {
+        id: "approved_registry_value_validation",
+        path: "tests/fixtures/execute_boundary/approved_registry_value_validation.rs",
+        source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<RegisteredExtensionValue, ClientError> { loop {} }",
+        probe: "value: kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "registry_value_validation_wrong_module",
+        path: "tests/fixtures/execute_boundary/registry_value_validation_wrong_module.rs",
+        source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<RegisteredExtensionValue, ClientError> { loop {} }",
+        probe: "value: kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_value_validation_wrong_argument",
+        path: "tests/fixtures/execute_boundary/registry_value_validation_wrong_argument.rs",
+        source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, payload: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<RegisteredExtensionValue, ClientError> { loop {} }",
+        probe: "payload: kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_value_validation_wrong_output",
+        path: "tests/fixtures/execute_boundary/registry_value_validation_wrong_output.rs",
+        source: "pub fn validate_extension_value(registry: &ClientExtensionRegistry, identity: ExtensionIdentity, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<kmipkit_ttlv::Item, ClientError> { loop {} }",
+        probe: "kmipkit_ttlv::Item",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "approved_registry_inspect",
+        path: "tests/fixtures/execute_boundary/approved_registry_inspect.rs",
+        source: "pub fn inspect(registry: &ClientExtensionRegistry, vendor_identifier: &str, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<ExtensionRecognition, ClientError> { loop {} }",
+        probe: "value: kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "registry_inspect_wrong_module",
+        path: "tests/fixtures/execute_boundary/registry_inspect_wrong_module.rs",
+        source: "pub fn inspect(registry: &ClientExtensionRegistry, vendor_identifier: &str, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<ExtensionRecognition, ClientError> { loop {} }",
+        probe: "value: kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_inspect_wrong_argument",
+        path: "tests/fixtures/execute_boundary/registry_inspect_wrong_argument.rs",
+        source: "pub fn inspect(registry: &ClientExtensionRegistry, vendor_identifier: &str, payload: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<ExtensionRecognition, ClientError> { loop {} }",
+        probe: "payload: kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_inspect_wrong_output",
+        path: "tests/fixtures/execute_boundary/registry_inspect_wrong_output.rs",
+        source: "pub fn inspect(registry: &ClientExtensionRegistry, vendor_identifier: &str, value: kmipkit_ttlv::Structure, limits: &kmipkit_ttlv::codec::CodecLimits) -> Result<kmipkit_ttlv::Structure, ClientError> { loop {} }",
+        probe: "Result<kmipkit_ttlv::Structure, ClientError>",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "approved_registry_generic_accessor",
+        path: "tests/fixtures/execute_boundary/approved_registry_generic_accessor.rs",
+        source: "pub fn generic_value(recognition: &ExtensionRecognition) -> &kmipkit_ttlv::Structure { loop {} }",
+        probe: "-> &kmipkit_ttlv::Structure",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
+        id: "registry_generic_accessor_wrong_input",
+        path: "tests/fixtures/execute_boundary/registry_generic_accessor_wrong_input.rs",
+        source: "pub fn generic_value(recognition: ExtensionRecognition) -> &kmipkit_ttlv::Structure { loop {} }",
+        probe: "recognition: ExtensionRecognition",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
+        id: "registry_generic_accessor_wrong_output",
+        path: "tests/fixtures/execute_boundary/registry_generic_accessor_wrong_output.rs",
+        source: "pub fn generic_value(recognition: &ExtensionRecognition) -> kmipkit_ttlv::Item { loop {} }",
+        probe: "-> kmipkit_ttlv::Item",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Reject,
+    },
+    Fixture {
         id: "public_structure_view_input",
         path: "tests/fixtures/execute_boundary/public_structure_view_input.rs",
         source: include_str!(
@@ -669,6 +757,17 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "ttlv_cargo_alias_type",
     "raw_body_input",
     "public_structure_input",
+    "approved_registry_value_validation",
+    "registry_value_validation_wrong_module",
+    "registry_value_validation_wrong_argument",
+    "registry_value_validation_wrong_output",
+    "approved_registry_inspect",
+    "registry_inspect_wrong_module",
+    "registry_inspect_wrong_argument",
+    "registry_inspect_wrong_output",
+    "approved_registry_generic_accessor",
+    "registry_generic_accessor_wrong_input",
+    "registry_generic_accessor_wrong_output",
     "public_structure_view_input",
     "public_structure_view_output",
     "public_tag_input",
@@ -847,6 +946,21 @@ impl BoundaryAudit {
             is_exact_error_validation_source(error_root_scope, impl_type, signature);
         let batch_response_iterator =
             is_exact_batch_response_iterator(execute_root_scope, impl_type, signature);
+        let registry_value_validation = is_exact_registry_value_validation(
+            self.is_source_root(Path::new("extension_registry.rs")),
+            impl_type,
+            signature,
+        );
+        let registry_inspect = is_exact_registry_inspect(
+            self.is_source_root(Path::new("extension_registry.rs")),
+            impl_type,
+            signature,
+        );
+        let registry_generic_accessor = is_exact_registry_generic_accessor(
+            self.is_source_root(Path::new("extension_registry.rs")),
+            impl_type,
+            signature,
+        );
         let approved_generic_signature =
             extension_view_callback || async_outcome_callback || error_validation_source;
         if has_public_type_or_const_generics(signature) && !approved_generic_signature {
@@ -862,6 +976,8 @@ impl BoundaryAudit {
                 if (unique_id_setter || extension_view_callback || async_outcome_callback)
                     && index == 1
                     || batch_from_items && index == 0
+                    || registry_value_validation && index == 2
+                    || registry_inspect && index == 2
                 {
                     continue;
                 }
@@ -869,13 +985,16 @@ impl BoundaryAudit {
             }
         }
         let mut output_finder = PublicTypeFinder::default();
-        if !batch_response_iterator && let syn::ReturnType::Type(_, output) = &signature.output {
+        if !batch_response_iterator
+            && !registry_generic_accessor
+            && let syn::ReturnType::Type(_, output) = &signature.output
+        {
             output_finder.visit_type(output);
         }
         if finder.has_forbidden_type() || output_finder.has_forbidden_output_type() {
             self.reject(format!(
-                "public signature exposes a forbidden type (input={:?}, output={:?})",
-                finder.violations, output_finder.violations
+                "public signature {} exposes a forbidden type (input={:?}, output={:?})",
+                signature.ident, finder.violations, output_finder.violations
             ));
         }
     }
@@ -2003,6 +2122,180 @@ fn is_named_typed_argument(argument: &syn::PatType, expected_name: &str) -> bool
                 && pattern.attrs.is_empty())
 }
 
+fn is_exact_registry_value_validation(
+    registry_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !registry_root_scope
+        || impl_type.is_some()
+        || signature.ident != "validate_extension_value"
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 4
+        || !is_result_with_types(&signature.output, "RegisteredExtensionValue", "ClientError")
+    {
+        return false;
+    }
+
+    let mut inputs = signature.inputs.iter();
+    matches!(
+        (inputs.next(), inputs.next(), inputs.next(), inputs.next()),
+        (
+            Some(syn::FnArg::Typed(registry)),
+            Some(syn::FnArg::Typed(identity)),
+            Some(syn::FnArg::Typed(value)),
+            Some(syn::FnArg::Typed(limits)),
+        ) if is_named_typed_argument(registry, "registry")
+            && is_shared_reference_to(&registry.ty, &["ClientExtensionRegistry"])
+            && is_named_typed_argument(identity, "identity")
+            && is_path_type(&identity.ty, &["ExtensionIdentity"])
+            && is_named_typed_argument(value, "value")
+            && is_path_type(&value.ty, &["kmipkit_ttlv", "Structure"])
+            && is_named_typed_argument(limits, "limits")
+            && is_shared_reference_to(
+                &limits.ty,
+                &["kmipkit_ttlv", "codec", "CodecLimits"],
+            )
+    )
+}
+
+fn is_exact_registry_inspect(
+    registry_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !registry_root_scope
+        || impl_type.is_some()
+        || signature.ident != "inspect"
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 4
+        || !is_result_with_types(&signature.output, "ExtensionRecognition", "ClientError")
+    {
+        return false;
+    }
+
+    let mut inputs = signature.inputs.iter();
+    matches!(
+        (inputs.next(), inputs.next(), inputs.next(), inputs.next()),
+        (
+            Some(syn::FnArg::Typed(registry)),
+            Some(syn::FnArg::Typed(vendor_identifier)),
+            Some(syn::FnArg::Typed(value)),
+            Some(syn::FnArg::Typed(limits)),
+        ) if is_named_typed_argument(registry, "registry")
+            && is_shared_reference_to(&registry.ty, &["ClientExtensionRegistry"])
+            && is_named_typed_argument(vendor_identifier, "vendor_identifier")
+            && is_shared_reference_to(&vendor_identifier.ty, &["str"])
+            && is_named_typed_argument(value, "value")
+            && is_path_type(&value.ty, &["kmipkit_ttlv", "Structure"])
+            && is_named_typed_argument(limits, "limits")
+            && is_shared_reference_to(
+                &limits.ty,
+                &["kmipkit_ttlv", "codec", "CodecLimits"],
+            )
+    )
+}
+
+fn is_exact_registry_generic_accessor(
+    registry_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !registry_root_scope
+        || impl_type.is_some()
+        || signature.ident != "generic_value"
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 1
+        || !matches!(
+            &signature.output,
+            syn::ReturnType::Type(_, output)
+                if is_shared_reference_to(output, &["kmipkit_ttlv", "Structure"])
+        )
+    {
+        return false;
+    }
+
+    matches!(
+        signature.inputs.first(),
+        Some(syn::FnArg::Typed(recognition))
+            if is_named_typed_argument(recognition, "recognition")
+                && is_shared_reference_to(&recognition.ty, &["ExtensionRecognition"])
+    )
+}
+
+fn is_result_with_types(output: &syn::ReturnType, ok_type: &str, error_type: &str) -> bool {
+    let syn::ReturnType::Type(_, output) = output else {
+        return false;
+    };
+    let Type::Path(path) = output.as_ref() else {
+        return false;
+    };
+    if path.qself.is_some()
+        || path.path.leading_colon.is_some()
+        || path.path.segments.len() != 1
+        || path.path.segments[0].ident != "Result"
+    {
+        return false;
+    }
+    let syn::PathArguments::AngleBracketed(arguments) = &path.path.segments[0].arguments else {
+        return false;
+    };
+    if arguments.args.len() != 2 {
+        return false;
+    }
+    matches!(
+        (arguments.args.first(), arguments.args.last()),
+        (
+            Some(syn::GenericArgument::Type(ok)),
+            Some(syn::GenericArgument::Type(error)),
+        ) if is_path_type(ok, &[ok_type]) && is_path_type(error, &[error_type])
+    )
+}
+
+fn is_shared_reference_to(ty: &Type, expected_path: &[&str]) -> bool {
+    matches!(ty, Type::Reference(reference)
+        if reference.mutability.is_none()
+            && reference.lifetime.is_none()
+            && is_path_type(&reference.elem, expected_path))
+}
+
+fn is_path_type(ty: &Type, expected_path: &[&str]) -> bool {
+    let Type::Path(path) = ty else {
+        return false;
+    };
+    if path.qself.is_some()
+        || path.path.leading_colon.is_some()
+        || path.path.segments.len() != expected_path.len()
+    {
+        return false;
+    }
+    path.path
+        .segments
+        .iter()
+        .zip(expected_path)
+        .all(|(segment, expected)| {
+            segment.ident == *expected && matches!(segment.arguments, syn::PathArguments::None)
+        })
+}
+
 fn is_exact_batch_response_iterator(
     execute_root_scope: bool,
     impl_type: Option<&str>,
@@ -2537,6 +2830,17 @@ fn candidate_check_fixture(fixture: &Fixture) -> Result<(), CandidateRejection> 
         Path::new("execute.rs")
     } else if fixture.id == "approved_error_validation_source" {
         Path::new("error.rs")
+    } else if matches!(
+        fixture.id,
+        "approved_registry_value_validation"
+            | "approved_registry_inspect"
+            | "registry_inspect_wrong_argument"
+            | "registry_inspect_wrong_output"
+            | "approved_registry_generic_accessor"
+            | "registry_generic_accessor_wrong_input"
+            | "registry_generic_accessor_wrong_output"
+    ) {
+        Path::new("extension_registry.rs")
     } else {
         Path::new("fixture.rs")
     };
@@ -2928,6 +3232,51 @@ fn generic_item_and_raw_body_inputs_are_rejected() {
     assert!(
         accepted.is_empty(),
         "accepted forbidden fixtures: {accepted:?}"
+    );
+}
+
+#[test]
+fn registry_validation_generic_input_is_the_only_exact_exception() {
+    assert_eq!(
+        candidate_check_fixture(fixture("approved_registry_value_validation")),
+        Ok(()),
+        "the registry may validate a generic subtree only through its exact sealed-value API"
+    );
+
+    let rejected = accepted_ids_for_rejected_fixtures(&[
+        "registry_value_validation_wrong_module",
+        "registry_value_validation_wrong_argument",
+        "registry_value_validation_wrong_output",
+    ]);
+    assert!(
+        rejected.is_empty(),
+        "accepted non-exact registry validation signatures: {rejected:?}"
+    );
+}
+
+#[test]
+fn registry_inspection_and_generic_accessors_are_the_only_inbound_ttlv_surface() {
+    assert_eq!(
+        candidate_check_fixture(fixture("approved_registry_inspect")),
+        Ok(()),
+        "the client may accept a generic subtree only at its exact inspection boundary"
+    );
+    assert_eq!(
+        candidate_check_fixture(fixture("approved_registry_generic_accessor")),
+        Ok(()),
+        "the recognition result may expose its unchanged generic subtree by borrow"
+    );
+
+    let rejected = accepted_ids_for_rejected_fixtures(&[
+        "registry_inspect_wrong_module",
+        "registry_inspect_wrong_argument",
+        "registry_inspect_wrong_output",
+        "registry_generic_accessor_wrong_input",
+        "registry_generic_accessor_wrong_output",
+    ]);
+    assert!(
+        rejected.is_empty(),
+        "accepted non-exact inbound TTLV signatures: {rejected:?}"
     );
 }
 
@@ -3339,6 +3688,9 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "approved_batch_from_items_iterator"
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"
+                    | "approved_registry_value_validation"
+                    | "approved_registry_inspect"
+                    | "approved_registry_generic_accessor"
                     | "matches_guard_logical_not"
             )),
             ExpectedDecision::Reject => assert!(!matches!(
@@ -3350,6 +3702,8 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "approved_async_outcome_callbacks"
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"
+                    | "approved_registry_inspect"
+                    | "approved_registry_generic_accessor"
                     | "matches_guard_logical_not"
             )),
         }

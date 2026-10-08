@@ -1,0 +1,13 @@
+error[E0308]: mismatched types
+  --> tests/ui/extension_boundary/arbitrary_item.rs:11:33
+   |
+11 |     let _ = item.with_extension(arbitrary_item);
+   |                  -------------- ^^^^^^^^^^^^^^ expected `ClientRequestMessageExtension`, found `Item`
+   |                  |
+   |                  arguments to this method are incorrect
+   |
+note: method defined here
+  --> src/execute.rs
+   |
+   |     pub fn with_extension(mut self, extension: ClientRequestMessageExtension) -> Self {
+   |            ^^^^^^^^^^^^^^

@@ -1,0 +1,17 @@
+error[E0308]: mismatched types
+  --> tests/ui/extension_boundary/caller_conversion.rs:14:33
+   |
+14 |     let _ = item.with_extension(CallerValue);
+   |                  -------------- ^^^^^^^^^^^ expected `ClientRequestMessageExtension`, found `CallerValue`
+   |                  |
+   |                  arguments to this method are incorrect
+   |
+note: method defined here
+  --> src/execute.rs
+   |
+   |     pub fn with_extension(mut self, extension: ClientRequestMessageExtension) -> Self {
+   |            ^^^^^^^^^^^^^^
+help: call `Into::into` on this expression to convert `CallerValue` into `ClientRequestMessageExtension`
+   |
+14 |     let _ = item.with_extension(CallerValue.into());
+   |                                            +++++++

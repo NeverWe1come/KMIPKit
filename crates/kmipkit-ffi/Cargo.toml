@@ -11,8 +11,17 @@ publish = false
 [lib]
 crate-type = ["cdylib", "staticlib", "rlib"]
 
+[features]
+coverage-c-consumer = []
+
 [dependencies]
 kmipkit.workspace = true
+kmipkit-client.workspace = true
+kmipkit-protocol.workspace = true
+kmipkit-ttlv.workspace = true
+
+[build-dependencies]
+cc = "=1.6.0"
 
 [lints]
 workspace = true

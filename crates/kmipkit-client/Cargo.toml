@@ -19,6 +19,7 @@ serde = "=1.0.228"
 quickcheck = { version = "=1.1.0", default-features = false }
 kmipkit-test-support.workspace = true
 syn = { version = "=2.0.119", default-features = false, features = ["full", "parsing", "visit"] }
+trybuild = "=1.0.121"
 
 [lints]
 workspace = true

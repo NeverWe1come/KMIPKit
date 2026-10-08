@@ -1,0 +1,1132 @@
+{
+  "format": "kmipkit-extension-fixtures",
+  "formatVersion": 1,
+  "outcomeEncoding": {
+    "version": 1,
+    "outcomeCodes": [
+      "recognized",
+      "unrecognized.schema_invalid",
+      "unrecognized.ambiguous",
+      "unrecognized.no_match",
+      "outbound.validated"
+    ],
+    "matchedDefinitionIdsOrder": "lexicographic-ascending",
+    "genericPayloadRepresentation": "normalized-ttlv-v1",
+    "arrayOrder": "significant-and-preserved"
+  },
+  "definitions": [
+    {
+      "id": "ambiguous.beta",
+      "vendorIdentification": "example.vendor",
+      "extensionName": "ambiguous-beta",
+      "extensionVersion": "1",
+      "discriminator": {
+        "path": ["0x540010", "0x540012"],
+        "itemType": "TextString",
+        "value": "route-beta"
+      },
+      "payloadSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "Beta definition schema for the shared ambiguous payload",
+        "type": "object",
+        "required": ["type", "children"],
+        "properties": {
+          "type": {"const": "Structure"},
+          "children": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "required": ["tag", "type", "children"],
+              "properties": {
+                "tag": {"const": "0x540010"},
+                "type": {"const": "Structure"},
+                "children": {
+                  "type": "array",
+                  "allOf": [
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540011"}, "type": {"const": "TextString"}, "value": {"const": "route-alpha"}}}},
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540012"}, "type": {"const": "TextString"}, "value": {"const": "route-beta"}}}},
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540013"}, "type": {"const": "TextString"}, "value": {"const": "shared"}}}}
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "known.alpha",
+      "vendorIdentification": "example.vendor",
+      "extensionName": "alpha",
+      "extensionVersion": "1",
+      "discriminator": {
+        "path": ["0x420001"],
+        "itemType": "TextString",
+        "value": "alpha-v1"
+      },
+      "payloadSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "Recognized alpha extension schema",
+        "type": "object",
+        "required": ["type", "children"],
+        "properties": {
+          "type": {"const": "Structure"},
+          "children": {
+            "type": "array",
+            "allOf": [
+              {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x420001"}, "type": {"const": "TextString"}, "value": {"const": "alpha-v1"}}}},
+              {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x420004"}, "type": {"const": "LongInteger"}, "value": {"type": "integer", "minimum": 0, "maximum": 99}}}}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "ambiguous.alpha",
+      "vendorIdentification": "example.vendor",
+      "extensionName": "ambiguous-alpha",
+      "extensionVersion": "1",
+      "discriminator": {
+        "path": ["0x540010", "0x540011"],
+        "itemType": "TextString",
+        "value": "route-alpha"
+      },
+      "payloadSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "Alpha definition schema for the shared ambiguous payload",
+        "type": "object",
+        "required": ["type", "children"],
+        "properties": {
+          "type": {"const": "Structure"},
+          "children": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "required": ["tag", "type", "children"],
+              "properties": {
+                "tag": {"const": "0x540010"},
+                "type": {"const": "Structure"},
+                "children": {
+                  "type": "array",
+                  "allOf": [
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540011"}, "type": {"const": "TextString"}, "value": {"const": "route-alpha"}}}},
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540012"}, "type": {"const": "TextString"}, "value": {"const": "route-beta"}}}},
+                    {"contains": {"type": "object", "required": ["tag", "type", "value"], "properties": {"tag": {"const": "0x540013"}, "type": {"const": "TextString"}, "value": {"const": "shared"}}}}
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "valid-recognized",
+      "kind": "valid-recognized",
+      "extension": {
+        "vendorIdentification": "example.vendor",
+        "criticalityIndicator": false,
+        "payload": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x420001", "type": "TextString", "value": "alpha-v1"},
+            {"tag": "0x420002", "type": "Enumeration", "value": 4294967295},
+            {"tag": "0x420004", "type": "LongInteger", "value": 42},
+            {"tag": "0x420006", "type": "TextString", "value": "preserve-this-child-order"},
+            {"tag": "0x540001", "type": "TextString", "value": "preserve-vendor-range-tag"}
+          ]
+        }
+      },
+      "expected": {
+        "outcomeCode": "recognized",
+        "matchedDefinitionIds": ["known.alpha"],
+        "typedValueAvailable": true,
+        "genericPayloadPreserved": true,
+        "preservedPayload": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x420001", "type": "TextString", "value": "alpha-v1"},
+            {"tag": "0x420002", "type": "Enumeration", "value": 4294967295},
+            {"tag": "0x420004", "type": "LongInteger", "value": 42},
+            {"tag": "0x420006", "type": "TextString", "value": "preserve-this-child-order"},
+            {"tag": "0x540001", "type": "TextString", "value": "preserve-vendor-range-tag"}
+          ]
+        },
+        "diagnostics": {"redacted": true, "containsPayloadValues": false}
+      }
+    },
+    {
+      "id": "invalid-schema",
+      "kind": "invalid-schema",
+      "extension": {
+        "vendorIdentification": "example.vendor",
+        "criticalityIndicator": false,
+        "payload": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x420001", "type": "TextString", "value": "alpha-v1"},
+            {"tag": "0x420004", "type": "LongInteger", "value": 100}
+          ]
+        }
+      },
+      "expected": {
+        "outcomeCode": "unrecognized.schema_invalid",
+        "matchedDefinitionIds": ["known.alpha"],
+        "typedValueAvailable": false,
+        "genericPayloadPreserved": true,
+        "preservedPayload": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x420001", "type": "TextString", "value": "alpha-v1"},
+            {"tag": "0x420004", "type": "LongInteger", "value": 100}
+          ]
+        },
+        "diagnostics": {"redacted": true, "containsPayloadValues": false}
+      }
+    },
+    {
+      "id": "multiply-matching",
+      "kind": "multiply-matching",
+      "extension": {
+        "vendorIdentification": "example.vendor",
+        "criticalityIndicator": false,
+        "payload": {
+          "type": "Structure",
+          "children": [
+            {
+              "tag": "0x540010",
+              "type": "Structure",
+              "children": [
+                {"tag": "0x540011", "type": "TextString", "value": "route-alpha"},
+                {"tag": "0x540012", "type": "TextString", "value": "route-beta"},
+                {"tag": "0x540013", "type": "TextString", "value": "shared"}
+              ]
+            },
+            {"tag": "0x540014", "type": "Enumeration", "value": 314159},
+            {"tag": "0x540015", "type": "TextString", "value": "preserve-this-child-order"}
+          ]
+        }
+      },
+      "expected": {
+        "outcomeCode": "unrecognized.ambiguous",
+        "matchedDefinitionIds": ["ambiguous.alpha", "ambiguous.beta"],
+        "typedValueAvailable": false,
+        "genericPayloadPreserved": true,
+        "preservedPayload": {
+          "type": "Structure",
+          "children": [
+            {
+              "tag": "0x540010",
+              "type": "Structure",
+              "children": [
+                {"tag": "0x540011", "type": "TextString", "value": "route-alpha"},
+                {"tag": "0x540012", "type": "TextString", "value": "route-beta"},
+                {"tag": "0x540013", "type": "TextString", "value": "shared"}
+              ]
+            },
+            {"tag": "0x540014", "type": "Enumeration", "value": 314159},
+            {"tag": "0x540015", "type": "TextString", "value": "preserve-this-child-order"}
+          ]
+        },
+        "diagnostics": {"redacted": true, "containsPayloadValues": false}
+      }
+    },
+    {
+      "id": "unknown-preserved",
+      "kind": "unknown-preserved",
+      "extension": {
+        "vendorIdentification": "example.vendor",
+        "criticalityIndicator": false,
+        "payload": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x540021", "type": "Enumeration", "value": 8675309},
+            {"tag": "0x540022", "type": "TextString", "value": "unknown-extension-content"}
+          ]
+        }
+      },
+      "expected": {
+        "outcomeCode": "unrecognized.no_match",
+        "matchedDefinitionIds": [],
+        "typedValueAvailable": false,
+        "genericPayloadPreserved": true,
+        "preservedPayload": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x540021", "type": "Enumeration", "value": 8675309},
+            {"tag": "0x540022", "type": "TextString", "value": "unknown-extension-content"}
+          ]
+        },
+        "diagnostics": {"redacted": true, "containsPayloadValues": false}
+      }
+    },
+    {
+      "id": "synthetic-secret-bearing",
+      "kind": "synthetic-secret-bearing",
+      "secretSentinel": "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A",
+      "extension": {
+        "vendorIdentification": "example.vendor",
+        "criticalityIndicator": false,
+        "payload": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x420001", "type": "TextString", "value": "alpha-v1"},
+            {"tag": "0x420004", "type": "LongInteger", "value": 42},
+            {"tag": "0x420005", "type": "TextString", "value": "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A"}
+          ]
+        }
+      },
+      "expected": {
+        "outcomeCode": "recognized",
+        "matchedDefinitionIds": ["known.alpha"],
+        "typedValueAvailable": true,
+        "genericPayloadPreserved": true,
+        "preservedPayload": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x420001", "type": "TextString", "value": "alpha-v1"},
+            {"tag": "0x420004", "type": "LongInteger", "value": 42},
+            {"tag": "0x420005", "type": "TextString", "value": "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A"}
+          ]
+        },
+        "diagnostics": {"redacted": true, "containsPayloadValues": false},
+        "outboundRequest": {
+          "outcomeCode": "outbound.validated",
+          "attachments": [
+            {"fixtureId": "synthetic-secret-bearing", "criticalityIndicator": false},
+            {"fixtureId": "valid-recognized", "criticalityIndicator": true}
+          ]
+        }
+      }
+    }
+  ],
+  "limitCases":   [
+    {
+      "id": "maxDefinitions",
+      "default": 256,
+      "hardMaximum": 1024,
+      "unit": "definitions",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 256,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 128,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 1024,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 1025,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        },
+        {
+          "profile": "raised-default",
+          "value": 257,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxSchemaNodes",
+      "default": 16384,
+      "hardMaximum": 100000,
+      "unit": "schema-nodes",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 16384,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 8192,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 100000,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 100001,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        },
+        {
+          "profile": "raised-default",
+          "value": 16385,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxChildRulesPerStructure",
+      "default": 256,
+      "hardMaximum": 4096,
+      "unit": "rules-per-structure",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 256,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 128,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 4096,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 4097,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        },
+        {
+          "profile": "raised-default",
+          "value": 257,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxTextBytesPerField",
+      "default": 4096,
+      "hardMaximum": 4096,
+      "unit": "bytes-per-text-field",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 4096,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 2048,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 4096,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 4097,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxRegistryTextBytes",
+      "default": 1048576,
+      "hardMaximum": 16777216,
+      "unit": "aggregate-text-bytes",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 1048576,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 524288,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 16777216,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 16777217,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        },
+        {
+          "profile": "raised-default",
+          "value": 1048577,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxDiscriminatorScalarBytes",
+      "default": 4096,
+      "hardMaximum": 4096,
+      "unit": "bytes-per-discriminator-scalar",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 4096,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 2048,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 4096,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 4097,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxTotalDiscriminatorScalarBytes",
+      "default": 1048576,
+      "hardMaximum": 16777216,
+      "unit": "aggregate-discriminator-bytes",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 1048576,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 524288,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 16777216,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 16777217,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        },
+        {
+          "profile": "raised-default",
+          "value": 1048577,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxConstraintMembersPerRule",
+      "default": 256,
+      "hardMaximum": 4096,
+      "unit": "constraint-members-per-rule",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 256,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 128,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 4096,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 4097,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        },
+        {
+          "profile": "raised-default",
+          "value": 257,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxTotalConstraintMembers",
+      "default": 16384,
+      "hardMaximum": 100000,
+      "unit": "aggregate-constraint-members",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 16384,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 8192,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 100000,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 100001,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        },
+        {
+          "profile": "raised-default",
+          "value": 16385,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxPayloadIndexRecords",
+      "default": 200000,
+      "hardMaximum": 200000,
+      "unit": "payload-index-records",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 200000,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 100000,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 200000,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 200001,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxLookupComparisons",
+      "default": 1048576,
+      "hardMaximum": 4194304,
+      "unit": "tag-comparisons",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 1048576,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 524288,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 4194304,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 4194305,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        },
+        {
+          "profile": "raised-default",
+          "value": 1048577,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "maxDepth",
+      "default": 64,
+      "hardMaximum": 64,
+      "unit": "levels",
+      "errorCategory": "resource_limit",
+      "probes": [
+        {
+          "profile": "default",
+          "value": 64,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "lowered",
+          "value": 32,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "hard",
+          "value": 64,
+          "expectedOutcome": "accepted",
+          "expectedByAdapter": {
+            "rust": "accepted",
+            "c": "accepted",
+            "java": "accepted",
+            "python": "accepted"
+          }
+        },
+        {
+          "profile": "over-hard",
+          "value": 65,
+          "expectedOutcome": "resource_limit",
+          "expectedByAdapter": {
+            "rust": "resource_limit",
+            "c": "resource_limit",
+            "java": "resource_limit",
+            "python": "resource_limit"
+          }
+        }
+      ]
+    }
+  ],
+  "algorithmWorkCases":   [
+    {
+      "id": "client-definitions",
+      "hardMaximum": 1024,
+      "expectedOutcome": "accepted",
+      "expectedByAdapter": {
+        "rust": "accepted",
+        "c": "accepted",
+        "java": "accepted",
+        "python": "accepted"
+      }
+    },
+    {
+      "id": "discriminator-path-depth",
+      "hardMaximum": 64,
+      "expectedOutcome": "accepted",
+      "expectedByAdapter": {
+        "rust": "accepted",
+        "c": "accepted",
+        "java": "accepted",
+        "python": "accepted"
+      }
+    },
+    {
+      "id": "payload-items-including-root",
+      "hardMaximum": 100000,
+      "expectedOutcome": "accepted",
+      "expectedByAdapter": {
+        "rust": "accepted",
+        "c": "accepted",
+        "java": "accepted",
+        "python": "accepted"
+      }
+    },
+    {
+      "id": "path-step-tag-comparisons",
+      "hardMaximum": 35,
+      "expectedOutcome": "accepted",
+      "expectedByAdapter": {
+        "rust": "accepted",
+        "c": "accepted",
+        "java": "accepted",
+        "python": "accepted"
+      }
+    },
+    {
+      "id": "total-lookup-comparisons",
+      "hardMaximum": 4194304,
+      "expectedOutcome": "accepted",
+      "expectedByAdapter": {
+        "rust": "accepted",
+        "c": "accepted",
+        "java": "accepted",
+        "python": "accepted"
+      }
+    },
+    {
+      "id": "schema-tag-comparisons-per-item",
+      "hardMaximum": 13,
+      "expectedOutcome": "accepted",
+      "expectedByAdapter": {
+        "rust": "accepted",
+        "c": "accepted",
+        "java": "accepted",
+        "python": "accepted"
+      }
+    },
+    {
+      "id": "allowed-enum-comparisons-per-item",
+      "hardMaximum": 13,
+      "expectedOutcome": "accepted",
+      "expectedByAdapter": {
+        "rust": "accepted",
+        "c": "accepted",
+        "java": "accepted",
+        "python": "accepted"
+      }
+    },
+    {
+      "id": "order-constraint-position-pass",
+      "passesPerPayload": 1,
+      "expectedOutcome": "accepted",
+      "expectedByAdapter": {
+        "rust": "accepted",
+        "c": "accepted",
+        "java": "accepted",
+        "python": "accepted"
+      }
+    },
+    {
+      "id": "order-constraint-edge-check",
+      "checksPerEdge": 1,
+      "expectedOutcome": "accepted",
+      "expectedByAdapter": {
+        "rust": "accepted",
+        "c": "accepted",
+        "java": "accepted",
+        "python": "accepted"
+      }
+    }
+  ]
+}

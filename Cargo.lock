@@ -670,6 +670,7 @@ dependencies = [
  "serde",
  "static_assertions",
  "syn 2.0.119",
+ "trybuild",
  "zeroize",
 ]
 
@@ -677,7 +678,11 @@ dependencies = [
 name = "kmipkit-ffi"
 version = "0.1.0"
 dependencies = [
+ "cc",
  "kmipkit",
+ "kmipkit-client",
+ "kmipkit-protocol",
+ "kmipkit-ttlv",
 ]
 
 [[package]]

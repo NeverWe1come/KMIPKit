@@ -50,7 +50,7 @@ Schema child rules are compiled into a tag-ordered index at construction, with n
 
 Ordering constraints are directed tag pairs. Construction rejects duplicate edges, self-edges, and cycles, then resolves each endpoint to its child-rule index. During validation, one pass over input children records the first and last position of each declared child. A second pass checks each edge once: when both endpoints occur, every occurrence of `before_tag` must precede every occurrence of `after_tag`; when either optional endpoint is absent, cardinality rules decide validity and the order edge is satisfied. The pass is linear in input children plus declared edges, so repeated fields never cause a full constraint-list rescan. Each allowed-enumeration value and each ordering edge counts as one constraint member for ExtensionRegistryLimits.
 
-For inbound discriminator lookup, one temporary index is built over the received TTLV subtree and shared by all registered definitions. It stores one descriptor per indexed Structure and `(Tag, original child index)` pairs for its children, keeps duplicate tags, and never reorders or rewrites the generic subtree. At most 100,000 Structures and 100,000 child pairs can occur under the 100,000-item TTLV cap, so the index has at most 200,000 records. A checked counting pass rejects excess records before reserve/allocation. Because KMIP Tags are 24-bit values, index construction uses a bounded fixed-pass radix ordering. Each path step uses lower- and upper-bound searches; it matches only when exactly one child has that tag. Missing or repeated tags are non-matches. A configured comparison-budget exhaustion is a stable redacted resource-limit error and returns no partial typed value.
+For inbound discriminator lookup, one temporary index is built over the received TTLV subtree and shared by all registered definitions. It stores one descriptor per indexed Structure and `(Tag, original child index)` pairs for its children, keeps duplicate tags, and never reorders or rewrites the generic subtree. The hard cap is 100,000 total payload Items including the root Structure, so there can be at most 100,000 Structure descriptors and 99,999 child pairs (199,999 records); the configured payload-index record maximum remains 200,000. A checked counting pass rejects excess records before reserve/allocation. Because KMIP Tags are 24-bit values, index construction uses a bounded fixed-pass radix ordering. Each path step uses lower- and upper-bound searches; it matches only when exactly one child has that tag. Missing or repeated tags are non-matches. A configured comparison-budget exhaustion is a stable redacted resource-limit error and returns no partial typed value. Payload nesting is governed by `CodecLimits`; the registry `maxDepth` applies to registered schemas and discriminator paths.
 
 ## ExtensionRegistryLimits
 
@@ -107,16 +107,24 @@ A client-owned immutable snapshot of validated ExtensionDefinition values.
 
 A sealed value created only by successful validation of an ExtensionSchema. It contains ExtensionIdentity and an owned generic TTLV subtree; typed field access does not mutate or normalize that subtree. Its default Debug/Display is redacted. KMIPKit-owned payload storage is zeroized on drop by the existing TTLV Value ownership contract. Borrowed access follows scoped-view conventions; application/runtime copies are outside the zeroization guarantee.
 
-Inbound content produces this value only if exactly one registered discriminator key matches and its complete schema validates. Zero or multiple matching discriminator keys, or schema failure for the sole candidate, return an unrecognized generic value with no partial typed projection; multiple keys never select by registration order.
+Protocol validation against an ExtensionSchema produces this value, but it does not prove that the schema belongs to a particular client registry and does not admit the value to outbound typed requests. Inbound recognition separately requires exactly one registered discriminator key and complete schema validation. Zero or multiple matching keys, or schema failure for the sole candidate, return an unrecognized generic value with no partial typed projection; multiple keys never select by registration order.
 
-## ClientMessageExtension
+## RegisteredExtensionValue
 
-Typed request wrapper containing one ValidatedExtensionValue and the caller-selected Criticality Indicator Boolean for this specific request use. Construction requires the Boolean; no KMIPKit default is applied. Multiple wrappers may be attached to one typed Request Batch Item in caller order as permitted by §8.3/Table 396. Encoding uses the standard Message Extension structure with the registered Vendor Identification and validated Vendor Extension Structure through the existing private request writer.
+A client-owned seal created only by `ClientExtensionRegistry` validation of a generic TTLV subtree against the definition found by exact registered identity. It contains the resulting ValidatedExtensionValue and preserves its identity and original subtree. This registry-scoped type is the only extension-value type accepted by outbound typed request construction.
+
+## ClientRequestMessageExtension
+
+Typed request wrapper containing one RegisteredExtensionValue and the caller-selected Criticality Indicator Boolean for this specific request use. Construction requires the Boolean; no KMIPKit default is applied. Multiple wrappers may be attached to one typed Request Batch Item in caller order as permitted by §8.3/Table 396. Encoding uses the standard Message Extension structure with the registered Vendor Identification and validated Vendor Extension Structure through the existing private request writer.
+
+This name is specific to outbound request use. KMIPKIT-0007's existing `ClientMessageExtension` continues to represent preserved inbound Message Extension content.
 
 ## State transitions
 
 Definition: unvalidated input -> validated immutable registration -> client registry snapshot.
 
-Extension value: generic TTLV subtree -> bounded discriminator scan (zero or multiple hits -> unrecognized generic value) -> full schema validation of the sole candidate within CodecLimits and ExtensionRegistryLimits -> sealed ValidatedExtensionValue, or unrecognized generic value. Schema failure never yields a partially typed value.
+Registry construction: generic TTLV subtree + exact identity -> complete registered-schema validation within CodecLimits and ExtensionRegistryLimits -> sealed RegisteredExtensionValue; absent identity or schema failure returns an error without a request-admissible value.
 
-Outbound use: schema-validated value + explicit Criticality Indicator -> ClientMessageExtension -> typed Request Batch Item -> existing private encoding permit -> zeroizing byte owner retained through all partial transport writes and until success/error return, then initialized bytes are zeroized and the correct delivery state is reported without retry.
+Inbound extension recognition: generic TTLV subtree -> bounded discriminator scan (zero or multiple hits -> unrecognized generic value) -> full schema validation of the sole candidate within CodecLimits and ExtensionRegistryLimits -> typed view over the unchanged subtree. Schema failure never yields a partially typed view.
+
+Outbound use: registry-validated RegisteredExtensionValue + explicit Criticality Indicator -> ClientRequestMessageExtension -> typed Request Batch Item -> existing private encoding permit -> zeroizing byte owner retained through all partial transport writes and until success/error return, then initialized bytes are zeroized and the correct delivery state is reported without retry.

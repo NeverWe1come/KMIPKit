@@ -1,0 +1,54 @@
+#![allow(unsafe_code)]
+#![cfg(all(feature = "coverage-c-consumer", target_os = "linux"))]
+
+use std::ffi::{CString, c_char};
+use std::path::Path;
+
+use kmipkit_ffi::kmipkit_codec_limits_t;
+
+#[link(name = "kmipkit_extension_registry_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_extension_registry_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+}
+
+#[link(name = "kmipkit_ffi")]
+unsafe extern "C" {
+    fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
+    fn kmipkit_codec_limits_release(limits: *mut kmipkit_codec_limits_t);
+}
+
+#[test]
+fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/fixtures/extensions/cases.json")
+        .canonicalize()
+        .expect("shared C consumer fixture exists");
+    let executable = CString::new("kmipkit_extension_registry_consumer")
+        .expect("test executable name has no NUL byte");
+    let fixture = CString::new(fixture.to_str().expect("fixture path is UTF-8"))
+        .expect("fixture path has no NUL byte");
+    let mut arguments = [executable.as_ptr().cast_mut(), fixture.as_ptr().cast_mut()];
+    let argument_count =
+        i32::try_from(arguments.len()).expect("the C consumer argument count fits in i32");
+    let mut limits = std::ptr::null_mut();
+
+    // SAFETY: `limits` is a valid writable output slot for the duration of this call.
+    let status = unsafe { kmipkit_codec_limits_defaults(&raw mut limits) };
+    assert_eq!(status, 0, "codec limits defaults must succeed");
+    assert!(
+        !limits.is_null(),
+        "codec limits defaults must return an owned handle"
+    );
+
+    // SAFETY: a successful defaults call returned this live owned handle, which is released once.
+    unsafe {
+        kmipkit_codec_limits_release(limits);
+    }
+
+    // SAFETY: both C strings and the mutable argument array remain live for the entire call.
+    let result = unsafe {
+        kmipkit_extension_registry_c_consumer_main(argument_count, arguments.as_mut_ptr())
+    };
+
+    assert_eq!(result, 0, "the existing C ABI behavior suite must pass");
+}
