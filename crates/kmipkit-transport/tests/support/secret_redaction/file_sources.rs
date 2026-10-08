@@ -122,7 +122,7 @@ fn selected_path(original: &Path, link: &Path) -> PathBuf {
         #[cfg(windows)]
         Err(_) => original.to_path_buf(),
         #[cfg(not(windows))]
-        Err(_) => panic!("selected path alias creation failed"),
+        Err(error) => panic!("selected path alias creation failed: {}", error.kind()),
     }
 }
 
