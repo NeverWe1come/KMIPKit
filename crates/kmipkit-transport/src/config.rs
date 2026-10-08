@@ -333,9 +333,12 @@ impl PrivateKeyInput {
     /// Returns [`TransportConfigError::InvalidCredential`] if the file cannot
     /// be read.
     pub fn from_pem_file(path: impl AsRef<Path>) -> Result<Self, TransportConfigError> {
-        let bytes = std::fs::read(path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        let file =
+            std::fs::File::open(path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        let bytes =
+            SecretBuffer::read_from(file).map_err(|_| TransportConfigError::InvalidCredential)?;
         Ok(Self {
-            bytes: PrivateKeyBytes::Pem(SecretBuffer::new(bytes)),
+            bytes: PrivateKeyBytes::Pem(bytes),
         })
     }
 
@@ -357,9 +360,12 @@ impl PrivateKeyInput {
     /// Returns [`TransportConfigError::InvalidCredential`] if the file cannot
     /// be read.
     pub fn from_der_file(path: impl AsRef<Path>) -> Result<Self, TransportConfigError> {
-        let bytes = std::fs::read(path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        let file =
+            std::fs::File::open(path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        let bytes =
+            SecretBuffer::read_from(file).map_err(|_| TransportConfigError::InvalidCredential)?;
         Ok(Self {
-            bytes: PrivateKeyBytes::Der(SecretBuffer::new(bytes)),
+            bytes: PrivateKeyBytes::Der(bytes),
         })
     }
 

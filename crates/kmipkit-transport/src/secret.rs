@@ -1,5 +1,7 @@
 //! Private owners for secret input and temporary key encodings.
 
+use std::io::{self, Read};
+
 use rustls::pki_types::PrivateKeyDer;
 use zeroize::Zeroize;
 
@@ -17,6 +19,23 @@ impl SecretBuffer {
             #[cfg(test)]
             observer: None,
         }
+    }
+
+    pub(crate) fn read_from<R: Read>(reader: R) -> io::Result<Self> {
+        Self::read_from_owned(reader, Self::new(Vec::new()))
+    }
+
+    fn read_from_owned<R: Read>(mut reader: R, mut owner: Self) -> io::Result<Self> {
+        reader.read_to_end(&mut owner.bytes)?;
+        Ok(owner)
+    }
+
+    #[cfg(test)]
+    fn read_from_with_observer_for_test<R: Read>(
+        reader: R,
+        observer: SecretBufferObserver,
+    ) -> io::Result<Self> {
+        Self::read_from_owned(reader, Self::with_observer(Vec::new(), observer))
     }
 
     #[cfg(test)]
