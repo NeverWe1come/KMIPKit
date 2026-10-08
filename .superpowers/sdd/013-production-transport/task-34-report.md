@@ -3,7 +3,8 @@
 ## Scope and baseline
 
 T034 Red test commits: `d4206ec` (`test(transport): define HTTPS request capture contract (T034 Red)`) and
-`1c6c8ab` (`test(transport): cover HTTPS target validation (T034 Red)`).
+`1c6c8ab` (`test(transport): cover HTTPS target validation (T034 Red)`), followed by QA correction
+`2669cca` (`test(transport): keep HTTPS EOF assertion contract-focused`).
 The worktree began at `27ee73b4bc77cb9f6e8ad6cb6700a8269536a965` with the
 raw-TLS adapter and shared resolver/worker/deadline modules present, but no
 HTTPS adapter source or HTTPS test target. No production source was changed.
@@ -36,6 +37,12 @@ The tests use fixed assertion messages and comparisons that do not format the
 request sentinel. The peer accept, TLS operations, and request capture are
 bounded. Its body parser caps captured request storage at 1 MiB.
 
+The QA correction removed an assertion on `TransportCauseCategory::Other`
+from the peer-close case. The contract requires an error with
+`RequestDeliveryState::PossiblySent`; it does not prescribe whether incomplete
+HTTP/TLS EOF is categorized as `Io`, `Http`, or `Other`. The correction keeps
+the delivery-state, captured-request, and zeroization assertions unchanged.
+
 ## Red verification
 
 Focused command:
@@ -65,6 +72,7 @@ Formatting and patch checks:
 | --- | --- |
 | `rustfmt --edition 2024 --check --config skip_children=true crates/kmipkit-transport/tests/https.rs` | Passed |
 | `git diff --check` | Passed |
+| `cargo test -p kmipkit-transport --test https --offline` after `2669cca` | Expected Red; the compiler reports the missing source-included `src/https.rs` module as above |
 
 The direct rustfmt command skips child-module loading because the expected
 HTTPS source module is intentionally absent in Red. A normal rustfmt invocation
