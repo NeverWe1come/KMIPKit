@@ -129,6 +129,15 @@ Formatting and patch checks:
 | `cargo fmt --all --check` | Passed |
 | `git diff --check` | Passed |
 
-The T037 ledger remains unchecked pending independent review. A separate Red
-commit contains the tests and this report. No production implementation, Green
-changes, push, or PR is included in this task.
+## Independent review
+
+The first QA review found that the missing-`Content-Length` case could fail on
+an abrupt TLS EOF instead of the HTTP policy. Correction commit
+`3f8a834cde9d0660e093bce3d4a7243877b90c42` added a peer that sends and flushes
+`close_notify`; independent QA then approved T037 Red. The full focused suite
+reproduced 61 passed and 5 expected product failures, including the clean
+close-delimited response that the current adapter incorrectly accepts.
+
+T037 Red is checked in `specs/013-production-transport/tasks.md` with the
+evidence above. No production implementation, Green changes, push, or PR is
+included in this task.
