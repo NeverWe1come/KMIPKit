@@ -52,6 +52,10 @@ name = "tls_policy"
 path = "tests/tls_policy.rs"
 
 [[test]]
+name = "raw_tls"
+path = "tests/raw_tls.rs"
+
+[[test]]
 name = "secret_redaction"
 path = "tests/secret_redaction.rs"
 
