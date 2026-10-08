@@ -7,8 +7,8 @@
 //! request bytes before release.
 
 use std::io::{self, Read, Write};
-use std::net::{Shutdown, TcpListener, TcpStream};
-use std::sync::Arc;
+use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
+use std::sync::{Arc, Condvar, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -72,6 +72,43 @@ const PEER_ACCEPT_TIMEOUT: Duration = Duration::from_secs(2);
 const PEER_ACCEPT_POLL_INTERVAL: Duration = Duration::from_millis(10);
 const PEER_OPERATION_TIMEOUT: Duration = Duration::from_secs(6);
 const SERVER_NAME: &str = "server.kmipkit.test";
+
+#[derive(Clone, Default)]
+struct TestGate {
+    state: Arc<(Mutex<bool>, Condvar)>,
+}
+
+impl TestGate {
+    fn wait(&self, timeout: Duration) -> bool {
+        let (lock, changed) = self.state.as_ref();
+        let Ok(released) = lock.lock() else {
+            return false;
+        };
+        let Ok((released, _)) = changed.wait_timeout_while(released, timeout, |open| !*open) else {
+            return false;
+        };
+        *released
+    }
+
+    fn release(&self) {
+        let (lock, changed) = self.state.as_ref();
+        if let Ok(mut released) = lock.lock() {
+            *released = true;
+            changed.notify_all();
+        }
+    }
+}
+
+fn test_resolver(
+    lookup: impl Fn(&str, u16) -> io::Result<Vec<SocketAddr>> + Send + Sync + 'static,
+) -> resolver::Resolver {
+    resolver::Resolver::with_lookup_and_governor(lookup, Arc::new(tokio::sync::Semaphore::new(1)))
+}
+
+fn fixed_resolver(addresses: Vec<SocketAddr>) -> resolver::Resolver {
+    let addresses = Arc::new(addresses);
+    test_resolver(move |_host, _port| Ok(addresses.as_ref().clone()))
+}
 
 /// Proves the caller's exact bytes reach a TLS 1.3 peer that requires mTLS,
 /// that one response frame is returned, that the connection closes, and that
@@ -149,6 +186,447 @@ fn raw_tls_zeroizes_staged_request_after_peer_closes_without_response() {
         "the peer receives the caller bytes before it closes"
     );
     assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
+}
+
+#[test]
+fn raw_tls_connect_deadline_covers_tls_handshake_before_dispatch() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        0,
+        PeerAction::HoldBeforeHandshake,
+    );
+    let config = client_config_with_timeouts(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        short_timeout_policy(Duration::from_millis(120), Duration::from_secs(2)),
+    );
+
+    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let peer = peer.join().expect("the bounded TLS peer thread completes");
+
+    let error = result.expect_err("the connect deadline expires during the TLS handshake");
+    assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert!(peer.accepted, "the local peer accepted the TCP connection");
+    assert!(
+        !peer.handshake_completed,
+        "the gated handshake did not complete"
+    );
+    assert!(
+        peer.request_bytes.is_empty(),
+        "no request bytes preceded TLS"
+    );
+}
+
+#[test]
+fn raw_tls_read_timeout_zeroizes_the_staged_request() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        PeerAction::HoldAfterRequest,
+    );
+    let observer = secret::SecretBufferObserver::new(fixtures::REQUEST_SENTINEL.len());
+    let config = client_config_with_timeouts(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        short_timeout_policy(Duration::from_secs(1), Duration::from_secs(2))
+            .with_read(TimeoutLimit::Bounded(Duration::from_millis(120))),
+    );
+
+    let result = exchange(config, fixtures::REQUEST_SENTINEL, Some(observer.clone()));
+    let peer = peer.join().expect("the bounded TLS peer thread completes");
+
+    let error = result.expect_err("the peer withholds its response");
+    assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
+    assert_eq!(error.delivery_state(), RequestDeliveryState::PossiblySent);
+    assert!(peer.handshake_completed);
+    assert!(
+        peer.request_bytes.as_slice() == fixtures::REQUEST_SENTINEL,
+        "the peer receives the caller bytes unchanged"
+    );
+    assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
+}
+
+#[test]
+fn raw_tls_total_deadline_remains_absolute_while_waiting_for_response() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        PeerAction::HoldAfterRequest,
+    );
+    let observer = secret::SecretBufferObserver::new(fixtures::REQUEST_SENTINEL.len());
+    let config = client_config_with_timeouts(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        short_timeout_policy(Duration::from_secs(1), Duration::from_millis(120))
+            .with_read(TimeoutLimit::Bounded(Duration::from_secs(2))),
+    );
+
+    let result = exchange(config, fixtures::REQUEST_SENTINEL, Some(observer.clone()));
+    let peer = peer.join().expect("the bounded TLS peer thread completes");
+
+    let error = result.expect_err("the absolute total deadline expires");
+    assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
+    assert_eq!(error.delivery_state(), RequestDeliveryState::PossiblySent);
+    assert!(
+        peer.request_bytes.as_slice() == fixtures::REQUEST_SENTINEL,
+        "the peer receives the caller bytes unchanged"
+    );
+    assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
+}
+
+#[test]
+fn raw_tls_write_timeout_zeroizes_a_partially_written_request() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let request = vec![0x5A; 12 * 1024 * 1024];
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        request.len(),
+        PeerAction::ReadPrefixThenHold(1024),
+    );
+    let observer = secret::SecretBufferObserver::new(request.len());
+    let config = client_config_with_timeouts(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        short_timeout_policy(Duration::from_secs(1), Duration::from_secs(3))
+            .with_write(TimeoutLimit::Bounded(Duration::from_millis(120))),
+    );
+    let started = Instant::now();
+
+    let result = exchange(config, &request, Some(observer.clone()));
+    let elapsed = started.elapsed();
+    let peer = peer.join().expect("the bounded TLS peer thread completes");
+
+    let error = result.expect_err("the peer stops reading during request write");
+    assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
+    assert_eq!(error.delivery_state(), RequestDeliveryState::PossiblySent);
+    assert!(elapsed < Duration::from_secs(2));
+    assert!(
+        peer.request_bytes.as_slice() == &request[..1024],
+        "the peer receives only the prefix written before timeout"
+    );
+    assert_request_owner_zeroized(&observer, request.len());
+}
+
+#[test]
+fn raw_tls_rejects_an_unrepresentable_read_phase_before_dispatch() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        PeerAction::HoldAfterRequest,
+    );
+    let config = client_config_with_timeouts(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        TimeoutPolicy::default()
+            .with_read(TimeoutLimit::Bounded(Duration::MAX))
+            .with_total(TimeoutLimit::Bounded(Duration::from_millis(250))),
+    );
+
+    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let peer = peer.join().expect("the bounded TLS peer thread completes");
+
+    let error = result.expect_err("an unrepresentable phase duration is invalid input");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert!(
+        peer.request_bytes.is_empty(),
+        "invalid timeout input dispatches no request"
+    );
+}
+
+#[test]
+fn raw_tls_rejects_an_unrepresentable_write_phase_before_dispatch() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        PeerAction::HoldAfterRequest,
+    );
+    let config = client_config_with_timeouts(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        TimeoutPolicy::default()
+            .with_write(TimeoutLimit::Bounded(Duration::MAX))
+            .with_total(TimeoutLimit::Bounded(Duration::from_millis(250))),
+    );
+
+    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    let peer = peer.join().expect("the bounded TLS peer thread completes");
+
+    let error = result.expect_err("an unrepresentable phase duration is invalid input");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert!(
+        peer.request_bytes.is_empty(),
+        "invalid timeout input dispatches no request"
+    );
+}
+
+#[test]
+fn raw_tls_connect_deadline_discards_a_late_resolver_result() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind()
+        .expect("the passive TCP peer binds loopback")
+        .into_inner();
+    let address = listener.local_addr().expect("listener has an address");
+    listener
+        .set_nonblocking(true)
+        .expect("the listener observes late connection attempts");
+    let lookup_started = TestGate::default();
+    let started_signal = lookup_started.clone();
+    let late_lookup = TestGate::default();
+    let lookup_gate = late_lookup.clone();
+    let resolver = test_resolver(move |_host, _port| {
+        started_signal.release();
+        let _ = lookup_gate.wait(TLS_TEST_TIMEOUT);
+        Ok(vec![address])
+    });
+    let config = client_config_with_timeouts(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        short_timeout_policy(Duration::from_millis(120), Duration::from_secs(2)),
+    );
+    let observer = secret::SecretBufferObserver::new(fixtures::REQUEST_SENTINEL.len());
+    let mut adapter = raw_tls::new_for_test_with_resolver(config, Some(observer.clone()), resolver);
+    let (result_sender, result_receiver) = std::sync::mpsc::sync_channel(1);
+    let caller = thread::spawn(move || {
+        let result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+        let _ = result_sender.send(result);
+    });
+
+    assert!(lookup_started.wait(Duration::from_secs(1)));
+    let result = result_receiver.recv_timeout(Duration::from_secs(1));
+    late_lookup.release();
+    caller
+        .join()
+        .expect("the synchronous exchange thread completes");
+
+    let error = result
+        .expect("the connect timeout returns while the resolver is blocked")
+        .expect_err("the lookup deadline expires before request dispatch");
+    assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
+    thread::sleep(Duration::from_millis(80));
+    assert!(
+        matches!(listener.accept(), Err(ref error) if error.kind() == io::ErrorKind::WouldBlock)
+    );
+}
+
+#[test]
+fn raw_tls_has_no_tcp_side_effect_while_an_uncanceled_lookup_is_pending() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind()
+        .expect("the TLS peer binds loopback")
+        .into_inner();
+    let address = listener.local_addr().expect("listener has an address");
+    let probe = listener
+        .try_clone()
+        .expect("the test can observe the listener queue");
+    let peer = spawn_peer(
+        listener,
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        PeerAction::RespondOnce,
+    );
+    let lookup_started = TestGate::default();
+    let started_signal = lookup_started.clone();
+    let pending_lookup = TestGate::default();
+    let lookup_gate = pending_lookup.clone();
+    let resolver = test_resolver(move |_host, _port| {
+        started_signal.release();
+        let _ = lookup_gate.wait(TLS_TEST_TIMEOUT);
+        Ok(vec![address])
+    });
+    let config = client_config_with_timeouts(
+        &pki,
+        &pki,
+        address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        short_timeout_policy(Duration::from_secs(2), Duration::from_secs(3)),
+    );
+    let mut adapter = raw_tls::new_for_test_with_resolver(config, None, resolver);
+    let (result_sender, result_receiver) = std::sync::mpsc::sync_channel(1);
+    let caller = thread::spawn(move || {
+        let result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+        let _ = result_sender.send(result);
+    });
+
+    assert!(lookup_started.wait(Duration::from_secs(1)));
+    probe
+        .set_nonblocking(true)
+        .expect("the listener probe can be polled");
+    let no_connection = matches!(
+        probe.accept(),
+        Err(ref error) if error.kind() == io::ErrorKind::WouldBlock
+    );
+    pending_lookup.release();
+    let result = result_receiver.recv_timeout(Duration::from_secs(3));
+    caller
+        .join()
+        .expect("the synchronous exchange thread completes");
+    let peer = peer.join().expect("the bounded TLS peer completes");
+
+    assert!(
+        no_connection,
+        "DNS has no TCP side effect before it completes"
+    );
+    assert!(result.expect("the lookup completes").is_ok());
+    assert!(peer.handshake_completed);
+    assert!(
+        peer.request_bytes.as_slice() == fixtures::REQUEST_SENTINEL,
+        "the peer receives the caller bytes unchanged"
+    );
+}
+
+#[test]
+fn raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake() {
+    let trusted_pki = EphemeralPki::generate().expect("the trusted test PKI is generated");
+    let rejected_pki = EphemeralPki::generate().expect("the untrusted test PKI is generated");
+    let rejected_listener = LoopbackTcpListener::bind().expect("the first TLS peer binds");
+    let rejected_address = rejected_listener.local_addr();
+    let rejected_peer = spawn_peer(
+        rejected_listener.into_inner(),
+        server_config(&rejected_pki, false),
+        0,
+        PeerAction::CloseAfterHandshake,
+    );
+    let trusted_listener = LoopbackTcpListener::bind().expect("the second TLS peer binds");
+    let trusted_address = trusted_listener.local_addr();
+    let trusted_peer = spawn_peer(
+        trusted_listener.into_inner(),
+        server_config(&trusted_pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        PeerAction::RespondOnce,
+    );
+    let config = client_config_with_timeouts(
+        &trusted_pki,
+        &trusted_pki,
+        trusted_address.port(),
+        SERVER_NAME,
+        Vec::new(),
+        short_timeout_policy(Duration::from_secs(1), Duration::from_secs(3)),
+    );
+    let resolver = fixed_resolver(vec![rejected_address, trusted_address]);
+    let mut adapter = raw_tls::new_for_test_with_resolver(config, None, resolver);
+
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    let rejected_peer = rejected_peer
+        .join()
+        .expect("the rejected TLS peer completes");
+    let trusted_peer = trusted_peer.join().expect("the trusted TLS peer completes");
+
+    assert!(rejected_peer.accepted);
+    assert!(rejected_peer.request_bytes.is_empty());
+    assert!(result.is_ok(), "a later verified TLS candidate succeeds");
+    assert!(trusted_peer.handshake_completed);
+    assert!(
+        trusted_peer.request_bytes.as_slice() == fixtures::REQUEST_SENTINEL,
+        "the peer receives the caller bytes unchanged"
+    );
+}
+
+#[test]
+fn raw_tls_total_deadline_covers_lazy_worker_readiness() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let ready_gate = TestGate::default();
+    let worker_entered = TestGate::default();
+    let entered_signal = worker_entered.clone();
+    let startup_gate = ready_gate.clone();
+    let lookup_count = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let lookup_count_in_job = Arc::clone(&lookup_count);
+    let resolver = test_resolver(move |_host, _port| {
+        lookup_count_in_job.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        Err(io::Error::other("test lookup must remain unused"))
+    });
+    let config = client_config_with_timeouts(
+        &pki,
+        &pki,
+        443,
+        SERVER_NAME,
+        Vec::new(),
+        short_timeout_policy(Duration::from_secs(1), Duration::from_millis(120)),
+    );
+    let mut adapter =
+        raw_tls::new_for_test_with_lifecycle_controls(config, None, resolver, move |task| {
+            entered_signal.release();
+            thread::Builder::new()
+                .name("kmipkit-test-worker-gate".to_owned())
+                .spawn(move || {
+                    let _ = startup_gate.wait(TLS_TEST_TIMEOUT);
+                    task();
+                })
+        });
+    let (result_sender, result_receiver) = std::sync::mpsc::sync_channel(1);
+    let caller = thread::spawn(move || {
+        let result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+        let _ = result_sender.send(result);
+    });
+
+    assert!(worker_entered.wait(Duration::from_secs(1)));
+    let returned_before_ready = result_receiver.recv_timeout(Duration::from_millis(300));
+    let returned_by_deadline = returned_before_ready.is_ok();
+    ready_gate.release();
+    let eventual_result = match returned_before_ready {
+        Ok(result) => Ok(result),
+        Err(_) => result_receiver.recv_timeout(Duration::from_secs(1)),
+    };
+    caller
+        .join()
+        .expect("the synchronous exchange thread completes");
+
+    assert!(
+        returned_by_deadline,
+        "the public total deadline returns while lazy worker readiness is gated"
+    );
+    let error = eventual_result
+        .expect("the exchange returns after its total deadline")
+        .expect_err("the expired exchange is not dispatched");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert_eq!(lookup_count.load(std::sync::atomic::Ordering::SeqCst), 0);
 }
 
 #[test]
@@ -584,6 +1062,24 @@ fn client_config(
     server_name: &str,
     revocation_lists: Vec<config::RevocationListInput>,
 ) -> config::TransportConfig {
+    client_config_with_timeouts(
+        identity_pki,
+        trust_pki,
+        port,
+        server_name,
+        revocation_lists,
+        TimeoutPolicy::default(),
+    )
+}
+
+fn client_config_with_timeouts(
+    identity_pki: &impl PkiMaterial,
+    trust_pki: &impl PkiMaterial,
+    port: u16,
+    server_name: &str,
+    revocation_lists: Vec<config::RevocationListInput>,
+    timeouts: TimeoutPolicy,
+) -> config::TransportConfig {
     config::TransportConfig::builder(config::Endpoint::raw_tls("127.0.0.1", port))
         .client_identity(config::ClientIdentity::new(
             config::CertificateInput::from_der(identity_pki.client_chain_der()),
@@ -594,8 +1090,15 @@ fn client_config(
         ]))
         .revocation_lists(revocation_lists)
         .tls_server_name(server_name)
+        .timeouts(timeouts)
         .build()
         .expect("the explicit identity and trust inputs build a valid config")
+}
+
+fn short_timeout_policy(connect: Duration, total: Duration) -> TimeoutPolicy {
+    TimeoutPolicy::default()
+        .with_connect(TimeoutLimit::Bounded(connect))
+        .with_total(TimeoutLimit::Bounded(total))
 }
 
 trait PkiMaterial {
@@ -665,6 +1168,9 @@ enum PeerAction {
     RespondCoalesced,
     CloseWithoutResponse,
     CloseAfterHandshake,
+    HoldBeforeHandshake,
+    HoldAfterRequest,
+    ReadPrefixThenHold(usize),
 }
 
 #[derive(Default)]
@@ -706,6 +1212,9 @@ fn run_peer(
     {
         return observation;
     }
+    if matches!(action, PeerAction::HoldBeforeHandshake) {
+        thread::sleep(Duration::from_millis(400));
+    }
     let Ok(mut connection) = ServerConnection::new(config) else {
         return observation;
     };
@@ -721,15 +1230,20 @@ fn run_peer(
     observation.client_identity_present = connection
         .peer_certificates()
         .is_some_and(|certificates| !certificates.is_empty());
-    if request_len == 0
-        || !read_plaintext_exact(
-            &mut connection,
-            &mut stream,
-            deadline,
-            request_len,
-            &mut observation.request_bytes,
-        )
-    {
+    if request_len == 0 {
+        return observation;
+    }
+    let expected_request_len = match action {
+        PeerAction::ReadPrefixThenHold(prefix_len) => prefix_len.min(request_len),
+        _ => request_len,
+    };
+    if !read_plaintext_exact(
+        &mut connection,
+        &mut stream,
+        deadline,
+        expected_request_len,
+        &mut observation.request_bytes,
+    ) {
         return observation;
     }
 
@@ -739,7 +1253,7 @@ fn run_peer(
                 PeerAction::RespondOnce => connection.writer().write_all(&RESPONSE_FRAME),
                 PeerAction::RespondBytes(bytes) => connection.writer().write_all(bytes),
                 PeerAction::RespondCoalesced => connection.writer().write_all(&TWO_RESPONSE_FRAMES),
-                PeerAction::CloseWithoutResponse | PeerAction::CloseAfterHandshake => {
+                _ => {
                     return observation;
                 }
             };
@@ -770,6 +1284,10 @@ fn run_peer(
             }
         }
         PeerAction::CloseWithoutResponse | PeerAction::CloseAfterHandshake => {}
+        PeerAction::HoldAfterRequest | PeerAction::ReadPrefixThenHold(_) => {
+            thread::sleep(Duration::from_millis(400));
+        }
+        PeerAction::HoldBeforeHandshake => {}
     }
     observation
 }

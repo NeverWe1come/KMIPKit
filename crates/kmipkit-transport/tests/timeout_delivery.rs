@@ -116,6 +116,30 @@ async fn a_blocked_read_uses_the_read_inactivity_deadline() {
 }
 
 #[tokio::test]
+async fn an_unrepresentable_finite_read_phase_is_rejected_as_invalid_input() {
+    let control = ExchangeControl::new();
+    let mut io = deadline_io(
+        ScriptIo::manual(),
+        Some(Duration::MAX),
+        Some(Duration::from_secs(1)),
+        None,
+        control,
+    );
+    let mut response_byte = [0];
+
+    let result = tokio::time::timeout(
+        Duration::from_millis(100),
+        read_exact(&mut io, &mut response_byte),
+    )
+    .await;
+
+    assert!(
+        matches!(result, Ok(Err(ref error)) if error.kind() == io::ErrorKind::InvalidInput),
+        "a finite read phase outside the monotonic clock range must fail as invalid input"
+    );
+}
+
+#[tokio::test]
 async fn a_blocked_write_uses_the_write_inactivity_deadline() {
     let inner = ScriptIo::manual();
     let control = dispatched_control();

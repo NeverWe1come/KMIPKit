@@ -18,11 +18,19 @@ use crate::secret::SecretBuffer;
 use crate::secret::SecretBufferObserver;
 use crate::timeout::DeadlineIo;
 use crate::tls::{self, TlsClientConfig};
+#[cfg(test)]
+use crate::worker::WorkerTask;
 use crate::worker::{ClientWorker, ExchangeControl, WorkerError};
 use crate::{
     RequestDeliveryState, RequestOptions, TimeoutLimit, TimeoutPolicy, Transport,
     TransportCauseCategory, TransportConfig, TransportError, TransportResponse,
 };
+#[cfg(test)]
+use std::thread::JoinHandle;
+
+#[cfg(test)]
+type WorkerSpawnerForTest =
+    Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
 
 const RESPONSE_HEADER_LEN: usize = 8;
 const RESPONSE_STRUCTURE_TAG: [u8; 3] = [0x42, 0x00, 0x78];
@@ -53,6 +61,8 @@ pub struct RawTlsTransport {
     observer: Option<SecretBufferObserver>,
     #[cfg(test)]
     response_allocation_observer: Option<ResponseAllocationObserver>,
+    #[cfg(test)]
+    worker_spawner: Option<WorkerSpawnerForTest>,
 }
 
 impl RawTlsTransport {
@@ -79,6 +89,8 @@ impl RawTlsTransport {
             observer: None,
             #[cfg(test)]
             response_allocation_observer: None,
+            #[cfg(test)]
+            worker_spawner: None,
         })
     }
 
@@ -118,7 +130,14 @@ impl RawTlsTransport {
         }
 
         if self.worker.is_none() {
-            self.worker = Some(ClientWorker::start().map_err(|error| {
+            #[cfg(test)]
+            let worker = match self.worker_spawner.take() {
+                Some(spawner) => ClientWorker::start_with_spawner(spawner),
+                None => ClientWorker::start(),
+            };
+            #[cfg(not(test))]
+            let worker = ClientWorker::start();
+            self.worker = Some(worker.map_err(|error| {
                 safe_error(
                     RequestDeliveryState::NotSent,
                     TransportCauseCategory::Other,
@@ -198,6 +217,31 @@ pub(crate) fn new_for_test(
     let mut adapter = RawTlsTransport::new(configuration)
         .expect("the raw TLS contract supplies validated configuration");
     adapter.observer = observer;
+    adapter
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // T031 injects deterministic DNS and worker-readiness gates.
+pub(crate) fn new_for_test_with_resolver(
+    configuration: TransportConfig,
+    observer: Option<SecretBufferObserver>,
+    resolver: Resolver,
+) -> RawTlsTransport {
+    let mut adapter = new_for_test(configuration, observer);
+    adapter.resolver = resolver;
+    adapter
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // T031 injects deterministic DNS and worker-readiness gates.
+pub(crate) fn new_for_test_with_lifecycle_controls(
+    configuration: TransportConfig,
+    observer: Option<SecretBufferObserver>,
+    resolver: Resolver,
+    spawner: impl FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static,
+) -> RawTlsTransport {
+    let mut adapter = new_for_test_with_resolver(configuration, observer, resolver);
+    adapter.worker_spawner = Some(Box::new(spawner));
     adapter
 }
 
