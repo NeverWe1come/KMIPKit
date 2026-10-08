@@ -352,7 +352,7 @@ fn https_request_host_serializes_bracketed_ipv6_authority_and_explicit_port() {
 
 #[test]
 fn https_rejects_invalid_status_response_headers_and_encodings() {
-    let cases: [(&str, &[u8]); 13] = [
+    let cases: [(&str, &[u8]); 12] = [
         (
             "non-200 status",
             b"HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\n\r\nresponse",
@@ -360,10 +360,6 @@ fn https_rejects_invalid_status_response_headers_and_encodings() {
         (
             "missing Content-Type",
             b"HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nresponse",
-        ),
-        (
-            "missing Content-Length",
-            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nConnection: close\r\n\r\nresponse",
         ),
         (
             "duplicate Content-Type",
@@ -424,6 +420,45 @@ fn https_rejects_invalid_status_response_headers_and_encodings() {
     assert!(
         failures.is_empty(),
         "HTTPS must reject invalid status, headers, and encodings: {failures:?}"
+    );
+}
+
+#[test]
+fn https_rejects_close_delimited_response_without_content_length() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_clean_tls_close_response_peer(
+        listener.into_inner(),
+        server_config(&pki),
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nConnection: close\r\n\r\nresponse"
+            .to_vec(),
+    );
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+    let peer = peer
+        .join()
+        .expect("the bounded close-delimited HTTPS peer completes");
+
+    assert!(
+        peer.accepted,
+        "the response peer accepted one TLS connection"
+    );
+    assert!(peer.request.is_some(), "the peer captured one HTTP request");
+    assert!(
+        peer.close_notify_sent,
+        "the peer completed TLS shutdown with a flushed close_notify"
+    );
+    assert!(
+        matches!(result, Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted),
+        "a valid close-delimited response without Content-Length must be rejected"
     );
 }
 
@@ -862,6 +897,7 @@ struct PeerObservation {
     accepted: bool,
     protocol_version: Option<rustls::ProtocolVersion>,
     client_identity_present: bool,
+    close_notify_sent: bool,
     request: Option<CapturedRequest>,
 }
 
@@ -931,6 +967,23 @@ fn spawn_raw_response_peer(
     configuration: Arc<ServerConfig>,
     response: Vec<u8>,
 ) -> JoinHandle<PeerObservation> {
+    spawn_response_peer(listener, configuration, response, false)
+}
+
+fn spawn_clean_tls_close_response_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    response: Vec<u8>,
+) -> JoinHandle<PeerObservation> {
+    spawn_response_peer(listener, configuration, response, true)
+}
+
+fn spawn_response_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    response: Vec<u8>,
+    send_close_notify: bool,
+) -> JoinHandle<PeerObservation> {
     thread::spawn(move || {
         let Ok((stream, _)) = accept_before_deadline(&listener) else {
             return PeerObservation::default();
@@ -962,10 +1015,17 @@ fn spawn_raw_response_peer(
             .peer_certificates()
             .is_some_and(|certificates| !certificates.is_empty());
         observation.request = read_request(&mut tls);
-        if observation.request.is_some()
-            && (tls.write_all(&response).is_err() || tls.flush().is_err())
-        {
-            return observation;
+        if observation.request.is_some() {
+            if tls.write_all(&response).is_err() || tls.flush().is_err() {
+                return observation;
+            }
+            if send_close_notify {
+                tls.conn.send_close_notify();
+                if tls.flush().is_err() {
+                    return observation;
+                }
+                observation.close_notify_sent = true;
+            }
         }
         observation
     })

@@ -22,7 +22,10 @@ original `ResponseBuffer(Vec<u8>)` and its append/drop behavior is unchanged.
 - Invalid responses: non-200 status; absent `Content-Type` and
   `Content-Length`; duplicate content type/length; conflicting lengths;
   unsupported media type; malformed and negative lengths; transfer encoding,
-  transfer encoding combined with content length, and content encoding.
+  transfer encoding combined with content length, and content encoding. The
+  missing-length case is a valid HTTP/1.1 close-delimited response with
+  `Connection: close`; its peer flushes rustls `close_notify`, and the harness
+  asserts that shutdown completed cleanly.
 - Parser and framing errors: malformed status/header syntax, malformed chunk
   framing, incomplete headers, and a fixed-length body truncated at EOF. The
   error must retain `ResponseStarted` when response bytes were observed.
@@ -61,8 +64,10 @@ contract's 64-header and 64 KiB limits. Hyper also exposes a separate
 boundary tests target `max_buf_size` semantics rather than inventing another
 policy. The parser itself rejects the malformed status/header syntax, malformed
 chunk body, truncation, malformed length, and conflicting duplicate length
-cases exercised here. It accepts the exact boundary inputs and, with current
-defaults, accepts the over-boundary inputs.
+cases exercised here. It accepts valid close-delimited responses without a
+`Content-Length`; rejecting that missing header is KMIPKit response policy,
+which the current adapter does not implement. Hyper accepts the exact parser
+boundary inputs and, with current defaults, accepts the over-boundary inputs.
 
 ## Red verification
 
@@ -72,16 +77,15 @@ Command:
 cargo test -p kmipkit-transport --test https --offline -- --test-threads=1
 ```
 
-Result: compilation succeeded without warnings; 61 passed and 4 failed. Each
+Result: compilation succeeded without warnings; 61 passed and 5 failed. Each
 failure is a product assertion, not a compile failure or test-harness timeout:
 
 1. `https_rejects_invalid_status_response_headers_and_encodings` reports that
    the adapter accepts these nine responses: non-200 status, missing media
    type, duplicate content type, duplicate identical content length, invalid
    media type, transfer encoding, transfer encoding plus content length,
-   content encoding, and duplicate content encoding. Hyper already rejects
-   the missing-length close-delimited response and malformed/negative or
-   conflicting length cases.
+   content encoding, and duplicate content encoding. Hyper rejects malformed,
+   negative, and conflicting content lengths.
 2. `https_enforces_64_headers_and_64_kibibyte_parser_input_boundary` reports
    acceptance of 65 headers and 65,537 bytes. The exact 64-header and 65,536
    byte inputs are accepted, as required.
@@ -90,7 +94,12 @@ failure is a product assertion, not a compile failure or test-harness timeout:
    fails because the requests used different TLS connection IDs and the
    surplus could not be written to the second connection. The third exchange
    still runs and checks that the body is not attributed to it.
-4. `https_rejects_declared_oversize_before_body_arrives_or_response_buffer_grows`
+4. `https_rejects_close_delimited_response_without_content_length` sends a
+   valid `Connection: close` response without `Content-Length` and completes a
+   clean TLS shutdown. The peer assertion confirms `close_notify` was flushed;
+   the product assertion fails because the adapter returns the close-delimited
+   body instead of rejecting the absent header.
+5. `https_rejects_declared_oversize_before_body_arrives_or_response_buffer_grows`
    confirms the current code rejects the eventual over-cap body with
    `ResponseStarted` and requests zero response-buffer capacity. Its product
    failure is that it remains pending while the body is deliberately withheld
@@ -101,6 +110,17 @@ Expected Red coverage passed in this run: parser syntax/framing and truncation,
 partial-buffer zeroization, exact 64-header/64 KiB inputs, and exact response
 cap. These passing cases are retained to specify behavior Hyper or the current
 buffer already provides.
+
+Focused QA correction command:
+
+```text
+cargo test -p kmipkit-transport --test https --offline https_rejects_close_delimited_response_without_content_length -- --exact --nocapture
+```
+
+Result: compilation succeeded; expected Red, 0 passed and 1 failed. The peer
+assertions for the captured request and flushed TLS `close_notify` completed;
+the sole failure is the product assertion that a valid close-delimited body
+without `Content-Length` must be rejected. The adapter returned that body.
 
 Formatting and patch checks:
 
