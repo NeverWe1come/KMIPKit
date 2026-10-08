@@ -598,12 +598,23 @@ class WorkflowContractTests(unittest.TestCase):
         job = self.require_job(contents, "run-summary")
         self.assertRegex(job, r"(?m)^        id: checkout$")
         self.assertRegex(job, r"(?m)^        id: write-summary$")
-        self.assertIn("Fallback summary when checkout or rendering fails", job)
-        self.assertIn(
-            "steps.write-summary.outputs.summary_written != 'true'",
+        renderer = re.search(
+            r"(?ms)^      - name: Write run summary\n(.*?)(?=^      - name: |\Z)",
             job,
         )
-        self.assertIn("normal ci run summary could not be rendered", job.lower())
+        fallback = re.search(
+            r"(?ms)^      - name: Fallback summary when checkout or rendering fails\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(renderer)
+        self.assertIsNotNone(fallback)
+        self.assertLess(renderer.start(), fallback.start())
+        self.assertIn(
+            "steps.write-summary.outputs.summary_written != 'true'",
+            fallback.group(1),
+        )
+        self.assertIn("steps.checkout.outcome != 'success'", fallback.group(1))
+        self.assertIn("normal ci run summary could not be rendered", fallback.group(1).lower())
 
     def test_multi_command_python_binding_step_preserves_each_exit_code(self) -> None:
         contents = self.require_workflow()
