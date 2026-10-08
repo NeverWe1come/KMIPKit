@@ -99,3 +99,35 @@ finite duration into no deadline when `Instant::checked_add` overflows. These
 are assigned to T031/T032 Red/Green coverage and implementation; they are not
 changed in T026a/T026b. T052 will document the resulting worker-startup and
 finite-duration handling in the threat model.
+
+## T026a Red — bound candidate collection
+
+Red source commit: `fa18962fcabd9f03f85632b17dfa238a163f8fbf`.
+
+Added `candidate_collection_consumes_only_the_first_sixteen_addresses` to
+`crates/kmipkit-transport/src/resolver_tests.rs`. Its instrumented iterator
+provides 20 deterministic socket addresses; the assertions require the first
+16 in order and exactly 16 calls to `next`, without invoking real DNS. No
+production code changed in the Red commit.
+
+Expected Red command:
+
+```text
+cargo test -p kmipkit-transport --lib resolver::tests::candidate_collection_consumes_only_the_first_sixteen_addresses --offline
+```
+
+It exited 1 at compilation for the intended reason, the missing production
+collector seam:
+
+```text
+error[E0432]: unresolved import `super::collect_candidates`
+  --> crates\kmipkit-transport\src\resolver_tests.rs:13:57
+   |
+13 |     Lookup, ResolveFailure, Resolver, ResolverJobState, collect_candidates, finish_lookup,
+   |                                                         ^^^^^^^^^^^^^^^^^^ no `collect_candidates` in `resolver`
+```
+
+`rustfmt --edition 2024 --check crates/kmipkit-transport/src/resolver_tests.rs`
+and `git diff --check` passed. Green must add this exact helper to the
+production collection path in `system_lookup`, so the regression does not
+exercise a separate test model.
