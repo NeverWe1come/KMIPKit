@@ -1248,22 +1248,29 @@ fn worker_error(error: WorkerError) -> TransportError {
 }
 
 fn io_error(error: io::Error, state: RequestDeliveryState) -> TransportError {
-    let cause = match error
+    let cause = error
         .get_ref()
         .and_then(|source| source.downcast_ref::<hyper::Error>())
-    {
-        Some(source) if source.is_parse() || source.is_incomplete_message() => {
-            TransportCauseCategory::Http
-        }
-        Some(source) if source.is_timeout() => TransportCauseCategory::Timeout,
-        Some(_) => TransportCauseCategory::Io,
-        None => match error.kind() {
-            io::ErrorKind::TimedOut => TransportCauseCategory::Timeout,
-            io::ErrorKind::InvalidInput => TransportCauseCategory::Other,
-            _ => TransportCauseCategory::Io,
-        },
-    };
+        .map_or_else(|| io_error_cause(error.kind()), hyper_error_cause);
     safe_error(state, cause, error)
+}
+
+fn hyper_error_cause(error: &hyper::Error) -> TransportCauseCategory {
+    if error.is_parse() || error.is_incomplete_message() {
+        TransportCauseCategory::Http
+    } else if error.is_timeout() {
+        TransportCauseCategory::Timeout
+    } else {
+        TransportCauseCategory::Io
+    }
+}
+
+fn io_error_cause(kind: io::ErrorKind) -> TransportCauseCategory {
+    match kind {
+        io::ErrorKind::TimedOut => TransportCauseCategory::Timeout,
+        io::ErrorKind::InvalidInput => TransportCauseCategory::Other,
+        _ => TransportCauseCategory::Io,
+    }
 }
 
 fn timeout_error(state: RequestDeliveryState) -> TransportError {
