@@ -384,6 +384,10 @@ fn values_equal(left: &Item, right: &Item) -> bool {
     })
 }
 
+fn items_equal(left: &Item, right: &Item) -> bool {
+    left.tag().raw() == right.tag().raw() && values_equal(left, right)
+}
+
 fn value_views_equal(left: ValueView<'_>, right: ValueView<'_>) -> bool {
     match (left, right) {
         (ValueView::Structure(left), ValueView::Structure(right)) => {
@@ -407,12 +411,10 @@ fn structures_equal(left: &StructureView<'_>, right: &StructureView<'_>) -> bool
     let left_items = left.children();
     let right_items = right.children();
     left_items.len() == right_items.len()
-        && left_items.iter().zip(right_items).all(|(left, right)| {
-            left.tag().raw() == right.tag().raw()
-                && left.with_value(|left_value| {
-                    right.with_value(|right_value| value_views_equal(left_value, right_value))
-                })
-        })
+        && left_items
+            .iter()
+            .zip(right_items)
+            .all(|(left, right)| items_equal(left, right))
 }
 
 fn parse_success_payload(
