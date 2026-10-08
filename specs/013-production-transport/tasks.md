@@ -128,7 +128,7 @@ and return only a typed decoded result; verify cross-client extension-provenance
 same-client extension preservation through the public Rust API.
 
 - [x] T046 [US4] **Red**: Add public API integration tests in `crates/kmipkit-client/tests/production_client.rs` for validated raw TLS/HTTPS construction, no arbitrary transport injection, sync execution inside an existing runtime, options-bearing variants for every current typed operation method, direct-adapter byte exchange overrides, timeout override precedence on both paths, and exact request/response delivery. Red commit `6e2ea68`; `cargo test -p kmipkit-client --test production_client --offline` fails at the expected missing production `Client::new` constructor and root `RequestOptions` export. `cargo fmt --all --check` and `git diff --check` pass. See `.superpowers/sdd/013-production-transport/task-46-report.md`.
-- [ ] T046a [US4] **Red**: Add a focused execution-boundary unit test in
+- [x] T046a [US4] **Red**: Add a focused execution-boundary unit test in
   `crates/kmipkit-client/src/execute.rs` proving `ClientRequestMessageExtension` registry
   provenance is checked before outgoing `RequestMessage` construction, codec invocation, and adapter
   handoff. Add public Rust integration tests in
@@ -141,7 +141,12 @@ same-client extension preservation through the public Rust API.
   `ClientRequestMessageExtension` validated by the production client's retained configuration and
   asserts a typed response plus the expected unchanged Message Extension wire representation.
   Assert error formatting does not reveal registry identity or extension payload data. Record
-  expected failures in a separate Red commit before T047.
+  expected failures in a separate Red commit before T047. Red commits `f89f1b0` and test-name
+  alignment `c18e542`. The focused AST ordering regression passed 1/1 because the existing fake-client
+  path already checks provenance before request construction; no artificial product failure was
+  introduced. `cargo test -p kmipkit-client --test production_client --offline` fails at the expected
+  missing production constructor and public `RequestOptions` export. Formatting and `git diff --check`
+  pass. See `.superpowers/sdd/013-production-transport/task-46a-report.md`.
 - [ ] T047 [US4] **Green**: Add shared public `RequestOptions`, the production constructor, concrete
   direct-adapter `exchange_with_options` methods, adapter selection, and options-bearing variants
   corresponding to every current public typed operation method in `crates/kmipkit-client/src/lib.rs`
