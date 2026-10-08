@@ -119,6 +119,11 @@ class WorkflowContractTests(unittest.TestCase):
             job,
             "Every supported pull-request platform must reject stale generated API outputs.",
         )
+        self.assertIn(
+            "tools/extension_fixtures/generate.py --check",
+            job,
+            "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
+        )
 
     def test_language_binding_job_compiles_bilingual_client_guide_examples(self) -> None:
         contents = self.require_workflow()
@@ -132,11 +137,6 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported platform must compile the marked bilingual Rust examples.",
         )
         self.assertGreater(guide_position, build_position)
-        self.assertIn(
-            "tools/extension_fixtures/generate.py --check",
-            job,
-            "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
-        )
 
     def test_script_contract_job_runs_negative_extension_fixture_generator_tests(self) -> None:
         contents = self.require_workflow()

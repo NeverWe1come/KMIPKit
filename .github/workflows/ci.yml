@@ -230,6 +230,10 @@ jobs:
         run: |
           cargo build --locked -p kmipkit-ffi
 
+      - name: Compile bilingual Rust client guide examples
+        id: compile-bilingual-rust-client-guide-examples
+        run: python scripts/test_user_guide_examples.py
+
       - name: Configure the C consumer with MSVC
         id: configure-the-c-consumer-with-msvc
         if: runner.os == 'Windows'
