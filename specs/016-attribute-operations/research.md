@@ -7,12 +7,12 @@
 - **Alternatives considered**: One generic read/write method; rejected because its flags and optional values would make operation-specific requirements ambiguous and easier to violate.
 - **Evidence**: Pinned KMIP Specification v2.1 §§6.1.2, 6.1.3, 6.1.13, 6.1.20, 6.1.21, 6.1.34, and 6.1.51, with their cited request/response/error tables.
 
-## Decision 2: Preserve Attribute name and complete TTLV value
+## Decision 2: Follow the distinct OASIS attribute wire forms
 
-- **Decision**: Reuse the `AttributeEntry` contract from KMIPKIT-0014: exact Attribute Name and complete generic TTLV value. Keep Attribute Reference, Current Attribute, and New Attribute as separate protocol roles.
-- **Rationale**: §§5.5–5.7 define distinct structures. Generic values preserve exact names and unknown values on individually allocated or accepted §11.56 extension tags without guessing tags from names. Raw tags failing KMIPKIT-0004/ADR-0010 allocation checks cannot become public Items or be encoded.
+- **Decision**: Model Table 161 `Attribute Reference` as either the name form (Vendor Identification and Attribute Name) or tag form (Enumeration). Model Current Attribute and New Attribute as wrappers around one direct generic TTLV Item whose tag identifies the §4 attribute. Reuse KMIPKIT-0014's `AttributeSet` for the Get Attributes response's ordered direct Items.
+- **Rationale**: The exact structures in §§5.5–5.7 are different and must not be narrowed to a name/value pair. Generic Items preserve unknown values on individually allocated or accepted §11.56 extension tags; raw tags failing KMIPKIT-0004/ADR-0010 allocation checks cannot become public Items or be encoded.
 - **Alternatives considered**: Map every name to only known typed values; rejected because unknown and vendor data must survive round trips.
-- **Dependency**: The approved KMIPKIT-0014 shared-model implementation must be merged before coding this feature; otherwise this plan's implementation gate applies.
+- **Dependency**: The merged KMIPKIT-0013 transport, focused merged response-root correction, and accepted KMIPKIT-0014 `AttributeSet` implementation are required before coding Get Attributes. KMIPKIT-0015's Cosmian deployment/live smoke test is complementary integration evidence and does not gate implementation; its response-root code fix must land independently.
 
 ## Decision 3: Keep adjustment semantics at the server
 
@@ -34,10 +34,10 @@
 
 ## Decision 6: Enforce source-backed unconditional mutation prohibitions
 
-- **Decision**: Keep client-side policy narrow and auditable. A pinned internal standard-attribute registry records the exact §4 source reference, unconditional client modifiability/deletability, required-value behavior, operation-specific prohibition, and conditional rules for each standard attribute. Reject only a statically known unconditional prohibition before the exchange, report `NotSent`, and do not include the submitted value in diagnostics. Leave rules whose result depends on remote object state to the server; do not preflight. Unknown names have no inferred policy. A Vendor Attribute value with Vendor Identification `y` is rejected when present in a value-bearing mutation field under §4.60/Table 150; Adjust and reference-only Delete cannot expose that identifier and preserve the server result. For Add/Modify, reject every New Attribute named `Usage Limits`: §7.40 Table 392 requires Count, and §4.59 prohibits setting or modifying it through these operations.
+- **Decision**: Keep client-side policy narrow and auditable. Identify standard attributes from direct Item tags or Attribute Reference tag values; a name-form reference is matched to standard policy only if its exact Vendor Identification/Attribute Name pair has a source-backed mapping. Reject only a statically known unconditional prohibition before the exchange, report `NotSent`, and do not include submitted values in diagnostics. A supplied Vendor Attribute Item or name-form Attribute Reference may expose Vendor Identification `y`; tag-form references do not, and no identifier is inferred. For Add/Modify, reject every New Attribute identified as `Usage Limits`: §7.40 Table 392 requires Count, and §4.59 prohibits setting or modifying it through these operations.
 - **Rationale**: OASIS §§4, 6.1.2, 6.1.3, 6.1.13, and 6.1.51 include client prohibitions that cannot be represented by blanket server-only validation. The catalog is the normative inventory and provides exact source references; deterministic generation avoids hand-maintained runtime policy drift.
 - **Alternatives considered**: Reject every mutation that might be restricted, or defer all checks to the server; rejected because the former invents restrictions and the latter ignores explicit unconditional client prohibitions.
 
 ## Resolved unknowns
 
-The operation set, fields, optionality, repetition, adjustment values, absence rules, and error tables are stated in the pinned KMIP 2.1 specification. No unresolved technical choice requires clarification before design. Implementation order remains gated on KMIPKIT-0014 shared attributes and integration of KMIPKIT-0013/0015.
+The operation set, fields, optionality, repetition, adjustment values, absence rules, and error tables are stated in the pinned KMIP 2.1 specification. No unresolved protocol choice requires clarification before design. Implementation order is gated on merged KMIPKIT-0013 transport and response-root correction, plus KMIPKIT-0014's `AttributeSet` implementation for the Get Attributes response. The KMIPKIT-0015 Cosmian deployment/live smoke test is deferred interoperability evidence and does not block typed operation implementation.

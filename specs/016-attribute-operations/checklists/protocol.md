@@ -17,7 +17,7 @@
 
 ## Requirement Clarity
 
-- [ ] CHK005 Are Attribute Reference, Current Attribute, New Attribute, and Attribute values clearly distinguished? [Spec FR-002; §§5.5–5.7]
+- [ ] CHK005 Are both Table 161 Attribute Reference variants represented, and are Current/New Attribute direct-Item wrappers distinguished from references and response AttributeSet? [Spec FR-002; §§5.5–5.7]
 - [ ] CHK006 Are Add, Adjust, Delete, Modify, and Set semantics described without implying client-side server-state mutation? [Spec US2; FR-003–FR-005, FR-008–FR-009]
 - [ ] CHK007 Is the Adjust Attribute boundary clear about sending the operation and parameter while leaving arithmetic and remote-state-dependent rules to the server? [Spec FR-004; §11.1]
 - [ ] CHK008 Is the handling of omitted Unique Identifier clear where the operation tables permit ID Placeholder behavior? [Spec Edge Cases; FR-002]
@@ -41,7 +41,7 @@
 
 ## Dependencies and Assumptions
 
-- [ ] CHK017 Is implementation explicitly gated on the shared KMIPKIT-0014 AttributeEntry contract and updated KMIPKIT-0013/0015 release baseline? [Plan §Implementation Gate]
+- [ ] CHK017 Is implementation gated on the merged KMIPKIT-0013 transport and focused response-root correction, plus the KMIPKIT-0014 AttributeSet dependency for Get Attributes, while treating only the KMIPKIT-0015 live Cosmian evidence as non-blocking? [Plan §Implementation Gate]
 - [ ] CHK018 Are language bindings, high-level builders, other operation families, and server-initiated operations explicitly excluded from this protocol feature? [Spec Product boundaries and exclusions]
 
 ## Ambiguities and Conflicts

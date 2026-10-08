@@ -1,6 +1,6 @@
 # Quickstart: Validate KMIPKIT-0016
 
-Run these commands from the repository root after the KMIPKIT-0013 transport, KMIPKIT-0015 integration, and KMIPKIT-0014 shared attribute-model dependencies have been merged and the KMIPKIT-0016 implementation is present.
+Run these commands from the repository root after the KMIPKIT-0013 transport and focused raw-TLS response-root correction are merged, KMIPKIT-0014's `AttributeSet` implementation is present, and the KMIPKIT-0016 implementation is available. Get Attributes reuses that direct-item `AttributeSet`; it is not a name/value pair. The KMIPKIT-0015 Cosmian deployment/live smoke test in PR #56 is optional interoperability evidence and is not required to execute these Rust tests.
 
 ## Focused protocol tests
 
