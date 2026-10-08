@@ -178,3 +178,10 @@ Verification after Refactor:
 The full suite includes both T021 redaction targets (9 and 22 tests), the
 T026a iterator regression, and T025's six raw TLS contract cases. No
 cross-platform run was performed in this correction cycle.
+
+## Independent QA review
+
+QA reviewed the T026a/b and T027 correction range
+`19e0ec5..b4a7f40` and approved it with no findings. The review confirms the
+instrumented cap regression, in-place bounded candidate result, and one-shot
+raw connection ownership are ready for subsequent task work.
