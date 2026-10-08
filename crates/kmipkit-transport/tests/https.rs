@@ -208,7 +208,10 @@ fn https_does_not_store_cookies_negotiate_http2_or_request_compression() {
     assert_ne!(peer.alpn_protocol.as_deref(), Some(b"h2".as_slice()));
     for request in &peer.requests {
         assert_eq!(request.version, "HTTP/1.1");
-        assert!(header_values(request, "accept-encoding").is_empty());
+        assert_eq!(
+            header_values(request, "accept-encoding"),
+            Vec::<&str>::new()
+        );
     }
     assert!(
         header_values(&peer.requests[1], "cookie").is_empty(),

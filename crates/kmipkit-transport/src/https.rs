@@ -47,8 +47,10 @@ use std::thread::JoinHandle;
 /// and never retries automatically. It sends request bytes only after the
 /// verified TLS connection and Hyper sender are ready. It maintains at most
 /// one direct connection per client and reuses it across healthy exchanges;
-/// proxy settings are not consulted. The default timeout policy comes from the
-/// validated configuration, and
+/// redirects and server-supplied endpoints are not followed, proxy settings
+/// are not consulted, cookies are not retained, and compression is not
+/// negotiated. TLS ALPN is empty and the adapter uses Hyper's HTTP/1 driver.
+/// The default timeout policy comes from the validated configuration, and
 /// [`Self::exchange_with_options`] accepts per-call overrides.
 ///
 /// `KMIPKit` zeroizes initialized bytes in its staged request owner and partial
@@ -58,6 +60,7 @@ pub struct HttpsTransport {
     configuration: TransportConfig,
     route: HttpsRoute,
     tls: crate::tls::TlsClientConfig,
+    http1_tls_config: Arc<rustls::ClientConfig>,
     resolver: Resolver,
     connection: Arc<StdMutex<Option<HttpsConnection>>>,
     worker: Option<ClientWorker>,
@@ -125,6 +128,14 @@ impl HttpsRoute {
     }
 }
 
+fn build_http1_tls_config(tls_config: &Arc<rustls::ClientConfig>) -> Arc<rustls::ClientConfig> {
+    let mut http1_config = tls_config.as_ref().clone();
+    // The HTTPS adapter only has a Hyper HTTP/1 driver; do not advertise a
+    // different application protocol during TLS negotiation.
+    http1_config.alpn_protocols.clear();
+    Arc::new(http1_config)
+}
+
 #[cfg(test)]
 type WorkerSpawnerForTest =
     Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
@@ -142,10 +153,12 @@ impl HttpsTransport {
     pub fn new(configuration: TransportConfig) -> Result<Self, TransportConfigError> {
         let route = HttpsRoute::from_configuration(&configuration)?;
         let tls = crate::tls::build_client_config(&configuration)?;
+        let http1_tls_config = build_http1_tls_config(tls.rustls_config_arc());
         Ok(Self {
             configuration,
             route,
             tls,
+            http1_tls_config,
             resolver: Resolver::system(),
             connection: Arc::new(StdMutex::new(None)),
             worker: None,
@@ -236,7 +249,7 @@ impl HttpsTransport {
         let route = self.route.clone();
         let resolver = self.resolver.clone();
         let connection = Arc::clone(&self.connection);
-        let client_config = Arc::clone(self.tls.rustls_config_arc());
+        let client_config = Arc::clone(&self.http1_tls_config);
         let server_name = self.tls.server_name().clone();
         #[cfg(test)]
         let response_buffer_observer = self.response_buffer_observer.take();
