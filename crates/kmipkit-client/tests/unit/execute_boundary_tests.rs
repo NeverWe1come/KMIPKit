@@ -1022,6 +1022,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
     fn visit_attribute(&mut self, attribute: &'ast Attribute) {
         self.check_attributes(std::slice::from_ref(attribute));
         if is_approved_user_guide_doc_include(attribute, self.current_source_path.as_deref()) {
+            // Root-level guide text is inert documentation, not production macro code.
             return;
         }
         visit::visit_attribute(self, attribute);
