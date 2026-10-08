@@ -1248,10 +1248,20 @@ fn worker_error(error: WorkerError) -> TransportError {
 }
 
 fn io_error(error: io::Error, state: RequestDeliveryState) -> TransportError {
-    let cause = match error.kind() {
-        io::ErrorKind::TimedOut => TransportCauseCategory::Timeout,
-        io::ErrorKind::InvalidInput => TransportCauseCategory::Other,
-        _ => TransportCauseCategory::Io,
+    let cause = match error
+        .get_ref()
+        .and_then(|source| source.downcast_ref::<hyper::Error>())
+    {
+        Some(source) if source.is_parse() || source.is_incomplete_message() => {
+            TransportCauseCategory::Http
+        }
+        Some(source) if source.is_timeout() => TransportCauseCategory::Timeout,
+        Some(_) => TransportCauseCategory::Io,
+        None => match error.kind() {
+            io::ErrorKind::TimedOut => TransportCauseCategory::Timeout,
+            io::ErrorKind::InvalidInput => TransportCauseCategory::Other,
+            _ => TransportCauseCategory::Io,
+        },
     };
     safe_error(state, cause, error)
 }

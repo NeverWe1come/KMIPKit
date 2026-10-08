@@ -526,10 +526,7 @@ where
             "HTTP request is unavailable",
         ));
     };
-    sender
-        .send_request(request)
-        .await
-        .map_err(|_| sender_closed_error())
+    sender.send_request(request).await.map_err(io::Error::other)
 }
 
 /// Closes response observation, awaits exchange cleanup, then snapshots state.
