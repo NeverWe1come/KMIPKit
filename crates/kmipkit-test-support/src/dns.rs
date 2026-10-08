@@ -205,33 +205,30 @@ fn bind_local_dns_sockets() -> io::Result<(UdpSocket, TcpListener)> {
 fn bind_local_dns_sockets_with(
     mut bind_tcp: impl FnMut(SocketAddr) -> io::Result<TcpListener>,
 ) -> io::Result<(UdpSocket, TcpListener)> {
-    let mut last_retryable_error = None;
-    for _ in 0..MAX_SOCKET_PAIR_BIND_ATTEMPTS {
+    let mut attempts_remaining = MAX_SOCKET_PAIR_BIND_ATTEMPTS;
+    loop {
         let socket = UdpSocket::bind((Ipv4Addr::LOCALHOST, 0))?;
         let local_addr = socket.local_addr()?;
         match bind_tcp(local_addr) {
             Ok(tcp_listener) => return Ok((socket, tcp_listener)),
-            Err(error)
-                if matches!(
-                    error.kind(),
-                    io::ErrorKind::AddrInUse
-                        | io::ErrorKind::AddrNotAvailable
-                        | io::ErrorKind::PermissionDenied
-                ) =>
-            {
-                last_retryable_error = Some(error);
+            Err(error) if is_retryable_socket_pair_bind_error(&error) => {
+                attempts_remaining -= 1;
+                if attempts_remaining == 0 {
+                    return Err(error);
+                }
             }
             Err(error) => return Err(error),
         }
     }
+}
 
-    if let Some(error) = last_retryable_error {
-        Err(error)
-    } else {
-        Err(io::Error::other(
-            "could not allocate a UDP/TCP DNS fixture port pair",
-        ))
-    }
+fn is_retryable_socket_pair_bind_error(error: &io::Error) -> bool {
+    matches!(
+        error.kind(),
+        io::ErrorKind::AddrInUse
+            | io::ErrorKind::AddrNotAvailable
+            | io::ErrorKind::PermissionDenied
+    )
 }
 
 impl Drop for LocalDnsFixture {
