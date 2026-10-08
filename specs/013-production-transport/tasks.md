@@ -180,10 +180,8 @@ same-client extension preservation through the public Rust API.
 **Purpose**: Close documentation, traceability, security, coverage, reproducibility, and review gates.
 
 - [x] T052 Record final implementation evidence in ADR-0016 and update `docs/security/threat-model.md` with the worker, shared resolver governor, OS-owned DNS behavior, uncancelable started resolver calls, possible background resolver work, candidate limits, `SSL_CERT_FILE` trust override, parser limits, delivery/timeout races, raw-vs-HTTPS connection lifecycle, one-hour session-resumption trust snapshot, memory-copy boundaries, lazy worker-startup deadline enforcement, rejection of finite phase durations not representable by `Instant`, and new controls. The canonical connection-model and TLS-policy amendments are made at T001 before code starts; accepted ADR-0015 remains otherwise immutable. Added the resolver's final implementation evidence to ADR-0016 and updated the threat model, public API design, and transport-security architecture to match the production typed-client state. Verified 22 referenced source/spec/doc paths exist and `git diff --check` passes. Final platform, coverage, and independent security review gates remain T057/T060. See `.superpowers/sdd/013-production-transport/task-52-report.md`.
-- [ ] T053 Add complete stable requirement-to-source/spec/code/test links for every KMIPKIT-0013
-  functional requirement and applicable OASIS requirement in
-  `specification/compliance/requirements/KMIPKIT-0013.csv`, including FR-018's KMIPKIT-0012/ADR-0013
-  source links and the T046a provenance tests.
+- [x] T053 Add complete stable requirement-to-source/spec/code/test links for every KMIPKIT-0013 functional requirement and applicable OASIS requirement in specification/compliance/requirements/KMIPKIT-0013.csv, including FR-018's KMIPKIT-0012/ADR-0013 source links and the T046a provenance tests. Evidence: the 34-row CSV maps 18/18 FRs and 16 applicable catalog IDs (5 TTLV, 3 §10.4 channel-security, and 8 selected §5.3.1 requirements); a focused offline CSV audit found every implementation path and test symbol and all eight profile rows are scoped_verified. git diff --check passes. All test IDs are derived project tests; no official OASIS case is credited and no profile claim is made. python tools/normative_catalog/validate.py passes (4 sources, 1,411 clauses, 4,024 records); python -m unittest tools.normative_catalog.tests.test_feature_traceability passes 14 tests with 1 skipped (that existing suite does not target KMIPKIT-0013). The catalog explicitly keeps KMIPKIT-REQ-SPEC-10.1.2-001 unassigned because generic ordered-child tests do not verify every KMIP Structure. KMIPKIT-REQ-SPEC-10.4-001-002 remains deferred: no direct tampered TLS-record test exists; valid protected handshakes/exchanges are not negative integrity evidence. T063 records the corrective verification gate. See .superpowers/sdd/013-production-transport/task-53-report.md.
+- [ ] T063 [SEC] Close the KMIPKIT-REQ-SPEC-10.4-001-002 direct-verification gap with focused derived negative TLS integrity tests. Use a local relay to corrupt a protected TLS 1.3 application-data record after handshake for the raw-TLS and HTTPS paths; assert corrupted plaintext is never accepted, the returned TLS cause is redacted, delivery state remains PossiblySent when no decrypted response byte was observed, and the affected connection is invalidated. After the tests pass, reconcile the §10.4 traceability evidence and the accepted specification's verification note. Do not use a successful handshake as negative integrity evidence or claim profile support. Evidence is pending; see .superpowers/sdd/013-production-transport/task-53-report.md.
 - [ ] T054 Document Rust API behavior, trust configuration, timeout states, limitations, and executable examples in `docs/user-guide/en/` and `docs/user-guide/es/`; test examples in Rust.
 - [ ] T055 Run catalog/traceability checks and verify all eight selected §5.3.1 requirements have behavior/test links without an unsupported profile claim; record evidence in `specs/013-production-transport/tasks.md`.
 - [ ] T056 Run `cargo fmt --all --check`, strict workspace Clippy, focused tests, full workspace tests, docs tests, and repository dependency/security automation; fix every failure and record exact command results.
@@ -202,7 +200,7 @@ same-client extension preservation through the public Rust API.
 - User Story 1 (T015–T024) establishes validated config/TLS before raw TLS or HTTPS.
 - User Stories 2 and 3 depend on the worker/deadline foundation and User Story 1; implement sequentially under one active implementer because both share TLS and I/O state.
 - User Story 4 depends on both production adapters and preserves the existing client boundary.
-- T052–T062 require all four stories complete; design ADR acceptance is T001 before implementation; review fixes precede final branch update and draft PR.
+- T052–T063 require all four stories complete; T063 integrity verification gates T056/T057 and final review; design ADR acceptance is T001 before implementation; review fixes precede final branch update and draft PR.
 
 ### Parallel Opportunities
 
@@ -213,15 +211,15 @@ There are no parallel code implementation tasks while the shared worker, TLS, re
 | Requirement | Task coverage |
 |---|---|
 | FR-001, FR-016, FR-018: typed-client boundary, public transport surface, and KMIPKIT-0012 registry binding | T046, T046a, T047–T051 |
-| FR-002, FR-003, FR-006: TLS, trust, mTLS, resumption, 0-RTT/keylog | T018–T020, T025–T027, T052–T055 |
+| FR-002, FR-003, FR-006: TLS, trust, mTLS, resumption, 0-RTT/keylog | T018–T020, T025–T027, T052–T055, T063 |
 | FR-004, FR-005: key inputs, zeroization, redaction | T018–T023, T054, T059 |
 | FR-007: raw TTLV/TLS frame | T025–T033 |
 | FR-008, FR-009, FR-010: HTTPS behavior and framing | T034–T042 |
 | FR-011, FR-012: deadlines, queueing, request options, and delivery state | T006–T014, T031–T033, T040–T045, T046–T048 |
 | FR-013: one endpoint, invalidation, no retry/failover | T006–T014, T031–T033, T040–T045 |
 | FR-014, FR-015, FR-017: request/response limits and memory cleanup | T015–T025, T028–T031, T034, T037–T039, T049–T051, T054 |
-| SC-001–SC-008 | T018–T062, with final evidence at T055–T060; SC-007 also includes T046a |
-| Normative traceability | T053, T055 |
+| SC-001–SC-008 | T018–T063, with final evidence at T055–T060; SC-007 also includes T046a |
+| Normative traceability | T053, T055, T063 |
 
 ## Implementation Strategy
 
