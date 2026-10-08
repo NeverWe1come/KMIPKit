@@ -68,3 +68,7 @@ mod query_async_requests_tests;
 #[cfg(test)]
 #[path = "../tests/unit/query_async_response_tests.rs"]
 mod query_async_response_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/attribute_tests.rs"]
+mod attribute_tests;
