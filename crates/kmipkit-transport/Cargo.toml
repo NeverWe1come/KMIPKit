@@ -51,6 +51,14 @@ path = "tests/tls_config.rs"
 name = "tls_policy"
 path = "tests/tls_policy.rs"
 
+[[test]]
+name = "secret_redaction"
+path = "tests/secret_redaction.rs"
+
+[[test]]
+name = "secret_redaction_current"
+path = "tests/secret_redaction_current.rs"
+
 [dev-dependencies]
 kmipkit-test-support = { workspace = true, default-features = false, features = ["fixtures"] }
 rcgen.workspace = true
