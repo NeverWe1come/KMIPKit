@@ -54511,8 +54511,7 @@
         "KMIPKIT-PROFILE-TAPE-LIBRARY-SERVER"
       ],
       "test_case_ids": [
-        "KMIPKIT-TEST-PROF-5-17-2",
-        "KMIPKIT-TEST-CN01-2-12"
+        "KMIPKIT-TEST-PROF-5-17-2"
       ],
       "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [],
@@ -100101,7 +100100,6 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-CREATE",
         "KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-CREATE-SD-1-21.xml",
