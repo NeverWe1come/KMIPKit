@@ -11,6 +11,9 @@
 //! tests use opaque TTLV frames and make no profile-conformance claim. The
 //! Message Extension structure follows OASIS KMIP Specification v2.1 §9.13,
 //! Table 418.
+//! Request and response boundaries additionally trace to OASIS KMIP
+//! Specification v2.1 §9.12, Table 417, and §§10.1.1–10.1.5; byte-limit and
+//! typed-decoding acceptance is defined by KMIPKIT-0013 FR-014 and FR-017.
 
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, TcpListener};
@@ -238,6 +241,194 @@ fn https_adapter_timeout_override_wins_and_preserves_exact_bytes() {
 }
 
 #[test]
+fn raw_tls_adapter_rejects_oversized_request_before_connect() {
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let listener = LoopbackTcpListener::bind()
+        .expect("loopback listener binds")
+        .into_inner();
+    listener
+        .set_nonblocking(true)
+        .expect("listener switches to nonblocking mode");
+    let port = listener
+        .local_addr()
+        .expect("loopback port is available")
+        .port();
+    let config = transport_configuration_with_request_limit(
+        &pki,
+        Endpoint::raw_tls("127.0.0.1", port),
+        TimeoutPolicy::default(),
+        7,
+    );
+    let mut adapter = RawTlsTransport::new(config).expect("raw-TLS adapter is valid");
+
+    let error = adapter
+        .exchange_with_options(
+            &REQUEST_FRAME,
+            SIMPLE_RESPONSE_FRAME.len(),
+            &RequestOptions::default(),
+        )
+        .expect_err("an oversized request is rejected before connection");
+
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert!(matches!(listener.accept(), Err(error) if error.kind() == io::ErrorKind::WouldBlock));
+}
+
+#[test]
+fn https_adapter_rejects_oversized_request_before_connect() {
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let listener = LoopbackTcpListener::bind()
+        .expect("loopback listener binds")
+        .into_inner();
+    listener
+        .set_nonblocking(true)
+        .expect("listener switches to nonblocking mode");
+    let port = listener
+        .local_addr()
+        .expect("loopback port is available")
+        .port();
+    let config = transport_configuration_with_request_limit(
+        &pki,
+        Endpoint::https(format!("https://127.0.0.1:{port}")),
+        TimeoutPolicy::default(),
+        7,
+    );
+    let mut adapter = HttpsTransport::new(config).expect("HTTPS adapter is valid");
+
+    let error = adapter
+        .exchange_with_options(
+            &REQUEST_FRAME,
+            SIMPLE_RESPONSE_FRAME.len(),
+            &RequestOptions::default(),
+        )
+        .expect_err("an oversized request is rejected before connection");
+
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert!(matches!(listener.accept(), Err(error) if error.kind() == io::ErrorKind::WouldBlock));
+}
+
+#[test]
+fn typed_client_rejects_encoded_request_over_codec_limit_before_connect() {
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let listener = LoopbackTcpListener::bind()
+        .expect("loopback listener binds")
+        .into_inner();
+    listener
+        .set_nonblocking(true)
+        .expect("listener switches to nonblocking mode");
+    let port = listener
+        .local_addr()
+        .expect("loopback port is available")
+        .port();
+    let mut client = Client::new(
+        empty_client_configuration(),
+        transport_configuration(
+            &pki,
+            Endpoint::raw_tls("127.0.0.1", port),
+            TimeoutPolicy::default(),
+        ),
+    )
+    .expect("validated raw-TLS client construction succeeds");
+    let limits = kmipkit_ttlv::codec::CodecLimits::new(
+        8,
+        kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
+        kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_ELEMENTS,
+    )
+    .expect("a positive message-byte limit is valid");
+
+    let error = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions())),
+            &limits,
+        )
+        .expect_err("the encoded typed request exceeds the per-call limit");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert!(matches!(listener.accept(), Err(error) if error.kind() == io::ErrorKind::WouldBlock));
+}
+
+#[test]
+fn typed_client_accepts_a_valid_response_at_the_exact_codec_limit() {
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let listener = LoopbackTcpListener::bind().expect("loopback peer binds");
+    let port = listener.local_addr().port();
+    let response_bytes = discover_versions_response();
+    let response_cap = response_bytes.len();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_configuration(&pki),
+        PeerProtocol::RawTtlv,
+        response_bytes,
+    );
+    let mut client = Client::new(
+        empty_client_configuration(),
+        transport_configuration(
+            &pki,
+            Endpoint::raw_tls("127.0.0.1", port),
+            TimeoutPolicy::default(),
+        ),
+    )
+    .expect("validated raw-TLS client construction succeeds");
+    let limits = kmipkit_ttlv::codec::CodecLimits::new(
+        response_cap,
+        kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
+        kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_ELEMENTS,
+    )
+    .expect("the exact response-byte limit is positive");
+
+    let response = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions())),
+            &limits,
+        )
+        .expect("a valid response exactly at the configured limit is accepted");
+
+    assert_eq!(response.len(), 1);
+    assert_discover_versions_request(&peer.join().expect("the raw-TLS peer completes"));
+}
+
+#[test]
+fn typed_client_rejects_invalid_response_without_exposing_response_bytes() {
+    const RESPONSE_SENTINEL: &[u8] = b"SENTINEL";
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let listener = LoopbackTcpListener::bind().expect("loopback peer binds");
+    let port = listener.local_addr().port();
+    let malformed_response = structure(
+        0x0042_0078,
+        [ttlv_item(0x0042_0069, 0x07, RESPONSE_SENTINEL)],
+    );
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_configuration(&pki),
+        PeerProtocol::RawTtlv,
+        malformed_response,
+    );
+    let mut client = Client::new(
+        empty_client_configuration(),
+        transport_configuration(
+            &pki,
+            Endpoint::raw_tls("127.0.0.1", port),
+            TimeoutPolicy::default(),
+        ),
+    )
+    .expect("validated raw-TLS client construction succeeds");
+
+    let error = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions())),
+            &kmipkit_ttlv::codec::CodecLimits::defaults(),
+        )
+        .expect_err("a response with an invalid typed message shape is rejected");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    let diagnostics = format!("{error}\n{error:?}");
+    assert!(!diagnostics.contains("SENTINEL"));
+    assert_discover_versions_request(&peer.join().expect("the raw-TLS peer completes"));
+}
+
+#[test]
 fn every_typed_operation_has_a_per_exchange_options_variant() {
     let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
     let listener = LoopbackTcpListener::bind().expect("loopback peer binds");
@@ -394,7 +585,9 @@ fn production_client_accepts_client_request_message_extension_from_its_own_confi
 
 #[test]
 fn production_constructor_does_not_accept_a_caller_transport() {
-    trybuild::TestCases::new().compile_fail("tests/ui/production_transport_injection.rs");
+    let cases = trybuild::TestCases::new();
+    cases.compile_fail("tests/ui/production_transport_injection.rs");
+    cases.compile_fail("tests/ui/typed_response_raw_bytes.rs");
 }
 
 fn empty_client_configuration() -> ClientConfiguration {
@@ -497,6 +690,15 @@ fn transport_configuration(
     endpoint: Endpoint,
     timeouts: TimeoutPolicy,
 ) -> TransportConfig {
+    transport_configuration_with_request_limit(pki, endpoint, timeouts, 16 * 1024 * 1024)
+}
+
+fn transport_configuration_with_request_limit(
+    pki: &EphemeralPki,
+    endpoint: Endpoint,
+    timeouts: TimeoutPolicy,
+    max_request_bytes: usize,
+) -> TransportConfig {
     let client_identity = pki.client_identity();
     let certificates = client_identity
         .certificate_chain_der()
@@ -513,6 +715,7 @@ fn transport_configuration(
         ]))
         .tls_server_name(SERVER_NAME)
         .timeouts(timeouts)
+        .max_request_bytes(max_request_bytes)
         .build()
         .expect("ephemeral certificate inputs produce a valid transport configuration")
 }
