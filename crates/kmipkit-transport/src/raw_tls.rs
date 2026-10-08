@@ -51,6 +51,8 @@ pub struct RawTlsTransport {
     worker: Option<ClientWorker>,
     #[cfg(test)]
     observer: Option<SecretBufferObserver>,
+    #[cfg(test)]
+    response_allocation_observer: Option<ResponseAllocationObserver>,
 }
 
 impl RawTlsTransport {
@@ -75,6 +77,8 @@ impl RawTlsTransport {
             worker: None,
             #[cfg(test)]
             observer: None,
+            #[cfg(test)]
+            response_allocation_observer: None,
         })
     }
 
@@ -151,6 +155,8 @@ impl RawTlsTransport {
         let resolver = self.resolver.clone();
         let client_config = Arc::clone(self.tls.rustls_config_arc());
         let server_name = self.tls.server_name().clone();
+        #[cfg(test)]
+        let response_allocation_observer = self.response_allocation_observer.clone();
         let result = self.worker.as_ref().map(|worker| {
             worker.exchange(total_deadline, move |control| async move {
                 exchange_on_worker(
@@ -164,6 +170,8 @@ impl RawTlsTransport {
                     total_deadline,
                     max_response_bytes,
                     control,
+                    #[cfg(test)]
+                    response_allocation_observer,
                 )
                 .await
             })
@@ -186,10 +194,22 @@ impl RawTlsTransport {
 pub(crate) fn new_for_test(
     configuration: TransportConfig,
     observer: Option<SecretBufferObserver>,
-) -> impl Transport {
+) -> RawTlsTransport {
     let mut adapter = RawTlsTransport::new(configuration)
         .expect("the raw TLS contract supplies validated configuration");
     adapter.observer = observer;
+    adapter
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // The T028 integration target is the only caller.
+pub(crate) fn new_for_test_with_response_allocation_observer(
+    configuration: TransportConfig,
+    observer: ResponseAllocationObserver,
+) -> RawTlsTransport {
+    let mut adapter = RawTlsTransport::new(configuration)
+        .expect("the raw TLS contract supplies validated configuration");
+    adapter.response_allocation_observer = Some(observer);
     adapter
 }
 
@@ -215,6 +235,7 @@ async fn exchange_on_worker(
     total_deadline: Option<Instant>,
     max_response_bytes: usize,
     control: ExchangeControl,
+    #[cfg(test)] response_allocation_observer: Option<ResponseAllocationObserver>,
 ) -> Result<TransportResponse, TransportError> {
     let connect_deadline = earlier_deadline(
         deadline_for(policy.connect(), Instant::now()).map_err(|error| {
@@ -238,7 +259,12 @@ async fn exchange_on_worker(
     .await?;
 
     RawTlsConnection::new(tls_stream, policy, total_deadline, control)
-        .exchange(request.as_slice(), max_response_bytes)
+        .exchange(
+            request.as_slice(),
+            max_response_bytes,
+            #[cfg(test)]
+            response_allocation_observer,
+        )
         .await
 }
 
@@ -272,6 +298,7 @@ impl RawTlsConnection {
         mut self,
         request: &[u8],
         max_response_bytes: usize,
+        #[cfg(test)] response_allocation_observer: Option<ResponseAllocationObserver>,
     ) -> Result<TransportResponse, TransportError> {
         if !self.control.commit_dispatch() {
             return Err(safe_error(
@@ -314,14 +341,25 @@ impl RawTlsConnection {
                 )
             })?;
 
-        let mut response =
-            ResponseBuffer::with_header(response_len, &header[..]).map_err(|error| {
-                safe_error(
-                    self.control.delivery_state(),
-                    TransportCauseCategory::Other,
-                    error,
-                )
-            })?;
+        #[cfg(test)]
+        let allocation = if let Some(observer) = response_allocation_observer {
+            ResponseBuffer::with_header_and_allocation_observer_for_test(
+                response_len,
+                &header[..],
+                observer,
+            )
+        } else {
+            ResponseBuffer::with_header(response_len, &header[..])
+        };
+        #[cfg(not(test))]
+        let allocation = ResponseBuffer::with_header(response_len, &header[..]);
+        let mut response = allocation.map_err(|error| {
+            safe_error(
+                self.control.delivery_state(),
+                TransportCauseCategory::Other,
+                error,
+            )
+        })?;
         if response_len > RESPONSE_HEADER_LEN {
             tokio::io::AsyncReadExt::read_exact(
                 &mut self.io,
@@ -433,6 +471,19 @@ impl ResponseBuffer {
     }
 
     #[cfg(test)]
+    fn with_header_and_allocation_observer_for_test(
+        _length: usize,
+        _header: &[u8],
+        observer: ResponseAllocationObserver,
+    ) -> io::Result<Self> {
+        // Count the constructor attempt and stop before a regression can reserve an untrusted size.
+        observer.record_allocation_attempt();
+        Err(io::Error::other(
+            "response allocation intercepted by test observer",
+        ))
+    }
+
+    #[cfg(test)]
     fn with_header_and_observer_for_test(
         length: usize,
         header: &[u8],
@@ -445,6 +496,30 @@ impl ResponseBuffer {
 
     fn into_transport_response(mut self) -> TransportResponse {
         TransportResponse::new(std::mem::take(&mut self.bytes))
+    }
+}
+
+#[cfg(test)]
+#[derive(Clone, Default)]
+/// Counts response-buffer allocation attempts for one test adapter.
+pub(crate) struct ResponseAllocationObserver {
+    allocation_count: Arc<std::sync::atomic::AtomicUsize>,
+}
+
+#[cfg(test)]
+impl ResponseAllocationObserver {
+    pub(crate) fn new() -> Self {
+        Self::default()
+    }
+
+    fn record_allocation_attempt(&self) {
+        self.allocation_count
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    pub(crate) fn allocation_count(&self) -> usize {
+        self.allocation_count
+            .load(std::sync::atomic::Ordering::SeqCst)
     }
 }
 

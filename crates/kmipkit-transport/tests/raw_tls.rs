@@ -196,23 +196,12 @@ fn raw_tls_rejects_an_unaligned_response_length() {
 
 #[test]
 fn raw_tls_rejects_an_aligned_response_length_over_the_limit_before_body_read() {
-    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
-    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
-    let address = listener.local_addr();
-    let peer = spawn_peer(
-        listener.into_inner(),
-        server_config(&pki, true),
-        fixtures::REQUEST_SENTINEL.len(),
-        PeerAction::RespondBytes(&OVERSIZED_LENGTH_HEADER),
-    );
-    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
     let allocation_observer = raw_tls::ResponseAllocationObserver::new();
-    let mut adapter = raw_tls::new_for_test_with_response_allocation_observer(
-        config,
-        allocation_observer.clone(),
+    let (result, peer) = exchange_action_with_response_allocation_observer(
+        PeerAction::RespondBytes(&OVERSIZED_LENGTH_HEADER),
+        RESPONSE_LIMIT,
+        Some(allocation_observer.clone()),
     );
-    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
-    let peer = peer.join().expect("the bounded local TLS peer completes");
 
     assert_response_started(
         &result,
@@ -224,6 +213,32 @@ fn raw_tls_rejects_an_aligned_response_length_over_the_limit_before_body_read() 
         0,
         "the oversized header is rejected before a response allocation is attempted"
     );
+}
+
+#[test]
+fn raw_tls_response_allocation_observer_is_scoped_to_its_adapter() {
+    let allocation_observer = raw_tls::ResponseAllocationObserver::new();
+    let (observed_result, observed_peer) = exchange_action_with_response_allocation_observer(
+        PeerAction::RespondOnce,
+        RESPONSE_LIMIT,
+        Some(allocation_observer.clone()),
+    );
+
+    assert_response_started(
+        &observed_result,
+        "the test observer intercepts the bounded response allocation",
+    );
+    assert_peer_closed_after_response(&observed_peer);
+    assert_eq!(allocation_observer.allocation_count(), 1);
+
+    let (unobserved_result, unobserved_peer) =
+        exchange_action(PeerAction::RespondOnce, RESPONSE_LIMIT);
+    assert!(
+        unobserved_result.is_ok(),
+        "an adapter without the observer succeeds"
+    );
+    assert_peer_closed_after_response(&unobserved_peer);
+    assert_eq!(allocation_observer.allocation_count(), 1);
 }
 
 #[test]
@@ -486,6 +501,14 @@ fn exchange_action(
     action: PeerAction,
     max_response_bytes: usize,
 ) -> (Result<TransportResponse, TransportError>, PeerObservation) {
+    exchange_action_with_response_allocation_observer(action, max_response_bytes, None)
+}
+
+fn exchange_action_with_response_allocation_observer(
+    action: PeerAction,
+    max_response_bytes: usize,
+    allocation_observer: Option<raw_tls::ResponseAllocationObserver>,
+) -> (Result<TransportResponse, TransportError>, PeerObservation) {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
     let address = listener.local_addr();
@@ -496,7 +519,12 @@ fn exchange_action(
         action,
     );
     let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
-    let result = exchange_with_limit(config, fixtures::REQUEST_SENTINEL, None, max_response_bytes);
+    let mut adapter = if let Some(observer) = allocation_observer {
+        raw_tls::new_for_test_with_response_allocation_observer(config, observer)
+    } else {
+        raw_tls::new_for_test(config, None)
+    };
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, max_response_bytes);
     let peer = peer.join().expect("the bounded local TLS peer completes");
     assert!(peer.handshake_completed, "the mTLS handshake completes");
     assert_eq!(
