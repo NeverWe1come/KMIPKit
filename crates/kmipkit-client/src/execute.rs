@@ -2132,54 +2132,42 @@ fn response_outcome(
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
-            Ok(pending_outcome_if_pending(
+            operation_outcome(
                 ClientOperation::DiscoverVersions,
-                response.result(),
+                response.result().clone(),
                 item,
-            )?
-            .map_or(
                 ClientBatchOutcome::Completed(response),
-                ClientBatchOutcome::Pending,
-            ))
+            )
         }
         CREATE_OPERATION => {
             let response =
                 CreateResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
-            Ok(
-                pending_outcome_if_pending(ClientOperation::Create, response.result(), item)?
-                    .map_or(
-                        ClientBatchOutcome::CreateCompleted(response),
-                        ClientBatchOutcome::Pending,
-                    ),
+            operation_outcome(
+                ClientOperation::Create,
+                response.result().clone(),
+                item,
+                ClientBatchOutcome::CreateCompleted(response),
             )
         }
         CREATE_KEY_PAIR_OPERATION => {
             let response = CreateKeyPairResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
-            Ok(
-                pending_outcome_if_pending(
-                    ClientOperation::CreateKeyPair,
-                    response.result(),
-                    item,
-                )?
-                .map_or(
-                    ClientBatchOutcome::CreateKeyPairCompleted(response),
-                    ClientBatchOutcome::Pending,
-                ),
+            operation_outcome(
+                ClientOperation::CreateKeyPair,
+                response.result().clone(),
+                item,
+                ClientBatchOutcome::CreateKeyPairCompleted(response),
             )
         }
         CREATE_SPLIT_KEY_OPERATION => {
             let response = CreateSplitKeyResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
-            Ok(pending_outcome_if_pending(
+            operation_outcome(
                 ClientOperation::CreateSplitKey,
-                response.result(),
+                response.result().clone(),
                 item,
-            )?
-            .map_or(
                 ClientBatchOutcome::CreateSplitKeyCompleted(response),
-                ClientBatchOutcome::Pending,
-            ))
+            )
         }
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
@@ -2211,15 +2199,16 @@ fn pending_outcome(
     })
 }
 
-fn pending_outcome_if_pending(
+fn operation_outcome(
     operation: ClientOperation,
-    result: &KmipOperationResult,
+    result: KmipOperationResult,
     item: ResponseBatchItemView<'_>,
-) -> Result<Option<PendingOutcome>, ProtocolError> {
+    completed: ClientBatchOutcome,
+) -> Result<ClientBatchOutcome, ProtocolError> {
     if result.status().raw() == RESULT_STATUS_PENDING {
-        pending_outcome(operation, result.clone(), item).map(Some)
+        pending_outcome(operation, result, item).map(ClientBatchOutcome::Pending)
     } else {
-        Ok(None)
+        Ok(completed)
     }
 }
 
