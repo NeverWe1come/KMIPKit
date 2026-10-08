@@ -141,6 +141,11 @@ flakiness.
 
 Source Green commit: `78c65fb68df09c9136383e25009328e746b9be41`.
 
+Independent QA approved T032 with no blocking gap. The review caveat is that
+`TransportCauseCategory` has no `InvalidInput` variant: the adapter represents
+an unrepresentable finite phase as sanitized `Other`/`NotSent`, while the
+lower-level `DeadlineIo` reports `io::ErrorKind::InvalidInput`.
+
 `exchange_with_options` captures `exchange_started` at public entry and checks
 the bounded connect, read, write, and total durations with
 `Instant::checked_add` before lazy worker creation. The same absolute total
@@ -190,3 +195,39 @@ Final verification:
 The source commit does not change public API or TLS policy. The T031 cases
 previously recorded as Red now pass against T032 Green. No cross-platform run
 was performed for this checkpoint.
+
+## T033 Refactor verification
+
+Source Refactor commit: `977db24677c30b46857fc68f4a95fbc13e5a703b`.
+
+The refactor removes an unnecessary `Option::map` plus nested
+`Option<Result<...>>` match from `exchange_with_options`. After lazy worker
+startup succeeds, it extracts the worker with `ok_or_else`, retaining the same
+sanitized impossible-`None`/`NotSent` fallback, then directly maps
+`worker.exchange` errors through `worker_error`. The identical captured
+`total_deadline` is passed through. No connection selection, handshake,
+dispatch, request bytes, retry, or delivery-state behavior changed.
+
+Baseline commands before editing:
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --test raw_tls raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake --offline -- --exact` | 1 passed, 0 failed |
+| `cargo test -p kmipkit-transport --test raw_tls raw_tls_total_deadline_covers_lazy_worker_readiness --offline -- --exact` | 1 passed, 0 failed |
+| `cargo test -p kmipkit-transport --test raw_tls raw_tls_reconnects_after_a_failed_response_without_replaying_the_first_request --offline -- --exact` | 1 passed, 0 failed |
+| `cargo test -p kmipkit-transport --test raw_tls --offline -- --test-threads=1` | 81 passed, 0 failed |
+| `cargo test -p kmipkit-transport --test timeout_delivery --offline -- --test-threads=1` | 56 passed, 0 failed |
+
+Post-refactor focused and T031 commands produced the same passing results:
+each focused case passed 1/1, and the serial `raw_tls` and `timeout_delivery`
+targets passed 81/81 and 56/56.
+
+Final Refactor verification:
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --all-targets --all-features --offline --quiet -- --test-threads=1` | Exit 0; all 268 tests passed across 12 test binaries |
+| `cargo clippy -p kmipkit-transport --all-targets --all-features --offline -- -D warnings` | Passed |
+| `cargo check -p kmipkit-transport --offline` | Passed |
+| `cargo fmt --all -- --check` | Passed |
+| `git diff --check` | Passed |
