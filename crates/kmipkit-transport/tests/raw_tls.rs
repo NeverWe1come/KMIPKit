@@ -527,6 +527,44 @@ fn raw_tls_has_no_tcp_side_effect_while_an_uncanceled_lookup_is_pending() {
 }
 
 #[test]
+fn raw_tls_candidate_observer_records_success_before_request_dispatch() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        PeerAction::RespondOnce,
+    );
+    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
+    let observer = raw_tls::CandidateEventObserver::new();
+    let mut adapter = raw_tls::new_for_test_with_candidate_observer(
+        config,
+        fixed_resolver(vec![address]),
+        observer.clone(),
+    );
+
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    let peer = peer.join().expect("the local TLS peer thread completes");
+
+    assert!(result.is_ok(), "the verified TLS exchange succeeds");
+    assert!(peer.handshake_completed, "the TLS handshake completes");
+    assert!(
+        peer.request_bytes.as_slice() == fixtures::REQUEST_SENTINEL,
+        "the peer receives the caller bytes unchanged"
+    );
+    assert_eq!(
+        observer.events(),
+        vec![
+            raw_tls::CandidateEvent::HandshakeSucceeded(address),
+            raw_tls::CandidateEvent::RequestDispatch(address),
+        ],
+        "the verified candidate is recorded before dispatch"
+    );
+}
+
+#[test]
 fn raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake() {
     let trusted_pki = EphemeralPki::generate().expect("the trusted test PKI is generated");
     let rejected_pki = EphemeralPki::generate().expect("the untrusted test PKI is generated");
@@ -1310,11 +1348,12 @@ fn run_peer(
                 }
             }
         }
-        PeerAction::CloseWithoutResponse | PeerAction::CloseAfterHandshake => {}
+        PeerAction::CloseWithoutResponse
+        | PeerAction::CloseAfterHandshake
+        | PeerAction::HoldBeforeHandshake => {}
         PeerAction::HoldAfterRequest | PeerAction::ReadPrefixThenHold(_) => {
             thread::sleep(Duration::from_millis(400));
         }
-        PeerAction::HoldBeforeHandshake => {}
     }
     observation
 }

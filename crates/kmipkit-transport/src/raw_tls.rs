@@ -27,6 +27,11 @@ use crate::{
 };
 #[cfg(test)]
 use std::thread::JoinHandle;
+#[cfg(test)]
+use std::{
+    net::SocketAddr,
+    sync::{Mutex, MutexGuard},
+};
 
 #[cfg(test)]
 type WorkerSpawnerForTest =
@@ -63,6 +68,8 @@ pub struct RawTlsTransport {
     response_allocation_observer: Option<ResponseAllocationObserver>,
     #[cfg(test)]
     worker_spawner: Option<WorkerSpawnerForTest>,
+    #[cfg(test)]
+    candidate_event_observer: Option<CandidateEventObserver>,
 }
 
 impl RawTlsTransport {
@@ -91,6 +98,8 @@ impl RawTlsTransport {
             response_allocation_observer: None,
             #[cfg(test)]
             worker_spawner: None,
+            #[cfg(test)]
+            candidate_event_observer: None,
         })
     }
 
@@ -176,6 +185,8 @@ impl RawTlsTransport {
         let server_name = self.tls.server_name().clone();
         #[cfg(test)]
         let response_allocation_observer = self.response_allocation_observer.clone();
+        #[cfg(test)]
+        let candidate_event_observer = self.candidate_event_observer.clone();
         let result = self.worker.as_ref().map(|worker| {
             worker.exchange(total_deadline, move |control| async move {
                 exchange_on_worker(
@@ -191,6 +202,8 @@ impl RawTlsTransport {
                     control,
                     #[cfg(test)]
                     response_allocation_observer,
+                    #[cfg(test)]
+                    candidate_event_observer,
                 )
                 .await
             })
@@ -246,6 +259,18 @@ pub(crate) fn new_for_test_with_lifecycle_controls(
 }
 
 #[cfg(test)]
+#[allow(dead_code)] // The T031 raw TLS target observes candidate-to-dispatch ordering.
+pub(crate) fn new_for_test_with_candidate_observer(
+    configuration: TransportConfig,
+    resolver: Resolver,
+    observer: CandidateEventObserver,
+) -> RawTlsTransport {
+    let mut adapter = new_for_test_with_resolver(configuration, None, resolver);
+    adapter.candidate_event_observer = Some(observer);
+    adapter
+}
+
+#[cfg(test)]
 #[allow(dead_code)] // The T028 integration target is the only caller.
 pub(crate) fn new_for_test_with_response_allocation_observer(
     configuration: TransportConfig,
@@ -280,6 +305,7 @@ async fn exchange_on_worker(
     max_response_bytes: usize,
     control: ExchangeControl,
     #[cfg(test)] response_allocation_observer: Option<ResponseAllocationObserver>,
+    #[cfg(test)] candidate_event_observer: Option<CandidateEventObserver>,
 ) -> Result<TransportResponse, TransportError> {
     let connect_deadline = earlier_deadline(
         deadline_for(policy.connect(), Instant::now()).map_err(|error| {
@@ -299,6 +325,8 @@ async fn exchange_on_worker(
         server_name,
         connect_deadline,
         control.clone(),
+        #[cfg(test)]
+        candidate_event_observer.clone(),
     )
     .await?;
 
@@ -308,6 +336,8 @@ async fn exchange_on_worker(
             max_response_bytes,
             #[cfg(test)]
             response_allocation_observer,
+            #[cfg(test)]
+            candidate_event_observer,
         )
         .await
 }
@@ -343,6 +373,7 @@ impl RawTlsConnection {
         request: &[u8],
         max_response_bytes: usize,
         #[cfg(test)] response_allocation_observer: Option<ResponseAllocationObserver>,
+        #[cfg(test)] candidate_event_observer: Option<CandidateEventObserver>,
     ) -> Result<TransportResponse, TransportError> {
         if !self.control.commit_dispatch() {
             return Err(safe_error(
@@ -350,6 +381,11 @@ impl RawTlsConnection {
                 TransportCauseCategory::Timeout,
                 io::Error::new(io::ErrorKind::Interrupted, "request dispatch was canceled"),
             ));
+        }
+
+        #[cfg(test)]
+        if let Some(observer) = candidate_event_observer {
+            observer.record_request_dispatch_for_selected_candidate();
         }
 
         tokio::io::AsyncWriteExt::write_all(&mut self.io, request)
@@ -416,6 +452,7 @@ impl RawTlsConnection {
     }
 }
 
+#[allow(clippy::too_many_arguments)] // The cfg(test) candidate observer is per adapter.
 async fn connect_and_handshake(
     host: &str,
     port: u16,
@@ -424,6 +461,7 @@ async fn connect_and_handshake(
     server_name: ServerName<'static>,
     deadline: Option<Instant>,
     control: ExchangeControl,
+    #[cfg(test)] candidate_event_observer: Option<CandidateEventObserver>,
 ) -> Result<TlsStream<TcpStream>, TransportError> {
     let mut canceled = control.subscribe_cancel();
     let addresses = resolver
@@ -433,6 +471,8 @@ async fn connect_and_handshake(
 
     let mut last_connect_error = None;
     let mut connected_stream = None;
+    #[cfg(test)]
+    let mut connected_address = None;
     for address in addresses.iter().copied() {
         let result = tokio::select! {
             biased;
@@ -446,6 +486,10 @@ async fn connect_and_handshake(
         };
         match result {
             Ok(stream) => {
+                #[cfg(test)]
+                {
+                    connected_address = Some(address);
+                }
                 connected_stream = Some(stream);
                 break;
             }
@@ -466,13 +510,21 @@ async fn connect_and_handshake(
         biased;
         () = wait_for_cancel(&mut canceled) => Err(canceled_error(control.delivery_state())),
         () = wait_until(deadline) => Err(timeout_error(control.delivery_state())),
-        result = connector.connect(server_name, stream) => result.map_err(|_| {
-            safe_error(
-                control.delivery_state(),
-                TransportCauseCategory::Tls,
-                io::Error::other("TLS handshake failed"),
-            )
-        }),
+        result = connector.connect(server_name, stream) => {
+            #[cfg(test)]
+            if let (Some(observer), Some(address)) =
+                (&candidate_event_observer, connected_address)
+            {
+                observer.record_handshake_result(address, result.is_ok());
+            }
+            result.map_err(|_| {
+                safe_error(
+                    control.delivery_state(),
+                    TransportCauseCategory::Tls,
+                    io::Error::other("TLS handshake failed"),
+                )
+            })
+        },
     }
 }
 
@@ -540,6 +592,65 @@ impl ResponseBuffer {
 
     fn into_transport_response(mut self) -> TransportResponse {
         TransportResponse::new(std::mem::take(&mut self.bytes))
+    }
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // The T031 source-including raw TLS target consumes these events.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum CandidateEvent {
+    HandshakeFailed(SocketAddr),
+    HandshakeSucceeded(SocketAddr),
+    RequestDispatch(SocketAddr),
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // The T031 source-including raw TLS target consumes these events.
+#[derive(Default)]
+struct CandidateEventState {
+    events: Vec<CandidateEvent>,
+    selected_candidate: Option<SocketAddr>,
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // The T031 source-including raw TLS target consumes these events.
+#[derive(Clone, Default)]
+pub(crate) struct CandidateEventObserver {
+    state: Arc<Mutex<CandidateEventState>>,
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // The T031 source-including raw TLS target consumes these events.
+impl CandidateEventObserver {
+    pub(crate) fn new() -> Self {
+        Self::default()
+    }
+
+    pub(crate) fn events(&self) -> Vec<CandidateEvent> {
+        self.lock_state().events.clone()
+    }
+
+    fn record_handshake_result(&self, address: SocketAddr, succeeded: bool) {
+        let mut state = self.lock_state();
+        state.selected_candidate = succeeded.then_some(address);
+        state.events.push(if succeeded {
+            CandidateEvent::HandshakeSucceeded(address)
+        } else {
+            CandidateEvent::HandshakeFailed(address)
+        });
+    }
+
+    fn record_request_dispatch_for_selected_candidate(&self) {
+        let mut state = self.lock_state();
+        if let Some(address) = state.selected_candidate {
+            state.events.push(CandidateEvent::RequestDispatch(address));
+        }
+    }
+
+    fn lock_state(&self) -> MutexGuard<'_, CandidateEventState> {
+        self.state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 }
 
