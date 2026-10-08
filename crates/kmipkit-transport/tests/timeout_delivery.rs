@@ -856,6 +856,7 @@ fn https_connect_deadline_ignores_a_late_blocked_resolver_result() {
         .expect("the connect deadline expires while the native resolver is held");
     let error = result.expect_err("the unresolved lookup reaches its connect deadline");
     assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
 
     gate.release();
     gate.wait_until_returned();
@@ -913,6 +914,43 @@ fn https_unresolved_resolver_sends_no_early_bytes_then_succeeds_after_release() 
 }
 
 #[test]
+fn https_new_uses_the_system_resolver_for_a_loopback_ip_endpoint() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let configuration = https_client_configuration_for_endpoint(
+        &pki,
+        format!("https://127.0.0.1:{}", address.port()),
+        Some(HTTPS_SERVER_NAME),
+    );
+    let (peer, connected) = spawn_https_peer(
+        listener.into_inner(),
+        https_server_config(&pki, &pki),
+        Some(complete_http_response(b"done")),
+        None,
+    );
+    let mut adapter = https::HttpsTransport::new(configuration)
+        .expect("the numeric loopback endpoint builds a verified HTTPS transport");
+
+    let response = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the production system resolver resolves the loopback IP endpoint");
+    assert_eq!(response.as_bytes(), b"done");
+    connected
+        .recv_timeout(Duration::from_secs(1))
+        .expect("the system-resolver-backed transport reaches the HTTPS peer");
+    let peer = peer
+        .join()
+        .expect("the bounded system-resolver peer completes");
+    assert!(peer.handshake_completed);
+    assert_eq!(peer.requests.len(), 1);
+    assert_eq!(
+        http_request_body(&peer.requests[0]),
+        fixtures::REQUEST_SENTINEL
+    );
+}
+
+#[test]
 fn https_connect_deadline_during_tls_handshake_is_not_sent() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the stalled TLS peer binds loopback");
@@ -928,6 +966,7 @@ fn https_connect_deadline_during_tls_handshake_is_not_sent() {
         .exchange_with_options(fixtures::REQUEST_SENTINEL, 64, &options)
         .expect_err("the stalled TLS handshake exceeds the connect deadline");
     assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
     accepted
         .recv_timeout(Duration::from_secs(1))
         .expect("the stalled peer accepted the TCP connection");
@@ -959,45 +998,48 @@ fn https_tries_resolver_candidates_in_order_and_dispatches_only_after_trusted_tl
     let second_address = second_listener.local_addr();
     let configuration = https_client_configuration(&client_pki, first_address.port());
     let resolver = https_resolver(vec![first_address, second_address]);
-    let (attempt_tx, attempt_rx) = mpsc::sync_channel(2);
+    let (release_first_handshake, first_handshake_gate) = mpsc::sync_channel(1);
     let (first_peer, first_connected) = spawn_https_peer(
         first_listener.into_inner(),
         https_server_config(&untrusted_server_pki, &client_pki),
         None,
-        Some((attempt_tx.clone(), 1)),
+        Some(first_handshake_gate),
     );
     let (second_peer, second_connected) = spawn_https_peer(
         second_listener.into_inner(),
         https_server_config(&client_pki, &client_pki),
         Some(complete_http_response(b"done")),
-        Some((attempt_tx, 2)),
+        None,
     );
-    let mut adapter = https::new_for_test_with_resolver(configuration, None, resolver);
+    let adapter = https::new_for_test_with_resolver(configuration, None, resolver);
+    let (result_tx, result_rx) = mpsc::sync_channel(1);
 
-    let response = adapter
-        .exchange(fixtures::REQUEST_SENTINEL, 64)
-        .expect("the later trusted TLS candidate completes the HTTPS exchange");
-    assert_eq!(response.as_bytes(), b"done");
+    thread::spawn(move || {
+        let mut adapter = adapter;
+        let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+        let _ = result_tx.send(result);
+    });
     first_connected
         .recv_timeout(Duration::from_secs(1))
-        .expect("the first resolver candidate is attempted first");
+        .expect("the first resolver candidate reaches TCP");
+    assert!(
+        matches!(
+            second_connected.recv_timeout(Duration::from_millis(200)),
+            Err(mpsc::RecvTimeoutError::Timeout)
+        ),
+        "the second TCP candidate cannot start while the first TLS handshake is held"
+    );
+    release_first_handshake
+        .send(())
+        .expect("the first untrusted TLS handshake is released");
+    let response = result_rx
+        .recv_timeout(Duration::from_secs(3))
+        .expect("the candidate loop advances after the first TLS failure")
+        .expect("the later trusted TLS candidate completes the HTTPS exchange");
+    assert_eq!(response.as_bytes(), b"done");
     second_connected
         .recv_timeout(Duration::from_secs(1))
-        .expect("the trusted candidate is attempted after the untrusted one");
-    assert_eq!(
-        attempt_rx
-            .recv_timeout(Duration::from_secs(1))
-            .expect("the first candidate acceptance is recorded"),
-        1,
-        "resolver candidates start in returned order"
-    );
-    assert_eq!(
-        attempt_rx
-            .recv_timeout(Duration::from_secs(1))
-            .expect("the later candidate acceptance is recorded"),
-        2,
-        "the second candidate starts only after the first TLS failure"
-    );
+        .expect("the trusted candidate starts after the first TLS failure");
 
     let first_peer = first_peer
         .join()
@@ -1054,6 +1096,10 @@ fn https_total_deadline_after_partial_body_invalidates_and_explicitly_reconnects
     assert_eq!(
         first_error.delivery_state(),
         RequestDeliveryState::ResponseStarted
+    );
+    assert_eq!(
+        first_error.cause_category(),
+        TransportCauseCategory::Timeout
     );
     assert!(
         !https::has_cached_connection_for_test(&adapter),
@@ -1146,24 +1192,40 @@ fn https_resolver(addresses: Vec<SocketAddr>) -> resolver::Resolver {
 }
 
 fn https_client_configuration(pki: &EphemeralPki, port: u16) -> config::TransportConfig {
+    https_client_configuration_for_endpoint(
+        pki,
+        format!("https://{HTTPS_SERVER_NAME}:{port}"),
+        None,
+    )
+}
+
+fn https_client_configuration_for_endpoint(
+    pki: &EphemeralPki,
+    endpoint: String,
+    tls_server_name: Option<&str>,
+) -> config::TransportConfig {
     let client_chain = pki
         .client_identity()
         .certificate_chain_der()
         .into_iter()
         .map(<[u8]>::to_vec)
         .collect();
-    config::TransportConfig::builder(config::Endpoint::https(format!(
-        "https://{HTTPS_SERVER_NAME}:{port}"
-    )))
-    .client_identity(config::ClientIdentity::new(
-        config::CertificateInput::from_der(client_chain),
-        config::PrivateKeyInput::from_der(pki.client_identity().private_key_der().to_vec()),
-    ))
-    .trust_source(config::TrustSource::certificate_authorities(vec![
-        config::CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
-    ]))
-    .build()
-    .expect("the client identity and server trust inputs build an HTTPS config")
+    let builder = config::TransportConfig::builder(config::Endpoint::https(endpoint));
+    let builder = if let Some(tls_server_name) = tls_server_name {
+        builder.tls_server_name(tls_server_name)
+    } else {
+        builder
+    };
+    builder
+        .client_identity(config::ClientIdentity::new(
+            config::CertificateInput::from_der(client_chain),
+            config::PrivateKeyInput::from_der(pki.client_identity().private_key_der().to_vec()),
+        ))
+        .trust_source(config::TrustSource::certificate_authorities(vec![
+            config::CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .build()
+        .expect("the client identity and server trust inputs build an HTTPS config")
 }
 
 fn https_server_config(server_pki: &EphemeralPki, client_pki: &EphemeralPki) -> Arc<ServerConfig> {
@@ -1204,7 +1266,7 @@ fn spawn_https_peer(
     listener: TcpListener,
     configuration: Arc<ServerConfig>,
     response: Option<Vec<u8>>,
-    attempt_event: Option<(mpsc::SyncSender<u8>, u8)>,
+    handshake_gate: Option<mpsc::Receiver<()>>,
 ) -> (JoinHandle<HttpsPeerObservation>, mpsc::Receiver<()>) {
     let (connected_tx, connected_rx) = mpsc::sync_channel(1);
     let peer = thread::spawn(move || {
@@ -1212,8 +1274,10 @@ fn spawn_https_peer(
             return HttpsPeerObservation::default();
         };
         let _ = connected_tx.send(());
-        if let Some((events, candidate)) = attempt_event {
-            let _ = events.send(candidate);
+        if let Some(handshake_gate) = handshake_gate
+            && handshake_gate.recv_timeout(HTTPS_PEER_TIMEOUT).is_err()
+        {
+            return HttpsPeerObservation::default();
         }
         let Ok(mut tls) = finish_https_server_handshake(stream, configuration) else {
             return HttpsPeerObservation::default();

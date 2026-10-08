@@ -19,14 +19,22 @@ the production HTTPS adapter and use a gated injected resolver plus local TLS
 - A peer accepts TCP and holds the TLS handshake after receiving ClientHello.
   The connect deadline returns `NotSent`; TLS never completes and no HTTP/KMIP
   request is dispatched.
-- Two resolver candidates are recorded in returned order. The first endpoint's
-  server certificate is untrusted and receives no HTTP request; the second
-  endpoint completes verified TLS and receives the one request.
+- `HttpsTransport::new` exercises the production system resolver with an IPv4
+  loopback endpoint and the configured TLS server-name override. The mutual-TLS
+  exchange succeeds and the peer captures one request.
+- Two resolver candidates are attempted in returned order. The first endpoint
+  accepts TCP, then holds its untrusted TLS handshake. While it is held, the
+  second listener observes no TCP connection. Releasing the handshake lets
+  certificate verification fail; only then does the trusted second endpoint
+  complete TLS and receive the one request.
 - A total deadline expires after the peer sends HTTP headers and only part of
   the declared body. The error retains `ResponseStarted`, the connection is
   absent from the adapter cache, and a later explicit call opens a second
   connection. The two connections carry distinct `first-call` and
   `second-call` bodies, proving the first call was not replayed.
+- The resolver-deadline, stalled-handshake, and partial-body total-deadline
+  errors each assert `TransportCauseCategory::Timeout` alongside delivery
+  evidence.
 
 Existing tests in this target continue to cover generic blocked
 `SendRequest::ready()`, read/write/flush deadlines, queued deadlines, dispatch
@@ -34,18 +42,19 @@ and response-observation races, and delivery-state transitions.
 
 ## Red Evidence
 
-All five new integration tests passed against the implementation present before
-T044. This task found no failing baseline assertion, so no product failure was
-manufactured. The tests add HTTPS/TLS integration evidence around already
-implemented timeout and retry-inhibition behavior.
+All six HTTPS integration tests passed against the implementation present
+before T044. This task found no failing baseline assertion, so no product
+failure was manufactured. The tests add HTTPS/TLS integration evidence around
+already implemented timeout, resolver, candidate-order, and retry-inhibition
+behavior.
 
 ## Verification
 
 | Command | Result |
 | --- | --- |
-| `cargo test -p kmipkit-transport --test timeout_delivery https_ --offline -- --test-threads=1` | Passed: 5/5 |
-| `cargo test -p kmipkit-transport --test timeout_delivery https_ --offline` | Passed: 5/5 |
-| `cargo test -p kmipkit-transport --test timeout_delivery --offline -- --test-threads=1` | Passed: 78/78 |
+| `cargo test -p kmipkit-transport --test timeout_delivery https_ --offline -- --test-threads=1` | Passed: 6/6 |
+| `cargo test -p kmipkit-transport --test timeout_delivery https_ --offline` | Passed: 6/6 |
+| `cargo test -p kmipkit-transport --test timeout_delivery --offline -- --test-threads=1` | Passed: 79/79 |
 | `cargo clippy -p kmipkit-transport --all-targets --all-features --offline -- -D warnings` | Passed |
 | `cargo fmt --all --check` | Passed |
 | `git diff --check` | Passed |
