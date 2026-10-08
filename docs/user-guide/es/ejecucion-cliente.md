@@ -1,9 +1,8 @@
 # Ejecución tipada del cliente
 
-Esta guía describe la base de ejecución actual de KMIPKIT-0007. No es una guía
-para conectarse a un servidor: esta funcionalidad no proporciona un
-constructor de producción para `Client` ni un backend TCP/TLS o HTTPS. La
-única implementación de transporte es un doble determinista para pruebas.
+Esta guía describe la base de ejecución tipada introducida por KMIPKIT-0007 y
+las API actuales de operaciones. Para configurar una conexión de producción,
+consulta la [guía de transportes TLS y HTTPS](transportes-produccion.md).
 
 ## Límite de peticiones tipadas
 
@@ -28,11 +27,11 @@ compatibilidad retroactiva entre versiones principales conforme a KMIP §9.16.
 Consulta [ADR-0002](../../adr/0002-kmip-21-release-scope.md) para conocer el
 alcance de la versión.
 
-Aunque `Client::execute` y los tipos de petición están documentados como API
-de Rust, las aplicaciones no pueden construir un `Client` de producción con
-esta funcionalidad. El doble interno solo se usa en pruebas deterministas de
-ejecución. Aquí no se ofrece un adaptador TLS/HTTPS ni disponibilidad para
-servidores reales.
+`Client::new` construye un cliente de producción a partir de una configuración
+inmutable del cliente y un `TransportConfig` validado. Acepta TTLV sobre TLS
+directo o TTLV sobre HTTPS/HTTP 1.1; no acepta transportes implementados por el
+llamador ni bytes de petición sin procesar. Consulta la [guía de transporte](transportes-produccion.md)
+para configurar la confianza, los plazos y el comportamiento de las conexiones.
 
 ## Credenciales y capacidad de atestación
 
@@ -60,9 +59,9 @@ Los constructores síncronos y asíncronos de la cabecera Request emiten
 una Credential Attestation. Esto anuncia únicamente capacidad de construcción:
 no genera ni verifica evidencia de atestación, no envía una Credential ni predice si el
 servidor la aceptará. No existe una opción para cambiarlo en cada petición. El
-valor se observa en el intercambio capturado con el transporte de prueba; esta
-funcionalidad aún no ofrece un constructor de cliente de producción ni un
-transporte para servidores reales.
+El indicador solo anuncia capacidad de construcción de la API. No envía una
+Credential, no genera ni verifica evidencia y no predice si el servidor la
+aceptará.
 
 KMIPKit no registra el contenido de las Credential; Debug, Display y los
 diagnósticos de validación también lo redactan. `SecretText` y `SecretBytes`
@@ -161,10 +160,10 @@ recursos, no campos de la cabecera KMIP.
 
 Discover Versions no se clasifica como una respuesta probablemente grande,
 por lo que esta API no incluye el campo Maximum Response Size visible para el
-servidor. Ese campo es distinto del límite local de bytes. Las futuras
-especificaciones de operaciones deben evaluar por separado el tamaño de sus
-respuestas. Esta funcionalidad tampoco ofrece límites de conexión, lectura,
-escritura o plazo total de red porque no hay backend de producción.
+servidor. Ese campo es distinto del límite local de bytes. Las especificaciones
+de operaciones evalúan por separado el tamaño de sus respuestas. La [guía de
+transporte](transportes-produccion.md) documenta los plazos de conexión,
+escritura, lectura e intercambio completo.
 
 ## Errores, estado de entrega y redacción
 
@@ -231,16 +230,15 @@ de respuesta se reasigne tras almacenar bytes o limpiar las asignaciones
 anteriores antes de liberarlas, tanto en éxito como en error. Estas garantías no cubren capacidad libre ni asignaciones anteriores salvo que se limpien antes de crecer. Tampoco cubren copias del llamador ni copias externas de TLS, del sistema operativo o de bibliotecas. Consulta [ADR-0014](../../adr/0014-public-transport-exchange-contract.md)
 para conocer el contrato exacto.
 
-Una funcionalidad TLS/HTTPS aprobada por separado será responsable de crear
-clientes a partir de configuración de transporte validada y no deberá
-exponer la inyección arbitraria de transportes. La
-[arquitectura de transporte](../../architecture/transport-security.md)
-describe el perfil TLS y HTTPS previsto; no confirma que exista un adaptador
-disponible actualmente.
+Los adaptadores de producción TLS y HTTPS usan la configuración de transporte
+validada que se describe en la [guía de transportes](transportes-produccion.md).
+La [arquitectura de transporte](../../architecture/transport-security.md)
+registra su política de seguridad y el ciclo de vida de las conexiones.
 
 ## Guías y decisiones relacionadas
 
 - [Inspeccionar mensajes KMIP](modelo-mensaje.md)
+- [Transportes de producción TLS y HTTPS](transportes-produccion.md)
 - [Arquitectura de la API pública](../../architecture/public-api.md)
 - [Guía rápida de revisión para operaciones asíncronas KMIP 2.1](../../../specs/009-asynchronous-operations/quickstart.md)
 - [ADR-0002: alcance KMIP 2.1](../../adr/0002-kmip-21-release-scope.md)

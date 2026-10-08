@@ -1,9 +1,8 @@
 # Typed client execution
 
-This guide describes the current KMIPKIT-0007 execution foundation. It is not
-a live-server setup guide: this feature provides no production `Client`
-constructor and no TCP/TLS or HTTPS backend. The only transport
-implementation is a deterministic test fake.
+This guide describes the typed execution foundation introduced by
+KMIPKIT-0007 and its current operation APIs. For configuring a production
+connection, see the [TLS and HTTPS transport guide](production-transports.md).
 
 ## Typed request boundary
 
@@ -29,10 +28,11 @@ claim that the implementation provides KMIP §9.16 same-major backward
 compatibility. See [ADR-0002](../../adr/0002-kmip-21-release-scope.md) for the release
 scope.
 
-Although `Client::execute` and the request types are documented Rust APIs,
-applications cannot construct a production `Client` in this feature. The
-internal fake exists for deterministic execution tests only. No TLS/HTTPS
-adapter or live-server readiness is provided here.
+`Client::new` constructs a production client from an immutable client
+configuration and a validated `TransportConfig`. It accepts raw TTLV over TLS
+or TTLV over HTTPS/HTTP 1.1; it does not accept caller-implemented transports
+or raw request bytes. See the [transport guide](production-transports.md) for
+trust configuration, timeouts, and connection behavior.
 
 ## Credentials and attestation capability
 
@@ -59,9 +59,9 @@ Synchronous and asynchronous Request Header builders emit
 Attestation Credential. This
 advertises construction capability only: it does not generate or verify
 attestation evidence, submit a Credential, or predict server acceptance. There
-is no per-request override. The value appears in the captured fake-transport
-exchange; this feature still has no production client constructor or live
-server transport.
+is no per-request override. The indicator reports API construction capability
+only. It does not submit a Credential, generate or verify evidence, or predict
+server acceptance.
 
 KMIPKit does not log Credential contents; Debug, Display, and validation
 diagnostics redact them. `SecretText` and `SecretBytes` zeroize initialized
@@ -150,10 +150,9 @@ any one value. These are local resource limits, not KMIP header fields.
 
 Discover Versions is not classified as a likely-large response, so this API
 does not include the peer-visible Maximum Response Size field. That field is
-distinct from the local byte cap. Future operation specifications must assess
-their response sizes separately. This feature also exposes no connect, read,
-write, or total network deadlines because no production I/O backend is
-available.
+distinct from the local byte cap. Operation specifications assess their
+response sizes separately. Production connect, write, read, and total
+deadlines are described in the [transport guide](production-transports.md).
 
 ## Errors, delivery state, and redaction
 
@@ -218,15 +217,15 @@ copies, or external TLS/operating-system/library copies. See
 [ADR-0014](../../adr/0014-public-transport-exchange-contract.md) for the exact
 contract.
 
-A separately approved TLS/HTTPS feature will own construction from validated
-transport configuration and must not expose arbitrary transport injection.
-The [transport architecture](../../architecture/transport-security.md) records
-the intended TLS and HTTPS profile; it is not evidence that an adapter is
-available today.
+The production TLS and HTTPS adapters use the validated transport
+configuration described in the [transport guide](production-transports.md).
+The [transport architecture](../../architecture/transport-security.md)
+records their security policy and connection lifecycle.
 
 ## Related guides and decisions
 
 - [Inspecting KMIP messages](message-model.md)
+- [Production TLS and HTTPS transports](production-transports.md)
 - [Public API architecture](../../architecture/public-api.md)
 - [KMIP 2.1 asynchronous operations review quickstart](../../../specs/009-asynchronous-operations/quickstart.md)
 - [ADR-0002: KMIP 2.1 release scope](../../adr/0002-kmip-21-release-scope.md)
