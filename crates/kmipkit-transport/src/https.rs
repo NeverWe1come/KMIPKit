@@ -64,6 +64,15 @@ pub struct HttpsTransport {
     driver_abort_observer: Option<mpsc::SyncSender<()>>,
     #[cfg(test)]
     cancel_exchange: Option<tokio::sync::oneshot::Receiver<()>>,
+    #[cfg(test)]
+    driver_cleanup_gate: Option<DriverCleanupGateForTest>,
+}
+
+#[cfg(test)]
+pub(crate) struct DriverCleanupGateForTest {
+    pub(crate) started: mpsc::SyncSender<()>,
+    pub(crate) release: tokio::sync::oneshot::Receiver<()>,
+    pub(crate) acknowledged: mpsc::SyncSender<()>,
 }
 
 // Keep endpoint routing and its origin-form target together. The target never
@@ -121,6 +130,8 @@ impl HttpsTransport {
             driver_abort_observer: None,
             #[cfg(test)]
             cancel_exchange: None,
+            #[cfg(test)]
+            driver_cleanup_gate: None,
         })
     }
 
@@ -209,6 +220,8 @@ impl HttpsTransport {
         let driver_abort_observer = self.driver_abort_observer.take();
         #[cfg(test)]
         let cancel_exchange = self.cancel_exchange.take();
+        #[cfg(test)]
+        let driver_cleanup_gate = self.driver_cleanup_gate.take();
         let worker = self.worker.as_ref().ok_or_else(|| {
             safe_error(
                 RequestDeliveryState::NotSent,
@@ -233,6 +246,8 @@ impl HttpsTransport {
                     driver_abort_observer,
                     #[cfg(test)]
                     cancel_exchange,
+                    #[cfg(test)]
+                    driver_cleanup_gate,
                 )
                 .await
             })
@@ -264,6 +279,20 @@ pub(crate) fn new_for_test_with_resolver_and_driver_abort_observer(
 ) -> HttpsTransport {
     let mut adapter = new_for_test_with_resolver(configuration, None, resolver);
     adapter.driver_abort_observer = Some(driver_abort_observer);
+    adapter.cancel_exchange = Some(cancel_exchange);
+    adapter
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // The source-included HTTPS integration target uses this cleanup gate.
+pub(crate) fn new_for_test_with_resolver_and_driver_cleanup_gate(
+    configuration: TransportConfig,
+    resolver: Resolver,
+    driver_cleanup_gate: DriverCleanupGateForTest,
+    cancel_exchange: tokio::sync::oneshot::Receiver<()>,
+) -> HttpsTransport {
+    let mut adapter = new_for_test_with_resolver(configuration, None, resolver);
+    adapter.driver_cleanup_gate = Some(driver_cleanup_gate);
     adapter.cancel_exchange = Some(cancel_exchange);
     adapter
 }
@@ -304,6 +333,7 @@ async fn exchange_on_worker(
     control: ExchangeControl,
     #[cfg(test)] driver_abort_observer: Option<mpsc::SyncSender<()>>,
     #[cfg(test)] cancel_exchange: Option<tokio::sync::oneshot::Receiver<()>>,
+    #[cfg(test)] driver_cleanup_gate: Option<DriverCleanupGateForTest>,
 ) -> Result<TransportResponse, TransportError> {
     let connect_deadline = earlier_deadline(
         deadline_for(policy.connect(), Instant::now()).map_err(|error| {
@@ -348,9 +378,11 @@ async fn exchange_on_worker(
         )
     })?;
     let driver = HyperDriverGuard {
-        task: tokio::spawn(connection),
+        task: Some(tokio::spawn(connection)),
         #[cfg(test)]
         abort_observer: driver_abort_observer,
+        #[cfg(test)]
+        cleanup_gate: driver_cleanup_gate,
     };
     #[cfg(test)]
     if let Some(cancel_exchange) = cancel_exchange {
@@ -388,18 +420,34 @@ async fn exchange_on_worker(
 }
 
 struct HyperDriverGuard {
-    task: tokio::task::JoinHandle<Result<(), hyper::Error>>,
+    task: Option<tokio::task::JoinHandle<Result<(), hyper::Error>>>,
     #[cfg(test)]
     abort_observer: Option<mpsc::SyncSender<()>>,
+    #[cfg(test)]
+    cleanup_gate: Option<DriverCleanupGateForTest>,
 }
 
 impl Drop for HyperDriverGuard {
     fn drop(&mut self) {
-        self.task.abort();
+        let Some(task) = self.task.take() else {
+            return;
+        };
+        task.abort();
         #[cfg(test)]
         if let Some(observer) = self.abort_observer.take() {
             let _ = observer.send(());
         }
+        #[cfg(test)]
+        if let Some(gate) = self.cleanup_gate.take() {
+            let _ = gate.started.send(());
+            tokio::spawn(async move {
+                let _ = gate.release.await;
+                let _ = task.await;
+                let _ = gate.acknowledged.send(());
+            });
+            return;
+        }
+        drop(task);
     }
 }
 

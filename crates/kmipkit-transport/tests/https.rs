@@ -177,6 +177,84 @@ fn https_cancellation_aborts_the_hyper_connection_driver() {
 }
 
 #[test]
+fn https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let (peer, request_seen) = spawn_stalled_peer(listener.into_inner(), server_config(&pki));
+    let config = config_builder(&pki, format!("https://{SERVER_NAME}:{}", address.port()))
+        .build()
+        .expect("the explicit identity and trust inputs build a valid HTTPS config");
+    let (cleanup_started_tx, cleanup_started_rx) = mpsc::sync_channel(1);
+    let (cleanup_release_tx, cleanup_release_rx) = tokio::sync::oneshot::channel();
+    let (cleanup_acknowledged_tx, cleanup_acknowledged_rx) = mpsc::sync_channel(1);
+    let cleanup_gate = https::DriverCleanupGateForTest {
+        started: cleanup_started_tx,
+        release: cleanup_release_rx,
+        acknowledged: cleanup_acknowledged_tx,
+    };
+    let (cancel_tx, cancel_rx) = tokio::sync::oneshot::channel();
+    let adapter = https::new_for_test_with_resolver_and_driver_cleanup_gate(
+        config,
+        fixed_resolver(address),
+        cleanup_gate,
+        cancel_rx,
+    );
+    let (exchange_tx, exchange_rx) = mpsc::sync_channel(1);
+
+    thread::spawn(move || {
+        let mut adapter = adapter;
+        let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+        let _ = exchange_tx.send((adapter, result));
+    });
+
+    assert!(
+        request_seen.recv_timeout(PEER_TIMEOUT).is_ok(),
+        "the peer receives the request before the test cancels the exchange"
+    );
+    cancel_tx
+        .send(())
+        .expect("the in-flight adapter exchange is ready for cancellation");
+    assert!(
+        cleanup_started_rx.recv_timeout(PEER_TIMEOUT).is_ok(),
+        "driver cleanup starts after the cancellation is observed"
+    );
+
+    let returned_before_cleanup_acknowledgement = match exchange_rx.try_recv() {
+        Ok(completion) => Some(completion),
+        Err(mpsc::TryRecvError::Empty | mpsc::TryRecvError::Disconnected) => None,
+    };
+    let exchange_returned_before_cleanup_acknowledgement =
+        returned_before_cleanup_acknowledgement.is_some();
+    cleanup_release_tx
+        .send(())
+        .expect("the test releases the cleanup gate");
+    assert!(
+        cleanup_acknowledged_rx.recv_timeout(ACCEPT_TIMEOUT).is_ok(),
+        "the driver cleanup path acknowledges completion after release"
+    );
+    let (adapter, result) = match returned_before_cleanup_acknowledgement {
+        Some(completion) => completion,
+        None => exchange_rx
+            .recv_timeout(PEER_TIMEOUT)
+            .expect("worker cancellation completes after driver cleanup acknowledgement"),
+    };
+    let error = result.expect_err("the peer withholds its response until cancellation");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::PossiblySent);
+
+    drop(adapter);
+    let peer = peer
+        .join()
+        .expect("the bounded stalled HTTPS peer completes");
+    assert!(peer.accepted, "the peer accepted one connection");
+    assert!(peer.request.is_some(), "the peer captured the request");
+    assert!(
+        !exchange_returned_before_cleanup_acknowledgement,
+        "the public exchange does not return before driver cleanup is acknowledged"
+    );
+}
+
+#[test]
 fn https_configured_target_preserves_ip_authority_and_zeroizes_after_peer_close() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
