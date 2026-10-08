@@ -53,20 +53,21 @@ pub use config::{
     TransportConfigError, TrustSource,
 };
 
-const RESPONSE_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0];
+const RESPONSE_FRAME: [u8; 8] = [0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 0];
 const RESPONSE_FRAME_WITH_BODY: [u8; 16] = [
-    0x42, 0x00, 0x78, 0x01, 0, 0, 0, 8, 0x42, 0x00, 0x01, 0x01, 0, 0, 0, 0,
+    0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 8, 0x42, 0x00, 0x01, 0x01, 0, 0, 0, 0,
 ];
 const TWO_RESPONSE_FRAMES: [u8; 16] = [
-    0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0, 0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0,
+    0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 0, 0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 0,
 ];
 const BAD_ROOT_TAG_FRAME: [u8; 8] = [0x42, 0x00, 0x79, 0x01, 0, 0, 0, 0];
-const BAD_ROOT_TYPE_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x02, 0, 0, 0, 0];
-const UNALIGNED_LENGTH_HEADER: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 1];
-const OVERSIZED_LENGTH_HEADER: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0xff, 0xff, 0xff, 0xf8];
-const PARTIAL_RESPONSE_HEADER: [u8; 4] = [0x42, 0x00, 0x78, 0x01];
+const REQUEST_MESSAGE_ROOT_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0];
+const BAD_ROOT_TYPE_FRAME: [u8; 8] = [0x42, 0x00, 0x7B, 0x02, 0, 0, 0, 0];
+const UNALIGNED_LENGTH_HEADER: [u8; 8] = [0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 1];
+const OVERSIZED_LENGTH_HEADER: [u8; 8] = [0x42, 0x00, 0x7B, 0x01, 0xff, 0xff, 0xff, 0xf8];
+const PARTIAL_RESPONSE_HEADER: [u8; 4] = [0x42, 0x00, 0x7B, 0x01];
 const TRUNCATED_RESPONSE_BODY: [u8; 12] =
-    [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 8, 0xA5, 0x5A, 0xC3, 0x3C];
+    [0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 8, 0xA5, 0x5A, 0xC3, 0x3C];
 const RESPONSE_LIMIT: usize = RESPONSE_FRAME.len();
 const TLS_TEST_TIMEOUT: Duration = Duration::from_secs(2);
 const PEER_ACCEPT_TIMEOUT: Duration = Duration::from_secs(2);
@@ -766,6 +767,17 @@ fn raw_tls_rejects_a_response_with_an_invalid_root_tag() {
     let (result, peer) = exchange_responding(&BAD_ROOT_TAG_FRAME, RESPONSE_LIMIT);
 
     assert_response_started(&result, "an invalid response root tag is rejected");
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_rejects_a_request_message_as_the_response_root() {
+    let (result, peer) = exchange_responding(&REQUEST_MESSAGE_ROOT_FRAME, RESPONSE_LIMIT);
+
+    assert_response_started(
+        &result,
+        "KMIP 2.1 §8.4 Table 397 requires a Response Message root, not Request Message",
+    );
     assert_peer_closed_after_response(&peer);
 }
 

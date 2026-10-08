@@ -45,7 +45,7 @@ const SERVER_NAME: &str = "server.kmipkit.test";
 const RESPONSE_SENTINEL: &[u8] = b"TLS_RESPONSE_SENTINEL_0123456789";
 const TEST_TIMEOUT: Duration = Duration::from_secs(6);
 const RAW_RESPONSE: [u8; 40] = [
-    0x42, 0x00, 0x78, 0x01, 0, 0, 0, 32, b'T', b'L', b'S', b'_', b'R', b'E', b'S', b'P', b'O',
+    0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 32, b'T', b'L', b'S', b'_', b'R', b'E', b'S', b'P', b'O',
     b'N', b'S', b'E', b'_', b'S', b'E', b'N', b'T', b'I', b'N', b'E', b'L', b'_', b'0', b'1', b'2',
     b'3', b'4', b'5', b'6', b'7', b'8', b'9',
 ];
