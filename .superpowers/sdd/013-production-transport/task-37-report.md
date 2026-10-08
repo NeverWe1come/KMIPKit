@@ -57,17 +57,22 @@ surplus invalidation remain a Green implementation gap for T038/T039.
 ## Hyper/parser review
 
 The locked dependency is Hyper 1.12.0. Its HTTP/1 connection `Builder` exposes
-`max_headers` and `max_buf_size`; its documented defaults are 100 headers and
-approximately 400 KiB, respectively. The configured methods can enforce the
-contract's 64-header and 64 KiB limits. Hyper also exposes a separate
-`max_header_size`, but the contract specifies the input-buffer limit, so the
-boundary tests target `max_buf_size` semantics rather than inventing another
-policy. The parser itself rejects the malformed status/header syntax, malformed
-chunk body, truncation, malformed length, and conflicting duplicate length
-cases exercised here. It accepts valid close-delimited responses without a
-`Content-Length`; rejecting that missing header is KMIPKit response policy,
-which the current adapter does not implement. Hyper accepts the exact parser
-boundary inputs and, with current defaults, accepts the over-boundary inputs.
+three separate limits used by T038: `max_headers` caps the number of headers,
+`max_buf_size` caps the connection read buffer, and `max_header_size` caps the
+total response status line and header section. `max_buf_size` alone does not
+guarantee a total header-size limit: Hyper can parse a larger header section
+incrementally in chunks. Therefore Green configures `max_buf_size` and
+`max_header_size` to 65,536 bytes, in addition to `max_headers(64)`. The
+boundary regression accepts exactly 65,536 bytes and rejects 65,537 bytes with
+this configuration. These parser limits do not change the KMIP response-body
+limit.
+
+Hyper parses HTTP/1 syntax and framing, including malformed status/header
+syntax, malformed chunk bodies, truncation, malformed lengths, and conflicting
+duplicate lengths. It accepts valid close-delimited responses without a
+`Content-Length`; rejecting that missing header is KMIPKit response policy.
+T038's strict response validation enforces that policy and invalidates the
+connection on response errors.
 
 ## Red verification
 
@@ -178,3 +183,15 @@ missing `Content-Length`, and early over-cap rejection. The isolated over-cap
 test passes under the T038 Green work in progress. `cargo fmt --all --check`
 and `git diff --check` passed. Independent QA approved the corrected peer and
 channel behavior; T037 Red is checked in the task ledger.
+
+## Hyper header-size correction
+
+The initial Red report described `max_buf_size` as sufficient to enforce the
+64 KiB parser-input boundary. Source and API review of Hyper 1.12.0 corrected
+that explanation: `max_buf_size` bounds the connection buffer, while Hyper may
+parse a larger header section over multiple reads. The production parser must
+also set `max_header_size`, which caps the complete status line and response
+headers. T038 sets both limits to 65,536 bytes and sets `max_headers` to 64.
+The final focused HTTPS run passes the approved boundary test: 65,536 bytes
+are accepted and 65,537 bytes are rejected. This correction records the
+distinction without changing the body-size policy or T037 expectations.
