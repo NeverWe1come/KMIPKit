@@ -16,6 +16,9 @@
 mod config;
 mod error;
 mod response;
+// T019 exercises this private builder before T023 connects production adapters.
+#[allow(dead_code)]
+mod tls;
 // T010 introduces the private timeout seam before later adapter tasks consume it.
 #[allow(dead_code)]
 mod timeout;
@@ -32,8 +35,9 @@ mod resolver;
 mod worker;
 
 pub use config::{
-    CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions, TimeoutLimit,
-    TimeoutPolicy, TransportConfig, TransportConfigBuilder, TransportConfigError, TrustSource,
+    CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions,
+    RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder,
+    TransportConfigError, TrustSource,
 };
 pub use error::{RequestDeliveryState, TransportCauseCategory, TransportError};
 pub use response::TransportResponse;

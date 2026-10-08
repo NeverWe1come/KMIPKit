@@ -2,13 +2,14 @@
 
 use std::error::Error;
 use std::fmt;
+use std::net::IpAddr;
 use std::time::Duration;
 
 use hyper::Uri;
 use rustls::RootCertStore;
 use rustls::crypto::aws_lc_rs;
 use rustls::pki_types::pem::PemObject;
-use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use rustls::pki_types::{CertificateDer, CertificateRevocationListDer, PrivateKeyDer, ServerName};
 use rustls::sign::CertifiedKey;
 use zeroize::Zeroizing;
 
@@ -54,6 +55,39 @@ impl Endpoint {
 
     fn is_https(&self) -> bool {
         matches!(self.0, EndpointInput::Https { .. })
+    }
+
+    fn host(&self) -> Result<String, TransportConfigError> {
+        match &self.0 {
+            EndpointInput::RawTls { host, .. } => Ok(host.clone()),
+            EndpointInput::Https { uri } => {
+                let parsed = Uri::try_from(uri.as_str())
+                    .map_err(|_| TransportConfigError::InvalidEndpoint)?;
+                parsed
+                    .authority()
+                    .map(|authority| authority.host().to_owned())
+                    .ok_or(TransportConfigError::InvalidEndpoint)
+            }
+        }
+    }
+
+    fn server_name(
+        &self,
+        override_name: Option<String>,
+    ) -> Result<(ServerName<'static>, bool), TransportConfigError> {
+        let host = self.host()?;
+        let host = host
+            .strip_prefix('[')
+            .and_then(|value| value.strip_suffix(']'))
+            .unwrap_or(&host);
+        let is_ip = host.parse::<IpAddr>().is_ok();
+        if override_name.is_some() && !is_ip {
+            return Err(TransportConfigError::InvalidServerName);
+        }
+        let name = override_name.unwrap_or_else(|| host.to_owned());
+        let server_name =
+            ServerName::try_from(name).map_err(|_| TransportConfigError::InvalidServerName)?;
+        Ok((server_name, !is_ip))
     }
 }
 
@@ -167,6 +201,70 @@ impl fmt::Debug for CertificateInput {
                 &match &self.bytes {
                     CertificateBytes::Pem(_) => "PEM",
                     CertificateBytes::Der(_) => "DER",
+                },
+            )
+            .field("bytes", &"[REDACTED]")
+            .finish()
+    }
+}
+
+enum RevocationListBytes {
+    Pem(Zeroizing<Vec<u8>>),
+    Der(Vec<Zeroizing<Vec<u8>>>),
+}
+
+/// Caller-provided certificate revocation list with an explicit encoding.
+pub struct RevocationListInput {
+    bytes: RevocationListBytes,
+}
+
+impl RevocationListInput {
+    /// Creates a PEM-encoded certificate revocation list.
+    #[must_use]
+    pub fn from_pem(bytes: impl Into<Vec<u8>>) -> Self {
+        Self {
+            bytes: RevocationListBytes::Pem(Zeroizing::new(bytes.into())),
+        }
+    }
+
+    /// Creates one or more DER-encoded certificate revocation lists.
+    #[must_use]
+    pub fn from_der(revocation_lists: Vec<Vec<u8>>) -> Self {
+        Self {
+            bytes: RevocationListBytes::Der(
+                revocation_lists.into_iter().map(Zeroizing::new).collect(),
+            ),
+        }
+    }
+
+    fn parse(self) -> Result<Vec<CertificateRevocationListDer<'static>>, TransportConfigError> {
+        let lists = match self.bytes {
+            RevocationListBytes::Pem(bytes) => {
+                CertificateRevocationListDer::pem_slice_iter(bytes.as_slice())
+                    .collect::<Result<Vec<_>, _>>()
+                    .map_err(|_| TransportConfigError::InvalidRevocationList)?
+            }
+            RevocationListBytes::Der(lists) => lists
+                .into_iter()
+                .map(|bytes| CertificateRevocationListDer::from(bytes.to_vec()))
+                .collect(),
+        };
+        if lists.is_empty() || lists.iter().any(|list| list.is_empty()) {
+            return Err(TransportConfigError::InvalidRevocationList);
+        }
+        Ok(lists)
+    }
+}
+
+impl fmt::Debug for RevocationListInput {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("RevocationListInput")
+            .field(
+                "encoding",
+                &match &self.bytes {
+                    RevocationListBytes::Pem(_) => "PEM",
+                    RevocationListBytes::Der(_) => "DER",
                 },
             )
             .field("bytes", &"[REDACTED]")
@@ -474,11 +572,11 @@ pub struct TransportConfig {
     target_uri: Option<String>,
     timeouts: TimeoutPolicy,
     max_request_bytes: usize,
-    // T019 wires these validated values into the rustls client configuration.
-    #[expect(dead_code, reason = "Consumed by the TLS client configuration in T019")]
     trust: RootCertStore,
-    #[expect(dead_code, reason = "Consumed by the TLS client configuration in T019")]
     identity: CertifiedKey,
+    revocation_lists: Vec<CertificateRevocationListDer<'static>>,
+    tls_server_name: ServerName<'static>,
+    enable_sni: bool,
 }
 
 impl TransportConfig {
@@ -492,6 +590,8 @@ impl TransportConfig {
             max_request_bytes: DEFAULT_MAX_REQUEST_BYTES,
             trust: None,
             identity: None,
+            revocation_lists: Vec::new(),
+            tls_server_name: None,
         }
     }
 
@@ -518,6 +618,26 @@ impl TransportConfig {
     pub const fn timeouts(&self) -> TimeoutPolicy {
         self.timeouts
     }
+
+    pub(crate) fn tls_roots(&self) -> &RootCertStore {
+        &self.trust
+    }
+
+    pub(crate) fn tls_identity(&self) -> &CertifiedKey {
+        &self.identity
+    }
+
+    pub(crate) fn tls_revocation_lists(&self) -> &[CertificateRevocationListDer<'static>] {
+        &self.revocation_lists
+    }
+
+    pub(crate) fn tls_server_name(&self) -> &ServerName<'static> {
+        &self.tls_server_name
+    }
+
+    pub(crate) const fn tls_sni_enabled(&self) -> bool {
+        self.enable_sni
+    }
 }
 
 impl fmt::Debug for TransportConfig {
@@ -533,6 +653,9 @@ impl fmt::Debug for TransportConfig {
             .field("max_request_bytes", &self.max_request_bytes)
             .field("trust", &"[REDACTED]")
             .field("identity", &"[REDACTED]")
+            .field("revocation_lists", &"[REDACTED]")
+            .field("tls_server_name", &"[REDACTED]")
+            .field("enable_sni", &self.enable_sni)
             .finish()
     }
 }
@@ -545,6 +668,8 @@ pub struct TransportConfigBuilder {
     max_request_bytes: usize,
     trust: Option<TrustSource>,
     identity: Option<ClientIdentity>,
+    revocation_lists: Vec<RevocationListInput>,
+    tls_server_name: Option<String>,
 }
 
 impl TransportConfigBuilder {
@@ -559,6 +684,20 @@ impl TransportConfigBuilder {
     #[must_use]
     pub fn trust_source(mut self, trust: TrustSource) -> Self {
         self.trust = Some(trust);
+        self
+    }
+
+    /// Sets caller-provided certificate revocation lists.
+    #[must_use]
+    pub fn revocation_lists(mut self, lists: Vec<RevocationListInput>) -> Self {
+        self.revocation_lists = lists;
+        self
+    }
+
+    /// Sets the certificate verification name for an IP endpoint.
+    #[must_use]
+    pub fn tls_server_name(mut self, server_name: impl Into<String>) -> Self {
+        self.tls_server_name = Some(server_name.into());
         self
     }
 
@@ -602,8 +741,13 @@ impl TransportConfigBuilder {
         };
         let identity_input = self.identity.ok_or(TransportConfigError::MissingIdentity)?;
         let trust_source = self.trust.ok_or(TransportConfigError::MissingTrust)?;
+        let (tls_server_name, enable_sni) = self.endpoint.server_name(self.tls_server_name)?;
         let identity = identity_input.parse()?;
         let trust = trust_source.load()?;
+        let mut revocation_lists = Vec::new();
+        for list in self.revocation_lists {
+            revocation_lists.extend(list.parse()?);
+        }
         Ok(TransportConfig {
             endpoint: self.endpoint,
             target_uri,
@@ -611,6 +755,9 @@ impl TransportConfigBuilder {
             max_request_bytes: self.max_request_bytes,
             trust,
             identity,
+            revocation_lists,
+            tls_server_name,
+            enable_sni,
         })
     }
 }
@@ -628,6 +775,11 @@ impl fmt::Debug for TransportConfigBuilder {
             .field("max_request_bytes", &self.max_request_bytes)
             .field("trust", &self.trust)
             .field("identity", &self.identity)
+            .field("revocation_lists", &self.revocation_lists)
+            .field(
+                "tls_server_name",
+                &self.tls_server_name.as_ref().map(|_| "[REDACTED]"),
+            )
             .finish()
     }
 }
@@ -665,6 +817,12 @@ pub enum TransportConfigError {
     InvalidCredential,
     /// Caller trust certificates are malformed or empty.
     InvalidTrust,
+    /// Caller-provided revocation-list material is malformed or empty.
+    InvalidRevocationList,
+    /// The TLS verification name is invalid or used with a DNS endpoint.
+    InvalidServerName,
+    /// The selected TLS security configuration could not be constructed.
+    InvalidTlsConfiguration,
     /// Platform trust could not be loaded cleanly.
     PlatformTrustUnavailable,
 }
@@ -679,6 +837,9 @@ impl fmt::Display for TransportConfigError {
             Self::MissingTrust => "an explicit trust source is required",
             Self::InvalidCredential => "client credential input is invalid",
             Self::InvalidTrust => "trust certificates are invalid",
+            Self::InvalidRevocationList => "certificate revocation list input is invalid",
+            Self::InvalidServerName => "TLS verification name is invalid",
+            Self::InvalidTlsConfiguration => "TLS configuration is invalid",
             Self::PlatformTrustUnavailable => "platform trust is unavailable",
         })
     }
