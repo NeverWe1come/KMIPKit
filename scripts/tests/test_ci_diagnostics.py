@@ -130,6 +130,28 @@ class CiDiagnosticsTests(unittest.TestCase):
             self.assertIn("Failure diagnosis", console.getvalue())
             self.assertIn("sanitizer regression failed", console.getvalue())
 
+    def test_main_accepts_null_matrix_context_for_a_non_matrix_job(self) -> None:
+        diagnostics = self.require_diagnostics()
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "summary.md"
+            output_path = Path(directory) / "output.txt"
+            environment = {
+                "CI_JOB_ID": "dependency-policy",
+                "CI_MATRIX_JSON": "null",
+                "CI_STEPS_JSON": json.dumps(
+                    {"run-dependency-policy": {"outcome": "success", "conclusion": "success"}}
+                ),
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_OUTPUT": str(output_path),
+            }
+
+            with mock.patch.dict(os.environ, environment, clear=False), redirect_stdout(StringIO()):
+                exit_code = diagnostics.main()
+
+            self.assertEqual(0, exit_code)
+            self.assertIn("Dependency policy", summary_path.read_text(encoding="utf-8"))
+            self.assertNotIn("**Matrix:**", summary_path.read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
