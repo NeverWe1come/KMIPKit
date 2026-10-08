@@ -22,12 +22,14 @@ use rcgen::{
     ExtendedKeyUsagePurpose, IsCa, Issuer, KeyIdMethod, KeyPair, KeyUsagePurpose,
     RevokedCertParams, SerialNumber, date_time_ymd,
 };
+use rustls::pki_types::pem::PemObject;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer, ServerName};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{ClientConnection, HandshakeKind, RootCertStore, ServerConfig, ServerConnection};
 use tls::{MonotonicClock, TlsClientConfig};
 
 #[path = "../src/config.rs"]
+#[allow(dead_code)]
 mod config;
 #[path = "../src/tls.rs"]
 mod tls;
@@ -40,7 +42,7 @@ const CLIENT_SERIAL: u64 = 42;
 fn caller_ca_and_matching_mtls_identity_build_a_tls13_only_config() {
     let pki = TestPki::generate(SERVER_NAME, false);
     let configuration = transport_config(&pki, &pki, None, Vec::new());
-    let client = tls::build_client_config(configuration)
+    let client = tls::build_client_config(&configuration)
         .expect("valid caller roots and a matching client identity build");
 
     assert!(!client.rustls_config().enable_early_data);
@@ -51,7 +53,7 @@ fn caller_ca_and_matching_mtls_identity_build_a_tls13_only_config() {
             .will_log("CLIENT_HANDSHAKE_TRAFFIC_SECRET")
     );
     assert_eq!(client.server_name(), &dns_name(SERVER_NAME));
-    let connection = ClientConnection::new(
+    let mut connection = ClientConnection::new(
         Arc::new(client.rustls_config().clone()),
         client.server_name().clone(),
     )
@@ -66,7 +68,7 @@ fn caller_ca_and_matching_mtls_identity_build_a_tls13_only_config() {
 
     let other_identity = TestPki::generate("other-client.kmipkit.test", false);
     let mismatched_client =
-        tls::build_client_config(transport_config(&pki, &other_identity, None, Vec::new()))
+        tls::build_client_config(&transport_config(&pki, &other_identity, None, Vec::new()))
             .expect("a distinct client identity is valid on its own");
     expect_tls_rejection(handshake(&mismatched_client, server_config(&pki, true, 0)));
 }
@@ -90,21 +92,21 @@ fn mismatched_client_certificate_and_private_key_are_rejected_before_tls() {
 fn untrusted_chain_expired_leaf_and_hostname_mismatch_fail_closed() {
     let pki = TestPki::generate(SERVER_NAME, false);
     let unrelated = TestPki::generate(SERVER_NAME, false);
-    let trusted_client = tls::build_client_config(transport_config(&pki, &pki, None, Vec::new()))
+    let trusted_client = tls::build_client_config(&transport_config(&pki, &pki, None, Vec::new()))
         .expect("the caller trust configuration is valid");
     let untrusted_peer = server_config(&unrelated, false, 0);
     expect_tls_rejection(handshake(&trusted_client, untrusted_peer));
 
     let expired = TestPki::generate_expired(SERVER_NAME);
     let expired_client =
-        tls::build_client_config(transport_config(&expired, &expired, None, Vec::new()))
+        tls::build_client_config(&transport_config(&expired, &expired, None, Vec::new()))
             .expect("the expired test chain can still be configured as a trust input");
     expect_tls_rejection(handshake(
         &expired_client,
         server_config(&expired, false, 0),
     ));
 
-    let wrong_name = tls::build_client_config(transport_config(
+    let wrong_name = tls::build_client_config(&transport_config(
         &pki,
         &pki,
         Some("different.kmipkit.test"),
@@ -118,7 +120,7 @@ fn untrusted_chain_expired_leaf_and_hostname_mismatch_fail_closed() {
 fn explicit_server_name_override_applies_only_to_ip_endpoints() {
     let pki = TestPki::generate(SERVER_NAME, false);
     let overridden =
-        tls::build_client_config(transport_config(&pki, &pki, Some(SERVER_NAME), Vec::new()))
+        tls::build_client_config(&transport_config(&pki, &pki, Some(SERVER_NAME), Vec::new()))
             .expect("an IP endpoint may use a separate certificate-verification name");
     assert_eq!(overridden.server_name(), &dns_name(SERVER_NAME));
     assert!(!overridden.rustls_config().enable_sni);
@@ -130,7 +132,7 @@ fn explicit_server_name_override_applies_only_to_ip_endpoints() {
         .trust_source(trust_input(&pki))
         .build()
         .expect("an IP endpoint may rely on its IP subject alternative name");
-    let no_override = tls::build_client_config(no_override)
+    let no_override = tls::build_client_config(&no_override)
         .expect("the caller omitted the optional TLS-name override");
     expect_tls_rejection(handshake(&no_override, server_config(&pki, false, 0)));
 
@@ -147,7 +149,7 @@ fn explicit_server_name_override_applies_only_to_ip_endpoints() {
 #[test]
 fn caller_crls_accept_current_evidence_and_reject_expired_unmatched_or_revoking_lists() {
     let pki = TestPki::generate(SERVER_NAME, false);
-    let valid = tls::build_client_config(transport_config(
+    let valid = tls::build_client_config(&transport_config(
         &pki,
         &pki,
         None,
@@ -157,7 +159,7 @@ fn caller_crls_accept_current_evidence_and_reject_expired_unmatched_or_revoking_
     handshake(&valid, server_config(&pki, false, 0))
         .expect("a current applicable non-revoking CRL accepts the server");
 
-    let expired_crl = tls::build_client_config(transport_config(
+    let expired_crl = tls::build_client_config(&transport_config(
         &pki,
         &pki,
         None,
@@ -167,7 +169,7 @@ fn caller_crls_accept_current_evidence_and_reject_expired_unmatched_or_revoking_
     expect_tls_rejection(handshake(&expired_crl, server_config(&pki, false, 0)));
 
     let unrelated = TestPki::generate(SERVER_NAME, false);
-    let non_applicable = tls::build_client_config(transport_config(
+    let non_applicable = tls::build_client_config(&transport_config(
         &pki,
         &pki,
         None,
@@ -176,7 +178,7 @@ fn caller_crls_accept_current_evidence_and_reject_expired_unmatched_or_revoking_
     .expect("a valid CRL with a different issuer is supplied");
     expect_tls_rejection(handshake(&non_applicable, server_config(&pki, false, 0)));
 
-    let revoked = tls::build_client_config(transport_config(
+    let revoked = tls::build_client_config(&transport_config(
         &pki,
         &pki,
         None,
@@ -189,7 +191,7 @@ fn caller_crls_accept_current_evidence_and_reject_expired_unmatched_or_revoking_
 #[test]
 fn tls13_resumption_uses_new_connections_and_is_bounded_to_sixteen_tickets() {
     let pki = TestPki::generate(SERVER_NAME, false);
-    let client = tls::build_client_config(transport_config(&pki, &pki, None, Vec::new()))
+    let client = tls::build_client_config(&transport_config(&pki, &pki, None, Vec::new()))
         .expect("the client configuration is valid");
     let peer = server_config(&pki, false, 32);
 
@@ -208,10 +210,10 @@ fn tls13_resumption_uses_new_connections_and_is_bounded_to_sixteen_tickets() {
 fn each_identity_gets_an_isolated_session_cache() {
     let pki = TestPki::generate(SERVER_NAME, false);
     let other_identity = TestPki::generate("other-client.kmipkit.test", false);
-    let first = tls::build_client_config(transport_config(&pki, &pki, None, Vec::new()))
+    let first = tls::build_client_config(&transport_config(&pki, &pki, None, Vec::new()))
         .expect("the first identity configures");
     let second =
-        tls::build_client_config(transport_config(&pki, &other_identity, None, Vec::new()))
+        tls::build_client_config(&transport_config(&pki, &other_identity, None, Vec::new()))
             .expect("the second identity configures with the same server trust");
     let peer = server_config(&pki, false, 2);
 
@@ -231,7 +233,7 @@ fn local_ticket_age_expires_at_one_hour_and_rebuilt_trust_starts_empty() {
 
     let before_expiry_clock = Arc::new(TestClock::default());
     let before_expiry = tls::build_client_config_with_clock(
-        transport_config(&pki, &pki, None, Vec::new()),
+        &transport_config(&pki, &pki, None, Vec::new()),
         Arc::clone(&before_expiry_clock) as Arc<dyn MonotonicClock>,
     )
     .expect("the client accepts an injectable monotonic clock");
@@ -248,7 +250,7 @@ fn local_ticket_age_expires_at_one_hour_and_rebuilt_trust_starts_empty() {
 
     let expiry_clock = Arc::new(TestClock::default());
     let expiring = tls::build_client_config_with_clock(
-        transport_config(&pki, &pki, None, Vec::new()),
+        &transport_config(&pki, &pki, None, Vec::new()),
         Arc::clone(&expiry_clock) as Arc<dyn MonotonicClock>,
     )
     .expect("a separate client starts an independent session cache");
@@ -257,7 +259,7 @@ fn local_ticket_age_expires_at_one_hour_and_rebuilt_trust_starts_empty() {
         HandshakeKind::Full
     );
     assert!(expiring.cached_ticket_count() > 0);
-    expiry_clock.advance(Duration::from_secs(60 * 60));
+    expiry_clock.advance(Duration::from_hours(1));
     assert_eq!(
         handshake(&expiring, Arc::clone(&peer)).unwrap(),
         HandshakeKind::Full
@@ -265,7 +267,7 @@ fn local_ticket_age_expires_at_one_hour_and_rebuilt_trust_starts_empty() {
 
     let changed_trust = TestPki::generate(SERVER_NAME, false);
     let (rebuilt, verifier) = tls::build_client_config_with_test_verifier(
-        transport_config(&changed_trust, &pki, None, Vec::new()),
+        &transport_config(&changed_trust, &pki, None, Vec::new()),
         expiry_clock,
     )
     .expect("a rebuilt client applies the new trust set");
@@ -283,7 +285,7 @@ fn resumed_handshake_does_not_reinvoke_the_full_handshake_trust_verifier() {
     let pki = TestPki::generate(SERVER_NAME, false);
     let clock = Arc::new(TestClock::default());
     let (client, verifier) = tls::build_client_config_with_test_verifier(
-        transport_config(&pki, &pki, None, vec![pki.crl(false, false)]),
+        &transport_config(&pki, &pki, None, vec![pki.crl(false, false)]),
         clock,
     )
     .expect("the test verifier wraps the production WebPKI verifier");
@@ -458,7 +460,7 @@ impl TestPki {
         }
         .signed_by(&issuer)
         .expect("test CRL signing succeeds");
-        RevocationListInput::from_der(crl.der().as_ref().to_vec())
+        RevocationListInput::from_der(vec![crl.der().as_ref().to_vec()])
     }
 }
 
@@ -640,7 +642,10 @@ fn run_client_handshake(
 }
 
 fn expect_tls_rejection(result: Result<HandshakeKind, HandshakeFailure>) {
-    assert_eq!(result, Err(HandshakeFailure::ClientRejected));
+    match result {
+        Err(HandshakeFailure::ClientRejected) => {}
+        other => panic!("expected client-side TLS rejection, received {other:?}"),
+    }
 }
 
 fn run_server_handshake(mut stream: TcpStream, config: Arc<ServerConfig>) -> Result<(), ()> {
