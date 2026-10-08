@@ -410,6 +410,8 @@ fn response_value_length(header: &[u8]) -> Option<usize> {
 
 struct ResponseBuffer {
     bytes: Vec<u8>,
+    #[cfg(test)]
+    drop_observer: Option<ResponseBufferDropObserver>,
 }
 
 impl ResponseBuffer {
@@ -423,7 +425,22 @@ impl ResponseBuffer {
             .map_err(|_| io::Error::other("response allocation failed"))?;
         bytes.resize(length, 0);
         bytes[..RESPONSE_HEADER_LEN].copy_from_slice(header);
-        Ok(Self { bytes })
+        Ok(Self {
+            bytes,
+            #[cfg(test)]
+            drop_observer: None,
+        })
+    }
+
+    #[cfg(test)]
+    fn with_header_and_observer_for_test(
+        length: usize,
+        header: &[u8],
+        observer: ResponseBufferDropObserver,
+    ) -> io::Result<Self> {
+        let mut response = Self::with_header(length, header)?;
+        response.drop_observer = Some(observer);
+        Ok(response)
     }
 
     fn into_transport_response(mut self) -> TransportResponse {
@@ -433,8 +450,106 @@ impl ResponseBuffer {
 
 impl Drop for ResponseBuffer {
     fn drop(&mut self) {
+        #[cfg(test)]
+        let contained_nonzero_bytes = self
+            .bytes
+            .get(RESPONSE_HEADER_LEN..)
+            .is_some_and(|body| body.iter().any(|byte| *byte != 0));
         self.bytes.as_mut_slice().zeroize();
+        #[cfg(test)]
+        if let Some(observer) = &self.drop_observer {
+            observer.record(self.bytes.as_slice(), contained_nonzero_bytes);
+        }
     }
+}
+
+#[cfg(test)]
+#[derive(Clone)]
+struct ResponseBufferDropObserver {
+    expected_len: usize,
+    initialized_len: Arc<std::sync::atomic::AtomicUsize>,
+    contained_nonzero_bytes: Arc<std::sync::atomic::AtomicBool>,
+    initialized_range_was_zero: Arc<std::sync::atomic::AtomicBool>,
+}
+
+#[cfg(test)]
+impl ResponseBufferDropObserver {
+    fn new(expected_len: usize) -> Self {
+        Self {
+            expected_len,
+            initialized_len: Arc::default(),
+            contained_nonzero_bytes: Arc::default(),
+            initialized_range_was_zero: Arc::default(),
+        }
+    }
+
+    fn record(&self, initialized_bytes: &[u8], contained_nonzero_bytes: bool) {
+        self.initialized_len
+            .store(initialized_bytes.len(), std::sync::atomic::Ordering::SeqCst);
+        self.contained_nonzero_bytes
+            .store(contained_nonzero_bytes, std::sync::atomic::Ordering::SeqCst);
+        let all_zero = initialized_bytes.len() == self.expected_len
+            && initialized_bytes.iter().all(|byte| *byte == 0);
+        self.initialized_range_was_zero
+            .store(all_zero, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    fn initialized_len(&self) -> usize {
+        self.initialized_len
+            .load(std::sync::atomic::Ordering::SeqCst)
+    }
+
+    fn contained_nonzero_bytes(&self) -> bool {
+        self.contained_nonzero_bytes
+            .load(std::sync::atomic::Ordering::SeqCst)
+    }
+
+    fn initialized_range_was_zero(&self) -> bool {
+        self.initialized_range_was_zero
+            .load(std::sync::atomic::Ordering::SeqCst)
+    }
+}
+
+#[cfg(test)]
+#[test]
+fn response_buffer_zeroizes_partially_read_body_before_release() {
+    const HEADER: [u8; RESPONSE_HEADER_LEN] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 8];
+    const INITIALIZED_BODY: [u8; 4] = [0xA5, 0x5A, 0xC3, 0x3C];
+    const RESPONSE_LEN: usize = RESPONSE_HEADER_LEN + 8;
+
+    let observer = ResponseBufferDropObserver::new(RESPONSE_LEN);
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .build()
+        .expect("the test runtime is created");
+    runtime.block_on(async {
+        let (mut source, mut reader) = tokio::io::duplex(INITIALIZED_BODY.len());
+        tokio::io::AsyncWriteExt::write_all(&mut source, &INITIALIZED_BODY)
+            .await
+            .expect("the reader receives a partial response value");
+        tokio::io::AsyncWriteExt::shutdown(&mut source)
+            .await
+            .expect("the partial response source closes");
+        let mut response = ResponseBuffer::with_header_and_observer_for_test(
+            RESPONSE_LEN,
+            &HEADER,
+            observer.clone(),
+        )
+        .expect("a bounded response buffer is reserved");
+        let read_result = tokio::io::AsyncReadExt::read_exact(
+            &mut reader,
+            &mut response.bytes[RESPONSE_HEADER_LEN..],
+        )
+        .await;
+        assert!(
+            read_result.is_err(),
+            "a truncated response value is rejected"
+        );
+        drop(response);
+    });
+
+    assert_eq!(observer.initialized_len(), RESPONSE_LEN);
+    assert!(observer.contained_nonzero_bytes());
+    assert!(observer.initialized_range_was_zero());
 }
 
 fn timeout_duration(limit: TimeoutLimit) -> Option<Duration> {

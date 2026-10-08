@@ -7,7 +7,7 @@
 //! request bytes before release.
 
 use std::io::{self, Read, Write};
-use std::net::{TcpListener, TcpStream};
+use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -53,6 +53,19 @@ pub use config::{
 };
 
 const RESPONSE_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0];
+const RESPONSE_FRAME_WITH_BODY: [u8; 16] = [
+    0x42, 0x00, 0x78, 0x01, 0, 0, 0, 8, 0x42, 0x00, 0x01, 0x01, 0, 0, 0, 0,
+];
+const TWO_RESPONSE_FRAMES: [u8; 16] = [
+    0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0, 0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0,
+];
+const BAD_ROOT_TAG_FRAME: [u8; 8] = [0x42, 0x00, 0x79, 0x01, 0, 0, 0, 0];
+const BAD_ROOT_TYPE_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x02, 0, 0, 0, 0];
+const UNALIGNED_LENGTH_HEADER: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 1];
+const OVERSIZED_LENGTH_HEADER: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0xff, 0xff, 0xff, 0xf8];
+const PARTIAL_RESPONSE_HEADER: [u8; 4] = [0x42, 0x00, 0x78, 0x01];
+const TRUNCATED_RESPONSE_BODY: [u8; 12] =
+    [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 8, 0xA5, 0x5A, 0xC3, 0x3C];
 const RESPONSE_LIMIT: usize = RESPONSE_FRAME.len();
 const TLS_TEST_TIMEOUT: Duration = Duration::from_secs(2);
 const PEER_ACCEPT_TIMEOUT: Duration = Duration::from_secs(2);
@@ -126,11 +139,172 @@ fn raw_tls_zeroizes_staged_request_after_peer_closes_without_response() {
 
     let peer = peer.join().expect("the local TLS peer thread completes");
     assert!(peer.handshake_completed, "the mTLS handshake completes");
+    assert_eq!(
+        result.as_ref().unwrap_err().delivery_state(),
+        RequestDeliveryState::PossiblySent,
+        "EOF before the response header follows a committed request"
+    );
     assert!(
         peer.request_bytes.as_slice() == fixtures::REQUEST_SENTINEL,
         "the peer receives the caller bytes before it closes"
     );
     assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
+}
+
+#[test]
+fn raw_tls_rejects_a_partial_response_header() {
+    let (result, peer) = exchange_responding(&PARTIAL_RESPONSE_HEADER, RESPONSE_LIMIT);
+
+    assert_response_started(&result, "a partial response header is rejected");
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_rejects_eof_after_a_complete_header_before_the_value() {
+    let (result, peer) = exchange_responding(&RESPONSE_FRAME_WITH_BODY[..8], 16);
+
+    assert_response_started(
+        &result,
+        "EOF after the response header but before its value is rejected",
+    );
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_rejects_a_response_with_an_invalid_root_tag() {
+    let (result, peer) = exchange_responding(&BAD_ROOT_TAG_FRAME, RESPONSE_LIMIT);
+
+    assert_response_started(&result, "an invalid response root tag is rejected");
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_rejects_a_response_with_an_invalid_root_type() {
+    let (result, peer) = exchange_responding(&BAD_ROOT_TYPE_FRAME, RESPONSE_LIMIT);
+
+    assert_response_started(&result, "an invalid response root type is rejected");
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_rejects_an_unaligned_response_length() {
+    let (result, peer) = exchange_responding(&UNALIGNED_LENGTH_HEADER, RESPONSE_LIMIT);
+
+    assert_response_started(&result, "an unaligned response value length is rejected");
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_rejects_an_aligned_response_length_over_the_limit_before_body_read() {
+    let (result, peer) = exchange_responding(&OVERSIZED_LENGTH_HEADER, RESPONSE_LIMIT);
+
+    assert_response_started(
+        &result,
+        "a response exceeding the configured cap is rejected",
+    );
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_accepts_a_response_exactly_at_the_configured_limit() {
+    let (result, peer) =
+        exchange_responding(&RESPONSE_FRAME_WITH_BODY, RESPONSE_FRAME_WITH_BODY.len());
+
+    let response = result.expect("a response at the configured limit is accepted");
+    assert_eq!(response.as_bytes(), RESPONSE_FRAME_WITH_BODY);
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_rejects_a_response_one_byte_over_the_configured_limit() {
+    let (result, peer) = exchange_responding(
+        &RESPONSE_FRAME_WITH_BODY,
+        RESPONSE_FRAME_WITH_BODY.len() - 1,
+    );
+
+    assert_response_started(
+        &result,
+        "a response one byte over the configured cap is rejected",
+    );
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_rejects_a_truncated_response_body_and_zeroizes_its_owner() {
+    let (result, peer) =
+        exchange_responding(&TRUNCATED_RESPONSE_BODY, RESPONSE_FRAME_WITH_BODY.len());
+
+    assert_response_started(&result, "a truncated response body is rejected");
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_returns_only_the_first_of_two_coalesced_response_frames() {
+    let (result, peer) = exchange_action(PeerAction::RespondCoalesced, RESPONSE_LIMIT);
+
+    let response = result.expect("the first complete response frame is accepted");
+    assert_eq!(response.as_bytes(), RESPONSE_FRAME);
+    assert_peer_closed_after_response(&peer);
+}
+
+#[test]
+fn raw_tls_reconnects_after_a_failed_response_without_replaying_the_first_request() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer_config = server_config(&pki, true);
+    let listener = listener.into_inner();
+    let first_peer_config = Arc::clone(&peer_config);
+    let second_peer_config = Arc::clone(&peer_config);
+    let peer = thread::spawn(move || {
+        let first = run_peer(
+            &listener,
+            first_peer_config,
+            fixtures::REQUEST_SENTINEL.len(),
+            PeerAction::RespondBytes(&BAD_ROOT_TAG_FRAME),
+        );
+        let second = run_peer(
+            &listener,
+            second_peer_config,
+            fixtures::REQUEST_SENTINEL.len(),
+            PeerAction::RespondBytes(&RESPONSE_FRAME),
+        );
+        (first, second)
+    });
+    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
+    let mut adapter = raw_tls::new_for_test(config, None);
+
+    let first_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    assert_response_started(&first_result, "the malformed first response is rejected");
+    let second_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    let response = second_result.expect("a later distinct call reconnects successfully");
+
+    assert_eq!(response.as_bytes(), RESPONSE_FRAME);
+    let (first_peer, second_peer) = peer
+        .join()
+        .expect("the bounded TLS peer sequence completes");
+    for peer in [&first_peer, &second_peer] {
+        assert!(peer.accepted, "each distinct call opens a connection");
+        assert!(peer.handshake_completed, "each connection completes mTLS");
+        assert_eq!(
+            peer.request_bytes.as_slice(),
+            fixtures::REQUEST_SENTINEL,
+            "each connection receives only its own caller request"
+        );
+        assert!(
+            peer.closed_after_response,
+            "each connection closes after its frame"
+        );
+    }
+}
+
+#[cfg(target_pointer_width = "32")]
+#[test]
+fn raw_tls_rejects_response_length_that_overflows_checked_total_size() {
+    let (result, peer) = exchange_responding(&OVERSIZED_LENGTH_HEADER, usize::MAX);
+
+    assert_response_started(&result, "a response whose total size overflows is rejected");
+    assert_peer_closed_after_response(&peer);
 }
 
 /// Proves the adapter rejects a server chain rooted in a CA the caller did
@@ -267,8 +441,68 @@ fn exchange(
     request: &[u8],
     observer: Option<secret::SecretBufferObserver>,
 ) -> Result<TransportResponse, TransportError> {
+    exchange_with_limit(config, request, observer, RESPONSE_LIMIT)
+}
+
+fn exchange_with_limit(
+    config: config::TransportConfig,
+    request: &[u8],
+    observer: Option<secret::SecretBufferObserver>,
+    max_response_bytes: usize,
+) -> Result<TransportResponse, TransportError> {
     let mut adapter = raw_tls::new_for_test(config, observer);
-    adapter.exchange(request, RESPONSE_LIMIT)
+    adapter.exchange(request, max_response_bytes)
+}
+
+fn exchange_responding(
+    response: &'static [u8],
+    max_response_bytes: usize,
+) -> (Result<TransportResponse, TransportError>, PeerObservation) {
+    exchange_action(PeerAction::RespondBytes(response), max_response_bytes)
+}
+
+fn exchange_action(
+    action: PeerAction,
+    max_response_bytes: usize,
+) -> (Result<TransportResponse, TransportError>, PeerObservation) {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        action,
+    );
+    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
+    let result = exchange_with_limit(config, fixtures::REQUEST_SENTINEL, None, max_response_bytes);
+    let peer = peer.join().expect("the bounded local TLS peer completes");
+    assert!(peer.handshake_completed, "the mTLS handshake completes");
+    assert_eq!(
+        peer.request_bytes.as_slice(),
+        fixtures::REQUEST_SENTINEL,
+        "the peer receives the caller request unchanged"
+    );
+    (result, peer)
+}
+
+fn assert_response_started(result: &Result<TransportResponse, TransportError>, message: &str) {
+    let Err(error) = result else {
+        panic!("{message}");
+    };
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted,
+        "{message}"
+    );
+}
+
+fn assert_peer_closed_after_response(peer: &PeerObservation) {
+    assert!(peer.accepted, "the local peer accepted the TLS connection");
+    assert!(
+        peer.closed_after_response,
+        "the raw connection is closed after its frame"
+    );
 }
 
 fn assert_request_owner_zeroized(observer: &secret::SecretBufferObserver, request_len: usize) {
@@ -378,6 +612,8 @@ fn server_config(pki: &impl PkiMaterial, require_client_auth: bool) -> Arc<Serve
 #[derive(Clone, Copy)]
 enum PeerAction {
     RespondOnce,
+    RespondBytes(&'static [u8]),
+    RespondCoalesced,
     CloseWithoutResponse,
     CloseAfterHandshake,
 }
@@ -449,14 +685,25 @@ fn run_peer(
     }
 
     match action {
-        PeerAction::RespondOnce => {
-            if connection.writer().write_all(&RESPONSE_FRAME).is_err() {
+        PeerAction::RespondOnce | PeerAction::RespondBytes(_) | PeerAction::RespondCoalesced => {
+            let response_write = match action {
+                PeerAction::RespondOnce => connection.writer().write_all(&RESPONSE_FRAME),
+                PeerAction::RespondBytes(bytes) => connection.writer().write_all(bytes),
+                PeerAction::RespondCoalesced => connection.writer().write_all(&TWO_RESPONSE_FRAMES),
+                PeerAction::CloseWithoutResponse | PeerAction::CloseAfterHandshake => {
+                    return observation;
+                }
+            };
+            if response_write.is_err() {
                 return observation;
             }
             while connection.wants_write() {
                 if Instant::now() >= deadline || connection.write_tls(&mut stream).is_err() {
                     return observation;
                 }
+            }
+            if stream.shutdown(Shutdown::Write).is_err() {
+                return observation;
             }
             let mut encrypted = [0_u8; 1024];
             loop {
