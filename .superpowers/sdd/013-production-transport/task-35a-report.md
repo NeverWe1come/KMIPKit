@@ -177,3 +177,7 @@ available on this host; symlink-following remains unverified on this host.
 
 Independent QA re-review of source commit `81fe8cd271ee9f584a7293daa54a4cb885adb5ca`
 is pending. T035a remains unchecked and T037 remains blocked until that review.
+
+## Independent QA approval
+
+Independent QA approved the T035a Green source commit `81fe8cd271ee9f584a7293daa54a4cb885adb5ca` against T010's cleanup-before-timeout-snapshot requirement. The review confirms the relevant timeout/cancellation/shutdown branches drop the operation future, await bounded driver cleanup, then snapshot delivery state. Normal `Operation` completion calls `control.finish()` before joining cleanup, but waits for cleanup before publishing the result or allowing the next worker command; this is distinct from the T010 timeout snapshot ordering. The documentation distinction was recorded in commit `233ea4a9102ecd0e25390c999c418b52f0292499`. T037 may proceed.
