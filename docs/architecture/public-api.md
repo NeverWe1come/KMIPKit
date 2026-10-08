@@ -5,13 +5,15 @@
 ### High level
 
 The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
-not implement the general builder surface. This feature adds one typed
-Discover Versions request variant and the synchronous batch execution
-contract. It also has no production client constructor, so there is no
-application-ready network call in this slice. See the
-[client execution guide](../user-guide/en/client-execution.md) for the current
-boundary and the runnable typed batch-preparation example in client crate
-rustdoc.
+not implement the general builder surface. The current typed client exposes
+Discover Versions for batch execution and separate Poll, Cancel, Process, and
+Query Asynchronous Requests methods.
+KMIPKIT-0013 adds synchronous production construction from a separate
+immutable client extension configuration and validated transport
+configuration. The typed client accepts neither raw request bytes nor an
+arbitrary caller-implemented transport. This request set is not full KMIP 2.1
+coverage. See the [client execution guide](../user-guide/en/client-execution.md)
+for the current boundary and examples.
 
 
 ### Low-level transport
@@ -24,8 +26,9 @@ KMIP messages and does not provide the typed client's request-owner guarantee.
 On success, `TransportResponse` lends bytes through a borrowed view, redacts
 `Debug` output, and zeroizes initialized bytes in its current owned allocation
 on drop. Partial and error cleanup limits, including allocation growth and
-external copies, are defined by ADR-0014. No production TLS/HTTPS backend is
-available in KMIPKIT-0007.
+external copies, are defined by ADR-0014. KMIPKIT-0013 provides production
+raw-TLS and HTTPS/HTTP 1.1 adapters; only the validated adapters are reachable
+from the typed client. Direct users may call each adapter's bounded byte API.
 
 ### Typed protocol
 
@@ -36,11 +39,10 @@ bytes, or caller-implemented conversions. Discover Versions is an explicit
 operation and is never a hidden preflight. Per-call `CodecLimits` bound request
 encoding and response decoding and supply the transport response-byte cap.
 
-The feature defines no production Client constructor or live backend. A
-separately approved TLS/HTTPS feature will construct clients from validated
-transport configuration without arbitrary transport injection. The public
-low-level kmipkit-transport exchange contract remains a separate direct
-caller-byte API under ADR-0014. See the
+KMIPKIT-0013 constructs the typed client from validated transport
+configuration without arbitrary transport injection. The public low-level
+`kmipkit-transport` exchange contract remains a separate direct caller-byte
+API under ADR-0014. A typed result does not expose raw response bytes. See the
 [client execution guide](../user-guide/en/client-execution.md) and
 [ADR-0014](../adr/0014-public-transport-exchange-contract.md).
 

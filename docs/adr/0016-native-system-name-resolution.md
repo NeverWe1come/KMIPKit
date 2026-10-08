@@ -83,6 +83,37 @@ are outside this bound.
 - The per-library governor is shared state and must be reviewed as part of the
   security and lifecycle audit.
 
+## Implementation evidence
+
+The accepted resolver policy is implemented in
+`crates/kmipkit-transport/src/resolver.rs` and integrated with the private
+worker in `crates/kmipkit-transport/src/worker.rs`. The resolver acquires the
+shared permit before scheduling the blocking `ToSocketAddrs` call, keeps that
+permit in the blocking closure until the native call exits, retains at most 16
+addresses in returned OS order, and exposes no resolver cache. Worker
+cancellation discards a late lookup result before it can begin candidate
+connection or KMIP dispatch; shutdown does not wait for a started native
+resolver call. Each worker runtime retains its one-thread blocking-pool limit,
+which supplements rather than replaces the shared governor. These controls
+bound KMIPKit-owned admissions and candidates, not OS-owned DNS packet
+activity or allocations internal to the resolver.
+
+Executable evidence is maintained with KMIPKIT-0013: injected resolver tests
+cover admission, cancellation, late-result isolation, address ordering, and
+candidate bounds in `crates/kmipkit-transport/tests/resolver.rs`; worker tests
+cover serialization, queued expiry, and shutdown with a started resolver job
+in `crates/kmipkit-transport/tests/worker.rs`; raw-TLS and HTTPS deadline tests
+prove a late resolver result cannot start a connection or dispatch KMIP bytes
+in `crates/kmipkit-transport/tests/timeout_delivery.rs`. The `localhost`
+smoke test exercises the host resolver on the platform running CI. It does not
+assert split-DNS, cache, retry, or packet-level behavior, and it does not
+establish identical resolver behavior on every operating-system configuration.
+
+The final platform matrix, coverage gate, and independent security review are
+release-readiness checks tracked by T057 and T060 of
+[`KMIPKIT-0013`](../../specs/013-production-transport/tasks.md); this ADR does
+not claim those later gates have passed.
+
 ## Alternatives considered
 
 | Alternative | Result | Reason |

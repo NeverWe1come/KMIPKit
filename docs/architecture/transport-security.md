@@ -1,10 +1,11 @@
 # Transport and security architecture
 
 This document describes the intended 1.0 transport profile and its accepted
-implementation boundary. KMIPKIT-0013 specifies production TLS/HTTPS adapters
-and a synchronous client constructor from validated configuration; its
-implementation is in progress. The constructor must not expose arbitrary
-transport injection. See the
+implementation boundary. KMIPKIT-0013 implements production TLS/HTTPS
+adapters and a synchronous typed-client constructor from validated
+configuration. Remaining operation coverage, platform, documentation, and
+independent-review gates are tracked in that specification. The constructor
+does not expose arbitrary transport injection. See the
 [client execution guide](../user-guide/en/client-execution.md) for the
 implemented boundary.
 
@@ -68,6 +69,17 @@ automatically.
 
 One endpoint is configured per client. Alternative endpoints returned by KMIP
 are exposed to the application but never selected automatically.
+
+The worker calls `std::net::ToSocketAddrs` through `spawn_blocking` to preserve
+the operating system's resolver policy. It acquires one of 32 shared permits
+per loaded KMIPKit library instance before submission and retains at most the
+first 16 returned addresses in OS order. A started native lookup may continue
+after timeout or cancellation and retain its permit; KMIPKit discards its late
+result before it can open a candidate connection or dispatch KMIP data. The
+OS owns DNS packet retries, upstream concurrency, resolver caches, hosts and
+search rules, and split-DNS/VPN routing. KMIPKit makes no numeric claims about
+those OS-controlled behaviors. See
+[ADR-0016](../adr/0016-native-system-name-resolution.md).
 
 ## Timeouts
 
