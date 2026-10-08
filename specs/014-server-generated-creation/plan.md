@@ -1,12 +1,12 @@
 # Implementation Plan: Server-Generated Object Creation
 
-**Branch**: feature/KMIPKIT-0014-create-operations | **Date**: 2026-10-07 | **Spec**: spec.md
+**Branch**: feature/KMIPKIT-0014-attribute-schema-correction | **Date**: 2026-10-07 | **Spec**: spec.md
 
 **Input**: specs/014-server-generated-creation/spec.md
 
 ## Summary
 
-Add typed KMIP 2.1 Create, Create Key Pair, and Create Split Key requests and responses to the Rust protocol and typed-client path. Preserve every table-defined field, cardinality, order, and result. Keep cryptographic choices explicit, one exchange per invocation, errors redacted, and response models backed by the existing generic message owner.
+Add typed KMIP 2.1 Create, Create Key Pair, and Create Split Key requests and responses to the Rust protocol and typed-client path. Preserve every table-defined field, cardinality, order, and result. Model operation attribute groups as ordered direct §4 attribute TTLV items under §§5.1–5.4, Tables 157–160; retain Table 150 only for the distinct Vendor Attribute structure. Keep cryptographic choices explicit, one exchange per invocation, errors redacted, and response models backed by the existing generic message owner.
 
 ## Technical Context
 
@@ -16,7 +16,7 @@ Add typed KMIP 2.1 Create, Create Key Pair, and Create Split Key requests and re
 
 **Storage**: None.
 
-**Testing**: Rust unit tests, table-derived TTLV fixtures, malformed-input tests, property roundtrips where appropriate, and deterministic client fake transport.
+**Testing**: Rust unit tests, table-derived TTLV fixtures, malformed-input tests, explicitly named property-based TTLV roundtrip tests for ordered attribute items, and deterministic client fake transport. The pinned official test-case XML supplies only a Create-only derived case; the complete `TC-CREATE-SD-1-21` case is not claimed as passing. Focused immutable-source checker tests protect the exact pinned `upstream/` subtree and reject all OASIS changes except the project-authored README/SOURCES edits and new fixture additions required by this specification.
 
 **Target Platform**: Linux, Windows, and macOS; Rust 1.94 and stable.
 
@@ -24,7 +24,7 @@ Add typed KMIP 2.1 Create, Create Key Pair, and Create Split Key requests and re
 
 **Performance Goals**: No additional serialization pass or unbounded allocation; existing 16 MiB/depth-64/100,000-item defaults remain authoritative.
 
-**Constraints**: All outbound model checks precede encoding; no implicit cryptographic parameters; no automatic retry or polling; no raw-body errors or logs; redact AttributeEntry values from public Debug/error context; preserve unknown generic values and their tags; require caller-supplied Prime Field Size for Polynomial Sharing Prime Field; send the §9.12 peer response limit for batches containing Create Split Key while enforcing the local byte cap; coverage gates and 100% requirement traceability apply.
+**Constraints**: All outbound model checks precede encoding; no implicit cryptographic parameters; no automatic retry or polling; no raw-body errors or logs; redact attribute-item values from public Debug/error context; preserve unknown generic values and their tags; Create and Create Split Key require outer Attributes structures that may be empty under §5.1; require caller-supplied Prime Field Size for Polynomial Sharing Prime Field as a KMIPKit client policy (Table 193 marks the request field optional; §2.8/Table 9 describes the Split Key object); send the §9.12 peer response limit for batches containing Create Split Key while enforcing the local byte cap; coverage gates and 100% requirement traceability apply.
 **Scale/Scope**: Three client-initiated operations and their operation payloads, limited to TTLV and Rust APIs in this feature.
 
 ## Constitution Check

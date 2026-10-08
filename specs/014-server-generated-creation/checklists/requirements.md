@@ -19,8 +19,8 @@
 - [x] Acceptance scenarios cover each operation.
 - [x] Edge cases include malformed responses, repeated fields, operation errors, and Pending results.
 - [x] Dependencies, assumptions, and exclusions are recorded.
-- [x] Exact OASIS sections, tables, catalog requirement IDs, and operation elements are cited.
-- [x] Official test cases are distinguished from table-derived tests.
+- [x] Exact OASIS sections, tables, catalog requirement IDs, and operation elements are cited; §§5.1–5.4 Tables 157–160 are distinguished from §4.60 Table 150.
+- [x] The local `TC-CREATE-SD-1-21` fixture is distinguished from its Create-only derived test; fixture availability is not described as a full test-case pass.
 
 ## Feature Readiness
 
@@ -32,3 +32,8 @@
 ## Notes
 
 The author checklist is complete; independent human review and PR approval remain open.
+
+Prime Field Size is described as an explicit KMIPKit client restriction for
+Polynomial Sharing Prime Field. The spec does not attribute that restriction
+to OASIS request semantics: Table 193 marks the request field optional, and
+§2.8/Table 9 concerns the Split Key object.

@@ -54511,9 +54511,10 @@
         "KMIPKIT-PROFILE-TAPE-LIBRARY-SERVER"
       ],
       "test_case_ids": [
-        "KMIPKIT-TEST-PROF-5-17-2"
+        "KMIPKIT-TEST-PROF-5-17-2",
+        "KMIPKIT-TEST-CN01-2-12"
       ],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [],
       "verification_refs": [],
       "payload_tables": [
@@ -54543,13 +54544,18 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.9-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.9-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.9-006",
+        "KMIPKIT-REQ-SPEC-6.1.9-007"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-COMPLETE-SERVER",
         "KMIPKIT-PROFILE-QUANTUM-SAFE-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [],
       "verification_refs": [],
       "payload_tables": [
@@ -54579,10 +54585,12 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.10-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [],
       "verification_refs": [],
       "payload_tables": [
@@ -86557,10 +86565,12 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -90847,10 +90857,12 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -90877,10 +90889,12 @@
       "direction": "client_to_server",
       "condition": "For attributes not common to both keys.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -90907,10 +90921,12 @@
       "direction": "client_to_server",
       "condition": "For each attribute identified by the referenced table.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -90937,10 +90953,12 @@
       "direction": "client_to_server",
       "condition": "When assigning the attribute to a key pair.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -100083,11 +100101,12 @@
       "profile_ids": [],
       "requirement_ids": [],
       "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CREATE",
         "KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-CREATE-SD-1-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/TC-CREATE-SD-1-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {

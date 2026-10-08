@@ -10,6 +10,11 @@ an independent implementation and is not endorsed or certified by OASIS.
 Use [`SOURCES.md`](SOURCES.md) for canonical URLs and document status and
 [`CHECKSUMS.sha256`](CHECKSUMS.sha256) to verify bytes.
 
+The exact linked `TC-CREATE-SD-1-21` XML fixture is stored in `fixtures/`,
+outside the immutable `upstream/` HTML copies. Its source URL, work-product
+version/date, and SHA-256 are recorded in [`SOURCES.md`](SOURCES.md). Do not
+modify the fixture bytes.
+
 The normative precedence rules are in
 [`docs/compliance/document-hierarchy.md`](../../../docs/compliance/document-hierarchy.md).
 

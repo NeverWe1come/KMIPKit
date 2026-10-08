@@ -2,7 +2,7 @@
 
 ## Decision 1 — Use the pinned OASIS v2.1 operation tables as the schema
 
-**Decision**: Implement payloads from Specification §§6.1.8–6.1.10 and Tables 186–195, with structural definitions from §§7.1–7.2 and common message/result behavior from applicable shared sections.
+**Decision**: Implement payloads from Specification §§6.1.8–6.1.10 and Tables 186–195. Use §§5.1–5.4 and Tables 157–160 for operation attribute groups and direct §4 Object Attribute items. Use §4.60/Table 150 only for the distinct Vendor Attribute structure. Shared message/result behavior follows the applicable shared sections.
 
 **Rationale**: The pinned HTML is the normative source and the inventory records operation element IDs and applicable requirement IDs. The Usage Guide is informative and cannot fill a normative gap.
 
@@ -10,9 +10,9 @@
 
 ## Decision 2 — Preserve a typed operation envelope and dynamic attributes
 
-**Decision**: Expose distinct request/response types for each operation and an Attribute entry modeled from §7.2, Table 150: preserve Attribute Name as an exact Text String and Attribute Value as the existing generic TTLV Item, including its tag and typed Value. Attribute entries remain ordered and may repeat. The client preserves the Common, Private, and Public groups; the server applies the Table 189 union rule. Do not accept caller-defined conversions or arbitrary pre-encoded request bodies.
+**Decision**: Expose distinct request/response types for each operation and ordered attribute groups containing direct §4 Object Attribute TTLV items as specified by Tables 157–160. Each generic Item retains its tag and typed value; entries may repeat and remain in wire order. Do not wrap ordinary attribute items in Table 150's Attribute Name/Attribute Value structure. Table 150 is the separate §4.60 Vendor Attribute structure and requires Vendor Identification. The client preserves the Common, Private, and Public groups; the server applies the Table 189 union rule. Do not accept caller-defined conversions or arbitrary pre-encoded request bodies.
 
-**Rationale**: Table 150 encodes Attribute Name as a Text String and Attribute Value using a type and tag associated with the named attribute. KMIP Attributes are heterogeneous and extensible. The generic Item preserves the tag as well as integer, enumeration, text, bytes, date-time, interval, and nested Structure representations without lossy conversion, while the exact string preserves unknown and vendor names. This representation does not expand outbound assigned-value or registered-extension policy. Convenience attribute-specific builders may be added before 1.0 if they preserve this wire contract and do not locally merge groups.
+**Rationale**: Tables 157–160 specify direct §4 attribute items, which already carry their attribute identity in the TTLV tag. The generic Item preserves that tag and the typed value without lossy conversion. The distinct Vendor Attribute structure uses its own Vendor Identification and Attribute Name fields under §4.60/Table 150. This representation does not expand outbound assigned-value or registered-extension policy. Convenience attribute-specific builders may be added before 1.0 if they preserve this wire contract and do not locally merge groups.
 
 **Alternatives considered**: Convert every attribute into a rigid closed enum immediately. Rejected for this operation slice because it duplicates extensible values and risks losing unrecognized attributes. Treat the entire request as an arbitrary TTLV Item. Rejected because it bypasses the closed typed operation boundary from KMIPKIT-0007.
 
@@ -36,6 +36,14 @@
 
 **Rationale**: The payload schemas need no new parser, crypto provider, or transport. Dependency policy stays reproducible.
 
+## Decision 6 — Keep source integrity checks aligned with the immutable boundary
+
+**Decision**: Keep the exact pinned OASIS files under `specification/oasis/kmip-2.1/upstream/` immutable. The source checker may allow edits only to the project-authored KMIP 2.1 `README.md` and `SOURCES.md`, plus additions under `fixtures/`; it must reject every other OASIS path and changes to fixture files already present in the base commit. Preserve the existing exact-base and catalog fixture validation.
+
+**Rationale**: T001 and T002 require recording the project-owned fixture's provenance and mapping its exact XML path as available. A whole-`specification/oasis/` prohibition blocks those approved project artifacts. Keeping the exact pinned `upstream/` subtree immutable, recording and verifying the fixture SHA-256, and retaining catalog path validation preserves the distinct source-integrity checks.
+
+**Evidence**: `tools/normative_catalog/tests/test_immutable_sources.py` exercises permitted inventory/fixture additions and rejection of modified upstream, unrelated OASIS paths, and existing fixture changes. Red, Green, and Refactor commits preserve the required TDD evidence.
+
 ## Normative evidence
 
-Catalog-linked requirements for Create Key Pair are KMIPKIT-REQ-SPEC-6.1.9-001-001, -001-002, -006, and -007. Create Split Key links KMIPKIT-REQ-SPEC-6.1.10-001. The pinned KMIP Test Cases HTML includes `TC-CREATE-SD-1-21` for Create/Secret Data (§2.12), but its linked XML is not locally pinned; T001 adds a provenance-tracked local fixture. No direct Create Key Pair or Create Split Key case appears in the pinned work product.
+Catalog-linked and feature-assigned requirements for Create Key Pair are KMIPKIT-REQ-SPEC-6.1.9-001-001, -001-002, -006, and -007. Create Split Key links KMIPKIT-REQ-SPEC-6.1.10-001. Section 2.8/Table 9 describes Prime Field Size in the Split Key object, while §6.1.10/Table 193 marks the Create Split Key request field optional. FR-015 is therefore documented as a KMIPKit client restriction, not as an OASIS request requirement. The pinned KMIP Test Cases HTML includes `TC-CREATE-SD-1-21` for Create/Secret Data (§2.12); its byte-identical linked XML is pinned at `specification/oasis/kmip-2.1/fixtures/TC-CREATE-SD-1-21.xml` with provenance in `SOURCES.md` and catalog availability marked `available`. The catalog maps the case to the Create operation and Secret Data object only; availability is not evidence that the case passed. Only the Create request/response batch item is used for a derived test; the full two-operation case is not claimed as passing. No direct Create Key Pair or Create Split Key case appears in the pinned work product.
