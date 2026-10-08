@@ -241,5 +241,5 @@ fn finish_lookup_until(
 }
 
 #[cfg(test)]
-#[path = "resolver_tests.rs"]
+#[path = "../tests/unit/resolver_tests.rs"]
 mod tests;

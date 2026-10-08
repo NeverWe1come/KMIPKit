@@ -743,5 +743,5 @@ impl std::fmt::Display for SafeIoFailure {
 impl std::error::Error for SafeIoFailure {}
 
 #[cfg(test)]
-#[path = "timeout_tests.rs"]
+#[path = "../tests/unit/timeout_tests.rs"]
 mod tests;

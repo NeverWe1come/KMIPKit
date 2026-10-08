@@ -6,7 +6,7 @@ use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer, ServerName};
 use rustls::{ClientConnection, RootCertStore, ServerConfig, ServerConnection};
 
-#[path = "../src/tls_policy.rs"]
+#[path = "support/tls_policy.rs"]
 mod tls_policy;
 
 #[test]

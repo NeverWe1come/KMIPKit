@@ -237,9 +237,10 @@ mod tls;
 #[allow(dead_code)]
 mod timeout;
 #[cfg(test)]
+#[path = "../tests/support/tls_policy.rs"]
 mod tls_policy;
 #[cfg(test)]
-#[path = "tls_policy_tests.rs"]
+#[path = "../tests/unit/tls_policy_tests.rs"]
 mod tls_policy_tests;
 // The resolver precedes the production adapters that consume it in later tasks.
 #[allow(dead_code)]
