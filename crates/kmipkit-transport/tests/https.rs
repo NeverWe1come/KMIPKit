@@ -350,6 +350,371 @@ fn https_request_host_serializes_bracketed_ipv6_authority_and_explicit_port() {
     );
 }
 
+#[test]
+fn https_rejects_invalid_status_response_headers_and_encodings() {
+    let cases: [(&str, &[u8]); 13] = [
+        (
+            "non-200 status",
+            b"HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\n\r\nresponse",
+        ),
+        (
+            "missing Content-Type",
+            b"HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nresponse",
+        ),
+        (
+            "missing Content-Length",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nConnection: close\r\n\r\nresponse",
+        ),
+        (
+            "duplicate Content-Type",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\n\r\nresponse",
+        ),
+        (
+            "duplicate Content-Length",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\nContent-Length: 8\r\n\r\nresponse",
+        ),
+        (
+            "conflicting Content-Length",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\nContent-Length: 9\r\n\r\nresponse",
+        ),
+        (
+            "invalid media type",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 8\r\n\r\nresponse",
+        ),
+        (
+            "invalid Content-Length",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: eight\r\n\r\nresponse",
+        ),
+        (
+            "negative Content-Length",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: -1\r\n\r\n",
+        ),
+        (
+            "Transfer-Encoding",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nTransfer-Encoding: chunked\r\n\r\n8\r\nresponse\r\n0\r\n\r\n",
+        ),
+        (
+            "conflicting Transfer-Encoding and Content-Length",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nTransfer-Encoding: chunked\r\nContent-Length: 8\r\n\r\n8\r\nresponse\r\n0\r\n\r\n",
+        ),
+        (
+            "Content-Encoding",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Encoding: gzip\r\nContent-Length: 8\r\n\r\nresponse",
+        ),
+        (
+            "duplicate Content-Encoding",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Encoding: identity\r\nContent-Encoding: gzip\r\nContent-Length: 8\r\n\r\nresponse",
+        ),
+    ];
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let mut failures = Vec::new();
+
+    for (name, response) in cases {
+        let result = exchange_raw_response(&pki, response, 64);
+        match result {
+            Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted => {}
+            Err(error) => failures.push(format!(
+                "{name}: rejected with delivery state {:?}",
+                error.delivery_state()
+            )),
+            Ok(_) => failures.push(format!("{name}: unexpectedly accepted the response")),
+        }
+    }
+
+    assert!(
+        failures.is_empty(),
+        "HTTPS must reject invalid status, headers, and encodings: {failures:?}"
+    );
+}
+
+#[test]
+fn https_rejects_http_parser_errors_and_truncated_response_bodies() {
+    let cases: [(&str, &[u8]); 4] = [
+        (
+            "malformed status line",
+            b"HTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\n\r\n",
+        ),
+        (
+            "malformed header name",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\nBad Header: value\r\n\r\n",
+        ),
+        (
+            "malformed chunk framing",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nTransfer-Encoding: chunked\r\n\r\nnot-a-chunk\r\n",
+        ),
+        (
+            "truncated fixed-length body",
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 16\r\n\r\npartial",
+        ),
+    ];
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let mut failures = Vec::new();
+
+    for (name, response) in cases {
+        match exchange_raw_response(&pki, response, 64) {
+            Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted => {}
+            Err(error) => failures.push(format!(
+                "{name}: parser rejected with delivery state {:?}",
+                error.delivery_state()
+            )),
+            Ok(_) => failures.push(format!("{name}: unexpectedly accepted the response")),
+        }
+    }
+
+    assert!(
+        failures.is_empty(),
+        "malformed and truncated HTTP responses must fail after response bytes: {failures:?}"
+    );
+}
+
+#[test]
+fn https_enforces_64_headers_and_64_kibibyte_parser_input_boundary() {
+    const PARSER_LIMIT: usize = 64 * 1024;
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let accepted_64 = response_with_header_count(64);
+    let rejected_65 = response_with_header_count(65);
+    let accepted_at_limit = response_with_header_block_size(PARSER_LIMIT);
+    let rejected_over_limit = response_with_header_block_size(PARSER_LIMIT + 1);
+
+    let exact_headers = exchange_raw_response(&pki, &accepted_64, 1);
+    let too_many_headers = exchange_raw_response(&pki, &rejected_65, 1);
+    let exact_size = exchange_raw_response(&pki, &accepted_at_limit, 1);
+    let oversized = exchange_raw_response(&pki, &rejected_over_limit, 1);
+    let incomplete = exchange_raw_response(
+        &pki,
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\nX-Incomplete: value\r\n",
+        1,
+    );
+
+    let mut failures = Vec::new();
+    if exact_headers.is_err() {
+        failures.push("exactly 64 headers were rejected");
+    }
+    if !matches!(too_many_headers, Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted)
+    {
+        failures.push("a 65th response header was accepted or lacked response evidence");
+    }
+    if exact_size.is_err() {
+        failures.push("a complete 64 KiB response header block was rejected");
+    }
+    if !matches!(oversized, Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted)
+    {
+        failures
+            .push("a response header block over 64 KiB was accepted or lacked response evidence");
+    }
+    if !matches!(incomplete, Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted)
+    {
+        failures
+            .push("an incomplete response header block was accepted or lacked response evidence");
+    }
+    assert!(
+        failures.is_empty(),
+        "parser boundary failures: {failures:?}"
+    );
+}
+
+#[test]
+fn https_accepts_a_response_at_the_exact_body_limit() {
+    const BODY: &[u8] = b"boundary";
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n",
+        BODY.len()
+    );
+    let mut wire = response.into_bytes();
+    wire.extend_from_slice(BODY);
+
+    let result = exchange_raw_response(&pki, &wire, BODY.len());
+    assert!(
+        matches!(result, Ok(response) if response.as_bytes() == BODY),
+        "a response whose declared and received size equals the cap is accepted unchanged"
+    );
+}
+
+#[test]
+fn https_rejects_declared_oversize_before_body_arrives_or_response_buffer_grows() {
+    const LIMIT: usize = 8;
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let config = config_builder(&pki, format!("https://{SERVER_NAME}:{}", address.port()))
+        .timeouts(TimeoutPolicy::default().with_read(TimeoutLimit::Bounded(Duration::from_secs(2))))
+        .build()
+        .expect("the explicit identity and trust inputs build a valid HTTPS config");
+    let header = format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n",
+        LIMIT + 1
+    )
+    .into_bytes();
+    let (peer, headers_sent, body_release) = spawn_gated_response_peer(
+        listener.into_inner(),
+        server_config(&pki),
+        header,
+        b"oversize!".to_vec(),
+    );
+    let observer = https::ResponseBufferObserver::new();
+    let adapter = https::new_for_test_with_response_buffer_observer(
+        config,
+        fixed_resolver(address),
+        observer.clone(),
+    );
+    let (result_tx, result_rx) = mpsc::sync_channel(1);
+
+    thread::spawn(move || {
+        let mut adapter = adapter;
+        let result = adapter.exchange(fixtures::REQUEST_SENTINEL, LIMIT);
+        let _ = result_tx.send(result);
+    });
+
+    assert!(
+        headers_sent.recv_timeout(PEER_TIMEOUT).is_ok(),
+        "the peer sent response headers declaring a body above the cap"
+    );
+    let rejected_before_body = matches!(
+        result_rx.recv_timeout(Duration::from_millis(250)),
+        Ok(Err(error)) if error.cause_category() != TransportCauseCategory::Timeout
+    );
+    let _ = body_release.send(());
+    let result = result_rx
+        .recv_timeout(PEER_TIMEOUT)
+        .expect("the exchange returns after the held response body is released");
+    let peer = peer.join().expect("the bounded HTTPS peer completes");
+
+    assert!(
+        matches!(result, Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted),
+        "a response declaring more than the effective cap is rejected"
+    );
+    assert_eq!(
+        observer.allocation_attempts(),
+        0,
+        "the KMIPKit response body owner does not request a buffer allocation over the cap"
+    );
+    assert_eq!(
+        observer.requested_capacity(),
+        0,
+        "no KMIPKit response buffer capacity is requested over the declared cap"
+    );
+    assert!(
+        peer.request.is_some(),
+        "the peer captured the request before sending the oversized response headers"
+    );
+    assert!(
+        rejected_before_body,
+        "declared oversize is rejected from Content-Length before the peer sends body bytes"
+    );
+}
+
+#[test]
+fn https_zeroizes_partial_response_buffer_when_http_body_is_truncated() {
+    const PARTIAL_BODY: &[u8] = b"partial-secret-response";
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let header = format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n",
+        PARTIAL_BODY.len() + 5
+    );
+    let mut response = header.into_bytes();
+    response.extend_from_slice(PARTIAL_BODY);
+    let peer = spawn_raw_response_peer(listener.into_inner(), server_config(&pki), response);
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let observer = https::ResponseBufferObserver::new();
+    let mut adapter = https::new_for_test_with_response_buffer_observer(
+        config,
+        fixed_resolver(address),
+        observer.clone(),
+    );
+
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+    let peer = peer.join().expect("the bounded HTTPS peer completes");
+
+    assert!(
+        matches!(result, Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted),
+        "a body shorter than Content-Length is rejected"
+    );
+    assert_eq!(
+        observer.initialized_len(),
+        PARTIAL_BODY.len(),
+        "the response owner records the bytes initialized before truncation"
+    );
+    assert!(
+        observer.initialized_range_was_zero(),
+        "initialized partial response bytes are zeroized before release"
+    );
+    assert!(
+        observer.replaced_allocations_were_zero(),
+        "replaced response allocations are zeroized before release"
+    );
+    assert!(
+        peer.request.is_some(),
+        "the peer captured the HTTPS request"
+    );
+}
+
+#[test]
+fn https_never_attributes_a_surplus_response_to_a_later_exchange() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let (peer, surplus_release, surplus_sent) =
+        spawn_surplus_response_peer(listener.into_inner(), server_config(&pki));
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+
+    let first = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the first exchange receives its own response");
+    let second = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the second exchange receives its own response");
+    let _ = surplus_release.send(());
+    assert!(
+        surplus_sent.recv_timeout(PEER_TIMEOUT).is_ok(),
+        "the peer queued the unsolicited response after two completed exchanges"
+    );
+    let third = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+    let third_avoids_surplus = match &third {
+        Ok(response) => response.as_bytes() != b"unsolicited",
+        Err(_) => true,
+    };
+    drop(adapter);
+    let peer = peer.join().expect("the bounded reuse peer completes");
+
+    let mut failures = Vec::new();
+    if first.as_bytes() != b"first" {
+        failures.push("the first exchange did not receive its response");
+    }
+    if second.as_bytes() != b"second" {
+        failures.push("the second exchange did not receive its response");
+    }
+    if peer.request_connection_ids.len() < 2 {
+        failures.push("the peer did not observe two actual HTTPS requests");
+    }
+    if peer.request_connection_ids.first() != peer.request_connection_ids.get(1) {
+        failures.push("the first two completed exchanges used different TLS connections");
+    }
+    if !peer.surplus_write_succeeded {
+        failures.push("the unsolicited response could not be queued on the reused TLS connection");
+    }
+    if !third_avoids_surplus {
+        failures.push("the third exchange was given the unsolicited response");
+    }
+    assert!(
+        failures.is_empty(),
+        "reused HTTPS connections must discard surplus responses: {failures:?}"
+    );
+}
+
 fn assert_request(
     request: &CapturedRequest,
     expected_method: &str,
@@ -506,6 +871,302 @@ fn spawn_peer(
     respond: bool,
 ) -> JoinHandle<PeerObservation> {
     thread::spawn(move || run_peer(&listener, configuration, respond))
+}
+
+fn exchange_raw_response(
+    pki: &EphemeralPki,
+    response: &[u8],
+    max_response_bytes: usize,
+) -> Result<TransportResponse, TransportError> {
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer =
+        spawn_raw_response_peer(listener.into_inner(), server_config(pki), response.to_vec());
+    let config = client_config(
+        pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, max_response_bytes);
+    let peer = peer
+        .join()
+        .expect("the bounded HTTPS response peer completes");
+    assert!(
+        peer.accepted,
+        "the response peer accepted one TLS connection"
+    );
+    assert!(peer.request.is_some(), "the peer captured one HTTP request");
+    result
+}
+
+fn response_with_header_count(total_headers: usize) -> Vec<u8> {
+    let mut response =
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\n"
+            .to_vec();
+    for index in 2..total_headers {
+        response.extend_from_slice(format!("X-Extra-{index}: value\r\n").as_bytes());
+    }
+    response.extend_from_slice(b"\r\n");
+    response
+}
+
+fn response_with_header_block_size(total_size: usize) -> Vec<u8> {
+    let prefix = b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\nX-Padding: ";
+    let suffix = b"\r\n\r\n";
+    let value_len = total_size
+        .checked_sub(prefix.len() + suffix.len())
+        .expect("the parser boundary exceeds fixed response header text");
+    let mut response = Vec::with_capacity(total_size);
+    response.extend_from_slice(prefix);
+    response.resize(response.len() + value_len, b'a');
+    response.extend_from_slice(suffix);
+    assert_eq!(response.len(), total_size);
+    response
+}
+
+fn spawn_raw_response_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    response: Vec<u8>,
+) -> JoinHandle<PeerObservation> {
+    thread::spawn(move || {
+        let Ok((stream, _)) = accept_before_deadline(&listener) else {
+            return PeerObservation::default();
+        };
+        let mut observation = PeerObservation {
+            accepted: true,
+            ..PeerObservation::default()
+        };
+        if stream.set_nonblocking(false).is_err()
+            || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
+            || stream.set_write_timeout(Some(PEER_TIMEOUT)).is_err()
+        {
+            return observation;
+        }
+        let Ok(connection) = ServerConnection::new(configuration) else {
+            return observation;
+        };
+        let mut tls = StreamOwned::new(connection, stream);
+        let handshake_deadline = Instant::now() + PEER_TIMEOUT;
+        while tls.conn.is_handshaking() {
+            if Instant::now() >= handshake_deadline || tls.conn.complete_io(&mut tls.sock).is_err()
+            {
+                return observation;
+            }
+        }
+        observation.protocol_version = tls.conn.protocol_version();
+        observation.client_identity_present = tls
+            .conn
+            .peer_certificates()
+            .is_some_and(|certificates| !certificates.is_empty());
+        observation.request = read_request(&mut tls);
+        if observation.request.is_some()
+            && (tls.write_all(&response).is_err() || tls.flush().is_err())
+        {
+            return observation;
+        }
+        observation
+    })
+}
+
+fn spawn_gated_response_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    response_headers: Vec<u8>,
+    body: Vec<u8>,
+) -> (
+    JoinHandle<PeerObservation>,
+    mpsc::Receiver<()>,
+    mpsc::SyncSender<()>,
+) {
+    let (headers_sent, headers_sent_rx) = mpsc::sync_channel(1);
+    let (body_release, body_release_rx) = mpsc::sync_channel(1);
+    let peer = thread::spawn(move || {
+        let Ok((stream, _)) = accept_before_deadline(&listener) else {
+            return PeerObservation::default();
+        };
+        let mut observation = PeerObservation {
+            accepted: true,
+            ..PeerObservation::default()
+        };
+        if stream.set_nonblocking(false).is_err()
+            || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
+            || stream.set_write_timeout(Some(PEER_TIMEOUT)).is_err()
+        {
+            return observation;
+        }
+        let Ok(connection) = ServerConnection::new(configuration) else {
+            return observation;
+        };
+        let mut tls = StreamOwned::new(connection, stream);
+        let handshake_deadline = Instant::now() + PEER_TIMEOUT;
+        while tls.conn.is_handshaking() {
+            if Instant::now() >= handshake_deadline || tls.conn.complete_io(&mut tls.sock).is_err()
+            {
+                return observation;
+            }
+        }
+        observation.protocol_version = tls.conn.protocol_version();
+        observation.client_identity_present = tls
+            .conn
+            .peer_certificates()
+            .is_some_and(|certificates| !certificates.is_empty());
+        observation.request = read_request(&mut tls);
+        if observation.request.is_none() {
+            return observation;
+        }
+        if tls.write_all(&response_headers).is_err() || tls.flush().is_err() {
+            return observation;
+        }
+        let _ = headers_sent.send(());
+        if body_release_rx.recv_timeout(PEER_TIMEOUT).is_ok() {
+            let _ = tls.write_all(&body);
+            let _ = tls.flush();
+        }
+        observation
+    });
+    (peer, headers_sent_rx, body_release)
+}
+
+#[derive(Default)]
+struct SurplusPeerObservation {
+    request_connection_ids: Vec<usize>,
+    surplus_write_succeeded: bool,
+}
+
+fn spawn_surplus_response_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+) -> (
+    JoinHandle<SurplusPeerObservation>,
+    mpsc::SyncSender<()>,
+    mpsc::Receiver<()>,
+) {
+    let observation = Arc::new(std::sync::Mutex::new(SurplusPeerObservation::default()));
+    let (surplus_release, surplus_release_rx) = mpsc::sync_channel(1);
+    let surplus_release_rx = Arc::new(std::sync::Mutex::new(surplus_release_rx));
+    let (surplus_sent, surplus_sent_rx) = mpsc::sync_channel(1);
+    let peer_observation = Arc::clone(&observation);
+    let peer = thread::spawn(move || {
+        let _ = listener.set_nonblocking(true);
+        let accept_deadline = Instant::now() + Duration::from_secs(3);
+        let mut connection_id = 0_usize;
+        let mut handlers = Vec::new();
+        while Instant::now() < accept_deadline && connection_id < 3 {
+            match listener.accept() {
+                Ok((stream, _)) => {
+                    connection_id += 1;
+                    let id = connection_id;
+                    let configuration = Arc::clone(&configuration);
+                    let observation = Arc::clone(&peer_observation);
+                    let surplus_release = Arc::clone(&surplus_release_rx);
+                    let surplus_sent = surplus_sent.clone();
+                    handlers.push(thread::spawn(move || {
+                        run_surplus_connection(
+                            stream,
+                            configuration,
+                            id,
+                            observation,
+                            surplus_release,
+                            surplus_sent,
+                        );
+                    }));
+                }
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    thread::sleep(Duration::from_millis(10));
+                }
+                Err(_) => break,
+            }
+        }
+        for handler in handlers {
+            let _ = handler.join();
+        }
+        let Ok(observation) = Arc::try_unwrap(peer_observation) else {
+            return SurplusPeerObservation::default();
+        };
+        observation
+            .into_inner()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    });
+    (peer, surplus_release, surplus_sent_rx)
+}
+
+fn run_surplus_connection(
+    stream: TcpStream,
+    configuration: Arc<ServerConfig>,
+    connection_id: usize,
+    observation: Arc<std::sync::Mutex<SurplusPeerObservation>>,
+    surplus_release: Arc<std::sync::Mutex<mpsc::Receiver<()>>>,
+    surplus_sent: mpsc::SyncSender<()>,
+) {
+    if stream.set_nonblocking(false).is_err()
+        || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
+        || stream.set_write_timeout(Some(PEER_TIMEOUT)).is_err()
+    {
+        return;
+    }
+    let Ok(connection) = ServerConnection::new(configuration) else {
+        return;
+    };
+    let mut tls = StreamOwned::new(connection, stream);
+    let handshake_deadline = Instant::now() + PEER_TIMEOUT;
+    while tls.conn.is_handshaking() {
+        if Instant::now() >= handshake_deadline || tls.conn.complete_io(&mut tls.sock).is_err() {
+            return;
+        }
+    }
+
+    while read_request(&mut tls).is_some() {
+        let request_index = {
+            let Ok(mut observation) = observation.lock() else {
+                return;
+            };
+            observation.request_connection_ids.push(connection_id);
+            observation.request_connection_ids.len() - 1
+        };
+        let (body, send_surplus) = match request_index {
+            0 => (b"first".as_slice(), false),
+            1 => (b"second".as_slice(), true),
+            _ => (b"third".as_slice(), false),
+        };
+        if write_response_body(&mut tls, body).is_err() {
+            return;
+        }
+        if send_surplus {
+            let Ok(release) = surplus_release.lock() else {
+                return;
+            };
+            if release.recv_timeout(PEER_TIMEOUT).is_err() {
+                return;
+            }
+            let wrote_surplus = write_response_body(&mut tls, b"unsolicited").is_ok();
+            if let Ok(mut observation) = observation.lock() {
+                observation.surplus_write_succeeded = wrote_surplus;
+            }
+            let _ = surplus_sent.send(());
+            if !wrote_surplus {
+                return;
+            }
+        }
+        if request_index >= 2 {
+            return;
+        }
+    }
+}
+
+fn write_response_body(
+    tls: &mut StreamOwned<ServerConnection, TcpStream>,
+    body: &[u8],
+) -> io::Result<()> {
+    let headers = format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n",
+        body.len()
+    );
+    tls.write_all(headers.as_bytes())?;
+    tls.write_all(body)?;
+    tls.flush()
 }
 
 fn spawn_stalled_peer(

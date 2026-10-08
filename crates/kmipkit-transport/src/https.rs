@@ -59,6 +59,8 @@ pub struct HttpsTransport {
     #[cfg(test)]
     observer: Option<SecretBufferObserver>,
     #[cfg(test)]
+    response_buffer_observer: Option<ResponseBufferObserver>,
+    #[cfg(test)]
     worker_spawner: Option<WorkerSpawnerForTest>,
     #[cfg(test)]
     driver_abort_observer: Option<mpsc::SyncSender<()>>,
@@ -132,6 +134,8 @@ impl HttpsTransport {
             worker: None,
             #[cfg(test)]
             observer: None,
+            #[cfg(test)]
+            response_buffer_observer: None,
             #[cfg(test)]
             worker_spawner: None,
             #[cfg(test)]
@@ -225,6 +229,8 @@ impl HttpsTransport {
         let client_config = Arc::clone(self.tls.rustls_config_arc());
         let server_name = self.tls.server_name().clone();
         #[cfg(test)]
+        let response_buffer_observer = self.response_buffer_observer.take();
+        #[cfg(test)]
         let driver_abort_observer = self.driver_abort_observer.take();
         #[cfg(test)]
         let cancel_exchange = self.cancel_exchange.take();
@@ -256,6 +262,8 @@ impl HttpsTransport {
                     cancel_exchange,
                     #[cfg(test)]
                     driver_cleanup_gate,
+                    #[cfg(test)]
+                    response_buffer_observer,
                 )
                 .await
             })
@@ -274,6 +282,18 @@ pub(crate) fn new_for_test_with_resolver(
         .expect("the HTTPS test contract supplies validated configuration");
     adapter.observer = observer;
     adapter.resolver = resolver;
+    adapter
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // The source-included HTTPS response contract uses this observer.
+pub(crate) fn new_for_test_with_response_buffer_observer(
+    configuration: TransportConfig,
+    resolver: Resolver,
+    observer: ResponseBufferObserver,
+) -> HttpsTransport {
+    let mut adapter = new_for_test_with_resolver(configuration, None, resolver);
+    adapter.response_buffer_observer = Some(observer);
     adapter
 }
 
@@ -342,6 +362,7 @@ async fn exchange_on_worker(
     #[cfg(test)] driver_abort_observer: Option<mpsc::SyncSender<()>>,
     #[cfg(test)] cancel_exchange: Option<tokio::sync::oneshot::Receiver<()>>,
     #[cfg(test)] driver_cleanup_gate: Option<DriverCleanupGateForTest>,
+    #[cfg(test)] response_buffer_observer: Option<ResponseBufferObserver>,
 ) -> Result<TransportResponse, TransportError> {
     let connect_deadline = earlier_deadline(
         deadline_for(policy.connect(), Instant::now()).map_err(|error| {
@@ -421,7 +442,14 @@ async fn exchange_on_worker(
         )
         .await
         .map_err(|error| io_error(error, control.delivery_state()))?;
-        read_response_body(response.into_body(), max_response_bytes, &control).await
+        read_response_body(
+            response.into_body(),
+            max_response_bytes,
+            &control,
+            #[cfg(test)]
+            response_buffer_observer,
+        )
+        .await
     }
     .await;
     drop(driver);
@@ -540,7 +568,11 @@ async fn read_response_body(
     mut body: Incoming,
     max_response_bytes: usize,
     control: &ExchangeControl,
+    #[cfg(test)] observer: Option<ResponseBufferObserver>,
 ) -> Result<TransportResponse, TransportError> {
+    #[cfg(test)]
+    let mut response = observer.map_or_else(ResponseBuffer::new, ResponseBuffer::new_with_observer);
+    #[cfg(not(test))]
     let mut response = ResponseBuffer::new();
     loop {
         let frame = poll_fn(|cx| Pin::new(&mut body).poll_frame(cx)).await;
@@ -568,11 +600,22 @@ async fn read_response_body(
     }
 }
 
-struct ResponseBuffer(Vec<u8>);
+struct ResponseBuffer(Vec<u8>, #[cfg(test)] Option<ResponseBufferObserver>);
 
 impl ResponseBuffer {
+    #[cfg(not(test))]
     fn new() -> Self {
         Self(Vec::new())
+    }
+
+    #[cfg(test)]
+    fn new() -> Self {
+        Self(Vec::new(), None)
+    }
+
+    #[cfg(test)]
+    fn new_with_observer(observer: ResponseBufferObserver) -> Self {
+        Self(Vec::new(), Some(observer))
     }
 
     fn append(&mut self, bytes: &[u8], limit: usize) -> io::Result<()> {
@@ -588,6 +631,10 @@ impl ResponseBuffer {
         }
 
         let capacity = self.0.capacity().saturating_mul(2).max(new_len).min(limit);
+        #[cfg(test)]
+        if let Some(observer) = &self.1 {
+            observer.record_allocation_attempt(capacity);
+        }
         let mut replacement = Vec::new();
         replacement
             .try_reserve_exact(capacity)
@@ -595,6 +642,10 @@ impl ResponseBuffer {
         replacement.extend_from_slice(&self.0);
         replacement.extend_from_slice(bytes);
         self.0.as_mut_slice().zeroize();
+        #[cfg(test)]
+        if let Some(observer) = &self.1 {
+            observer.record_replaced_allocation(self.0.as_slice());
+        }
         self.0 = replacement;
         Ok(())
     }
@@ -606,7 +657,105 @@ impl ResponseBuffer {
 
 impl Drop for ResponseBuffer {
     fn drop(&mut self) {
+        #[cfg(test)]
+        let initialized_len = self.0.len();
         self.0.as_mut_slice().zeroize();
+        #[cfg(test)]
+        if let Some(observer) = &self.1 {
+            observer.record_drop(initialized_len, self.0.as_slice());
+        }
+    }
+}
+
+#[cfg(test)]
+#[derive(Clone)]
+pub(crate) struct ResponseBufferObserver {
+    state: Arc<ResponseBufferObserverState>,
+}
+
+#[cfg(test)]
+struct ResponseBufferObserverState {
+    allocation_attempts: std::sync::atomic::AtomicUsize,
+    requested_capacity: std::sync::atomic::AtomicUsize,
+    initialized_len: std::sync::atomic::AtomicUsize,
+    initialized_range_was_zero: std::sync::atomic::AtomicBool,
+    replaced_allocations_were_zero: std::sync::atomic::AtomicBool,
+}
+
+#[cfg(test)]
+impl ResponseBufferObserver {
+    #[allow(dead_code)] // Integration tests construct this observer per adapter.
+    pub(crate) fn new() -> Self {
+        Self {
+            state: Arc::new(ResponseBufferObserverState {
+                allocation_attempts: std::sync::atomic::AtomicUsize::new(0),
+                requested_capacity: std::sync::atomic::AtomicUsize::new(0),
+                initialized_len: std::sync::atomic::AtomicUsize::new(0),
+                initialized_range_was_zero: std::sync::atomic::AtomicBool::new(false),
+                replaced_allocations_were_zero: std::sync::atomic::AtomicBool::new(true),
+            }),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn allocation_attempts(&self) -> usize {
+        self.state
+            .allocation_attempts
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn requested_capacity(&self) -> usize {
+        self.state
+            .requested_capacity
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn initialized_len(&self) -> usize {
+        self.state
+            .initialized_len
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn initialized_range_was_zero(&self) -> bool {
+        self.state
+            .initialized_range_was_zero
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn replaced_allocations_were_zero(&self) -> bool {
+        self.state
+            .replaced_allocations_were_zero
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
+    fn record_allocation_attempt(&self, capacity: usize) {
+        self.state
+            .allocation_attempts
+            .fetch_add(1, std::sync::atomic::Ordering::AcqRel);
+        self.state
+            .requested_capacity
+            .fetch_max(capacity, std::sync::atomic::Ordering::AcqRel);
+    }
+
+    fn record_replaced_allocation(&self, bytes: &[u8]) {
+        self.state.replaced_allocations_were_zero.fetch_and(
+            bytes.iter().all(|byte| *byte == 0),
+            std::sync::atomic::Ordering::AcqRel,
+        );
+    }
+
+    fn record_drop(&self, initialized_len: usize, bytes: &[u8]) {
+        self.state
+            .initialized_len
+            .store(initialized_len, std::sync::atomic::Ordering::Release);
+        self.state.initialized_range_was_zero.store(
+            bytes.iter().all(|byte| *byte == 0),
+            std::sync::atomic::Ordering::Release,
+        );
     }
 }
 
