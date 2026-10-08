@@ -127,7 +127,7 @@ description: "Implementation tasks for production TLS and HTTPS transports"
 and return only a typed decoded result; verify cross-client extension-provenance rejection and
 same-client extension preservation through the public Rust API.
 
-- [ ] T046 [US4] **Red**: Add public API integration tests in `crates/kmipkit-client/tests/production_client.rs` for validated raw TLS/HTTPS construction, no arbitrary transport injection, sync execution inside an existing runtime, options-bearing variants for every current typed operation method, direct-adapter byte exchange overrides, timeout override precedence on both paths, and exact request/response delivery; record expected failures in a Red commit.
+- [x] T046 [US4] **Red**: Add public API integration tests in `crates/kmipkit-client/tests/production_client.rs` for validated raw TLS/HTTPS construction, no arbitrary transport injection, sync execution inside an existing runtime, options-bearing variants for every current typed operation method, direct-adapter byte exchange overrides, timeout override precedence on both paths, and exact request/response delivery. Red commit `6e2ea68`; `cargo test -p kmipkit-client --test production_client --offline` fails at the expected missing production `Client::new` constructor and root `RequestOptions` export. `cargo fmt --all --check` and `git diff --check` pass. See `.superpowers/sdd/013-production-transport/task-46-report.md`.
 - [ ] T046a [US4] **Red**: Add a focused execution-boundary unit test in
   `crates/kmipkit-client/src/execute.rs` proving `ClientRequestMessageExtension` registry
   provenance is checked before outgoing `RequestMessage` construction, codec invocation, and adapter
