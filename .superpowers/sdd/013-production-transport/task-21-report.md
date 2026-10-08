@@ -67,6 +67,16 @@ tests need a real logging surface before they can be added.
   Red phase.
 - git diff --check passes.
 
+### Encrypted-key sentinel correction
+
+The current-API encrypted-key case includes a dedicated, synthetic PEM-body
+sentinel and checks that it is absent from error Display, Debug, and the public
+source chain. Assertion messages are static and do not print the sentinel.
+Correction commit: da52647f728032cd2c81fc78057e550e0900f73c. Verification:
+`cargo test -p kmipkit-transport --test secret_redaction_current --offline`
+passed 9/9; focused rustfmt for `secret_redaction_current.rs` and
+`support/secret_redaction/current.rs` passed; `git diff --check` passed.
+
 ## Commit
 
 Red commit: c00556281a1399dbf7281306591a39a9eb13db6b. The follow-up evidence
