@@ -213,6 +213,99 @@ fn cancellation_after_complete_https_response_does_not_cache_the_connection() {
 }
 
 #[test]
+fn canceled_completed_response_waits_for_driver_cleanup_before_returning() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let (peer, release_peer) = spawn_held_response_peer(listener.into_inner(), server_config(&pki));
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let (cleanup_events_tx, cleanup_events_rx) = mpsc::channel();
+    let (cleanup_release_tx, cleanup_release_rx) = tokio::sync::oneshot::channel();
+    let cleanup_gate = https::DriverCleanupGateForTest {
+        release: cleanup_release_rx,
+        events: cleanup_events_tx.clone(),
+    };
+    let adapter = https::new_for_test_canceling_before_success_finish_with_cleanup_gate(
+        config,
+        fixed_resolver(address),
+        cleanup_gate,
+    );
+    let (exchange_result_tx, exchange_result_rx) = mpsc::sync_channel(1);
+    let exchange_events_tx = cleanup_events_tx.clone();
+    thread::spawn(move || {
+        let mut adapter = adapter;
+        let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+        let _ = exchange_events_tx.send(https::DriverCleanupEventForTest::ExchangeReturned);
+        let _ = exchange_result_tx.send((adapter, result));
+    });
+
+    assert_eq!(
+        cleanup_events_rx
+            .recv_timeout(PEER_TIMEOUT)
+            .expect("the canceled connection begins cleanup"),
+        https::DriverCleanupEventForTest::Started
+    );
+    assert!(
+        exchange_result_rx
+            .recv_timeout(Duration::from_millis(100))
+            .is_err(),
+        "the canceled exchange waits for driver cleanup acknowledgement"
+    );
+
+    cleanup_release_tx
+        .send(())
+        .expect("the cleanup task is held at its acknowledgement gate");
+    let (adapter, result) = exchange_result_rx
+        .recv_timeout(PEER_TIMEOUT)
+        .expect("the exchange returns after cleanup acknowledgement");
+    let error = result.expect_err("cancellation wins before exchange finalization");
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert!(
+        !https::has_cached_connection_for_test(&adapter),
+        "a canceled response connection is invalidated"
+    );
+
+    let mut observed_events = vec![https::DriverCleanupEventForTest::Started];
+    while !observed_events.contains(&https::DriverCleanupEventForTest::Acknowledged)
+        || !observed_events.contains(&https::DriverCleanupEventForTest::ExchangeReturned)
+    {
+        observed_events.push(
+            cleanup_events_rx
+                .recv_timeout(PEER_TIMEOUT)
+                .expect("cleanup and exchange return events are delivered"),
+        );
+    }
+    let acknowledged = observed_events
+        .iter()
+        .position(|event| *event == https::DriverCleanupEventForTest::Acknowledged)
+        .expect("cleanup acknowledgement is observed");
+    let returned = observed_events
+        .iter()
+        .position(|event| *event == https::DriverCleanupEventForTest::ExchangeReturned)
+        .expect("exchange return is observed");
+    assert!(
+        acknowledged < returned,
+        "driver cleanup is acknowledged before the exchange returns"
+    );
+
+    let _ = release_peer.send(());
+    let peer = peer.join().expect("the bounded HTTPS peer completes");
+    assert!(peer.accepted, "the peer accepted one connection");
+    assert!(
+        peer.request.is_some(),
+        "the peer captured the HTTPS request"
+    );
+}
+
+#[test]
 fn https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");

@@ -374,6 +374,18 @@ pub(crate) fn new_for_test_canceling_before_success_finish(
 
 #[cfg(test)]
 #[allow(dead_code)]
+pub(crate) fn new_for_test_canceling_before_success_finish_with_cleanup_gate(
+    configuration: TransportConfig,
+    resolver: Resolver,
+    cleanup_gate: DriverCleanupGateForTest,
+) -> HttpsTransport {
+    let mut adapter = new_for_test_canceling_before_success_finish(configuration, resolver);
+    adapter.driver_cleanup_gate = Some(cleanup_gate);
+    adapter
+}
+
+#[cfg(test)]
+#[allow(dead_code)]
 pub(crate) fn has_cached_connection_for_test(adapter: &HttpsTransport) -> bool {
     lock_https_connection(&adapter.connection).is_some()
 }
@@ -459,13 +471,17 @@ async fn exchange_on_worker(
     .await;
     if result.is_ok() {
         session.io_control.finish_exchange();
-        tokio::task::yield_now().await;
         #[cfg(test)]
         if cancel_before_finish_for_test {
             control.cancel();
         }
         if session.is_reusable() {
-            *lock_https_connection(&connection_state) = Some(session);
+            // Completion and cancellation share one atomic gate; publish only
+            // when completion wins it.
+            let (completed, _) = control.finish();
+            if completed {
+                *lock_https_connection(&connection_state) = Some(session);
+            }
         }
     }
     result

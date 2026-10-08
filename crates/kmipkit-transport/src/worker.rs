@@ -30,6 +30,9 @@ const RESPONSE_STARTED: u8 = 3;
 const FINALIZED_NOT_SENT: u8 = 4;
 const FINALIZED_POSSIBLY_SENT: u8 = 5;
 const FINALIZED_RESPONSE_STARTED: u8 = 6;
+const FINALIZED_COMPLETED_NOT_SENT: u8 = 7;
+const FINALIZED_COMPLETED_POSSIBLY_SENT: u8 = 8;
+const FINALIZED_COMPLETED_RESPONSE_STARTED: u8 = 9;
 const COMMAND_CAPACITY: usize = 1;
 const DROP_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
 const CLEANUP_ACK_TIMEOUT: Duration = Duration::from_secs(1);
@@ -269,6 +272,11 @@ impl ExchangeControl {
         is_final(self.state.load(Ordering::Acquire))
     }
 
+    /// Returns whether successful operation completion won terminal arbitration.
+    pub(crate) fn is_completed(&self) -> bool {
+        is_completed(self.state.load(Ordering::Acquire))
+    }
+
     /// Finalizes cancellation without moving delivery evidence backwards.
     pub(crate) fn cancel(&self) -> RequestDeliveryState {
         loop {
@@ -288,17 +296,21 @@ impl ExchangeControl {
     }
 
     /// Finalizes a completed operation; returns false if cancellation already won.
-    fn finish(&self) -> (bool, RequestDeliveryState) {
+    /// A previously committed completion remains successful for the worker's final check.
+    pub(crate) fn finish(&self) -> (bool, RequestDeliveryState) {
         self.finish_after_load(|| {})
     }
 
     fn finish_after_load(&self, mut after_load: impl FnMut()) -> (bool, RequestDeliveryState) {
         loop {
             let current = self.state.load(Ordering::Acquire);
+            if is_completed(current) {
+                return (true, delivery_for_state(current));
+            }
             if is_final(current) {
                 return (false, delivery_for_state(current));
             }
-            let finalized = final_state(current).unwrap_or(FINALIZED_NOT_SENT);
+            let finalized = completed_state(current);
             after_load();
             if self
                 .state
@@ -324,22 +336,53 @@ fn final_state(state: u8) -> Option<u8> {
     match state {
         DISPATCH_COMMITTED => Some(FINALIZED_POSSIBLY_SENT),
         RESPONSE_STARTED => Some(FINALIZED_RESPONSE_STARTED),
-        FINALIZED_NOT_SENT | FINALIZED_POSSIBLY_SENT | FINALIZED_RESPONSE_STARTED => None,
+        FINALIZED_NOT_SENT
+        | FINALIZED_POSSIBLY_SENT
+        | FINALIZED_RESPONSE_STARTED
+        | FINALIZED_COMPLETED_NOT_SENT
+        | FINALIZED_COMPLETED_POSSIBLY_SENT
+        | FINALIZED_COMPLETED_RESPONSE_STARTED => None,
         _ => Some(FINALIZED_NOT_SENT),
     }
+}
+
+fn completed_state(state: u8) -> u8 {
+    match state {
+        DISPATCH_COMMITTED => FINALIZED_COMPLETED_POSSIBLY_SENT,
+        RESPONSE_STARTED => FINALIZED_COMPLETED_RESPONSE_STARTED,
+        _ => FINALIZED_COMPLETED_NOT_SENT,
+    }
+}
+
+fn is_completed(state: u8) -> bool {
+    matches!(
+        state,
+        FINALIZED_COMPLETED_NOT_SENT
+            | FINALIZED_COMPLETED_POSSIBLY_SENT
+            | FINALIZED_COMPLETED_RESPONSE_STARTED
+    )
 }
 
 fn is_final(state: u8) -> bool {
     matches!(
         state,
-        FINALIZED_NOT_SENT | FINALIZED_POSSIBLY_SENT | FINALIZED_RESPONSE_STARTED
+        FINALIZED_NOT_SENT
+            | FINALIZED_POSSIBLY_SENT
+            | FINALIZED_RESPONSE_STARTED
+            | FINALIZED_COMPLETED_NOT_SENT
+            | FINALIZED_COMPLETED_POSSIBLY_SENT
+            | FINALIZED_COMPLETED_RESPONSE_STARTED
     )
 }
 
 fn delivery_for_state(state: u8) -> RequestDeliveryState {
     match state {
-        DISPATCH_COMMITTED | FINALIZED_POSSIBLY_SENT => RequestDeliveryState::PossiblySent,
-        RESPONSE_STARTED | FINALIZED_RESPONSE_STARTED => RequestDeliveryState::ResponseStarted,
+        DISPATCH_COMMITTED | FINALIZED_POSSIBLY_SENT | FINALIZED_COMPLETED_POSSIBLY_SENT => {
+            RequestDeliveryState::PossiblySent
+        }
+        RESPONSE_STARTED | FINALIZED_RESPONSE_STARTED | FINALIZED_COMPLETED_RESPONSE_STARTED => {
+            RequestDeliveryState::ResponseStarted
+        }
         _ => RequestDeliveryState::NotSent,
     }
 }
@@ -646,7 +689,7 @@ impl WorkerCommand for ExchangeCommand {
                 let operation_future = operation(control.clone());
                 tokio::pin!(operation_future);
 
-                tokio::select! {
+                let exit = tokio::select! {
                     biased;
                     changed = shutdown.changed() => {
                         let _ = changed;
@@ -663,14 +706,16 @@ impl WorkerCommand for ExchangeCommand {
                         ExchangeExit::Deadline
                     }
                     operation_result = &mut operation_future => {
-                        if *shutdown.borrow() {
+                        if *shutdown.borrow() && !control.is_completed() {
                             control.cancel();
                             ExchangeExit::Closed
                         } else {
                             ExchangeExit::Operation(operation_result)
                         }
                     }
-                }
+                };
+
+                resolve_terminal_event(&control, exit, operation_future.as_mut()).await
             };
 
             match exit {
@@ -720,6 +765,26 @@ impl WorkerCommand for ExchangeCommand {
     fn reject_closed(self: Box<Self>) {
         let state = self.control.cancel();
         let _ = self.result.send(Err(WorkerError::Closed(state)));
+    }
+}
+
+async fn resolve_terminal_event<F>(
+    control: &ExchangeControl,
+    exit: ExchangeExit,
+    operation_future: Pin<&mut F>,
+) -> ExchangeExit
+where
+    F: Future<Output = Result<TransportResponse, TransportError>>,
+{
+    // Successful transports may commit completion immediately before publishing
+    // reusable state. That atomic result must outrank a later watch or timer event.
+    match exit {
+        ExchangeExit::Closed | ExchangeExit::Canceled | ExchangeExit::Deadline
+            if control.is_completed() =>
+        {
+            ExchangeExit::Operation(operation_future.await)
+        }
+        other => other,
     }
 }
 

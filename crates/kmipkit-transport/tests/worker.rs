@@ -436,8 +436,10 @@ fn completion_that_wins_before_shutdown_keeps_its_result() {
     let (completion_committed_sender, completion_committed_receiver) =
         tokio::sync::oneshot::channel();
     let (release_operation_sender, release_operation_receiver) = tokio::sync::oneshot::channel();
-    let (command, result, _) =
+    let (command, result, control) =
         make_command(None, ExchangeControl::new(), move |control| async move {
+            assert!(control.commit_dispatch());
+            assert!(control.response_started());
             assert!(
                 control.finish().0,
                 "operation completion wins the atomic gate"
@@ -448,6 +450,7 @@ fn completion_that_wins_before_shutdown_keeps_its_result() {
             let _ = release_operation_receiver.await;
             Ok(response(7))
         });
+    let cancel_events = control.subscribe_cancel();
 
     runtime.block_on(async move {
         tokio::spawn(async move {
@@ -465,6 +468,20 @@ fn completion_that_wins_before_shutdown_keeps_its_result() {
             .recv()
             .expect("the command returns its completed result"),
         7,
+    );
+    assert_eq!(control.cancel(), RequestDeliveryState::ResponseStarted);
+    assert_eq!(
+        control.finish(),
+        (true, RequestDeliveryState::ResponseStarted)
+    );
+    assert_eq!(
+        control.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert!(
+        !cancel_events
+            .has_changed()
+            .expect("completed control remains connected")
     );
 }
 
