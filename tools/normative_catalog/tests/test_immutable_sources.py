@@ -28,6 +28,7 @@ class ImmutableSourceGateTests(unittest.TestCase):
         oasis_docs.mkdir(parents=True, exist_ok=True)
         (oasis_docs / "README.md").write_text("Project inventory.\n", encoding="utf-8")
         (oasis_docs / "SOURCES.md").write_text("Pinned source inventory.\n", encoding="utf-8")
+        (oasis_docs / "other.md").write_text("Not an approved project inventory.\n", encoding="utf-8")
         self._git("add", "specification/oasis")
         self._git("commit", "--quiet", "-m", "base")
         self.base_sha = self._git("rev-parse", "HEAD").decode().strip()
@@ -59,7 +60,7 @@ class ImmutableSourceGateTests(unittest.TestCase):
 
         check_immutable_sources(self.root, self.base_sha)
 
-    def test_change_detection_uses_quiet_diffs_and_streamed_untracked_paths(self) -> None:
+    def test_change_detection_uses_nul_delimited_diffs_and_streamed_untracked_paths(self) -> None:
         real_run = subprocess.run
         with patch(
             "tools.normative_catalog.check_immutable_sources.subprocess.run",
@@ -70,7 +71,7 @@ class ImmutableSourceGateTests(unittest.TestCase):
         commands = [call.args[0] for call in run.call_args_list]
         diff_commands = [command for command in commands if len(command) > 1 and command[1] == "diff"]
         self.assertEqual(len(diff_commands), 2)
-        self.assertTrue(all("--quiet" in command for command in diff_commands))
+        self.assertTrue(all("--name-only" in command and "-z" in command for command in diff_commands))
         self.assertFalse(any(command[1:2] == ["ls-files"] for command in commands))
 
     def test_rejects_missing_or_non_commit_base_sha(self) -> None:
@@ -87,6 +88,24 @@ class ImmutableSourceGateTests(unittest.TestCase):
     def test_rejects_added_untracked_source(self) -> None:
         path = self.root / "specification/oasis/new.html"
         path.write_text("new", encoding="utf-8")
+        with self.assertRaises(ImmutableSourceError):
+            check_immutable_sources(self.root, self.base_sha)
+
+    def test_rejects_modified_unapproved_oasis_document(self) -> None:
+        path = self.root / "specification/oasis/kmip-2.1/other.md"
+        path.write_text("Changed outside the approved inventory paths.\n", encoding="utf-8")
+        with self.assertRaises(ImmutableSourceError):
+            check_immutable_sources(self.root, self.base_sha)
+
+    def test_rejects_modifying_fixture_that_already_exists_in_base(self) -> None:
+        fixture = self.root / "specification/oasis/kmip-2.1/fixtures/TC-CREATE-SD-1-21.xml"
+        fixture.parent.mkdir()
+        fixture.write_bytes(b"<TestCase/>\n")
+        self._git("add", "specification/oasis/kmip-2.1/fixtures/TC-CREATE-SD-1-21.xml")
+        self._git("commit", "--quiet", "-m", "fixture base")
+        self.base_sha = self._git("rev-parse", "HEAD").decode().strip()
+        fixture.write_bytes(b"<TestCase changed=\"true\"/>\n")
+
         with self.assertRaises(ImmutableSourceError):
             check_immutable_sources(self.root, self.base_sha)
 
