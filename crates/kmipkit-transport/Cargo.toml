@@ -12,7 +12,6 @@ autotests = false
 
 [dependencies]
 bytes.workspace = true
-hickory-resolver.workspace = true
 hyper.workspace = true
 rustls.workspace = true
 rustls-native-certs.workspace = true
