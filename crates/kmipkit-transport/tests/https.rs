@@ -615,10 +615,13 @@ fn https_rejects_http_parser_errors_and_truncated_response_bodies() {
 
     for (name, response) in cases {
         match exchange_raw_response(&pki, response, 64) {
-            Err(error) if error.delivery_state() == RequestDeliveryState::ResponseStarted => {}
+            Err(error)
+                if error.delivery_state() == RequestDeliveryState::ResponseStarted
+                    && error.cause_category() == TransportCauseCategory::Http => {}
             Err(error) => failures.push(format!(
-                "{name}: parser rejected with delivery state {:?}",
-                error.delivery_state()
+                "{name}: rejected with {:?} delivery and {:?} cause",
+                error.delivery_state(),
+                error.cause_category()
             )),
             Ok(_) => failures.push(format!("{name}: unexpectedly accepted the response")),
         }
@@ -627,6 +630,50 @@ fn https_rejects_http_parser_errors_and_truncated_response_bodies() {
     assert!(
         failures.is_empty(),
         "malformed and truncated HTTP responses must fail after response bytes: {failures:?}"
+    );
+}
+
+#[test]
+fn malformed_http_parser_error_invalidates_the_reusable_session() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let malformed =
+        b"HTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\n\r\n";
+    let (peer, release_peer) = spawn_held_raw_response_peer(
+        listener.into_inner(),
+        server_config(&pki),
+        malformed.to_vec(),
+    );
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let mut adapter = https::new_for_test_with_resolver(config, None, fixed_resolver(address));
+
+    let error = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect_err("a malformed HTTP status line is rejected");
+    assert_eq!(error.cause_category(), TransportCauseCategory::Http);
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert!(
+        !https::has_cached_connection_for_test(&adapter),
+        "a session that produced a parser error is not reusable"
+    );
+
+    let _ = release_peer.send(());
+    let peer = peer
+        .join()
+        .expect("the bounded malformed-response peer completes");
+    assert!(peer.accepted, "the peer accepted one TLS connection");
+    assert!(
+        peer.request.is_some(),
+        "the peer captured the HTTPS request"
     );
 }
 
@@ -1102,7 +1149,7 @@ fn spawn_raw_response_peer(
     configuration: Arc<ServerConfig>,
     response: Vec<u8>,
 ) -> JoinHandle<PeerObservation> {
-    spawn_response_peer(listener, configuration, response, false)
+    spawn_response_peer(listener, configuration, response, false, None)
 }
 
 fn spawn_clean_tls_close_response_peer(
@@ -1110,7 +1157,23 @@ fn spawn_clean_tls_close_response_peer(
     configuration: Arc<ServerConfig>,
     response: Vec<u8>,
 ) -> JoinHandle<PeerObservation> {
-    spawn_response_peer(listener, configuration, response, true)
+    spawn_response_peer(listener, configuration, response, true, None)
+}
+
+fn spawn_held_raw_response_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    response: Vec<u8>,
+) -> (JoinHandle<PeerObservation>, mpsc::SyncSender<()>) {
+    let (release_peer, release_peer_rx) = mpsc::sync_channel(1);
+    let peer = spawn_response_peer(
+        listener,
+        configuration,
+        response,
+        false,
+        Some(release_peer_rx),
+    );
+    (peer, release_peer)
 }
 
 fn spawn_response_peer(
@@ -1118,6 +1181,7 @@ fn spawn_response_peer(
     configuration: Arc<ServerConfig>,
     response: Vec<u8>,
     send_close_notify: bool,
+    hold_after_response: Option<mpsc::Receiver<()>>,
 ) -> JoinHandle<PeerObservation> {
     thread::spawn(move || {
         let Ok((stream, _)) = accept_before_deadline(&listener) else {
@@ -1160,6 +1224,9 @@ fn spawn_response_peer(
                     return observation;
                 }
                 observation.close_notify_sent = true;
+            }
+            if let Some(release) = hold_after_response {
+                let _ = release.recv_timeout(PEER_TIMEOUT);
             }
         }
         observation
