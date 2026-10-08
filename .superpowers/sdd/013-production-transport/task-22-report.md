@@ -91,3 +91,26 @@ production constructors.
   180 passed, 0 failed.
 - Strict package Clippy, `cargo fmt --all --check`, and `git diff --check`:
   passed.
+
+## P2 replaced-allocation cleanup correction — Red, pending review
+
+Final review found that `read_to_end(&mut Vec)` can grow the key buffer after
+bytes are initialized. `SecretBuffer::drop` clears only the current allocation,
+so any allocation released during implicit `Vec` growth is outside that
+cleanup. The new regression extends only the `cfg(test)` observer with a
+replacement count and cumulative zero-status; it never exposes buffer bytes.
+Its reader yields the first byte separately, then the remaining 64 KiB input,
+and the test asserts that at least one replaced allocation was observed and
+that every replacement was zeroized before release.
+
+- Red test commit: `8a79a63903c67cfb0de0d458f737cd1eff60e249`.
+- Expected Red:
+  `cargo test -p kmipkit-transport --lib secret::tests::key_buffer_growth_zeroizes_each_replaced_allocation_before_release --offline`
+  exits 1 at the runtime assertion that the read owner must report a replaced
+  allocation. The current `read_to_end` path has no per-replacement observer
+  or zeroization step. No production code changed in this Red commit.
+- `rustfmt --edition 2024 --check crates/kmipkit-transport/src/secret.rs` and
+  `git diff --check` passed.
+- Green correction and full verification remain pending review of this Red
+  test. T022 is incomplete until production reads use explicit zeroizing
+  growth and this regression passes.
