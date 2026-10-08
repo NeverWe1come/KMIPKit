@@ -103,12 +103,17 @@ Its reader yields the first byte separately, then the remaining 64 KiB input,
 and the test asserts that at least one replaced allocation was observed and
 that every replacement was zeroized before release.
 
-- Red test commit: `8a79a63903c67cfb0de0d458f737cd1eff60e249`.
+- Initial Red test commit: `8a79a63903c67cfb0de0d458f737cd1eff60e249`.
+- Red test refinement commit: `f49f229c876ccf7953993b79936978ba6aa77f22`.
+  The test-only reader seam now creates the observed owner with one byte of
+  initial capacity; the reader fills that byte, then supplies the remaining
+  input. Observer additions report only replacement count and cumulative
+  zero-status; they never expose bytes.
 - Expected Red:
   `cargo test -p kmipkit-transport --lib secret::tests::key_buffer_growth_zeroizes_each_replaced_allocation_before_release --offline`
   exits 1 at the runtime assertion that the read owner must report a replaced
   allocation. The current `read_to_end` path has no per-replacement observer
-  or zeroization step. No production code changed in this Red commit.
+  or zeroization step. No production code changed in either Red commit.
 - `rustfmt --edition 2024 --check crates/kmipkit-transport/src/secret.rs` and
   `git diff --check` passed.
 - Green correction and full verification remain pending review of this Red
