@@ -196,13 +196,34 @@ fn raw_tls_rejects_an_unaligned_response_length() {
 
 #[test]
 fn raw_tls_rejects_an_aligned_response_length_over_the_limit_before_body_read() {
-    let (result, peer) = exchange_responding(&OVERSIZED_LENGTH_HEADER, RESPONSE_LIMIT);
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        PeerAction::RespondBytes(&OVERSIZED_LENGTH_HEADER),
+    );
+    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
+    let allocation_observer = raw_tls::ResponseAllocationObserver::new();
+    let mut adapter = raw_tls::new_for_test_with_response_allocation_observer(
+        config,
+        allocation_observer.clone(),
+    );
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    let peer = peer.join().expect("the bounded local TLS peer completes");
 
     assert_response_started(
         &result,
         "a response exceeding the configured cap is rejected",
     );
     assert_peer_closed_after_response(&peer);
+    assert_eq!(
+        allocation_observer.allocation_count(),
+        0,
+        "the oversized header is rejected before a response allocation is attempted"
+    );
 }
 
 #[test]
