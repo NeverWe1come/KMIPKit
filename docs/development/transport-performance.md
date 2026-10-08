@@ -42,16 +42,35 @@ build profiles as if they were a controlled regression series.
 
 | Environment | Rust | Iterations | Results |
 |---|---|---:|---|
-| Pending measurement | | | |
+| Windows 11 Pro 10.0.26200, HP Victus, Intel i7-12700H (14 cores / 20 logical CPUs) | 1.99.0, `x86_64-pc-windows-msvc` | 40 | See measured series below; source commit `7598eed`. |
+
+Measured output (`cargo bench --locked -p kmipkit-transport --bench production_transport -- --iterations 40`):
+
+```text
+KMIPKit production transport benchmark
+iterations=40 warmups=5 concurrency=[1, 4, 16]
+server=loopback HTTPS/1.1 TLS1.3 mTLS; payload=request sentinel / 8-byte response
+TransportConfig::build: p50=30.10 us p95=35.60 us
+HttpsTransport::new (config prepared before timing): p50=1.80 us p95=5.60 us
+TLS1.3 mTLS handshake (TCP connected before timing): p50=1304.10 us p95=2543.80 us
+HTTPS cold first exchange (lazy worker + TCP + TLS + HTTP): p50=3011.70 us p95=16126.40 us
+HTTPS reused steady-state exchange: p50=288.50 us p95=489.80 us
+concurrent cold first-exchange batch (n=1): p50=3037.90 us p95=21500.60 us
+concurrent reused steady-state batch (n=1): p50=611.10 us p95=772.50 us
+concurrent cold first-exchange batch (n=4): p50=5417.00 us p95=6818.90 us
+concurrent reused steady-state batch (n=4): p50=1178.90 us p95=2460.10 us
+concurrent cold first-exchange batch (n=16): p50=11329.10 us p95=23119.20 us
+concurrent reused steady-state batch (n=16): p50=2273.10 us p95=2550.10 us
+```
 
 Environment record:
 
-- OS and version:
-- CPU model and logical processor count:
-- Rust toolchain (`rustc -Vv`):
-- Cargo profile and target triple:
-- Commit:
-- Power plan / CPU governor, if known:
+- OS and version: Windows 11 Pro 10.0.26200 (build 26200).
+- CPU: Intel Core i7-12700H, 14 cores / 20 logical processors; 16 GiB RAM.
+- Rust toolchain: `rustc 1.99.0 (b940084d7 2026-09-28)`, stable toolchain.
+- Cargo profile and target triple: optimized `bench`, `x86_64-pc-windows-msvc`.
+- Benchmark source commit: `7598eed`.
+- Power plan / CPU governor: not recorded.
 
 ## Interpretation
 
