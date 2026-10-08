@@ -38,11 +38,11 @@
 
 ## Decision 6 — Keep source integrity checks aligned with the immutable boundary
 
-**Decision**: Keep the exact pinned OASIS files under `specification/oasis/kmip-2.1/upstream/` immutable. The source checker may allow edits only to the project-authored KMIP 2.1 `README.md` and `SOURCES.md`, plus additions under `fixtures/`; it must reject every other OASIS path and changes to fixture files already present in the base commit. Preserve the existing exact-base and catalog fixture validation.
+**Decision**: Keep the exact pinned OASIS files under `specification/oasis/kmip-2.1/upstream/` immutable. The source checker may allow modifications only to the KMIP 2.1 `README.md` and `SOURCES.md` paths already tracked in the exact base commit, plus additions under `fixtures/`; it rejects adding, deleting, or renaming either inventory file, every other OASIS path, and changes to fixture files already present in the base commit. Preserve the existing exact-base and catalog fixture validation.
 
 **Rationale**: T001 and T002 require recording the project-owned fixture's provenance and mapping its exact XML path as available. A whole-`specification/oasis/` prohibition blocks those approved project artifacts. Keeping the exact pinned `upstream/` subtree immutable, recording and verifying the fixture SHA-256, and retaining catalog path validation preserves the distinct source-integrity checks.
 
-**Evidence**: `tools/normative_catalog/tests/test_immutable_sources.py` exercises permitted inventory/fixture additions and rejection of modified upstream, unrelated OASIS paths, and existing fixture changes. Red, Green, and Refactor commits preserve the required TDD evidence.
+**Evidence**: `tools/normative_catalog/tests/test_immutable_sources.py` exercises permitted tracked inventory edits and new fixture additions; rejects upstream changes, unrelated OASIS paths, existing fixture changes, and inventory additions/deletions/renames. The first Red/Green/Refactor cycle is preserved in `8a60b42`, `6e02e42`, and `1c061bd`; the follow-up inventory add/delete/rename Red/Green/Refactor cycle is preserved in `97d4d1e`, `2f6469f`, and `43ae31a`. The official XML download and local fixture are each 2,725 bytes and have SHA-256 `882e0f57ff2cc42b214e2ffb40bf9c80105489aab00f07a6ea5e2c1c395474ad`.
 
 ## Normative evidence
 

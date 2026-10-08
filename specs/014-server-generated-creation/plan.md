@@ -16,7 +16,7 @@ Add typed KMIP 2.1 Create, Create Key Pair, and Create Split Key requests and re
 
 **Storage**: None.
 
-**Testing**: Rust unit tests, table-derived TTLV fixtures, malformed-input tests, explicitly named property-based TTLV roundtrip tests for ordered attribute items, and deterministic client fake transport. The pinned official test-case XML supplies only a Create-only derived case; the complete `TC-CREATE-SD-1-21` case is not claimed as passing. Focused immutable-source checker tests protect the exact pinned `upstream/` subtree and reject all OASIS changes except the project-authored README/SOURCES edits and new fixture additions required by this specification.
+**Testing**: Rust unit tests, table-derived TTLV fixtures, malformed-input tests, including the explicitly named property `property_roundtrips_ordered_repeated_direct_attribute_items`, and deterministic client fake transport. The pinned official test-case XML supplies only a Create-only derived case; the complete `TC-CREATE-SD-1-21` case is not claimed as passing. Focused immutable-source checker tests protect the exact pinned `upstream/` subtree, permit only edits to README/SOURCES paths already tracked in the base and additions under `fixtures/`, and reject inventory add/delete/rename, other OASIS paths, and changes to existing fixtures.
 
 **Target Platform**: Linux, Windows, and macOS; Rust 1.94 and stable.
 
