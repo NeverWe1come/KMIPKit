@@ -1,10 +1,13 @@
 # Tasks: Local Cosmian KMS Integration Smoke Test
 
+**Status**: Draft for human review. The feature specification and implementation
+are not approved for merge; coverage and hosted CI gates also remain open.
+
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md)
 
 ## Phase 1: Specification and test-first scaffold
 
-- [x] T001 Write the approved bounded feature specification and exact OASIS clause references in `specs/015-cosmian-kms-integration/spec.md`.
+- [x] T001 Write the bounded feature specification and exact OASIS clause references in `specs/015-cosmian-kms-integration/spec.md`.
 - [x] T002 Record transport choice, local isolation, and the original deferred-verification plan in `specs/015-cosmian-kms-integration/research.md` and `plan.md`; update the evidence after live-test authorization.
 - [x] T003 [US2] Author the ignored typed Discover Versions integration test first in `crates/kmipkit-client/tests/cosmian_kms.rs`. The user later authorized executing it.
 
