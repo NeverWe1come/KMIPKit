@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +15,7 @@ SPEC = importlib.util.spec_from_file_location("user_guide_examples_runner", RUNN
 if SPEC is None or SPEC.loader is None:
     raise RuntimeError("the user-guide example runner module could not be loaded")
 runner = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = runner
 SPEC.loader.exec_module(runner)
 
 
@@ -40,8 +42,8 @@ fn second() {}
         self.assertEqual(
             [(example.source, example.line, example.code) for example in examples],
             [
-                (source, 3, "fn first() {}"),
-                (source, 11, "fn second() {}"),
+                (source, 3, "fn first() {}\n"),
+                (source, 11, "fn second() {}\n"),
             ],
         )
 
