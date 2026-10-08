@@ -13,6 +13,7 @@
 //! ownership, response-limit, and cleanup contract.
 #![forbid(unsafe_code)]
 
+mod config;
 mod error;
 mod response;
 // T010 introduces the private timeout seam before later adapter tasks consume it.
@@ -30,6 +31,11 @@ mod resolver;
 #[allow(dead_code)]
 mod worker;
 
+pub use config::{
+    CertificateInput, ClientIdentity, CredentialEncoding, Endpoint, PrivateKeyInput,
+    RequestOptions, TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder,
+    TransportConfigError, TrustSource,
+};
 pub use error::{RequestDeliveryState, TransportCauseCategory, TransportError};
 pub use response::TransportResponse;
 

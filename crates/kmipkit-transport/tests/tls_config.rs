@@ -17,7 +17,7 @@ fn identity_and_trust(pem_encoded: bool) -> (ClientIdentity, TrustSource) {
     let pki = EphemeralPki::generate().expect("ephemeral client PKI should be generated");
     let client = pki.client_identity();
     let identity = if pem_encoded {
-        let certificates = client
+        let certificates: Vec<u8> = client
             .certificate_chain_der()
             .into_iter()
             .flat_map(|certificate| pem("CERTIFICATE", certificate))
