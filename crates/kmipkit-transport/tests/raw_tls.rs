@@ -560,9 +560,16 @@ fn raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake
     let trusted_peer = trusted_peer.join().expect("the trusted TLS peer completes");
 
     assert!(rejected_peer.accepted);
-    assert!(rejected_peer.request_bytes.is_empty());
-    assert!(result.is_ok(), "a later verified TLS candidate succeeds");
+    assert!(
+        rejected_peer.request_bytes.is_empty(),
+        "application bytes follow a verified TLS handshake"
+    );
+    assert!(
+        trusted_peer.accepted,
+        "the next resolver candidate is attempted after TLS rejection"
+    );
     assert!(trusted_peer.handshake_completed);
+    assert!(result.is_ok(), "a later verified TLS candidate succeeds");
     assert!(
         trusted_peer.request_bytes.as_slice() == fixtures::REQUEST_SENTINEL,
         "the peer receives the caller bytes unchanged"
