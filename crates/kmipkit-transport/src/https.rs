@@ -73,6 +73,8 @@ pub struct HttpsTransport {
     cancel_exchange: Option<tokio::sync::oneshot::Receiver<()>>,
     #[cfg(test)]
     driver_cleanup_gate: Option<DriverCleanupGateForTest>,
+    #[cfg(test)]
+    cancel_before_finish_for_test: bool,
 }
 
 #[cfg(test)]
@@ -159,6 +161,8 @@ impl HttpsTransport {
             cancel_exchange: None,
             #[cfg(test)]
             driver_cleanup_gate: None,
+            #[cfg(test)]
+            cancel_before_finish_for_test: false,
         })
     }
 
@@ -242,6 +246,8 @@ impl HttpsTransport {
         let cancel_exchange = self.cancel_exchange.take();
         #[cfg(test)]
         let driver_cleanup_gate = self.driver_cleanup_gate.take();
+        #[cfg(test)]
+        let cancel_before_finish_for_test = std::mem::take(&mut self.cancel_before_finish_for_test);
         let worker = self.worker.as_ref().ok_or_else(|| {
             safe_error(
                 RequestDeliveryState::NotSent,
@@ -271,6 +277,8 @@ impl HttpsTransport {
                     driver_cleanup_gate,
                     #[cfg(test)]
                     response_buffer_observer,
+                    #[cfg(test)]
+                    cancel_before_finish_for_test,
                 )
                 .await
             })
@@ -355,6 +363,23 @@ pub(crate) fn new_for_test_with_resolver_and_driver_cleanup_gate(
 
 #[cfg(test)]
 #[allow(dead_code)]
+pub(crate) fn new_for_test_canceling_before_success_finish(
+    configuration: TransportConfig,
+    resolver: Resolver,
+) -> HttpsTransport {
+    let mut adapter = new_for_test_with_resolver(configuration, None, resolver);
+    adapter.cancel_before_finish_for_test = true;
+    adapter
+}
+
+#[cfg(test)]
+#[allow(dead_code)]
+pub(crate) fn has_cached_connection_for_test(adapter: &HttpsTransport) -> bool {
+    lock_https_connection(&adapter.connection).is_some()
+}
+
+#[cfg(test)]
+#[allow(dead_code)]
 pub(crate) fn build_request_for_test(
     configuration: &TransportConfig,
     request: &[u8],
@@ -392,6 +417,7 @@ async fn exchange_on_worker(
     #[cfg(test)] cancel_exchange: Option<tokio::sync::oneshot::Receiver<()>>,
     #[cfg(test)] driver_cleanup_gate: Option<DriverCleanupGateForTest>,
     #[cfg(test)] response_buffer_observer: Option<ResponseBufferObserver>,
+    #[cfg(test)] cancel_before_finish_for_test: bool,
 ) -> Result<TransportResponse, TransportError> {
     #[cfg(test)]
     if let Some(cancel_exchange) = cancel_exchange {
@@ -434,6 +460,10 @@ async fn exchange_on_worker(
     if result.is_ok() {
         session.io_control.finish_exchange();
         tokio::task::yield_now().await;
+        #[cfg(test)]
+        if cancel_before_finish_for_test {
+            control.cancel();
+        }
         if session.is_reusable() {
             *lock_https_connection(&connection_state) = Some(session);
         }

@@ -178,6 +178,41 @@ fn https_cancellation_aborts_the_hyper_connection_driver() {
 }
 
 #[test]
+fn cancellation_after_complete_https_response_does_not_cache_the_connection() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let (peer, release_peer) = spawn_held_response_peer(listener.into_inner(), server_config(&pki));
+    let config = client_config(
+        &pki,
+        format!("https://{SERVER_NAME}:{}", address.port()),
+        None,
+        None,
+    );
+    let mut adapter =
+        https::new_for_test_canceling_before_success_finish(config, fixed_resolver(address));
+
+    let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+    let error = result.expect_err("cancellation wins before exchange finalization");
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert!(
+        !https::has_cached_connection_for_test(&adapter),
+        "a connection from a canceled exchange is invalidated before it can be reused"
+    );
+
+    let _ = release_peer.send(());
+    let peer = peer.join().expect("the bounded HTTPS peer completes");
+    assert!(peer.accepted, "the peer accepted one connection");
+    assert!(
+        peer.request.is_some(),
+        "the peer captured the HTTPS request"
+    );
+}
+
+#[test]
 fn https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
@@ -1340,6 +1375,60 @@ fn run_peer(
         let _ = tls.sock.shutdown(Shutdown::Both);
     }
     observation
+}
+
+fn spawn_held_response_peer(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+) -> (JoinHandle<PeerObservation>, mpsc::SyncSender<()>) {
+    let (release_peer, release_peer_rx) = mpsc::sync_channel(1);
+    let peer = thread::spawn(move || {
+        let Ok((stream, _)) = accept_before_deadline(&listener) else {
+            return PeerObservation::default();
+        };
+        let mut observation = PeerObservation {
+            accepted: true,
+            ..PeerObservation::default()
+        };
+        if stream.set_nonblocking(false).is_err()
+            || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
+            || stream.set_write_timeout(Some(PEER_TIMEOUT)).is_err()
+        {
+            return observation;
+        }
+        let Ok(connection) = ServerConnection::new(configuration) else {
+            return observation;
+        };
+        let mut tls = StreamOwned::new(connection, stream);
+        let handshake_deadline = Instant::now() + PEER_TIMEOUT;
+        while tls.conn.is_handshaking() {
+            if Instant::now() >= handshake_deadline || tls.conn.complete_io(&mut tls.sock).is_err()
+            {
+                return observation;
+            }
+        }
+        observation.protocol_version = tls.conn.protocol_version();
+        observation.client_identity_present = tls
+            .conn
+            .peer_certificates()
+            .is_some_and(|certificates| !certificates.is_empty());
+        observation.request = read_request(&mut tls);
+        if observation.request.is_some() {
+            let response = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n",
+                RESPONSE_BODY.len()
+            );
+            if tls.write_all(response.as_bytes()).is_err()
+                || tls.write_all(RESPONSE_BODY).is_err()
+                || tls.flush().is_err()
+            {
+                return observation;
+            }
+            let _ = release_peer_rx.recv_timeout(PEER_TIMEOUT);
+        }
+        observation
+    });
+    (peer, release_peer)
 }
 
 fn read_request(tls: &mut StreamOwned<ServerConnection, TcpStream>) -> Option<CapturedRequest> {
