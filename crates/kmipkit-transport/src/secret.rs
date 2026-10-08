@@ -5,6 +5,8 @@ use std::io::{self, Read};
 use rustls::pki_types::PrivateKeyDer;
 use zeroize::Zeroize;
 
+const SECRET_READ_BUFFER_SIZE: usize = 4096;
+
 /// Owns key input bytes and clears the initialized range before its allocation is released.
 pub(crate) struct SecretBuffer {
     bytes: Vec<u8>,
@@ -26,8 +28,55 @@ impl SecretBuffer {
     }
 
     fn read_from_owned<R: Read>(mut reader: R, mut owner: Self) -> io::Result<Self> {
-        reader.read_to_end(&mut owner.bytes)?;
+        let mut scratch = SecretReadScratch::new();
+        loop {
+            let bytes_read = reader
+                .read(&mut scratch.0)
+                .map_err(|_| credential_read_error())?;
+            if bytes_read == 0 {
+                break;
+            }
+            if bytes_read > scratch.0.len() {
+                return Err(credential_read_error());
+            }
+
+            owner.append(&scratch.0[..bytes_read])?;
+            scratch.0.zeroize();
+        }
         Ok(owner)
+    }
+
+    fn append(&mut self, bytes: &[u8]) -> io::Result<()> {
+        if bytes.is_empty() {
+            return Ok(());
+        }
+
+        let new_len = self
+            .bytes
+            .len()
+            .checked_add(bytes.len())
+            .ok_or_else(credential_read_error)?;
+        if new_len <= self.bytes.capacity() {
+            self.bytes.extend_from_slice(bytes);
+            return Ok(());
+        }
+
+        let new_capacity = self.bytes.capacity().saturating_mul(2).max(new_len);
+        let mut replacement = Self::new(Vec::new());
+        replacement
+            .bytes
+            .try_reserve_exact(new_capacity)
+            .map_err(|_| credential_read_error())?;
+        replacement.bytes.extend_from_slice(&self.bytes);
+        replacement.bytes.extend_from_slice(bytes);
+
+        self.bytes.as_mut_slice().zeroize();
+        #[cfg(test)]
+        if let Some(observer) = &self.observer {
+            observer.record_replaced_allocation(self.bytes.as_slice());
+        }
+        self.bytes = std::mem::take(&mut replacement.bytes);
+        Ok(())
     }
 
     #[cfg(test)]
@@ -53,6 +102,24 @@ impl SecretBuffer {
 
     pub(crate) fn as_slice(&self) -> &[u8] {
         &self.bytes
+    }
+}
+
+fn credential_read_error() -> io::Error {
+    io::Error::other("credential source could not be read")
+}
+
+struct SecretReadScratch([u8; SECRET_READ_BUFFER_SIZE]);
+
+impl SecretReadScratch {
+    fn new() -> Self {
+        Self([0; SECRET_READ_BUFFER_SIZE])
+    }
+}
+
+impl Drop for SecretReadScratch {
+    fn drop(&mut self) {
+        self.0.zeroize();
     }
 }
 
@@ -259,9 +326,9 @@ mod tests {
 
     #[test]
     fn key_buffer_growth_zeroizes_each_replaced_allocation_before_release() {
-        let observer = SecretBufferObserver::new(KEY_SENTINEL.len());
         const INITIAL_CAPACITY: usize = 1;
 
+        let observer = SecretBufferObserver::new(KEY_SENTINEL.len());
         let mut reader = SplitKeyReader {
             offset: 0,
             first_chunk_len: INITIAL_CAPACITY,
