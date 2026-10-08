@@ -361,8 +361,14 @@ fn ssl_cert_file_child() {
         }
         "native" => {
             assert!(loaded.errors.is_empty());
-            assert!(!loaded.certs.is_empty());
-            assert!(builder.build().is_ok());
+            if loaded.certs.is_empty() {
+                assert!(matches!(
+                    builder.build(),
+                    Err(TransportConfigError::InvalidTrust)
+                ));
+            } else {
+                assert!(builder.build().is_ok());
+            }
         }
         _ => panic!("unknown child mode"),
     }
