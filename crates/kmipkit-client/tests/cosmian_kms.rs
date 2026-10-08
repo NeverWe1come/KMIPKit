@@ -64,9 +64,8 @@ fn cosmian_kms_accepts_kmip_2_1_discover_versions_over_mutual_tls() -> Result<()
 }
 
 fn certificate_directory() -> PathBuf {
-    std::env::var_os("KMIPKIT_COSMIAN_CERT_DIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../.local/cosmian-kms/certs")
-        })
+    std::env::var_os("KMIPKIT_COSMIAN_CERT_DIR").map_or_else(
+        || Path::new(env!("CARGO_MANIFEST_DIR")).join("../../.local/cosmian-kms/certs"),
+        PathBuf::from,
+    )
 }
