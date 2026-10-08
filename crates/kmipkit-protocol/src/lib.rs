@@ -5,6 +5,7 @@ mod asynchronous;
 pub mod attribute;
 mod cancel;
 mod credential;
+mod create;
 mod discover_versions;
 mod error;
 pub mod extension;
@@ -23,6 +24,7 @@ pub use credential::{
     HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, SecretBytes,
     SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
+pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
@@ -42,6 +44,10 @@ pub use result::{
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
 mod discover_versions_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_tests.rs"]
+mod create_tests;
 
 #[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]

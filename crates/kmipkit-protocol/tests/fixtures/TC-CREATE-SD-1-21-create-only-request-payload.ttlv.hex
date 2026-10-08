@@ -1,0 +1,7 @@
+# Derived TTLV Request Payload from the Create batch item in TC-CREATE-SD-1-21.
+# The adjacent Get batch item is intentionally excluded. SecretData=7 and
+# Cryptographic Length=80 are the pinned OASIS Enumeration/Integer values.
+42 00 79 01 00 00 00 28
+42 00 57 05 00 00 00 04 00 00 00 07 00 00 00 00
+42 00 08 01 00 00 00 10
+42 00 2a 02 00 00 00 04 00 00 00 50 00 00 00 00
