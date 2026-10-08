@@ -19,6 +19,8 @@
 //! See the repository guide at `docs/user-guide/en/client-execution.md` for
 //! resource limits, redaction, the low-level transport contract, and current
 //! implementation boundaries.
+#![doc = include_str!("../../../docs/user-guide/en/production-transports.md")]
+#![doc = include_str!("../../../docs/user-guide/es/transportes-produccion.md")]
 #![forbid(unsafe_code)]
 
 mod error;
