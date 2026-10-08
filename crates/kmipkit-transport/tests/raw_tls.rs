@@ -555,7 +555,9 @@ fn raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake
         short_timeout_policy(Duration::from_secs(1), Duration::from_secs(3)),
     );
     let resolver = fixed_resolver(vec![rejected_address, trusted_address]);
-    let mut adapter = raw_tls::new_for_test_with_resolver(config, None, resolver);
+    let candidate_observer = raw_tls::CandidateEventObserver::new();
+    let mut adapter =
+        raw_tls::new_for_test_with_candidate_observer(config, resolver, candidate_observer.clone());
 
     let result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     let rejected_peer = rejected_peer
@@ -567,6 +569,15 @@ fn raw_tls_tries_tls_candidates_in_order_and_writes_only_after_a_valid_handshake
     assert!(
         rejected_peer.handshake_failed,
         "the untrusted candidate is rejected during TLS handshake"
+    );
+    assert_eq!(
+        candidate_observer.events(),
+        vec![
+            raw_tls::CandidateEvent::HandshakeFailed(rejected_address),
+            raw_tls::CandidateEvent::HandshakeSucceeded(trusted_address),
+            raw_tls::CandidateEvent::RequestDispatch(trusted_address),
+        ],
+        "only a TLS-verified candidate reaches request dispatch"
     );
     assert!(
         trusted_peer.accepted,
