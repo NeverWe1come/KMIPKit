@@ -2,11 +2,11 @@
 
 use std::io;
 use std::net::{SocketAddr, ToSocketAddrs};
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
 use std::time::Instant;
 
-use tokio::sync::{Semaphore, watch};
-use tokio::task::JoinError;
+use tokio::sync::{OwnedSemaphorePermit, Semaphore, watch};
+use tokio::task::{JoinError, JoinHandle};
 
 const SHARED_RESOLVER_CAPACITY: usize = 32;
 const MAX_CANDIDATES: usize = 16;
@@ -83,24 +83,31 @@ impl Resolver {
             .map_err(|_| ResolveFailure::Capacity)?;
         let lookup = Arc::clone(&self.lookup);
         let host = host.to_owned();
-        let mut task = tokio::task::spawn_blocking(move || {
-            // Keep admission charged until the native resolver call actually exits, even when
-            // the async caller has already timed out or canceled.
-            let _permit = permit;
+        let state = Arc::new(Mutex::new(ResolverJobState {
+            started: false,
+            permit: Some(permit),
+        }));
+        let task_state = Arc::clone(&state);
+        let task = tokio::task::spawn_blocking(move || {
+            let Some(_permit) = begin_resolver_job(&task_state) else {
+                return Err(io::Error::new(
+                    io::ErrorKind::Interrupted,
+                    "resolver job canceled before start",
+                ));
+            };
             lookup(&host, port)
         });
+        let mut task = AbortOnDrop::new(task, state);
 
         let result = tokio::select! {
             biased;
             () = wait_for_cancel(&mut canceled) => {
-                task.abort();
                 return Err(ResolveFailure::Cancelled);
             }
             () = tokio::time::sleep_until(deadline.into()) => {
-                task.abort();
                 return Err(ResolveFailure::Deadline);
             }
-            result = &mut task => result,
+            result = task.join() => result,
         };
 
         let addresses = result
@@ -124,6 +131,50 @@ async fn wait_for_cancel(canceled: &mut watch::Receiver<bool>) {
 
 fn map_join_error(_error: JoinError) -> ResolveFailure {
     ResolveFailure::Lookup
+}
+
+/// Requests cancellation of an unstarted blocking job when its async owner exits.
+struct AbortOnDrop<T> {
+    task: JoinHandle<T>,
+    state: Arc<Mutex<ResolverJobState>>,
+}
+
+impl<T> AbortOnDrop<T> {
+    fn new(task: JoinHandle<T>, state: Arc<Mutex<ResolverJobState>>) -> Self {
+        Self { task, state }
+    }
+
+    async fn join(&mut self) -> Result<T, JoinError> {
+        (&mut self.task).await
+    }
+}
+
+impl<T> Drop for AbortOnDrop<T> {
+    fn drop(&mut self) {
+        self.task.abort();
+        let mut state = lock_job_state(&self.state);
+        if !state.started {
+            state.permit.take();
+        }
+    }
+}
+
+struct ResolverJobState {
+    started: bool,
+    permit: Option<OwnedSemaphorePermit>,
+}
+
+fn begin_resolver_job(state: &Mutex<ResolverJobState>) -> Option<OwnedSemaphorePermit> {
+    let mut state = lock_job_state(state);
+    state.started = true;
+    state.permit.take()
+}
+
+fn lock_job_state(state: &Mutex<ResolverJobState>) -> MutexGuard<'_, ResolverJobState> {
+    match state.lock() {
+        Ok(state) => state,
+        Err(poisoned) => poisoned.into_inner(),
+    }
 }
 
 fn finish_lookup(
