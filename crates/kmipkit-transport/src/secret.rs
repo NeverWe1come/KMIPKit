@@ -34,8 +34,12 @@ impl SecretBuffer {
     fn read_from_with_observer_for_test<R: Read>(
         reader: R,
         observer: SecretBufferObserver,
+        initial_capacity: usize,
     ) -> io::Result<Self> {
-        Self::read_from_owned(reader, Self::with_observer(Vec::new(), observer))
+        Self::read_from_owned(
+            reader,
+            Self::with_observer(Vec::with_capacity(initial_capacity), observer),
+        )
     }
 
     #[cfg(test)]
@@ -195,6 +199,7 @@ mod tests {
 
     struct SplitKeyReader {
         offset: usize,
+        first_chunk_len: usize,
     }
 
     impl Read for SplitKeyReader {
@@ -205,7 +210,7 @@ mod tests {
 
             let remaining = &KEY_SENTINEL[self.offset..];
             let count = if self.offset == 0 {
-                1
+                self.first_chunk_len.min(destination.len())
             } else {
                 remaining.len().min(destination.len())
             };
@@ -224,7 +229,8 @@ mod tests {
             bytes: KEY_SENTINEL,
             offset: 0,
         };
-        let result = SecretBuffer::read_from_with_observer_for_test(&mut reader, observer.clone());
+        let result =
+            SecretBuffer::read_from_with_observer_for_test(&mut reader, observer.clone(), 0);
 
         assert!(
             result.is_err(),
@@ -244,8 +250,17 @@ mod tests {
     #[test]
     fn key_buffer_growth_zeroizes_each_replaced_allocation_before_release() {
         let observer = SecretBufferObserver::new(KEY_SENTINEL.len());
-        let mut reader = SplitKeyReader { offset: 0 };
-        let result = SecretBuffer::read_from_with_observer_for_test(&mut reader, observer.clone());
+        const INITIAL_CAPACITY: usize = 1;
+
+        let mut reader = SplitKeyReader {
+            offset: 0,
+            first_chunk_len: INITIAL_CAPACITY,
+        };
+        let result = SecretBuffer::read_from_with_observer_for_test(
+            &mut reader,
+            observer.clone(),
+            INITIAL_CAPACITY,
+        );
 
         assert!(result.is_ok(), "the split key reader must complete");
         drop(result);
