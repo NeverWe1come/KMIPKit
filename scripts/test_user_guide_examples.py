@@ -126,6 +126,15 @@ def write_project(root: Path, project: Path, examples: list[Example]) -> None:
     (project / "examples.txt").write_text("\n".join(source_map) + "\n", encoding="utf-8")
 
 
+def cargo_check_command(cargo: str, manifest: Path, locked: bool) -> list[str]:
+    """Build a no-network Cargo check command for the generated examples."""
+    command = [cargo, "check", "--offline"]
+    if locked:
+        command.append("--locked")
+    command.extend(("--all-targets", "--manifest-path", str(manifest)))
+    return command
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -149,18 +158,15 @@ def main() -> int:
         with tempfile.TemporaryDirectory(prefix="kmipkit-guide-examples-") as temporary:
             project = Path(temporary)
             write_project(root, project, examples)
-            command = [
-                cargo,
-                "check",
-                "--offline",
-                "--all-targets",
-                "--manifest-path",
-                str(project / "Cargo.toml"),
-            ]
-            result = subprocess.run(command, cwd=root, check=False)
+            manifest = project / "Cargo.toml"
+            result = subprocess.run(
+                cargo_check_command(cargo, manifest, locked=False),
+                cwd=root,
+                check=False,
+            )
             if result.returncode == 0:
                 result = subprocess.run(
-                    [cargo, "check", "--offline", "--locked", *command[3:]],
+                    cargo_check_command(cargo, manifest, locked=True),
                     cwd=root,
                     check=False,
                 )

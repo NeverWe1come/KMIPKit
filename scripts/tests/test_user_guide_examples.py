@@ -60,6 +60,22 @@ fn second() {}
 
 
 class ExampleProjectTests(unittest.TestCase):
+    def test_cargo_check_command_is_offline_and_can_require_the_resolved_lock(self) -> None:
+        manifest = Path("examples") / "Cargo.toml"
+
+        self.assertEqual(
+            runner.cargo_check_command("cargo", manifest, locked=True),
+            [
+                "cargo",
+                "check",
+                "--offline",
+                "--locked",
+                "--all-targets",
+                "--manifest-path",
+                str(manifest),
+            ],
+        )
+
     def test_each_example_becomes_a_separate_bin_and_uses_the_workspace_lock(self) -> None:
         source = Path("client-execution.md")
         examples = runner.extract_examples(
