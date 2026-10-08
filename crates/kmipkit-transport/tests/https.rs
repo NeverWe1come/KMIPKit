@@ -45,6 +45,35 @@ const ACCEPT_TIMEOUT: Duration = Duration::from_secs(2);
 const MAX_CAPTURED_REQUEST: usize = 1024 * 1024;
 
 #[test]
+fn https_configuration_rejects_absolute_or_different_authority_targets() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    for target in [
+        "https://other.kmipkit.test/kmip",
+        "//other.kmipkit.test/kmip",
+    ] {
+        let result = config_builder(&pki, "https://server.kmipkit.test".to_owned())
+            .target_uri(target)
+            .build();
+
+        assert!(
+            matches!(result, Err(config::TransportConfigError::InvalidTarget)),
+            "targets with a scheme or separate authority are rejected"
+        );
+    }
+}
+
+#[test]
+fn https_configuration_rejects_the_plain_http_scheme() {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let result = config_builder(&pki, "http://server.kmipkit.test".to_owned()).build();
+
+    assert!(
+        matches!(result, Err(config::TransportConfigError::InvalidEndpoint)),
+        "the transport accepts HTTPS endpoints only"
+    );
+}
+
+#[test]
 fn https_default_target_posts_exact_bytes_with_required_headers_and_zeroizes_on_success() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
@@ -233,20 +262,7 @@ fn client_config(
     target: Option<&str>,
     tls_server_name: Option<&str>,
 ) -> config::TransportConfig {
-    let client_chain = pki
-        .client_identity()
-        .certificate_chain_der()
-        .into_iter()
-        .map(<[u8]>::to_vec)
-        .collect();
-    let mut builder = config::TransportConfig::builder(config::Endpoint::https(endpoint))
-        .client_identity(config::ClientIdentity::new(
-            config::CertificateInput::from_der(client_chain),
-            config::PrivateKeyInput::from_der(pki.client_identity().private_key_der().to_vec()),
-        ))
-        .trust_source(config::TrustSource::certificate_authorities(vec![
-            config::CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
-        ]));
+    let mut builder = config_builder(pki, endpoint);
     if let Some(target) = target {
         builder = builder.target_uri(target);
     }
@@ -256,6 +272,23 @@ fn client_config(
     builder
         .build()
         .expect("the explicit identity and trust inputs build a valid HTTPS config")
+}
+
+fn config_builder(pki: &EphemeralPki, endpoint: String) -> config::TransportConfigBuilder {
+    let client_chain = pki
+        .client_identity()
+        .certificate_chain_der()
+        .into_iter()
+        .map(<[u8]>::to_vec)
+        .collect();
+    config::TransportConfig::builder(config::Endpoint::https(endpoint))
+        .client_identity(config::ClientIdentity::new(
+            config::CertificateInput::from_der(client_chain),
+            config::PrivateKeyInput::from_der(pki.client_identity().private_key_der().to_vec()),
+        ))
+        .trust_source(config::TrustSource::certificate_authorities(vec![
+            config::CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
 }
 
 fn fixed_resolver(address: SocketAddr) -> resolver::Resolver {
