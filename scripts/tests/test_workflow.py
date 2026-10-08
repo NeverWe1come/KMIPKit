@@ -58,7 +58,8 @@ class WorkflowContractTests(unittest.TestCase):
         return POLICY_RUNNER.read_text(encoding="utf-8")
 
     def scheduled_policy_job(self, contents: str) -> str:
-        jobs = re.findall(r"(?ms)^  ([a-z][\w-]*):\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
+        jobs_section = contents.split("\njobs:\n", maxsplit=1)[1]
+        jobs = re.findall(r"(?ms)^  ([a-z][\w-]*):\n(.*?)(?=^  [a-z][\w-]*:|\Z)", jobs_section)
         for _, body in jobs:
             if "Test-DependencyPolicy.ps1" in body and re.search(r"(?i)github\.event_name.*schedule", body):
                 return body
@@ -539,6 +540,78 @@ class WorkflowContractTests(unittest.TestCase):
         summary_script = (REPOSITORY_ROOT / "scripts" / "ci_summary.py").read_text(encoding="utf-8")
         self.assertIn("GITHUB_STEP_SUMMARY", summary_script)
         self.assert_github_hosted_runner(job)
+
+    def test_every_job_adds_a_final_failure_diagnosis_step(self) -> None:
+        contents = self.require_workflow()
+        jobs_section = contents.split("\njobs:\n", maxsplit=1)[1]
+        jobs = re.findall(r"(?ms)^  ([a-z][\w-]*):\n(.*?)(?=^  [a-z][\w-]*:|\Z)", jobs_section)
+        self.assertTrue(jobs, "The workflow must define jobs to diagnose.")
+
+        for job_id, body in jobs:
+            with self.subTest(job=job_id):
+                diagnosis = re.search(
+                    r"(?ms)^      - name: Diagnose job result\n(.*?)(?=^      - name: |\Z)", body
+                )
+                self.assertIsNotNone(diagnosis, f"{job_id} must end with a diagnostic step.")
+                diagnostic_body = diagnosis.group(1)
+                self.assertRegex(diagnostic_body, r"(?m)^        if: always\(\)$")
+                self.assertRegex(diagnostic_body, r"(?m)^        id: ci-diagnostics$")
+                self.assertIn("scripts/ci_diagnostics.py", diagnostic_body)
+                self.assertIn("${{ toJSON(steps) }}", diagnostic_body)
+
+                step_blocks = re.findall(
+                    r"(?ms)^      - name: [^\n]+\n(.*?)(?=^      - name: |\Z)", body
+                )
+                self.assertGreaterEqual(len(step_blocks), 2)
+                for index, block in enumerate(step_blocks[:-1]):
+                    self.assertRegex(
+                        block,
+                        r"(?m)^        id: [a-z][a-z0-9-]*$",
+                        f"Step {index} in {job_id} needs a stable id for failure reporting.",
+                    )
+
+    def test_required_summary_job_fails_closed_on_all_pr_check_jobs(self) -> None:
+        contents = self.require_workflow()
+        summary_script = (REPOSITORY_ROOT / "scripts" / "ci_summary.py").read_text(encoding="utf-8")
+
+        for job_id in (
+            "core",
+            "script-contracts",
+            "language-bindings",
+            "ffi-sanitizer",
+            "fuzz-smoke",
+            "normative-inventory",
+            "coverage",
+            "coverage-gate",
+            "adapter-coverage",
+            "dependency-policy",
+        ):
+            with self.subTest(job=job_id):
+                self.assertIn(f'"{job_id}"', summary_script)
+                self.assertRegex(
+                    self.require_job(contents, "run-summary"),
+                    rf"(?m)^      - {re.escape(job_id)}$",
+                )
+
+    def test_run_summary_has_a_fallback_when_checkout_or_renderer_fails(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "run-summary")
+        self.assertRegex(job, r"(?m)^        id: checkout$")
+        self.assertRegex(job, r"(?m)^        id: write-summary$")
+        self.assertIn("Fallback summary when checkout or rendering fails", job)
+        self.assertIn(
+            "steps.write-summary.outputs.summary_written != 'true'",
+            job,
+        )
+        self.assertIn("normal ci run summary could not be rendered", job.lower())
+
+    def test_multi_command_python_binding_step_preserves_each_exit_code(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-bindings")
+        step = re.search(r"(?ms)^      - name: Build the Python Maturin CFFI package.*?(?=^      - name: |\Z)", job)
+        self.assertIsNotNone(step)
+        self.assertIn("shell: pwsh", step.group(0))
+        self.assertGreaterEqual(step.group(0).count("if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }"), 3)
 
     def test_coverage_gate_adds_its_result_and_metrics_to_the_job_summary(self) -> None:
         contents = self.require_workflow()

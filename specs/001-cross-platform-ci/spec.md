@@ -91,6 +91,25 @@ As a maintainer, I need each CI run to show its overall result and the outcome o
 5. **Given** scheduled branch coverage fails or is unavailable, **When** the scheduled Summary is rendered, **Then** it is identified as informational and does not change the required overall result.
 6. **Given** the run-level reporting is added, **When** the workflow executes, **Then** its existing triggers, validation jobs, platform matrix, runner routing, and thresholds remain unchanged, and it adds no secrets, API calls, or third-party actions.
 
+### User Story 5 - Diagnose a failed CI check (Priority: P1)
+
+As a maintainer, I need each failed CI job to end with a clear explanation of the failed check and a pointer to its detailed output so that I can identify the cause without guessing which log to inspect.
+
+**Why this priority**: A red workflow is not actionable when its final message hides the failed job, the failing step, or the original test/tool diagnostic.
+
+**Independent Test**: Feed representative failed step outcomes from Rust, Python, Java, sanitizer, fuzz, coverage, and policy checks into the job diagnostic renderer; verify each message names the job and failed step, explains the failure category, and preserves the original workflow failure. Verify the run summary reports every required failed, cancelled, missing, or unexpectedly skipped job.
+
+**Acceptance Scenarios**:
+
+1. **Given** a check command or action fails, **When** its job reaches the final diagnostic step, **Then** the job Summary names the job, platform/toolchain context where applicable, every failed step, the relevant failure category, and where the native compiler/test/action details appear.
+2. **Given** a test, compiler, linter, sanitizer, fuzzer, coverage, or policy check fails, **When** the diagnostic is written, **Then** the original step output and non-zero result remain available and the diagnostic step does not convert the job to success.
+3. **Given** a required job fails, is cancelled, is missing, or is unexpectedly skipped, **When** the final run Summary is rendered, **Then** it identifies the affected job and, when available, includes its failed-step diagnosis; it fails the summary result.
+4. **Given** a job is skipped because an upstream required job failed, **When** the run Summary is rendered, **Then** it also names the upstream failure rather than reporting only the downstream skip.
+5. **Given** a scheduled informational branch-coverage step fails, **When** the job and run summaries are written, **Then** the job shows the failing step and diagnosis while the scheduled required result remains unaffected.
+6. **Given** a workflow step or matrix value contains Markdown-significant text, **When** a diagnostic is rendered, **Then** the text is escaped and cannot inject headings, links, or table rows.
+7. **Given** diagnostics are generated, **When** they are included in job or run summaries, **Then** raw command logs are not copied into summary output; the full native error remains in its original step log.
+8. **Given** diagnostic reporting is added, **When** CI runs, **Then** it adds no secrets, write permissions, API calls, or third-party workflow actions and does not relax or suppress any required check.
+
 ---
 
 ### Edge Cases
@@ -103,6 +122,9 @@ As a maintainer, I need each CI run to show its overall result and the outcome o
 - A pull request changes no executable Rust lines, or the initial workspace contains no executable Rust function bodies.
 - A required CI job fails, is cancelled, is skipped unexpectedly, or does not provide a result before the final Summary runs.
 - A scheduled informational branch-coverage attempt fails while the scheduled dependency-policy check passes.
+- A job has multiple failed steps, a failed step is marked `continue-on-error`, or a failed test job causes a dependent coverage job to be skipped.
+- The final summary renderer or repository checkout fails before it can render the normal run report.
+- A failed step or matrix context contains text that must not be interpreted as Markdown.
 
 ## Requirements *(mandatory)*
 
@@ -122,6 +144,9 @@ As a maintainer, I need each CI run to show its overall result and the outcome o
 - **FR-012**: Every externally sourced GitHub Actions `uses` reference in the workflow MUST be pinned to a full commit SHA; a comment MUST identify the corresponding upstream release or version.
 - **FR-013**: Linux jobs for pull requests whose head repository is the current repository MUST use the repository's self-hosted Linux ARM64 runner. Linux jobs for fork pull requests MUST use GitHub-hosted runners. Windows and macOS matrix jobs MUST remain GitHub-hosted. The scheduled informational branch-coverage job MUST use the self-hosted Linux ARM64 runner.
 - **FR-014**: Every pull-request and scheduled CI run MUST write a concise final GitHub run Summary containing the overall required-check result, event context (ref, commit, and run link), and relevant check-group results. The final summary job MUST run after upstream jobs even when they fail; missing, failed, or cancelled required groups MUST keep the summary job failing. Checks inapplicable to the triggering event MUST be labeled not applicable. Coverage gate summaries MUST report measured percentages and thresholds, an explicit unavailable reason without claiming a threshold, or a useful failure diagnostic. Scheduled branch coverage MUST be presented as informational and MUST NOT affect the required overall result. This reporting MUST NOT change existing triggers, checks, execution matrix, runner routing, coverage thresholds, permissions, or credential use, and MUST NOT add credentials, API calls, or third-party workflow actions.
+- **FR-015**: Every CI job MUST end with a diagnostic step that runs after success or failure and writes a job Summary. For failures it MUST list every failed step by a stable, human-readable name, identify the job and available matrix context, explain the type of check failure when known, and direct the maintainer to the native error output in that step's logs. It MUST preserve the original command/action output and failing result. The diagnostic step MUST NOT make an earlier failed job pass; informational jobs MAY remain non-gating but MUST still describe their failed steps. Raw command logs MUST NOT be copied into summaries.
+- **FR-016**: The final run Summary MUST include every required pull-request or scheduled job, not only selected check groups. Failed, cancelled, missing, and unexpectedly skipped required jobs MUST be shown as failures; any available per-job diagnostic MUST be included. It MUST identify upstream failures when dependent jobs are skipped. Matrix-job failures MUST direct the maintainer to the corresponding failed matrix leg and its job Summary. Expected event-specific skips and scheduled informational branch-coverage outcomes MUST remain correctly classified.
+- **FR-017**: If checkout or the normal run-summary renderer fails, the run-summary job MUST write a concise fallback failure Summary when the runner remains available. The fallback MUST preserve a non-zero job result and explain that normal diagnostics could not be rendered.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -143,6 +168,7 @@ As a maintainer, I need each CI run to show its overall result and the outcome o
 - **SC-008**: All externally sourced workflow actions are pinned to full commit SHAs, and fork-controlled steps run without secrets, write permissions, or unnecessary repository tokens.
 - **SC-009**: Same-repository Linux pull-request jobs and scheduled branch coverage run on the self-hosted ARM64 runner; fork pull requests use GitHub-hosted Linux, and Windows/macOS jobs continue to report their actual hosted platforms.
 - **SC-010**: Every pull-request and scheduled run presents a final at-a-glance Summary with required group outcomes, relevant event and commit context, and a truthful overall result; the Summary remains available after required failures, and coverage details distinguish measured, unavailable, and failed outcomes.
+- **SC-011**: For every workflow job, a deliberately failing representative step produces a job Summary naming the job and failed step, explaining its failure category, and directing the reader to its detailed native log; the original failing conclusion remains unchanged. The run Summary lists all event-required failures, including FFI sanitizer and fuzz smoke, and cannot report PASS for a failed, cancelled, missing, or unexpectedly skipped required job.
 
 ## Assumptions
 
