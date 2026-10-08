@@ -66,3 +66,16 @@ retaining `Timeout` for read-inactivity expiry.
 | `cargo clippy -p kmipkit-transport --all-targets --all-features --offline -- -D warnings` | Passed. |
 | `cargo fmt --all --check` | Passed. |
 | `git diff --check` | Passed. |
+
+## Independent Review
+
+QA approved commits `cca130c..0aff8d2` without findings. It verified the new
+timeout/redaction assertions, the existing parser/truncated-body behavior,
+both complete HTTPS and timeout-delivery targets, strict Clippy, formatting,
+and diff checks.
+
+Security review found no findings. It confirmed `TransportError::new` drops
+the Hyper/I/O source before public formatting, no logging was added, and the
+request and partial-response sentinels are checked against both `Display` and
+`Debug`. The review was manual; no separate automated security scan was
+completed for this small diff.
