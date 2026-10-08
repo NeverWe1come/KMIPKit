@@ -9,7 +9,9 @@ use std::time::{Duration, Instant};
 use tokio::runtime::Builder;
 use tokio::sync::{Mutex as AsyncMutex, Semaphore, watch};
 
-use super::{ResolveFailure, Resolver, finish_lookup, wait_for_cancel};
+use super::{
+    Lookup, ResolveFailure, Resolver, ResolverJobState, finish_lookup, run_lookup, wait_for_cancel,
+};
 
 const TEST_DEADLINE: Duration = Duration::from_secs(2);
 const PROMPT_RETURN_LIMIT: Duration = Duration::from_secs(1);
@@ -230,17 +232,23 @@ async fn resolver_admission_fails_fast_and_permit_stays_held_after_cancellation(
         },
         Arc::clone(&semaphore),
     );
+    let candidate_attempts = Arc::new(AtomicUsize::new(0));
+    let observed_attempts = Arc::clone(&candidate_attempts);
     let (cancel_sender, cancel_receiver) = cancellation_channel();
     let first_resolver = resolver.clone();
     let mut first_lookup = tokio::spawn(async move {
-        first_resolver
+        let outcome = first_resolver
             .lookup_candidates(
                 "blocked.example.test",
                 5696,
                 Instant::now() + TEST_DEADLINE,
                 cancel_receiver,
             )
-            .await
+            .await;
+        if let Ok(candidates) = &outcome {
+            observed_attempts.fetch_add(candidates.len(), Ordering::Relaxed);
+        }
+        outcome
     });
 
     tokio::task::spawn_blocking(move || {
@@ -278,6 +286,7 @@ async fn resolver_admission_fails_fast_and_permit_stays_held_after_cancellation(
 
     gate.release();
     wait_for_permit(&semaphore, 1).await;
+    assert_eq!(candidate_attempts.load(Ordering::Relaxed), 0);
 }
 
 #[tokio::test]
@@ -292,17 +301,23 @@ async fn deadline_returns_without_waiting_for_started_native_resolution() {
         },
         Arc::clone(&semaphore),
     );
+    let candidate_attempts = Arc::new(AtomicUsize::new(0));
+    let observed_attempts = Arc::clone(&candidate_attempts);
     let (_cancel_sender, cancel_receiver) = cancellation_channel();
     let first_resolver = resolver.clone();
     let mut first_lookup = tokio::spawn(async move {
-        first_resolver
+        let outcome = first_resolver
             .lookup_candidates(
                 "slow.example.test",
                 5696,
                 Instant::now() + Duration::from_millis(250),
                 cancel_receiver,
             )
-            .await
+            .await;
+        if let Ok(candidates) = &outcome {
+            observed_attempts.fetch_add(candidates.len(), Ordering::Relaxed);
+        }
+        outcome
     });
 
     tokio::task::spawn_blocking(move || {
@@ -322,6 +337,7 @@ async fn deadline_returns_without_waiting_for_started_native_resolution() {
 
     gate.release();
     wait_for_permit(&semaphore, 1).await;
+    assert_eq!(candidate_attempts.load(Ordering::Relaxed), 0);
 }
 
 #[tokio::test]
@@ -519,4 +535,29 @@ fn dropping_a_lookup_aborts_it_while_queued_on_the_only_blocking_thread() {
         assert!(permit_returned_before_blocker_release);
         assert_eq!(lookup_starts.load(Ordering::Relaxed), 0);
     });
+}
+
+#[test]
+fn a_queued_job_released_by_its_guard_never_calls_the_resolver() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let observed_calls = Arc::clone(&calls);
+    let lookup: Arc<Lookup> = Arc::new(move |_host, _port| {
+        observed_calls.fetch_add(1, Ordering::Relaxed);
+        Ok(vec![address(8, 5696)])
+    });
+    let state = std::sync::Mutex::new(ResolverJobState {
+        started: false,
+        permit: None,
+    });
+
+    let result = run_lookup(&state, lookup.as_ref(), "canceled.example.test", 5696);
+
+    assert_eq!(
+        result
+            .expect_err("canceled queued lookup must not run")
+            .kind(),
+        io::ErrorKind::Interrupted
+    );
+    assert_eq!(calls.load(Ordering::Relaxed), 0);
+    assert!(super::lock_job_state(&state).started);
 }

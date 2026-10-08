@@ -89,13 +89,7 @@ impl Resolver {
         }));
         let task_state = Arc::clone(&state);
         let task = tokio::task::spawn_blocking(move || {
-            let Some(_permit) = begin_resolver_job(&task_state) else {
-                return Err(io::Error::new(
-                    io::ErrorKind::Interrupted,
-                    "resolver job canceled before start",
-                ));
-            };
-            lookup(&host, port)
+            run_lookup(&task_state, lookup.as_ref(), &host, port)
         });
         let mut task = AbortOnDrop::new(task, state);
 
@@ -168,6 +162,21 @@ fn begin_resolver_job(state: &Mutex<ResolverJobState>) -> Option<OwnedSemaphoreP
     let mut state = lock_job_state(state);
     state.started = true;
     state.permit.take()
+}
+
+fn run_lookup(
+    state: &Mutex<ResolverJobState>,
+    lookup: &Lookup,
+    host: &str,
+    port: u16,
+) -> io::Result<Vec<SocketAddr>> {
+    let Some(_permit) = begin_resolver_job(state) else {
+        return Err(io::Error::new(
+            io::ErrorKind::Interrupted,
+            "resolver job canceled before start",
+        ));
+    };
+    lookup(host, port)
 }
 
 fn lock_job_state(state: &Mutex<ResolverJobState>) -> MutexGuard<'_, ResolverJobState> {
