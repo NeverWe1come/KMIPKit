@@ -136,16 +136,16 @@ fn local_dns_fixture_tracks_multiplexed_tcp_requests_per_connection() {
         .set_read_timeout(Some(Duration::from_secs(2)))
         .expect("the fixture read has a bounded wait");
     let query = dns_question(name, 1);
+    let mut requests = Vec::new();
     for _ in 0..2 {
         let length =
             u16::try_from(query.len()).expect("the test DNS question length fits in the TCP frame");
-        stream
-            .write_all(&length.to_be_bytes())
-            .expect("the TCP DNS frame length is written");
-        stream
-            .write_all(&query)
-            .expect("the TCP DNS question is written");
+        requests.extend_from_slice(&length.to_be_bytes());
+        requests.extend_from_slice(&query);
     }
+    stream
+        .write_all(&requests)
+        .expect("both length-prefixed TCP DNS questions are written");
 
     wait_for_question_count(&fixture, name, DnsQueryType::A, 2);
     assert!(fixture.peak_active_tcp_requests_per_connection() >= 2);

@@ -13,7 +13,6 @@ fn transport_feature_graph_uses_http1_and_aws_lc_without_proxy_or_compression() 
                 .expect("workspace manifest path is Unicode"),
             "--locked",
             "--offline",
-            "--all-targets",
             "-p",
             "kmipkit-transport",
             "-e",
