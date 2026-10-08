@@ -688,7 +688,7 @@ pub(crate) fn is_tls_failure(error: &io::Error) -> bool {
     error
         .get_ref()
         .and_then(|source| source.downcast_ref::<SafeIoFailure>())
-        .is_some_and(|failure| matches!(failure, SafeIoFailure::TlsRecordRejected))
+        .is_some_and(|failure| matches!(failure, SafeIoFailure::TlsFailure))
 }
 
 // Retain only a fixed safe cause; never carry the source error text.
@@ -697,7 +697,7 @@ enum SafeIoFailure {
     DeadlineElapsed,
     ExchangeFinalized,
     SenderUnavailable,
-    TlsRecordRejected,
+    TlsFailure,
     Inner(io::ErrorKind),
 }
 
@@ -709,7 +709,7 @@ impl SafeIoFailure {
             .is_some_and(|source| source.downcast_ref::<rustls::Error>().is_some());
         drop(error);
         if tls_record_rejected {
-            Self::TlsRecordRejected
+            Self::TlsFailure
         } else if kind == io::ErrorKind::TimedOut {
             Self::DeadlineElapsed
         } else {
@@ -719,7 +719,7 @@ impl SafeIoFailure {
 
     fn into_io_error(self) -> io::Error {
         match self {
-            Self::TlsRecordRejected => io::Error::new(io::ErrorKind::InvalidData, self),
+            Self::TlsFailure => io::Error::new(io::ErrorKind::InvalidData, self),
             Self::DeadlineElapsed => {
                 io::Error::new(io::ErrorKind::TimedOut, "I/O deadline elapsed")
             }
@@ -736,7 +736,7 @@ impl SafeIoFailure {
 
 impl std::fmt::Display for SafeIoFailure {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("TLS record integrity check failed")
+        formatter.write_str("TLS failure")
     }
 }
 

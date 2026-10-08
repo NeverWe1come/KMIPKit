@@ -47,3 +47,15 @@ The negative assertions observe exactly one corrupted server application-data
 record, reject its plaintext, retain `PossiblySent` because no response byte
 was decrypted, expose only the safe TLS category, and verify connection
 termination or cache invalidation for the affected adapter.
+
+## Refactor evidence
+
+Renamed the private sanitized marker to `TlsFailure` and aligned its fixed
+display text with the general category. This keeps the sanitizer accurate for
+all rustls failures while preserving the exact externally tested behavior.
+
+- `cargo test -p kmipkit-transport --all-targets --all-features --offline` —
+  PASS, including both record-corruption tests.
+- `cargo fmt --all --check`, `git diff --check`, and `cargo clippy -p
+  kmipkit-transport --all-targets --all-features --offline -- -D warnings` —
+  PASS.
