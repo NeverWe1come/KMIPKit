@@ -10,7 +10,7 @@ use std::io::{self, Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener, fixtures};
 pub use kmipkit_transport::{
@@ -55,6 +55,9 @@ pub use config::{
 const RESPONSE_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0];
 const RESPONSE_LIMIT: usize = RESPONSE_FRAME.len();
 const TLS_TEST_TIMEOUT: Duration = Duration::from_secs(2);
+const PEER_ACCEPT_TIMEOUT: Duration = Duration::from_secs(2);
+const PEER_ACCEPT_POLL_INTERVAL: Duration = Duration::from_millis(10);
+const PEER_OPERATION_TIMEOUT: Duration = Duration::from_secs(6);
 const SERVER_NAME: &str = "server.kmipkit.test";
 
 /// Proves the caller's exact bytes reach a TLS 1.3 peer that requires mTLS,
@@ -152,11 +155,13 @@ fn raw_tls_rejects_unknown_server_ca() {
         Vec::new(),
     );
 
-    assert!(
-        exchange(config, fixtures::REQUEST_SENTINEL, None).is_err(),
-        "an unknown server CA is rejected"
+    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    assert_not_sent(
+        result,
+        "an unknown server CA is rejected before request dispatch",
     );
     let peer = peer.join().expect("the local TLS peer thread completes");
+    assert!(peer.accepted, "the local peer accepted the TLS connection");
     assert!(
         !peer.handshake_completed,
         "the server handshake does not complete with an untrusted CA"
@@ -178,11 +183,13 @@ fn raw_tls_rejects_expired_server_certificate() {
     );
     let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
 
-    assert!(
-        exchange(config, fixtures::REQUEST_SENTINEL, None).is_err(),
-        "a server certificate outside its validity period is rejected"
+    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    assert_not_sent(
+        result,
+        "an expired server certificate is rejected before request dispatch",
     );
     let peer = peer.join().expect("the local TLS peer thread completes");
+    assert!(peer.accepted, "the local peer accepted the TLS connection");
     assert!(
         !peer.handshake_completed,
         "the expired server certificate prevents handshake completion"
@@ -209,11 +216,13 @@ fn raw_tls_rejects_server_name_mismatch() {
         Vec::new(),
     );
 
-    assert!(
-        exchange(config, fixtures::REQUEST_SENTINEL, None).is_err(),
-        "a hostname mismatch is rejected"
+    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    assert_not_sent(
+        result,
+        "a hostname mismatch is rejected before request dispatch",
     );
     let peer = peer.join().expect("the local TLS peer thread completes");
+    assert!(peer.accepted, "the local peer accepted the TLS connection");
     assert!(
         !peer.handshake_completed,
         "hostname validation prevents handshake completion"
@@ -240,11 +249,13 @@ fn raw_tls_rejects_server_certificate_revoked_by_caller_crl() {
         vec![pki.revoking_server_crl()],
     );
 
-    assert!(
-        exchange(config, fixtures::REQUEST_SENTINEL, None).is_err(),
-        "a server certificate listed by the caller CRL is rejected"
+    let result = exchange(config, fixtures::REQUEST_SENTINEL, None);
+    assert_not_sent(
+        result,
+        "a caller-revoked server certificate is rejected before request dispatch",
     );
     let peer = peer.join().expect("the local TLS peer thread completes");
+    assert!(peer.accepted, "the local peer accepted the TLS connection");
     assert!(
         !peer.handshake_completed,
         "CRL verification prevents handshake completion"
@@ -269,6 +280,18 @@ fn assert_request_owner_zeroized(observer: &secret::SecretBufferObserver, reques
     assert!(
         observer.initialized_range_was_zero(),
         "the request owner's initialized bytes are zeroized before release"
+    );
+}
+
+fn assert_not_sent(result: Result<TransportResponse, TransportError>, message: &str) {
+    let error = match result {
+        Ok(_) => panic!("{message}"),
+        Err(error) => error,
+    };
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::NotSent,
+        "{message}"
     );
 }
 
@@ -361,6 +384,7 @@ enum PeerAction {
 
 #[derive(Default)]
 struct PeerObservation {
+    accepted: bool,
     handshake_completed: bool,
     protocol_version: Option<rustls::ProtocolVersion>,
     client_identity_present: bool,
@@ -383,35 +407,39 @@ fn run_peer(
     request_len: usize,
     action: PeerAction,
 ) -> PeerObservation {
-    let Ok((mut stream, _)) = listener.accept() else {
+    let Ok((mut stream, _)) = accept_before_deadline(&listener) else {
         return PeerObservation::default();
     };
-    if stream.set_read_timeout(Some(TLS_TEST_TIMEOUT)).is_err()
+    let mut observation = PeerObservation {
+        accepted: true,
+        ..PeerObservation::default()
+    };
+    if stream.set_nonblocking(false).is_err()
+        || stream.set_read_timeout(Some(TLS_TEST_TIMEOUT)).is_err()
         || stream.set_write_timeout(Some(TLS_TEST_TIMEOUT)).is_err()
     {
-        return PeerObservation::default();
+        return observation;
     }
     let Ok(mut connection) = ServerConnection::new(config) else {
-        return PeerObservation::default();
+        return observation;
     };
+    let deadline = Instant::now() + PEER_OPERATION_TIMEOUT;
     while connection.is_handshaking() {
-        if connection.complete_io(&mut stream).is_err() {
-            return PeerObservation::default();
+        if Instant::now() >= deadline || connection.complete_io(&mut stream).is_err() {
+            return observation;
         }
     }
 
-    let mut observation = PeerObservation {
-        handshake_completed: true,
-        protocol_version: connection.protocol_version(),
-        client_identity_present: connection
-            .peer_certificates()
-            .is_some_and(|certificates| !certificates.is_empty()),
-        ..PeerObservation::default()
-    };
+    observation.handshake_completed = true;
+    observation.protocol_version = connection.protocol_version();
+    observation.client_identity_present = connection
+        .peer_certificates()
+        .is_some_and(|certificates| !certificates.is_empty());
     if request_len == 0
         || !read_plaintext_exact(
             &mut connection,
             &mut stream,
+            deadline,
             request_len,
             &mut observation.request_bytes,
         )
@@ -425,12 +453,15 @@ fn run_peer(
                 return observation;
             }
             while connection.wants_write() {
-                if connection.write_tls(&mut stream).is_err() {
+                if Instant::now() >= deadline || connection.write_tls(&mut stream).is_err() {
                     return observation;
                 }
             }
             let mut encrypted = [0_u8; 1024];
             loop {
+                if Instant::now() >= deadline {
+                    break;
+                }
                 match stream.read(&mut encrypted) {
                     Ok(0) => {
                         observation.closed_after_response = true;
@@ -446,15 +477,42 @@ fn run_peer(
     observation
 }
 
+fn accept_before_deadline(listener: &TcpListener) -> io::Result<(TcpStream, std::net::SocketAddr)> {
+    listener.set_nonblocking(true)?;
+    let deadline = Instant::now() + PEER_ACCEPT_TIMEOUT;
+    loop {
+        match listener.accept() {
+            Ok((stream, address)) => return Ok((stream, address)),
+            Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                let now = Instant::now();
+                if now >= deadline {
+                    return Err(io::Error::new(
+                        io::ErrorKind::TimedOut,
+                        "local TLS peer accept deadline elapsed",
+                    ));
+                }
+                thread::sleep(
+                    PEER_ACCEPT_POLL_INTERVAL.min(deadline.saturating_duration_since(now)),
+                );
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+
 fn read_plaintext_exact(
     connection: &mut ServerConnection,
     stream: &mut TcpStream,
+    deadline: Instant,
     expected_len: usize,
     bytes: &mut Vec<u8>,
 ) -> bool {
     bytes.resize(expected_len, 0);
     let mut initialized = 0;
     while initialized < expected_len {
+        if Instant::now() >= deadline {
+            return false;
+        }
         match connection.reader().read(&mut bytes[initialized..]) {
             Ok(0) => return false,
             Ok(read) => initialized += read,
