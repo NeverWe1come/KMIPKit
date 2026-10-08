@@ -210,8 +210,8 @@ fn request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_ord
         vendor_attribute(b"common-first"),
         vendor_attribute(b"common-second"),
     ]);
-    let private = attributes([item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3))]);
-    let public = attributes([item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048))]);
+    let private = attributes([vendor_attribute(b"private-value")]);
+    let public = attributes([vendor_attribute(b"public-value")]);
     let request = request_with_groups(Some(repeated_common), Some(private), Some(public))
         .with_common_protection_storage_masks(Structure::new())
         .with_private_protection_storage_masks(Structure::new())
@@ -220,7 +220,8 @@ fn request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_ord
     let payload = request
         .into_ttlv_payload()
         .expect("all six Table 189 groups are representable");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(
         fields
             .iter()
@@ -273,7 +274,8 @@ fn request_distinguishes_absent_groups_from_present_empty_groups_without_synthes
     )
     .into_ttlv_payload()
     .expect("optional attribute groups may be present and empty");
-    let fields = present_empty.view().children();
+    let payload_view = present_empty.view();
+    let fields = payload_view.children();
     assert_eq!(fields.len(), 3);
     assert_eq!(fields[0].tag().raw(), COMMON_ATTRIBUTES);
     assert_eq!(fields[1].tag().raw(), PRIVATE_KEY_ATTRIBUTES);
@@ -302,7 +304,8 @@ fn table_191_accepts_absent_values_and_common_attribute_fallback_without_copying
     let payload = request_with_groups(Some(common), None, None)
         .into_ttlv_payload()
         .expect("both keys inherit the same supplied Common Attributes values");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(fields.len(), 1);
     assert_eq!(fields[0].tag().raw(), COMMON_ATTRIBUTES);
     fields[0].with_value(|value| match value {
@@ -328,7 +331,8 @@ fn table_191_accepts_equal_key_specific_overrides_that_differ_from_common_values
     .into_ttlv_payload()
     .expect("equal private/public overrides take precedence over Common Attributes");
 
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(fields.len(), 3);
     assert_eq!(fields[0].tag().raw(), COMMON_ATTRIBUTES);
     assert_eq!(fields[1].tag().raw(), PRIVATE_KEY_ATTRIBUTES);
@@ -450,7 +454,7 @@ fn malformed_success_response_rejects_missing_duplicate_and_wrong_type_identifie
         None,
         None,
         Some(response_payload(
-            Value::integer(17),
+            Value::byte_string(b"not-a-Unique-Identifier".to_vec()),
             Value::text_string("public-key-id".to_owned()),
         )),
     );

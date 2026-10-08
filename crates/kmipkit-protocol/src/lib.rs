@@ -5,6 +5,7 @@ mod asynchronous;
 pub mod attribute;
 mod cancel;
 mod create;
+mod create_key_pair;
 mod credential;
 mod discover_versions;
 mod error;
@@ -19,6 +20,7 @@ pub use asynchronous::AsynchronousOperationError;
 pub use attribute::{AttributeSet, AttributeSetError};
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
+pub use create_key_pair::{CreateKeyPairError, CreateKeyPairRequest, CreateKeyPairResponse};
 pub use credential::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
     CredentialValidationErrorKind, CredentialValue, CredentialView, DeviceCredential,
