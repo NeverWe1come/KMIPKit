@@ -346,7 +346,7 @@ impl RawTlsConnection {
             ResponseBuffer::with_header_and_allocation_observer_for_test(
                 response_len,
                 &header[..],
-                observer,
+                &observer,
             )
         } else {
             ResponseBuffer::with_header(response_len, &header[..])
@@ -474,7 +474,7 @@ impl ResponseBuffer {
     fn with_header_and_allocation_observer_for_test(
         _length: usize,
         _header: &[u8],
-        observer: ResponseAllocationObserver,
+        observer: &ResponseAllocationObserver,
     ) -> io::Result<Self> {
         // Count the constructor attempt and stop before a regression can reserve an untrusted size.
         observer.record_allocation_attempt();
@@ -507,6 +507,7 @@ pub(crate) struct ResponseAllocationObserver {
 }
 
 #[cfg(test)]
+#[allow(dead_code)] // Constructed only by the source-including raw TLS integration target.
 impl ResponseAllocationObserver {
     pub(crate) fn new() -> Self {
         Self::default()
