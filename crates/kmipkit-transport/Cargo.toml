@@ -71,8 +71,13 @@ path = "tests/secret_redaction.rs"
 name = "secret_redaction_current"
 path = "tests/secret_redaction_current.rs"
 
+[[bench]]
+name = "production_transport"
+path = "benches/production_transport.rs"
+harness = false
+
 [dev-dependencies]
-kmipkit-test-support = { workspace = true, default-features = false, features = ["fixtures"] }
+kmipkit-test-support = { workspace = true, features = ["fixtures"] }
 rcgen.workspace = true
 
 [lints]
