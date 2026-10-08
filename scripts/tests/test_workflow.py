@@ -119,6 +119,19 @@ class WorkflowContractTests(unittest.TestCase):
             job,
             "Every supported pull-request platform must reject stale generated API outputs.",
         )
+
+    def test_language_binding_job_compiles_bilingual_client_guide_examples(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-bindings")
+        build_position = job.index("- name: Build the C consumer and example")
+        guide_position = job.find("python scripts/test_user_guide_examples.py")
+
+        self.assertGreaterEqual(
+            guide_position,
+            0,
+            "Every supported platform must compile the marked bilingual Rust examples.",
+        )
+        self.assertGreater(guide_position, build_position)
         self.assertIn(
             "tools/extension_fixtures/generate.py --check",
             job,
