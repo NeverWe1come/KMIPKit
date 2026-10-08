@@ -101,11 +101,21 @@ acknowledgment is held. The test seam is scoped to the source-included HTTPS
 test adapter. The production cleanup behavior has not been corrected in this
 Red commit.
 
+QA rejected the initial Red assertion because it sampled the result channel
+once immediately after cleanup started. Test correction commit
+`deb4761a874bbd17a8ad3d296259ea8f992e4132` replaces that sample with an
+ordered event stream from the real worker thread and the test-only Hyper
+driver joiner. While the cleanup gate is closed, the test waits for an
+exchange-return event or a bounded 250 ms observation interval; after
+releasing the gate, it requires the join acknowledgment event to precede
+public exchange return. This avoids treating an instantaneous empty channel
+as proof of ordering.
+
 Red verification:
 
 | Command | Result |
 | --- | --- |
-| `cargo test -p kmipkit-transport --test https --offline https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning -- --exact --nocapture` | Expected Red: 0/1 passed; failed at `the public exchange does not return before driver cleanup is acknowledged`. The compiler succeeded and the failure followed the observed early return while the gate was held. |
+| `cargo test -p kmipkit-transport --test https --offline https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning -- --exact --nocapture` | Expected Red: 0/1 passed; failed at `the public exchange remains pending while driver cleanup acknowledgment is gated`. The test observed the early return, released the gate, and joined the peer. |
 | `cargo fmt --all --check` | Passed |
 | `git diff --check` | Passed |
 
