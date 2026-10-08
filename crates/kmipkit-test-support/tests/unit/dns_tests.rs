@@ -19,7 +19,14 @@ fn lock_network_fixture() -> MutexGuard<'static, ()> {
 fn is_close_result(result: &io::Result<usize>) -> bool {
     match result {
         Ok(0) => true,
-        Err(error) if error.kind() == io::ErrorKind::ConnectionAborted => true,
+        Err(error)
+            if matches!(
+                error.kind(),
+                io::ErrorKind::ConnectionAborted | io::ErrorKind::ConnectionReset
+            ) =>
+        {
+            true
+        }
         Ok(_) | Err(_) => false,
     }
 }
@@ -270,6 +277,32 @@ fn connection_reset_is_accepted_as_peer_close() {
     assert!(
         is_close_result(&read_result),
         "a peer reset closes the connection after an invalid short frame"
+    );
+}
+
+#[test]
+fn eof_and_connection_aborted_are_accepted_as_peer_close() {
+    assert!(is_close_result(&Ok(0)), "EOF closes the connection");
+    assert!(
+        is_close_result(&Err(io::Error::from(io::ErrorKind::ConnectionAborted))),
+        "an aborted connection is closed"
+    );
+}
+
+#[test]
+fn data_and_unrelated_read_errors_are_not_accepted_as_peer_close() {
+    assert!(!is_close_result(&Ok(1)), "received data is not a close");
+    assert!(
+        !is_close_result(&Err(io::Error::from(io::ErrorKind::WouldBlock))),
+        "WouldBlock is not a close"
+    );
+    assert!(
+        !is_close_result(&Err(io::Error::from(io::ErrorKind::TimedOut))),
+        "a read timeout is not a close"
+    );
+    assert!(
+        !is_close_result(&Err(io::Error::other("unrelated read error"))),
+        "unrelated read errors are not a close"
     );
 }
 
