@@ -367,6 +367,11 @@ through `serde_derive` and a test-only dependency, while
 Their original approval remains the PR #50 decision; the two resolved
 exceptions are no longer active.
 
+An independent dependency review found stale `zerovec` mitigation text in the
+two remaining records after Hickory's transitive graph was pruned. The
+mitigations now name only the active `serde`/test and Tokio proc-macro paths
+and require re-evaluation when those dependencies change.
+
 Verification after the manifest and lockfile change:
 
 - `pwsh -File scripts/Test-DependencyPolicy.ps1` passed on
