@@ -255,10 +255,7 @@ fn parse_success_payload(
                 if object_type.is_some() {
                     return Err(CreateError::MalformedSuccessPayload);
                 }
-                object_type = field.with_value(|value| match value {
-                    ValueView::Enumeration(raw) => Some(ObjectType::from_raw(*raw)),
-                    _ => None,
-                });
+                object_type = parse_object_type(field);
                 if object_type.is_none() {
                     return Err(CreateError::MalformedSuccessPayload);
                 }
@@ -267,14 +264,7 @@ fn parse_success_payload(
                 if unique_identifier.is_some() {
                     return Err(CreateError::MalformedSuccessPayload);
                 }
-                unique_identifier = field.with_value(|value| match value {
-                    ValueView::TextString(value) => {
-                        Some(UniqueIdentifier::TextString(value.to_owned()))
-                    }
-                    ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-                    ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-                    _ => None,
-                });
+                unique_identifier = parse_unique_identifier(field);
                 if unique_identifier.is_none() {
                     return Err(CreateError::MalformedSuccessPayload);
                 }
@@ -289,6 +279,22 @@ fn parse_success_payload(
         (Some(object_type), Some(unique_identifier)) => Ok((object_type, unique_identifier)),
         _ => Err(CreateError::MalformedSuccessPayload),
     }
+}
+
+fn parse_object_type(field: &Item) -> Option<ObjectType> {
+    field.with_value(|value| match value {
+        ValueView::Enumeration(raw) => Some(ObjectType::from_raw(*raw)),
+        _ => None,
+    })
+}
+
+fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
+    field.with_value(|value| match value {
+        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
+        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
+        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
+        _ => None,
+    })
 }
 
 fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {

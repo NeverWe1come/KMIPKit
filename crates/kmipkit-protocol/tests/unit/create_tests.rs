@@ -291,6 +291,33 @@ fn response_preserves_unknown_object_type_and_all_unique_identifier_wire_forms()
 }
 
 #[test]
+fn typed_response_conversion_leaves_unknown_generic_payload_fields_available() {
+    let payload = structure([
+        item(OBJECT_TYPE, Value::enumeration(7)),
+        item(UNIQUE_IDENTIFIER, Value::text_string("id-001".to_owned())),
+        item(CRYPTOGRAPHIC_LENGTH, Value::integer(80)),
+    ]);
+    let message = response_for_payload(payload);
+    let typed = decode_response(&message).expect("known fields remain decodable");
+    assert_eq!(typed.object_type().map(ObjectType::raw), Some(7));
+
+    let retained = message
+        .batch_items()
+        .next()
+        .expect("fixture has one response batch item")
+        .with_response_payload(|payload| {
+            payload.children().iter().any(|field| {
+                field.tag().raw() == CRYPTOGRAPHIC_LENGTH
+                    && field.with_value(
+                        |value| matches!(value, ValueView::Integer(length) if *length == 80),
+                    )
+            })
+        })
+        .expect("the validated Response Payload remains available");
+    assert!(retained);
+}
+
+#[test]
 fn response_rejects_a_different_operation_without_echoing_payload_values() {
     let message = response_message(
         0x0000_001f,
