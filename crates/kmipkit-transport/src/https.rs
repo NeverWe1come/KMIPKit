@@ -5,6 +5,8 @@ use std::future::poll_fn;
 use std::io;
 use std::pin::Pin;
 use std::sync::Arc;
+#[cfg(test)]
+use std::sync::mpsc;
 use std::task::{Context, Poll};
 use std::time::{Duration, Instant};
 
@@ -58,6 +60,10 @@ pub struct HttpsTransport {
     observer: Option<SecretBufferObserver>,
     #[cfg(test)]
     worker_spawner: Option<WorkerSpawnerForTest>,
+    #[cfg(test)]
+    driver_abort_observer: Option<mpsc::SyncSender<()>>,
+    #[cfg(test)]
+    cancel_exchange: Option<tokio::sync::oneshot::Receiver<()>>,
 }
 
 // Keep endpoint routing and its origin-form target together. The target never
@@ -111,6 +117,10 @@ impl HttpsTransport {
             observer: None,
             #[cfg(test)]
             worker_spawner: None,
+            #[cfg(test)]
+            driver_abort_observer: None,
+            #[cfg(test)]
+            cancel_exchange: None,
         })
     }
 
@@ -195,6 +205,10 @@ impl HttpsTransport {
         let resolver = self.resolver.clone();
         let client_config = Arc::clone(self.tls.rustls_config_arc());
         let server_name = self.tls.server_name().clone();
+        #[cfg(test)]
+        let driver_abort_observer = self.driver_abort_observer.take();
+        #[cfg(test)]
+        let cancel_exchange = self.cancel_exchange.take();
         let worker = self.worker.as_ref().ok_or_else(|| {
             safe_error(
                 RequestDeliveryState::NotSent,
@@ -215,6 +229,10 @@ impl HttpsTransport {
                     total_deadline,
                     max_response_bytes,
                     control,
+                    #[cfg(test)]
+                    driver_abort_observer,
+                    #[cfg(test)]
+                    cancel_exchange,
                 )
                 .await
             })
@@ -233,6 +251,19 @@ pub(crate) fn new_for_test_with_resolver(
         .expect("the HTTPS test contract supplies validated configuration");
     adapter.observer = observer;
     adapter.resolver = resolver;
+    adapter
+}
+
+#[cfg(test)]
+pub(crate) fn new_for_test_with_resolver_and_driver_abort_observer(
+    configuration: TransportConfig,
+    resolver: Resolver,
+    driver_abort_observer: mpsc::SyncSender<()>,
+    cancel_exchange: tokio::sync::oneshot::Receiver<()>,
+) -> HttpsTransport {
+    let mut adapter = new_for_test_with_resolver(configuration, None, resolver);
+    adapter.driver_abort_observer = Some(driver_abort_observer);
+    adapter.cancel_exchange = Some(cancel_exchange);
     adapter
 }
 
@@ -270,6 +301,8 @@ async fn exchange_on_worker(
     total_deadline: Option<Instant>,
     max_response_bytes: usize,
     control: ExchangeControl,
+    #[cfg(test)] driver_abort_observer: Option<mpsc::SyncSender<()>>,
+    #[cfg(test)] cancel_exchange: Option<tokio::sync::oneshot::Receiver<()>>,
 ) -> Result<TransportResponse, TransportError> {
     let connect_deadline = earlier_deadline(
         deadline_for(policy.connect(), Instant::now()).map_err(|error| {
@@ -314,6 +347,15 @@ async fn exchange_on_worker(
         )
     })?;
     let driver = tokio::spawn(connection);
+    #[cfg(test)]
+    if let Some(cancel_exchange) = cancel_exchange {
+        let cancellation_control = control.clone();
+        tokio::spawn(async move {
+            if cancel_exchange.await.is_ok() {
+                cancellation_control.cancel();
+            }
+        });
+    }
 
     let result = async {
         let request = build_http_request(&route, request_owner).map_err(|_| {
@@ -337,6 +379,10 @@ async fn exchange_on_worker(
     }
     .await;
     driver.abort();
+    #[cfg(test)]
+    if let Some(observer) = driver_abort_observer {
+        let _ = observer.send(());
+    }
     result
 }
 
