@@ -116,7 +116,7 @@ impl SecretBufferObserver {
                 initialized_len: std::sync::atomic::AtomicUsize::new(0),
                 initialized_range_was_zero: std::sync::atomic::AtomicBool::new(false),
                 replaced_allocation_count: std::sync::atomic::AtomicUsize::new(0),
-                all_replaced_allocations_were_zero: std::sync::atomic::AtomicBool::new(true),
+                all_replaced_allocations_were_zero: std::sync::atomic::AtomicBool::new(false),
             }),
         }
     }
@@ -145,14 +145,24 @@ impl SecretBufferObserver {
             .load(std::sync::atomic::Ordering::Acquire)
     }
 
-    fn record_replaced_allocation(&self, initialized_range_was_zero: bool) {
-        self.state
+    /// Checks the old initialized range before its allocation is released.
+    fn record_replaced_allocation(&self, old_initialized_bytes: &[u8]) {
+        let initialized_range_was_zero = old_initialized_bytes.iter().all(|byte| *byte == 0);
+        let previous_count = self
+            .state
             .replaced_allocation_count
             .fetch_add(1, std::sync::atomic::Ordering::AcqRel);
-        self.state.all_replaced_allocations_were_zero.fetch_and(
-            initialized_range_was_zero,
-            std::sync::atomic::Ordering::AcqRel,
-        );
+        if previous_count == 0 {
+            self.state.all_replaced_allocations_were_zero.store(
+                initialized_range_was_zero,
+                std::sync::atomic::Ordering::Release,
+            );
+        } else {
+            self.state.all_replaced_allocations_were_zero.fetch_and(
+                initialized_range_was_zero,
+                std::sync::atomic::Ordering::AcqRel,
+            );
+        }
     }
 
     fn record(&self, initialized_len: usize, initialized_range_was_zero: bool) {
