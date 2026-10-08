@@ -885,55 +885,29 @@ fn validate_response_headers(
     max_response_bytes: usize,
     control: &ExchangeControl,
 ) -> Result<usize, TransportError> {
-    let reject_http = |message| {
-        safe_error(
-            control.delivery_state(),
-            TransportCauseCategory::Http,
-            io::Error::other(message),
-        )
-    };
+    // Hyper owns HTTP syntax parsing and produces the framed Incoming body.
+    // KMIPKit owns the narrower response profile and the exact TTLV byte cap.
     if response.status() != hyper::StatusCode::OK {
-        return Err(reject_http("HTTP response status was not 200"));
+        return Err(http_response_error(
+            control,
+            "HTTP response status was not 200",
+        ));
     }
 
-    let mut content_types = response.headers().get_all(CONTENT_TYPE).iter();
-    let Some(content_type) = content_types.next() else {
-        return Err(reject_http("HTTP response Content-Type was missing"));
-    };
-    if content_types.next().is_some() {
-        return Err(reject_http("HTTP response Content-Type was duplicated"));
-    }
-    let media_type = content_type
-        .to_str()
-        .map_err(|_| reject_http("HTTP response Content-Type was invalid"))?
-        .split(';')
-        .next()
-        .map(str::trim);
-    if !media_type.is_some_and(|value| value.eq_ignore_ascii_case("application/octet-stream")) {
-        return Err(reject_http("HTTP response media type was not octet-stream"));
-    }
-
-    let mut content_lengths = response.headers().get_all(CONTENT_LENGTH).iter();
-    let Some(content_length) = content_lengths.next() else {
-        return Err(reject_http("HTTP response Content-Length was missing"));
-    };
-    if content_lengths.next().is_some() {
-        return Err(reject_http("HTTP response Content-Length was duplicated"));
-    }
-    let length_bytes = content_length.as_bytes();
-    if length_bytes.is_empty() || !length_bytes.iter().all(u8::is_ascii_digit) {
-        return Err(reject_http("HTTP response Content-Length was invalid"));
-    }
-    let declared_length = std::str::from_utf8(length_bytes)
-        .ok()
-        .and_then(|value| value.parse::<usize>().ok())
-        .ok_or_else(|| reject_http("HTTP response Content-Length was invalid"))?;
+    validate_response_content_type(response.headers(), control)?;
+    let declared_length = parse_response_content_length(response.headers(), control)?;
 
     if response.headers().contains_key(TRANSFER_ENCODING) {
-        return Err(reject_http("HTTP Transfer-Encoding is unsupported"));
+        return Err(http_response_error(
+            control,
+            "HTTP Transfer-Encoding is unsupported",
+        ));
     }
     if response.headers().contains_key(CONTENT_ENCODING) {
-        return Err(reject_http("HTTP Content-Encoding is unsupported"));
+        return Err(http_response_error(
+            control,
+            "HTTP Content-Encoding is unsupported",
+        ));
     }
     if declared_length > max_response_bytes {
         return Err(safe_error(
@@ -943,6 +917,76 @@ fn validate_response_headers(
         ));
     }
     Ok(declared_length)
+}
+
+fn validate_response_content_type(
+    headers: &hyper::http::HeaderMap,
+    control: &ExchangeControl,
+) -> Result<(), TransportError> {
+    let mut content_types = headers.get_all(CONTENT_TYPE).iter();
+    let Some(content_type) = content_types.next() else {
+        return Err(http_response_error(
+            control,
+            "HTTP response Content-Type was missing",
+        ));
+    };
+    if content_types.next().is_some() {
+        return Err(http_response_error(
+            control,
+            "HTTP response Content-Type was duplicated",
+        ));
+    }
+    let media_type = content_type
+        .to_str()
+        .map_err(|_| http_response_error(control, "HTTP response Content-Type was invalid"))?
+        .split(';')
+        .next()
+        .map(str::trim);
+    if !media_type.is_some_and(|value| value.eq_ignore_ascii_case("application/octet-stream")) {
+        return Err(http_response_error(
+            control,
+            "HTTP response media type was not octet-stream",
+        ));
+    }
+    Ok(())
+}
+
+fn parse_response_content_length(
+    headers: &hyper::http::HeaderMap,
+    control: &ExchangeControl,
+) -> Result<usize, TransportError> {
+    let mut content_lengths = headers.get_all(CONTENT_LENGTH).iter();
+    let Some(content_length) = content_lengths.next() else {
+        return Err(http_response_error(
+            control,
+            "HTTP response Content-Length was missing",
+        ));
+    };
+    if content_lengths.next().is_some() {
+        return Err(http_response_error(
+            control,
+            "HTTP response Content-Length was duplicated",
+        ));
+    }
+    let length_bytes = content_length.as_bytes();
+    if length_bytes.is_empty() || !length_bytes.iter().all(u8::is_ascii_digit) {
+        return Err(http_response_error(
+            control,
+            "HTTP response Content-Length was invalid",
+        ));
+    }
+    std::str::from_utf8(length_bytes)
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .ok_or_else(|| http_response_error(control, "HTTP response Content-Length was invalid"))
+}
+
+fn http_response_error(control: &ExchangeControl, message: &'static str) -> TransportError {
+    safe_error(
+        control.delivery_state(),
+        TransportCauseCategory::Http,
+        io::Error::other(message),
+    )
 }
 
 struct ResponseBuffer(Vec<u8>, #[cfg(test)] Option<ResponseBufferObserver>);
