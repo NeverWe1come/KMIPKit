@@ -12,7 +12,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use hickory_resolver::config::{ConnectionConfig, NameServerConfig, ResolverConfig};
+use hickory_resolver::config::{ConnectionConfig, NameServerConfig, ResolverConfig, ResolverOpts};
 use hickory_resolver::hosts::Hosts;
 use hickory_resolver::proto::rr::Name;
 use kmipkit_test_support::{DnsQueryType, LocalDnsFixture};
@@ -90,6 +90,72 @@ async fn wait_for_questions(
     })
     .await
     .expect("the expected DNS questions reach the loopback fixture");
+}
+
+fn query_counts_across(
+    fixtures: [&LocalDnsFixture; 3],
+    name: &str,
+    query_type: DnsQueryType,
+) -> [usize; 3] {
+    fixtures.map(|fixture| fixture.query_count(name, query_type))
+}
+
+async fn wait_for_initial_fanout(
+    fixtures: [&LocalDnsFixture; 3],
+    name: &str,
+) -> ([usize; 3], [usize; 3]) {
+    tokio::time::timeout(Duration::from_secs(2), async {
+        loop {
+            let a_counts = query_counts_across(fixtures, name, DnsQueryType::A);
+            let aaaa_counts = query_counts_across(fixtures, name, DnsQueryType::Aaaa);
+            assert!(a_counts.iter().sum::<usize>() <= 2);
+            assert!(aaaa_counts.iter().sum::<usize>() <= 2);
+            if a_counts.iter().sum::<usize>() == 2 && aaaa_counts.iter().sum::<usize>() == 2 {
+                break (a_counts, aaaa_counts);
+            }
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+    })
+    .await
+    .expect("the A and AAAA requests reach the loopback nameservers while replies are held")
+}
+
+async fn observe_held_fanout<T>(
+    fixtures: [&LocalDnsFixture; 3],
+    name: &str,
+    result_receiver: &mut tokio::sync::oneshot::Receiver<T>,
+    observation_window: Duration,
+) -> ([usize; 3], [usize; 3]) {
+    let observation_started = Instant::now();
+    while observation_started.elapsed() < observation_window {
+        let current_counts = (
+            query_counts_across(fixtures, name, DnsQueryType::A),
+            query_counts_across(fixtures, name, DnsQueryType::Aaaa),
+        );
+        for per_question in [&current_counts.0, &current_counts.1] {
+            assert!(
+                per_question.iter().sum::<usize>() <= 2,
+                "a question does not fan out to a third nameserver before its held requests time out"
+            );
+        }
+        assert!(
+            matches!(
+                result_receiver.try_recv(),
+                Err(tokio::sync::oneshot::error::TryRecvError::Empty)
+            ),
+            "the lookup remains pending while all DNS responses are held"
+        );
+        tokio::time::sleep(Duration::from_millis(5)).await;
+    }
+
+    let observed_counts = (
+        query_counts_across(fixtures, name, DnsQueryType::A),
+        query_counts_across(fixtures, name, DnsQueryType::Aaaa),
+    );
+    for per_question in [&observed_counts.0, &observed_counts.1] {
+        assert!(per_question.iter().sum::<usize>() <= 2);
+    }
+    observed_counts
 }
 
 fn assert_resolver_limits(limits: ResolverLimits) {
@@ -206,41 +272,33 @@ async fn one_lookup_never_has_more_than_two_concurrent_nameserver_requests() {
     assert_resolver_limits(resolver.limits());
     let lookup_resolver = Arc::clone(&resolver);
     let lookup_name = name.to_owned();
+    let (result_sender, mut result_receiver) = tokio::sync::oneshot::channel();
     let lookup = tokio::spawn(async move {
-        lookup_resolver
+        let result = lookup_resolver
             .lookup_candidates(&lookup_name, Instant::now() + RESOLUTION_TIMEOUT)
-            .await
+            .await;
+        let _send_result = result_sender.send(result);
     });
 
-    let stable_counts = tokio::time::timeout(Duration::from_secs(2), async {
-        let mut previous = None;
-        let mut unchanged_since = Instant::now();
-        loop {
-            let counts = [
-                first.query_count(name, DnsQueryType::A),
-                second.query_count(name, DnsQueryType::A),
-                third.query_count(name, DnsQueryType::A),
-                first.query_count(name, DnsQueryType::Aaaa),
-                second.query_count(name, DnsQueryType::Aaaa),
-                third.query_count(name, DnsQueryType::Aaaa),
-            ];
-            if previous != Some(counts) {
-                previous = Some(counts);
-                unchanged_since = Instant::now();
-            } else if counts[..3].iter().sum::<usize>() > 0
-                && counts[3..].iter().sum::<usize>() > 0
-                && unchanged_since.elapsed() >= Duration::from_millis(100)
-            {
-                break counts;
-            }
-            tokio::time::sleep(Duration::from_millis(5)).await;
-        }
-    })
-    .await
-    .expect("per-question nameserver fan-out reaches a stable snapshot while replies are held");
-    for per_nameserver in [&stable_counts[..3], &stable_counts[3..]] {
-        assert!(per_nameserver.iter().all(|count| *count <= 1));
-        assert!(per_nameserver.iter().sum::<usize>() <= 2);
+    wait_for_initial_fanout([&first, &second, &third], name).await;
+
+    // Hickory's default request timeout bounds the initial parallel nameserver
+    // round. Observe almost that entire interval, with the responses still held,
+    // so a timer-delayed third nameserver request cannot hide behind a 100 ms
+    // snapshot. The margin avoids crossing into the permitted next round after
+    // the first requests have timed out.
+    let observation_window = ResolverOpts::default()
+        .timeout
+        .saturating_sub(Duration::from_millis(250));
+    assert!(!observation_window.is_zero());
+    let observed_counts = observe_held_fanout(
+        [&first, &second, &third],
+        name,
+        &mut result_receiver,
+        observation_window,
+    )
+    .await;
+    for per_nameserver in [&observed_counts.0[..], &observed_counts.1[..]] {
         assert!(
             per_nameserver.iter().any(|count| *count == 0),
             "at least one of three nameservers remains unqueried while responses are held"
@@ -252,9 +310,10 @@ async fn one_lookup_never_has_more_than_two_concurrent_nameserver_requests() {
     first.release_responses();
     second.release_responses();
     third.release_responses();
-    lookup
+    lookup.await.expect("the resolver task completes");
+    result_receiver
         .await
-        .expect("the resolver task completes")
+        .expect("the lookup result is delivered")
         .expect("the released DNS responses resolve");
 }
 
@@ -274,7 +333,18 @@ async fn active_request_limit_applies_per_upstream_connection_not_per_client() {
         .expect("two local upstreams build"),
     );
     let mut lookups = JoinSet::new();
-    for index in 0..48 {
+    let sentinel_resolver = Arc::clone(&resolver);
+    let (sentinel_sender, mut sentinel_receiver) = tokio::sync::oneshot::channel();
+    lookups.spawn(async move {
+        let result = sentinel_resolver
+            .lookup_candidates(
+                "held-cap-sentinel.kmipkit.test",
+                Instant::now() + RESOLUTION_TIMEOUT,
+            )
+            .await;
+        let _send_result = sentinel_sender.send(result);
+    });
+    for index in 0..47 {
         let current = Arc::clone(&resolver);
         let hostname = format!("host-{index}.kmipkit.test");
         lookups.spawn(async move {
@@ -284,18 +354,39 @@ async fn active_request_limit_applies_per_upstream_connection_not_per_client() {
         });
     }
 
-    tokio::time::timeout(Duration::from_secs(3), async {
+    let stable_counts = tokio::time::timeout(Duration::from_secs(3), async {
+        let mut stable_since = None;
         loop {
-            let first_active = first.active_tcp_requests();
-            let second_active = second.active_tcp_requests();
-            if first_active == 32 && second_active == 32 {
-                break;
+            let active = [first.active_tcp_requests(), second.active_tcp_requests()];
+            let peak = [
+                first.peak_active_tcp_requests_per_connection(),
+                second.peak_active_tcp_requests_per_connection(),
+            ];
+            assert!(
+                active.iter().all(|count| *count <= 32) && peak.iter().all(|count| *count <= 32),
+                "no upstream connection exceeds 32 held requests, including transient peaks"
+            );
+            assert!(
+                matches!(
+                    sentinel_receiver.try_recv(),
+                    Err(tokio::sync::oneshot::error::TryRecvError::Empty)
+                ),
+                "a designated lookup remains pending while the cap is saturated"
+            );
+            if active == [32, 32] && peak == [32, 32] {
+                let since = stable_since.get_or_insert_with(Instant::now);
+                if since.elapsed() >= Duration::from_millis(500) {
+                    break active;
+                }
+            } else {
+                stable_since = None;
             }
             tokio::time::sleep(Duration::from_millis(2)).await;
         }
     })
     .await
-    .expect("each independent TCP upstream reaches exactly 32 held requests");
+    .expect("each independent TCP upstream holds exactly 32 requests stably with work pending");
+    assert_eq!(stable_counts, [32, 32]);
     assert_eq!(first.active_tcp_requests(), 32);
     assert_eq!(second.active_tcp_requests(), 32);
     assert_eq!(first.peak_active_tcp_requests_per_connection(), 32);
@@ -310,6 +401,9 @@ async fn active_request_limit_applies_per_upstream_connection_not_per_client() {
     while let Some(result) = lookups.join_next().await {
         result.expect("lookup tasks complete");
     }
+    let _sentinel_result = sentinel_receiver
+        .await
+        .expect("the released sentinel lookup result is delivered");
 }
 
 #[tokio::test]
