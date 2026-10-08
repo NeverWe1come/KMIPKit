@@ -70,9 +70,16 @@ pub struct HttpsTransport {
 
 #[cfg(test)]
 pub(crate) struct DriverCleanupGateForTest {
-    pub(crate) started: mpsc::SyncSender<()>,
     pub(crate) release: tokio::sync::oneshot::Receiver<()>,
-    pub(crate) acknowledged: mpsc::SyncSender<()>,
+    pub(crate) events: mpsc::Sender<DriverCleanupEventForTest>,
+}
+
+#[cfg(test)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum DriverCleanupEventForTest {
+    Started,
+    Acknowledged,
+    ExchangeReturned,
 }
 
 // Keep endpoint routing and its origin-form target together. The target never
@@ -439,11 +446,11 @@ impl Drop for HyperDriverGuard {
         }
         #[cfg(test)]
         if let Some(gate) = self.cleanup_gate.take() {
-            let _ = gate.started.send(());
+            let _ = gate.events.send(DriverCleanupEventForTest::Started);
             tokio::spawn(async move {
                 let _ = gate.release.await;
                 let _ = task.await;
-                let _ = gate.acknowledged.send(());
+                let _ = gate.events.send(DriverCleanupEventForTest::Acknowledged);
             });
             return;
         }

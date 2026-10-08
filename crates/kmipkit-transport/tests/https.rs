@@ -50,6 +50,7 @@ const SERVER_NAME: &str = "server.kmipkit.test";
 const RESPONSE_BODY: &[u8] = b"response";
 const PEER_TIMEOUT: Duration = Duration::from_secs(6);
 const ACCEPT_TIMEOUT: Duration = Duration::from_secs(2);
+const CLEANUP_GATE_OBSERVATION_WINDOW: Duration = Duration::from_millis(250);
 const MAX_CAPTURED_REQUEST: usize = 1024 * 1024;
 
 #[test]
@@ -185,13 +186,11 @@ fn https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning() {
     let config = config_builder(&pki, format!("https://{SERVER_NAME}:{}", address.port()))
         .build()
         .expect("the explicit identity and trust inputs build a valid HTTPS config");
-    let (cleanup_started_tx, cleanup_started_rx) = mpsc::sync_channel(1);
     let (cleanup_release_tx, cleanup_release_rx) = tokio::sync::oneshot::channel();
-    let (cleanup_acknowledged_tx, cleanup_acknowledged_rx) = mpsc::sync_channel(1);
+    let (events_tx, events_rx) = mpsc::channel();
     let cleanup_gate = https::DriverCleanupGateForTest {
-        started: cleanup_started_tx,
         release: cleanup_release_rx,
-        acknowledged: cleanup_acknowledged_tx,
+        events: events_tx.clone(),
     };
     let (cancel_tx, cancel_rx) = tokio::sync::oneshot::channel();
     let adapter = https::new_for_test_with_resolver_and_driver_cleanup_gate(
@@ -205,6 +204,7 @@ fn https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning() {
     thread::spawn(move || {
         let mut adapter = adapter;
         let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
+        let _ = events_tx.send(https::DriverCleanupEventForTest::ExchangeReturned);
         let _ = exchange_tx.send((adapter, result));
     });
 
@@ -215,30 +215,40 @@ fn https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning() {
     cancel_tx
         .send(())
         .expect("the in-flight adapter exchange is ready for cancellation");
-    assert!(
-        cleanup_started_rx.recv_timeout(PEER_TIMEOUT).is_ok(),
-        "driver cleanup starts after the cancellation is observed"
-    );
+    let mut observed_events = Vec::with_capacity(3);
+    let started = loop {
+        match events_rx.recv_timeout(PEER_TIMEOUT) {
+            Ok(event) => {
+                observed_events.push(event);
+                if event == https::DriverCleanupEventForTest::Started {
+                    break true;
+                }
+            }
+            Err(_) => break false,
+        }
+    };
+    let returned_while_gate_was_closed =
+        observed_events.contains(&https::DriverCleanupEventForTest::ExchangeReturned);
+    if started && !returned_while_gate_was_closed {
+        if let Ok(event) = events_rx.recv_timeout(CLEANUP_GATE_OBSERVATION_WINDOW) {
+            observed_events.push(event);
+        }
+    }
+    let returned_during_observation =
+        observed_events.contains(&https::DriverCleanupEventForTest::ExchangeReturned);
+    let _ = cleanup_release_tx.send(());
 
-    let returned_before_cleanup_acknowledgement = match exchange_rx.try_recv() {
-        Ok(completion) => Some(completion),
-        Err(mpsc::TryRecvError::Empty | mpsc::TryRecvError::Disconnected) => None,
-    };
-    let exchange_returned_before_cleanup_acknowledgement =
-        returned_before_cleanup_acknowledgement.is_some();
-    cleanup_release_tx
-        .send(())
-        .expect("the test releases the cleanup gate");
-    assert!(
-        cleanup_acknowledged_rx.recv_timeout(ACCEPT_TIMEOUT).is_ok(),
-        "the driver cleanup path acknowledges completion after release"
-    );
-    let (adapter, result) = match returned_before_cleanup_acknowledgement {
-        Some(completion) => completion,
-        None => exchange_rx
-            .recv_timeout(PEER_TIMEOUT)
-            .expect("worker cancellation completes after driver cleanup acknowledgement"),
-    };
+    while !observed_events.contains(&https::DriverCleanupEventForTest::Acknowledged)
+        || !observed_events.contains(&https::DriverCleanupEventForTest::ExchangeReturned)
+    {
+        match events_rx.recv_timeout(PEER_TIMEOUT) {
+            Ok(event) => observed_events.push(event),
+            Err(_) => break,
+        }
+    }
+    let (adapter, result) = exchange_rx
+        .recv_timeout(PEER_TIMEOUT)
+        .expect("the HTTPS exchange eventually returns after cleanup is released");
     let error = result.expect_err("the peer withholds its response until cancellation");
     assert_eq!(error.delivery_state(), RequestDeliveryState::PossiblySent);
 
@@ -248,9 +258,20 @@ fn https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning() {
         .expect("the bounded stalled HTTPS peer completes");
     assert!(peer.accepted, "the peer accepted one connection");
     assert!(peer.request.is_some(), "the peer captured the request");
+    let acknowledgement_index = observed_events
+        .iter()
+        .position(|event| *event == https::DriverCleanupEventForTest::Acknowledged);
+    let returned_index = observed_events
+        .iter()
+        .position(|event| *event == https::DriverCleanupEventForTest::ExchangeReturned);
+    assert!(started, "the Hyper driver cleanup path started");
     assert!(
-        !exchange_returned_before_cleanup_acknowledgement,
-        "the public exchange does not return before driver cleanup is acknowledged"
+        !returned_while_gate_was_closed && !returned_during_observation,
+        "the public exchange remains pending while driver cleanup acknowledgment is gated"
+    );
+    assert!(
+        matches!((acknowledgement_index, returned_index), (Some(ack), Some(ret)) if ack < ret),
+        "the driver cleanup acknowledgment precedes the public exchange return"
     );
 }
 
