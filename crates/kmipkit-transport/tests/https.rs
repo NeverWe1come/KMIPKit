@@ -1135,9 +1135,9 @@ fn spawn_surplus_response_peer(
                             stream,
                             configuration,
                             id,
-                            observation,
-                            surplus_release,
-                            surplus_sent,
+                            &observation,
+                            &surplus_release,
+                            &surplus_sent,
                         );
                     }));
                 }
@@ -1155,7 +1155,7 @@ fn spawn_surplus_response_peer(
         };
         observation
             .into_inner()
-            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     });
     (peer, surplus_release, surplus_sent_rx)
 }
@@ -1164,9 +1164,9 @@ fn run_surplus_connection(
     stream: TcpStream,
     configuration: Arc<ServerConfig>,
     connection_id: usize,
-    observation: Arc<std::sync::Mutex<SurplusPeerObservation>>,
-    surplus_release: Arc<std::sync::Mutex<mpsc::Receiver<()>>>,
-    surplus_sent: mpsc::SyncSender<()>,
+    observation: &Arc<std::sync::Mutex<SurplusPeerObservation>>,
+    surplus_release: &Arc<std::sync::Mutex<mpsc::Receiver<()>>>,
+    surplus_sent: &mpsc::SyncSender<()>,
 ) {
     if stream.set_nonblocking(false).is_err()
         || stream.set_read_timeout(Some(PEER_TIMEOUT)).is_err()
