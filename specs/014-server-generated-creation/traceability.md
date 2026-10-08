@@ -53,6 +53,7 @@ These requirements are defined by accepted KMIPKIT-0006, KMIPKIT-0007, KMIPKIT-0
 | SC-005 | T001, T025–T028 | Normative source, stable feature requirement, implementation, named test, convergence, and independent QA/security review evidence are linked before review |
 | SC-006 | T009–T011, T015–T017, T021–T023 | Fake transport verifies single exchange, delivery state, Pending, redaction, owner lifetime through partial writes, zeroization, and no retry for all three operations |
 | SC-007 | T021–T023 | Split-key execution verifies the peer-visible maximum, exact-limit acceptance, and one-byte-over rejection before decoder entry |
+| SC-008 | T024–T026 | English and Spanish guides contain Rust examples for all three operations; `scripts/test_user_guide_examples.py` compiles every marked example in both guides |
 
 ## Stable normative requirement inventory
 

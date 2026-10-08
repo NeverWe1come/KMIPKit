@@ -16,7 +16,7 @@ Add typed KMIP 2.1 Create, Create Key Pair, and Create Split Key requests and re
 
 **Storage**: None.
 
-**Testing**: Rust unit tests, table-derived TTLV fixtures, malformed-input tests, including the explicitly named property `property_roundtrips_ordered_repeated_direct_attribute_items`, and deterministic client fake transport. The pinned official test-case XML supplies only a Create-only derived case; the complete `TC-CREATE-SD-1-21` case is not claimed as passing. Focused immutable-source checker tests protect the exact pinned `upstream/` subtree, permit only edits to README/SOURCES paths already tracked in the base and additions under `fixtures/`, and reject inventory add/delete/rename, other OASIS paths, and changes to existing fixtures.
+**Testing**: Rust unit tests, table-derived TTLV fixtures, malformed-input tests, including the explicitly named property `property_roundtrips_ordered_repeated_direct_attribute_items`, and deterministic client fake transport. Compile the marked Rust examples from both client guides with `scripts/test_user_guide_examples.py`. The pinned official test-case XML supplies only a Create-only derived case; the complete `TC-CREATE-SD-1-21` case is not claimed as passing. Focused immutable-source checker tests protect the exact pinned `upstream/` subtree, permit only edits to README/SOURCES paths already tracked in the base and additions under `fixtures/`, and reject inventory add/delete/rename, other OASIS paths, and changes to existing fixtures.
 
 **Target Platform**: Linux, Windows, and macOS; Rust 1.94 and stable.
 
@@ -44,6 +44,8 @@ Add typed KMIP 2.1 Create, Create Key Pair, and Create Split Key requests and re
     crates/kmipkit-client/tests/unit/{create,create_key_pair,create_split_key}_execution_tests.rs
     specification/catalog/kmip-2.1.json
     specification/catalog/coverage-report.md (regenerated only)
+    docs/user-guide/{en,es}/client-execution.md
+    scripts/test_user_guide_examples.py
     specs/014-server-generated-creation/{contracts,data-model,quickstart,research,traceability}.md
 
 **Structure Decision**: Extend the existing protocol model crate with one module per operation; connect those typed payloads and operation-agnostic Pending outcomes to the existing closed request enum and single execute writer after the overlapping client work has merged. Update the checked-in catalog input and regenerate the report in the same implementation PR.

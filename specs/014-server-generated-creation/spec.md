@@ -147,6 +147,7 @@ A caller explicitly requests a split-key operation using the method, part count,
 - **SC-005**: Every normative requirement in scope has 100% traceability from pinned source through this spec to implementation and executable tests before implementation review.
 - **SC-006**: Operation tests prove at most one exchange per invocation, keep raw message bodies and secret-bearing values out of diagnostics, and preserve operation failures without automatic retry.
 - **SC-007**: A Create Split Key execution includes a peer-visible Maximum Response Size no greater than the configured local limit; an exact-limit response is accepted and a response one byte over is rejected before decoder entry even if the peer ignores the advertised value.
+- **SC-008**: The English and Spanish client guides include Rust examples for Create, Create Key Pair, and Create Split Key, and a repository check compiles every example marked `rust,kmipkit-test` from both guides.
 
 ## Assumptions
 
