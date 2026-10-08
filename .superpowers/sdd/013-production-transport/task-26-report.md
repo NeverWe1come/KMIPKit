@@ -131,3 +131,23 @@ error[E0432]: unresolved import `super::collect_candidates`
 and `git diff --check` passed. Green must add this exact helper to the
 production collection path in `system_lookup`, so the regression does not
 exercise a separate test model.
+
+## T026b Green — collect only retained candidates
+
+Green source commit: `f6126c50cac5018423f35c887e666447d6fa3743`.
+
+`system_lookup` now passes the native `ToSocketAddrs` iterator directly to
+`collect_candidates`, which consumes at most 16 items while building the
+returned candidate vector. `finish_lookup_until` truncates the resolver's
+owned vector in place, avoiding its previous second `Vec` allocation. OS
+ordering and the established 16-address contract are unchanged.
+
+Verification after Green:
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --lib resolver::tests::candidate_collection_consumes_only_the_first_sixteen_addresses --offline` | 1 passed, 0 failed |
+| `cargo test -p kmipkit-transport --test resolver --offline` | 13 passed, 0 failed |
+| `cargo test -p kmipkit-transport --test raw_tls --offline` | 57 passed, 0 failed |
+| `rustfmt --edition 2024 --check crates/kmipkit-transport/src/resolver.rs` | passed |
+| `git diff --check` | passed |
