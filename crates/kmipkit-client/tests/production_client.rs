@@ -300,7 +300,7 @@ fn every_typed_operation_has_a_per_exchange_options_variant() {
 }
 
 #[test]
-fn production_client_rejects_foreign_extension_before_any_network_exchange() {
+fn production_client_rejects_foreign_client_request_message_extension_as_invalid_input_not_sent() {
     let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
     let listener = LoopbackTcpListener::bind()
         .expect("loopback listener binds")
@@ -348,7 +348,7 @@ fn production_client_rejects_foreign_extension_before_any_network_exchange() {
 }
 
 #[test]
-fn production_client_preserves_same_configuration_extension_wire_bytes() {
+fn production_client_accepts_client_request_message_extension_from_its_own_configuration() {
     let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
     let listener = LoopbackTcpListener::bind().expect("loopback peer binds");
     let port = listener.local_addr().port();
