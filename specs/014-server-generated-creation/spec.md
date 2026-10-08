@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-07
 
-**Status**: Draft for independent human review
+**Status**: Accepted for implementation. Human maintainer acceptance is recorded by the merge of [PR #53](https://github.com/NeverWe1come/KMIPKit/pull/53) into `release/1.0.0` (merge commit `a2572084d3d6f42019bed13234598e6d77478796`). Source and catalog corrections were merged in [PR #57](https://github.com/NeverWe1come/KMIPKit/pull/57) (merge commit `55c0c0cc42a6422cee72183a3532fc1e169f297c`). The implementation base contains both commits. No separate GitHub review event is claimed.
 **Input**: KMIPKit roadmap Phase D: complete client-initiated KMIP 2.1 operation families.
 
 ## Normative scope

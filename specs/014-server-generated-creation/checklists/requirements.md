@@ -27,11 +27,11 @@
 - [x] All three operation request/response structures have acceptance criteria.
 - [x] Security and secret-handling constraints are explicit.
 - [x] The feature does not expand the accepted 1.0 encoding, direction, transport, or language boundaries.
-- [x] Human review remains required before this draft is accepted for implementation.
+- [x] The human maintainer accepted the specification by merging PR #53; PR #57 merged source and catalog corrections. No separate GitHub review event is claimed.
 
 ## Notes
 
-The author checklist is complete; independent human review and PR approval remain open.
+The specification is accepted for implementation through the merged PR #53. PR #57 contains the merged source and catalog corrections. Independent review of the implementation remains open.
 
 Prime Field Size is described as an explicit KMIPKit client restriction for
 Polynomial Sharing Prime Field. The spec does not attribute that restriction

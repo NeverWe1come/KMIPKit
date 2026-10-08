@@ -2,6 +2,7 @@
 #![forbid(unsafe_code)]
 
 mod asynchronous;
+pub mod attribute;
 mod cancel;
 mod credential;
 mod discover_versions;
@@ -14,6 +15,7 @@ mod query_async_requests;
 mod result;
 
 pub use asynchronous::AsynchronousOperationError;
+pub use attribute::{AttributeSet, AttributeSetError};
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use credential::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
@@ -68,3 +70,7 @@ mod query_async_requests_tests;
 #[cfg(test)]
 #[path = "../tests/unit/query_async_response_tests.rs"]
 mod query_async_response_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/attribute_tests.rs"]
+mod attribute_tests;
