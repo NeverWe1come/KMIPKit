@@ -39,6 +39,21 @@ WORD_LABELS = {
     "ubsan": "UBSAN",
     "uv": "uv",
     "wsl": "WSL",
+    "cmake": "CMake",
+    "maven": "Maven",
+    "msvc": "MSVC",
+    "oasis": "OASIS",
+    "rustsec": "RustSec",
+}
+STEP_LABELS = {
+    "source": "Check production source eligibility",
+    "enforce": "Enforce coverage thresholds",
+    "download": "Download platform and adapter reports",
+    "active-release": "Report active release ref",
+    "scanned-commit": "Report scanned commit",
+    "branch-report": "Attempt informational branch coverage",
+    "fallback-summary": "Fallback summary when checkout or rendering fails",
+    "write-summary": "Write run summary",
 }
 EXPLANATIONS = {
     "check-formatting": "Rust formatting differs from rustfmt output; run `cargo fmt --all` and commit the result.",
@@ -48,9 +63,12 @@ EXPLANATIONS = {
     "run-python-contracts": "A Python contract, catalog, fixture, or generated-file check failed; inspect the named failing test or generator message in this step's log.",
     "run-powershell-contracts": "A PowerShell contract failed; inspect the first failed assertion in this step's log.",
     "run-asan-consumer": "The AddressSanitizer-instrumented C consumer failed; inspect its sanitizer or assertion diagnostic in this step's log.",
+    "run-the-c-consumer-against-the-instrumented-rust-ffi": "The C consumer failed against the AddressSanitizer-instrumented Rust FFI; inspect the sanitizer report or consumer assertion in this step's log.",
     "run-native-sanitizers": "The native sanitizer regression failed; inspect the AddressSanitizer or UndefinedBehaviorSanitizer diagnostic in this step's log.",
     "run-fuzz-target": "The bounded extension-schema fuzz target failed to build, crashed, or timed out; inspect libFuzzer's terminal output in this step's log.",
+    "fuzz-the-bounded-extension-schema-target": "The bounded extension-schema fuzz target failed to build, crashed, or timed out; inspect libFuzzer's terminal output in this step's log.",
     "run-c-consumer": "The C ABI consumer reported a failure; inspect its failing operation and status in this step's log.",
+    "run-the-c-consumer-and-example": "The C ABI consumer or example failed; inspect the failing operation and native exit status in this step's log.",
     "run-java-tests": "The Java/JNI tests or Maven verification failed; inspect the named Surefire test or compiler error in this step's log.",
     "run-python-tests": "The Python adapter tests or example failed; inspect the pytest failure or traceback in this step's log.",
     "run-java-coverage": "The Java tests or JaCoCo report collection failed; inspect the first Maven/Surefire error in this step's log.",
@@ -59,6 +77,21 @@ EXPLANATIONS = {
     "enforce-coverage-thresholds": "Coverage data is missing, malformed, or below a documented threshold; the Coverage gate summary contains the measured values and reason.",
     "run-dependency-policy": "The dependency, license, advisory, source, or lockfile policy check failed; inspect the specific cargo-deny finding in this step's log.",
     "run-scheduled-dependency-policy": "The scheduled dependency-policy scan failed; inspect the exact cargo-deny or advisory-refresh diagnostic in this step's log.",
+    "run-root-and-fuzz-dependency-policy": "The root or fuzz dependency policy failed; inspect the exact cargo-deny advisory, license, source, or lockfile finding in this step's log.",
+    "check-pinned-oasis-tree-against-exact-pr-base": "The pinned OASIS source tree differs from the exact PR base. Restore immutable upstream files; inspect the reported path in this step's log.",
+    "compare-source-candidates-with-reviewed-clause-ledger": "Changed OASIS source candidates do not match the reviewed clause ledger. Review the candidate paths and update the approved inventory evidence.",
+    "validate-complete-normative-catalog": "The normative catalog failed validation. Inspect the first reported source hash, clause, identifier, or completeness error in this step's log.",
+    "verify-generated-ttlv-tag-allocations": "Generated TTLV tag allocations differ from the catalog inputs or are invalid. Inspect the reported tag and regenerate the committed output with the pinned generator.",
+    "verify-generated-result-mappings": "Generated result mappings are stale or invalid. Inspect the reported value and regenerate the committed output with the pinned generator.",
+    "add-versioned-llvm-tool-names": "The versioned LLVM tool links or PATH setup failed; inspect the missing binary or link target in this step's log.",
+    "source": "The production source preflight failed while inspecting Rust files or writing its eligibility status; inspect the first file or parser error in this step's log.",
+    "enforce": "The coverage gate rejected a missing, malformed, or below-threshold report; the Coverage gate Summary contains the measured values and exact reason.",
+    "summarize-failed-platform-or-adapter-collection": "The upstream coverage collection failed; this step could not write its failure details, so inspect the platform and adapter job results listed immediately before it.",
+    "summarize": "The workflow could not write the coverage status summary; inspect the source-preflight, tool-install, or report-generation step outcomes above.",
+    "active-release": "The workflow could not report the configured active release ref; inspect the output file or shell error in this step's log.",
+    "scanned-commit": "The workflow could not resolve or report the checked-out commit; inspect the checkout or Git error in this step's log.",
+    "fallback-summary": "The fallback Summary could not be written after checkout or summary rendering failed; inspect the preceding step's error.",
+    "write-summary": "The run-summary renderer failed or reported a required CI failure; inspect the Summary text and this step's log.",
     "attempt-informational-branch-coverage": "The optional nightly branch-coverage report failed; inspect the tool diagnostic in this step's log. This result remains informational.",
     "write-run-summary": "The run summary renderer failed or reported a required CI failure; inspect the summary output and this step's log.",
 }
@@ -77,6 +110,9 @@ def _safe_text(value: Any) -> str:
 
 
 def _display_step_id(step_id: str) -> str:
+    known = STEP_LABELS.get(step_id)
+    if known is not None:
+        return known
     words = re.sub(r"[^A-Za-z0-9]+", " ", step_id).split()
     return " ".join(WORD_LABELS.get(word.lower(), word.capitalize()) for word in words)
 
@@ -86,7 +122,7 @@ def _failure_explanation(step_id: str) -> str:
     if known is not None:
         return known
     normalized = step_id.lower()
-    if "install" in normalized or "setup" in normalized or "toolchain" in normalized:
+    if "install" in normalized or "setup" in normalized or "set-up" in normalized or "toolchain" in normalized:
         return "A required tool or dependency could not be installed or configured; inspect the version/download error in this step's log."
     if "test" in normalized or "contract" in normalized:
         return "A test or contract failed; inspect the failing test name and assertion in this step's log."
