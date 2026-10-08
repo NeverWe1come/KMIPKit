@@ -109,13 +109,13 @@ driver joiner. While the cleanup gate is closed, the test waits for an
 exchange-return event or a bounded 250 ms observation interval; after
 releasing the gate, it requires the join acknowledgment event to precede
 public exchange return. This avoids treating an instantaneous empty channel
-as proof of ordering.
+as proof of ordering. Independent QA approved the corrected test design.
 
 Red verification:
 
 | Command | Result |
 | --- | --- |
-| `cargo test -p kmipkit-transport --test https --offline https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning -- --exact --nocapture` | Expected Red: 0/1 passed; failed at `the public exchange remains pending while driver cleanup acknowledgment is gated`. The test observed the early return, released the gate, and joined the peer. |
+| `cargo test -p kmipkit-transport --test https --offline https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning -- --exact --nocapture` | Expected Red: 0/1 passed; failed at `the public exchange remains pending while driver cleanup acknowledgment is gated`. Compilation succeeded; the test observed the early return, released the gate, and joined the peer. |
 | `cargo fmt --all --check` | Passed |
 | `git diff --check` | Passed |
 
