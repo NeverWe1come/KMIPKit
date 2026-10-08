@@ -57,23 +57,37 @@ Windows symlink-following itself still needs verification where file symlink
 creation succeeds. Workspace-wide tests, coverage, and cross-platform CI were
 not part of this task's package-scoped verification.
 
-## P2 partial-read correction — Red, pending review
+## P2 partial-read correction — Red and Green complete
 
 Review identified that the original `std::fs::read` constructors only create
 `SecretBuffer` after a successful read. If a read fails after yielding bytes,
 the partially initialized `Vec` is released before it enters the zeroizing
-owner, so the original Green evidence did not cover this error path.
+owner, so the original Green evidence did not cover this error path. The
+correction adds `SecretBuffer::read_from<R: Read>` and a shared private reader
+that constructs the zeroizing owner before calling `read_to_end`. Its `?`
+error path drops that owner, whose destructor zeros the initialized range.
+Both private-key PEM and DER file constructors open the selected path once and
+pass that `File` through the production helper; file and read errors still map
+to the fixed `InvalidCredential` category. The test-only observer wrapper uses
+the same private reader, so the regression exercises the owner used by the
+production constructors.
 
 - Red test commit: `991796eb30259ace813e47ea2f07369562869911`.
 - The `#[cfg(test)]` regression uses an injected reader that yields a private
   key sentinel and then returns an I/O error. It asserts the observer saw the
   complete initialized length and that those bytes were zeroized before
   release. The sentinel is never included in assertion or error text.
-- Expected Red command:
-  `cargo test -p kmipkit-transport --lib secret::tests::partially_read_private_key_is_zeroized_when_reader_fails --offline`.
-  It exits 1 during compilation with E0599 because
-  `SecretBuffer::read_from_with_observer_for_test` is the not-yet-implemented
-  private read seam. No production code changed in the Red commit.
-- `git diff --check` passed for the Red test. The Green correction and its
-  verification have not yet been performed; T022 remains incomplete until
-  the partial-read path uses the zeroizing owner and this regression passes.
+- Expected Red: `cargo test -p kmipkit-transport --lib secret::tests::partially_read_private_key_is_zeroized_when_reader_fails --offline`
+  exited 1 at compile time with E0599 for the intentionally absent observer
+  wrapper. No production code changed in the Red commit.
+- Green correction commit: `a10214ebfc484623805f596ddfa4cf0080934bd7`.
+- `cargo test -p kmipkit-transport --lib secret::tests::partially_read_private_key_is_zeroized_when_reader_fails --offline`:
+  1 passed, 0 failed.
+- `cargo test -p kmipkit-transport --test secret_redaction_current --offline`:
+  9 passed, 0 failed.
+- `cargo test -p kmipkit-transport --test secret_redaction --offline`:
+  21 passed, 0 failed.
+- `cargo test -p kmipkit-transport --all-targets --all-features --offline`:
+  180 passed, 0 failed.
+- Strict package Clippy, `cargo fmt --all --check`, and `git diff --check`:
+  passed.
