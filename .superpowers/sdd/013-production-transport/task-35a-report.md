@@ -75,8 +75,41 @@ uses the existing Hyper driver and worker.
 | `cargo fmt --all --check` | Passed |
 | `git diff --check` | Passed |
 
-All Green commands ran offline on the Windows host. The T021 symlink fixture
-used its documented fallback because temporary symlink creation was
+The initial Green commands ran offline on the Windows host. The T021 symlink
+fixture used its documented fallback because temporary symlink creation was
 unavailable on this host; Windows symlink-following remains a platform
-verification gap. Independent read-only review of T035a Green is pending;
-T037 must not start until that review completes.
+verification gap.
+
+## Cleanup ordering correction — Red
+
+Independent QA found that the abort-on-drop guard does not ensure the caller
+waits for the Hyper driver to finish cleanup before the worker returns and
+snapshots delivery state. `ExchangeCommand::run` can publish its cancellation
+result before dropping the operation future, so the guard's `Drop` and driver
+abort happen after the public exchange has returned. T035a Green is pending;
+the previous Green commit is not sufficient for T010's cancellation
+finalization ordering, and T037 remains blocked.
+
+Red test/seam commit:
+`44b8a96e65613b80f5d8d6a8c16f63929b40c5ae`
+(`test(transport): gate HTTPS driver cleanup acknowledgement`). The new
+`https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning`
+test cancels after the peer captures the request, gates the per-adapter
+cleanup waiter after `JoinHandle::abort()` and before it joins the actual
+Hyper task, then observes whether the public exchange returned while that
+acknowledgment is held. The test seam is scoped to the source-included HTTPS
+test adapter. The production cleanup behavior has not been corrected in this
+Red commit.
+
+Red verification:
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --test https --offline https_exchange_waits_for_driver_cleanup_acknowledgement_before_returning -- --exact --nocapture` | Expected Red: 0/1 passed; failed at `the public exchange does not return before driver cleanup is acknowledged`. The compiler succeeded and the failure followed the observed early return while the gate was held. |
+| `cargo fmt --all --check` | Passed |
+| `git diff --check` | Passed |
+
+The next Green correction must make cancellation finalization await the
+Hyper driver's cleanup acknowledgment/join before publishing or snapshotting
+the delivery state, with a bounded cleanup wait. Do not start T037 until this
+Green correction passes and independent QA approves it.
