@@ -112,6 +112,11 @@ fn success_payload(private_identifier: &str, public_identifier: &str) -> Structu
     ])
 }
 
+fn large_success_payload() -> Structure {
+    let padding = "identifier-padding-".repeat(32);
+    success_payload(&format!("private-{padding}"), &format!("public-{padding}"))
+}
+
 fn response_bytes(items: impl IntoIterator<Item = Item>) -> Vec<u8> {
     let items = items.into_iter().collect::<Vec<_>>();
     let version = test_structure([
@@ -210,9 +215,14 @@ struct CapturingFakeTransport {
 
 struct BoundedResponseTransport {
     response: Vec<u8>,
-    exchange_count: Rc<RefCell<usize>>,
-    advertised_cap: Rc<RefCell<Option<usize>>>,
-    captured_request: Rc<RefCell<Option<Vec<u8>>>>,
+    capture: Rc<RefCell<BoundedTransportCapture>>,
+}
+
+#[derive(Default)]
+struct BoundedTransportCapture {
+    exchange_count: usize,
+    advertised_cap: Option<usize>,
+    captured_request: Option<Vec<u8>>,
 }
 
 impl Transport for BoundedResponseTransport {
@@ -221,9 +231,10 @@ impl Transport for BoundedResponseTransport {
         request: &[u8],
         max_response_bytes: usize,
     ) -> Result<TransportResponse, TransportError> {
-        *self.exchange_count.borrow_mut() += 1;
-        *self.advertised_cap.borrow_mut() = Some(max_response_bytes);
-        *self.captured_request.borrow_mut() = Some(request.to_vec());
+        let mut capture = self.capture.borrow_mut();
+        capture.exchange_count += 1;
+        capture.advertised_cap = Some(max_response_bytes);
+        capture.captured_request = Some(request.to_vec());
         // Deliberately ignore the peer cap to exercise the client's boundary.
         Ok(TransportResponse::new(self.response.clone()))
     }
@@ -233,23 +244,15 @@ fn bounded_transport(
     response: Vec<u8>,
 ) -> (
     BoundedResponseTransport,
-    Rc<RefCell<usize>>,
-    Rc<RefCell<Option<usize>>>,
-    Rc<RefCell<Option<Vec<u8>>>>,
+    Rc<RefCell<BoundedTransportCapture>>,
 ) {
-    let exchange_count = Rc::new(RefCell::new(0));
-    let advertised_cap = Rc::new(RefCell::new(None));
-    let captured_request = Rc::new(RefCell::new(None));
+    let capture = Rc::new(RefCell::new(BoundedTransportCapture::default()));
     (
         BoundedResponseTransport {
             response,
-            exchange_count: Rc::clone(&exchange_count),
-            advertised_cap: Rc::clone(&advertised_cap),
-            captured_request: Rc::clone(&captured_request),
+            capture: Rc::clone(&capture),
         },
-        exchange_count,
-        advertised_cap,
-        captured_request,
+        capture,
     )
 }
 
@@ -686,18 +689,23 @@ fn create_split_key_advertises_local_response_cap_clamped_to_signed_integer() {
         None,
         Some(success_payload("private-cap", "public-cap")),
     )]);
-    let (transport, exchange_count, advertised_cap, captured_request) = bounded_transport(response);
+    let (transport, capture) = bounded_transport(response);
     let mut client = Client::for_test(transport);
 
     let _ = client
         .create_split_key(empty_request(), &limits)
         .expect("the response is valid under the large local cap");
 
-    assert_eq!(*exchange_count.borrow(), 1);
-    assert_eq!(*advertised_cap.borrow(), Some(cap));
-    let request = captured_request.borrow();
+    let capture = capture.borrow();
+    assert_eq!(capture.exchange_count, 1);
+    assert_eq!(capture.advertised_cap, Some(cap));
     assert_eq!(
-        maximum_response_size(request.as_deref().expect("the request was captured")),
+        maximum_response_size(
+            capture
+                .captured_request
+                .as_deref()
+                .expect("the request was captured")
+        ),
         Some(i32::MAX)
     );
 }
@@ -710,11 +718,11 @@ fn create_split_key_accepts_response_exactly_at_local_limit() {
         None,
         None,
         None,
-        Some(success_payload("private-exact", "public-exact")),
+        Some(large_success_payload()),
     )]);
     let cap = response.len();
     let limits = limits_with_response_cap(cap);
-    let (transport, exchange_count, advertised_cap, captured_request) = bounded_transport(response);
+    let (transport, capture) = bounded_transport(response);
     let observer = LimitsIdentityObserver::new(&limits);
     let mut client = Client::for_test_with_limits_observer(transport, observer.clone());
 
@@ -722,13 +730,26 @@ fn create_split_key_accepts_response_exactly_at_local_limit() {
         .create_split_key(empty_request(), &limits)
         .expect("a valid response exactly at the local cap is accepted");
 
-    assert_eq!(result.unique_identifiers().len(), 2);
-    assert_eq!(*exchange_count.borrow(), 1);
-    assert_eq!(*advertised_cap.borrow(), Some(cap));
-    assert_eq!(observer.decode_calls(), 1);
-    let request = captured_request.borrow();
     assert_eq!(
-        maximum_response_size(request.as_deref().expect("the request was captured")),
+        result
+            .outcome()
+            .create_split_key_response()
+            .expect("the completed result is typed as Create Split Key")
+            .unique_identifiers()
+            .len(),
+        2
+    );
+    assert_eq!(observer.decode_calls(), 1);
+    let capture = capture.borrow();
+    assert_eq!(capture.exchange_count, 1);
+    assert_eq!(capture.advertised_cap, Some(cap));
+    assert_eq!(
+        maximum_response_size(
+            capture
+                .captured_request
+                .as_deref()
+                .expect("the request was captured")
+        ),
         Some(i32::try_from(cap).expect("fixture cap fits the field"))
     );
 }
@@ -741,14 +762,13 @@ fn create_split_key_rejects_one_byte_over_local_limit_before_decoder_entry() {
         None,
         None,
         None,
-        Some(success_payload("private-over", "public-over")),
+        Some(large_success_payload()),
     )]);
     let cap = valid_response.len();
     let limits = limits_with_response_cap(cap);
     let mut oversized_response = valid_response;
     oversized_response.push(0xa5);
-    let (transport, exchange_count, advertised_cap, captured_request) =
-        bounded_transport(oversized_response);
+    let (transport, capture) = bounded_transport(oversized_response);
     let observer = LimitsIdentityObserver::new(&limits);
     let mut client = Client::for_test_with_limits_observer(transport, observer.clone());
 
@@ -761,12 +781,17 @@ fn create_split_key_rejects_one_byte_over_local_limit_before_decoder_entry() {
         error.delivery_state(),
         Some(RequestDeliveryState::ResponseStarted)
     );
-    assert_eq!(*exchange_count.borrow(), 1);
-    assert_eq!(*advertised_cap.borrow(), Some(cap));
     assert_eq!(observer.decode_calls(), 0);
-    let request = captured_request.borrow();
+    let capture = capture.borrow();
+    assert_eq!(capture.exchange_count, 1);
+    assert_eq!(capture.advertised_cap, Some(cap));
     assert_eq!(
-        maximum_response_size(request.as_deref().expect("the request was captured")),
+        maximum_response_size(
+            capture
+                .captured_request
+                .as_deref()
+                .expect("the request was captured")
+        ),
         Some(i32::try_from(cap).expect("fixture cap fits the field"))
     );
 }
