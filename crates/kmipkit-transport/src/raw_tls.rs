@@ -43,7 +43,7 @@ type WorkerSpawnerForTest =
     Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
 
 const RESPONSE_HEADER_LEN: usize = 8;
-const RESPONSE_STRUCTURE_TAG: [u8; 3] = [0x42, 0x00, 0x78];
+const RESPONSE_STRUCTURE_TAG: [u8; 3] = [0x42, 0x00, 0x7B];
 const TTLV_STRUCTURE_TYPE: u8 = 0x01;
 
 /// A serialized synchronous adapter for raw TTLV over TLS 1.3 with mutual TLS.
