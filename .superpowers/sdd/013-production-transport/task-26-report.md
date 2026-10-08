@@ -83,4 +83,19 @@ deadline tests. T021's two requested targets also passed independently.
 - `crates/kmipkit-transport/tests/raw_tls.rs` (strict-Clippy-compatible
   assertions and fixture observations; T025 scenarios unchanged)
 
-No dependency or KMIP wire-boundary change was made. T026 review is pending.
+No dependency or KMIP wire-boundary change was made. Independent static security
+review of T026 reported zero actionable findings. A follow-up architecture
+review identified that `system_lookup` currently collects the complete
+`ToSocketAddrs` iterator before `finish_lookup_until` retains the first 16;
+this exceeds the KMIPKit-retained-candidate bound in ADR-0016 and the FR-013
+contract even though OS-internal allocations remain explicitly outside that
+bound. T026a/T026b add an instrumented iterator regression and cap collection
+at the resolver boundary without an intermediate unbounded vector.
+
+The same review noted two separate timeout follow-ups: lazy worker readiness
+currently blocks before `ClientWorker::start` returns, despite the total
+deadline being captured at public exchange entry; and `PhaseDeadline` turns a
+finite duration into no deadline when `Instant::checked_add` overflows. These
+are assigned to T031/T032 Red/Green coverage and implementation; they are not
+changed in T026a/T026b. T052 will document the resulting worker-startup and
+finite-duration handling in the threat model.
