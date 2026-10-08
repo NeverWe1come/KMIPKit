@@ -39,9 +39,13 @@ class CiSummaryTests(unittest.TestCase):
         results = {
             "core": "success",
             "script-contracts": "success",
+            "language-bindings": "success",
+            "ffi-sanitizer": "success",
+            "fuzz-smoke": "success",
             "normative-inventory": "success",
             "coverage": "success",
             "coverage-gate": "success",
+            "adapter-coverage": "success",
             "dependency-policy": "success",
             "scheduled-dependency-policy": "skipped",
             "branch-coverage": "skipped",
@@ -93,6 +97,71 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("Core matrix", markdown)
         self.assertIn("FAIL", markdown)
         self.assertIn("CANCELLED", markdown)
+
+    def test_every_pull_request_job_failure_is_reported_and_fails_the_summary(self) -> None:
+        summary_module = self.require_summary()
+        expected_labels = {
+            "language-bindings": "Language bindings",
+            "ffi-sanitizer": "FFI sanitizer",
+            "fuzz-smoke": "Fuzz smoke",
+            "adapter-coverage": "Adapter coverage",
+        }
+
+        for job_id, label in expected_labels.items():
+            with self.subTest(job=job_id):
+                markdown, exit_code = summary_module.build_summary(
+                    event_name="pull_request",
+                    context=self.context(),
+                    needs=self.pull_request_needs(**{job_id: "failure"}),
+                )
+
+                self.assertEqual(1, exit_code)
+                self.assertIn(label, markdown)
+                self.assertIn("CI result: FAIL", markdown)
+                self.assertIn("Failures to fix", markdown)
+
+    def test_required_skipped_and_missing_jobs_cannot_produce_a_passing_summary(self) -> None:
+        summary_module = self.require_summary()
+        skipped = self.pull_request_needs(**{"language-bindings": "skipped"})
+        missing = self.pull_request_needs()
+        del missing["fuzz-smoke"]
+
+        for needs in (skipped, missing):
+            with self.subTest(needs=needs):
+                markdown, exit_code = summary_module.build_summary(
+                    event_name="pull_request",
+                    context=self.context(),
+                    needs=needs,
+                )
+
+                self.assertEqual(1, exit_code)
+                self.assertIn("CI result: FAIL", markdown)
+
+    def test_summary_includes_the_job_level_failure_diagnosis(self) -> None:
+        summary_module = self.require_summary()
+        needs = self.pull_request_needs(**{"ffi-sanitizer": "failure"})
+        needs["ffi-sanitizer"]["outputs"] = {
+            "diagnostic_details": json.dumps(
+                [
+                    {
+                        "step_id": "run-asan-consumer",
+                        "label": "Run ASAN consumer",
+                        "explanation": "AddressSanitizer-instrumented C consumer failed.",
+                    }
+                ]
+            )
+        }
+
+        markdown, exit_code = summary_module.build_summary(
+            event_name="pull_request",
+            context=self.context(),
+            needs=needs,
+        )
+
+        self.assertEqual(1, exit_code)
+        self.assertIn("Run ASAN consumer", markdown)
+        self.assertIn("AddressSanitizer-instrumented C consumer failed", markdown)
+        self.assertIn("FFI sanitizer", markdown)
 
     def test_schedule_summary_requires_dependency_policy_but_keeps_branch_coverage_informational(self) -> None:
         summary_module = self.require_summary()
@@ -170,6 +239,7 @@ class CiSummaryTests(unittest.TestCase):
         needs = self.pull_request_needs(core="failure")
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "step-summary.md"
+            github_output = Path(directory) / "github-output.txt"
             environment = {
                 "GITHUB_STEP_SUMMARY": str(output),
                 "CI_NEEDS_JSON": json.dumps(needs),
@@ -180,6 +250,7 @@ class CiSummaryTests(unittest.TestCase):
                 "GITHUB_RUN_ID": "123456789",
                 "GITHUB_RUN_ATTEMPT": "1",
                 "GITHUB_SERVER_URL": "https://github.com",
+                "GITHUB_OUTPUT": str(github_output),
             }
             with mock.patch.dict(os.environ, environment, clear=False):
                 exit_code = summary_module.main()
@@ -188,6 +259,26 @@ class CiSummaryTests(unittest.TestCase):
             markdown = output.read_text(encoding="utf-8")
             self.assertIn("CI result: FAIL", markdown)
             self.assertIn("Core matrix", markdown)
+            self.assertIn("summary_written=true", github_output.read_text(encoding="utf-8"))
+
+    def test_main_marks_the_fallback_needed_when_status_input_cannot_be_rendered(self) -> None:
+        summary_module = self.require_summary()
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "step-summary.md"
+            github_output = Path(directory) / "github-output.txt"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(output),
+                "GITHUB_OUTPUT": str(github_output),
+                "CI_NEEDS_JSON": "not-json",
+                "GITHUB_EVENT_NAME": "pull_request",
+            }
+
+            with mock.patch.dict(os.environ, environment, clear=False):
+                exit_code = summary_module.main()
+
+            self.assertEqual(1, exit_code)
+            self.assertIn("could not be rendered", output.read_text(encoding="utf-8"))
+            self.assertIn("summary_written=false", github_output.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

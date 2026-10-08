@@ -336,9 +336,11 @@ RustSec evidence separately.
 
 ## CI run summaries
 
-Every pull-request and scheduled run includes a final **CI summary / at a glance** job. The workflow run Summary shows whether required checks passed, the event, ref, commit, run link, and outcomes grouped by the checks that apply to that event. Checks belonging to the other event type are marked not applicable. Failed, cancelled, or missing required checks remain failures in the final summary.
+Every pull-request and scheduled run includes a final **CI summary / at a glance** job. The workflow run Summary shows whether required checks passed, the event, ref, commit, run link, and outcomes for every check that applies to that event. Checks belonging to the other event type are marked not applicable. Failed, cancelled, missing, or unexpectedly skipped required checks remain failures in the final summary.
 
-The coverage gate adds its own job Summary with measured percentages and thresholds, an explicit reason when coverage is unavailable and no threshold is claimed, or a failure diagnostic. Scheduled branch coverage is called out as informational and does not affect the required result. Detailed matrix rows and logs remain in each job. These summaries only present existing workflow results; they do not change the jobs, runner routing, or thresholds.
+Every job ends with a diagnosis step that runs after earlier steps succeed or fail. Its text appears in both the job Summary and the final step log. A failure diagnosis names each failed step, the job and matrix values where applicable, and what kind of check failed; it points to the original step log for compiler, test, sanitizer, artifact, or policy output. The original logs are preserved and are not copied into summaries. Matrix jobs report their diagnosis in the failed leg's job Summary. If checkout or the diagnostic renderer itself fails, a concise fallback explains that limitation.
+
+The run Summary lists all required pull-request checks, including language bindings, FFI sanitizers, fuzzing, coverage adapters, and dependency policy. It adds available single-job diagnoses and directs matrix failures to their failed job-leg Summary. A downstream check that was skipped because an upstream job failed is identified as such. The coverage gate keeps its own job Summary with measured percentages and thresholds, an explicit reason when coverage is unavailable and no threshold is claimed, or a failure diagnosis. Scheduled branch coverage remains informational and does not affect the required result. The changes preserve the commands, triggers, runner routing, and thresholds; explicit exit-code checks ensure a later command cannot hide an earlier failure in the multi-command Python binding step.
 
 ## CI levels
 
@@ -349,6 +351,7 @@ The coverage gate adds its own job Summary with measured percentages and thresho
 - Linux, Windows, and macOS tests.
 - Coverage and traceability, including the coverage gate summary.
 - Final at-a-glance run summary with relevant job-group outcomes.
+- Per-job final diagnosis in each applicable job Summary and final step log.
 - Documentation with warnings denied.
 - Affected ABI and adapter tests.
 - Dependency, advisory, source, and license policy.
