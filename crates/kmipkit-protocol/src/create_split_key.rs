@@ -13,7 +13,6 @@ use crate::{
 
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0003;
 const SUCCESS: u32 = 0;
-const POLYNOMIAL_SHARING_PRIME_FIELD: u32 = 3;
 
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -36,7 +35,7 @@ impl SplitKeyMethod {
     pub const POLYNOMIAL_SHARING_GF_2_16: Self = Self(2);
 
     /// Splits the secret with polynomial sharing over the caller-selected prime field.
-    pub const POLYNOMIAL_SHARING_PRIME_FIELD: Self = Self(POLYNOMIAL_SHARING_PRIME_FIELD);
+    pub const POLYNOMIAL_SHARING_PRIME_FIELD: Self = Self(3);
 
     /// Splits the secret with polynomial sharing over GF(2⁸).
     pub const POLYNOMIAL_SHARING_GF_2_8: Self = Self(4);
@@ -182,15 +181,13 @@ impl CreateSplitKeyRequest {
     /// Returns a sanitized protocol error for the FR-015 client-policy
     /// violation or an invalid generic TTLV model value.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if self.split_key_method.raw() == POLYNOMIAL_SHARING_PRIME_FIELD
-            && self.prime_field_size.is_none()
-        {
-            return Err(ProtocolError::new(
+        self.validate_client_policy().map_err(|error| {
+            ProtocolError::new(
                 ProtocolErrorKind::InvalidValue,
                 ProtocolCauseCategory::InvalidValue,
-                CreateSplitKeyError::PolynomialMethodRequiresPrimeFieldSize,
-            ));
-        }
+                error,
+            )
+        })?;
 
         let mut payload = Structure::new();
         push(
@@ -241,6 +238,16 @@ impl CreateSplitKeyRequest {
             )?;
         }
         Ok(payload)
+    }
+
+    fn validate_client_policy(&self) -> Result<(), CreateSplitKeyError> {
+        if self.split_key_method == SplitKeyMethod::POLYNOMIAL_SHARING_PRIME_FIELD
+            && self.prime_field_size.is_none()
+        {
+            Err(CreateSplitKeyError::PolynomialMethodRequiresPrimeFieldSize)
+        } else {
+            Ok(())
+        }
     }
 }
 
