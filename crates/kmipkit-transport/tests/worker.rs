@@ -459,6 +459,47 @@ fn shutdown_wait_is_bounded_when_an_operation_blocks_its_worker_thread() {
 }
 
 #[test]
+fn shutdown_does_not_wait_for_a_started_blocking_resolver_job() {
+    let worker = Arc::new(ClientWorker::start().expect("worker thread should start"));
+    let (started_tx, started_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let caller_worker = Arc::clone(&worker);
+    let caller = thread::spawn(move || {
+        caller_worker.exchange(None, move |_control| async move {
+            let blocking = tokio::task::spawn_blocking(move || {
+                started_tx.send(()).expect("test receiver remains open");
+                release_rx
+                    .recv()
+                    .expect("test releases the blocking lookup");
+            });
+            blocking.await.expect("blocking test job completes");
+            Ok(response(0))
+        })
+    });
+    started_rx
+        .recv_timeout(Duration::from_secs(1))
+        .expect("native resolver job should be active");
+
+    let started = Instant::now();
+    let shutdown = worker.close(Duration::from_millis(100));
+    let elapsed = started.elapsed();
+
+    release_tx
+        .send(())
+        .expect("blocking test job remains active until released");
+    assert_worker_error(
+        caller.join().expect("exchange caller does not panic"),
+        WorkerError::Closed(RequestDeliveryState::NotSent),
+    );
+    worker
+        .close(Duration::from_secs(1))
+        .expect("worker thread finishes after the detached lookup exits");
+
+    assert!(elapsed < Duration::from_secs(1));
+    assert_eq!(shutdown, Ok(()));
+}
+
+#[test]
 fn worker_operation_panic_is_contained_and_returns_delivery_evidence() {
     let worker = ClientWorker::start().expect("worker thread should start");
     let result = worker.exchange(None, |control| async move {
