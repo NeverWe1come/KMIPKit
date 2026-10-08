@@ -18,9 +18,12 @@ evidence in `f70bec03d674b07358ea663c6477fa80ad7d8763`.
   and zeroized status only; it is crate-internal and compiled only under
   `cfg(test)`.
 - Added explicit PEM and DER file constructors for certificate and private-key
-  inputs. Each constructor calls `std::fs::read` once, keeps no source path,
-  and maps read errors to `InvalidCredential` without retaining OS error text.
-  The existing in-memory constructors and explicit encoding behavior remain.
+  inputs. Certificate PEM/DER constructors call `std::fs::read` once. Private
+  key PEM/DER constructors each call `File::open` once and route key bytes
+  through `SecretBuffer::read_from`. Neither form retains the source path;
+  open/read errors map to `InvalidCredential` without retaining OS/path error
+  text. The existing in-memory constructors and explicit encoding behavior
+  remain.
 - Added `# Errors` rustdoc to all four constructors. Existing configuration and
   transport errors remain fixed-category and payload-free. No logger or new
   dependency was introduced.
@@ -146,3 +149,22 @@ The T021 symlink fixture used its documented fallback on this host, so actual
 symlink following still needs platform verification where symlink creation
 succeeds. External caller copies and key bytes transferred to rustls/AWS-LC or
 held by the OS and other dependencies remain outside this zeroization claim.
+
+## Review-driven key-content preservation assertion
+
+Review confirmed the growth test also needed to prove that controlled copying
+preserves the complete key input before it checks cleanup. Test correction
+commit: `c3f55bb1782884000f5cb0c7865d70c06a5db9cc`. The test now inspects the
+successful owner before drop with a boolean equality assertion against the
+test sentinel, using fixed diagnostic text; after drop it retains the existing
+assertions that the final buffer and every observed replaced allocation were
+zeroized. The assertion never formats the sentinel.
+
+As a mutation check, the implementation's old-buffer copy was temporarily
+omitted and the focused growth test failed at `the read owner must preserve all
+input bytes`. The production line was restored and the temporary mutation was
+not committed. With the assertion in place, the focused growth and partial-read
+tests each pass 1/1; `secret_redaction_current` passes 9/9,
+`secret_redaction` passes 22/22, and all package targets/features pass 183
+tests. Strict package Clippy, `cargo fmt --all --check`, and
+`git diff --check` pass.
