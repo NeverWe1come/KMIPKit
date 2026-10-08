@@ -16,6 +16,14 @@ fn lock_network_fixture() -> MutexGuard<'static, ()> {
     }
 }
 
+fn is_close_result(result: &io::Result<usize>) -> bool {
+    match result {
+        Ok(0) => true,
+        Err(error) if error.kind() == io::ErrorKind::ConnectionAborted => true,
+        Ok(_) | Err(_) => false,
+    }
+}
+
 #[test]
 fn rejects_duplicate_names_after_case_and_trailing_dot_normalization() {
     let records = BTreeMap::from([
@@ -249,14 +257,19 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
         .expect("short DNS frame header should be sent");
     let mut trailing = [0_u8; 1];
     let read_result = client.read(&mut trailing);
-    let closed = match &read_result {
-        Ok(0) => true,
-        Err(error) if error.kind() == io::ErrorKind::ConnectionAborted => true,
-        Ok(_) | Err(_) => false,
-    };
     assert!(
-        closed,
+        is_close_result(&read_result),
         "fixture closes an invalid short frame; client read returned {read_result:?}"
+    );
+}
+
+#[test]
+fn connection_reset_is_accepted_as_peer_close() {
+    let read_result = Err(io::Error::from(io::ErrorKind::ConnectionReset));
+
+    assert!(
+        is_close_result(&read_result),
+        "a peer reset closes the connection after an invalid short frame"
     );
 }
 
