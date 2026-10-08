@@ -333,9 +333,11 @@ dependencies = [
  "kmipkit-transport",
  "kmipkit-ttlv",
  "quickcheck",
+ "rustls",
  "serde",
  "static_assertions",
  "syn 2.0.119",
+ "tokio",
  "trybuild",
  "zeroize",
 ]
