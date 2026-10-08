@@ -55,8 +55,13 @@ tests need a real logging surface before they can be added.
   for the new secret-owner observer and file-input contract.
 - cargo test -p kmipkit-transport --test secret_redaction_current --offline
   passes: 9 passed, 0 failed.
-- rustfmt --edition 2024 --config skip_children=true --check over the five
-  added Rust test/harness files passes.
+- rustfmt --edition 2024 --config skip_children=true --check
+  crates/kmipkit-transport/tests/secret_redaction.rs
+  crates/kmipkit-transport/tests/secret_redaction_current.rs
+  crates/kmipkit-transport/tests/support/secret_redaction/current.rs
+  crates/kmipkit-transport/tests/support/secret_redaction/file_sources.rs
+  crates/kmipkit-transport/tests/support/secret_redaction/zeroization.rs
+  passes with exit 0.
 - cargo fmt --all --check cannot resolve the same T022-owned
   src/secret.rs module. Focused rustfmt is the formatting evidence for this
   Red phase.
@@ -64,5 +69,5 @@ tests need a real logging surface before they can be added.
 
 ## Commit
 
-Red commit: to be recorded in the T021 task row and this report by the
-follow-up evidence-only commit.
+Red commit: c00556281a1399dbf7281306591a39a9eb13db6b. The follow-up evidence
+commit records this ID in the T021 task row.
