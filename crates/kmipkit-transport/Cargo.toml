@@ -56,6 +56,10 @@ name = "raw_tls"
 path = "tests/raw_tls.rs"
 
 [[test]]
+name = "https"
+path = "tests/https.rs"
+
+[[test]]
 name = "secret_redaction"
 path = "tests/secret_redaction.rs"
 
