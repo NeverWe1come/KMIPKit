@@ -120,14 +120,8 @@ fn selected_path(original: &Path, link: &Path) -> PathBuf {
     match create_file_symlink(original, link) {
         Ok(()) => link.to_path_buf(),
         #[cfg(windows)]
-        Err(error)
-            if matches!(
-                error.kind(),
-                std::io::ErrorKind::PermissionDenied | std::io::ErrorKind::Unsupported
-            ) =>
-        {
-            original.to_path_buf()
-        }
+        Err(_) => original.to_path_buf(),
+        #[cfg(not(windows))]
         Err(_) => panic!("selected path alias creation failed"),
     }
 }
