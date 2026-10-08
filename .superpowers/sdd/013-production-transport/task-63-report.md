@@ -24,3 +24,26 @@ decrypted request. The failures therefore exercise record integrity rather
 than handshake rejection. No successful-handshake test is credited as
 negative integrity evidence, and no profile or official OASIS test claim is
 made.
+
+## Green evidence
+
+The timeout I/O sanitizer preserves a private, fixed TLS-failure marker when
+the discarded source is a rustls error. The raw-TLS and HTTPS adapters map
+that marker to the existing safe `Tls` cause category. The original rustls
+error text and payload are discarded; the exposed source is the fixed
+`TLS failure` category. No public API or error text contains peer-controlled
+TLS diagnostics.
+
+- `cargo test -p kmipkit-transport --test tls_integrity --offline` — PASS; all
+  56 source-included adapter/unit and TLS integrity tests pass, including both
+  corrupted-record regressions.
+- `cargo test -p kmipkit-transport --all-targets --all-features --offline` —
+  PASS for the complete transport package.
+- `cargo fmt --all --check`, `git diff --check`, and `cargo clippy -p
+  kmipkit-transport --all-targets --all-features --offline -- -D warnings` —
+  PASS.
+
+The negative assertions observe exactly one corrupted server application-data
+record, reject its plaintext, retain `PossiblySent` because no response byte
+was decrypted, expose only the safe TLS category, and verify connection
+termination or cache invalidation for the affected adapter.

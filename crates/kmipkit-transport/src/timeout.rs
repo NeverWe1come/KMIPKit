@@ -684,20 +684,33 @@ fn sanitize_io_error(error: io::Error) -> io::Error {
     SafeIoFailure::from_io_error(error).into_io_error()
 }
 
-// Retain only a fixed message and safe kind; never carry the source error text.
+pub(crate) fn is_tls_failure(error: &io::Error) -> bool {
+    error
+        .get_ref()
+        .and_then(|source| source.downcast_ref::<SafeIoFailure>())
+        .is_some_and(|failure| matches!(failure, SafeIoFailure::TlsRecordRejected))
+}
+
+// Retain only a fixed safe cause; never carry the source error text.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum SafeIoFailure {
     DeadlineElapsed,
     ExchangeFinalized,
     SenderUnavailable,
+    TlsRecordRejected,
     Inner(io::ErrorKind),
 }
 
 impl SafeIoFailure {
     fn from_io_error(error: io::Error) -> Self {
         let kind = error.kind();
+        let tls_record_rejected = error
+            .get_ref()
+            .is_some_and(|source| source.downcast_ref::<rustls::Error>().is_some());
         drop(error);
-        if kind == io::ErrorKind::TimedOut {
+        if tls_record_rejected {
+            Self::TlsRecordRejected
+        } else if kind == io::ErrorKind::TimedOut {
             Self::DeadlineElapsed
         } else {
             Self::Inner(kind)
@@ -705,15 +718,29 @@ impl SafeIoFailure {
     }
 
     fn into_io_error(self) -> io::Error {
-        let (kind, message) = match self {
-            Self::DeadlineElapsed => (io::ErrorKind::TimedOut, "I/O deadline elapsed"),
-            Self::ExchangeFinalized => (io::ErrorKind::Interrupted, "exchange I/O finalized"),
-            Self::SenderUnavailable => (io::ErrorKind::BrokenPipe, "HTTP sender failed"),
-            Self::Inner(kind) => (kind, "transport I/O failed"),
-        };
-        io::Error::new(kind, message)
+        match self {
+            Self::TlsRecordRejected => io::Error::new(io::ErrorKind::InvalidData, self),
+            Self::DeadlineElapsed => {
+                io::Error::new(io::ErrorKind::TimedOut, "I/O deadline elapsed")
+            }
+            Self::ExchangeFinalized => {
+                io::Error::new(io::ErrorKind::Interrupted, "exchange I/O finalized")
+            }
+            Self::SenderUnavailable => {
+                io::Error::new(io::ErrorKind::BrokenPipe, "HTTP sender failed")
+            }
+            Self::Inner(kind) => io::Error::new(kind, "transport I/O failed"),
+        }
     }
 }
+
+impl std::fmt::Display for SafeIoFailure {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("TLS record integrity check failed")
+    }
+}
+
+impl std::error::Error for SafeIoFailure {}
 
 #[cfg(test)]
 #[path = "timeout_tests.rs"]

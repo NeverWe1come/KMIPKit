@@ -1341,7 +1341,9 @@ fn response_body_error(error: hyper::Error, state: RequestDeliveryState) -> Tran
 }
 
 fn hyper_error_cause(error: &hyper::Error) -> TransportCauseCategory {
-    if error.is_parse()
+    if error_chain_contains_tls_failure(Some(error)) {
+        TransportCauseCategory::Tls
+    } else if error.is_parse()
         || error.is_incomplete_message()
         || hyper_error_has_io_kind(error, io::ErrorKind::UnexpectedEof)
     {
@@ -1351,6 +1353,22 @@ fn hyper_error_cause(error: &hyper::Error) -> TransportCauseCategory {
     } else {
         TransportCauseCategory::Io
     }
+}
+
+fn error_chain_contains_tls_failure(
+    mut source: Option<&(dyn std::error::Error + 'static)>,
+) -> bool {
+    while let Some(error) = source {
+        if error.downcast_ref::<rustls::Error>().is_some()
+            || error
+                .downcast_ref::<io::Error>()
+                .is_some_and(crate::timeout::is_tls_failure)
+        {
+            return true;
+        }
+        source = error.source();
+    }
+    false
 }
 
 fn hyper_error_has_io_kind(error: &hyper::Error, expected: io::ErrorKind) -> bool {
