@@ -77,6 +77,31 @@ Correction commit: da52647f728032cd2c81fc78057e550e0900f73c. Verification:
 passed 9/9; focused rustfmt for `secret_redaction_current.rs` and
 `support/secret_redaction/current.rs` passed; `git diff --check` passed.
 
+### Windows symlink-fallback correction
+
+On Windows, any file-symlink creation failure in the temporary fixture now
+selects the original file path. The fallback does not depend on Windows mapping
+all symlink-creation failures to `PermissionDenied` or `Unsupported`. When
+symlink creation succeeds, the test still selects the symlink path.
+Correction Red commit: `0eebc75e7ea84a72b9da6fe523a6016e57b10bb3`.
+
+Verification:
+
+- `cargo test -p kmipkit-transport --test secret_redaction_current --offline`:
+  9 passed, 0 failed.
+- `cargo test -p kmipkit-transport --test secret_redaction --offline`:
+  20 passed, 0 failed. The target emits 33 dead-code warnings from the
+  directly included `config.rs` and `tls.rs` modules; it emits no
+  unreachable-pattern warning after the correction.
+- `rustfmt --edition 2024 --config skip_children=true --check
+  crates/kmipkit-transport/tests/support/secret_redaction/file_sources.rs`:
+  passed.
+- `git diff --check`: passed.
+
+This Windows host used the fallback, so the test did not exercise following a
+Windows symlink. Symlink resolution remains to be verified on a host where
+file-symlink creation succeeds.
+
 ## Commit
 
 Red commit: c00556281a1399dbf7281306591a39a9eb13db6b. The follow-up evidence
