@@ -256,6 +256,7 @@ fn local_ticket_age_expires_at_one_hour_and_rebuilt_trust_starts_empty() {
         handshake(&expiring, Arc::clone(&peer)).unwrap(),
         HandshakeKind::Full
     );
+    assert!(expiring.cached_ticket_count() > 0);
     expiry_clock.advance(Duration::from_secs(60 * 60));
     assert_eq!(
         handshake(&expiring, Arc::clone(&peer)).unwrap(),
