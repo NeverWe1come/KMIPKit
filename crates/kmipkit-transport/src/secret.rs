@@ -116,3 +116,59 @@ impl SecretBufferObserver {
         );
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::io::{self, Read};
+
+    use super::{SecretBuffer, SecretBufferObserver};
+
+    struct FailsAfterBytes {
+        bytes: &'static [u8],
+        offset: usize,
+    }
+
+    impl Read for FailsAfterBytes {
+        fn read(&mut self, destination: &mut [u8]) -> io::Result<usize> {
+            if destination.is_empty() {
+                return Ok(0);
+            }
+
+            if self.offset < self.bytes.len() {
+                let available = &self.bytes[self.offset..];
+                let count = available.len().min(destination.len());
+                destination[..count].copy_from_slice(&available[..count]);
+                self.offset += count;
+                return Ok(count);
+            }
+
+            Err(io::Error::other("injected read failure"))
+        }
+    }
+
+    #[test]
+    fn partially_read_private_key_is_zeroized_when_reader_fails() {
+        const KEY_SENTINEL: &[u8] = b"private-key-read-error-sentinel";
+
+        let observer = SecretBufferObserver::new(KEY_SENTINEL.len());
+        let mut reader = FailsAfterBytes {
+            bytes: KEY_SENTINEL,
+            offset: 0,
+        };
+        let result = SecretBuffer::read_from_with_observer_for_test(&mut reader, observer.clone());
+
+        assert!(
+            result.is_err(),
+            "the injected reader must fail after yielding bytes"
+        );
+        assert_eq!(
+            observer.initialized_len(),
+            KEY_SENTINEL.len(),
+            "the read owner must observe every initialized byte before release"
+        );
+        assert!(
+            observer.initialized_range_was_zero(),
+            "the read owner must zero initialized bytes before release"
+        );
+    }
+}
