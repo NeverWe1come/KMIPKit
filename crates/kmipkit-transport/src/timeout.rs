@@ -3,6 +3,7 @@
 use std::future::{Future, poll_fn};
 use std::io::{self, IoSlice};
 use std::pin::Pin;
+use std::sync::{Arc, Mutex, MutexGuard};
 use std::task::{Context, Poll};
 use std::time::{Duration, Instant};
 
@@ -22,6 +23,24 @@ const READ_BUFFER_SIZE: usize = 16 * 1024;
 /// TLS I/O with independent inactivity limits and an absolute exchange limit.
 pub(crate) struct DeadlineIo<I> {
     inner: Pin<Box<I>>,
+    state: Arc<Mutex<DeadlineIoState>>,
+}
+
+/// Mutable per-exchange deadline and delivery state for a persistent HTTP/1 connection.
+#[allow(dead_code)] // timeout_delivery source-includes this module without the HTTPS adapter.
+#[derive(Clone)]
+pub(crate) struct DeadlineIoControl {
+    state: Arc<Mutex<DeadlineIoState>>,
+}
+
+enum DeadlineIoState {
+    Active(ActiveDeadlineIo),
+    #[allow(dead_code)] // Constructed by HTTPS after a successful persistent exchange.
+    Idle,
+    Invalid,
+}
+
+struct ActiveDeadlineIo {
     read_deadline: PhaseDeadline,
     write_deadline: PhaseDeadline,
     total_deadline: Option<Instant>,
@@ -38,21 +57,120 @@ impl<I> DeadlineIo<I> {
     ) -> Self {
         Self {
             inner: Box::pin(inner),
+            state: Arc::new(Mutex::new(DeadlineIoState::Active(ActiveDeadlineIo::new(
+                read_timeout,
+                write_timeout,
+                total_deadline,
+                control,
+            )))),
+        }
+    }
+
+    /// Creates a deadline-aware I/O stream whose exchange context can be renewed between requests.
+    #[allow(dead_code)] // Used by HTTPS; timeout_delivery source-includes this module alone.
+    pub(crate) fn new_reusable(
+        inner: I,
+        read_timeout: Option<Duration>,
+        write_timeout: Option<Duration>,
+        total_deadline: Option<Instant>,
+        control: ExchangeControl,
+    ) -> (Self, DeadlineIoControl) {
+        let state = Arc::new(Mutex::new(DeadlineIoState::Active(ActiveDeadlineIo::new(
+            read_timeout,
+            write_timeout,
+            total_deadline,
+            control,
+        ))));
+        (
+            Self {
+                inner: Box::pin(inner),
+                state: Arc::clone(&state),
+            },
+            DeadlineIoControl { state },
+        )
+    }
+
+    #[allow(dead_code)] // The raw TLS source-including target validates before dispatch.
+    pub(crate) fn validate_phase_deadlines(&self) -> io::Result<()> {
+        match &*lock_deadline_state(&self.state) {
+            DeadlineIoState::Active(active)
+                if active.read_deadline.invalid || active.write_deadline.invalid =>
+            {
+                Err(invalid_deadline_io_error())
+            }
+            DeadlineIoState::Active(_) => Ok(()),
+            DeadlineIoState::Idle | DeadlineIoState::Invalid => Err(invalid_deadline_io_error()),
+        }
+    }
+}
+
+impl ActiveDeadlineIo {
+    fn new(
+        read_timeout: Option<Duration>,
+        write_timeout: Option<Duration>,
+        total_deadline: Option<Instant>,
+        control: ExchangeControl,
+    ) -> Self {
+        Self {
             read_deadline: PhaseDeadline::new(read_timeout),
             write_deadline: PhaseDeadline::new(write_timeout),
             total_deadline,
             control,
         }
     }
+}
 
-    #[allow(dead_code)] // The raw TLS source-including target validates before dispatch.
-    pub(crate) fn validate_phase_deadlines(&self) -> io::Result<()> {
-        if self.read_deadline.invalid || self.write_deadline.invalid {
-            Err(invalid_deadline_io_error())
-        } else {
-            Ok(())
+#[allow(dead_code)] // Used by HTTPS; timeout_delivery source-includes this module alone.
+impl DeadlineIoControl {
+    /// Starts a new serialized exchange on an idle persistent connection.
+    pub(crate) fn begin_exchange(
+        &self,
+        read_timeout: Option<Duration>,
+        write_timeout: Option<Duration>,
+        total_deadline: Option<Instant>,
+        control: ExchangeControl,
+    ) -> io::Result<()> {
+        let mut state = lock_deadline_state(&self.state);
+        match &*state {
+            DeadlineIoState::Idle => {
+                let active =
+                    ActiveDeadlineIo::new(read_timeout, write_timeout, total_deadline, control);
+                if active.read_deadline.invalid || active.write_deadline.invalid {
+                    return Err(invalid_deadline_io_error());
+                }
+                *state = DeadlineIoState::Active(active);
+                Ok(())
+            }
+            DeadlineIoState::Invalid => Err(unsolicited_response_io_error()),
+            DeadlineIoState::Active(_) => Err(io::Error::other(
+                "HTTP connection already has an exchange in flight",
+            )),
         }
     }
+
+    /// Stops applying an exchange's delivery state and deadlines after its full response arrives.
+    pub(crate) fn finish_exchange(&self) {
+        let mut state = lock_deadline_state(&self.state);
+        if matches!(*state, DeadlineIoState::Active(_)) {
+            *state = DeadlineIoState::Idle;
+        }
+    }
+
+    /// Prevents a connection with malformed or unsolicited input from being reused.
+    pub(crate) fn invalidate(&self) {
+        *lock_deadline_state(&self.state) = DeadlineIoState::Invalid;
+    }
+
+    /// Reports whether the persistent I/O observed bytes outside an active exchange.
+    pub(crate) fn is_invalid(&self) -> bool {
+        matches!(*lock_deadline_state(&self.state), DeadlineIoState::Invalid)
+    }
+}
+
+fn lock_deadline_state(state: &Mutex<DeadlineIoState>) -> MutexGuard<'_, DeadlineIoState> {
+    state
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
 impl<I> HyperRead for DeadlineIo<I>
@@ -69,18 +187,51 @@ where
         if capacity == 0 {
             return Poll::Ready(Ok(()));
         }
-        if this.control.is_finalized() {
-            return Poll::Ready(Err(finalized_io_error()));
-        }
 
         let mut scratch = [0_u8; READ_BUFFER_SIZE];
         let mut inner_buffer = TokioReadBuf::new(&mut scratch[..capacity]);
         let read_result = {
-            let total_deadline = this.total_deadline;
-            let (inner, phase_deadline) = (&mut this.inner, &mut this.read_deadline);
-            poll_with_deadline(phase_deadline, total_deadline, cx, |cx| {
-                inner.as_mut().poll_read(cx, &mut inner_buffer)
-            })
+            let (inner, state) = (&mut this.inner, &this.state);
+            let mut state = lock_deadline_state(state);
+            match &mut *state {
+                DeadlineIoState::Active(active) => {
+                    if active.control.is_finalized() {
+                        Poll::Ready(Err(finalized_io_error()))
+                    } else {
+                        let result = poll_with_deadline(
+                            &mut active.read_deadline,
+                            active.total_deadline,
+                            cx,
+                            |cx| inner.as_mut().poll_read(cx, &mut inner_buffer),
+                        );
+                        if let Poll::Ready(Ok(())) = result {
+                            if inner_buffer.filled().is_empty() {
+                                result
+                            } else if active.control.observe_response_byte() {
+                                active.read_deadline.reset_after_progress();
+                                result
+                            } else {
+                                *state = DeadlineIoState::Invalid;
+                                Poll::Ready(Err(finalized_io_error()))
+                            }
+                        } else {
+                            result
+                        }
+                    }
+                }
+                DeadlineIoState::Idle => match inner.as_mut().poll_read(cx, &mut inner_buffer) {
+                    Poll::Ready(Ok(())) if !inner_buffer.filled().is_empty() => {
+                        *state = DeadlineIoState::Invalid;
+                        Poll::Ready(Err(unsolicited_response_io_error()))
+                    }
+                    Poll::Ready(Err(error)) => {
+                        *state = DeadlineIoState::Invalid;
+                        Poll::Ready(Err(sanitize_io_error(error)))
+                    }
+                    result => result,
+                },
+                DeadlineIoState::Invalid => Poll::Ready(Err(unsolicited_response_io_error())),
+            }
         };
 
         match read_result {
@@ -90,13 +241,8 @@ where
                     scratch.zeroize();
                     return Poll::Ready(Ok(()));
                 }
-                if !this.control.observe_response_byte() {
-                    scratch.zeroize();
-                    return Poll::Ready(Err(finalized_io_error()));
-                }
 
                 buffer.put_slice(&scratch[..bytes_read]);
-                this.read_deadline.reset_after_progress();
                 scratch.zeroize();
                 Poll::Ready(Ok(()))
             }
@@ -159,24 +305,32 @@ where
         if bytes.is_empty() {
             return Poll::Ready(Ok(0));
         }
-        if this.control.is_finalized() {
-            return Poll::Ready(Err(finalized_io_error()));
-        }
-
         let result = {
-            let total_deadline = this.total_deadline;
-            let (inner, phase_deadline) = (&mut this.inner, &mut this.write_deadline);
-            poll_with_deadline(phase_deadline, total_deadline, cx, |cx| {
-                inner.as_mut().poll_write(cx, bytes)
-            })
+            let (inner, state) = (&mut this.inner, &this.state);
+            let mut state = lock_deadline_state(state);
+            match &mut *state {
+                DeadlineIoState::Active(active) if !active.control.is_finalized() => {
+                    let result = poll_with_deadline(
+                        &mut active.write_deadline,
+                        active.total_deadline,
+                        cx,
+                        |cx| inner.as_mut().poll_write(cx, bytes),
+                    );
+                    if matches!(result, Poll::Ready(Ok(written)) if written > 0) {
+                        active.write_deadline.reset_after_progress();
+                    }
+                    result
+                }
+                DeadlineIoState::Active(_) => Poll::Ready(Err(finalized_io_error())),
+                DeadlineIoState::Idle => {
+                    *state = DeadlineIoState::Invalid;
+                    Poll::Ready(Err(unsolicited_response_io_error()))
+                }
+                DeadlineIoState::Invalid => Poll::Ready(Err(unsolicited_response_io_error())),
+            }
         };
         match result {
-            Poll::Ready(Ok(written)) => {
-                if written > 0 {
-                    this.write_deadline.reset_after_progress();
-                }
-                Poll::Ready(Ok(written))
-            }
+            Poll::Ready(Ok(written)) => Poll::Ready(Ok(written)),
             Poll::Ready(Err(error)) => Poll::Ready(Err(sanitize_io_error(error))),
             Poll::Pending => Poll::Pending,
         }
@@ -184,21 +338,35 @@ where
 
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         let this = self.get_mut();
-        if this.control.is_finalized() {
-            return Poll::Ready(Err(finalized_io_error()));
-        }
         let result = {
-            let total_deadline = this.total_deadline;
-            let (inner, phase_deadline) = (&mut this.inner, &mut this.write_deadline);
-            poll_with_deadline(phase_deadline, total_deadline, cx, |cx| {
-                inner.as_mut().poll_flush(cx)
-            })
+            let (inner, state) = (&mut this.inner, &this.state);
+            let mut state = lock_deadline_state(state);
+            match &mut *state {
+                DeadlineIoState::Active(active) if !active.control.is_finalized() => {
+                    let result = poll_with_deadline(
+                        &mut active.write_deadline,
+                        active.total_deadline,
+                        cx,
+                        |cx| inner.as_mut().poll_flush(cx),
+                    );
+                    if matches!(result, Poll::Ready(Ok(()))) {
+                        active.write_deadline.reset_after_progress();
+                    }
+                    result
+                }
+                DeadlineIoState::Active(_) => Poll::Ready(Err(finalized_io_error())),
+                DeadlineIoState::Idle => match inner.as_mut().poll_flush(cx) {
+                    Poll::Ready(Err(error)) => {
+                        *state = DeadlineIoState::Invalid;
+                        Poll::Ready(Err(sanitize_io_error(error)))
+                    }
+                    result => result,
+                },
+                DeadlineIoState::Invalid => Poll::Ready(Err(unsolicited_response_io_error())),
+            }
         };
         match result {
-            Poll::Ready(Ok(())) => {
-                this.write_deadline.reset_after_progress();
-                Poll::Ready(Ok(()))
-            }
+            Poll::Ready(Ok(())) => Poll::Ready(Ok(())),
             Poll::Ready(Err(error)) => Poll::Ready(Err(sanitize_io_error(error))),
             Poll::Pending => Poll::Pending,
         }
@@ -207,11 +375,21 @@ where
     fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         let this = self.get_mut();
         let result = {
-            let total_deadline = this.total_deadline;
-            let (inner, phase_deadline) = (&mut this.inner, &mut this.write_deadline);
-            poll_with_deadline(phase_deadline, total_deadline, cx, |cx| {
-                inner.as_mut().poll_shutdown(cx)
-            })
+            let (inner, state) = (&mut this.inner, &this.state);
+            let mut state = lock_deadline_state(state);
+            match &mut *state {
+                DeadlineIoState::Active(active) => poll_with_deadline(
+                    &mut active.write_deadline,
+                    active.total_deadline,
+                    cx,
+                    |cx| inner.as_mut().poll_shutdown(cx),
+                ),
+                DeadlineIoState::Idle => {
+                    *state = DeadlineIoState::Invalid;
+                    inner.as_mut().poll_shutdown(cx)
+                }
+                DeadlineIoState::Invalid => Poll::Ready(Err(unsolicited_response_io_error())),
+            }
         };
         match result {
             Poll::Ready(Err(error)) => Poll::Ready(Err(sanitize_io_error(error))),
@@ -232,24 +410,32 @@ where
         if buffers.iter().all(|buffer| buffer.is_empty()) {
             return Poll::Ready(Ok(0));
         }
-        if this.control.is_finalized() {
-            return Poll::Ready(Err(finalized_io_error()));
-        }
-
         let result = {
-            let total_deadline = this.total_deadline;
-            let (inner, phase_deadline) = (&mut this.inner, &mut this.write_deadline);
-            poll_with_deadline(phase_deadline, total_deadline, cx, |cx| {
-                inner.as_mut().poll_write_vectored(cx, buffers)
-            })
+            let (inner, state) = (&mut this.inner, &this.state);
+            let mut state = lock_deadline_state(state);
+            match &mut *state {
+                DeadlineIoState::Active(active) if !active.control.is_finalized() => {
+                    let result = poll_with_deadline(
+                        &mut active.write_deadline,
+                        active.total_deadline,
+                        cx,
+                        |cx| inner.as_mut().poll_write_vectored(cx, buffers),
+                    );
+                    if matches!(result, Poll::Ready(Ok(written)) if written > 0) {
+                        active.write_deadline.reset_after_progress();
+                    }
+                    result
+                }
+                DeadlineIoState::Active(_) => Poll::Ready(Err(finalized_io_error())),
+                DeadlineIoState::Idle => {
+                    *state = DeadlineIoState::Invalid;
+                    Poll::Ready(Err(unsolicited_response_io_error()))
+                }
+                DeadlineIoState::Invalid => Poll::Ready(Err(unsolicited_response_io_error())),
+            }
         };
         match result {
-            Poll::Ready(Ok(written)) => {
-                if written > 0 {
-                    this.write_deadline.reset_after_progress();
-                }
-                Poll::Ready(Ok(written))
-            }
+            Poll::Ready(Ok(written)) => Poll::Ready(Ok(written)),
             Poll::Ready(Err(error)) => Poll::Ready(Err(sanitize_io_error(error))),
             Poll::Pending => Poll::Pending,
         }
@@ -487,6 +673,10 @@ fn invalid_deadline_io_error() -> io::Error {
 
 fn finalized_io_error() -> io::Error {
     SafeIoFailure::ExchangeFinalized.into_io_error()
+}
+
+fn unsolicited_response_io_error() -> io::Error {
+    io::Error::other("HTTP connection received unsolicited data while idle")
 }
 
 fn sender_closed_error() -> io::Error {
