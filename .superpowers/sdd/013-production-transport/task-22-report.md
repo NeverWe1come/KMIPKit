@@ -11,8 +11,8 @@ evidence in `f70bec03d674b07358ea663c6477fa80ad7d8763`.
 
 ## Implementation
 
-- Added private `SecretBuffer`, which owns private-key input and zeroizes its
-  initialized bytes before its `Vec` allocation is released. A private
+- Added private `SecretBuffer`, which zeroizes initialized bytes already under
+  its ownership before its `Vec` allocation is released. A private
   `SecretPrivateKeyDer` guard zeroizes PEM parser output when parsing fails or
   the input is ambiguous. The test-only observer reports initialized length
   and zeroized status only; it is crate-internal and compiled only under
@@ -56,3 +56,24 @@ Windows T021 fixture used its symlink-unavailable fallback on this host, so
 Windows symlink-following itself still needs verification where file symlink
 creation succeeds. Workspace-wide tests, coverage, and cross-platform CI were
 not part of this task's package-scoped verification.
+
+## P2 partial-read correction — Red, pending review
+
+Review identified that the original `std::fs::read` constructors only create
+`SecretBuffer` after a successful read. If a read fails after yielding bytes,
+the partially initialized `Vec` is released before it enters the zeroizing
+owner, so the original Green evidence did not cover this error path.
+
+- Red test commit: `991796eb30259ace813e47ea2f07369562869911`.
+- The `#[cfg(test)]` regression uses an injected reader that yields a private
+  key sentinel and then returns an I/O error. It asserts the observer saw the
+  complete initialized length and that those bytes were zeroized before
+  release. The sentinel is never included in assertion or error text.
+- Expected Red command:
+  `cargo test -p kmipkit-transport --lib secret::tests::partially_read_private_key_is_zeroized_when_reader_fails --offline`.
+  It exits 1 during compilation with E0599 because
+  `SecretBuffer::read_from_with_observer_for_test` is the not-yet-implemented
+  private read seam. No production code changed in the Red commit.
+- `git diff --check` passed for the Red test. The Green correction and its
+  verification have not yet been performed; T022 remains incomplete until
+  the partial-read path uses the zeroizing owner and this regression passes.
