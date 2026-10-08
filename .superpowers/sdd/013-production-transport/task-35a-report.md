@@ -119,10 +119,11 @@ Red verification:
 | `cargo fmt --all --check` | Passed |
 | `git diff --check` | Passed |
 
-The next Green correction must make cancellation finalization await the
-Hyper driver's cleanup acknowledgment/join before publishing or snapshotting
-the delivery state, with a bounded cleanup wait. Do not start T037 until this
-Green correction passes and independent QA approves it.
+To satisfy T010, timeout/cancellation/shutdown finalization must drop the
+operation future, await bounded Hyper driver cleanup, then snapshot delivery
+state before publishing the terminal error. Normal successful completion must
+await cleanup before publishing its operation result. Do not start T037 until
+this Green correction passes and independent QA approves it.
 
 ## Cleanup ordering correction — Green implementation
 
@@ -133,15 +134,20 @@ ordered cleanup gap without changing the public API or TLS policy.
 `HyperDriverGuard` now owns the Hyper connection `JoinHandle`. Its `Drop`
 requests abort, then starts a cleanup monitor that joins the actual driver and
 registers that monitor with the exchange control. `ExchangeCommand::run`
-scopes the pinned operation future so cancellation drops it before timeout
-finalization; finalization then waits for registered cleanup before taking the
-delivery-state snapshot and publishing the result. Normal completion also
-waits for driver cleanup before returning the operation result. Cleanup wait
-is bounded to one second; if that acknowledgment window expires, the monitor
-is aborted and given a further 50 ms abort grace. An unsuccessful cleanup
-wait on normal completion is returned as a sanitized stopped-worker error.
-The synchronous caller retains the receiver while an active command
-finalizes, but an exchange that expires while still queued continues to return
+scopes the pinned operation future. In timeout, cancellation, and shutdown
+exits, it drops that future, waits for registered cleanup, then calls
+`finalize_timeout` to snapshot delivery state before publishing the terminal
+error. In normal `Operation` completion, it calls `control.finish()` before
+the cleanup join; it still waits for cleanup before publishing the operation
+result or allowing the worker to process its next command. This
+normal-completion order is distinct from T010's cleanup-before-timeout-snapshot
+requirement.
+
+Cleanup wait is bounded to one second; if that acknowledgment window expires,
+the monitor is aborted and given a further 50 ms abort grace. An unsuccessful
+cleanup wait on normal completion becomes a sanitized stopped-worker error.
+The synchronous caller retains the result receiver while an active command
+finalizes; an exchange that expires while still queued continues to return
 `NotSent` immediately.
 
 The adapter-level regression gates the cleanup monitor after abort and before
