@@ -45,9 +45,10 @@ use std::thread::JoinHandle;
 ///
 /// The adapter posts caller-supplied bytes to the validated origin-form target
 /// and never retries automatically. It sends request bytes only after the
-/// verified TLS connection and Hyper sender are ready. Each exchange uses one
-/// direct connection; proxy settings are not consulted. The default timeout
-/// policy comes from the validated configuration, and
+/// verified TLS connection and Hyper sender are ready. It maintains at most
+/// one direct connection per client and reuses it across healthy exchanges;
+/// proxy settings are not consulted. The default timeout policy comes from the
+/// validated configuration, and
 /// [`Self::exchange_with_options`] accepts per-call overrides.
 ///
 /// `KMIPKit` zeroizes initialized bytes in its staged request owner and partial
