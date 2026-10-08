@@ -2026,41 +2026,41 @@ fn response_outcome(
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
-            if response.result().status().raw() == RESULT_STATUS_PENDING {
-                Ok(ClientBatchOutcome::Pending(pending_outcome(
-                    ClientOperation::DiscoverVersions,
-                    response.result().clone(),
-                    item,
-                )?))
-            } else {
-                Ok(ClientBatchOutcome::Completed(response))
-            }
+            Ok(pending_outcome_if_pending(
+                ClientOperation::DiscoverVersions,
+                response.result(),
+                item,
+            )?
+            .map_or(
+                ClientBatchOutcome::Completed(response),
+                ClientBatchOutcome::Pending,
+            ))
         }
         CREATE_OPERATION => {
             let response =
                 CreateResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
-            if response.result().status().raw() == RESULT_STATUS_PENDING {
-                Ok(ClientBatchOutcome::Pending(pending_outcome(
-                    ClientOperation::Create,
-                    response.result().clone(),
-                    item,
-                )?))
-            } else {
-                Ok(ClientBatchOutcome::CreateCompleted(response))
-            }
+            Ok(
+                pending_outcome_if_pending(ClientOperation::Create, response.result(), item)?
+                    .map_or(
+                        ClientBatchOutcome::CreateCompleted(response),
+                        ClientBatchOutcome::Pending,
+                    ),
+            )
         }
         CREATE_KEY_PAIR_OPERATION => {
             let response = CreateKeyPairResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
-            if response.result().status().raw() == RESULT_STATUS_PENDING {
-                Ok(ClientBatchOutcome::Pending(pending_outcome(
+            Ok(
+                pending_outcome_if_pending(
                     ClientOperation::CreateKeyPair,
-                    response.result().clone(),
+                    response.result(),
                     item,
-                )?))
-            } else {
-                Ok(ClientBatchOutcome::CreateKeyPairCompleted(response))
-            }
+                )?
+                .map_or(
+                    ClientBatchOutcome::CreateKeyPairCompleted(response),
+                    ClientBatchOutcome::Pending,
+                ),
+            )
         }
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
@@ -2090,6 +2090,18 @@ fn pending_outcome(
         result,
         asynchronous_correlation_value,
     })
+}
+
+fn pending_outcome_if_pending(
+    operation: ClientOperation,
+    result: &KmipOperationResult,
+    item: ResponseBatchItemView<'_>,
+) -> Result<Option<PendingOutcome>, ProtocolError> {
+    if result.status().raw() == RESULT_STATUS_PENDING {
+        pending_outcome(operation, result.clone(), item).map(Some)
+    } else {
+        Ok(None)
+    }
 }
 
 fn validate_follow_up_indicator(raw: Option<u32>) -> Result<(), ClientError> {
