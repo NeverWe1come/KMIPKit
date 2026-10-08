@@ -6,6 +6,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Condvar, Mutex as StdMutex, mpsc};
 use std::time::{Duration, Instant};
 
+use tokio::runtime::Builder;
 use tokio::sync::{Mutex as AsyncMutex, Semaphore, watch};
 
 use super::{ResolveFailure, Resolver, finish_lookup, wait_for_cancel};
@@ -451,4 +452,71 @@ async fn cancellation_wait_ends_when_its_sender_is_dropped() {
     tokio::time::timeout(PROMPT_RETURN_LIMIT, wait_for_cancel(&mut cancel_receiver))
         .await
         .expect("a closed cancellation channel ends its wait");
+}
+
+#[test]
+fn dropping_a_lookup_aborts_it_while_queued_on_the_only_blocking_thread() {
+    let runtime = Builder::new_current_thread()
+        .enable_all()
+        .max_blocking_threads(1)
+        .build()
+        .expect("test runtime should build");
+    let (blocking_gate, blocking_started) = LookupGate::new();
+    let blocker_gate = Arc::clone(&blocking_gate);
+    let lookup_starts = Arc::new(AtomicUsize::new(0));
+    let observed_starts = Arc::clone(&lookup_starts);
+    let governor = Arc::new(Semaphore::new(1));
+    let resolver = Resolver::with_lookup_and_governor(
+        move |_host, _port| {
+            observed_starts.fetch_add(1, Ordering::Relaxed);
+            Ok(vec![address(7, 5696)])
+        },
+        Arc::clone(&governor),
+    );
+
+    runtime.block_on(async move {
+        let blocker = tokio::task::spawn_blocking(move || blocker_gate.block_until_released());
+        blocking_started
+            .recv_timeout(TEST_DEADLINE)
+            .expect("the sole blocking thread is occupied");
+
+        let (_cancel_sender, cancel_receiver) = cancellation_channel();
+        let queued_resolver = resolver.clone();
+        let queued_lookup = tokio::spawn(async move {
+            queued_resolver
+                .lookup_candidates(
+                    "queued.example.test",
+                    5696,
+                    Instant::now() + TEST_DEADLINE,
+                    cancel_receiver,
+                )
+                .await
+        });
+        tokio::time::timeout(TEST_DEADLINE, async {
+            while governor.available_permits() != 0 {
+                tokio::time::sleep(Duration::from_millis(1)).await;
+            }
+        })
+        .await
+        .expect("queued resolver owns its governor permit");
+
+        queued_lookup.abort();
+        assert!(
+            queued_lookup
+                .await
+                .expect_err("lookup task was aborted")
+                .is_cancelled()
+        );
+        let permit_returned_before_blocker_release =
+            tokio::time::timeout(Duration::from_millis(250), wait_for_permit(&governor, 1))
+                .await
+                .is_ok();
+
+        blocking_gate.release();
+        blocker.await.expect("blocking gate exits after release");
+        wait_for_permit(&governor, 1).await;
+
+        assert!(permit_returned_before_blocker_release);
+        assert_eq!(lookup_starts.load(Ordering::Relaxed), 0);
+    });
 }
