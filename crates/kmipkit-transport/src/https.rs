@@ -50,9 +50,7 @@ use std::thread::JoinHandle;
 /// by Hyper, rustls, AWS-LC, the operating system, or other dependencies.
 pub struct HttpsTransport {
     configuration: TransportConfig,
-    host: String,
-    port: u16,
-    authority: String,
+    route: HttpsRoute,
     tls: crate::tls::TlsClientConfig,
     resolver: Resolver,
     worker: Option<ClientWorker>,
@@ -60,6 +58,30 @@ pub struct HttpsTransport {
     observer: Option<SecretBufferObserver>,
     #[cfg(test)]
     worker_spawner: Option<WorkerSpawnerForTest>,
+}
+
+// Keep endpoint routing and its origin-form target together. The target never
+// supplies the resolver authority or HTTP Host; TLS server-name selection
+// remains owned by the independently validated TLS configuration.
+#[derive(Clone)]
+struct HttpsRoute {
+    resolver_host: String,
+    port: u16,
+    authority: String,
+    target: String,
+}
+
+impl HttpsRoute {
+    fn from_configuration(configuration: &TransportConfig) -> Result<Self, TransportConfigError> {
+        let (resolver_host, port, authority) =
+            configuration.endpoint().https_connection_details()?;
+        Ok(Self {
+            resolver_host,
+            port,
+            authority,
+            target: configuration.target_uri().unwrap_or("/kmip").to_owned(),
+        })
+    }
 }
 
 #[cfg(test)]
@@ -77,13 +99,11 @@ impl HttpsTransport {
     /// Returns the fixed configuration error if the endpoint is not HTTPS or
     /// its TLS policy cannot be built.
     pub fn new(configuration: TransportConfig) -> Result<Self, TransportConfigError> {
-        let (host, port, authority) = configuration.endpoint().https_connection_details()?;
+        let route = HttpsRoute::from_configuration(&configuration)?;
         let tls = crate::tls::build_client_config(&configuration)?;
         Ok(Self {
             configuration,
-            host,
-            port,
-            authority,
+            route,
             tls,
             resolver: Resolver::system(),
             worker: None,
@@ -171,14 +191,7 @@ impl HttpsTransport {
             )
         })?;
 
-        let host = self.host.clone();
-        let port = self.port;
-        let authority = self.authority.clone();
-        let target = self
-            .configuration
-            .target_uri()
-            .unwrap_or("/kmip")
-            .to_owned();
+        let route = self.route.clone();
         let resolver = self.resolver.clone();
         let client_config = Arc::clone(self.tls.rustls_config_arc());
         let server_name = self.tls.server_name().clone();
@@ -194,10 +207,7 @@ impl HttpsTransport {
             .exchange(total_deadline, move |control| async move {
                 exchange_on_worker(
                     request_owner,
-                    host,
-                    port,
-                    authority,
-                    target,
+                    route,
                     resolver,
                     client_config,
                     server_name,
@@ -231,20 +241,12 @@ pub(crate) fn new_for_test_with_resolver(
 pub(crate) fn build_request_for_test(
     configuration: &TransportConfig,
     request: &[u8],
-) -> Result<Request<Bytes>, hyper::http::Error> {
-    let (_, _, authority) = configuration
-        .endpoint()
-        .https_connection_details()
-        .expect("the request-builder test supplies an HTTPS endpoint");
+) -> Result<Request<impl Body<Data = Bytes, Error = Infallible>>, hyper::http::Error> {
+    let route = HttpsRoute::from_configuration(configuration)
+        .expect("the request-builder test supplies a validated HTTPS endpoint");
     let owner = SecretBuffer::try_copy_from_slice(request)
         .expect("the bounded test request owner allocates");
-    let body = Bytes::from_owner(RequestBodyOwner(owner));
-    build_http_request(
-        &authority,
-        configuration.target_uri().unwrap_or("/kmip"),
-        body.len() as u64,
-        body,
-    )
+    build_http_request(&route, owner)
 }
 
 impl Transport for HttpsTransport {
@@ -260,10 +262,7 @@ impl Transport for HttpsTransport {
 #[allow(clippy::too_many_arguments)]
 async fn exchange_on_worker(
     request_owner: SecretBuffer,
-    host: String,
-    port: u16,
-    authority: String,
-    target: String,
+    route: HttpsRoute,
     resolver: Resolver,
     client_config: Arc<rustls::ClientConfig>,
     server_name: ServerName<'static>,
@@ -283,8 +282,8 @@ async fn exchange_on_worker(
         total_deadline,
     );
     let tls_stream = connect_and_handshake(
-        &host,
-        port,
+        &route.resolver_host,
+        route.port,
         resolver,
         client_config,
         server_name,
@@ -317,17 +316,13 @@ async fn exchange_on_worker(
     let driver = tokio::spawn(connection);
 
     let result = async {
-        let request_len = request_owner.as_slice().len();
-        let request_body_bytes = Bytes::from_owner(RequestBodyOwner(request_owner));
-        let request_body = RequestBody::new(request_body_bytes, request_len as u64);
-        let request = build_http_request(&authority, &target, request_len as u64, request_body)
-            .map_err(|_| {
-                safe_error(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    io::Error::other("HTTP request construction failed"),
-                )
-            })?;
+        let request = build_http_request(&route, request_owner).map_err(|_| {
+            safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("HTTP request construction failed"),
+            )
+        })?;
         let mut request = Some(request);
         let response = send_request_when_ready(
             &mut sender,
@@ -500,9 +495,10 @@ struct RequestBody {
 }
 
 impl RequestBody {
-    fn new(data: Bytes, length: u64) -> Self {
+    fn from_owner(owner: SecretBuffer) -> Self {
+        let length = owner.as_slice().len() as u64;
         Self {
-            data: Some(data),
+            data: Some(Bytes::from_owner(RequestBodyOwner(owner))),
             length,
         }
     }
@@ -528,16 +524,16 @@ impl Body for RequestBody {
     }
 }
 
-fn build_http_request<B>(
-    authority: &str,
-    target: &str,
-    body_length: u64,
-    body: B,
-) -> Result<Request<B>, hyper::http::Error> {
+fn build_http_request(
+    route: &HttpsRoute,
+    request_owner: SecretBuffer,
+) -> Result<Request<RequestBody>, hyper::http::Error> {
+    let body = RequestBody::from_owner(request_owner);
+    let body_length = body.length;
     Request::builder()
         .method(Method::POST)
-        .uri(target)
-        .header(HOST, authority)
+        .uri(&route.target)
+        .header(HOST, &route.authority)
         .header(CONTENT_TYPE, "application/octet-stream")
         .header(CONTENT_LENGTH, body_length.to_string())
         .header(CACHE_CONTROL, "no-cache")
