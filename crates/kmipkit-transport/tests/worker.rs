@@ -50,6 +50,19 @@ fn constructing_worker_does_not_start_network_activity() {
 }
 
 #[test]
+fn worker_start_without_a_deadline_uses_the_default_startup_path() {
+    let worker = ClientWorker::start_until(None).expect("an unbounded worker starts normally");
+
+    worker
+        .close(Duration::from_secs(1))
+        .expect("the unused worker closes promptly");
+    assert_eq!(
+        WorkerStartError::Deadline.to_string(),
+        "transport worker missed the exchange deadline"
+    );
+}
+
+#[test]
 fn worker_serializes_one_in_flight_exchange_and_one_queued_exchange() {
     let worker = Arc::new(ClientWorker::start().expect("worker thread should start"));
     let (first_started_tx, first_started_rx) = mpsc::channel();

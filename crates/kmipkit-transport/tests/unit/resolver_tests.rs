@@ -11,7 +11,7 @@ use tokio::sync::{Semaphore, watch};
 
 use super::{
     Lookup, ResolveFailure, Resolver, ResolverJobState, collect_candidates, finish_lookup,
-    run_lookup, wait_for_cancel,
+    lock_job_state, run_lookup, wait_for_cancel, wait_until,
 };
 
 const TEST_DEADLINE: Duration = Duration::from_secs(2);
@@ -595,4 +595,26 @@ fn a_queued_job_released_by_its_guard_never_calls_the_resolver() {
     );
     assert_eq!(calls.load(Ordering::Relaxed), 0);
     assert!(super::lock_job_state(&state).started);
+}
+
+#[test]
+fn poisoned_resolver_state_lock_recovers_the_job_state() {
+    let state = StdMutex::new(ResolverJobState {
+        started: false,
+        permit: None,
+    });
+    let poisoned = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _guard = state.lock().expect("the resolver state starts unlocked");
+        panic!("inject mutex poisoning for the recovery test");
+    }));
+    assert!(poisoned.is_err());
+
+    assert!(!lock_job_state(&state).started);
+}
+
+#[tokio::test]
+async fn unbounded_resolver_deadline_wait_remains_pending() {
+    let result = tokio::time::timeout(Duration::from_millis(1), wait_until(None)).await;
+
+    assert!(result.is_err(), "an unbounded deadline must not fire");
 }

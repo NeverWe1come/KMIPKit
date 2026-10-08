@@ -234,6 +234,12 @@ mod secret;
 #[allow(dead_code)]
 mod tls;
 // T010 introduces the private timeout seam before later adapter tasks consume it.
+#[cfg(test)]
+#[path = "../tests/unit/https_transport_tests.rs"]
+mod https_transport_tests;
+#[cfg(test)]
+#[path = "../tests/unit/raw_tls_tests.rs"]
+mod raw_tls_tests;
 #[allow(dead_code)]
 mod timeout;
 #[cfg(test)]
@@ -245,6 +251,17 @@ mod tls_policy_tests;
 #[cfg(test)]
 #[path = "../tests/unit/tls_safety_tests.rs"]
 mod tls_safety_tests;
+#[cfg(test)]
+#[path = "../tests/unit/transport_test_support.rs"]
+mod transport_test_support;
+// cargo-llvm-cov omits coverage from standalone integration-test binaries.
+// These canonical public-API cases also run in the library test target so
+// their production-source hits contribute to the aggregate gate.
+#[cfg(test)]
+extern crate self as kmipkit_transport;
+#[cfg(test)]
+#[path = "../tests/tls_config.rs"]
+mod tls_config_coverage_tests;
 // The resolver precedes the production adapters that consume it in later tasks.
 #[allow(dead_code)]
 mod resolver;

@@ -16,6 +16,7 @@ use kmipkit_protocol::{
 use kmipkit_transport::Transport;
 use kmipkit_transport::{
     HttpsTransport, RawTlsTransport, RequestDeliveryState, RequestOptions, TransportConfig,
+    TransportConfigError,
 };
 use kmipkit_ttlv::codec::{CodecLimits, DecodeError, decode_with_limits};
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
@@ -678,28 +679,20 @@ enum ClientTransport {
     Test(TestTransport),
 }
 
+#[cfg(test)]
+#[path = "../tests/unit/production_transport_selection_tests.rs"]
+mod production_transport_selection_tests;
+
 impl ClientTransport {
     fn from_configuration(configuration: TransportConfig) -> Result<Self, ClientError> {
         if configuration.target_uri().is_some() {
             HttpsTransport::new(configuration)
                 .map(Self::Https)
-                .map_err(|error| {
-                    ClientError::validation(
-                        ClientCauseCategory::InvalidInput,
-                        RequestDeliveryState::NotSent,
-                        error,
-                    )
-                })
+                .map_err(transport_configuration_error)
         } else {
             RawTlsTransport::new(configuration)
                 .map(Self::RawTls)
-                .map_err(|error| {
-                    ClientError::validation(
-                        ClientCauseCategory::InvalidInput,
-                        RequestDeliveryState::NotSent,
-                        error,
-                    )
-                })
+                .map_err(transport_configuration_error)
         }
     }
 
@@ -722,6 +715,14 @@ impl ClientTransport {
             }
         }
     }
+}
+
+fn transport_configuration_error(error: TransportConfigError) -> ClientError {
+    ClientError::validation(
+        ClientCauseCategory::InvalidInput,
+        RequestDeliveryState::NotSent,
+        error,
+    )
 }
 
 impl Client {

@@ -25,6 +25,11 @@ use crate::{
     RequestDeliveryState, RequestOptions, TimeoutLimit, TimeoutPolicy, Transport,
     TransportCauseCategory, TransportConfig, TransportError, TransportResponse,
 };
+
+#[cfg(test)]
+#[path = "../tests/unit/raw_tls_error_mapping_tests.rs"]
+mod error_mapping_tests;
+
 #[cfg(test)]
 use std::thread::JoinHandle;
 #[cfg(test)]
@@ -641,7 +646,7 @@ impl CandidateEventObserver {
         self.lock_state().events.clone()
     }
 
-    fn record_handshake_result(&self, address: SocketAddr, succeeded: bool) {
+    pub(crate) fn record_handshake_result(&self, address: SocketAddr, succeeded: bool) {
         let mut state = self.lock_state();
         state.selected_candidate = succeeded.then_some(address);
         state.events.push(if succeeded {
@@ -651,7 +656,7 @@ impl CandidateEventObserver {
         });
     }
 
-    fn record_request_dispatch_for_selected_candidate(&self) {
+    pub(crate) fn record_request_dispatch_for_selected_candidate(&self) {
         let mut state = self.lock_state();
         if let Some(address) = state.selected_candidate {
             state.events.push(CandidateEvent::RequestDispatch(address));
@@ -679,7 +684,7 @@ impl ResponseAllocationObserver {
         Self::default()
     }
 
-    fn record_allocation_attempt(&self) {
+    pub(crate) fn record_allocation_attempt(&self) {
         self.allocation_count
             .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
     }
