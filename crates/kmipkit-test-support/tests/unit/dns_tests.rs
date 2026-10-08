@@ -4,10 +4,17 @@ use super::{
 use std::collections::BTreeMap;
 use std::io::{self, Read, Write};
 use std::net::{IpAddr, Ipv4Addr, TcpStream, UdpSocket};
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use std::time::Duration;
 
 static NETWORK_FIXTURE_LOCK: Mutex<()> = Mutex::new(());
+
+fn lock_network_fixture() -> MutexGuard<'static, ()> {
+    match NETWORK_FIXTURE_LOCK.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    }
+}
 
 #[test]
 fn rejects_duplicate_names_after_case_and_trailing_dot_normalization() {
@@ -112,7 +119,9 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
 
     assert_eq!(attempts, 2);
     assert_eq!(
-        udp_socket.local_addr().expect("UDP socket has a local address"),
+        udp_socket
+            .local_addr()
+            .expect("UDP socket has a local address"),
         tcp_listener
             .local_addr()
             .expect("TCP listener has the paired local address")
@@ -121,9 +130,7 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
 
 #[test]
 fn loopback_udp_fixture_answers_tracks_nxdomain_and_drops_selected_questions() {
-    let _guard = NETWORK_FIXTURE_LOCK
-        .lock()
-        .expect("DNS fixture tests share one port-pair allocator");
+    let _guard = lock_network_fixture();
     let fixture = LocalDnsFixture::bind(BTreeMap::from([(
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
@@ -176,9 +183,7 @@ fn loopback_udp_fixture_answers_tracks_nxdomain_and_drops_selected_questions() {
 
 #[test]
 fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
-    let _guard = NETWORK_FIXTURE_LOCK
-        .lock()
-        .expect("DNS fixture tests share one port-pair allocator");
+    let _guard = lock_network_fixture();
     let fixture = LocalDnsFixture::bind(BTreeMap::from([(
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
