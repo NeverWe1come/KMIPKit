@@ -211,7 +211,7 @@ fn bind_local_dns_sockets_with(
         let local_addr = socket.local_addr()?;
         match bind_tcp(local_addr) {
             Ok(tcp_listener) => return Ok((socket, tcp_listener)),
-            Err(error) if is_retryable_socket_pair_bind_error(&error) => {
+            Err(error) if is_retryable_socket_pair_bind_error(error.kind()) => {
                 attempts_remaining -= 1;
                 if attempts_remaining == 0 {
                     return Err(error);
@@ -222,9 +222,9 @@ fn bind_local_dns_sockets_with(
     }
 }
 
-fn is_retryable_socket_pair_bind_error(error: &io::Error) -> bool {
+fn is_retryable_socket_pair_bind_error(kind: io::ErrorKind) -> bool {
     matches!(
-        error.kind(),
+        kind,
         io::ErrorKind::AddrInUse
             | io::ErrorKind::AddrNotAvailable
             | io::ErrorKind::PermissionDenied
