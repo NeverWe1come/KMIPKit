@@ -1,5 +1,9 @@
 # Research: Server-Generated Object Creation
 
+## Implementation acceptance evidence
+
+The human maintainer accepted KMIPKIT-0014 by merging [PR #53](https://github.com/NeverWe1come/KMIPKit/pull/53) into `release/1.0.0` on 2026-10-08 (merge commit `a2572084d3d6f42019bed13234598e6d77478796`). The source and catalog corrections were merged in [PR #57](https://github.com/NeverWe1come/KMIPKit/pull/57) on 2026-10-08 (merge commit `55c0c0cc42a6422cee72183a3532fc1e169f297c`). Both commits are ancestors of implementation base `0e50e4b9859532cf7a0832deb2d510a3af4563de`. GitHub metadata reports no review decision or submitted reviews for those PRs; this record treats the maintainer merge as the acceptance event and does not claim a separate review.
+
 ## Decision 1 — Use the pinned OASIS v2.1 operation tables as the schema
 
 **Decision**: Implement payloads from Specification §§6.1.8–6.1.10 and Tables 186–195. Use §§5.1–5.4 and Tables 157–160 for operation attribute groups and direct §4 Object Attribute items. Use §4.60/Table 150 only for the distinct Vendor Attribute structure. Shared message/result behavior follows the applicable shared sections.
