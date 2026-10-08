@@ -95,6 +95,26 @@ fn parser_rejects_unsupported_types_and_truncated_labels() {
 }
 
 #[test]
+fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
+    let mut attempts = 0;
+    let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(|address| {
+        attempts += 1;
+        if attempts == 1 {
+            Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "simulated Windows excluded TCP port",
+            ))
+        } else {
+            std::net::TcpListener::bind(address)
+        }
+    })
+    .expect("a reserved ephemeral port should be retried");
+
+    assert_eq!(attempts, 2);
+    assert_eq!(udp_socket.local_addr(), tcp_listener.local_addr());
+}
+
+#[test]
 fn loopback_udp_fixture_answers_tracks_nxdomain_and_drops_selected_questions() {
     let _guard = NETWORK_FIXTURE_LOCK
         .lock()
