@@ -2,7 +2,8 @@
 
 ## Test source
 
-Red test commit: `3b1579840010d42181e8fb4fad9449fd7d4ff919`.
+Initial Red test commit: `3b1579840010d42181e8fb4fad9449fd7d4ff919`.
+Review-driven test correction commit: `0560662951a4e4df15938e5a6bc84b700ea9eaf3`.
 
 Added `crates/kmipkit-transport/tests/raw_tls.rs` and registered its explicit
 Cargo test target. The cases cover exact caller bytes, TLS 1.3 negotiation,
@@ -20,6 +21,14 @@ existing `SecretBufferObserver`; T026 must route it through the same request
 owner used by production exchange. This is private test wiring and does not
 add a public API. The request staging/zeroization assertions cannot pass until
 that production path and observer handoff exist.
+
+The review correction asserts `RequestDeliveryState::NotSent` for unknown CA,
+expired certificate, hostname mismatch, and caller CRL rejection. The peer
+fixture uses a nonblocking accept loop with a two-second monotonic deadline,
+a short poll interval, blocking accepted sockets with read/write timeouts
+before TLS, and a six-second operation deadline. It also asserts that the
+local peer accepted a connection before treating a handshake rejection as
+valid, so a pre-connect adapter error cannot satisfy these cases.
 
 ## Red evidence
 
