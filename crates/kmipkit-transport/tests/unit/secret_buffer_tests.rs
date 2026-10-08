@@ -50,6 +50,17 @@ impl Read for SplitKeyReader {
     }
 }
 
+struct OverreportingReader;
+
+impl Read for OverreportingReader {
+    fn read(&mut self, destination: &mut [u8]) -> io::Result<usize> {
+        if !destination.is_empty() {
+            destination[0] = 0xa7;
+        }
+        Ok(destination.len() + 1)
+    }
+}
+
 #[test]
 fn partially_read_private_key_is_zeroized_when_reader_fails() {
     const KEY_SENTINEL: &[u8] = b"private-key-read-error-sentinel";
@@ -117,4 +128,25 @@ fn key_buffer_growth_zeroizes_each_replaced_allocation_before_release() {
         observer.all_replaced_allocations_were_zero(),
         "every replaced allocation must be zeroized before release"
     );
+}
+
+#[test]
+fn empty_append_preserves_existing_secret_bytes() {
+    let mut owner = SecretBuffer::new(b"private-key".to_vec());
+
+    owner.append(&[]).expect("an empty append is a no-op");
+
+    assert_eq!(owner.as_slice(), b"private-key");
+}
+
+#[test]
+fn reader_cannot_overreport_initialized_secret_bytes() {
+    let observer = SecretBufferObserver::new(0);
+
+    let result =
+        SecretBuffer::read_from_with_observer_for_test(OverreportingReader, observer.clone(), 0);
+
+    assert!(result.is_err(), "an invalid Read count must be rejected");
+    assert_eq!(observer.initialized_len(), 0);
+    assert!(observer.initialized_range_was_zero());
 }

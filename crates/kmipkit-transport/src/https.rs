@@ -148,7 +148,6 @@ mod request_tests;
 #[cfg(test)]
 #[path = "../tests/unit/https_response_tests.rs"]
 mod response_tests;
-
 #[cfg(test)]
 type WorkerSpawnerForTest =
     Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
@@ -344,6 +343,18 @@ pub(crate) fn new_for_test_with_resolver(
         .expect("the HTTPS test contract supplies validated configuration");
     adapter.observer = observer;
     adapter.resolver = resolver;
+    adapter
+}
+
+#[cfg(test)]
+#[allow(dead_code)] // Source-including integration targets do not include the library test consumer.
+pub(crate) fn new_for_test_with_worker_spawner(
+    configuration: TransportConfig,
+    resolver: Resolver,
+    spawner: impl FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static,
+) -> HttpsTransport {
+    let mut adapter = new_for_test_with_resolver(configuration, None, resolver);
+    adapter.worker_spawner = Some(Box::new(spawner));
     adapter
 }
 

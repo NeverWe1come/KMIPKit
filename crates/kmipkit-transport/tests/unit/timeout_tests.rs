@@ -404,6 +404,24 @@ async fn reusable_deadline_io_rejects_idle_writes_and_vectored_writes() {
 }
 
 #[tokio::test]
+async fn reusable_control_rejects_overlap_and_invalid_connection_shutdown() {
+    let (mut io, control) =
+        DeadlineIo::new_reusable(ScriptIo::ready(), None, None, None, active_control());
+
+    control.finish_exchange();
+    control
+        .begin_exchange(None, None, None, active_control())
+        .expect("an idle connection accepts a new exchange");
+    let overlap = control
+        .begin_exchange(None, None, None, active_control())
+        .expect_err("a persistent connection accepts only one in-flight exchange");
+    assert_eq!(overlap.kind(), io::ErrorKind::Other);
+
+    control.invalidate();
+    assert!(shutdown(&mut io).await.is_err());
+}
+
+#[tokio::test]
 async fn read_and_write_phase_and_total_deadlines_expire() {
     let mut read_io = DeadlineIo::new(
         ScriptIo::new(Mode::Pending, Mode::Ready, Mode::Ready, Mode::Ready),

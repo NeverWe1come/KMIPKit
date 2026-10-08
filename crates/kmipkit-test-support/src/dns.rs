@@ -10,6 +10,7 @@ use std::time::Duration;
 
 const READ_POLL_INTERVAL: Duration = Duration::from_millis(25);
 const MAX_QUERY_BYTES: usize = 512;
+const MAX_SOCKET_PAIR_BIND_ATTEMPTS: usize = 32;
 // Resolver tests need answers larger than the production 16-candidate cap.
 const MAX_RECORDS_PER_NAME: usize = 32;
 
@@ -66,10 +67,9 @@ impl LocalDnsFixture {
     /// service thread cannot be created.
     pub fn bind(records: BTreeMap<String, Vec<IpAddr>>) -> io::Result<Self> {
         let records = validate_records(records)?;
-        let socket = UdpSocket::bind((Ipv4Addr::LOCALHOST, 0))?;
+        let (socket, tcp_listener) = bind_local_dns_sockets()?;
         socket.set_read_timeout(Some(READ_POLL_INTERVAL))?;
         let local_addr = socket.local_addr()?;
-        let tcp_listener = TcpListener::bind(local_addr)?;
         tcp_listener.set_nonblocking(true)?;
         let state = Arc::new(FixtureState {
             stop: AtomicBool::new(false),
@@ -196,6 +196,39 @@ impl LocalDnsFixture {
             .map(|metrics| metrics.active_by_connection.values().sum())
             .unwrap_or_default()
     }
+}
+
+fn bind_local_dns_sockets() -> io::Result<(UdpSocket, TcpListener)> {
+    bind_local_dns_sockets_with(TcpListener::bind)
+}
+
+fn bind_local_dns_sockets_with(
+    mut bind_tcp: impl FnMut(SocketAddr) -> io::Result<TcpListener>,
+) -> io::Result<(UdpSocket, TcpListener)> {
+    let mut attempts_remaining = MAX_SOCKET_PAIR_BIND_ATTEMPTS;
+    loop {
+        let socket = UdpSocket::bind((Ipv4Addr::LOCALHOST, 0))?;
+        let local_addr = socket.local_addr()?;
+        match bind_tcp(local_addr) {
+            Ok(tcp_listener) => return Ok((socket, tcp_listener)),
+            Err(error) if is_retryable_socket_pair_bind_error(error.kind()) => {
+                attempts_remaining -= 1;
+                if attempts_remaining == 0 {
+                    return Err(error);
+                }
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+
+fn is_retryable_socket_pair_bind_error(kind: io::ErrorKind) -> bool {
+    matches!(
+        kind,
+        io::ErrorKind::AddrInUse
+            | io::ErrorKind::AddrNotAvailable
+            | io::ErrorKind::PermissionDenied
+    )
 }
 
 impl Drop for LocalDnsFixture {
