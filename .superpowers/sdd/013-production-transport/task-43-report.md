@@ -62,3 +62,26 @@ behavior.
 No OS DNS packet cancellation behavior is asserted. The blocked resolver gates
 only the injected native lookup result; deadlines and cancellation remain
 responsible for preventing late candidates from reaching TCP/TLS.
+
+## Independent QA Review
+
+QA re-reviewed the correction commit `c230551` and approved T043 with no
+blocking findings. It verified the first-candidate TLS handshake is held while
+the second listener observes no TCP connection, and repeated that candidate
+ordering test five times successfully. Deadline tests assert both delivery
+state and `TransportCauseCategory::Timeout`. The production adapter test uses
+`HttpsTransport::new` and therefore the default `Resolver::system()` wiring;
+its endpoint is the literal IPv4 loopback address, so hostname resolution is
+covered separately by the resolver's `localhost` test rather than by this
+HTTPS adapter case. QA passed the six HTTPS cases, three `system_resolver`
+cases, the candidate-order test five times, formatting, and diff checks.
+
+## Independent Security Review
+
+Security review found no issue that invalidates T043 evidence. It confirmed
+that the HTTPS system-resolver case is loopback-only, uses an in-memory
+ephemeral PKI, and does not contact external DNS; peer and gate waits are
+bounded; key material is not printed or persisted; and request bodies prove
+that a timed-out call is not replayed. The audit manually inspected the three
+changed files after its automated inventory returned no rows. It reported zero
+security findings.
