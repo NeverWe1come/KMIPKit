@@ -3079,7 +3079,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-TEST-CN01-2-8 | TC-ASYNC-8-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-9 | TC-ASYNC-9-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-11 | TC-CERTATTR-1-21 | unavailable | — |
-| KMIPKIT-TEST-CN01-2-12 | TC-CREATE-SD-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-12 | TC-CREATE-SD-1-21 | available | specification/oasis/kmip-2.1/fixtures/TC-CREATE-SD-1-21.xml |
 | KMIPKIT-TEST-CN01-2-13 | TC-CS-CORVAL-1-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-14 | TC-DERIVEKEY-1-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-15 | TC-DERIVEKEY-2-21 | unavailable | — |
@@ -3183,7 +3183,8 @@ Every row summarizes audited candidate locators by their pinned source section. 
 
 | Fixture state | Count |
 | --- | --- |
-| unavailable | 203 |
+| available | 1 |
+| unavailable | 202 |
 
 ## Open discrepancies
 

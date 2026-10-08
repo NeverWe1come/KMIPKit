@@ -2,12 +2,12 @@
 
 ## Typed request models
 
-- CreateRequest names an explicit Object Type and contains ordered attribute and protection/storage inputs from Table 186.
+- CreateRequest names an explicit Object Type and contains the required outer Attributes structure from Table 186 plus optional protection/storage inputs. The Attributes structure may be empty under §5.1/Table 157.
 - CreateKeyPairRequest keeps Common Attributes, Private Key Attributes, and Public Key Attributes separate and exposes every Table 189 field.
-- CreateSplitKeyRequest exposes every Table 193 field and the optional source Unique Identifier.
+- CreateSplitKeyRequest exposes every Table 193 field and the optional source Unique Identifier; its required outer Attributes structure may be empty under §5.1/Table 157.
 - Each request has one closed ClientRequest variant and can be placed in an ordered ClientBatch. No API accepts raw bytes or caller-defined payload conversion.
-- AttributeEntry encodes as the Table 150 `Attribute` Structure: its required `Attribute Name` is preserved as an exact Text String, and its required `Attribute Value` is a generic TTLV `Item` retaining both the wire tag and typed value. Unknown/vendor names and tags remain representable without synthesizing a tag from a name; outbound validation continues to follow assigned-value and registered-extension policy. AttributeSet preserves repeated entries and wire order.
-- AttributeEntry's public Debug output and diagnostic context redact its TTLV value; value bytes are never formatted as contents.
+- AttributeSet contains ordered generic TTLV `Item`s for the direct §4 Object Attribute items defined by §§5.1–5.4, Tables 157–160. Each item retains its tag and typed value; repeated and unknown items survive without tag synthesis. The distinct §4.60 Vendor Attribute structure uses Table 150 and includes required Vendor Identification. Outbound validation continues to follow assigned-value and registered-extension policy.
+- Public Debug output and diagnostic context for attribute groups redact item contents; value bytes are never formatted as contents.
 
 ## Client entry points and outcomes
 
@@ -23,6 +23,7 @@
 
 - Locally invalid structures fail before dispatch and report NotSent.
 - Table 191 same-value constraints apply to Cryptographic Algorithm, Cryptographic Length, Cryptographic Domain Parameters, and Cryptographic Parameters. For each key, its key-specific value overrides Common Attributes; otherwise the common value applies. Both effective values absent remain unspecified; exactly one present or two differing values are rejected; equal effective values are accepted, including equal overrides that differ from Common Attributes.
+- For Create Split Key, Table 193 marks request Prime Field Size optional. Requiring an explicit caller value for Polynomial Sharing Prime Field is a KMIPKit client restriction; §2.8/Table 9 describes the Split Key object and is not cited as a request-field MUST.
 - The client preserves Common, Private, and Public groups exactly and never copies values across groups. Only the server applies the Table 189 union behavior.
 - The request preserves Common, Private, and Public attribute groups and repeated values. The server applies the Table 189 union rule.
 - Create Split Key preserves caller-requested attributes as request input. The client does not claim those are the effective attributes when an input key may take precedence.
