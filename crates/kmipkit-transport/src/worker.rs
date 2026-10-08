@@ -56,6 +56,8 @@ pub(crate) enum WorkerStartError {
     Thread,
     /// The worker's current-thread Tokio runtime could not be created.
     Runtime,
+    /// The worker did not become ready before the exchange deadline.
+    Deadline,
 }
 
 impl fmt::Display for WorkerStartError {
@@ -63,6 +65,7 @@ impl fmt::Display for WorkerStartError {
         match self {
             Self::Thread => formatter.write_str("transport worker thread could not start"),
             Self::Runtime => formatter.write_str("transport worker runtime could not start"),
+            Self::Deadline => formatter.write_str("transport worker missed the exchange deadline"),
         }
     }
 }
@@ -327,6 +330,27 @@ impl ClientWorker {
         })
     }
 
+    /// Starts a private runtime, bounding lazy readiness by an absolute deadline.
+    pub(crate) fn start_until(deadline: Option<Instant>) -> Result<Self, WorkerStartError> {
+        if deadline.is_none() {
+            return Self::start();
+        }
+        Self::start_with_factories_until(
+            deadline,
+            |task| {
+                thread::Builder::new()
+                    .name("kmipkit-transport".to_owned())
+                    .spawn(task)
+            },
+            || {
+                Builder::new_current_thread()
+                    .enable_all()
+                    .max_blocking_threads(1)
+                    .build()
+            },
+        )
+    }
+
     /// Starts the worker through an injectable thread spawner for deterministic failure tests.
     pub(crate) fn start_with_spawner(
         spawner: impl FnOnce(WorkerTask) -> io::Result<JoinHandle<()>>,
@@ -339,10 +363,35 @@ impl ClientWorker {
         })
     }
 
+    /// Test-only spawner variant for deterministic deadline-bound readiness tests.
+    #[cfg(test)]
+    pub(crate) fn start_with_spawner_until(
+        spawner: impl FnOnce(WorkerTask) -> io::Result<JoinHandle<()>>,
+        deadline: Option<Instant>,
+    ) -> Result<Self, WorkerStartError> {
+        Self::start_with_factories_until(deadline, spawner, || {
+            Builder::new_current_thread()
+                .enable_all()
+                .max_blocking_threads(1)
+                .build()
+        })
+    }
+
     fn start_with_factories(
         spawner: impl FnOnce(WorkerTask) -> io::Result<JoinHandle<()>>,
         runtime_factory: impl FnOnce() -> io::Result<Runtime> + Send + 'static,
     ) -> Result<Self, WorkerStartError> {
+        Self::start_with_factories_until(None, spawner, runtime_factory)
+    }
+
+    fn start_with_factories_until(
+        deadline: Option<Instant>,
+        spawner: impl FnOnce(WorkerTask) -> io::Result<JoinHandle<()>>,
+        runtime_factory: impl FnOnce() -> io::Result<Runtime> + Send + 'static,
+    ) -> Result<Self, WorkerStartError> {
+        if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
+            return Err(WorkerStartError::Deadline);
+        }
         let (command_sender, command_receiver) = async_mpsc::channel(COMMAND_CAPACITY);
         let (shutdown_sender, shutdown_receiver) = watch::channel(false);
         let (ready_sender, ready_receiver) = mpsc::sync_channel(1);
@@ -359,7 +408,9 @@ impl ClientWorker {
                     return;
                 };
 
-                let _ = ready_sender.send(Ok(()));
+                if ready_sender.send(Ok(())).is_err() {
+                    return;
+                }
 
                 run_runtime(
                     runtime,
@@ -377,7 +428,20 @@ impl ClientWorker {
         });
 
         let join = spawner(task).map_err(|_| WorkerStartError::Thread)?;
-        match ready_receiver.recv() {
+        let readiness = match deadline {
+            Some(deadline) => {
+                ready_receiver.recv_timeout(deadline.saturating_duration_since(Instant::now()))
+            }
+            None => ready_receiver
+                .recv()
+                .map_err(|_| mpsc::RecvTimeoutError::Disconnected),
+        };
+        match readiness {
+            Ok(Ok(())) if deadline.is_some_and(|deadline| Instant::now() >= deadline) => {
+                shutdown_sender.send_replace(true);
+                drop(join);
+                Err(WorkerStartError::Deadline)
+            }
             Ok(Ok(())) => Ok(Self {
                 commands: command_sender,
                 shutdown: shutdown_sender,
@@ -389,7 +453,12 @@ impl ClientWorker {
                 let _ = join.join();
                 Err(error)
             }
-            Err(_) => {
+            Err(mpsc::RecvTimeoutError::Timeout) => {
+                shutdown_sender.send_replace(true);
+                drop(join);
+                Err(WorkerStartError::Deadline)
+            }
+            Err(mpsc::RecvTimeoutError::Disconnected) => {
                 let _ = join.join();
                 Err(WorkerStartError::Runtime)
             }

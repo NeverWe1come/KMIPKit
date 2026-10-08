@@ -458,6 +458,7 @@ async fn phase_deadline_helpers_cover_absent_overflow_and_expired_deadlines() {
     assert_eq!(already_started.deadline, first_deadline);
     let mut huge = PhaseDeadline::new(Some(Duration::MAX));
     huge.begin_pending();
+    assert!(huge.invalid);
     assert_eq!(huge.deadline, None);
 
     let mut expired = PhaseDeadline::new(None);

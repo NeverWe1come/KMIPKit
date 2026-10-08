@@ -20,7 +20,7 @@ use crate::timeout::DeadlineIo;
 use crate::tls::{self, TlsClientConfig};
 #[cfg(test)]
 use crate::worker::WorkerTask;
-use crate::worker::{ClientWorker, ExchangeControl, WorkerError};
+use crate::worker::{ClientWorker, ExchangeControl, WorkerError, WorkerStartError};
 use crate::{
     RequestDeliveryState, RequestOptions, TimeoutLimit, TimeoutPolicy, Transport,
     TransportCauseCategory, TransportConfig, TransportError, TransportResponse,
@@ -138,20 +138,30 @@ impl RawTlsTransport {
             ));
         }
 
-        if self.worker.is_none() {
-            #[cfg(test)]
-            let worker = match self.worker_spawner.take() {
-                Some(spawner) => ClientWorker::start_with_spawner(spawner),
-                None => ClientWorker::start(),
-            };
-            #[cfg(not(test))]
-            let worker = ClientWorker::start();
-            self.worker = Some(worker.map_err(|error| {
+        let total_deadline =
+            validated_total_deadline(policy, exchange_started).map_err(|error| {
                 safe_error(
                     RequestDeliveryState::NotSent,
                     TransportCauseCategory::Other,
                     error,
                 )
+            })?;
+
+        if self.worker.is_none() {
+            #[cfg(test)]
+            let worker = match self.worker_spawner.take() {
+                Some(spawner) => ClientWorker::start_with_spawner_until(spawner, total_deadline),
+                None => ClientWorker::start_until(total_deadline),
+            };
+            #[cfg(not(test))]
+            let worker = ClientWorker::start_until(total_deadline);
+            self.worker = Some(worker.map_err(|error| match error {
+                WorkerStartError::Deadline => timeout_error(RequestDeliveryState::NotSent),
+                error => safe_error(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    error,
+                ),
             })?);
         }
 
@@ -171,13 +181,6 @@ impl RawTlsTransport {
             )
         })?;
 
-        let total_deadline = deadline_for(policy.total(), exchange_started).map_err(|error| {
-            safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                error,
-            )
-        })?;
         let host = self.host.clone();
         let port = self.port;
         let resolver = self.resolver.clone();
@@ -375,6 +378,13 @@ impl RawTlsConnection {
         #[cfg(test)] response_allocation_observer: Option<ResponseAllocationObserver>,
         #[cfg(test)] candidate_event_observer: Option<CandidateEventObserver>,
     ) -> Result<TransportResponse, TransportError> {
+        self.io.validate_phase_deadlines().map_err(|error| {
+            safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                error,
+            )
+        })?;
         if !self.control.commit_dispatch() {
             return Err(safe_error(
                 self.control.delivery_state(),
@@ -469,11 +479,27 @@ async fn connect_and_handshake(
         .await
         .map_err(|failure| resolve_error(failure, control.delivery_state()))?;
 
+    let connector = TlsConnector::from(client_config);
     let mut last_connect_error = None;
-    let mut connected_stream = None;
-    #[cfg(test)]
-    let mut connected_address = None;
+    let mut handshake_failed = false;
     for address in addresses.iter().copied() {
+        let stream = tokio::select! {
+            biased;
+            () = wait_for_cancel(&mut canceled) => {
+                return Err(canceled_error(control.delivery_state()));
+            }
+            () = wait_until(deadline) => {
+                return Err(timeout_error(control.delivery_state()));
+            }
+            result = TcpStream::connect(address) => match result {
+                Ok(stream) => stream,
+                Err(error) => {
+                    last_connect_error = Some(error);
+                    continue;
+                }
+            },
+        };
+
         let result = tokio::select! {
             biased;
             () = wait_for_cancel(&mut canceled) => {
@@ -482,49 +508,36 @@ async fn connect_and_handshake(
             () = wait_until(deadline) => {
                 return Err(timeout_error(control.delivery_state()));
             }
-            result = TcpStream::connect(address) => result,
+            result = connector.connect(server_name.clone(), stream) => result,
         };
-        match result {
-            Ok(stream) => {
-                #[cfg(test)]
-                {
-                    connected_address = Some(address);
-                }
-                connected_stream = Some(stream);
-                break;
+        if let Ok(tls_stream) = result {
+            #[cfg(test)]
+            if let Some(observer) = &candidate_event_observer {
+                observer.record_handshake_result(address, true);
             }
-            Err(error) => last_connect_error = Some(error),
+            return Ok(tls_stream);
+        }
+
+        handshake_failed = true;
+        #[cfg(test)]
+        if let Some(observer) = &candidate_event_observer {
+            observer.record_handshake_result(address, false);
         }
     }
-    let stream = connected_stream.ok_or_else(|| {
-        io_error(
+
+    if handshake_failed {
+        Err(safe_error(
+            control.delivery_state(),
+            TransportCauseCategory::Tls,
+            io::Error::other("TLS handshake failed"),
+        ))
+    } else {
+        Err(io_error(
             last_connect_error.unwrap_or_else(|| {
                 io::Error::new(io::ErrorKind::AddrNotAvailable, "no endpoint address")
             }),
             control.delivery_state(),
-        )
-    })?;
-
-    let connector = TlsConnector::from(client_config);
-    tokio::select! {
-        biased;
-        () = wait_for_cancel(&mut canceled) => Err(canceled_error(control.delivery_state())),
-        () = wait_until(deadline) => Err(timeout_error(control.delivery_state())),
-        result = connector.connect(server_name, stream) => {
-            #[cfg(test)]
-            if let (Some(observer), Some(address)) =
-                (&candidate_event_observer, connected_address)
-            {
-                observer.record_handshake_result(address, result.is_ok());
-            }
-            result.map_err(|_| {
-                safe_error(
-                    control.delivery_state(),
-                    TransportCauseCategory::Tls,
-                    io::Error::other("TLS handshake failed"),
-                )
-            })
-        },
+        ))
     }
 }
 
@@ -800,6 +813,17 @@ fn deadline_for(limit: TimeoutLimit, start: Instant) -> io::Result<Option<Instan
     }
 }
 
+fn validated_total_deadline(
+    policy: TimeoutPolicy,
+    exchange_started: Instant,
+) -> io::Result<Option<Instant>> {
+    let total_deadline = deadline_for(policy.total(), exchange_started)?;
+    let _ = deadline_for(policy.connect(), exchange_started)?;
+    let _ = deadline_for(policy.read(), exchange_started)?;
+    let _ = deadline_for(policy.write(), exchange_started)?;
+    Ok(total_deadline)
+}
+
 fn earlier_deadline(first: Option<Instant>, second: Option<Instant>) -> Option<Instant> {
     match (first, second) {
         (Some(first), Some(second)) => Some(first.min(second)),
@@ -855,10 +879,10 @@ fn worker_error(error: WorkerError) -> TransportError {
 }
 
 fn io_error(error: io::Error, state: RequestDeliveryState) -> TransportError {
-    let cause = if error.kind() == io::ErrorKind::TimedOut {
-        TransportCauseCategory::Timeout
-    } else {
-        TransportCauseCategory::Io
+    let cause = match error.kind() {
+        io::ErrorKind::TimedOut => TransportCauseCategory::Timeout,
+        io::ErrorKind::InvalidInput => TransportCauseCategory::Other,
+        _ => TransportCauseCategory::Io,
     };
     safe_error(state, cause, error)
 }

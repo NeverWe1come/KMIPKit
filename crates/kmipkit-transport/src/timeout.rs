@@ -44,6 +44,15 @@ impl<I> DeadlineIo<I> {
             control,
         }
     }
+
+    #[allow(dead_code)] // The raw TLS source-including target validates before dispatch.
+    pub(crate) fn validate_phase_deadlines(&self) -> io::Result<()> {
+        if self.read_deadline.invalid || self.write_deadline.invalid {
+            Err(invalid_deadline_io_error())
+        } else {
+            Ok(())
+        }
+    }
 }
 
 impl<I> HyperRead for DeadlineIo<I>
@@ -354,6 +363,7 @@ struct PhaseDeadline {
     inactivity: Option<Duration>,
     deadline: Option<Instant>,
     timer: Option<DeadlineTimer>,
+    invalid: bool,
 }
 
 // Keep the cached sleep paired with the deadline it was created for.
@@ -377,18 +387,25 @@ impl DeadlineTimer {
 
 impl PhaseDeadline {
     fn new(inactivity: Option<Duration>) -> Self {
+        let invalid =
+            inactivity.is_some_and(|duration| Instant::now().checked_add(duration).is_none());
         Self {
             inactivity,
             deadline: None,
             timer: None,
+            invalid,
         }
     }
 
     fn begin_pending(&mut self) {
         if self.deadline.is_none() {
-            self.deadline = self
-                .inactivity
-                .and_then(|duration| Instant::now().checked_add(duration));
+            self.deadline = self.inactivity.and_then(|duration| {
+                let deadline = Instant::now().checked_add(duration);
+                if deadline.is_none() {
+                    self.invalid = true;
+                }
+                deadline
+            });
         }
     }
 
@@ -426,6 +443,9 @@ fn poll_with_deadline<T>(
     cx: &mut Context<'_>,
     poll_io: impl FnOnce(&mut Context<'_>) -> Poll<io::Result<T>>,
 ) -> Poll<io::Result<T>> {
+    if phase_deadline.invalid {
+        return Poll::Ready(Err(invalid_deadline_io_error()));
+    }
     if phase_deadline.is_expired(total_deadline) {
         return Poll::Ready(Err(timeout_io_error()));
     }
@@ -434,6 +454,9 @@ fn poll_with_deadline<T>(
         Poll::Ready(result) => Poll::Ready(result),
         Poll::Pending => {
             phase_deadline.begin_pending();
+            if phase_deadline.invalid {
+                return Poll::Ready(Err(invalid_deadline_io_error()));
+            }
             if phase_deadline.poll_expiration(total_deadline, cx) {
                 Poll::Ready(Err(timeout_io_error()))
             } else {
@@ -453,6 +476,13 @@ fn earlier_deadline(first: Option<Instant>, second: Option<Instant>) -> Option<I
 
 fn timeout_io_error() -> io::Error {
     SafeIoFailure::DeadlineElapsed.into_io_error()
+}
+
+fn invalid_deadline_io_error() -> io::Error {
+    io::Error::new(
+        io::ErrorKind::InvalidInput,
+        "finite timeout exceeds clock range",
+    )
 }
 
 fn finalized_io_error() -> io::Error {
