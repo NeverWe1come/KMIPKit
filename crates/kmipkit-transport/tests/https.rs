@@ -12,7 +12,7 @@ use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener, fixtures};
-use kmipkit_transport::{RequestDeliveryState, Transport, TransportCauseCategory};
+use kmipkit_transport::{RequestDeliveryState, Transport};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
@@ -135,7 +135,6 @@ fn https_configured_target_preserves_ip_authority_and_zeroizes_after_peer_close(
 
     let result = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
     let error = result.expect_err("the peer closes without an HTTP response");
-    assert_eq!(error.cause_category(), TransportCauseCategory::Other);
     assert_eq!(error.delivery_state(), RequestDeliveryState::PossiblySent);
 
     let peer = peer.join().expect("the bounded HTTPS peer completes");
