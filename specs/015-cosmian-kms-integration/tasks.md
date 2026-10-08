@@ -27,4 +27,5 @@
 - [x] T012 Execute `cargo test -p kmipkit-client --test cosmian_kms -- --ignored`; record the initial failure, successful rerun, and image digest.
 - [x] T013 Diagnose the failed response as KMIPKit expecting the Request Message root tag on the response path; add regression coverage and correct it to require the OASIS Response Message tag. Do not weaken the live assertion.
 - [x] T014 Verify the focused raw-TLS and production-client suites and the live Cosmian test.
-- [ ] T015 Retain distinct Red, Green, and Refactor commits, then run the required quality and coverage checks before opening a draft PR.
+- [x] T015 Retain distinct Red, Green, and Refactor commits: `c74dbd1` (Red), `7094217` (Green), and `30c8fea` (Refactor).
+- [ ] T016 Run the required workspace quality and coverage checks before opening a draft PR.
