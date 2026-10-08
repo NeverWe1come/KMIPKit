@@ -50,6 +50,10 @@ mod discover_versions_tests;
 mod create_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/create_key_pair_tests.rs"]
+mod create_key_pair_tests;
+
+#[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]
 mod async_operation_fixtures;
 
