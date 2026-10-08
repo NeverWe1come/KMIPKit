@@ -107,8 +107,15 @@ that every replacement was zeroized before release.
 - Red test refinement commit: `f49f229c876ccf7953993b79936978ba6aa77f22`.
   The test-only reader seam now creates the observed owner with one byte of
   initial capacity; the reader fills that byte, then supplies the remaining
-  input. Observer additions report only replacement count and cumulative
-  zero-status; they never expose bytes.
+  input.
+- Observer assertion refinement commit: `ce9c42f80b435f5f702433b4ab22207b3d48f136`.
+  The test-only observer callback accepts a borrowed old initialized range,
+  checks whether all bytes are zero while the allocation is still live, and
+  records only count/status. Its status starts false and the test requires
+  both at least one event and an all-zero result, so no event cannot pass.
+  The current read path does not call this callback; Green must invoke it from
+  the controlled replacement helper after zeroing and before releasing the old
+  allocation. No key bytes are retained, exposed, or formatted.
 - Expected Red:
   `cargo test -p kmipkit-transport --lib secret::tests::key_buffer_growth_zeroizes_each_replaced_allocation_before_release --offline`
   exits 1 at the runtime assertion that the read owner must report a replaced
@@ -116,6 +123,8 @@ that every replacement was zeroized before release.
   or zeroization step. No production code changed in either Red commit.
 - `rustfmt --edition 2024 --check crates/kmipkit-transport/src/secret.rs` and
   `git diff --check` passed.
+- `cargo test -p kmipkit-transport --lib secret::tests::partially_read_private_key_is_zeroized_when_reader_fails --offline`:
+  1 passed, 0 failed.
 - Green correction and full verification remain pending review of this Red
   test. T022 is incomplete until production reads use explicit zeroizing
   growth and this regression passes.
