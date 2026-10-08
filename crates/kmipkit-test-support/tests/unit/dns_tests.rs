@@ -248,12 +248,16 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
         .write_all(&11_u16.to_be_bytes())
         .expect("short DNS frame header should be sent");
     let mut trailing = [0_u8; 1];
-    let closed = match client.read(&mut trailing) {
+    let read_result = client.read(&mut trailing);
+    let closed = match &read_result {
         Ok(0) => true,
         Err(error) if error.kind() == io::ErrorKind::ConnectionAborted => true,
         Ok(_) | Err(_) => false,
     };
-    assert!(closed, "fixture closes an invalid short frame");
+    assert!(
+        closed,
+        "fixture closes an invalid short frame; client read returned {read_result:?}"
+    );
 }
 
 fn fixture_query(record_type: u16) -> Vec<u8> {
