@@ -9,21 +9,56 @@ Every implementation location and test function named in the CSV was checked aga
 ## Applicability and open verification
 
 - The eight §5.3.1 records use the catalog's profile_conditional scope and are marked scoped_verified only for the selected HTTP/1.1 + TTLV behavior. The implementation does not claim full HTTPS Client profile support.
-- KMIPKIT-REQ-SPEC-10.1.2-001 remains deferred. The catalog review note says generic ordered-child preservation does not establish the order of every KMIP Structure; no structure-by-structure verification is linked here.
+- KMIPKIT-REQ-SPEC-10.1.2-001 remains deferred and is assigned to the Phase D typed operation-family specifications, with per-Structure assignments derived from the normative inventory. The catalog review note says generic ordered-child preservation does not establish the order of every KMIP Structure. Each applicable Structure needs an owner and structure-specific order tests before a global compliance claim.
 - KMIPKIT-REQ-SPEC-10.4-001-002 remains deferred. Existing raw-TLS and HTTPS tests exercise valid protected exchanges, but the current tree has no test that corrupts a TLS record and asserts rejection. A successful TLS handshake is not direct negative integrity evidence. T063 was added to tasks.md as a corrective verification gate; the CSV does not mark this requirement verified.
 - The catalog has no requirement records for the other TTLV sections cited by FR-007 (§§10.1.1, 10.1.3, 10.1.4, or 10.2). No IDs were invented; one-frame stream framing remains the KMIPKit project contract described by FR-007.
 
 ## Verification
 
-- T053 CSV schema, exact FR/catalog ID set, implementation path, and Rust test-symbol audit: PASS — 34 unique rows, 18/18 FRs, 16 expected catalog IDs, all referenced paths and symbols exist, and all eight §5.3.1 mappings are scoped_verified.
+- T053 CSV schema, exact FR/catalog ID set equality, implementation path, and Rust test-symbol audit: PASS — 34 unique rows, exact equality for 18 FR IDs and 16 normative catalog IDs, all referenced paths and symbols exist, and all eight §5.3.1 mappings are scoped_verified.
 - python tools/normative_catalog/validate.py: PASS — catalog valid, 4 sources, 1,411 clauses, 4,024 records.
 - python -m unittest tools.normative_catalog.tests.test_feature_traceability: PASS — 14 tests, 1 skipped. This existing suite validates other feature CSVs; the separate T053 audit above checked KMIPKIT-0013.
 - git diff --check: PASS (exit 0; only a Windows working-copy line-ending notice).
 - Runtime transport tests were not rerun for this documentation-only traceability task.
 
-T053 CSV structural/path/symbol audit command (run in PowerShell):
-    python -c "import csv,json,pathlib,re; root=pathlib.Path('.'); rows=list(csv.DictReader((root/'specification/compliance/requirements/KMIPKIT-0013.csv').open(encoding='utf-8-sig',newline=''))); spec=(root/'specs/013-production-transport/spec.md').read_text(encoding='utf-8'); cat=json.loads((root/'specification/catalog/kmip-2.1.json').read_text(encoding='utf-8')); fr={x['requirement_id'] for x in rows if x['requirement_id'].startswith('KMIPKIT-0013-FR-')}; expected={f'KMIPKIT-0013-FR-{n}' for n in re.findall(r'^\s*- \*\*FR-(\d{3})\*\*',spec,re.M)}; oasis={x['requirement_id'] for x in rows if x['requirement_kind']=='OASIS normative'}; catids={x['requirement_id'] for x in cat['requirements']}; impl=all((root/p).is_file() for x in rows for p in x['implementation_location'].split('; ')); tests=all((lambda q:(root/q[0]).is_file() and 'fn '+q[1]+'(' in (root/q[0]).read_text(encoding='utf-8'))(ref.split('::',1)) for x in rows for ref in x['test_ids'].split('; ')); profiles=[x for x in rows if x['requirement_id'].startswith('KMIPKIT-REQ-PROF-5.3.1-')]; assert len(rows)==34 and fr==expected and len(oasis)==16 and oasis<=catids and impl and tests and len(profiles)==8 and all(x['status']=='scoped_verified' for x in profiles); print('PASS: 34 rows; 18/18 FRs; 16 catalog IDs; every implementation path and test function exists; 8/8 selected profile mappings scoped')"
-Result: PASS — 34 rows; 18/18 FRs; 16 catalog IDs; every implementation path and test function exists; 8/8 selected profile mappings scoped.
+- T053 exact-set/path/symbol audit command (run in PowerShell):
+  ```powershell
+  @'
+  import csv, json, re
+  from pathlib import Path
+  root = Path('.')
+  rows = list(csv.DictReader((root / 'specification/compliance/requirements/KMIPKIT-0013.csv').open(encoding='utf-8-sig', newline='')))
+  expected_fr = {f'KMIPKIT-0013-FR-{n:03}' for n in range(1, 19)}
+  expected_oasis = {
+      'KMIPKIT-REQ-SPEC-10.1.2-001', 'KMIPKIT-REQ-SPEC-10.1.2-002-001', 'KMIPKIT-REQ-SPEC-10.1.2-002-002',
+      'KMIPKIT-REQ-SPEC-10.1.5-001-001', 'KMIPKIT-REQ-SPEC-10.1.5-001-002',
+      'KMIPKIT-REQ-SPEC-10.4-001-001', 'KMIPKIT-REQ-SPEC-10.4-001-002', 'KMIPKIT-REQ-SPEC-10.4-001-003',
+      'KMIPKIT-REQ-PROF-5.3.1-001', 'KMIPKIT-REQ-PROF-5.3.1-002', 'KMIPKIT-REQ-PROF-5.3.1-003', 'KMIPKIT-REQ-PROF-5.3.1-004',
+      'KMIPKIT-REQ-PROF-5.3.1-005', 'KMIPKIT-REQ-PROF-5.3.1-008', 'KMIPKIT-REQ-PROF-5.3.1-009', 'KMIPKIT-REQ-PROF-5.3.1-010',
+  }
+  fr = {r['requirement_id'] for r in rows if r['requirement_kind'] == 'project functional'}
+  oasis = {r['requirement_id'] for r in rows if r['requirement_kind'] == 'OASIS normative'}
+  catalog = json.loads((root / 'specification/catalog/kmip-2.1.json').read_text(encoding='utf-8'))
+  catalog_ids = {r['requirement_id'] for r in catalog['requirements']}
+  assert len(rows) == 34 and fr == expected_fr and oasis == expected_oasis and oasis <= catalog_ids
+  assert all((root / p).is_file() for r in rows for p in r['implementation_location'].split('; '))
+  for r in rows:
+      for ref in r['test_ids'].split('; '):
+          path, symbol = ref.split('::', 1)
+          source = (root / path).read_text(encoding='utf-8')
+          assert re.search(r'(?m)^\s*(?:async\s+)?fn\s+' + re.escape(symbol) + r'\s*\(', source), ref
+  profiles = [r for r in rows if r['requirement_id'].startswith('KMIPKIT-REQ-PROF-5.3.1-')]
+  assert len(profiles) == 8 and all(r['status'] == 'scoped_verified' for r in profiles)
+  print('PASS: 34 rows; exact 18 FR IDs and 16 catalog IDs; all implementation paths and 128 test symbols exist; 8/8 profile rows scoped')
+  '@ | python -
+  ```
+- Result: PASS — 34 rows; exact 18 FR IDs and 16 catalog IDs; every implementation path and 128 test symbols exist; 8/8 selected profile mappings scoped.
+
+## Review fix round 1
+
+- Assigned deferred structure-ordering requirement KMIPKIT-REQ-SPEC-10.1.2-001 to Phase D typed operation-family specifications, with per-Structure allocation from the normative inventory and structure-specific tests required before a global claim.
+- Replaced the count-and-membership audit with an explicit expected ID set and exact equality assertions for all 18 FRs and 16 OASIS records. The same command checks all 128 test symbols and implementation paths.
+- Independent review approved the mapping and raised only these follow-up/evidence issues. Controller review after the fix confirmed the explicit Phase D ownership and exact-set audit result; this round changes documentation and traceability only.
 ## Changed files
 
 - specification/compliance/requirements/KMIPKIT-0013.csv
