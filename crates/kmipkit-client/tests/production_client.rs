@@ -8,7 +8,9 @@
 //! The typed Discover Versions exchange follows OASIS KMIP Specification
 //! v2.1 §6.1.16, Tables 211–212. The TLS profile context is OASIS KMIP
 //! Profiles v2.1 Operating System Profile §5.3.1 items 3–4. Direct adapter
-//! tests use opaque TTLV frames and make no profile-conformance claim.
+//! tests use opaque TTLV frames and make no profile-conformance claim. The
+//! Message Extension structure follows OASIS KMIP Specification v2.1 §9.13,
+//! Table 418.
 
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, TcpListener};
@@ -16,16 +18,21 @@ use std::sync::Arc;
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
-use kmipkit_client::extension_registry::{ClientConfiguration, client_extension_registry};
+use kmipkit_client::extension_registry::{
+    ClientConfiguration, client_extension_registry, client_request_message_extension,
+    validate_extension_value,
+};
 use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientCauseCategory, ClientRequest, RequestOptions,
 };
+use kmipkit_protocol::extension;
 use kmipkit_protocol::{CancelRequest, PollRequest, ProcessRequest, QueryAsyncRequestsRequest};
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener};
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, HttpsTransport, PrivateKeyInput, RawTlsTransport,
     RequestDeliveryState, TimeoutLimit, TimeoutPolicy, TransportConfig, TrustSource,
 };
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
@@ -293,6 +300,99 @@ fn every_typed_operation_has_a_per_exchange_options_variant() {
 }
 
 #[test]
+fn production_client_rejects_foreign_extension_before_any_network_exchange() {
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let listener = LoopbackTcpListener::bind()
+        .expect("loopback listener binds")
+        .into_inner();
+    listener
+        .set_nonblocking(true)
+        .expect("listener switches to nonblocking mode");
+    let port = listener
+        .local_addr()
+        .expect("loopback port is available")
+        .port();
+    let source_configuration = extension_client_configuration();
+    let foreign_extension = registered_request_extension(&source_configuration);
+    let mut client = Client::new(
+        empty_client_configuration(),
+        transport_configuration(
+            &pki,
+            Endpoint::raw_tls("127.0.0.1", port),
+            TimeoutPolicy::default(),
+        ),
+    )
+    .expect("validated raw-TLS client construction succeeds");
+
+    let error = client
+        .execute_with_options(
+            ClientBatch::new(
+                ClientBatchItem::new(ClientRequest::discover_versions())
+                    .with_extension(foreign_extension),
+            ),
+            &kmipkit_ttlv::codec::CodecLimits::defaults(),
+            &RequestOptions::default(),
+        )
+        .expect_err("an extension from another client configuration is rejected");
+
+    assert_eq!(
+        error.cause_category(),
+        Some(ClientCauseCategory::InvalidInput)
+    );
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    let diagnostics = format!("{error}\n{error:?}");
+    for sentinel in [VENDOR_IDENTIFIER, EXTENSION_NAME, EXTENSION_PAYLOAD] {
+        assert!(!diagnostics.contains(sentinel));
+    }
+    assert!(matches!(listener.accept(), Err(error) if error.kind() == io::ErrorKind::WouldBlock));
+}
+
+#[test]
+fn production_client_preserves_same_configuration_extension_wire_bytes() {
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let listener = LoopbackTcpListener::bind().expect("loopback peer binds");
+    let port = listener.local_addr().port();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_configuration(&pki),
+        PeerProtocol::RawTtlv,
+        discover_versions_response(),
+    );
+    let client_configuration = extension_client_configuration();
+    let request_extension = registered_request_extension(&client_configuration);
+    let mut client = Client::new(
+        client_configuration,
+        transport_configuration(
+            &pki,
+            Endpoint::raw_tls("127.0.0.1", port),
+            TimeoutPolicy::default(),
+        ),
+    )
+    .expect("validated raw-TLS client construction succeeds");
+
+    let response = client
+        .execute_with_options(
+            ClientBatch::new(
+                ClientBatchItem::new(ClientRequest::discover_versions())
+                    .with_extension(request_extension),
+            ),
+            &kmipkit_ttlv::codec::CodecLimits::defaults(),
+            &RequestOptions::default(),
+        )
+        .expect("the same configuration's extension is valid for execution");
+
+    assert_eq!(response.len(), 1);
+    let request = peer.join().expect("the raw-TLS peer completes");
+    let expected_extension = request_message_extension_wire();
+    assert!(
+        request
+            .windows(expected_extension.len())
+            .any(|window| window == expected_extension),
+        "the registered extension's exact TTLV representation reaches the peer"
+    );
+}
+
+#[test]
 fn production_constructor_does_not_accept_a_caller_transport() {
     trybuild::TestCases::new().compile_fail("tests/ui/production_transport_injection.rs");
 }
@@ -301,6 +401,95 @@ fn empty_client_configuration() -> ClientConfiguration {
     let registry = client_extension_registry(Vec::new(), kmipkit_protocol::extension::defaults())
         .expect("an empty extension registry is valid");
     ClientConfiguration::new(registry)
+}
+
+const VENDOR_IDENTIFIER: &str = "extension.vendor.sentinel";
+const EXTENSION_NAME: &str = "registry.identity.sentinel";
+const EXTENSION_VERSION: &str = "1";
+const EXTENSION_PAYLOAD: &str = "request.payload.sentinel";
+const EXTENSION_DISCRIMINATOR_TAG: u32 = 0x0042_0173;
+
+fn extension_client_configuration() -> ClientConfiguration {
+    let identity =
+        extension::extension_identity(VENDOR_IDENTIFIER, EXTENSION_NAME, EXTENSION_VERSION)
+            .expect("extension identity is valid");
+    let compatibility = extension::compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+        .expect("extension is compatible with KMIP 2.1");
+    let tag = vendor_extension_tag(EXTENSION_DISCRIMINATOR_TAG);
+    let path = extension::ttlv_path(tag).expect("extension discriminator path is valid");
+    let discriminator =
+        extension::discriminator(path, Value::text_string(EXTENSION_PAYLOAD.to_owned()))
+            .expect("extension discriminator is a text value");
+    let schema = extension::structure(
+        vec![
+            extension::required(
+                tag,
+                extension::scalar(ItemType::TextString).expect("Text String schema is valid"),
+            )
+            .expect("required discriminator field is valid"),
+        ],
+        Vec::new(),
+        false,
+    )
+    .expect("extension schema is valid");
+    let definition =
+        extension::extension_definition(identity, compatibility, discriminator, schema)
+            .expect("extension definition is valid");
+    let information =
+        extension::extension_information("fixture").expect("extension metadata is valid");
+    let definition =
+        extension::with_information(definition, information).expect("extension metadata attaches");
+    let registry = client_extension_registry(vec![definition], extension::defaults())
+        .expect("single extension registry is valid");
+    ClientConfiguration::new(registry)
+}
+
+fn registered_request_extension(
+    configuration: &ClientConfiguration,
+) -> kmipkit_client::extension_registry::ClientRequestMessageExtension {
+    let mut payload = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                vendor_extension_tag(EXTENSION_DISCRIMINATOR_TAG),
+                Value::text_string(EXTENSION_PAYLOAD.to_owned()),
+            )
+            .expect("request discriminator model item is valid"),
+        )
+        .expect("request extension payload is valid");
+    let registered = validate_extension_value(
+        configuration.extension_registry(),
+        extension::extension_identity(VENDOR_IDENTIFIER, EXTENSION_NAME, EXTENSION_VERSION)
+            .expect("extension identity is valid"),
+        payload,
+        &kmipkit_ttlv::codec::CodecLimits::defaults(),
+    )
+    .expect("extension value matches its client's registry");
+    client_request_message_extension(registered, false)
+        .expect("validated extension can be attached to a request")
+}
+
+fn vendor_extension_tag(raw: u32) -> kmipkit_ttlv::Tag {
+    RawTag::new(raw)
+        .expect("test extension tag fits the raw tag representation")
+        .try_checked()
+        .expect("test extension tag uses the vendor allocation")
+}
+
+fn request_message_extension_wire() -> Vec<u8> {
+    let discriminator = ttlv_item(
+        EXTENSION_DISCRIMINATOR_TAG,
+        0x07,
+        EXTENSION_PAYLOAD.as_bytes(),
+    );
+    let vendor_extension = ttlv_item(0x0042_009C, 0x01, &discriminator);
+    let vendor = ttlv_item(0x0042_009D, 0x07, VENDOR_IDENTIFIER.as_bytes());
+    let criticality = ttlv_item(0x0042_0026, 0x06, &[0, 0, 0, 0, 0, 0, 0, 0]);
+    ttlv_item(
+        0x0042_0051,
+        0x01,
+        &[vendor, criticality, vendor_extension].concat(),
+    )
 }
 
 fn transport_configuration(
