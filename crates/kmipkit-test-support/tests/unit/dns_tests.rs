@@ -111,7 +111,12 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
     .expect("a reserved ephemeral port should be retried");
 
     assert_eq!(attempts, 2);
-    assert_eq!(udp_socket.local_addr(), tcp_listener.local_addr());
+    assert_eq!(
+        udp_socket.local_addr().expect("UDP socket has a local address"),
+        tcp_listener
+            .local_addr()
+            .expect("TCP listener has the paired local address")
+    );
 }
 
 #[test]

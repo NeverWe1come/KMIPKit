@@ -10,6 +10,7 @@ use std::time::Duration;
 
 const READ_POLL_INTERVAL: Duration = Duration::from_millis(25);
 const MAX_QUERY_BYTES: usize = 512;
+const MAX_SOCKET_PAIR_BIND_ATTEMPTS: usize = 32;
 // Resolver tests need answers larger than the production 16-candidate cap.
 const MAX_RECORDS_PER_NAME: usize = 32;
 
@@ -66,10 +67,9 @@ impl LocalDnsFixture {
     /// service thread cannot be created.
     pub fn bind(records: BTreeMap<String, Vec<IpAddr>>) -> io::Result<Self> {
         let records = validate_records(records)?;
-        let socket = UdpSocket::bind((Ipv4Addr::LOCALHOST, 0))?;
+        let (socket, tcp_listener) = bind_local_dns_sockets()?;
         socket.set_read_timeout(Some(READ_POLL_INTERVAL))?;
         let local_addr = socket.local_addr()?;
-        let tcp_listener = TcpListener::bind(local_addr)?;
         tcp_listener.set_nonblocking(true)?;
         let state = Arc::new(FixtureState {
             stop: AtomicBool::new(false),
@@ -195,6 +195,42 @@ impl LocalDnsFixture {
             .lock()
             .map(|metrics| metrics.active_by_connection.values().sum())
             .unwrap_or_default()
+    }
+}
+
+fn bind_local_dns_sockets() -> io::Result<(UdpSocket, TcpListener)> {
+    bind_local_dns_sockets_with(TcpListener::bind)
+}
+
+fn bind_local_dns_sockets_with(
+    mut bind_tcp: impl FnMut(SocketAddr) -> io::Result<TcpListener>,
+) -> io::Result<(UdpSocket, TcpListener)> {
+    let mut last_retryable_error = None;
+    for _ in 0..MAX_SOCKET_PAIR_BIND_ATTEMPTS {
+        let socket = UdpSocket::bind((Ipv4Addr::LOCALHOST, 0))?;
+        let local_addr = socket.local_addr()?;
+        match bind_tcp(local_addr) {
+            Ok(tcp_listener) => return Ok((socket, tcp_listener)),
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    io::ErrorKind::AddrInUse
+                        | io::ErrorKind::AddrNotAvailable
+                        | io::ErrorKind::PermissionDenied
+                ) =>
+            {
+                last_retryable_error = Some(error);
+            }
+            Err(error) => return Err(error),
+        }
+    }
+
+    if let Some(error) = last_retryable_error {
+        Err(error)
+    } else {
+        Err(io::Error::other(
+            "could not allocate a UDP/TCP DNS fixture port pair",
+        ))
     }
 }
 
