@@ -124,7 +124,11 @@ impl Resolver {
 }
 
 fn system_lookup(host: &str, port: u16) -> io::Result<Vec<SocketAddr>> {
-    (host, port).to_socket_addrs().map(Iterator::collect)
+    (host, port).to_socket_addrs().map(collect_candidates)
+}
+
+fn collect_candidates(addresses: impl Iterator<Item = SocketAddr>) -> Vec<SocketAddr> {
+    addresses.take(MAX_CANDIDATES).collect()
 }
 
 async fn wait_for_cancel(canceled: &mut watch::Receiver<bool>) {
@@ -228,10 +232,8 @@ fn finish_lookup_until(
         return Err(ResolveFailure::Cancelled);
     }
 
-    let candidates = addresses
-        .into_iter()
-        .take(MAX_CANDIDATES)
-        .collect::<Vec<_>>();
+    let mut candidates = addresses;
+    candidates.truncate(MAX_CANDIDATES);
     if candidates.is_empty() {
         return Err(ResolveFailure::Lookup);
     }
