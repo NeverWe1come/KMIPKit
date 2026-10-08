@@ -71,7 +71,7 @@ class ImmutableSourceGateTests(unittest.TestCase):
         commands = [call.args[0] for call in run.call_args_list]
         diff_commands = [command for command in commands if len(command) > 1 and command[1] == "diff"]
         self.assertEqual(len(diff_commands), 2)
-        self.assertTrue(all("--name-only" in command and "-z" in command for command in diff_commands))
+        self.assertTrue(all("--name-status" in command and "-z" in command for command in diff_commands))
         self.assertFalse(any(command[1:2] == ["ls-files"] for command in commands))
 
     def test_rejects_missing_or_non_commit_base_sha(self) -> None:

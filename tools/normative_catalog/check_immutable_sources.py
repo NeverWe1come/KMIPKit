@@ -37,20 +37,49 @@ def _git(root: Path, *arguments: str) -> bytes:
     return result.stdout
 
 
-def _changed_paths(root: Path, base_sha: str, *, staged: bool) -> set[str]:
-    """Return NUL-delimited changed OASIS paths relative to ``base_sha``."""
+def _changed_paths(root: Path, base_sha: str, *, staged: bool) -> dict[str, set[str]]:
+    """Return NUL-delimited changed OASIS paths and statuses relative to ``base_sha``."""
     arguments = ["diff"]
     if staged:
         arguments.append("--cached")
     output = _git(
         root,
         *arguments,
-        "--name-only",
+        "--name-status",
         "-z",
         "--no-renames",
         base_sha,
         "--",
         OASIS_ROOT,
+    )
+    fields = output.split(b"\0")
+    if fields and not fields[-1]:
+        fields.pop()
+    if len(fields) % 2:
+        raise ImmutableSourceError("Git returned a malformed changed-path listing")
+    changed: dict[str, set[str]] = {}
+    for index in range(0, len(fields), 2):
+        try:
+            status = fields[index].decode("ascii")
+        except UnicodeDecodeError as error:
+            raise ImmutableSourceError("Git returned an invalid changed-path status") from error
+        path = os.fsdecode(fields[index + 1])
+        changed.setdefault(path, set()).add(status)
+    return changed
+
+
+def _base_inventory_paths(root: Path, base_sha: str) -> set[str]:
+    """Return project-authored inventory files present in the exact base commit."""
+    output = _git(
+        root,
+        "ls-tree",
+        "--full-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        base_sha,
+        "--",
+        *sorted(PROJECT_INVENTORY_PATHS),
     )
     return {os.fsdecode(path) for path in output.split(b"\0") if path}
 
@@ -114,7 +143,7 @@ def _untracked_fixture_count(root: Path) -> tuple[bool, int]:
 
 
 def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]:
-    """Protect upstream sources while permitting project inventories and new fixtures."""
+    """Protect upstream sources while permitting tracked inventory edits and new fixtures."""
     root = repo_root.resolve(strict=True)
     if re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", base_sha) is None:
         raise ImmutableSourceError("base must be a full lowercase Git commit SHA")
@@ -126,17 +155,24 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
     if resolved != base_sha:
         raise ImmutableSourceError("base SHA does not resolve to that exact commit")
 
-    changed_paths = _changed_paths(root, base_sha, staged=False)
-    changed_paths.update(_changed_paths(root, base_sha, staged=True))
+    changed_statuses = _changed_paths(root, base_sha, staged=False)
+    for path, statuses in _changed_paths(root, base_sha, staged=True).items():
+        changed_statuses.setdefault(path, set()).update(statuses)
     existing_fixture_paths = _base_fixture_paths(root, base_sha)
+    existing_inventory_paths = _base_inventory_paths(root, base_sha)
     unsupported_paths = {
         path
-        for path in changed_paths
+        for path, statuses in changed_statuses.items()
         if path.startswith(UPSTREAM_ROOT)
         or (
-            path not in PROJECT_INVENTORY_PATHS
-            and not (path.startswith(FIXTURE_ROOT) and path not in existing_fixture_paths)
+            path in PROJECT_INVENTORY_PATHS
+            and (path not in existing_inventory_paths or statuses != {"M"})
         )
+        or (
+            path.startswith(FIXTURE_ROOT)
+            and (path in existing_fixture_paths or "A" not in statuses or not statuses <= {"A", "M"})
+        )
+        or (path not in PROJECT_INVENTORY_PATHS and not path.startswith(FIXTURE_ROOT))
     }
     has_unsupported_untracked, untracked_fixture_count = _untracked_fixture_count(root)
     if unsupported_paths or has_unsupported_untracked:
@@ -145,7 +181,7 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
         )
     return {
         "base_sha": base_sha,
-        "changed_path_count": len(changed_paths) + untracked_fixture_count,
+        "changed_path_count": len(changed_statuses) + untracked_fixture_count,
     }
 
 
