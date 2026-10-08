@@ -148,7 +148,7 @@ async fn shared_governor_caps_active_resolver_jobs_at_thirty_two() {
     let (started_sender, started_receiver) = mpsc::sync_channel(32);
     let gate = Arc::new(LookupGate {
         started: started_sender,
-        released: (Mutex::new(false), Condvar::new()),
+        released: (StdMutex::new(false), Condvar::new()),
     });
     let system_resolver = Resolver::system();
     let governor = Arc::clone(system_resolver.governor());
