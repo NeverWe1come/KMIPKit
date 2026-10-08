@@ -128,9 +128,9 @@ error[E0432]: unresolved import `super::collect_candidates`
 ```
 
 `rustfmt --edition 2024 --check crates/kmipkit-transport/src/resolver_tests.rs`
-and `git diff --check` passed. Green must add this exact helper to the
-production collection path in `system_lookup`, so the regression does not
-exercise a separate test model.
+and `git diff --check` passed. T026b added this exact helper to the production
+collection path in `system_lookup`, so the regression exercises no separate
+test model.
 
 ## T026b Green — collect only retained candidates
 
@@ -151,3 +151,30 @@ Verification after Green:
 | `cargo test -p kmipkit-transport --test raw_tls --offline` | 57 passed, 0 failed |
 | `rustfmt --edition 2024 --check crates/kmipkit-transport/src/resolver.rs` | passed |
 | `git diff --check` | passed |
+
+## T027 Refactor — one-shot raw TLS connection owner
+
+Refactor source commit: `f6055822094d6c660d4b2e1efb6415b4e67c128c`.
+
+Moved the post-handshake request/response lifecycle into a consuming private
+`RawTlsConnection`. It owns the `DeadlineIo` stream and matching
+`ExchangeControl` for exactly one exchange. The method commits dispatch,
+writes and flushes the request, reads and bounds one response frame, and then
+consumes the owner; its stream therefore drops on success and every error
+return. This keeps delivery-state error mapping adjacent to the stream that
+provides that evidence. Wire bytes, TLS policy, response limits, and delivery
+semantics are unchanged.
+
+Verification after Refactor:
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-transport --test raw_tls --offline` | 57 passed, 0 failed |
+| `cargo test -p kmipkit-transport --all-targets --all-features --offline` | 242 passed, 0 failed across 12 targets |
+| `cargo clippy -p kmipkit-transport --all-targets --all-features --offline -- -D warnings` | passed |
+| `cargo fmt --all -- --check` | passed |
+| `git diff --check` | passed |
+
+The full suite includes both T021 redaction targets (9 and 22 tests), the
+T026a iterator regression, and T025's six raw TLS contract cases. No
+cross-platform run was performed in this correction cycle.
