@@ -190,8 +190,16 @@ impl RawTlsTransport {
         let response_allocation_observer = self.response_allocation_observer.clone();
         #[cfg(test)]
         let candidate_event_observer = self.candidate_event_observer.clone();
-        let result = self.worker.as_ref().map(|worker| {
-            worker.exchange(total_deadline, move |control| async move {
+        let worker = self.worker.as_ref().ok_or_else(|| {
+            safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("transport worker is unavailable"),
+            )
+        })?;
+
+        worker
+            .exchange(total_deadline, move |control| async move {
                 exchange_on_worker(
                     request_owner,
                     host,
@@ -210,17 +218,7 @@ impl RawTlsTransport {
                 )
                 .await
             })
-        });
-
-        match result {
-            Some(Ok(response)) => Ok(response),
-            Some(Err(error)) => Err(worker_error(error)),
-            None => Err(safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("transport worker is unavailable"),
-            )),
-        }
+            .map_err(worker_error)
     }
 }
 
