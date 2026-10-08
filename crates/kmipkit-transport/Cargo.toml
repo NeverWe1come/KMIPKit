@@ -43,6 +43,10 @@ path = "tests/timeout_delivery.rs"
 name = "resolver"
 path = "tests/resolver.rs"
 
+[[test]]
+name = "tls_config"
+path = "tests/tls_config.rs"
+
 [dev-dependencies]
 kmipkit-test-support = { workspace = true, default-features = false, features = ["fixtures"] }
 
