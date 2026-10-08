@@ -1,6 +1,6 @@
 //! Create Split Key payload tests derived from KMIP Specification v2.1
 //! §6.1.10, Tables 193–195, and the Table 9 Split Key object definition.
-//! Prime Field Size enforcement for method 3 is the accepted KMIPKit FR-015
+//! Prime Field Size enforcement for method 3 is the accepted `KMIPKit` FR-015
 //! caller-input policy; Table 193 itself marks the request field optional.
 
 use crate::{
@@ -145,7 +145,8 @@ fn request_preserves_table_193_fields_order_and_exact_input_identifier() {
     let payload = request
         .into_ttlv_payload()
         .expect("non-polynomial method does not require Prime Field Size");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -162,17 +163,17 @@ fn request_preserves_table_193_fields_order_and_exact_input_identifier() {
             PROTECTION_STORAGE_MASKS,
         ]
     );
-    assert_eq!(fields[0].value_type(), ItemType::Enumeration);
-    assert_eq!(fields[1].value_type(), ItemType::Enumeration);
-    assert_eq!(fields[2].value_type(), ItemType::Integer);
-    assert_eq!(fields[3].value_type(), ItemType::Integer);
-    assert_eq!(fields[4].value_type(), ItemType::Enumeration);
-    assert_eq!(fields[5].value_type(), ItemType::Structure);
+    assert_eq!(fields[0].item_type(), ItemType::Enumeration);
+    assert_eq!(fields[1].item_type(), ItemType::Enumeration);
+    assert_eq!(fields[2].item_type(), ItemType::Integer);
+    assert_eq!(fields[3].item_type(), ItemType::Integer);
+    assert_eq!(fields[4].item_type(), ItemType::Enumeration);
+    assert_eq!(fields[5].item_type(), ItemType::Structure);
     fields[5].with_value(|value| match value {
         ValueView::Structure(attributes) => assert!(attributes.children().is_empty()),
         other => panic!("required Attributes is a Structure, got {other:?}"),
     });
-    assert_eq!(fields[6].value_type(), ItemType::Structure);
+    assert_eq!(fields[6].item_type(), ItemType::Structure);
 }
 
 #[test]
@@ -180,7 +181,8 @@ fn request_always_encodes_required_empty_attributes_without_synthesizing_choices
     let payload = request(1)
         .into_ttlv_payload()
         .expect("XOR request omits optional Prime Field Size");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -195,15 +197,10 @@ fn request_always_encodes_required_empty_attributes_without_synthesizing_choices
             ATTRIBUTES,
         ]
     );
-    assert_eq!(
-        fields[0].with_value(|value| value.as_enumeration()),
-        Some(7)
-    );
-    assert_eq!(fields[2].with_value(|value| value.as_integer()), Some(2));
-    assert_eq!(
-        fields[3].with_value(|value| value.as_enumeration()),
-        Some(1)
-    );
+    fields[0].with_value(|value| assert!(matches!(value, ValueView::Enumeration(7))));
+    fields[1].with_value(|value| assert!(matches!(value, ValueView::Integer(3))));
+    fields[2].with_value(|value| assert!(matches!(value, ValueView::Integer(2))));
+    fields[3].with_value(|value| assert!(matches!(value, ValueView::Enumeration(1))));
     fields[4].with_value(|value| match value {
         ValueView::Structure(attributes) => assert!(attributes.children().is_empty()),
         other => panic!("required Attributes is a Structure, got {other:?}"),
@@ -227,13 +224,14 @@ fn polynomial_prime_field_size_is_preserved_as_big_integer() {
         .with_prime_field_size(size.clone())
         .into_ttlv_payload()
         .expect("explicit Prime Field Size satisfies FR-015");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     let prime_field_size = fields
         .iter()
         .find(|field| field.tag().raw() == PRIME_FIELD_SIZE)
         .expect("the caller-supplied Prime Field Size is encoded");
 
-    assert_eq!(prime_field_size.value_type(), ItemType::BigInteger);
+    assert_eq!(prime_field_size.item_type(), ItemType::BigInteger);
     prime_field_size.with_value(|value| match value {
         ValueView::BigInteger(encoded) => assert_eq!(encoded, size.as_slice()),
         other => panic!("Prime Field Size remains a Big Integer, got {other:?}"),
@@ -246,13 +244,20 @@ fn table_193_prime_field_size_remains_optional_for_other_methods_and_future_valu
         let payload = request(method)
             .into_ttlv_payload()
             .expect("only method 3 has the accepted FR-015 caller-input policy");
+        let payload_view = payload.view();
+        let fields = payload_view.children();
         assert!(
-            payload
-                .view()
-                .children()
+            fields
                 .iter()
                 .all(|field| field.tag().raw() != PRIME_FIELD_SIZE)
         );
+        fields
+            .iter()
+            .find(|field| field.tag().raw() == SPLIT_KEY_METHOD)
+            .expect("the caller's method is encoded")
+            .with_value(|value| {
+                assert!(matches!(value, ValueView::Enumeration(raw) if *raw == method));
+            });
     }
 }
 
@@ -305,7 +310,7 @@ fn failure_response_preserves_every_table_195_result_reason() {
             typed.result().reason().map(ResultReason::raw),
             Some(*reason)
         );
-        assert!(typed.unique_identifiers().is_empty());
+        assert_eq!(typed.unique_identifiers(), []);
     }
 }
 
