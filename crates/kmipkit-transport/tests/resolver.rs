@@ -167,18 +167,20 @@ async fn injected_hosts_and_search_configuration_are_used_before_upstream_querie
 #[tokio::test]
 async fn one_retry_means_no_more_than_two_attempts_for_each_question() {
     let name = "retry.kmipkit.test";
-    let fixture = fixture(&[(name, vec![record_a(23)])]);
+    let fixture = fixture(&[(name, vec![record_a(23), IpAddr::V6(Ipv6Addr::LOCALHOST)])]);
     fixture.drop_next_questions(name, DnsQueryType::A, 1);
+    fixture.drop_next_questions(name, DnsQueryType::Aaaa, 1);
     let resolver = local_resolver(&fixture, &[]);
 
     let resolved = resolver
         .lookup_candidates(name, Instant::now() + RESOLUTION_TIMEOUT)
         .await
-        .expect("the second A attempt receives the local answer");
+        .expect("each address family succeeds after its discarded first response");
 
-    assert_eq!(resolved, vec![record_a(23)]);
+    assert!(resolved.contains(&record_a(23)));
+    assert!(resolved.contains(&IpAddr::V6(Ipv6Addr::LOCALHOST)));
     assert_eq!(fixture.query_count(name, DnsQueryType::A), 2);
-    assert!(fixture.query_count(name, DnsQueryType::Aaaa) <= 2);
+    assert_eq!(fixture.query_count(name, DnsQueryType::Aaaa), 2);
 }
 
 #[tokio::test]
@@ -210,36 +212,43 @@ async fn one_lookup_never_has_more_than_two_concurrent_nameserver_requests() {
             .await
     });
 
-    tokio::time::timeout(Duration::from_secs(2), async {
+    let stable_counts = tokio::time::timeout(Duration::from_secs(2), async {
+        let mut previous = None;
+        let mut unchanged_since = Instant::now();
         loop {
-            let a_queries = first.query_count(name, DnsQueryType::A)
-                + second.query_count(name, DnsQueryType::A)
-                + third.query_count(name, DnsQueryType::A);
-            let aaaa_queries = first.query_count(name, DnsQueryType::Aaaa)
-                + second.query_count(name, DnsQueryType::Aaaa)
-                + third.query_count(name, DnsQueryType::Aaaa);
-            if a_queries >= 1 && aaaa_queries >= 1 {
-                break;
+            let counts = [
+                first.query_count(name, DnsQueryType::A),
+                second.query_count(name, DnsQueryType::A),
+                third.query_count(name, DnsQueryType::A),
+                first.query_count(name, DnsQueryType::Aaaa),
+                second.query_count(name, DnsQueryType::Aaaa),
+                third.query_count(name, DnsQueryType::Aaaa),
+            ];
+            if previous != Some(counts) {
+                previous = Some(counts);
+                unchanged_since = Instant::now();
+            } else if counts[..3].iter().sum::<usize>() > 0
+                && counts[3..].iter().sum::<usize>() > 0
+                && unchanged_since.elapsed() >= Duration::from_millis(100)
+            {
+                break counts;
             }
-            tokio::time::sleep(Duration::from_millis(2)).await;
+            tokio::time::sleep(Duration::from_millis(5)).await;
         }
     })
     .await
-    .expect("each address question reaches a loopback nameserver");
-    for query_type in [DnsQueryType::A, DnsQueryType::Aaaa] {
-        let per_nameserver = [
-            first.query_count(name, query_type),
-            second.query_count(name, query_type),
-            third.query_count(name, query_type),
-        ];
+    .expect("per-question nameserver fan-out reaches a stable snapshot while replies are held");
+    for per_nameserver in [&stable_counts[..3], &stable_counts[3..]] {
         assert!(per_nameserver.iter().all(|count| *count <= 1));
-        let total = per_nameserver.iter().sum::<usize>();
-        assert!((1..=2).contains(&total));
+        assert!(per_nameserver.iter().sum::<usize>() <= 2);
         assert!(
             per_nameserver.iter().any(|count| *count == 0),
             "at least one of three nameservers remains unqueried while responses are held"
         );
     }
+    assert!(first.peak_active_responses() > 0);
+    assert!(second.peak_active_responses() > 0);
+    assert!(third.peak_active_responses() > 0);
     first.release_responses();
     second.release_responses();
     third.release_responses();
@@ -279,16 +288,18 @@ async fn active_request_limit_applies_per_upstream_connection_not_per_client() {
         loop {
             let first_active = first.active_tcp_requests();
             let second_active = second.active_tcp_requests();
-            if first_active + second_active > 32 {
+            if first_active == 32 && second_active == 32 {
                 break;
             }
             tokio::time::sleep(Duration::from_millis(2)).await;
         }
     })
     .await
-    .expect("more than 32 active requests can use separate upstream connections");
-    assert!(first.peak_active_tcp_requests_per_connection() <= 32);
-    assert!(second.peak_active_tcp_requests_per_connection() <= 32);
+    .expect("each independent TCP upstream reaches exactly 32 held requests");
+    assert_eq!(first.active_tcp_requests(), 32);
+    assert_eq!(second.active_tcp_requests(), 32);
+    assert_eq!(first.peak_active_tcp_requests_per_connection(), 32);
+    assert_eq!(second.peak_active_tcp_requests_per_connection(), 32);
     assert!(
         first.active_tcp_requests() + second.active_tcp_requests() > 32,
         "the per-upstream cap is not an aggregate client cap"
@@ -302,43 +313,154 @@ async fn active_request_limit_applies_per_upstream_connection_not_per_client() {
 }
 
 #[tokio::test]
-async fn response_cache_is_per_resolver_and_evicts_past_128_answers() {
-    let names = (0..130)
-        .map(|index| (format!("cache-{index}.kmipkit.test"), vec![record_a(27)]))
+async fn response_cache_is_per_resolver_and_capped_at_128_answers() {
+    let names = (0..66)
+        .map(|index| {
+            (
+                format!("cache-{index}.kmipkit.test"),
+                vec![
+                    record_a(u8::try_from(index + 1).expect("record index fits")),
+                    IpAddr::V6(Ipv6Addr::LOCALHOST),
+                ],
+            )
+        })
         .collect::<BTreeMap<_, _>>();
     let fixture = LocalDnsFixture::bind(names).expect("cache test records are valid loopback data");
-    let resolver = local_resolver(&fixture, &[]);
-    let first_name = "cache-0.kmipkit.test";
+    let host_names = [
+        "cache-63.kmipkit.test",
+        "cache-64.kmipkit.test",
+        "cache-65.kmipkit.test",
+    ];
+    let host_addresses = [record_a(100), record_a(101), record_a(102)];
+    let hosts_text = host_names
+        .iter()
+        .zip(host_addresses)
+        .map(|(name, address)| format!("{address} {name}\n"))
+        .collect::<String>();
+    let mut hosts = Hosts::default();
+    hosts
+        .read_hosts_conf(Cursor::new(hosts_text.into_bytes()))
+        .expect("A-only hosts entries parse");
+    let resolver =
+        Resolver::from_config(resolver_config(&[fixture.local_addr()], &[]), Some(hosts))
+            .expect("the cache resolver uses its injected A-only hosts entries");
+    let initial_names = (0..63)
+        .map(|index| format!("cache-{index}.kmipkit.test"))
+        .collect::<Vec<_>>();
+    let probe_names = &host_names[..2];
 
-    resolver
-        .lookup_candidates(first_name, Instant::now() + RESOLUTION_TIMEOUT)
-        .await
-        .expect("first answer resolves");
-    resolver
-        .lookup_candidates(first_name, Instant::now() + RESOLUTION_TIMEOUT)
-        .await
-        .expect("the cached answer resolves");
-    assert_eq!(fixture.query_count(first_name, DnsQueryType::A), 1);
-
-    for index in 1..130 {
-        let name = format!("cache-{index}.kmipkit.test");
-        resolver
-            .lookup_candidates(&name, Instant::now() + RESOLUTION_TIMEOUT)
+    for name in &initial_names {
+        let candidates = resolver
+            .lookup_candidates(name, Instant::now() + RESOLUTION_TIMEOUT)
             .await
-            .expect("each unique answer resolves");
+            .expect("each known A+AAAA answer resolves");
+        assert!(candidates.iter().any(IpAddr::is_ipv4));
+        assert!(candidates.iter().any(IpAddr::is_ipv6));
+        assert_eq!(fixture.query_count(name, DnsQueryType::A), 1);
+        assert_eq!(fixture.query_count(name, DnsQueryType::Aaaa), 1);
     }
-    resolver
-        .lookup_candidates(first_name, Instant::now() + RESOLUTION_TIMEOUT)
-        .await
-        .expect("the evicted answer resolves again");
-    assert!(fixture.query_count(first_name, DnsQueryType::A) >= 2);
+    for (name, address) in probe_names.iter().zip(host_addresses) {
+        let candidates = resolver
+            .lookup_candidates(name, Instant::now() + RESOLUTION_TIMEOUT)
+            .await
+            .expect("the A hosts result and known AAAA answer resolve");
+        assert!(candidates.contains(&address));
+        assert!(candidates.contains(&IpAddr::V6(Ipv6Addr::LOCALHOST)));
+        assert_eq!(fixture.query_count(name, DnsQueryType::A), 0);
+        assert_eq!(fixture.query_count(name, DnsQueryType::Aaaa), 1);
+    }
 
-    let isolated_client = local_resolver(&fixture, &[]);
-    isolated_client
+    // 63 dual-stack lookups plus two AAAA-only DNS answers fill exactly 128
+    // response-cache entries. Repeating all keys proves they are still hits.
+    for name in &initial_names {
+        resolver
+            .lookup_candidates(name, Instant::now() + RESOLUTION_TIMEOUT)
+            .await
+            .expect("all 126 cached address-family answers remain available");
+        assert_eq!(fixture.query_count(name, DnsQueryType::A), 1);
+        assert_eq!(fixture.query_count(name, DnsQueryType::Aaaa), 1);
+    }
+    for (name, address) in probe_names.iter().zip(host_addresses) {
+        let candidates = resolver
+            .lookup_candidates(name, Instant::now() + RESOLUTION_TIMEOUT)
+            .await
+            .expect("both cached AAAA answers remain available at the exact limit");
+        assert!(candidates.contains(&address));
+        assert_eq!(fixture.query_count(name, DnsQueryType::Aaaa), 1);
+    }
+
+    let first_name = initial_names[0].as_str();
+    let first_a_before = fixture.query_count(first_name, DnsQueryType::A);
+    let first_aaaa_before = fixture.query_count(first_name, DnsQueryType::Aaaa);
+    local_resolver(&fixture, &[])
         .lookup_candidates(first_name, Instant::now() + RESOLUTION_TIMEOUT)
         .await
         .expect("a second resolver client has an independent cache");
-    assert!(fixture.query_count(first_name, DnsQueryType::A) >= 3);
+    assert_eq!(
+        fixture.query_count(first_name, DnsQueryType::A),
+        first_a_before + 1
+    );
+    assert_eq!(
+        fixture.query_count(first_name, DnsQueryType::Aaaa),
+        first_aaaa_before + 1
+    );
+
+    resolver
+        .lookup_candidates(host_names[2], Instant::now() + RESOLUTION_TIMEOUT)
+        .await
+        .expect("the 129th distinct DNS response is obtained for the third probe");
+    assert_eq!(fixture.query_count(host_names[2], DnsQueryType::A), 0);
+    assert_eq!(fixture.query_count(host_names[2], DnsQueryType::Aaaa), 1);
+
+    let mut before_probe = initial_names
+        .iter()
+        .flat_map(|name| {
+            [
+                (
+                    name.clone(),
+                    DnsQueryType::A,
+                    fixture.query_count(name, DnsQueryType::A),
+                ),
+                (
+                    name.clone(),
+                    DnsQueryType::Aaaa,
+                    fixture.query_count(name, DnsQueryType::Aaaa),
+                ),
+            ]
+        })
+        .collect::<Vec<_>>();
+    before_probe.extend(probe_names.iter().map(|name| {
+        (
+            (*name).to_owned(),
+            DnsQueryType::Aaaa,
+            fixture.query_count(name, DnsQueryType::Aaaa),
+        )
+    }));
+    for name in &initial_names {
+        resolver
+            .lookup_candidates(name, Instant::now() + RESOLUTION_TIMEOUT)
+            .await
+            .expect("known answers remain resolvable after cache overflow");
+    }
+    for (name, address) in probe_names.iter().zip(host_addresses) {
+        let candidates = resolver
+            .lookup_candidates(name, Instant::now() + RESOLUTION_TIMEOUT)
+            .await
+            .expect("host and DNS answers remain resolvable after cache overflow");
+        assert!(candidates.contains(&address));
+    }
+    let additional_queries = before_probe
+        .iter()
+        .map(|(name, query_type, before)| {
+            fixture
+                .query_count(name, *query_type)
+                .saturating_sub(*before)
+        })
+        .sum::<usize>();
+    assert!(
+        additional_queries > 0,
+        "the 129th cached response evicts at least one of the first 128 entries"
+    );
 }
 
 #[tokio::test]
