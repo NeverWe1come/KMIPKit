@@ -17,7 +17,7 @@
 ## Decision 3: Keep adjustment semantics at the server
 
 - **Decision**: Send assigned Adjustment Type values or valid `0x80000000–0x8FFFFFFF` extension values and the optional Adjustment Value unchanged. Preserve unknown Enumeration values generically, but reject Reserved values outside the assigned and extension ranges before transmission. Do not compute an adjusted attribute locally.
-- **Rationale**: §11.1 Tables 428–429 defines Increment, Decrement, and Negate and their applicable TTLV types/default parameters. §6.1.3 assigns missing-value, multi-instance, read-only, type, range, and object-state behavior to operation processing.
+- **Rationale**: §11.1 Tables 428–429 defines Increment, Decrement, and Negate and their applicable TTLV types/default parameters. §6.1.3 assigns missing-value, multi-instance, type, range, and object-state behavior to operation processing. Any unconditional client prohibition stated by §4 or §6.1.3 is checked locally from pinned source-backed metadata; conditions requiring remote object state remain server-authoritative.
 - **Alternatives considered**: Read-modify-write client behavior; rejected because it introduces races, needs server state, and is not equivalent to Adjust Attribute.
 
 ## Decision 4: Use catalog and test-case inputs already checked in
@@ -31,6 +31,12 @@
 - **Decision**: Extend the existing typed execution request/response path and shared Result model; retain the 16 MiB/depth-64/100,000-element defaults, one-exchange behavior, pending outcomes, delivery-state reporting, and body/value redaction.
 - **Rationale**: These are accepted workspace contracts and satisfy the client boundaries without a new runtime dependency or writer.
 - **Alternatives considered**: Add a separate attribute transport or automatic retry; rejected because either duplicates the execution path or violates explicit security invariants.
+
+## Decision 6: Enforce source-backed unconditional mutation prohibitions
+
+- **Decision**: Keep client-side policy narrow and auditable. A pinned internal standard-attribute registry records the exact §4 source reference, unconditional client modifiability/deletability, required-value behavior, operation-specific prohibition, and conditional rules for each standard attribute. Reject only a statically known unconditional prohibition before the exchange, report `NotSent`, and do not include the submitted value in diagnostics. Leave rules whose result depends on remote object state to the server; do not preflight. Unknown names have no inferred policy. A Vendor Attribute value with Vendor Identification `y` is rejected when present in a value-bearing mutation field under §4.60/Table 150; Adjust and reference-only Delete cannot expose that identifier and preserve the server result. For Add/Modify, reject every New Attribute named `Usage Limits`: §7.40 Table 392 requires Count, and §4.59 prohibits setting or modifying it through these operations.
+- **Rationale**: OASIS §§4, 6.1.2, 6.1.3, 6.1.13, and 6.1.51 include client prohibitions that cannot be represented by blanket server-only validation. The catalog is the normative inventory and provides exact source references; deterministic generation avoids hand-maintained runtime policy drift.
+- **Alternatives considered**: Reject every mutation that might be restricted, or defer all checks to the server; rejected because the former invents restrictions and the latter ignores explicit unconditional client prohibitions.
 
 ## Resolved unknowns
 

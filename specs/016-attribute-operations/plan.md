@@ -24,13 +24,13 @@ Add typed Rust request/response models and deterministic client execution for th
 
 **Performance Goals**: No additional serialization pass, avoid unnecessary copies of attribute values, and enforce existing 16 MiB message, depth 64, and 100,000 element limits before allocation.
 
-**Constraints**: Exact OASIS table fields/cardinality; no implicit changes or attribute selection; no automatic retry; preserve pending/delivery-state semantics; redact attribute values from Debug/errors; retain exact names and unknown values on allocated/accepted extension tags, while rejecting Reserved outbound tags and Adjustment Type values; obey the 95% protocol/new-code coverage gates; do not modify upstream OASIS files.
+**Constraints**: Exact OASIS table fields/cardinality; no implicit changes or attribute selection; no automatic retry; preserve pending/delivery-state semantics; redact attribute values from Debug/errors; retain exact names and unknown values on allocated/accepted extension tags, while rejecting Reserved outbound tags and Adjustment Type values; enforce unconditional standard-attribute prohibitions from source-backed policy metadata and the inspectable §4.60 Vendor Attribute `Vendor Identification=y` rule before transmission; leave remote-state-dependent and uninspectable-reference rules to the server; obey the 95% protocol/new-code coverage gates; do not modify upstream OASIS files.
 
 **Scale/Scope**: Seven client-initiated operations and their shared attribute values, limited to TTLV and the Rust protocol/client surface in this specification.
 
 ## Constitution Check
 
-- **Specification and traceability**: Partial for this draft. Every operation has an exact v2.1 section/table citation and FR-001 through FR-014 map to planned verification. Approval remains blocked until Phase B maps applicable catalog requirements/test cases and operation elements to this feature; implementation must complete code/test refs.
+- **Specification and traceability**: Partial for this draft. Every operation has an exact v2.1 section/table citation and FR-001 through FR-015 map to planned verification. The pre-approval catalog gate assigns applicable requirements, operation elements, and source-linked test cases; implementation must complete code/test refs.
 - **Test-first and evidence-based conformance**: Pass as a plan. Tests are first and recorded in a distinct Red commit; Green and Refactor are separate commits. Official test cases are claimed only for the actual complete case exercised.
 - **One core, explicit language boundaries**: Pass. Rust owns protocol behavior. C, Java, Python, and high-level builders are later API-parity work.
 - **Secure defaults and lossless handling**: Pass. Existing decoder bounds, generic unknown-value preservation, redaction, and no-retry policy remain in force.
@@ -39,7 +39,7 @@ Add typed Rust request/response models and deterministic client execution for th
 
 ### Implementation Gate
 
-The approved KMIPKIT-0014 specification defines the shared `AttributeEntry` model used by creation and attribute operations, but its implementation has not yet landed on the release branch. Code for this feature MUST wait until the approved KMIPKIT-0014 implementation is merged; KMIPKIT-0016 MUST NOT redefine or modify that shared contract. The KMIPKIT-0013 transport and KMIPKIT-0015 integration branches also touch the client/transport baseline; this feature MUST branch from the updated release after those dependencies are integrated. The KMIPKIT-0016 specification itself MUST be approved and merged, and the catalog approval blocker must be closed, before implementation begins. If a dependency changes the agreed public contract, revise and re-review this specification before implementation.
+The approved KMIPKIT-0014 specification defines the shared `AttributeEntry` model used by creation and attribute operations, but its implementation has not yet landed on the release branch. Code for this feature MUST wait until the approved KMIPKIT-0014 implementation is merged; KMIPKIT-0016 MUST NOT redefine or modify that shared contract. The KMIPKIT-0013 transport and KMIPKIT-0015 integration branches also touch the client/transport baseline; this feature MUST branch from the updated release after those dependencies are integrated. The KMIPKIT-0016 specification itself MUST be approved and merged before implementation begins. Its catalog approval blocker is a pre-approval task in this specification PR (T001–T003), not a post-approval dependency. If a dependency changes the agreed public contract, revise and re-review this specification before implementation.
 
 ## Project Structure
 
@@ -68,19 +68,24 @@ crates/kmipkit-protocol/src/{get_attributes,get_attribute_list,modify_attribute,
 crates/kmipkit-protocol/tests/unit/attribute_*_tests.rs
 crates/kmipkit-client/src/execute.rs
 crates/kmipkit-client/tests/unit/attribute_execution_tests.rs
+tools/normative_catalog/generate_attribute_policy.py
+tools/normative_catalog/tests/test_generate_attribute_policy.py
+tools/normative_catalog/tests/test_validate.py
+crates/kmipkit-protocol/src/generated/attribute_policy.rs  # generated output only
+.github/workflows/ci.yml
 specification/catalog/kmip-2.1.json
 specification/catalog/coverage-report.md       # regenerated output only
 specs/016-attribute-operations/traceability.md
 ```
 
-**Structure Decision**: Extend the existing protocol crate with one shared attribute model and one module per operation. Extend the current client request/response and execution path, rather than introducing a second writer. Keep protocol conformance tests beside the protocol crate and fake-transport tests beside client execution. Update the checked-in catalog input and regenerate generated reports in the same implementation PR.
+**Structure Decision**: Extend the existing protocol crate with one shared attribute model and one module per operation. Extend the current client request/response and execution path, rather than introducing a second writer. Keep protocol conformance tests beside the protocol crate and fake-transport tests beside client execution. Store exact source-backed standard-attribute policy metadata and a separate value-aware §4.60 rule on the canonical catalog's Vendor Attribute entry, generate the internal lookup with the pinned repository tool, and update the checked-in catalog plus generated artifacts in the same implementation PR.
 
 ## Design Decisions and Alternatives
 
 - Preserve each operation as a distinct typed request. A generic `AttributeMutation` API was rejected because it could hide the differences among add, adjust, delete, modify, and set.
 - Represent an Attribute as exact name plus its complete generic TTLV value. Reconstructing tags from names was rejected. Generic unknown Enumeration values remain preservable, but outbound Items must use assigned/accepted §11.56 tags and typed Adjustment Type must use assigned or Table 429 extension values; unallocated/Reserved values cannot be emitted.
 - Keep Adjust Attribute as a server-side operation carrying `Adjustment Type` and optional `Adjustment Value`. Computing the result locally was rejected because the client lacks authoritative server state and KMIP defines attribute and object-state checks at the server.
-- Leave attribute policy and state transition outcomes to the server; preserve its Result Reason. Local policy emulation was rejected because it can diverge from server state and object-specific requirements.
+- Enforce unconditional, source-backed standard-attribute prohibitions locally and return `NotSent`. Also inspect supplied Vendor Attribute values and reject the §4.60 server-created `Vendor Identification=y` case when the identifier is present; do not infer it for Adjust or reference-only Delete. Leave other rules that depend on unavailable remote object state to the server and preserve its Result Reason. General policy emulation was rejected because it can diverge from server state and object-specific requirements.
 - Reuse existing message execution, transport, decoder limits, and result handling. A new runtime dependency or parallel transport path is unnecessary.
 
 ## Complexity Tracking

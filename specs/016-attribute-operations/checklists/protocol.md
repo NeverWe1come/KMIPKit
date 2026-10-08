@@ -19,24 +19,24 @@
 
 - [ ] CHK005 Are Attribute Reference, Current Attribute, New Attribute, and Attribute values clearly distinguished? [Spec FR-002; §§5.5–5.7]
 - [ ] CHK006 Are Add, Adjust, Delete, Modify, and Set semantics described without implying client-side server-state mutation? [Spec US2; FR-003–FR-005, FR-008–FR-009]
-- [ ] CHK007 Is the Adjust Attribute boundary clear about sending the operation and parameter while leaving arithmetic and policy to the server? [Spec FR-004; §11.1]
+- [ ] CHK007 Is the Adjust Attribute boundary clear about sending the operation and parameter while leaving arithmetic and remote-state-dependent rules to the server? [Spec FR-004; §11.1]
 - [ ] CHK008 Is the handling of omitted Unique Identifier clear where the operation tables permit ID Placeholder behavior? [Spec Edge Cases; FR-002]
 
 ## Requirement Consistency
 
-- [ ] CHK009 Do read-only and always-required attribute constraints distinguish server policy from client-side validation across Add, Adjust, Delete, Modify, Set, and §4? [Spec FR-003–FR-009]
+- [ ] CHK009 Are unconditional `Read-Only`, non-modifiable/non-deletable, Usage Limits Count, and Vendor Attribute `Vendor Identification=y` prohibitions distinguished from remote-state-dependent or uninspectable-reference cases and tied to exact source metadata? [Spec FR-003–FR-009, FR-015; §§4.59–4.60, §7.40 Table 392]
 - [ ] CHK010 Do Get Attributes selection rules and the UID-only Get Attribute List request/required repeated response references match their respective OASIS tables? [Spec FR-006–FR-007]
 - [ ] CHK011 Do unknown-value preservation, redaction, decoder limits, and no-retry behavior remain consistent with accepted workspace contracts? [Spec FR-011–FR-013]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK012 Can every success criterion be objectively verified without claiming support from any particular KMIP server? [Spec SC-001–SC-007]
+- [ ] CHK012 Can every success criterion be objectively verified without claiming support from any particular KMIP server? [Spec SC-001–SC-008]
 - [ ] CHK013 Does each functional requirement have an exact source and planned executable verification? [Spec Normative Traceability]
 
 ## Scenario and Edge Case Coverage
 
 - [ ] CHK014 Are successful and failed read scenarios defined for absent, repeated, all-attribute, and named-selection cases? [Spec US1; Edge Cases]
-- [ ] CHK015 Are ambiguous multi-instance, missing-value, read-only, and required-value write cases covered without client-side policy guesswork? [Spec US2; Edge Cases]
+- [ ] CHK015 Are ambiguous multi-instance, missing-value, unconditional read-only/non-deletable, and remote-state-dependent write cases distinguished without inferring unavailable server state? [Spec US2; Edge Cases]
 - [ ] CHK016 Are malformed and over-limit inputs, pending results, and delivery-state failures in scope and consistent with the existing client contract? [Spec Edge Cases; FR-012–FR-013]
 
 ## Dependencies and Assumptions
@@ -51,7 +51,7 @@
 - [ ] CHK021 Does Delete Attribute preserve both optional selector omissions and expose the server result without inventing local semantics? [Spec FR-005; §6.1.13 Table 202]
 - [ ] CHK022 Are Adjustment Type extension values accepted only in the Table 429 range and Reserved values rejected before transmission? [Spec FR-004/FR-011]
 - [ ] CHK023 Is the applicable catalog requirement/test-case mapping complete before the specification is approved? [Spec Clarification Record; Plan §Constitution Check]
-- [ ] CHK024 Do implementation tasks require an approved/merged specification and a final release-branch synchronization before review? [Tasks T001, T054]
+- [ ] CHK024 Do implementation tasks require an approved/merged specification and a final release-branch synchronization before review? [Tasks T004, T062]
 
 ## Notes
 
