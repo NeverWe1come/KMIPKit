@@ -8,7 +8,7 @@ use crate::{
     AttributeSet, CreateError, CreateRequest, CreateResponse, ObjectType, ResultReason,
     ResultStatus, UniqueIdentifier,
 };
-use kmipkit_ttlv::{codec, Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView, codec};
 
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007c;
@@ -70,6 +70,19 @@ fn response_message(
     message: Option<&str>,
     payload: Option<Structure>,
 ) -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(response_tree(
+        operation, status, reason, message, payload,
+    ))
+    .expect("fixture is a valid KMIP 2.1 response message")
+}
+
+fn response_tree(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    message: Option<&str>,
+    payload: Option<Structure>,
+) -> Structure {
     let protocol_version = structure([
         item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
         item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
@@ -92,16 +105,13 @@ fn response_message(
     if let Some(payload) = payload {
         fields.push(item(RESPONSE_PAYLOAD, Value::structure(payload)));
     }
-    crate::ResponseMessage::try_from_ttlv(structure([
+    structure([
         item(RESPONSE_HEADER, Value::structure(header)),
         item(BATCH_ITEM, Value::structure(structure(fields))),
-    ]))
-    .expect("fixture is a valid KMIP 2.1 response message")
+    ])
 }
 
-fn decode_response(
-    message: &crate::ResponseMessage,
-) -> Result<CreateResponse, CreateError> {
+fn decode_response(message: &crate::ResponseMessage) -> Result<CreateResponse, CreateError> {
     let response_item = message
         .batch_items()
         .next()
@@ -117,17 +127,12 @@ fn success_payload(object_type: Value, unique_identifier: Value) -> Structure {
 }
 
 fn response_for_payload(payload: Structure) -> crate::ResponseMessage {
-    response_message(
-        CREATE_OPERATION,
-        SUCCESS,
-        None,
-        None,
-        Some(payload),
-    )
+    response_message(CREATE_OPERATION, SUCCESS, None, None, Some(payload))
 }
 
 fn assert_structure_field_types(structure: &Structure, expected: &[(u32, ItemType)]) {
-    let fields = structure.view().children();
+    let view = structure.view();
+    let fields = view.children();
     assert_eq!(fields.len(), expected.len());
     for (field, (expected_tag, expected_type)) in fields.iter().zip(expected) {
         assert_eq!(field.tag().raw(), *expected_tag);
@@ -147,25 +152,50 @@ fn create_only_oasis_fixtures_decode_with_the_expected_fields() {
             let fields = payload.children();
             assert_eq!(fields.len(), 2);
             assert_eq!(fields[0].tag().raw(), OBJECT_TYPE);
-            assert!(matches!(
-                fields[0].with_value(|value| value),
+            assert!(fields[0].with_value(|value| matches!(
+                value,
                 ValueView::Enumeration(value) if *value == 7
-            ));
+            )));
             assert_eq!(fields[1].tag().raw(), ATTRIBUTES);
             fields[1].with_value(|value| match value {
                 ValueView::Structure(attributes) => {
                     let items = attributes.children();
                     assert_eq!(items.len(), 1);
                     assert_eq!(items[0].tag().raw(), CRYPTOGRAPHIC_LENGTH);
-                    assert!(matches!(
-                        items[0].with_value(|value| value),
+                    assert!(items[0].with_value(|value| matches!(
+                        value,
                         ValueView::Integer(value) if *value == 80
-                    ));
+                    )));
                 }
                 _ => panic!("Attributes fixture field must be a Structure"),
             });
         }
         _ => panic!("Request Payload fixture must be a Structure"),
+    });
+
+    let attributes = AttributeSet::try_new([item(CRYPTOGRAPHIC_LENGTH, Value::integer(80))])
+        .expect("Cryptographic Length is a direct §4 Object Attribute item");
+    let typed_request = CreateRequest::new(ObjectType::from_raw(7), attributes)
+        .into_ttlv_payload()
+        .expect("typed Create request represents the derived official payload");
+    let typed_view = typed_request.view();
+    let typed_fields = typed_view.children();
+    assert_eq!(typed_fields.len(), 2);
+    assert!(typed_fields[0].with_value(|value| matches!(
+        value,
+        ValueView::Enumeration(value) if *value == 7
+    )));
+    typed_fields[1].with_value(|value| match value {
+        ValueView::Structure(attributes) => {
+            let items = attributes.children();
+            assert_eq!(items.len(), 1);
+            assert_eq!(items[0].tag().raw(), CRYPTOGRAPHIC_LENGTH);
+            assert!(items[0].with_value(|value| matches!(
+                value,
+                ValueView::Integer(value) if *value == 80
+            )));
+        }
+        _ => panic!("typed Attributes must remain a Structure"),
     });
 
     let response_bytes = hex_bytes(include_str!(
@@ -179,10 +209,7 @@ fn create_only_oasis_fixtures_decode_with_the_expected_fields() {
             assert_eq!(fields.len(), 2);
             assert_eq!(fields[0].tag().raw(), OBJECT_TYPE);
             assert_eq!(fields[1].tag().raw(), UNIQUE_IDENTIFIER);
-            assert!(matches!(
-                fields[1].with_value(|value| value),
-                ValueView::TextString("id-001")
-            ));
+            assert!(fields[1].with_value(|value| matches!(value, ValueView::TextString("id-001"))));
         }
         _ => panic!("Response Payload fixture must be a Structure"),
     });
@@ -192,7 +219,7 @@ fn create_only_oasis_fixtures_decode_with_the_expected_fields() {
 fn request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields() {
     let request = CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new());
     let payload = request
-        .to_ttlv_payload()
+        .into_ttlv_payload()
         .expect("Create payload uses assigned tags and valid model structures");
     assert_structure_field_types(
         &payload,
@@ -201,11 +228,12 @@ fn request_keeps_the_required_empty_attributes_structure_without_synthesizing_fi
             (ATTRIBUTES, ItemType::Structure),
         ],
     );
-    let fields = payload.view().children();
-    assert!(matches!(
-        fields[0].with_value(|value| value),
+    let view = payload.view();
+    let fields = view.children();
+    assert!(fields[0].with_value(|value| matches!(
+        value,
         ValueView::Enumeration(value) if *value == 7
-    ));
+    )));
     fields[1].with_value(|value| match value {
         ValueView::Structure(attributes) => assert!(attributes.children().is_empty()),
         _ => panic!("Attributes must remain a Structure"),
@@ -218,7 +246,7 @@ fn request_preserves_optional_protection_storage_masks_as_a_structure() {
     let request = CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new())
         .with_protection_storage_masks(masks);
     let payload = request
-        .to_ttlv_payload()
+        .into_ttlv_payload()
         .expect("the optional generic Structure is representable");
     assert_structure_field_types(
         &payload,
@@ -244,13 +272,17 @@ fn response_preserves_unknown_object_type_and_all_unique_identifier_wire_forms()
         Value::enumeration(0xf001_0001),
         Value::integer(-17),
     ] {
-        let message = response_for_payload(success_payload(
-            Value::enumeration(0xf002_0001),
-            identifier,
-        ));
+        let message =
+            response_for_payload(success_payload(Value::enumeration(0xf002_0001), identifier));
         let response = decode_response(&message).expect("all Table 187 identifier types are valid");
-        assert_eq!(response.object_type().map(ObjectType::raw), Some(0xf002_0001));
-        match (response.unique_identifier(), response.unique_identifier().unwrap()) {
+        assert_eq!(
+            response.object_type().map(ObjectType::raw),
+            Some(0xf002_0001)
+        );
+        match (
+            response.unique_identifier(),
+            response.unique_identifier().unwrap(),
+        ) {
             (_, UniqueIdentifier::TextString(value)) => assert_eq!(value, "id-001"),
             (_, UniqueIdentifier::Enumeration(value)) => assert_eq!(*value, 0xf001_0001),
             (_, UniqueIdentifier::Integer(value)) => assert_eq!(*value, -17),
@@ -281,10 +313,10 @@ fn successful_response_rejects_missing_duplicate_and_malformed_fields_redacted()
     let malformed_payloads = [
         Structure::new(),
         structure([item(OBJECT_TYPE, Value::enumeration(7))]),
-        structure([item(
-            OBJECT_TYPE,
-            Value::text_string(SENTINEL.to_owned()),
-        ), item(UNIQUE_IDENTIFIER, Value::text_string("id-001".to_owned()))]),
+        structure([
+            item(OBJECT_TYPE, Value::text_string(SENTINEL.to_owned())),
+            item(UNIQUE_IDENTIFIER, Value::text_string("id-001".to_owned())),
+        ]),
         structure([
             item(OBJECT_TYPE, Value::enumeration(7)),
             item(OBJECT_TYPE, Value::enumeration(8)),
@@ -312,10 +344,17 @@ fn successful_response_rejects_missing_duplicate_and_malformed_fields_redacted()
 
 #[test]
 fn successful_response_requires_a_payload() {
-    let message = response_message(CREATE_OPERATION, SUCCESS, None, None, None);
+    let error = crate::ResponseMessage::try_from_ttlv(response_tree(
+        CREATE_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        None,
+    ))
+    .expect_err("the shared message layer rejects success without Response Payload");
     assert_eq!(
-        decode_response(&message).unwrap_err(),
-        CreateError::MissingSuccessPayload
+        error.kind(),
+        crate::MessageValidationErrorKind::InvalidResult
     );
 }
 
@@ -356,7 +395,10 @@ fn operation_failed_preserves_each_create_result_reason_without_a_success_payloa
             None,
         );
         let response = decode_response(&message).expect("a Failure with its reason is valid");
-        assert_eq!(response.result().status(), ResultStatus::from_raw(OPERATION_FAILED));
+        assert_eq!(
+            response.result().status(),
+            ResultStatus::from_raw(OPERATION_FAILED)
+        );
         assert_eq!(response.result().reason(), Some(reason));
         assert!(response.object_type().is_none());
         assert!(response.unique_identifier().is_none());
@@ -365,10 +407,19 @@ fn operation_failed_preserves_each_create_result_reason_without_a_success_payloa
 
 #[test]
 fn non_create_result_shapes_retain_the_existing_result_validation_contract() {
-    let missing_reason = response_message(CREATE_OPERATION, OPERATION_FAILED, None, None, None);
-    assert!(decode_response(&missing_reason).is_err());
+    let missing_reason = crate::ResponseMessage::try_from_ttlv(response_tree(
+        CREATE_OPERATION,
+        OPERATION_FAILED,
+        None,
+        None,
+        None,
+    ));
+    assert_eq!(
+        missing_reason.unwrap_err().kind(),
+        crate::MessageValidationErrorKind::InvalidResult
+    );
 
-    let success_with_reason = response_message(
+    let success_with_reason = crate::ResponseMessage::try_from_ttlv(response_tree(
         CREATE_OPERATION,
         SUCCESS,
         Some(0xf001_0001),
@@ -377,6 +428,9 @@ fn non_create_result_shapes_retain_the_existing_result_validation_contract() {
             Value::enumeration(7),
             Value::text_string("id-001".to_owned()),
         )),
+    ));
+    assert_eq!(
+        success_with_reason.unwrap_err().kind(),
+        crate::MessageValidationErrorKind::InvalidResult
     );
-    assert!(decode_response(&success_with_reason).is_err());
 }

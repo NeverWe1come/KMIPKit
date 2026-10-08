@@ -4,8 +4,8 @@
 mod asynchronous;
 pub mod attribute;
 mod cancel;
-mod credential;
 mod create;
+mod credential;
 mod discover_versions;
 mod error;
 pub mod extension;
@@ -18,13 +18,13 @@ mod result;
 pub use asynchronous::AsynchronousOperationError;
 pub use attribute::{AttributeSet, AttributeSetError};
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
+pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
 pub use credential::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
     CredentialValidationErrorKind, CredentialValue, CredentialView, DeviceCredential,
     HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, SecretBytes,
     SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
-pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
