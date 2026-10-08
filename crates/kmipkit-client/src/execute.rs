@@ -875,28 +875,12 @@ impl Client {
         drop(encoded);
 
         let response = transport_result.map_err(ClientError::transport)?;
-        let response_delivery_state =
-            RequestDeliveryState::PossiblySent.response_bytes_received(response.as_bytes().len());
-        let response_message = decode_bounded_response(
-            response.as_bytes(),
+        decode_transport_response(
+            response,
             limits,
-            decode_response_message,
             #[cfg(test)]
             self.limits_identity_observer.as_ref(),
         )
-        .map_err(|error| {
-            let protocol = match error {
-                BoundedResponseError::TooLarge => ProtocolError::new(
-                    ProtocolErrorKind::MalformedMessage,
-                    ProtocolCauseCategory::InvalidEncoding,
-                    ResponseLimitExceeded,
-                ),
-                BoundedResponseError::Decode(error) => error,
-            };
-            protocol_failure_at(protocol, response_delivery_state)
-        })?;
-        drop(response);
-        Ok((response_message, response_delivery_state))
     }
 
     /// Executes one explicit Poll request and returns the original operation's
@@ -2050,6 +2034,36 @@ pub(super) fn decode_bounded_response<T, E>(
         observer.record_decode(limits);
     }
     decoder(bytes, limits).map_err(BoundedResponseError::Decode)
+}
+
+fn decode_transport_response(
+    response: kmipkit_transport::TransportResponse,
+    limits: &CodecLimits,
+    #[cfg(test)] observer: Option<&LimitsIdentityObserver>,
+) -> Result<(ResponseMessage, RequestDeliveryState), ClientError> {
+    let response_delivery_state =
+        RequestDeliveryState::PossiblySent.response_bytes_received(response.as_bytes().len());
+    let decode_result = decode_bounded_response(
+        response.as_bytes(),
+        limits,
+        decode_response_message,
+        #[cfg(test)]
+        observer,
+    );
+    drop(response);
+
+    let response_message = decode_result.map_err(|error| {
+        let protocol = match error {
+            BoundedResponseError::TooLarge => ProtocolError::new(
+                ProtocolErrorKind::MalformedMessage,
+                ProtocolCauseCategory::InvalidEncoding,
+                ResponseLimitExceeded,
+            ),
+            BoundedResponseError::Decode(error) => error,
+        };
+        protocol_failure_at(protocol, response_delivery_state)
+    })?;
+    Ok((response_message, response_delivery_state))
 }
 
 fn protocol_failure_at(error: ProtocolError, delivery_state: RequestDeliveryState) -> ClientError {
