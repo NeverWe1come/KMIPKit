@@ -43,6 +43,27 @@ TLS diagnostics.
   kmipkit-transport --all-targets --all-features --offline -- -D warnings` —
   PASS.
 
+## Traceability reconciliation
+
+Updated `KMIPKIT-REQ-SPEC-10.4-001-002` in
+`specification/compliance/requirements/KMIPKIT-0013.csv` to
+`scoped_verified`, linked both relay tests and the TLS sanitizer source, and
+updated the verification table in `specs/013-production-transport/spec.md`.
+The checked task entry records the evidence and commit sequence. A focused
+audit confirmed the cited implementation paths and test symbols exist and
+that the spec and task links resolve.
+
+- `cargo test -p kmipkit-transport --test tls_integrity --offline` — PASS,
+  56/56.
+- `python tools/normative_catalog/validate.py` — PASS (4 sources, 1,411
+  clauses, 4,024 records).
+- `python -m unittest tools.normative_catalog.tests.test_feature_traceability`
+  — PASS (14 tests, 1 skipped). This repository suite does not independently
+  target the KMIPKIT-0013 row; the focused audit above checks the row directly.
+
+Signed development commits: Red `89e704b`, Green `69b8b9b`, Refactor
+`960085f`. No formal profile or official OASIS test case is claimed.
+
 The negative assertions observe exactly one corrupted server application-data
 record, reject its plaintext, retain `PossiblySent` because no response byte
 was decrypted, expose only the safe TLS category, and verify connection

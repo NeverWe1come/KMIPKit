@@ -134,7 +134,7 @@ existing valid wire behavior.
 | Requirement ID | Normative source | Scope and verification |
 |---|---|---|
 | KMIPKIT-REQ-SPEC-10.4-001-001 | OASIS KMIP Specification v2.1 §10.4 | TLS integration evidence demonstrates confidentiality for exchanged KMIP bytes. |
-| KMIPKIT-REQ-SPEC-10.4-001-002 | OASIS KMIP Specification v2.1 §10.4 | TLS integrity tests reject tampered/invalid TLS records and the peer cannot alter accepted response bytes. |
+| KMIPKIT-REQ-SPEC-10.4-001-002 | OASIS KMIP Specification v2.1 §10.4 | A local relay corrupts a protected TLS 1.3 response application-data record after mTLS and request decryption; raw-TLS and HTTPS reject the corrupted record, expose only the safe TLS cause, retain `PossiblySent` without a decrypted response byte, and invalidate the affected connection. This is derived project-test evidence, not an official OASIS test or a full profile claim. |
 | KMIPKIT-REQ-SPEC-10.4-001-003 | OASIS KMIP Specification v2.1 §10.4 | Server certificate chain, validity, hostname/SAN, and selected-trust tests demonstrate authenticated peer identity; client mTLS identity tests verify KMIPKit product policy separately. |
 | KMIPKIT-REQ-PROF-5.3.1-001 | OASIS KMIP Profiles v2.1 OS §5.3.1 item 1 | HTTPS adapter uses HTTP/1.1 over TLS; TLS policy tests cover TLS 1.3. This selected overlap does not establish full profile support. |
 | KMIPKIT-REQ-PROF-5.3.1-002 | OASIS KMIP Profiles v2.1 OS §5.3.1 item 2 | HTTPS request-capture test asserts POST. |
