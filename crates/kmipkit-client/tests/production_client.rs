@@ -43,7 +43,7 @@ use tokio::runtime::Builder;
 
 const SERVER_NAME: &str = "server.kmipkit.test";
 const REQUEST_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0];
-const SIMPLE_RESPONSE_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0];
+const SIMPLE_RESPONSE_FRAME: [u8; 8] = [0x42, 0x00, 0x7b, 0x01, 0, 0, 0, 0];
 const PEER_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[derive(Clone, Copy)]
@@ -393,7 +393,7 @@ fn typed_client_rejects_invalid_response_without_exposing_response_bytes() {
     let listener = LoopbackTcpListener::bind().expect("loopback peer binds");
     let port = listener.local_addr().port();
     let malformed_response = structure(
-        0x0042_0078,
+        0x0042_007B,
         [ttlv_item(0x0042_0069, 0x07, RESPONSE_SENTINEL)],
     );
     let peer = spawn_peer(
@@ -881,7 +881,7 @@ fn discover_versions_response() -> Vec<u8> {
             response_payload,
         ],
     );
-    structure(0x0042_0078, [header, batch_item])
+    structure(0x0042_007B, [header, batch_item])
 }
 
 fn structure<const N: usize>(tag: u32, children: [Vec<u8>; N]) -> Vec<u8> {
