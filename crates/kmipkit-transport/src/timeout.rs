@@ -298,8 +298,26 @@ where
 struct PhaseDeadline {
     inactivity: Option<Duration>,
     deadline: Option<Instant>,
-    sleep: Option<Pin<Box<Sleep>>>,
-    sleep_deadline: Option<Instant>,
+    timer: Option<DeadlineTimer>,
+}
+
+// Keep the cached sleep paired with the deadline it was created for.
+struct DeadlineTimer {
+    deadline: Instant,
+    sleep: Pin<Box<Sleep>>,
+}
+
+impl DeadlineTimer {
+    fn new(deadline: Instant) -> Self {
+        Self {
+            deadline,
+            sleep: Box::pin(tokio::time::sleep_until(TokioInstant::from_std(deadline))),
+        }
+    }
+
+    fn poll(&mut self, cx: &mut Context<'_>) -> bool {
+        self.sleep.as_mut().poll(cx).is_ready()
+    }
 }
 
 impl PhaseDeadline {
@@ -307,8 +325,7 @@ impl PhaseDeadline {
         Self {
             inactivity,
             deadline: None,
-            sleep: None,
-            sleep_deadline: None,
+            timer: None,
         }
     }
 
@@ -322,8 +339,7 @@ impl PhaseDeadline {
 
     fn reset_after_progress(&mut self) {
         self.deadline = None;
-        self.sleep = None;
-        self.sleep_deadline = None;
+        self.timer = None;
     }
 
     fn is_expired(&self, total_deadline: Option<Instant>) -> bool {
@@ -335,19 +351,17 @@ impl PhaseDeadline {
     fn poll_expiration(&mut self, total_deadline: Option<Instant>, cx: &mut Context<'_>) -> bool {
         let deadline = earlier_deadline(self.deadline, total_deadline);
         let Some(deadline) = deadline else {
-            self.sleep = None;
-            self.sleep_deadline = None;
+            self.timer = None;
             return false;
         };
-        if self.sleep_deadline != Some(deadline) {
-            self.sleep = Some(Box::pin(tokio::time::sleep_until(TokioInstant::from_std(
-                deadline,
-            ))));
-            self.sleep_deadline = Some(deadline);
+        let timer_matches = self
+            .timer
+            .as_ref()
+            .is_some_and(|timer| timer.deadline == deadline);
+        if !timer_matches {
+            self.timer = Some(DeadlineTimer::new(deadline));
         }
-        self.sleep
-            .as_mut()
-            .is_some_and(|sleep| sleep.as_mut().poll(cx).is_ready())
+        self.timer.as_mut().is_some_and(|timer| timer.poll(cx))
     }
 }
 
@@ -383,26 +397,50 @@ fn earlier_deadline(first: Option<Instant>, second: Option<Instant>) -> Option<I
 }
 
 fn timeout_io_error() -> io::Error {
-    io::Error::new(io::ErrorKind::TimedOut, "I/O deadline elapsed")
+    SafeIoFailure::DeadlineElapsed.into_io_error()
 }
 
 fn finalized_io_error() -> io::Error {
-    io::Error::new(io::ErrorKind::Interrupted, "exchange I/O finalized")
+    SafeIoFailure::ExchangeFinalized.into_io_error()
 }
 
 fn sender_closed_error() -> io::Error {
-    io::Error::new(io::ErrorKind::BrokenPipe, "HTTP sender failed")
+    SafeIoFailure::SenderUnavailable.into_io_error()
 }
 
 fn sanitize_io_error(error: io::Error) -> io::Error {
-    let kind = error.kind();
-    drop(error);
-    let message = if kind == io::ErrorKind::TimedOut {
-        "I/O deadline elapsed"
-    } else {
-        "transport I/O failed"
-    };
-    io::Error::new(kind, message)
+    SafeIoFailure::from_io_error(error).into_io_error()
+}
+
+// Retain only a fixed message and safe kind; never carry the source error text.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum SafeIoFailure {
+    DeadlineElapsed,
+    ExchangeFinalized,
+    SenderUnavailable,
+    Inner(io::ErrorKind),
+}
+
+impl SafeIoFailure {
+    fn from_io_error(error: io::Error) -> Self {
+        let kind = error.kind();
+        drop(error);
+        if kind == io::ErrorKind::TimedOut {
+            Self::DeadlineElapsed
+        } else {
+            Self::Inner(kind)
+        }
+    }
+
+    fn into_io_error(self) -> io::Error {
+        let (kind, message) = match self {
+            Self::DeadlineElapsed => (io::ErrorKind::TimedOut, "I/O deadline elapsed"),
+            Self::ExchangeFinalized => (io::ErrorKind::Interrupted, "exchange I/O finalized"),
+            Self::SenderUnavailable => (io::ErrorKind::BrokenPipe, "HTTP sender failed"),
+            Self::Inner(kind) => (kind, "transport I/O failed"),
+        };
+        io::Error::new(kind, message)
+    }
 }
 
 #[cfg(test)]
