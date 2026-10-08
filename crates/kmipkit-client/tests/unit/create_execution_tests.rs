@@ -51,7 +51,6 @@ const PENDING_CORRELATION: &[u8] = b"CREATE_PENDING_CORRELATION_EXACT";
 const EXTENSION_VENDOR: &str = "CreateFixtureVendor";
 const EXTENSION_DISCRIMINATOR: &[u8] = b"create-fixture-v1";
 const DISCRIMINATOR_TAG: u32 = 0x0042_0173;
-const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 
 fn tag(raw: u32) -> Tag {
     RawTag::new(raw)
@@ -159,6 +158,22 @@ impl Transport for SharedFakeTransport {
         max_response_bytes: usize,
     ) -> Result<TransportResponse, TransportError> {
         self.0.borrow_mut().exchange(request, max_response_bytes)
+    }
+}
+
+struct CapturingFakeTransport {
+    fake: Rc<RefCell<ScriptedTransport>>,
+    captured_request: Rc<RefCell<Option<zeroize::Zeroizing<Vec<u8>>>>>,
+}
+
+impl Transport for CapturingFakeTransport {
+    fn exchange(
+        &mut self,
+        request: &[u8],
+        max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        *self.captured_request.borrow_mut() = Some(zeroize::Zeroizing::new(request.to_vec()));
+        self.fake.borrow_mut().exchange(request, max_response_bytes)
     }
 }
 
@@ -472,8 +487,12 @@ fn create_keeps_repeated_registered_message_extensions_in_caller_order() {
             request_write_chunks: Vec::new(),
         },
     )));
+    let captured_request = Rc::new(RefCell::new(None));
     let mut client = Client::for_test_with_configuration(
-        SharedFakeTransport(Rc::clone(&fake)),
+        CapturingFakeTransport {
+            fake: Rc::clone(&fake),
+            captured_request: Rc::clone(&captured_request),
+        },
         ClientConfiguration::new(registry),
     );
     let batch = ClientBatch::new(
@@ -487,9 +506,9 @@ fn create_keeps_repeated_registered_message_extensions_in_caller_order() {
         .execute(batch, &CodecLimits::defaults())
         .expect("both registry-validated extensions are emitted");
 
-    let fake_guard = fake.borrow();
-    let captured = fake_guard
-        .retained_request_bytes()
+    let capture_guard = captured_request.borrow();
+    let captured = capture_guard
+        .as_deref()
         .expect("the fake retains the request for test inspection");
     let extension_tag = [0x42, 0x00, 0x51, 0x01];
     let count = captured
