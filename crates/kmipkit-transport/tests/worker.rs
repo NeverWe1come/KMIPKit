@@ -427,6 +427,48 @@ fn a_worker_command_observes_expiry_cancellation_and_shutdown() {
 }
 
 #[test]
+fn completion_that_wins_before_shutdown_keeps_its_result() {
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("test runtime should build");
+    let (shutdown_sender, shutdown_receiver) = tokio::sync::watch::channel(false);
+    let (completion_committed_sender, completion_committed_receiver) =
+        tokio::sync::oneshot::channel();
+    let (release_operation_sender, release_operation_receiver) = tokio::sync::oneshot::channel();
+    let (command, result, _) =
+        make_command(None, ExchangeControl::new(), move |control| async move {
+            assert!(
+                control.finish().0,
+                "operation completion wins the atomic gate"
+            );
+            completion_committed_sender
+                .send(())
+                .expect("the test observes completion");
+            let _ = release_operation_receiver.await;
+            Ok(response(7))
+        });
+
+    runtime.block_on(async move {
+        tokio::spawn(async move {
+            completion_committed_receiver
+                .await
+                .expect("the operation commits completion");
+            shutdown_sender.send_replace(true);
+            let _ = release_operation_sender.send(());
+        });
+        command.run(shutdown_receiver).await;
+    });
+
+    assert_response(
+        result
+            .recv()
+            .expect("the command returns its completed result"),
+        7,
+    );
+}
+
+#[test]
 fn shutdown_wait_is_bounded_when_an_operation_blocks_its_worker_thread() {
     let worker = Arc::new(ClientWorker::start().expect("worker thread should start"));
     let (started_tx, started_rx) = mpsc::channel();
