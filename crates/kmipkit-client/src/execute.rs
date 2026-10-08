@@ -1923,46 +1923,7 @@ fn validate_response(
     for (request_index, response_index) in association.into_iter().enumerate() {
         let item = response_items[response_index];
         let extensions = preserve_response_extensions(item, registry, limits)?;
-        let outcome = match request_identities[request_index].operation {
-            DISCOVER_VERSIONS_OPERATION => {
-                let typed =
-                    DiscoverVersionsResponse::try_from_response_item(item).map_err(|error| {
-                        ProtocolError::new(
-                            ProtocolErrorKind::InvalidValue,
-                            ProtocolCauseCategory::InvalidValue,
-                            error,
-                        )
-                    })?;
-                if typed.result().status().raw() == RESULT_STATUS_PENDING {
-                    ClientBatchOutcome::Pending(pending_outcome(
-                        ClientOperation::DiscoverVersions,
-                        typed.result().clone(),
-                        item,
-                    )?)
-                } else {
-                    ClientBatchOutcome::Completed(typed)
-                }
-            }
-            CREATE_OPERATION => {
-                let typed = CreateResponse::try_from_response_item(item).map_err(|error| {
-                    ProtocolError::new(
-                        ProtocolErrorKind::InvalidValue,
-                        ProtocolCauseCategory::InvalidValue,
-                        error,
-                    )
-                })?;
-                if typed.result().status().raw() == RESULT_STATUS_PENDING {
-                    ClientBatchOutcome::Pending(pending_outcome(
-                        ClientOperation::Create,
-                        typed.result().clone(),
-                        item,
-                    )?)
-                } else {
-                    ClientBatchOutcome::CreateCompleted(typed)
-                }
-            }
-            _ => return Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
-        };
+        let outcome = response_outcome(request_identities[request_index].operation, item)?;
         #[cfg(test)]
         if let (Some(observer), ClientBatchOutcome::Pending(pending)) =
             (pending_owner_observer, &outcome)
@@ -1980,6 +1941,52 @@ fn validate_response(
         });
     }
     Ok(ClientBatchResponse { items: ordered })
+}
+
+fn response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        DISCOVER_VERSIONS_OPERATION => {
+            let response = DiscoverVersionsResponse::try_from_response_item(item)
+                .map_err(invalid_typed_response)?;
+            if response.result().status().raw() == RESULT_STATUS_PENDING {
+                Ok(ClientBatchOutcome::Pending(pending_outcome(
+                    ClientOperation::DiscoverVersions,
+                    response.result().clone(),
+                    item,
+                )?))
+            } else {
+                Ok(ClientBatchOutcome::Completed(response))
+            }
+        }
+        CREATE_OPERATION => {
+            let response =
+                CreateResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
+            if response.result().status().raw() == RESULT_STATUS_PENDING {
+                Ok(ClientBatchOutcome::Pending(pending_outcome(
+                    ClientOperation::Create,
+                    response.result().clone(),
+                    item,
+                )?))
+            } else {
+                Ok(ClientBatchOutcome::CreateCompleted(response))
+            }
+        }
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn invalid_typed_response<E>(error: E) -> ProtocolError
+where
+    E: Error + 'static,
+{
+    ProtocolError::new(
+        ProtocolErrorKind::InvalidValue,
+        ProtocolCauseCategory::InvalidValue,
+        error,
+    )
 }
 
 fn pending_outcome(
