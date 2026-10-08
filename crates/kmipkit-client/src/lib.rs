@@ -1,7 +1,7 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
-//! The current typed request enum supports an explicit Discover Versions
-//! operation. The synchronous [`Client`] is constructed from an immutable
+//! The typed request enum supports explicit Discover Versions and Create
+//! operations. The synchronous [`Client`] is constructed from an immutable
 //! client configuration and validated production transport configuration;
 //! callers cannot inject an arbitrary transport or submit raw KMIP bytes.
 //! Timeout overrides are available through the options-bearing typed methods.

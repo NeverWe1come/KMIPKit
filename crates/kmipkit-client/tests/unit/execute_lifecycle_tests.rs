@@ -148,7 +148,7 @@ fn public_batch_and_result_accessors_preserve_order_and_redact_identifiers() {
         crate::execute::ClientBatchOutcome::Completed(_)
     ));
     assert_eq!(outcome.asynchronous_correlation_value(), None);
-    assert_eq!(outcome.response().result().status().raw(), 0);
+    assert_eq!(outcome.result().status().raw(), 0);
     assert!(format!("{outcome:?}").starts_with("Completed("));
     assert!(outcome.to_string().starts_with("Completed("));
 }
@@ -232,7 +232,7 @@ fn present_empty_pending_correlation_value_is_preserved() {
     let outcome = result.get(0).expect("one result").outcome();
 
     assert_eq!(outcome.asynchronous_correlation_value(), Some(&[][..]));
-    assert_eq!(outcome.response().result().status().raw(), 2);
+    assert_eq!(outcome.result().status().raw(), 2);
     assert!(format!("{outcome:?}").starts_with("Pending("));
     assert!(outcome.to_string().starts_with("Pending("));
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -280,7 +280,8 @@ fn successful_empty_discover_versions_list_is_preserved() {
             .get(0)
             .expect("one result")
             .outcome()
-            .response()
+            .discover_versions_response()
+            .expect("completed Discover Versions response stays typed")
             .supported_versions(),
         Some(&[][..])
     );
@@ -303,8 +304,14 @@ fn server_failure_result_is_preserved_as_a_completed_operation_result() {
         .expect("a valid KMIP Failure is an operation result");
     let outcome = result.get(0).expect("one result").outcome();
 
-    assert_eq!(outcome.response().result().status().raw(), 1);
-    assert_eq!(outcome.response().supported_versions(), None);
+    assert_eq!(outcome.result().status().raw(), 1);
+    assert_eq!(
+        outcome
+            .discover_versions_response()
+            .expect("completed Discover Versions response stays typed")
+            .supported_versions(),
+        None
+    );
 }
 
 #[test]

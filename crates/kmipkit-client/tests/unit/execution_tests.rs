@@ -132,7 +132,7 @@ fn candidate_build_outgoing_request(
         batch = batch.with_client_correlation_value(value);
     }
     let limits = CodecLimits::defaults();
-    let message = request_message_for_test(&batch, &limits)
+    let message = request_message_for_test(batch, &limits)
         .expect("the typed Discover Versions request is valid");
     let header = message.header();
     CandidateRequest {

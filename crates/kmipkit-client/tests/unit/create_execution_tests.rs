@@ -295,11 +295,19 @@ fn create_failure_preserves_result_and_does_not_retry() {
     };
     assert_eq!(response.result().status().raw(), OPERATION_FAILED);
     assert_eq!(
-        response.result().reason().map(|reason| reason.raw()),
+        response
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(RESPONSE_TOO_LARGE)
     );
     assert!(!format!("{response:?}").contains(RESPONSE_SENTINEL));
     assert!(!format!("{result:?}").contains(RESPONSE_SENTINEL));
+    assert!(
+        result
+            .get(0)
+            .is_some_and(|item| !item.outcome().to_string().contains(RESPONSE_SENTINEL))
+    );
     assert!(
         fake.borrow()
             .captured_logs()
