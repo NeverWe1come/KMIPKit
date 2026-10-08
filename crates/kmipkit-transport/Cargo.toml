@@ -47,8 +47,13 @@ path = "tests/resolver.rs"
 name = "tls_config"
 path = "tests/tls_config.rs"
 
+[[test]]
+name = "tls_policy"
+path = "tests/tls_policy.rs"
+
 [dev-dependencies]
 kmipkit-test-support = { workspace = true, default-features = false, features = ["fixtures"] }
+rcgen.workspace = true
 
 [lints]
 workspace = true

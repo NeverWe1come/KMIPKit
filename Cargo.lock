@@ -379,6 +379,7 @@ dependencies = [
  "bytes",
  "hyper",
  "kmipkit-test-support",
+ "rcgen",
  "rustls",
  "rustls-native-certs",
  "tokio",
