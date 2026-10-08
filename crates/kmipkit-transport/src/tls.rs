@@ -29,6 +29,11 @@ use crate::config::TransportConfigError;
 const MAX_TICKETS: usize = 16;
 const MAX_LOCAL_TICKET_AGE: Duration = Duration::from_hours(1);
 
+/// Selects the AWS-LC provider retained by one validated transport configuration.
+pub(crate) fn aws_lc_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
+    Arc::new(aws_lc_rs::default_provider())
+}
+
 /// Monotonic elapsed time used to age cached TLS tickets.
 pub(crate) trait MonotonicClock: Send + Sync {
     /// Returns a duration that never moves backwards for this clock instance.
@@ -194,7 +199,7 @@ pub(crate) fn build_client_config_with_clock(
     configuration: &TransportConfig,
     clock: Arc<dyn MonotonicClock>,
 ) -> Result<TlsClientConfig, TransportConfigError> {
-    let provider = Arc::new(aws_lc_rs::default_provider());
+    let provider = Arc::clone(configuration.tls_crypto_provider());
     let verifier = build_webpki_verifier(configuration, Arc::clone(&provider))?;
     let builder = tls13_builder(provider)?.with_webpki_verifier(verifier);
     Ok(finish_client_config(configuration, clock, builder))
@@ -204,21 +209,18 @@ fn build_webpki_verifier(
     configuration: &TransportConfig,
     provider: Arc<rustls::crypto::CryptoProvider>,
 ) -> Result<Arc<WebPkiServerVerifier>, TransportConfigError> {
-    let revocation_lists = configuration.tls_revocation_lists().to_vec();
-    WebPkiServerVerifier::builder_with_provider(
-        Arc::new(configuration.tls_roots().clone()),
-        provider,
-    )
-    .with_crls(revocation_lists.clone())
-    .enforce_revocation_expiration()
-    .build()
-    .map_err(|_| {
-        if revocation_lists.is_empty() {
-            TransportConfigError::InvalidTrust
-        } else {
-            TransportConfigError::InvalidRevocationList
-        }
-    })
+    let has_revocation_lists = !configuration.tls_revocation_lists().is_empty();
+    WebPkiServerVerifier::builder_with_provider(Arc::clone(configuration.tls_roots()), provider)
+        .with_crls(configuration.tls_revocation_lists().to_vec())
+        .enforce_revocation_expiration()
+        .build()
+        .map_err(|_| {
+            if has_revocation_lists {
+                TransportConfigError::InvalidRevocationList
+            } else {
+                TransportConfigError::InvalidTrust
+            }
+        })
 }
 
 fn tls13_builder(
@@ -234,8 +236,8 @@ fn finish_client_config(
     clock: Arc<dyn MonotonicClock>,
     builder: ConfigBuilder<ClientConfig, WantsClientCert>,
 ) -> TlsClientConfig {
-    let builder = builder.with_client_cert_resolver(Arc::new(SingleCertAndKey::from(Arc::new(
-        configuration.tls_identity().clone(),
+    let builder = builder.with_client_cert_resolver(Arc::new(SingleCertAndKey::from(Arc::clone(
+        configuration.tls_identity(),
     ))));
     let session_store = Arc::new(TlsSessionStore::new(clock));
     let mut rustls_config = builder;
@@ -257,7 +259,7 @@ pub(crate) fn build_client_config_with_test_verifier(
     configuration: &TransportConfig,
     clock: Arc<dyn MonotonicClock>,
 ) -> Result<(TlsClientConfig, Arc<CountingVerifier>), TransportConfigError> {
-    let provider = Arc::new(aws_lc_rs::default_provider());
+    let provider = Arc::clone(configuration.tls_crypto_provider());
     let inner = build_webpki_verifier(configuration, Arc::clone(&provider))?;
     let verifier = Arc::new(CountingVerifier::new(inner));
     let builder = tls13_builder(provider)?

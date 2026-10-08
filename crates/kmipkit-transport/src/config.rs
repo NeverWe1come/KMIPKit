@@ -3,11 +3,12 @@
 use std::error::Error;
 use std::fmt;
 use std::net::IpAddr;
+use std::sync::Arc;
 use std::time::Duration;
 
 use hyper::Uri;
 use rustls::RootCertStore;
-use rustls::crypto::aws_lc_rs;
+use rustls::crypto::CryptoProvider;
 use rustls::pki_types::pem::PemObject;
 use rustls::pki_types::{CertificateDer, CertificateRevocationListDer, PrivateKeyDer, ServerName};
 use rustls::sign::CertifiedKey;
@@ -349,10 +350,10 @@ impl ClientIdentity {
         }
     }
 
-    fn parse(self) -> Result<CertifiedKey, TransportConfigError> {
+    fn parse(self, provider: &CryptoProvider) -> Result<CertifiedKey, TransportConfigError> {
         let certificates = self.certificate_chain.parse()?;
         let private_key = self.private_key.parse()?;
-        CertifiedKey::from_der(certificates, private_key, &aws_lc_rs::default_provider())
+        CertifiedKey::from_der(certificates, private_key, provider)
             .map_err(|_| TransportConfigError::InvalidCredential)
     }
 }
@@ -572,8 +573,9 @@ pub struct TransportConfig {
     target_uri: Option<String>,
     timeouts: TimeoutPolicy,
     max_request_bytes: usize,
-    trust: RootCertStore,
-    identity: CertifiedKey,
+    trust: Arc<RootCertStore>,
+    identity: Arc<CertifiedKey>,
+    crypto_provider: Arc<CryptoProvider>,
     revocation_lists: Vec<CertificateRevocationListDer<'static>>,
     tls_server_name: ServerName<'static>,
     enable_sni: bool,
@@ -619,12 +621,16 @@ impl TransportConfig {
         self.timeouts
     }
 
-    pub(crate) fn tls_roots(&self) -> &RootCertStore {
+    pub(crate) fn tls_roots(&self) -> &Arc<RootCertStore> {
         &self.trust
     }
 
-    pub(crate) fn tls_identity(&self) -> &CertifiedKey {
+    pub(crate) fn tls_identity(&self) -> &Arc<CertifiedKey> {
         &self.identity
+    }
+
+    pub(crate) fn tls_crypto_provider(&self) -> &Arc<CryptoProvider> {
+        &self.crypto_provider
     }
 
     pub(crate) fn tls_revocation_lists(&self) -> &[CertificateRevocationListDer<'static>] {
@@ -653,6 +659,7 @@ impl fmt::Debug for TransportConfig {
             .field("max_request_bytes", &self.max_request_bytes)
             .field("trust", &"[REDACTED]")
             .field("identity", &"[REDACTED]")
+            .field("crypto_provider", &"AWS-LC")
             .field("revocation_lists", &"[REDACTED]")
             .field("tls_server_name", &"[REDACTED]")
             .field("enable_sni", &self.enable_sni)
@@ -742,8 +749,9 @@ impl TransportConfigBuilder {
         let identity_input = self.identity.ok_or(TransportConfigError::MissingIdentity)?;
         let trust_source = self.trust.ok_or(TransportConfigError::MissingTrust)?;
         let (tls_server_name, enable_sni) = self.endpoint.server_name(self.tls_server_name)?;
-        let identity = identity_input.parse()?;
-        let trust = trust_source.load()?;
+        let crypto_provider = crate::tls::aws_lc_crypto_provider();
+        let identity = Arc::new(identity_input.parse(&crypto_provider)?);
+        let trust = Arc::new(trust_source.load()?);
         let mut revocation_lists = Vec::new();
         for list in self.revocation_lists {
             revocation_lists.extend(list.parse()?);
@@ -755,6 +763,7 @@ impl TransportConfigBuilder {
             max_request_bytes: self.max_request_bytes,
             trust,
             identity,
+            crypto_provider,
             revocation_lists,
             tls_server_name,
             enable_sni,
