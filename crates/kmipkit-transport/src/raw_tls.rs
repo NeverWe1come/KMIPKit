@@ -43,7 +43,7 @@ type WorkerSpawnerForTest =
     Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
 
 const RESPONSE_HEADER_LEN: usize = 8;
-const RESPONSE_STRUCTURE_TAG: [u8; 3] = [0x42, 0x00, 0x78];
+const RESPONSE_STRUCTURE_TAG: [u8; 3] = [0x42, 0x00, 0x7B];
 const TTLV_STRUCTURE_TYPE: u8 = 0x01;
 
 /// A serialized synchronous adapter for raw TTLV over TLS 1.3 with mutual TLS.
@@ -760,7 +760,7 @@ impl ResponseBufferDropObserver {
 #[cfg(test)]
 #[test]
 fn response_buffer_zeroizes_partially_read_body_before_release() {
-    const HEADER: [u8; RESPONSE_HEADER_LEN] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 8];
+    const HEADER: [u8; RESPONSE_HEADER_LEN] = [0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 8];
     const INITIALIZED_BODY: [u8; 4] = [0xA5, 0x5A, 0xC3, 0x3C];
     const RESPONSE_LEN: usize = RESPONSE_HEADER_LEN + 8;
 
