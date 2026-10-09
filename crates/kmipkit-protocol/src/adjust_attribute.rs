@@ -53,9 +53,9 @@ impl AdjustmentType {
 
 /// A client-to-server Adjust Attribute request from OASIS KMIP v2.1 §6.1.3.
 ///
-/// Table 170 preserves the optional Unique Identifier and Adjustment Value,
-/// followed by the required Attribute Reference and Adjustment Type. The
-/// client does not apply the adjustment locally or synthesize a default value.
+/// Table 170 orders the optional Unique Identifier, required Attribute
+/// Reference and Adjustment Type, then optional Adjustment Value. The client
+/// does not apply the adjustment locally or synthesize a default value.
 #[derive(Debug)]
 pub struct AdjustAttributeRequest {
     unique_identifier: Option<String>,

@@ -5,7 +5,10 @@
 //! Traceability: KMIPKIT-0016-FR-003/FR-010 and SC-002/SC-003.
 //! These structural vectors do not claim that an official OASIS case passed.
 
-use crate::{AddAttributeRequest, NewAttribute};
+use crate::{
+    AddAttributeRequest, AddAttributeResponse, NewAttribute, ResponseBatchItemView,
+    ResponseMessage, ResultReason, ResultStatus,
+};
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -15,6 +18,19 @@ const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME: u32 = 0x0042_000A;
 const ATTRIBUTE_VALUE: u32 = 0x0042_000B;
+const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_0004;
+const RESPONSE_HEADER: u32 = 0x0042_007A;
+const PROTOCOL_VERSION: u32 = 0x0042_0069;
+const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
+const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
+const TIME_STAMP: u32 = 0x0042_0092;
+const BATCH_COUNT: u32 = 0x0042_000D;
+const BATCH_ITEM: u32 = 0x0042_000F;
+const OPERATION: u32 = 0x0042_005C;
+const RESULT_STATUS: u32 = 0x0042_007F;
+const RESULT_REASON: u32 = 0x0042_007E;
+const RESULT_MESSAGE: u32 = 0x0042_007D;
+const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const OBJECT_IDENTIFIER: &str = "object-id-17";
 
 fn tag(raw_tag: u32) -> Tag {
@@ -36,6 +52,51 @@ fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
             .expect("fixture structure stays within the model depth limit");
     }
     structure
+}
+
+fn response_message(
+    status: u32,
+    reason: Option<u32>,
+    result_message: Option<&str>,
+    payload: Option<Structure>,
+) -> ResponseMessage {
+    let version = structure([
+        item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+    ]);
+    let header = structure([
+        item(PROTOCOL_VERSION, Value::structure(version)),
+        item(TIME_STAMP, Value::date_time(1)),
+        item(BATCH_COUNT, Value::integer(1)),
+    ]);
+    let mut batch = vec![
+        item(OPERATION, Value::enumeration(ADD_ATTRIBUTE_OPERATION)),
+        item(RESULT_STATUS, Value::enumeration(status)),
+    ];
+    if let Some(reason) = reason {
+        batch.push(item(RESULT_REASON, Value::enumeration(reason)));
+    }
+    if let Some(result_message) = result_message {
+        batch.push(item(
+            RESULT_MESSAGE,
+            Value::text_string(result_message.to_owned()),
+        ));
+    }
+    if let Some(payload) = payload {
+        batch.push(item(RESPONSE_PAYLOAD, Value::structure(payload)));
+    }
+    let tree = structure([
+        item(RESPONSE_HEADER, Value::structure(header)),
+        item(BATCH_ITEM, Value::structure(structure(batch))),
+    ]);
+    ResponseMessage::try_from_ttlv(tree).expect("fixture is a valid KMIP 2.1 response message")
+}
+
+fn response_item(message: &ResponseMessage) -> ResponseBatchItemView<'_> {
+    message
+        .batch_items()
+        .next()
+        .expect("fixture contains one response batch item")
 }
 
 #[test]
@@ -193,4 +254,64 @@ fn request_preserves_nested_vendor_value_when_identifier_is_omitted() {
         ]),
         "the nested vendor name and caller bytes remain unchanged and ordered"
     );
+}
+
+#[test]
+fn successful_response_preserves_the_required_unique_identifier() {
+    // §6.1.2 Table 168 requires Unique Identifier on successful responses.
+    let payload = structure([item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string(OBJECT_IDENTIFIER.to_owned()),
+    )]);
+    let message = response_message(0, None, None, Some(payload));
+    let response = AddAttributeResponse::try_from_response_item(response_item(&message))
+        .expect("Table 168 success contains its required Unique Identifier");
+
+    assert_eq!(response.result().status(), ResultStatus::from_raw(0));
+    assert_eq!(response.result().reason(), None);
+    assert_eq!(response.unique_identifier(), Some(OBJECT_IDENTIFIER));
+}
+
+#[test]
+fn successful_response_without_unique_identifier_is_rejected() {
+    // Table 168 requires Unique Identifier on every successful response.
+    let message = response_message(0, None, None, Some(Structure::new()));
+    assert!(
+        AddAttributeResponse::try_from_response_item(response_item(&message)).is_err(),
+        "a successful response without Unique Identifier is malformed"
+    );
+}
+
+#[test]
+fn response_preserves_each_unique_table_169_failure_reason_and_message() {
+    // Table 169 assigns Operation Failed to these unique reasons. Its printed
+    // list repeats Invalid Message; each assigned reason is checked once.
+    let table_169_reasons = [
+        0x23, 0x2C, 0x04, 0x35, 0x37, 0x1D, 0x3A, 0x15, 0x14, 0x08, 0x07, 0x05, 0x0C, 0x02, 0x43,
+    ];
+
+    for expected_reason in table_169_reasons {
+        let message = response_message(
+            1,
+            Some(expected_reason),
+            Some("Add Attribute rejected by server"),
+            None,
+        );
+        let response = AddAttributeResponse::try_from_response_item(response_item(&message))
+            .expect("Table 169 errors retain the common operation result");
+
+        assert_eq!(response.result().status(), ResultStatus::from_raw(1));
+        assert_eq!(
+            response.result().reason(),
+            Some(ResultReason::from_raw(expected_reason))
+        );
+        assert_eq!(
+            response
+                .result()
+                .message()
+                .map(crate::ResultMessage::as_str),
+            Some("Add Attribute rejected by server")
+        );
+        assert!(response.unique_identifier().is_none());
+    }
 }

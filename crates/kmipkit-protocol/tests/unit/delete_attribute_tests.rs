@@ -3,13 +3,11 @@
 //! Derived Delete Attribute request/response vectors for OASIS KMIP v2.1
 //! §6.1.13, Tables 202–204, and §5.6, Table 162. Traceability:
 //! KMIPKIT-0016-FR-005/FR-010 and SC-002/SC-003.
-//! Operation-specific failures from Table 204 are exercised with the client
-//! result-preservation tests in T032; these structural vectors do not claim
-//! that an official OASIS case passed.
+//! These derived vectors do not claim that an official OASIS case passed.
 
 use crate::{
     AttributeReference, CurrentAttribute, DeleteAttributeRequest, DeleteAttributeResponse,
-    ResponseBatchItemView, ResponseMessage, ResultStatus,
+    ResponseBatchItemView, ResponseMessage, ResultReason, ResultStatus,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
@@ -29,6 +27,8 @@ const BATCH_COUNT: u32 = 0x0042_000D;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATION: u32 = 0x0042_005C;
 const RESULT_STATUS: u32 = 0x0042_007F;
+const RESULT_REASON: u32 = 0x0042_007E;
+const RESULT_MESSAGE: u32 = 0x0042_007D;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const OBJECT_IDENTIFIER: &str = "object-id-17";
 
@@ -54,6 +54,15 @@ fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
 }
 
 fn successful_response_message(payload: Structure) -> ResponseMessage {
+    response_message(0, None, None, Some(payload))
+}
+
+fn response_message(
+    status: u32,
+    reason: Option<u32>,
+    result_message: Option<&str>,
+    payload: Option<Structure>,
+) -> ResponseMessage {
     let version = structure([
         item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
         item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
@@ -63,14 +72,25 @@ fn successful_response_message(payload: Structure) -> ResponseMessage {
         item(TIME_STAMP, Value::date_time(1)),
         item(BATCH_COUNT, Value::integer(1)),
     ]);
-    let batch = structure([
+    let mut batch = vec![
         item(OPERATION, Value::enumeration(DELETE_ATTRIBUTE_OPERATION)),
-        item(RESULT_STATUS, Value::enumeration(0)),
-        item(RESPONSE_PAYLOAD, Value::structure(payload)),
-    ]);
+        item(RESULT_STATUS, Value::enumeration(status)),
+    ];
+    if let Some(reason) = reason {
+        batch.push(item(RESULT_REASON, Value::enumeration(reason)));
+    }
+    if let Some(result_message) = result_message {
+        batch.push(item(
+            RESULT_MESSAGE,
+            Value::text_string(result_message.to_owned()),
+        ));
+    }
+    if let Some(payload) = payload {
+        batch.push(item(RESPONSE_PAYLOAD, Value::structure(payload)));
+    }
     let message = structure([
         item(RESPONSE_HEADER, Value::structure(header)),
-        item(BATCH_ITEM, Value::structure(batch)),
+        item(BATCH_ITEM, Value::structure(structure(batch))),
     ]);
     ResponseMessage::try_from_ttlv(message).expect("fixture is a valid KMIP 2.1 response message")
 }
@@ -263,4 +283,47 @@ fn successful_response_contains_the_required_unique_identifier() {
 
     assert_eq!(response.result().status(), ResultStatus::from_raw(0));
     assert_eq!(response.unique_identifier(), Some(OBJECT_IDENTIFIER));
+}
+
+#[test]
+fn successful_response_without_unique_identifier_is_rejected() {
+    // Table 203 requires Unique Identifier on every successful response.
+    let message = response_message(0, None, None, Some(Structure::new()));
+    assert!(
+        DeleteAttributeResponse::try_from_response_item(response_item(&message)).is_err(),
+        "a successful response without Unique Identifier is malformed"
+    );
+}
+
+#[test]
+fn response_preserves_each_table_204_failure_reason_and_message() {
+    // Table 204 assigns Operation Failed to each listed reason.
+    let table_204_reasons = [
+        0x20, 0x21, 0x22, 0x2C, 0x37, 0x15, 0x14, 0x08, 0x07, 0x04, 0x05, 0x0C, 0x02, 0x43,
+    ];
+
+    for expected_reason in table_204_reasons {
+        let message = response_message(
+            1,
+            Some(expected_reason),
+            Some("Delete Attribute rejected by server"),
+            None,
+        );
+        let response = DeleteAttributeResponse::try_from_response_item(response_item(&message))
+            .expect("Table 204 errors retain the common operation result");
+
+        assert_eq!(response.result().status(), ResultStatus::from_raw(1));
+        assert_eq!(
+            response.result().reason(),
+            Some(ResultReason::from_raw(expected_reason))
+        );
+        assert_eq!(
+            response
+                .result()
+                .message()
+                .map(crate::ResultMessage::as_str),
+            Some("Delete Attribute rejected by server")
+        );
+        assert!(response.unique_identifier().is_none());
+    }
 }
