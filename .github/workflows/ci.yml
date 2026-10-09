@@ -486,6 +486,10 @@ jobs:
         id: verify-generated-attribute-ttlv-types
         run: python3 -B tools/normative_catalog/generate_attribute_types.py --repo-root . --check
 
+      - name: Verify generated attribute policy lookup
+        id: verify-generated-attribute-policy-lookup
+        run: python3 -B tools/normative_catalog/generate_attribute_policy.py --repo-root . --check
+
       - name: Diagnose job result
         id: ci-diagnostics
         if: always()

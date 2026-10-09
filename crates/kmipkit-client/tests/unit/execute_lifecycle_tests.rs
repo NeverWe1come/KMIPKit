@@ -275,6 +275,23 @@ fn successful_empty_discover_versions_list_is_preserved() {
         .execute(discover_versions_batch(None), &CodecLimits::defaults())
         .expect("empty Discover Versions result list is valid");
 
+    let outcome = result.get(0).expect("one result").outcome();
+    let response_view = outcome.response();
+    assert_eq!(response_view.result(), outcome.result());
+    assert_eq!(response_view.supported_versions(), Some(&[][..]));
+    assert!(response_view.discover_versions().is_some());
+    assert!(response_view.create().is_none());
+    assert!(response_view.create_key_pair().is_none());
+    assert!(response_view.create_split_key().is_none());
+    assert!(response_view.add_attribute().is_none());
+    assert!(response_view.adjust_attribute().is_none());
+    assert!(response_view.delete_attribute().is_none());
+    assert!(response_view.modify_attribute().is_none());
+    assert!(response_view.set_attribute().is_none());
+    assert!(response_view.get_attributes().is_none());
+    assert!(response_view.get_attribute_list().is_none());
+    assert!(format!("{response_view:?}").starts_with("DiscoverVersions("));
+
     assert_eq!(
         result
             .get(0)
@@ -310,6 +327,10 @@ fn server_failure_result_is_preserved_as_a_completed_operation_result() {
     );
     assert_eq!(outcome.result().status().raw(), 1);
     assert_eq!(outcome.asynchronous_correlation_value(), None);
+    let response_view = outcome.response();
+    assert_eq!(response_view.result(), outcome.result());
+    assert_eq!(response_view.supported_versions(), None);
+    assert!(response_view.discover_versions().is_some());
     assert!(outcome.create_response().is_none());
     assert!(outcome.create_key_pair_response().is_none());
     assert!(outcome.create_split_key_response().is_none());
@@ -321,6 +342,17 @@ fn server_failure_result_is_preserved_as_a_completed_operation_result() {
             .supported_versions(),
         None
     );
+    assert!(response_view.create().is_none());
+    assert!(response_view.create_key_pair().is_none());
+    assert!(response_view.create_split_key().is_none());
+    assert!(response_view.add_attribute().is_none());
+    assert!(response_view.adjust_attribute().is_none());
+    assert!(response_view.delete_attribute().is_none());
+    assert!(response_view.modify_attribute().is_none());
+    assert!(response_view.set_attribute().is_none());
+    assert!(response_view.get_attributes().is_none());
+    assert!(response_view.get_attribute_list().is_none());
+    assert!(format!("{response_view:?}").starts_with("DiscoverVersions("));
 }
 
 #[test]

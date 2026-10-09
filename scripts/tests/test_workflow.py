@@ -87,6 +87,20 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(contents, r"(?ms)^permissions:\s*\n\s*contents:\s*read\b")
         self.assertNotRegex(contents, r"(?m)^\s*(?:write-all|packages:\s*write|contents:\s*write)\b")
 
+    def test_normative_inventory_checks_generated_attribute_policy(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "normative-inventory")
+        step = re.search(
+            r"(?ms)^      - name: Verify generated attribute policy lookup\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step, "The pull-request normative inventory job must check generated attribute policy.")
+        self.assertRegex(step.group(1), r"(?m)^        id: verify-generated-attribute-policy-lookup$")
+        self.assertRegex(
+            step.group(1),
+            r"(?m)^        run: python3 -B tools/normative_catalog/generate_attribute_policy\.py --repo-root \. --check$",
+        )
+
     def test_external_actions_use_full_commit_sha_and_release_comment(self) -> None:
         contents = self.require_workflow()
         action_lines = [line for line in contents.splitlines() if " uses:" in line]

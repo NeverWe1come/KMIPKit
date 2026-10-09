@@ -1,18 +1,22 @@
 # Typed client execution
 
 This guide describes the typed execution foundation introduced by
-KMIPKIT-0007 and its current operation APIs, including Create, Create Key
-Pair, and Create Split Key. For configuring a production connection, see the
-[TLS and HTTPS transport guide](production-transports.md).
+KMIPKIT-0007 and its current operation APIs: Discover Versions, Create, Create
+Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete Attribute,
+Get Attributes, Get Attribute List, Modify Attribute, and Set Attribute. For
+configuring a production connection, see the [TLS and HTTPS transport guide](production-transports.md).
 
 ## Typed request boundary
 
 The synchronous `kmipkit_client::Client::execute` API accepts a
 `ClientBatch` containing only the closed `ClientRequest` variants. The client
 supports explicitly requested client-to-server Discover Versions, Create,
-Create Key Pair, and Create Split Key requests. Discover Versions advertises
-exactly the KMIP 2.1 version pair (2, 1),
-as specified by OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.
+Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
+Attribute, Get Attributes, Get Attribute List, Modify Attribute, and Set
+Attribute requests. Discover Versions advertises exactly the KMIP 2.1 version pair (2,
+1), as specified by OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.
+Get Attributes and Get Attribute List use their typed request and response
+models from §§6.1.20–6.1.21.
 Passing generic TTLV `Item` or
 `Structure` values, encoded message bytes, or caller-defined conversion hooks
 to this API is not supported.
@@ -22,6 +26,16 @@ client does not run it as a hidden preflight or use it to negotiate another
 operation. The response reports versions only; it does not establish support
 for other operations. An empty version list or a server's `Operation Not
 Supported` result is returned as an ordinary typed outcome.
+
+Each batch item retains its operation-specific response. Calling
+`ClientBatchOutcome::response()` returns a borrowed `ClientResponseView` with
+the shared `result()` accessor and typed accessors for Discover Versions,
+Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
+Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, and
+Set Attribute. When an operation is Pending, its `PendingOutcome` retains that typed
+response and lends the opaque correlation value through
+`asynchronous_correlation_value()`. KMIPKit does not poll or retry
+automatically.
 
 KMIPKit 1.0 is scoped to KMIP 2.1. This slice emits and accepts Protocol
 Version 2.1 only under the product decision recorded for

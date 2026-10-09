@@ -28084,7 +28084,33 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Activation Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server or Client",
+      "source_modifiable_by_client": "Yes, only while in Pre-Active state",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 30",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.1"
+            }
+          ],
+          "source_text": "Once the state transition from Pre-Active has occurred, then this attribute SHALL NOT be changed or deleted before the object is destroyed."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.1"
+            }
+          ],
+          "source_text": "Yes, only while in Pre-Active state"
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME",
@@ -28115,7 +28141,14 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "Alternative Name"
+      "source_name": "Alternative Name",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 32",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
@@ -28145,7 +28178,28 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Sensitive",
-      "source_encoding": "Boolean"
+      "source_encoding": "Boolean",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 34",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.3"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
@@ -28177,7 +28231,14 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "Application Specific Information"
+      "source_name": "Application Specific Information",
+      "source_initially_set_by": "Client or Server (only if the Application Data is omitted, in the client request)",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 36",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ARCHIVE-DATE",
@@ -28205,7 +28266,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Archive Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 38",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
@@ -28227,7 +28295,14 @@
       ],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": []
+      "verification_refs": [],
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 40",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-LENGTH",
@@ -28255,7 +28330,38 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Certificate Length",
-      "source_encoding": "Integer"
+      "source_encoding": "Integer",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 44",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.8"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.8"
+            }
+          ],
+          "source_text": "The Certificate Length SHALL be set by the server when the object is created or registered, and then SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
@@ -28283,7 +28389,38 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Certificate Type",
-      "source_encoding": "Enumeration"
+      "source_encoding": "Enumeration",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 42",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.7"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.7"
+            }
+          ],
+          "source_text": "The Certificate Type value SHALL be set by the server when the certificate is created or registered and then SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-COMMENT",
@@ -28311,7 +28448,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Description",
-      "source_encoding": "Text String"
+      "source_encoding": "Text String",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 46",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-DATE",
@@ -28339,7 +28483,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Compromise Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 48",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
@@ -28367,7 +28518,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Compromise Occurrence Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 50",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CONTACT-INFORMATION",
@@ -28395,7 +28553,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Contact Information",
-      "source_encoding": "Text String"
+      "source_encoding": "Text String",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 52",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
@@ -28423,7 +28588,33 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Cryptographic Algorithm",
-      "source_encoding": "Enumeration"
+      "source_encoding": "Enumeration",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 54",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.13"
+            }
+          ],
+          "source_text": "This attribute SHALL be set by the server when the object is created or registered and then SHALL NOT be changed or deleted before the object is destroyed."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.13"
+            }
+          ],
+          "source_text": "Yes (except for Secret Data and Opaque Object)"
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
@@ -28452,7 +28643,14 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "Yes",
-      "source_name": "Cryptographic Domain Parameters"
+      "source_name": "Cryptographic Domain Parameters",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 56",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH",
@@ -28480,7 +28678,33 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Cryptographic Length",
-      "source_encoding": "Integer"
+      "source_encoding": "Integer",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 58",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.15"
+            }
+          ],
+          "source_text": "This attribute SHALL be set by the server when the object is created or registered, and then SHALL NOT be changed or deleted before the object is destroyed."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.15"
+            }
+          ],
+          "source_text": "Yes (Except for Opaque Object)"
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
@@ -28509,7 +28733,14 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "Cryptographic Parameters"
+      "source_name": "Cryptographic Parameters",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 60",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
@@ -28537,7 +28768,24 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Cryptographic Usage Mask",
-      "source_encoding": "Integer"
+      "source_encoding": "Integer",
+      "source_initially_set_by": "Server or Client",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 62",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.17"
+            }
+          ],
+          "source_text": "Yes (Except for Opaque Object)"
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
@@ -28565,7 +28813,33 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Deactivation Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server or Client",
+      "source_modifiable_by_client": "Yes, only while in Pre-Active or Active state",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 64",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.18"
+            }
+          ],
+          "source_text": "This attribute SHALL NOT be changed or deleted before the object is destroyed, unless the object is in the Pre-Active or Active state."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.18"
+            }
+          ],
+          "source_text": "Yes, only while in Pre-Active or Active state"
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION",
@@ -28593,7 +28867,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Description",
-      "source_encoding": "Text String"
+      "source_encoding": "Text String",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 66",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DESTROY-DATE",
@@ -28621,7 +28902,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Destroy Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 68",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
@@ -28650,7 +28938,33 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "Digest"
+      "source_name": "Digest",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 70",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.21"
+            }
+          ],
+          "source_text": "The digest(s) are static and SHALL be set by the server when the object is created or registered, provided that the server has access to the Key Material or the Digest Value (possibly obtained via out-of-band mechanisms)."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.21"
+            }
+          ],
+          "source_text": "Yes, if the server has access to the Digest Value or the Key Material (for keys and secret data), the Certificate Value (for certificates) or the Opaque Data Value (for opaque objects)."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
@@ -28678,7 +28992,38 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Digital Signature Algorithm",
-      "source_encoding": "Enumeration"
+      "source_encoding": "Enumeration",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 72",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.22"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.22"
+            }
+          ],
+          "source_text": "This attribute SHALL be set by the server when the object is created or registered and then SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
@@ -28708,7 +29053,28 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Extractable",
-      "source_encoding": "Boolean"
+      "source_encoding": "Boolean",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 74",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.23"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-FRESH",
@@ -28736,7 +29102,28 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Fresh",
-      "source_encoding": "Boolean"
+      "source_encoding": "Boolean",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 76",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.24"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE",
@@ -28764,7 +29151,38 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Initial Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 78",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.25"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.25"
+            }
+          ],
+          "source_text": "This attribute SHALL be set by the server when the object is created or registered, and then SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
@@ -28792,7 +29210,28 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Key Format Type",
-      "source_encoding": "Enumeration"
+      "source_encoding": "Enumeration",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 80",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.26"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
@@ -28823,7 +29262,14 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "Key Value Location"
+      "source_name": "Key Value Location",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 83",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
@@ -28855,7 +29301,33 @@
       "verification_refs": [],
       "source_name": "Key Value Present",
       "source_encoding": "Boolean",
-      "source_requiredness": "No"
+      "source_requiredness": "No",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 85",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.28"
+            }
+          ],
+          "source_text": "It SHALL NOT be specified by the client in a Register request."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.28"
+            }
+          ],
+          "source_text": "The value of Key Value Present SHALL NOT be modified by either the client or the server."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
@@ -28883,7 +29355,28 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Last Change Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 87",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.29"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
@@ -28911,7 +29404,72 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Lease Time",
-      "source_encoding": "Interval"
+      "source_encoding": "Interval",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 89",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.30"
+            }
+          ],
+          "source_text": "This attribute is read-only for clients."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.30"
+            }
+          ],
+          "source_text": "It SHALL be modified by the server only."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.30"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.2"
+            }
+          ],
+          "source_text": "Read-Only attributes SHALL NOT be added using the Add Attribute operation."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.30"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.3"
+            }
+          ],
+          "source_text": "Read-Only attributes SHALL NOT be added or modified using this operation."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.30"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.51"
+            }
+          ],
+          "source_text": "Read-Only attributes SHALL NOT be added or modified using this operation."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-LINK",
@@ -28942,7 +29500,14 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "Link"
+      "source_name": "Link",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 92",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-NAME",
@@ -28973,7 +29538,14 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "Name"
+      "source_name": "Name",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 94",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
@@ -29003,7 +29575,28 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Never Extractable",
-      "source_encoding": "Boolean"
+      "source_encoding": "Boolean",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 96",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.33"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
@@ -29031,7 +29624,24 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "NIST Key Type",
-      "source_encoding": "Enumeration"
+      "source_encoding": "Enumeration",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 98",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.34"
+            }
+          ],
+          "source_text": "Although the attribute is optional, once set, MAY NOT be deleted or modified by either the client or the server."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP",
@@ -29059,7 +29669,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Object Group",
-      "source_encoding": "Text String"
+      "source_encoding": "Text String",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 100",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE",
@@ -29087,7 +29704,38 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Object Type",
-      "source_encoding": "Enumeration"
+      "source_encoding": "Enumeration",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 102",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.36"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.36"
+            }
+          ],
+          "source_text": "The Object Type of a Managed Object (e.g., public key, private key, symmetric key, etc.) SHALL be set by the server when the object is created or registered and then SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE",
@@ -29115,7 +29763,38 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Opaque Data Type",
-      "source_encoding": "Enumeration"
+      "source_encoding": "Enumeration",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 104",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.37"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.37"
+            }
+          ],
+          "source_text": "The Opaque Data Type of an Opaque Object SHALL be set by the server when the object is registered and then SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
@@ -29143,7 +29822,24 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Original Creation Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Client or Server (when object is generated by Server)",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 106",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.38"
+            }
+          ],
+          "source_text": "In all cases, once the Original Creation Date is set, it SHALL NOT be deleted or updated."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME",
@@ -29171,7 +29867,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "PKCS#12 Friendly Name",
-      "source_encoding": "Text String"
+      "source_encoding": "Text String",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 108",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROCESS-START-DATE",
@@ -29199,7 +29902,33 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Process Start Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server or Client",
+      "source_modifiable_by_client": "Yes, only while in Pre-Active or Active state and as long as the Process Start Date has been not reached.",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 110",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.40"
+            }
+          ],
+          "source_text": "Once the Process Start Date has occurred, then this attribute SHALL NOT be changed or deleted before the object is destroyed."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.40"
+            }
+          ],
+          "source_text": "Yes, only while in Pre-Active or Active state and as long as the Process Start Date has been not reached."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECT-STOP-DATE",
@@ -29227,7 +29956,33 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Protect Stop Date",
-      "source_encoding": "Date-Time"
+      "source_encoding": "Date-Time",
+      "source_initially_set_by": "Server or Client",
+      "source_modifiable_by_client": "Yes, only while in Pre-Active or Active state and as long as the Protect Stop Date has not been reached.",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 112",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.41"
+            }
+          ],
+          "source_text": "Once the Protect Stop Date has occurred, then this attribute SHALL NOT be changed or deleted before the object is destroyed."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.41"
+            }
+          ],
+          "source_text": "Yes, only while in Pre-Active or Active state and as long as the Protect Stop Date has not been reached."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-LEVEL",
@@ -29255,7 +30010,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Protection Level",
-      "source_encoding": "Enumeration"
+      "source_encoding": "Enumeration",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 114",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
@@ -29285,7 +30047,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Protection Period",
-      "source_encoding": "Interval"
+      "source_encoding": "Interval",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 116",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK",
@@ -29313,7 +30082,28 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Protection Storage Mask",
-      "source_encoding": "Integer"
+      "source_encoding": "Integer",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 118",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.44"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-QUANTUM-SAFE",
@@ -29341,7 +30131,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Quantum Safe",
-      "source_encoding": "Boolean"
+      "source_encoding": "Boolean",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 120",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
@@ -29371,7 +30168,24 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Random Number Generator",
-      "source_encoding": "RNG Parameters"
+      "source_encoding": "RNG Parameters",
+      "source_initially_set_by": "Client (when the object is generated by the Client and registered) or Server (when object is generated by Server)",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 122",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.46"
+            }
+          ],
+          "source_text": "In all cases, once the Random Number Generator attribute is set, it SHALL NOT be deleted or updated."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
@@ -29400,7 +30214,14 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "Revocation Reason"
+      "source_name": "Revocation Reason",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 124",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
@@ -29428,7 +30249,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Rotate Automatic",
-      "source_encoding": "Boolean"
+      "source_encoding": "Boolean",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 126",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-DATE",
@@ -29456,7 +30284,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Rotate Date",
-      "source_encoding": "Date Time"
+      "source_encoding": "Date Time",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 128",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-GENERATION",
@@ -29484,7 +30319,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Rotate Generation",
-      "source_encoding": "Integer"
+      "source_encoding": "Integer",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 130",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
@@ -29512,7 +30354,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Rotate Interval",
-      "source_encoding": "Interval"
+      "source_encoding": "Interval",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 132",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-LATEST",
@@ -29540,7 +30389,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Rotate Latest",
-      "source_encoding": "Boolean"
+      "source_encoding": "Boolean",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 134",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-NAME",
@@ -29568,7 +30424,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
-      "source_name": "Rotate Name"
+      "source_name": "Rotate Name",
+      "source_initially_set_by": "Client",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "Yes",
+      "source_always_required": "No",
+      "source_policy_table": "Table 136",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-OFFSET",
@@ -29596,7 +30459,14 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Rotate Offset",
-      "source_encoding": "Interval"
+      "source_encoding": "Interval",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "No",
+      "source_policy_table": "Table 138",
+      "source_operation_restrictions": [],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE",
@@ -29626,7 +30496,28 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Sensitive",
-      "source_encoding": "Boolean"
+      "source_encoding": "Boolean",
+      "source_initially_set_by": "Client or Server",
+      "source_modifiable_by_client": "Yes",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 140",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.55"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": []
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER",
@@ -29654,7 +30545,38 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Short Unique Identifier",
-      "source_encoding": "Byte String"
+      "source_encoding": "Byte String",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 142",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.56"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.56"
+            }
+          ],
+          "source_text": "This attribute SHALL be assigned by the key management system upon creation or registration of a Unique Identifier, and then SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STATE",
@@ -29682,7 +30604,56 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "State",
-      "source_encoding": "Enumeration"
+      "source_encoding": "Enumeration",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No, but only by the server in response to certain requests (see above)",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 144",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.57"
+            }
+          ],
+          "source_text": "The State SHALL NOT be changed by using the Modify Attribute operation on this attribute."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.57"
+            }
+          ],
+          "source_text": "The State SHALL only be changed by the server as a part of other operations or other server processes."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.57"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.57"
+            }
+          ],
+          "source_text": "No, but only by the server in response to certain requests (see above)"
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
@@ -29852,7 +30823,38 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Unique Identifier",
-      "source_encoding": "Text String, Enumeration or Integer"
+      "source_encoding": "Text String, Enumeration or Integer",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 147",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.58"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.58"
+            }
+          ],
+          "source_text": "This attribute SHALL be assigned by the key management system at creation or registration time, and then SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
@@ -29888,7 +30890,57 @@
       "implementation_refs": [],
       "verification_refs": [],
       "source_name": "Usage Limits",
-      "source_encoding": "Structure"
+      "source_encoding": "Structure",
+      "source_initially_set_by": "Server (Usage Limits Total, Usage Limits Count, and Usage Limits Unit) or Client (Usage Limits Total and/or Usage Limits Unit only)",
+      "source_modifiable_by_client": "Yes (Usage Limits Total and/or Usage Limits Unit only, as long as Get Usage Allocation has not been performed)",
+      "source_deletable_by_client": "Yes, as long as Get Usage Allocation has not been performed",
+      "source_always_required": "No",
+      "source_policy_table": "Table 149",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.59"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "7.40"
+            }
+          ],
+          "source_text": "The Usage Limits Count value SHALL NOT be set or modified by the client via the Add Attribute or Modify Attribute operations.",
+          "structure_table": "Table 392"
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.59"
+            }
+          ],
+          "source_text": "Changes made via the Modify Attribute operation reflect corrections to the Usage Limits Total value, but they SHALL NOT be changed once the Usage Limits Count value has changed by a Get Usage Allocation operation."
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.59"
+            }
+          ],
+          "source_text": "Yes (Usage Limits Total and/or Usage Limits Unit only, as long as Get Usage Allocation has not been performed)"
+        },
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.59"
+            }
+          ],
+          "source_text": "Yes, as long as Get Usage Allocation has not been performed"
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
@@ -29909,11 +30961,46 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "Attribute"
+      "source_name": "Attribute",
+      "source_value_policies": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.60"
+            }
+          ],
+          "structure_table": "Table 150",
+          "source_text": "Vendor Attributes created by the server with Vendor Identification “y” are not created (provided during object creation), set, added, adjusted, modified or deleted by the client.",
+          "value_predicate": {
+            "member_element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION",
+            "equals": "y",
+            "source_indicates_origin": "server_created"
+          },
+          "prohibited_client_operations": [
+            "created (provided during object creation)",
+            "Set Attribute",
+            "Add Attribute",
+            "Adjust Attribute",
+            "Modify Attribute",
+            "Delete Attribute"
+          ]
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
@@ -29942,7 +31029,38 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "X.509 Certificate Identifier"
+      "source_name": "X.509 Certificate Identifier",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 152",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.61"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.61"
+            }
+          ],
+          "source_text": "The X.509 Certificate Identifier SHALL be set by the server when the X.509 certificate is created or registered and then SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
@@ -29971,7 +31089,38 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "X.509 Certificate Issuer"
+      "source_name": "X.509 Certificate Issuer",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 154",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.62"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.62"
+            }
+          ],
+          "source_text": "These values SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
@@ -30000,7 +31149,38 @@
       "verification_refs": [],
       "source_encoding": "Structure",
       "source_requiredness": "",
-      "source_name": "X.509 Certificate Subject"
+      "source_name": "X.509 Certificate Subject",
+      "source_initially_set_by": "Server",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_always_required": "Yes",
+      "source_policy_table": "Table 156",
+      "source_operation_restrictions": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.63"
+            },
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "6.1.13"
+            }
+          ],
+          "source_text": "Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation."
+        }
+      ],
+      "source_conditional_rules": [
+        {
+          "source_refs": [
+            {
+              "source_id": "KMIPKIT-SRC-spec",
+              "section": "4.63"
+            }
+          ],
+          "source_text": "The X.509 Certificate Subject SHALL be set by the server based on the information it extracts from the X.509 certificate that is created (as a result of a Certify or a Re-certify operation) or registered (as part of a Register operation) and SHALL NOT be changed or deleted before the object is destroyed."
+        }
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-BITMASK-CRYPTOGRAPHIC-USAGE-MASK",
@@ -54292,8 +55472,19 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -54355,8 +55546,19 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -54780,8 +55982,19 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -55150,8 +56363,19 @@
         "KMIPKIT-TEST-PROF-5-12-6-3"
       ],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attribute_list.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -55233,8 +56457,19 @@
         "KMIPKIT-TEST-PROF-5-12-6-3"
       ],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -55820,8 +57055,19 @@
         "KMIPKIT-TEST-PROF-5-12-6-3"
       ],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -56523,8 +57769,19 @@
         "KMIPKIT-TEST-CN01-2-94"
       ],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -60680,14 +61937,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"
       ],
-    "requirement_ids": [
-      "KMIPKIT-REQ-SPEC-4.60-001"
-    ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.60-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-    "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "source_encoding": "Text String",
       "source_requiredness": "Yes"
     },
@@ -60706,16 +61973,26 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"
       ],
-    "requirement_ids": [
-      "KMIPKIT-REQ-SPEC-4.60-001"
-    ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.60-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [
         "KMIPKIT-TEST-CN01-2-42"
       ],
-    "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "source_encoding": "Varies, depending on attribute.",
       "source_requiredness": "Yes, except for the Notify operation"
     },
@@ -60734,14 +62011,24 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"
       ],
-    "requirement_ids": [
-      "KMIPKIT-REQ-SPEC-4.60-001"
-    ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.60-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-    "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0016",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "source_encoding": "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])",
       "source_requiredness": "Yes"
     },
@@ -81740,10 +83027,10 @@
       "condition": "When encoding or interpreting a structure defined by the Specification.",
       "scope_state": "client_1_0",
       "element_ids": [
-      "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
-      "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME",
-      "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE",
-      "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION"
+        "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION"
       ],
       "profile_ids": [],
       "test_case_ids": [],
@@ -83687,8 +84974,30 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -83722,8 +85031,26 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -83759,8 +85086,30 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -83794,8 +85143,25 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -83826,8 +85192,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -84493,8 +85870,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -84561,8 +85957,30 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -85858,8 +87276,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -85895,8 +87332,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -85930,8 +87386,21 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -85956,17 +87425,27 @@
       "direction": "unclear",
       "condition": null,
       "scope_state": "client_1_0",
-    "element_ids": [
-      "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
-      "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME",
-      "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE",
-      "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION"
-    ],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -86183,8 +87662,30 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -86220,8 +87721,28 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -86436,8 +87957,26 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attribute_list.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -86472,8 +88011,26 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attribute_list.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -86506,8 +88063,21 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -86541,8 +88111,23 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87025,8 +88610,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87057,8 +88653,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87689,8 +89296,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -87721,8 +89339,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -87753,8 +89382,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -87785,8 +89425,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87817,8 +89468,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -88569,8 +90231,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -88871,8 +90544,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -88903,8 +90587,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -88935,8 +90630,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -88967,8 +90673,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -90199,8 +91916,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
