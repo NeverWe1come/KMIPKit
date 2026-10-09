@@ -1,7 +1,8 @@
 //! Cryptographic Parameters tests derived from OASIS KMIP v2.1 §4.16,
-//! Table 59; and §11.6, Table 436. These assert shared local validation and
-//! preservation, not operation-specific payloads or server behavior; they are
-//! source-derived tests, not official OASIS Test Cases.
+//! Table 59; §11.6, Table 436; and NIST SP 800-38C, Appendix A.1 (supporting
+//! evidence that CCM has variable nonce lengths). These assert shared local
+//! validation and preservation, not operation-specific payloads or server
+//! behavior; they are source-derived tests, not official OASIS Test Cases.
 //!
 //! Traceability: `KMIPKIT-REQ-SPEC-4.16-001-001`,
 //! `KMIPKIT-REQ-SPEC-4.16-001-002`, `KMIPKIT-REQ-SPEC-4.16-002`, and
@@ -17,6 +18,7 @@ const TAG_LENGTH_TAG: u32 = 0x0042_00CE;
 const VENDOR_PARAMETER_TAG: u32 = 0x0054_1234;
 const SECOND_VENDOR_PARAMETER_TAG: u32 = 0x0054_1235;
 const CTR_MODE: u32 = 6;
+const CCM_MODE: u32 = 8;
 const GCM_MODE: u32 = 9;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -87,6 +89,30 @@ fn variable_iv_mode_requires_iv_length_and_preserves_supplied_parameters() {
                 CapturedParameterValue::Enumeration(CTR_MODE),
             ),
             (IV_LENGTH_TAG, CapturedParameterValue::Integer(128)),
+        ]
+    );
+}
+
+#[test]
+fn ccm_requires_iv_length_without_requiring_gcm_tag_length() {
+    let without_iv_length = parameters([(BLOCK_CIPHER_MODE_TAG, Value::enumeration(CCM_MODE))]);
+    assert!(validated_parameters(without_iv_length).is_err());
+
+    let with_iv_length = parameters([
+        (BLOCK_CIPHER_MODE_TAG, Value::enumeration(CCM_MODE)),
+        (IV_LENGTH_TAG, Value::integer(96)),
+    ]);
+    let retained = validated_parameters(with_iv_length)
+        .expect("CCM is accepted when its IV length is supplied without a GCM Tag Length");
+
+    assert_eq!(
+        parameter_members(&retained),
+        [
+            (
+                BLOCK_CIPHER_MODE_TAG,
+                CapturedParameterValue::Enumeration(CCM_MODE),
+            ),
+            (IV_LENGTH_TAG, CapturedParameterValue::Integer(96)),
         ]
     );
 }
