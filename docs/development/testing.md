@@ -79,6 +79,15 @@ Regenerate assigned result-value lookup tables with
 CI runs the same generator in `--check` mode after validating the normative
 catalog. Generated Rust output must not be edited by hand.
 
+The protocol crate's recognized-attribute TTLV type lookup is generated from
+each catalog attribute's `source_encoding` and tag parent with
+`python -B tools/normative_catalog/generate_attribute_types.py --repo-root . --write`.
+`AttributeSet` validates those declared types while preserving unknown tags,
+unknown Enumeration values, repeated items, and their wire order. The distinct
+Table 150 Vendor Attribute remains validated by its dedicated structure rules.
+CI runs this generator in `--check` mode so the committed Rust lookup cannot
+drift from the reviewed catalog.
+
 ### Transport tests
 
 An ephemeral PKI creates CA, server, and client material. Test valid mTLS,

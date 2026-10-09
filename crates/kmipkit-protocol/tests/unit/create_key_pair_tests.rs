@@ -459,10 +459,7 @@ fn table_191_rejects_nested_values_with_different_item_types() {
 
 #[test]
 fn request_rejects_attribute_groups_that_exceed_the_ttlv_depth_limit() {
-    let common = attributes([item(
-        CRYPTOGRAPHIC_LENGTH,
-        Value::structure(structure_at_depth(63)),
-    )]);
+    let common = attributes([item(0x0042_00bf, Value::structure(structure_at_depth(63)))]);
     let request = request_with_groups(Some(common), None, None);
 
     assert!(request.into_ttlv_payload().is_err());

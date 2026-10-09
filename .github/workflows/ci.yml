@@ -482,6 +482,10 @@ jobs:
         id: verify-generated-result-mappings
         run: python3 -B tools/normative_catalog/generate_result_values.py --repo-root . --check
 
+      - name: Verify generated attribute TTLV types
+        id: verify-generated-attribute-ttlv-types
+        run: python3 -B tools/normative_catalog/generate_attribute_types.py --repo-root . --check
+
       - name: Diagnose job result
         id: ci-diagnostics
         if: always()

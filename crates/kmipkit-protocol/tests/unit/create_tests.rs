@@ -287,11 +287,9 @@ fn request_preserves_optional_protection_storage_masks_as_a_structure() {
 
 #[test]
 fn request_rejects_attribute_trees_that_exceed_the_ttlv_depth_limit() {
-    let attributes = AttributeSet::try_new([item(
-        CRYPTOGRAPHIC_LENGTH,
-        Value::structure(structure_at_depth(63)),
-    )])
-    .expect("generic attribute values retain their nested Structure");
+    let attributes =
+        AttributeSet::try_new([item(0x0042_00bf, Value::structure(structure_at_depth(63)))])
+            .expect("generic attribute values retain their nested Structure");
 
     let error = CreateRequest::new(ObjectType::from_raw(7), attributes)
         .into_ttlv_payload()

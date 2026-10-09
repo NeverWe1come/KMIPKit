@@ -263,7 +263,7 @@ fn request_preserves_text_and_integer_input_identifier_forms() {
 
 #[test]
 fn request_rejects_attribute_trees_that_exceed_the_ttlv_depth_limit() {
-    let attributes = attributes([item(0x0042_002a, Value::structure(structure_at_depth(63)))]);
+    let attributes = attributes([item(0x0042_00bf, Value::structure(structure_at_depth(63)))]);
 
     let error = request(1)
         .with_attributes(attributes)

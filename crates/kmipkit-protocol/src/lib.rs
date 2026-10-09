@@ -3,6 +3,7 @@
 
 mod asynchronous;
 pub mod attribute;
+mod attribute_types_generated;
 mod cancel;
 mod create;
 mod create_key_pair;
