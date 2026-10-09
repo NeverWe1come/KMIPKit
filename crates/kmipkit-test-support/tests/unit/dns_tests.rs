@@ -289,6 +289,37 @@ fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
 }
 
 #[test]
+fn accepted_tcp_connection_is_served_inline_when_accepted_stream_clone_fails() {
+    let records = BTreeMap::from([(
+        "fixture.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
+    )]);
+    let (spawner, _spawn_attempts, _connection_worker_done) =
+        tcp_worker_spawner_failing(TcpWorkerKind::Response);
+    let (local_addr, state, server) = start_tcp_server_for_spawn_test(
+        records,
+        spawner,
+        |_: &TcpStream| Err(io::Error::other("injected accepted-stream clone failure")),
+    );
+
+    let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
+    client
+        .set_read_timeout(Some(Duration::from_secs(1)))
+        .expect("DNS TCP read timeout should be configured");
+    let request = fixture_query(1);
+    write_tcp_dns_query(&mut client, &request).expect("framed DNS question should be sent");
+    let response = read_tcp_dns_response(&mut client);
+    let _shutdown_result = client.shutdown(Shutdown::Both);
+    state.stop.store(true, Ordering::Release);
+    let server_result = server.join();
+
+    assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
+    let response = response.expect("inline clone fallback should return a DNS response");
+    assert_eq!(read_u16(&response, 0), Some(0));
+    assert_eq!(read_u16(&response, 6), Some(1));
+}
+
+#[test]
 fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
     let records = BTreeMap::from([(
         "fixture.kmipkit.test".to_owned(),
