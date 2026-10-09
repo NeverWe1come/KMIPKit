@@ -515,3 +515,30 @@ fn create_error_display_and_source_preserve_the_public_error_contract() {
         }
     }
 }
+
+#[test]
+fn unique_identifier_debug_redacts_each_wire_form() {
+    let cases = [
+        (
+            UniqueIdentifier::TextString("unique-id-debug-sentinel".to_owned()),
+            "unique-id-debug-sentinel".to_owned(),
+        ),
+        (
+            UniqueIdentifier::Enumeration(0xF123_4567),
+            0xF123_4567_u32.to_string(),
+        ),
+        (
+            UniqueIdentifier::Integer(-12_345),
+            (-12_345_i32).to_string(),
+        ),
+    ];
+
+    for (identifier, value) in cases {
+        let formatted = format!("{identifier:?}");
+
+        assert!(
+            !formatted.contains(&value),
+            "UniqueIdentifier Debug must not expose a wire value"
+        );
+    }
+}
