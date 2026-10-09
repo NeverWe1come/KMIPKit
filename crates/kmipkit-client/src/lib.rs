@@ -1,14 +1,14 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
 //! The typed request enum supports explicit Discover Versions, Activate,
-//! Destroy, Create, Create Key Pair, Create Split Key, Add Attribute, Adjust
-//! Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
-//! Attribute, and Set Attribute operations. Separate methods execute Poll,
-//! Cancel, Process, and Query Asynchronous Requests. The synchronous [`Client`]
-//! is constructed from an immutable client configuration and validated
-//! production transport configuration; callers cannot inject an arbitrary
-//! transport or submit raw KMIP bytes. Timeout overrides are available through
-//! the options-bearing typed methods.
+//! Archive, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
+//! Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
+//! Attribute List, Modify Attribute, Set Attribute, Query, and Ping operations.
+//! Separate methods execute Poll, Cancel, Process, and Query Asynchronous
+//! Requests. The synchronous [`Client`] is constructed from an immutable client
+//! configuration and validated production transport configuration; callers
+//! cannot inject an arbitrary transport or submit raw KMIP bytes. Timeout
+//! overrides are available through the options-bearing typed methods.
 //!
 //! [`ClientBatchOutcome::response`] returns a [`ClientResponseView`] with a
 //! common operation-result accessor and typed accessors for each response.
@@ -126,6 +126,18 @@ mod lifecycle_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/process_execution_tests.rs"]
 mod process_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/ping_execution_tests.rs"]
+mod ping_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/query_execution_tests.rs"]
+mod query_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/query_ping_redaction_tests.rs"]
+mod query_ping_redaction_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/query_async_execution_tests.rs"]

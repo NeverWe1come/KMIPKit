@@ -945,8 +945,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.38-001-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.38 |
 | KMIPKIT-REQ-SPEC-6.1.38-001-002 | prohibited | client\_1\_0 | KMIPKIT-SRC-spec §6.1.38 |
 | KMIPKIT-REQ-SPEC-6.1.4-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.4 |
-| KMIPKIT-REQ-SPEC-6.1.40-014 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.40 |
-| KMIPKIT-REQ-SPEC-6.1.40-016 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.40 |
 | KMIPKIT-REQ-SPEC-6.1.42-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.42 |
 | KMIPKIT-REQ-SPEC-6.1.42-001-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.42 |
 | KMIPKIT-REQ-SPEC-6.1.43-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.43 |
@@ -1472,8 +1470,8 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.38-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.38 |
 | KMIPKIT-REQ-SPEC-6.1.38-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.38 |
 | KMIPKIT-REQ-SPEC-6.1.4-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.4 |
-| KMIPKIT-REQ-SPEC-6.1.40-014 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.40 |
-| KMIPKIT-REQ-SPEC-6.1.40-016 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.40 |
+| KMIPKIT-REQ-SPEC-6.1.40-014 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Implementation and repository tests now provide executable evidence; cited upstream fixtures remain unavailable, so no official conformance claim is made. | KMIPKIT-SRC-spec §6.1.40 |
+| KMIPKIT-REQ-SPEC-6.1.40-016 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Implementation and repository tests now provide executable evidence; cited upstream fixtures remain unavailable, so no official conformance claim is made. | KMIPKIT-SRC-spec §6.1.40 |
 | KMIPKIT-REQ-SPEC-6.1.42-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.42 |
 | KMIPKIT-REQ-SPEC-6.1.42-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.42 |
 | KMIPKIT-REQ-SPEC-6.1.43-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.43 |
@@ -1701,7 +1699,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ATTRIBUTE-NAME | Name | attribute | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §4.32, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE | Never Extractable | attribute | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §4.33, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE | NIST Key Type | attribute | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §4.34, KMIPKIT-SRC-spec §11.56 |
-| KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP | Object Group | attribute | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §4.35, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE | Object Type | attribute | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §4.36, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE | Opaque Data Type | attribute | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §4.37, KMIPKIT-SRC-spec §11.56 |
 | KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE | Original Creation Date | attribute | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §4.38, KMIPKIT-SRC-spec §11.56 |
@@ -2180,12 +2177,10 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-MODIFY-ATTRIBUTE-0000000E | Modify Attribute | enumeration\_value | both | client\_1\_0 | 0000000E | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-NOTIFY-0000001B | Notify | enumeration\_value | both | client\_1\_0 | 0000001B | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-OBTAIN-LEASE-00000010 | Obtain Lease | enumeration\_value | both | client\_1\_0 | 00000010 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PING-0000003B | Ping | enumeration\_value | both | client\_1\_0 | 0000003B | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PKCS-11-00000033 | PKCS#11 | enumeration\_value | both | client\_1\_0 | 00000033 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-POLL-0000001A | Poll | enumeration\_value | both | client\_1\_0 | 0000001A | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PROCESS-0000003A | Process | enumeration\_value | both | client\_1\_0 | 0000003A | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PUT-0000001C | Put | enumeration\_value | both | client\_1\_0 | 0000001C | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-QUERY-00000018 | Query | enumeration\_value | both | client\_1\_0 | 00000018 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-QUERY-ASYNCHRONOUS-REQUESTS-00000039 | Query Asynchronous Requests | enumeration\_value | both | client\_1\_0 | 00000039 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RE-CERTIFY-00000007 | Re-certify | enumeration\_value | both | client\_1\_0 | 00000007 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RE-KEY-00000004 | Re-key | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.36 |
@@ -2267,21 +2262,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-PUT-FUNCTION-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.43 |
 | KMIPKIT-ELEM-ENUM-VALUE-PUT-FUNCTION-NEW-00000001 | New | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.43 |
 | KMIPKIT-ELEM-ENUM-VALUE-PUT-FUNCTION-REPLACE-00000002 | Replace | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.43 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-APPLICATION-NAMESPACES-00000004 | Query Application Namespaces | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-ATTESTATION-TYPES-00000007 | Query Attestation Types | enumeration\_value | both | client\_1\_0 | 00000007 | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-CAPABILITIES-0000000B | Query Capabilities | enumeration\_value | both | client\_1\_0 | 0000000B | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-CLIENT-REGISTRATION-METHODS-0000000C | Query Client Registration Methods | enumeration\_value | both | client\_1\_0 | 0000000C | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-DEFAULTS-INFORMATION-0000000D | Query Defaults Information | enumeration\_value | both | client\_1\_0 | 0000000D | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-EXTENSION-LIST-00000005 | Query Extension List | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-EXTENSION-MAP-00000006 | Query Extension Map | enumeration\_value | both | client\_1\_0 | 00000006 | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OBJECTS-00000002 | Query Objects | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OPERATIONS-00000001 | Query Operations | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-PROFILES-0000000A | Query Profiles | enumeration\_value | both | client\_1\_0 | 0000000A | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-RNGS-00000008 | Query RNGs | enumeration\_value | both | client\_1\_0 | 00000008 | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-SERVER-INFORMATION-00000003 | Query Server Information | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-STORAGE-PROTECTION-MASKS-0000000E | Query Storage Protection Masks | enumeration\_value | both | client\_1\_0 | 0000000E | assigned | KMIPKIT-SRC-spec §11.44 |
-| KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-VALIDATIONS-00000009 | Query Validations | enumeration\_value | both | client\_1\_0 | 00000009 | assigned | KMIPKIT-SRC-spec §11.44 |
 | KMIPKIT-ELEM-ENUM-VALUE-RECOMMENDED-CURVE-ANSIX9C2PNB163V1-00000027 | ANSIX9C2PNB163V1 | enumeration\_value | both | client\_1\_0 | 00000027 | assigned | KMIPKIT-SRC-spec §11.45 |
 | KMIPKIT-ELEM-ENUM-VALUE-RECOMMENDED-CURVE-ANSIX9C2PNB163V2-00000028 | ANSIX9C2PNB163V2 | enumeration\_value | both | client\_1\_0 | 00000028 | assigned | KMIPKIT-SRC-spec §11.45 |
 | KMIPKIT-ELEM-ENUM-VALUE-RECOMMENDED-CURVE-ANSIX9C2PNB163V3-00000029 | ANSIX9C2PNB163V3 | enumeration\_value | both | client\_1\_0 | 00000029 | assigned | KMIPKIT-SRC-spec §11.45 |
@@ -2490,7 +2470,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUMERATION-PROFILE-NAME | Profile Name | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.41 |
 | KMIPKIT-ELEM-ENUMERATION-PROTECTION-LEVEL | Protection Level | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.42 |
 | KMIPKIT-ELEM-ENUMERATION-PUT-FUNCTION | Put Function | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.43 |
-| KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION | Query Function | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.44 |
 | KMIPKIT-ELEM-ENUMERATION-RECOMMENDED-CURVE | Recommended Curve | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.45 |
 | KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE | Revocation Reason Code | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.48 |
 | KMIPKIT-ELEM-ENUMERATION-RNG-ALGORITHM | RNG Algorithm | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.49 |
@@ -2571,11 +2550,9 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OP-C2S-MAC | MAC | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.32 |
 | KMIPKIT-ELEM-OP-C2S-MAC-VERIFY | MAC Verify | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.33 |
 | KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE | Obtain Lease | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.35 |
-| KMIPKIT-ELEM-OP-C2S-PING | Ping | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.36 |
 | KMIPKIT-ELEM-OP-C2S-PKCS-11 | PKCS#11 | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.37 |
 | KMIPKIT-ELEM-OP-C2S-POLL | Poll | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.38 |
 | KMIPKIT-ELEM-OP-C2S-PROCESS | Process | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.39 |
-| KMIPKIT-ELEM-OP-C2S-QUERY | Query | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.40 |
 | KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS | Query Asynchronous Requests | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.41 |
 | KMIPKIT-ELEM-OP-C2S-RE-CERTIFY | Re-certify | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.45 |
 | KMIPKIT-ELEM-OP-C2S-RE-KEY | Re-key | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.46 |
@@ -2612,7 +2589,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA | MAC Data | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.20 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS | Objects | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.21 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-22-OBJECT-DEFAULTS | Object Defaults | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.22 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS | Object Groups | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.23 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES | Object Types | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.24 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS | Operations | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.25 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-26-PKCS-11-FUNCTION | PKCS#11 Function | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.26 |
@@ -2791,7 +2767,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-ATTRIBUTES | Attributes | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.22 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-GROUPS | Object Groups | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.22 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-TYPE-OBJECTTYPES | Object Type \| ObjectTypes | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.22 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP | Object Group | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.23 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-24-OBJECT-TYPE | Object Type | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.24 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-25-OPERATION | Operation | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.25 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-26-PKCS-11-FUNCTION | PKCS#11 Function | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.26 |

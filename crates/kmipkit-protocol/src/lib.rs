@@ -28,8 +28,10 @@ mod get_attributes;
 mod lifecycle;
 mod message;
 mod modify_attribute;
+mod ping;
 mod poll;
 mod process;
+mod query;
 mod query_async_requests;
 mod recover;
 mod result;
@@ -72,8 +74,10 @@ pub use message::{
     ResponseHeaderView, ResponseMessage,
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
+pub use ping::{PingError, PingRequest, PingResponse};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
+pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
 pub use result::{
@@ -116,6 +120,18 @@ mod create_split_key_tests;
 #[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]
 mod async_operation_fixtures;
+
+#[cfg(test)]
+#[path = "../tests/support/query_ping_fixtures.rs"]
+mod query_ping_fixtures;
+
+#[cfg(test)]
+#[path = "../tests/unit/ping_operation_tests.rs"]
+mod ping_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/query_operation_tests.rs"]
+mod query_operation_tests;
 
 #[cfg(test)]
 #[path = "../tests/support/lifecycle_fixtures.rs"]

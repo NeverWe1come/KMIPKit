@@ -18,12 +18,13 @@ use kmipkit_protocol::{
     DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
     GetAttributeListRequest, GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse,
     KmipOperationResult, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
-    NewAttribute, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
-    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
-    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, RecoverRequest, RecoverResponse,
-    RequestMessage, ResponseBatchItemView, ResponseMessage, ResultStatus, SetAttributeRequest,
-    SetAttributeResponse,
+    NewAttribute, PingRequest, PingResponse, PollRequest, PollResponse, ProcessRequest,
+    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
+    RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus, SetAttributeRequest, SetAttributeResponse,
 };
+
 #[cfg(test)]
 use kmipkit_transport::Transport;
 use kmipkit_transport::{
@@ -93,6 +94,8 @@ const CANCEL_OPERATION: u32 = 0x0000_0019;
 const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
+const PING_OPERATION: u32 = 0x0000_003B;
+const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -137,6 +140,10 @@ pub enum ClientRequest {
     GetAttributes(GetAttributesRequest),
     /// An explicit client-to-server Get Attribute List request.
     GetAttributeList(GetAttributeListRequest),
+    /// An explicit client-to-server Ping request.
+    Ping(PingRequest),
+    /// An explicit client-to-server Query request.
+    Query(QueryRequest),
 }
 
 impl ClientRequest {
@@ -144,6 +151,18 @@ impl ClientRequest {
     #[must_use]
     pub const fn discover_versions() -> Self {
         Self::DiscoverVersions(DiscoverVersionsRequest::new())
+    }
+
+    /// Creates an explicit client-to-server Ping request variant.
+    #[must_use]
+    pub const fn ping() -> Self {
+        Self::Ping(PingRequest::new())
+    }
+
+    /// Creates a typed client-to-server Query request variant.
+    #[must_use]
+    pub fn query(request: QueryRequest) -> Self {
+        Self::Query(request)
     }
 
     /// Creates a typed Activate request variant.
@@ -169,7 +188,6 @@ impl ClientRequest {
     pub fn recover(request: RecoverRequest) -> Self {
         Self::Recover(request)
     }
-
     /// Creates a typed Get Attributes request variant.
     #[must_use]
     pub fn get_attributes(request: GetAttributesRequest) -> Self {
@@ -229,6 +247,8 @@ impl ClientRequest {
             Self::SetAttribute(_) => SET_ATTRIBUTE_OPERATION,
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
+            Self::Ping(_) => PING_OPERATION,
+            Self::Query(_) => QUERY_OPERATION,
         }
     }
 
@@ -249,6 +269,8 @@ impl ClientRequest {
             Self::SetAttribute(request) => request.to_ttlv_payload(),
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
+            Self::Ping(request) => request.to_ttlv_payload(),
+            Self::Query(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -277,6 +299,8 @@ impl fmt::Debug for ClientRequest {
                 .debug_tuple("GetAttributeList")
                 .field(request)
                 .finish(),
+            Self::Ping(_) => formatter.write_str("Ping"),
+            Self::Query(_) => formatter.write_str("Query([REDACTED])"),
         }
     }
 }
@@ -296,6 +320,18 @@ impl ClientBatchItem {
     #[must_use]
     pub const fn discover_versions() -> Self {
         Self::new(ClientRequest::discover_versions())
+    }
+
+    /// Creates a batch item for one empty-payload Ping operation.
+    #[must_use]
+    pub const fn ping() -> Self {
+        Self::new(ClientRequest::ping())
+    }
+
+    /// Creates a batch item for one typed Query request.
+    #[must_use]
+    pub fn query(request: QueryRequest) -> Self {
+        Self::new(ClientRequest::query(request))
     }
 
     /// Creates a batch item from an admitted typed request.
@@ -687,6 +723,10 @@ pub enum ClientOperation {
     GetAttributes,
     /// Get Attribute List.
     GetAttributeList,
+    /// Ping one server connection and observe its KMIP response.
+    Ping,
+    /// Query one server for explicitly requested protocol information.
+    Query,
     /// Poll one previously Pending operation.
     Poll,
     /// Cancel one previously Pending operation.
@@ -825,6 +865,8 @@ enum ClientResponseRef<'a> {
     SetAttribute(&'a SetAttributeResponse),
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
+    Ping(&'a PingResponse),
+    Query(&'a QueryResponse),
 }
 
 /// A borrowed view of one typed response in a [`ClientBatchOutcome`].
@@ -856,6 +898,8 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::SetAttribute(response) => response.result(),
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
+            ClientResponseRef::Ping(response) => response.result(),
+            ClientResponseRef::Query(response) => response.result(),
         }
     }
 
@@ -879,7 +923,9 @@ impl<'a> ClientResponseView<'a> {
             | ClientResponseRef::ModifyAttribute(_)
             | ClientResponseRef::SetAttribute(_)
             | ClientResponseRef::GetAttributes(_)
-            | ClientResponseRef::GetAttributeList(_) => None,
+            | ClientResponseRef::GetAttributeList(_)
+            | ClientResponseRef::Ping(_)
+            | ClientResponseRef::Query(_) => None,
         }
     }
 
@@ -901,7 +947,9 @@ impl<'a> ClientResponseView<'a> {
             | ClientResponseRef::ModifyAttribute(_)
             | ClientResponseRef::SetAttribute(_)
             | ClientResponseRef::GetAttributes(_)
-            | ClientResponseRef::GetAttributeList(_) => None,
+            | ClientResponseRef::GetAttributeList(_)
+            | ClientResponseRef::Ping(_)
+            | ClientResponseRef::Query(_) => None,
         }
     }
 
@@ -1030,6 +1078,24 @@ impl<'a> ClientResponseView<'a> {
             _ => None,
         }
     }
+
+    /// Returns the Ping response when this view represents it.
+    #[must_use]
+    pub const fn ping(&self) -> Option<&PingResponse> {
+        match self.response {
+            ClientResponseRef::Ping(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Query response when this view represents it.
+    #[must_use]
+    pub const fn query(&self) -> Option<&QueryResponse> {
+        match self.response {
+            ClientResponseRef::Query(response) => Some(response),
+            _ => None,
+        }
+    }
 }
 
 impl fmt::Debug for ClientResponseView<'_> {
@@ -1082,6 +1148,12 @@ impl fmt::Debug for ClientResponseView<'_> {
                 .debug_tuple("GetAttributeList")
                 .field(response)
                 .finish(),
+            ClientResponseRef::Ping(response) => {
+                formatter.debug_tuple("Ping").field(response).finish()
+            }
+            ClientResponseRef::Query(response) => {
+                formatter.debug_tuple("Query").field(response).finish()
+            }
         }
     }
 }
@@ -1121,6 +1193,10 @@ pub enum ClientBatchOutcome {
     GetAttributes(GetAttributesResponse),
     /// The server returned a Get Attribute List result.
     GetAttributeList(GetAttributeListResponse),
+    /// The server returned a Ping result.
+    Ping(PingResponse),
+    /// The server returned a Query result.
+    Query(QueryResponse),
 }
 
 impl ClientBatchOutcome {
@@ -1142,7 +1218,9 @@ impl ClientBatchOutcome {
             | Self::ModifyAttribute(_)
             | Self::SetAttribute(_)
             | Self::GetAttributes(_)
-            | Self::GetAttributeList(_) => None,
+            | Self::GetAttributeList(_)
+            | Self::Ping(_)
+            | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
     }
@@ -1166,6 +1244,8 @@ impl ClientBatchOutcome {
             Self::SetAttribute(response) => response.result(),
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
+            Self::Ping(response) => response.result(),
+            Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
     }
@@ -1189,6 +1269,8 @@ impl ClientBatchOutcome {
             Self::SetAttribute(_) => ClientOperation::SetAttribute,
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
+            Self::Ping(_) => ClientOperation::Ping,
+            Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
         }
     }
@@ -1318,6 +1400,12 @@ impl ClientBatchOutcome {
             Self::GetAttributeList(response) => ClientResponseView {
                 response: ClientResponseRef::GetAttributeList(response),
             },
+            Self::Ping(response) => ClientResponseView {
+                response: ClientResponseRef::Ping(response),
+            },
+            Self::Query(response) => ClientResponseView {
+                response: ClientResponseRef::Query(response),
+            },
         }
     }
 }
@@ -1373,6 +1461,8 @@ impl fmt::Debug for ClientBatchOutcome {
                 .debug_tuple("GetAttributeList")
                 .field(response)
                 .finish(),
+            Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
+            Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
         }
     }
 }
@@ -1416,6 +1506,8 @@ impl fmt::Display for ClientBatchOutcome {
             Self::GetAttributeList(response) => {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
+            Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
+            Self::Query(response) => write!(formatter, "Query({})", response.result()),
         }
     }
 }
@@ -1530,6 +1622,17 @@ impl fmt::Debug for ClientBatchResponse {
             .field("item_count", &self.items.len())
             .finish()
     }
+}
+
+fn take_single_response(
+    mut response: ClientBatchResponse,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    response.items.pop().ok_or_else(|| {
+        protocol_failure_at(
+            protocol_error(ProtocolErrorKind::MalformedMessage),
+            RequestDeliveryState::ResponseStarted,
+        )
+    })
 }
 
 /// Synchronous typed KMIP client execution foundation.
@@ -1724,7 +1827,7 @@ impl Client {
 
     /// Executes one typed Activate request through the shared batch writer.
     ///
-    /// Use [`Self::execute`] with a one-item batch and an explicit
+    /// Use the execute method with a one-item batch and an explicit
     /// Asynchronous Indicator when the caller wants to accept Operation
     /// Pending. This convenience method leaves batch options at their defaults.
     /// The client reports the server result and does not mutate local or remote
@@ -1768,7 +1871,7 @@ impl Client {
 
     /// Executes one typed Archive request through the shared batch writer.
     ///
-    /// Use [`Self::execute`] with a one-item batch and an explicit
+    /// Use the execute method with a one-item batch and an explicit
     /// Asynchronous Indicator when the caller wants to accept Operation
     /// Pending. This convenience method leaves batch options at their defaults.
     /// Archive is a server-directed preference; this method does not claim
@@ -1812,7 +1915,7 @@ impl Client {
 
     /// Executes one typed Destroy request through the shared batch writer.
     ///
-    /// Use [`Self::execute`] with a one-item batch and an explicit
+    /// Use the execute method with a one-item batch and an explicit
     /// Asynchronous Indicator when the caller wants to accept Operation
     /// Pending. This convenience method leaves batch options at their defaults.
     /// The client reports the server result and does not mutate local or remote
@@ -1856,7 +1959,7 @@ impl Client {
 
     /// Executes one typed Recover request through the shared batch writer.
     ///
-    /// Use [`Self::execute`] with a one-item batch and an explicit
+    /// Use the execute method with a one-item batch and an explicit
     /// Asynchronous Indicator when the caller wants to accept Operation
     /// Pending. This convenience method leaves batch options at their defaults.
     /// Any later Poll or Get is a separate caller action.
@@ -1897,6 +2000,77 @@ impl Client {
         take_single_item_response(response.items)
     }
 
+    /// Executes one client-to-server Ping request.
+    ///
+    /// A successful result confirms that the server returned a successful KMIP
+    /// Ping response; it is not a general service-health guarantee. This method
+    /// uses one exchange and does not retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn ping(&mut self, limits: &CodecLimits) -> Result<ClientBatchItemResponse, ClientError> {
+        self.ping_with_options(limits, &RequestOptions::default())
+    }
+
+    /// Executes one Ping request with per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn ping_with_options(
+        &mut self,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::ping()),
+            limits,
+            request_options,
+        )?;
+        take_single_response(response)
+    }
+
+    /// Executes one explicit Query request through the shared exchange path.
+    ///
+    /// The server response reports the values selected by this Query. It does
+    /// not prove that the client independently enforces those capabilities.
+    /// The method performs one exchange and does not retry or issue follow-up
+    /// operations.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn query(
+        &mut self,
+        request: QueryRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.query_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Query request with per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn query_with_options(
+        &mut self,
+        request: QueryRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::query(request)),
+            limits,
+            request_options,
+        )?;
+        take_single_response(response)
+    }
     /// Executes one typed Create request through the shared batch writer.
     ///
     /// Use [`Self::execute`] with a one-item batch and an explicit
@@ -2618,7 +2792,9 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::CreateKeyPair(_)
         | ClientRequest::CreateSplitKey(_)
         | ClientRequest::GetAttributes(_)
-        | ClientRequest::GetAttributeList(_) => false,
+        | ClientRequest::GetAttributeList(_)
+        | ClientRequest::Ping(_)
+        | ClientRequest::Query(_) => false,
     }
 }
 
@@ -3198,6 +3374,16 @@ fn response_outcome(
             PendingResponse::Recover,
             ClientBatchOutcome::Recover,
         ),
+        QUERY_OPERATION => {
+            let response =
+                QueryResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
+            Ok(ClientBatchOutcome::Query(response))
+        }
+        PING_OPERATION => {
+            let response =
+                PingResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
+            Ok(ClientBatchOutcome::Ping(response))
+        }
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
@@ -3459,7 +3645,9 @@ fn validate_async_response(
         | ClientOperation::ModifyAttribute
         | ClientOperation::SetAttribute
         | ClientOperation::GetAttributes
-        | ClientOperation::GetAttributeList => {
+        | ClientOperation::GetAttributeList
+        | ClientOperation::Ping
+        | ClientOperation::Query => {
             return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
         }
         ClientOperation::Poll => {
@@ -3751,3 +3939,7 @@ mod private_error_tests;
 #[cfg(test)]
 #[path = "../tests/unit/execute_provenance_order_tests.rs"]
 mod provenance_order_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/single_response_tests.rs"]
+mod single_response_tests;

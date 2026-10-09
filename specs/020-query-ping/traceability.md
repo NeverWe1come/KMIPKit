@@ -1,32 +1,65 @@
 # KMIPKIT-0020 Traceability: Query and Ping
 
-This is the design-time assignment for the specification PR. Implementation and verification paths stay pending until the separately authorized implementation change exists.
+This implementation follows the approved client scope in `spec.md`. References
+below point to executable code and tests in this branch. Structural TTLV
+fixtures are derived from the pinned OASIS KMIP v2.1 source; the cited upstream
+Query/Ping XML fixtures are unavailable, so no official vector pass or server
+conformance claim is made.
 
 ## Client normative requirements
 
-| Stable requirement ID | Exact source | Normative statement / feature behavior | Spec | Planned implementation | Planned verification |
-| --- | --- | --- | --- | --- | --- |
-| `KMIPKIT-REQ-SPEC-6.1.40-014` | OASIS KMIP Specification v2.1 §6.1.40, Table 282; catalog clause `KMIPKIT-CLAUSE-SPEC-6.1.40-014` | Query request contains at least one Query Function. Empty list rejected before exchange. | FR-003; US2.1 | `crates/kmipkit-protocol/src/query.rs`; `crates/kmipkit-client/src/execute.rs` | `query_operation_tests::rejects_empty_query_function_list`; `query_execution_tests::empty_query_is_not_sent` |
-| `KMIPKIT-REQ-SPEC-6.1.40-016` | OASIS KMIP Specification v2.1 §6.1.40, Table 282; catalog clause `KMIPKIT-CLAUSE-SPEC-6.1.40-016` | Client MAY repeat Query Function to request multiple information types. | FR-003; US2.1 | `crates/kmipkit-protocol/src/query.rs` | `query_operation_tests::preserves_repeated_query_functions_and_order`; `query_execution_tests::sends_multiple_query_functions_once` |
+| Stable requirement ID | Exact source | Implemented behavior | Implementation | Verification |
+| --- | --- | --- | --- | --- |
+| `KMIPKIT-REQ-SPEC-6.1.40-014` | OASIS KMIP Specification v2.1 §6.1.40, Table 282; catalog clause `KMIPKIT-CLAUSE-SPEC-6.1.40-014` | Query contains at least one Query Function. Empty input fails before any exchange with `NotSent` delivery evidence. | `crates/kmipkit-protocol/src/query.rs::QueryRequest::to_ttlv_payload`; `crates/kmipkit-client/src/execute.rs::Client::query` | `crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_rejects_an_empty_function_list_before_it_can_be_encoded`; `crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent` |
+| `KMIPKIT-REQ-SPEC-6.1.40-016` | OASIS KMIP Specification v2.1 §6.1.40, Table 282; catalog clause `KMIPKIT-CLAUSE-SPEC-6.1.40-016` | Repeated Query Function values retain caller order and raw values. | `crates/kmipkit-protocol/src/query.rs::QueryRequest`; `crates/kmipkit-client/src/execute.rs::Client::query` | `crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order`; `crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups` |
 
-## Operation and structure assignments
+## Operation and request-structure assignments
 
-| Catalog element | Source | Assigned specification coverage | Planned verification |
+| Catalog element | Source | Implementation | Verification |
 | --- | --- | --- | --- |
-| `KMIPKIT-ELEM-OP-C2S-PING` | §6.1.36, Tables 271–272 | FR-001, FR-002, FR-008–FR-010 | `ping_operation_tests`; `ping_execution_tests` |
-| `KMIPKIT-ELEM-OP-C2S-QUERY` | §6.1.40, Tables 281–284 | FR-001, FR-003–FR-009, FR-011–FR-012 | `query_operation_tests`; `query_execution_tests` |
-| `KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION` and all 14 assigned values plus extension range | §11.44, Table 476 | FR-003, FR-005 | `query_function_tests`; Query request round trips |
-| Query response members in Table 283 | §6.1.40, Table 283 | FR-006–FR-007, FR-011 | Per-member cardinality, repetition, order, unknown-value, empty-payload, and empty Protection Storage Masks tests |
-| `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS` and `KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP` | §7.23, Table 375 | FR-004 | Request round trip with absent, single, and repeated Object Group members |
-| `KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP` | §4.35, Tables 99–100; §7.23, Table 375 | FR-004 | Attribute shape, Text String value, repetition, order, and request round trip |
+| `KMIPKIT-ELEM-OP-C2S-PING` and operation value `0000003B` | §6.1.36, Tables 271–272; §11.36 | `crates/kmipkit-protocol/src/ping.rs`; `crates/kmipkit-client/src/execute.rs::Client::ping` | `ping_operation_tests::ping_request_has_an_empty_operation_payload`; `ping_execution_tests::ping_sends_one_empty_payload_and_returns_success`; `ping_execution_tests::ping_failure_preserves_transport_delivery_and_does_not_retry`; `ping_execution_tests::malformed_ping_response_is_rejected_after_one_exchange` |
+| `KMIPKIT-ELEM-OP-C2S-QUERY` and operation value `00000018` | §6.1.40, Tables 281–284; §11.36 | `crates/kmipkit-protocol/src/query.rs`; `crates/kmipkit-client/src/execute.rs::Client::query` | `query_operation_tests::query_request_preserves_required_repeated_functions_and_object_group_order`; `query_execution_tests::query_sends_one_request_with_repeated_functions_and_ordered_object_groups`; `query_execution_tests::query_failure_preserves_kmip_result_and_transport_delivery_without_retry` |
+| `KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION`, its 14 assigned values, and extension range | §11.44, Table 476 | `crates/kmipkit-protocol/src/query.rs::QueryFunction` | `query_operation_tests::names_all_standard_query_function_values_and_preserves_future_values`; `query_operation_tests::query_request_preserves_required_repeated_functions_and_object_group_order` |
+| `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS`, `KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP`, and `KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP` | §7.23, Table 375; §4.35, Tables 99–100 | `crates/kmipkit-protocol/src/query.rs::QueryRequest::with_object_groups` | `query_operation_tests::query_request_distinguishes_absent_and_present_empty_object_groups`; `query_operation_tests::query_request_preserves_required_repeated_functions_and_object_group_order`; `query_execution_tests::query_sends_one_request_with_repeated_functions_and_ordered_object_groups` |
 
-Operation enum values assigned to this feature are KMIPKIT-ELEM-ENUM-VALUE-OPERATION-PING-0000003B and KMIPKIT-ELEM-ENUM-VALUE-OPERATION-QUERY-00000018. The optional Object Groups request structure, its repeated Object Group member, and the Object Group attribute are assigned to this feature and verified by the Query request tests. `KMIPKIT-ELEM-ENUMERATION-OBJECT-GROUP-MEMBER` (§11.33) is not assigned: it types a distinct Locate request option, not the Object Group attribute in Query. Neither operation element has an asynchronous-response assignment in the catalog.
+The Object Group request structure is represented as an optional `Structure`
+containing zero or more repeated Text String attributes. The separate
+`KMIPKIT-ELEM-ENUMERATION-OBJECT-GROUP-MEMBER` (§11.33) is not part of this
+Query request field. Neither operation has an asynchronous-response assignment
+in the catalog.
 
-The two normative client requirements above are the applicable standalone requirement records cataloged for this scope. Table 281–284 prose assigns additional conditional response obligations to the server; this client implementation does not implement server behavior. It decodes and exposes the response without claiming the server conformed merely because a response was received.
+## Query response members in Table 283
 
-## Open source conflict
+Each known member is represented by a typed `QueryResponseField` variant and
+an accessor on `QueryResponse`. Complex structures and unknown top-level or
+nested Items retain generic TTLV values. The test below constructs every
+Table 283 member and checks field order, repetitions, typed accessors, and a
+nested unknown Item.
 
-`KMIPKIT-DISC-047` records two conflicting statements in OASIS KMIP Specification v2.1 §6.1.40: the prose says the response payload is empty when there are no values to return, while Table 283 marks Protection Storage Masks as required and says a server may provide an empty list when unable or unwilling to provide that information. The client contract accepts both forms without choosing a server-conformance interpretation. This feature does not close the discrepancy; an approved OASIS erratum or project decision is required before asserting server conformance for the disputed case.
+| Table 283 member | Typed response access | Verification |
+| --- | --- | --- |
+| Operation | `QueryResponse::operations` | `query_operation_tests::query_response_exposes_all_table_283_members_and_unknown_nested_items` |
+| Object Type | `QueryResponse::object_types` | same test |
+| Vendor Identification | `QueryResponse::vendor_identification` | same test; `query_response_rejects_repeated_singleton_table_283_fields` |
+| Server Information | `QueryResponse::server_information` | same test; `query_response_rejects_repetitions_of_each_singleton_table_283_member` |
+| Application Namespace | `QueryResponse::application_namespaces` | same test |
+| Extension Information | `QueryResponse::extension_information` | same test |
+| Attestation Type | `QueryResponse::attestation_types` | same test |
+| RNG Parameters | `QueryResponse::rng_parameters` | same test |
+| Profile Information | `QueryResponse::profile_information` | same test |
+| Validation Information | `QueryResponse::validation_information` | same test |
+| Capability Information | `QueryResponse::capability_information` | same test |
+| Client Registration Method | `QueryResponse::client_registration_methods` | same test |
+| Defaults Information | `QueryResponse::defaults_information` | same test; `query_response_rejects_repetitions_of_each_singleton_table_283_member` |
+| Protection Storage Masks | `QueryResponse::protection_storage_masks` | `query_operation_tests::query_response_accepts_empty_protection_storage_masks_list`; `query_response_rejects_missing_required_protection_storage_masks_in_structured_form`; `query_response_rejects_repetitions_of_each_singleton_table_283_member` |
+
+`query_operation_tests::query_accepts_the_empty_response_payload_form_and_preserves_common_failure_results`
+verifies the empty success form and common KMIP failure result. The empty
+Protection Storage Masks list verifies the structured form. `KMIPKIT-DISC-047`
+remains open: §6.1.40 prose describes the empty response payload when no values
+are available, while Table 283 marks Protection Storage Masks required in a
+structured response. The decoder accepts both without deciding server
+conformance.
 
 ## OASIS test-case mapping and limitations
 
@@ -38,12 +71,9 @@ The two normative client requirements above are the applicable standalone requir
 | `KMIPKIT-TEST-PROF-5-4-4-1` | `MSGENC-XML-M-1-21` | Profiles v2.1 §5.4.4.1 | Query, XML profile | Fixture unavailable; XML is out of scope |
 | `KMIPKIT-TEST-PROF-5-5-4-1` | `MSGENC-JSON-M-1-21` | Profiles v2.1 §5.5.4.1 | Query, JSON profile | Fixture unavailable; JSON is out of scope |
 
-These source links inform coverage and test planning; their missing XML fixtures cannot be treated as test failures or passes. Query tests in this feature use source-derived TTLV expectations and explicitly identify their provenance. The catalog assigns both client requirements to KMIPKIT-0020; their status remains unassigned until executable implementation and verification references are recorded in the implementation PR.
-
-## Catalog source dispositions retained
-
-- Query's two client requirements retain their stable IDs and exact §6.1.40 clauses.
-- The catalog's server-only and non-applicable clause dispositions in §§6.1.36 and 6.1.40 are not reclassified as client obligations.
-- `KMIPKIT-DISC-002` is limited to HTTPS profile evidence; it does not gate ordinary TTLV Query/Ping.
-- `KMIPKIT-DISC-039` applies to Query Asynchronous Requests (§6.1.41), not ordinary Query.
-- No profile support, interoperability certification, or formal OASIS test-suite pass is claimed.
+The catalog assigns the two applicable client Query requirements to KMIPKIT-0020
+and records executable implementation and verification references. Server-only
+response obligations remain server requirements. `KMIPKIT-DISC-002` is limited
+to HTTPS profile evidence; `KMIPKIT-DISC-039` applies to Query Asynchronous
+Requests (§6.1.41), not ordinary Query. No profile support, interoperability
+certification, or official OASIS test-suite pass is claimed.
