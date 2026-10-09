@@ -29661,8 +29661,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "source_name": "Object Group",
       "source_encoding": "Text String",
       "source_initially_set_by": "Client or Server",
@@ -41926,8 +41930,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/ping.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/ping_operation_tests.rs::ping_request_has_an_empty_operation_payload",
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::ping_sends_one_empty_payload_and_returns_success",
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::ping_failure_preserves_transport_delivery_and_does_not_retry",
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::malformed_ping_response_is_rejected_after_one_exchange"
+      ],
       "wire_value": "0000003B",
       "allocation": "assigned"
     },
@@ -42046,8 +42058,21 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
+      ],
       "wire_value": "00000018",
       "allocation": "assigned"
     },
@@ -44014,8 +44039,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "8XXXXXXX",
       "allocation": "extension"
     },
@@ -44038,8 +44068,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "00000004",
       "allocation": "assigned"
     },
@@ -44062,8 +44097,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "00000007",
       "allocation": "assigned"
     },
@@ -44086,8 +44126,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "0000000B",
       "allocation": "assigned"
     },
@@ -44110,8 +44155,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "0000000C",
       "allocation": "assigned"
     },
@@ -44134,8 +44184,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "0000000D",
       "allocation": "assigned"
     },
@@ -44158,8 +44213,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "00000005",
       "allocation": "assigned"
     },
@@ -44182,8 +44242,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "00000006",
       "allocation": "assigned"
     },
@@ -44208,8 +44273,13 @@
         "KMIPKIT-TEST-PROF-5-5-4-1"
       ],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "00000002",
       "allocation": "assigned"
     },
@@ -44234,8 +44304,13 @@
         "KMIPKIT-TEST-PROF-5-5-4-1"
       ],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "00000001",
       "allocation": "assigned"
     },
@@ -44258,8 +44333,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "0000000A",
       "allocation": "assigned"
     },
@@ -44282,8 +44362,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "00000008",
       "allocation": "assigned"
     },
@@ -44306,8 +44391,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "00000003",
       "allocation": "assigned"
     },
@@ -44330,8 +44420,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "0000000E",
       "allocation": "assigned"
     },
@@ -44354,8 +44449,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "wire_value": "00000009",
       "allocation": "assigned"
     },
@@ -51664,8 +51764,13 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": []
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUMERATION-RECOMMENDED-CURVE",
@@ -57188,8 +57293,16 @@
         "KMIPKIT-TEST-CN01-2-67"
       ],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/ping.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/ping_operation_tests.rs::ping_request_has_an_empty_operation_payload",
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::ping_sends_one_empty_payload_and_returns_success",
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::ping_failure_preserves_transport_delivery_and_does_not_retry",
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::malformed_ping_response_is_rejected_after_one_exchange"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -57363,8 +57476,21 @@
         "KMIPKIT-TEST-PROF-5-5-4-1"
       ],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58664,8 +58790,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -63131,8 +63261,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order"
+      ],
       "source_encoding": "Attribute, May be repeated",
       "source_requiredness": "No"
     },
@@ -65352,12 +65486,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -67942,12 +68086,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -67975,12 +68129,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -68132,12 +68296,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -68887,12 +69061,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -69526,12 +69710,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -70181,12 +70375,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -70398,12 +70602,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -71483,12 +71697,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -72041,12 +72265,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -72227,12 +72461,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -72599,12 +72843,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -72940,12 +73194,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -72971,12 +73235,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -75801,12 +76075,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -76204,12 +76488,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -76421,12 +76715,22 @@
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
         "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-protocol/src/query.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_accepts_empty_protection_storage_masks_list",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_repetitions_of_each_singleton_table_283_member",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
       ]
     },
     {
@@ -91003,12 +91307,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Implementation and repository tests now provide executable evidence; cited upstream fixtures remain unavailable, so no official conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-016",
@@ -91036,12 +91346,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0020",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Implementation and repository tests now provide executable evidence; cited upstream fixtures remain unavailable, so no official conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.42-001-001",

@@ -12,7 +12,7 @@
 
 - [x] T001 Confirm the active release base, Query/Ping OASIS references, both client requirement IDs, and assigned catalog elements in `specs/020-query-ping/traceability.md`.
 - [x] T002 Add Query and Ping source-derived TTLV fixture helpers with independent tag/value expectations in `crates/kmipkit-protocol/tests/support/query_ping_fixtures.rs`.
-- [ ] T003 Add catalog implementation/test references for the approved Query/Ping scope, including the Object Groups member and Object Group attribute, in `specification/catalog/kmip-2.1.json` and regenerate `specification/catalog/coverage-report.md` with `tools/normative_catalog/report.py`.
+- [x] T003 Add catalog implementation/test references for the approved Query/Ping scope, including the Object Groups member and Object Group attribute, in `specification/catalog/kmip-2.1.json` and regenerate `specification/catalog/coverage-report.md` with `tools/normative_catalog/report.py`.
 
 ## Phase 2: User Story 1 — Ping (Priority: P1)
 
