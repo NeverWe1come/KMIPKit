@@ -93,7 +93,7 @@
 
 ### Tests for User Story 2 — Red
 
-- [ ] T027 [P] [US2] Add FR-003/FR-010/SC-002/SC-003 Add Attribute request vectors, including exact caller-supplied request values, in `crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs` using §6.1.2 Tables 167–169; cover server error preservation in T032.
+- [x] T027 [P] [US2] Add FR-003/FR-010/SC-002/SC-003 Add Attribute request vectors, including exact caller-supplied request values, in `crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs` using §6.1.2 Tables 167–169; cover server error preservation in T032. Red: `66f392414ca9d2aa3e15a1687c4eb44934e63762`; independent test review passed.
 - [ ] T028 [P] [US2] Add FR-004/FR-010/SC-002/SC-003 Adjust Attribute vectors for every assigned and extension Adjustment Type, reserved enum boundaries, omitted parameter defaults, absent-current-value defaults for numeric, interval, Boolean, and other types, and server operation errors in `crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs` using §6.1.3 Tables 170–172 and §11.1 Tables 428–429.
 - [ ] T029 [P] [US2] Add FR-005/FR-010/SC-002/SC-003 Delete Attribute vectors for Current Attribute selection, omitted Current Attribute, both selectors omitted, and unchanged request shape in `crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs` using §6.1.13 Tables 202–204; cover server errors in T032.
 - [ ] T030 [P] [US2] Add FR-008/FR-010/SC-002/SC-003 Modify Attribute vectors for exact Current/New values, omitted Current Attribute, multiple instances, and operation errors in `crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs` using §6.1.34 Tables 265–267.
