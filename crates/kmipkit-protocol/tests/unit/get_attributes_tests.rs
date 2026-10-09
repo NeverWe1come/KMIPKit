@@ -14,8 +14,10 @@ const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
+const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME: u32 = 0x0042_000A;
+const ATTRIBUTE_VALUE: u32 = 0x0042_000B;
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
@@ -232,6 +234,20 @@ fn request_rejects_a_repeated_identical_attribute_reference() {
 }
 
 #[test]
+fn request_rejects_a_reserved_tag_form_reference_before_encoding() {
+    // OASIS KMIP v2.1 §11.56 and ADR-0010 require outbound raw tags to pass
+    // the tag-allocation gate; an unknown Enumeration remains representable,
+    // but a reserved Raw Tag cannot be emitted as an Item.
+    let request = GetAttributesRequest::try_new(None, [AttributeReference::tag(0x0042_0009)])
+        .expect("the raw tag is retained while constructing the reference");
+
+    assert!(
+        request.to_ttlv_payload().is_err(),
+        "a reserved §11.56 tag cannot be encoded as an Attribute Reference"
+    );
+}
+
+#[test]
 fn response_preserves_direct_attribute_instances_and_omits_missing_values() {
     let request = GetAttributesRequest::try_new(
         Some(OBJECT_IDENTIFIER.to_owned()),
@@ -425,4 +441,36 @@ fn response_rejects_payloads_missing_required_fields_or_violating_table_224_shap
             "Table 224 requires one Unique Identifier followed by one Attributes Structure"
         );
     }
+}
+
+#[test]
+fn response_rejects_vendor_attribute_fields_outside_table_150_order() {
+    // OASIS KMIP v2.1 §4.60, Table 150 lists Vendor Identification, Attribute
+    // Name, then Attribute Value. Section 10.1 requires Structure fields to
+    // appear in the order in which they are defined.
+    let out_of_order_vendor_attribute = item(
+        VENDOR_ATTRIBUTE,
+        Value::structure(structure([
+            item(
+                ATTRIBUTE_NAME,
+                Value::text_string("Opaque.Attribute".to_owned()),
+            ),
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string("KMIPKit.TestVendor_1".to_owned()),
+            ),
+            item(ATTRIBUTE_VALUE, Value::byte_string(vec![0, 0x80, 0xff])),
+        ])),
+    );
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([out_of_order_vendor_attribute])),
+    );
+
+    assert!(
+        GetAttributesResponse::try_from_response_item(response_item(&message)).is_err(),
+        "a successful response cannot accept Table 150 members out of order"
+    );
 }
