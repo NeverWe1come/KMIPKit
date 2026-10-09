@@ -188,7 +188,7 @@ fn assert_destroy_request(bytes: &[u8], expected_identifier: Option<&str>) {
             assert_eq!(payload_fields[0].1, ItemType::TextString);
             assert_eq!(payload_fields[0].2.as_deref(), Some(expected));
         }
-        None => assert!(payload_fields.is_empty()),
+        None => assert_eq!(payload_fields.as_slice(), &[]),
     }
 }
 
@@ -281,11 +281,17 @@ fn destroy_failure_preserves_common_result_and_does_not_retry() {
     assert_eq!(outcome.operation(), ClientOperation::Destroy);
     assert_eq!(typed.result().status().raw(), OPERATION_FAILED);
     assert_eq!(
-        typed.result().reason().map(|reason| reason.raw()),
+        typed
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(OBJECT_NOT_FOUND)
     );
     assert_eq!(
-        typed.result().message().map(|message| message.as_str()),
+        typed
+            .result()
+            .message()
+            .map(kmipkit_protocol::ResultMessage::as_str),
         Some(RESPONSE_MESSAGE_SENTINEL)
     );
     assert!(typed.unique_identifier().is_none());
