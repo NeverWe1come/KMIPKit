@@ -12,7 +12,7 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
-const ATTRIBUTES: u32 = 0x0042_0001;
+const ATTRIBUTES: u32 = 0x0042_0125;
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
@@ -133,8 +133,8 @@ fn request_follows_table_223_order_and_allows_repeated_reference_fields() {
         actual,
         [
             (0x0042_0094, ItemType::TextString),
-            (0x0042_000A, ItemType::Structure),
-            (0x0042_000A, ItemType::Structure),
+            (0x0042_013B, ItemType::Structure),
+            (0x0042_013B, ItemType::Structure),
         ]
     );
     assert_eq!(
@@ -159,7 +159,7 @@ fn request_preserves_optional_identifier_and_zero_or_more_reference_cardinality(
         .iter()
         .map(|field| field.tag().raw())
         .collect::<Vec<_>>();
-    assert_eq!(request_fields, [0x0042_000A]);
+    assert_eq!(request_fields, [0x0042_013B]);
 
     let request_without_identifier_or_references =
         GetAttributesRequest::try_new(None, []).expect("Table 223 permits zero references");
@@ -368,6 +368,7 @@ fn response_rejects_payloads_missing_required_fields_or_violating_table_224_shap
                 UNIQUE_IDENTIFIER,
                 Value::text_string(OBJECT_IDENTIFIER.to_owned()),
             ),
+            item(ATTRIBUTES, Value::structure(Structure::new())),
         ]),
     ];
     for payload in malformed_payloads {
