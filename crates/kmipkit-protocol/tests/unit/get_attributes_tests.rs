@@ -13,6 +13,9 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ATTRIBUTES: u32 = 0x0042_0125;
+const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
+const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
+const ATTRIBUTE_NAME: u32 = 0x0042_000A;
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
@@ -133,8 +136,8 @@ fn request_follows_table_223_order_and_allows_repeated_reference_fields() {
         actual,
         [
             (0x0042_0094, ItemType::TextString),
-            (0x0042_013B, ItemType::Structure),
-            (0x0042_013B, ItemType::Structure),
+            (ATTRIBUTE_REFERENCE, ItemType::Enumeration),
+            (ATTRIBUTE_REFERENCE, ItemType::Structure),
         ]
     );
     assert_eq!(
@@ -143,6 +146,49 @@ fn request_follows_table_223_order_and_allows_repeated_reference_fields() {
             _ => None,
         }),
         Some(b"object-id-17".to_vec())
+    );
+    assert_eq!(
+        fields[1].with_value(|value| match value {
+            ValueView::Enumeration(value) => Some(*value),
+            _ => None,
+        }),
+        Some(0x0042_002F),
+        "tag-form Attribute Reference carries the requested KMIP tag"
+    );
+    let name_fields = fields[2].with_value(|value| match value {
+        ValueView::Structure(structure) => Some(
+            structure
+                .children()
+                .iter()
+                .map(|field| {
+                    (
+                        field.tag().raw(),
+                        field.item_type(),
+                        field.with_value(|value| match value {
+                            ValueView::TextString(value) => Some(value.to_owned()),
+                            _ => None,
+                        }),
+                    )
+                })
+                .collect::<Vec<_>>(),
+        ),
+        _ => None,
+    });
+    assert_eq!(
+        name_fields,
+        Some(vec![
+            (
+                VENDOR_IDENTIFICATION,
+                ItemType::TextString,
+                Some("KMIPKit.TestVendor_1".to_owned()),
+            ),
+            (
+                ATTRIBUTE_NAME,
+                ItemType::TextString,
+                Some("Opaque.Attribute".to_owned()),
+            ),
+        ]),
+        "name-form Attribute Reference contains vendor identification and attribute name"
     );
 }
 

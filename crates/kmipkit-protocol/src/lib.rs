@@ -104,3 +104,11 @@ mod attribute_tests;
 #[cfg(test)]
 #[path = "../tests/unit/vendor_attribute_tests.rs"]
 mod vendor_attribute_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_attributes_tests.rs"]
+mod get_attributes_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_attribute_list_tests.rs"]
+mod get_attribute_list_tests;
