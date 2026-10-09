@@ -11,7 +11,7 @@
 - [x] T001 Assign Activate, Archive, Destroy, Recover, and the three applicable client requirements to KMIPKIT-0018 in `specification/catalog/kmip-2.1.json`.
 - [x] T002 Add the Archive and Recover requirement-to-operation links and retain the server-only classification for Activate and Destroy clauses in `specification/catalog/kmip-2.1.json`.
 - [x] T003 Regenerate `specification/catalog/coverage-report.md` with the pinned catalog generator and verify the report with its `--check` mode.
-- [ ] T004 Complete the planned traceability rows in `specs/018-managed-object-lifecycle/traceability.md` with catalog IDs, concrete source tables, planned code paths, and planned executable tests.
+- [x] T004 Complete the planned traceability rows in `specs/018-managed-object-lifecycle/traceability.md` with catalog IDs, concrete source tables, planned code paths, and planned executable tests.
 
 ---
 
