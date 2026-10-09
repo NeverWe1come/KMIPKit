@@ -344,6 +344,12 @@ fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
     let response = response.expect("DNS response should be sent if its worker cannot start");
     assert_eq!(read_u16(&response, 0), Some(0));
     assert_eq!(read_u16(&response, 6), Some(1));
+    let metrics = state
+        .tcp_metrics
+        .lock()
+        .expect("TCP metrics should remain available");
+    assert_eq!(metrics.active_by_connection.get(&1), Some(&0));
+    assert_eq!(metrics.peak_by_connection.get(&1), Some(&1));
 }
 
 fn tcp_worker_spawner_failing(failed_kind: TcpWorkerKind) -> (TcpWorkerSpawner, Arc<AtomicUsize>) {
@@ -388,7 +394,7 @@ fn start_tcp_server_for_spawn_test(
     });
     let server_state = Arc::clone(&state);
     let server = thread::spawn(move || {
-        serve_tcp_with_spawner(&listener, &records, &server_state, spawner);
+        serve_tcp_with_spawner(&listener, &records, &server_state, &spawner);
     });
     (local_addr, state, server)
 }
