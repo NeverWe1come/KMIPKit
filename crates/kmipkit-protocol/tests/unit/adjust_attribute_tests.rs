@@ -291,32 +291,78 @@ fn table_428_adjustment_parameter_types_and_values_are_transmitted_unchanged() {
     // Integer, Interval, Date Time, and Date Time Extended; Negate applies to
     // Integer, Long Integer, Big Integer, and Boolean. These assert parameter
     // preservation only, not server arithmetic or resulting attribute values.
+    // Standard type-matched tags are Cryptographic Length (Integer, §4.15
+    // Table 57; §11.56 Table 487), Protection Period (Interval, §4.43 Table
+    // 115), Activation Date (Date Time, §4.1 Table 29), and Quantum Safe
+    // (Boolean, §4.45 Table 119). Cryptographic Length is read-only and always
+    // required (§4.15 Table 58), and Activation Date modification is state-
+    // constrained (§4.1 Table 30); these vectors assert neither writability
+    // nor applicability. §7.40 Table 392 lists Long Integer for Usage Limits
+    // Total as a child of the Usage Limits Structure; §4.59 Tables 148–149
+    // govern the enclosing Usage Limits Attribute. The child is not used as
+    // an independent Attribute Reference. The pinned §4 catalog has no
+    // Attribute of type Long Integer, Big Integer, or Date Time Extended, so
+    // those vectors use synthetic name-form refs only to verify generic wire
+    // preservation, without claiming a known vendor attribute or standard-
+    // conformance case.
+    let generic_vendor = "KMIPKit.TestVendor_1";
     let vectors = [
-        (1, AdjustmentParameterVector::Integer(-7)),
-        (1, AdjustmentParameterVector::LongInteger(8_589_934_597)),
         (
             1,
+            AttributeReference::tag(CRYPTOGRAPHIC_LENGTH),
+            AdjustmentParameterVector::Integer(-7),
+        ),
+        (
+            1,
+            AttributeReference::name(generic_vendor, "Opaque.GenericLongIntegerWireVector"),
+            AdjustmentParameterVector::LongInteger(8_589_934_597),
+        ),
+        (
+            1,
+            AttributeReference::name(generic_vendor, "Opaque.GenericBigIntegerWireVector"),
             AdjustmentParameterVector::BigInteger(&[0x00, 0x80, 0xFF]),
         ),
-        (1, AdjustmentParameterVector::Interval(37)),
-        (1, AdjustmentParameterVector::DateTime(1_700_000_000)),
+        (
+            1,
+            AttributeReference::tag(PROTECTION_PERIOD),
+            AdjustmentParameterVector::Interval(37),
+        ),
+        (
+            1,
+            AttributeReference::tag(ACTIVATION_DATE),
+            AdjustmentParameterVector::DateTime(1_700_000_000),
+        ),
         (
             2,
+            AttributeReference::name(generic_vendor, "Opaque.GenericDateTimeExtendedWireVector"),
             AdjustmentParameterVector::DateTimeExtended(1_700_000_000_123_456),
         ),
-        (3, AdjustmentParameterVector::Integer(11)),
-        (3, AdjustmentParameterVector::LongInteger(-12)),
         (
             3,
+            AttributeReference::tag(CRYPTOGRAPHIC_LENGTH),
+            AdjustmentParameterVector::Integer(11),
+        ),
+        (
+            3,
+            AttributeReference::name(generic_vendor, "Opaque.GenericLongIntegerNegateWireVector"),
+            AdjustmentParameterVector::LongInteger(-12),
+        ),
+        (
+            3,
+            AttributeReference::name(generic_vendor, "Opaque.GenericBigIntegerNegateWireVector"),
             AdjustmentParameterVector::BigInteger(&[0x01, 0x02, 0x03]),
         ),
-        (3, AdjustmentParameterVector::Boolean(true)),
+        (
+            3,
+            AttributeReference::tag(QUANTUM_SAFE),
+            AdjustmentParameterVector::Boolean(true),
+        ),
     ];
 
-    for (raw_adjustment_type, expected_value) in vectors {
+    for (raw_adjustment_type, expected_reference, expected_value) in vectors {
         let request = request(
             None,
-            AttributeReference::tag(0x0042_002F),
+            expected_reference.clone(),
             raw_adjustment_type,
             Some(expected_value.into_value()),
         );
@@ -326,11 +372,57 @@ fn table_428_adjustment_parameter_types_and_values_are_transmitted_unchanged() {
         let fields = payload.view().children();
 
         assert_eq!(
-            fields.len(),
-            3,
-            "the optional parameter is present exactly once"
+            fields
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>(),
+            [ATTRIBUTE_REFERENCE, ADJUSTMENT_TYPE, ADJUSTMENT_VALUE],
+            "request fields preserve §6.1.3 Table 170 order with the optional value present"
         );
+        assert_eq!(fields[1].item_type(), ItemType::Enumeration);
         assert_eq!(fields[2].tag().raw(), ADJUSTMENT_VALUE);
+        match expected_reference.tag_value() {
+            Some(target_tag) => {
+                assert_eq!(fields[0].item_type(), ItemType::Enumeration);
+                assert_eq!(enumeration_value(&fields[0]), Some(target_tag));
+            }
+            None => {
+                let (expected_vendor, expected_name) = expected_reference
+                    .name_parts()
+                    .expect("the vector uses a name-form reference");
+                let reference_members = fields[0].with_value(|value| match value {
+                    ValueView::Structure(reference) => Some(
+                        reference
+                            .children()
+                            .iter()
+                            .map(|field| {
+                                let text = field.with_value(|value| match value {
+                                    ValueView::TextString(value) => Some(value.to_owned()),
+                                    _ => None,
+                                });
+                                (field.tag().raw(), field.item_type(), text)
+                            })
+                            .collect::<Vec<_>>(),
+                    ),
+                    _ => None,
+                });
+                assert_eq!(
+                    reference_members,
+                    Some(vec![
+                        (
+                            VENDOR_IDENTIFICATION,
+                            ItemType::TextString,
+                            Some(expected_vendor.to_owned()),
+                        ),
+                        (
+                            ATTRIBUTE_NAME,
+                            ItemType::TextString,
+                            Some(expected_name.to_owned()),
+                        ),
+                    ])
+                );
+            }
+        }
         assert!(
             expected_value.matches(&fields[2]),
             "the supplied Table 428 parameter keeps its exact Item Type and value"
