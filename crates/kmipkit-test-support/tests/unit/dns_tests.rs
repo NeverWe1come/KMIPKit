@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 use std::io::{self, Read, Write};
 use std::net::{IpAddr, Ipv4Addr, Shutdown, TcpListener, TcpStream, UdpSocket};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::mpsc::{self, Receiver};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
 use std::thread;
 use std::time::Duration;
@@ -265,7 +266,8 @@ fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
     )]);
-    let (spawner, spawn_attempts) = tcp_worker_spawner_failing(TcpWorkerKind::Connection);
+    let (spawner, spawn_attempts, _connection_worker_done) =
+        tcp_worker_spawner_failing(TcpWorkerKind::Connection);
     let (local_addr, state, server) = start_tcp_server_for_spawn_test(records, spawner);
 
     let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
@@ -292,7 +294,8 @@ fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
     )]);
-    let (spawner, spawn_attempts) = tcp_worker_spawner_failing(TcpWorkerKind::Response);
+    let (spawner, spawn_attempts, connection_worker_done) =
+        tcp_worker_spawner_failing(TcpWorkerKind::Response);
     let (local_addr, state, server) = start_tcp_server_for_spawn_test(records, spawner);
 
     let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
@@ -305,6 +308,9 @@ fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
     let _shutdown_result = client.shutdown(Shutdown::Both);
     state.stop.store(true, Ordering::Release);
     let server_result = server.join();
+    connection_worker_done
+        .recv_timeout(Duration::from_secs(1))
+        .expect("connection worker should finish before metrics are inspected");
 
     assert_eq!(spawn_attempts.load(Ordering::Acquire), 2);
     assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
@@ -319,19 +325,30 @@ fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
     assert_eq!(metrics.peak_by_connection.get(&1), Some(&1));
 }
 
-fn tcp_worker_spawner_failing(failed_kind: TcpWorkerKind) -> (TcpWorkerSpawner, Arc<AtomicUsize>) {
+fn tcp_worker_spawner_failing(
+    failed_kind: TcpWorkerKind,
+) -> (TcpWorkerSpawner, Arc<AtomicUsize>, Receiver<()>) {
     let attempts = Arc::new(AtomicUsize::new(0));
     let spawner_attempts = Arc::clone(&attempts);
+    let (connection_worker_done_sender, connection_worker_done) = mpsc::channel();
     let spawner: TcpWorkerSpawner = Arc::new(move |kind, job| {
         spawner_attempts.fetch_add(1, Ordering::AcqRel);
         if kind == failed_kind {
             drop(job);
             Err(io::Error::other("injected DNS worker spawn failure"))
+        } else if kind == TcpWorkerKind::Connection {
+            let done_sender = connection_worker_done_sender.clone();
+            thread::Builder::new()
+                .spawn(move || {
+                    job();
+                    let _ = done_sender.send(());
+                })
+                .map(drop)
         } else {
             thread::Builder::new().spawn(job).map(drop)
         }
     });
-    (spawner, attempts)
+    (spawner, attempts, connection_worker_done)
 }
 
 fn start_tcp_server_for_spawn_test(
