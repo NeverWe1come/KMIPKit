@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -44,8 +46,97 @@ def _tag_value_by_id(catalog: dict[str, Any], element_id: str) -> str:
     raise AssertionError(f"attribute references missing assigned tag {element_id}")
 
 
-def _normalized_rust(rendered: str) -> str:
-    return rendered.lower().replace("_", "")
+def _rust_struct_records(rendered: str, struct_name: str) -> list[str]:
+    """Return Rust struct bodies, including nested source-rule records."""
+    records: list[str] = []
+    declaration = re.compile(rf"\b{re.escape(struct_name)}\s*\{{")
+    for match in declaration.finditer(rendered):
+        opening = rendered.find("{", match.start())
+        depth = 0
+        in_string = False
+        escaped = False
+        for index in range(opening, len(rendered)):
+            character = rendered[index]
+            if in_string:
+                if escaped:
+                    escaped = False
+                elif character == "\\":
+                    escaped = True
+                elif character == '"':
+                    in_string = False
+                continue
+            if character == '"':
+                in_string = True
+            elif character == "{":
+                depth += 1
+            elif character == "}":
+                depth -= 1
+                if depth == 0:
+                    records.append(rendered[opening + 1 : index])
+                    break
+        else:
+            raise AssertionError(f"unterminated generated {struct_name} record")
+    return records
+
+
+def _attribute_policy_record(
+    testcase: unittest.TestCase,
+    rendered: str,
+    wire_value: str,
+) -> str:
+    """Find the unique AttributePolicy record whose numeric tag is wire_value.
+
+    Renderer contract for T014: each standard policy is an `AttributePolicy`
+    struct literal with a numeric `tag` field, `source_policy_table`, the four
+    source cells, and `source_operation_restrictions` / `source_conditional_rules`
+    arrays in that same struct body. Vendor Attribute uses a separate
+    `VendorAttributePolicy` record.
+    """
+    expected_value = int(wire_value, 16)
+    records = []
+    for record in _rust_struct_records(rendered, "AttributePolicy"):
+        actual_value = _tag_value_from_record(record)
+        if actual_value is None:
+            continue
+        if actual_value == expected_value:
+            records.append(record)
+    testcase.assertEqual(
+        len(records),
+        1,
+        f"expected exactly one AttributePolicy record keyed by assigned tag {wire_value}",
+    )
+    return records[0]
+
+
+def _tag_value_from_record(record: str) -> int | None:
+    tag_field = re.search(r"\btag\s*:\s*(0x[\da-fA-F_]+|\d+)", record)
+    if tag_field is None:
+        return None
+    tag_literal = tag_field.group(1).replace("_", "")
+    return int(tag_literal, 16) if tag_literal.lower().startswith("0x") else int(tag_literal)
+
+
+def _vendor_attribute_policy_record(testcase: unittest.TestCase, rendered: str) -> str:
+    records = [
+        record
+        for record in _rust_struct_records(rendered, "VendorAttributePolicy")
+        if re.search(r"\bequals\s*:\s*\"[^\"]+\"", record)
+    ]
+    testcase.assertEqual(len(records), 1, "expected one separate VendorAttributePolicy record")
+    return records[0]
+
+
+def _assert_source_value(
+    testcase: unittest.TestCase,
+    record: str,
+    field: str,
+    value: str,
+) -> None:
+    testcase.assertIn(f"{field}: {json.dumps(value, ensure_ascii=False)}", record)
+
+
+def _assert_source_literal(testcase: unittest.TestCase, record: str, value: str) -> None:
+    testcase.assertIn(json.dumps(value, ensure_ascii=False), record)
 
 
 def _copy_validated_catalog_repo(destination: Path) -> None:
@@ -96,7 +187,6 @@ class AttributePolicyRenderingTests(unittest.TestCase):
 
     def test_renders_a_tag_keyed_record_for_every_standard_attribute(self) -> None:
         rendered = self._render()
-        normalized = _normalized_rust(rendered)
         standard_attributes = [
             item
             for item in self.catalog["elements"]
@@ -108,7 +198,22 @@ class AttributePolicyRenderingTests(unittest.TestCase):
             with self.subTest(attribute=attribute["name"]):
                 self.assertEqual(len(attribute["parent_element_ids"]), 1)
                 tag = _tag_value_by_id(self.catalog, attribute["parent_element_ids"][0])
-                self.assertIn(tag, normalized)
+                record = _attribute_policy_record(self, rendered, tag)
+
+                _assert_source_value(self, record, "source_policy_table", attribute["source_policy_table"])
+                for field in (
+                    "source_initially_set_by",
+                    "source_modifiable_by_client",
+                    "source_deletable_by_client",
+                    "source_always_required",
+                ):
+                    _assert_source_value(self, record, field, attribute[field])
+                for field in ("source_operation_restrictions", "source_conditional_rules"):
+                    self.assertRegex(record, rf"\b{field}\s*:\s*&?\[")
+                    for rule in attribute[field]:
+                        _assert_source_value(self, record, "source_text", rule["source_text"])
+                        for source_ref in rule["source_refs"]:
+                            _assert_source_literal(self, record, source_ref["section"])
 
     def test_preserves_conditional_rule_text_and_qualified_source_values(self) -> None:
         rendered = self._render()
@@ -117,28 +222,18 @@ class AttributePolicyRenderingTests(unittest.TestCase):
             for item in self.catalog["elements"]
             if item.get("kind") == "attribute" and item.get("source_policy_table")
         ]
-        conditional_rules = [
-            rule
-            for attribute in conditional_attributes
-            for rule in attribute["source_conditional_rules"]
-        ]
-        qualified_values = [
-            attribute[field]
-            for attribute in conditional_attributes
-            for field in ("source_modifiable_by_client", "source_deletable_by_client")
-            if attribute[field] not in {"Yes", "No"}
-        ]
-
-        self.assertTrue(conditional_rules)
-        self.assertTrue(qualified_values)
-        for rule in conditional_rules:
-            with self.subTest(source_text=rule["source_text"]):
-                self.assertIn(rule["source_text"], rendered)
-                for source_ref in rule["source_refs"]:
-                    self.assertIn(source_ref["section"], rendered)
-        for source_value in qualified_values:
-            with self.subTest(source_value=source_value):
-                self.assertIn(source_value, rendered)
+        for attribute in conditional_attributes:
+            tag = _tag_value_by_id(self.catalog, attribute["parent_element_ids"][0])
+            record = _attribute_policy_record(self, rendered, tag)
+            for rule in attribute["source_conditional_rules"]:
+                with self.subTest(attribute=attribute["name"], source_text=rule["source_text"]):
+                    _assert_source_value(self, record, "source_text", rule["source_text"])
+                    for source_ref in rule["source_refs"]:
+                        _assert_source_literal(self, record, source_ref["section"])
+            for field in ("source_modifiable_by_client", "source_deletable_by_client"):
+                if attribute[field] not in {"Yes", "No"}:
+                    with self.subTest(attribute=attribute["name"], source_value=attribute[field]):
+                        _assert_source_value(self, record, field, attribute[field])
 
     def test_does_not_generate_entries_for_unknown_tags(self) -> None:
         catalog = {
@@ -156,27 +251,47 @@ class AttributePolicyRenderingTests(unittest.TestCase):
 
         rendered = self._render(catalog)
 
-        self.assertNotIn("54abcd", _normalized_rust(rendered))
-        self.assertNotIn("Unmapped Vendor Tag", rendered)
+        unknown_records = [
+            record
+            for record in _rust_struct_records(rendered, "AttributePolicy")
+            if _tag_value_from_record(record) == 0x54ABCD
+        ]
+        self.assertEqual(unknown_records, [])
 
-    def test_does_not_infer_policy_for_an_unmapped_name_form_reference(self) -> None:
-        catalog = {
-            "elements": [
-                *self.catalog["elements"],
-                {
-                    "element_id": "KMIPKIT-ELEM-ATTRIBUTE-UNMAPPED-CUSTOM-NAME",
-                    "kind": "attribute",
-                    "name": "Unmapped Customer Attribute",
-                    "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "4.60"}],
-                    "parent_element_ids": [],
-                    "source_name": "Unmapped Customer Attribute",
-                },
-            ]
+    def test_does_not_infer_policy_from_an_unmapped_name_form_reference(self) -> None:
+        rendered = self._render()
+        standard_attribute = next(
+            item
+            for item in self.catalog["elements"]
+            if item.get("kind") == "attribute" and item.get("source_name") == "Activation Date"
+        )
+        name_form_reference = {
+            "vendor_identification": "KMIPKit.UnmappedVendor",
+            "attribute_name": standard_attribute["source_name"],
         }
+        standard_tag = _tag_value_by_id(self.catalog, standard_attribute["parent_element_ids"][0])
+        standard_record = _attribute_policy_record(self, rendered, standard_tag)
+        policy_records = [
+            record
+            for record in _rust_struct_records(rendered, "AttributePolicy")
+            if _tag_value_from_record(record) is not None
+        ]
 
-        rendered = self._render(catalog)
-
-        self.assertNotIn("Unmapped Customer Attribute", rendered)
+        self.assertEqual(len(policy_records), 62)
+        for record in policy_records:
+            with self.subTest(record=record[:100]):
+                self.assertIsNotNone(_tag_value_from_record(record))
+                self.assertIsNone(
+                    re.search(r"\b(?:vendor_identification|attribute_name)\s*:", record),
+                    "standard policy records must use assigned tags, not name-form keys",
+                )
+        self.assertIn(standard_attribute["source_policy_table"], standard_record)
+        self.assertNotIn(name_form_reference["vendor_identification"], rendered)
+        self.assertNotIn(
+            f"{json.dumps(name_form_reference['vendor_identification'])}, "
+            f"{json.dumps(name_form_reference['attribute_name'])}",
+            rendered,
+        )
 
     def test_generates_the_separate_vendor_attribute_y_policy(self) -> None:
         rendered = self._render()
@@ -187,22 +302,28 @@ class AttributePolicyRenderingTests(unittest.TestCase):
         )
         policy = vendor_attribute["source_value_policies"][0]
 
-        self.assertIn(policy["source_text"], rendered)
-        self.assertIn(policy["value_predicate"]["member_element_id"], rendered)
-        self.assertIn('"y"', rendered)
-        self.assertIn("server_created", rendered)
+        vendor_record = _vendor_attribute_policy_record(self, rendered)
+
+        _assert_source_value(self, vendor_record, "source_text", policy["source_text"])
+        _assert_source_value(
+            self,
+            vendor_record,
+            "member_element_id",
+            policy["value_predicate"]["member_element_id"],
+        )
+        _assert_source_value(self, vendor_record, "equals", policy["value_predicate"]["equals"])
+        self.assertIn("server_created", vendor_record)
         for operation in policy["prohibited_client_operations"]:
             with self.subTest(operation=operation):
-                self.assertIn(operation, rendered)
+                _assert_source_literal(self, vendor_record, operation)
 
     def test_vendor_attribute_prohibition_matches_y_and_not_other_identifiers(self) -> None:
         rendered = self._render()
-        vendor_policy_start = rendered.find("VENDOR_ATTRIBUTE")
-        self.assertNotEqual(vendor_policy_start, -1, "separate Vendor Attribute policy is missing")
-        vendor_policy = rendered[vendor_policy_start:]
+        vendor_policy = _vendor_attribute_policy_record(self, rendered)
 
-        self.assertIn('equals: "y"', vendor_policy)
+        _assert_source_value(self, vendor_policy, "equals", "y")
         self.assertNotIn('equals: "x"', vendor_policy)
+        self.assertNotIn('prohibited_client_operations: "x"', vendor_policy)
 
 
 class AttributePolicyGeneratorCliTests(unittest.TestCase):
