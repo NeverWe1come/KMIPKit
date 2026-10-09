@@ -40,7 +40,7 @@ Provide opt-in interoperability tests for the ten KMIP 2.1 operations in `spec.m
 2. Generate CA/server/client credentials into ignored `.local/cosmian-kms/certs/`; the server certificate carries `DNS:localhost` SAN and `serverAuth`, and the client certificate carries `clientAuth`.
 3. Publish `5696` only on `127.0.0.1`; do not publish the unused HTTP UI or HTTP JSON TTLV port.
 4. Extend the ignored Cargo test target with a shared mTLS client builder, server-generated test-object helper, and one named test per operation. Use the typed KMIPKit request and response APIs; create separate objects for each attribute test and assert operation success plus operation-specific result fields where the server supports the operation.
-5. Use independently generated server-side RSA public keys for object-dependent attribute tests because Cosmian accepts the attribute operations for those objects. Use Create Key Pair for its own test and attempt an XOR two-of-two request over a test key for Create Split Key; record that the current Create builder defect prevents the latter's source-key setup.
+5. Use independently generated server-side RSA public keys for object-dependent attribute tests because Cosmian accepts the attribute operations for those objects. Use Create Key Pair for its own test and send an XOR two-of-two Create Split Key request over a test key. The initial test run exposed a Create Attributes tag defect and an incorrect Create Split Key operation enumeration; both candidate fixes are tracked separately under KMIPKIT-0014.
 6. Retain Response Message root validation as defined by OASIS KMIP v2.1 §8.4, Table 397, and §11.56.
 7. Update the English and Spanish-facing integration documentation and requirement traceability with the exact OASIS section/table and observed result for every operation.
 8. Run the full opt-in suite against the local deployment; record failed KMIP Result Status/Reason without treating server rejection as transport success or weakening typed parsing.
@@ -75,7 +75,7 @@ specs/015-cosmian-kms-integration/
 ## Risks
 
 - Cosmian may reject an operation because its version, configuration, authorization, or object-specific constraints differ from the supported-operation matrix; retain each observed response precisely and report the limitation.
-- The current Create request builder uses the Attribute tag where KMIP requires the Attributes structure tag. This library behavior defect blocks Create and Create Split Key fixture setup; record it and defer any production fix to its own approved specification.
+- The initial Create request builder used the Attribute tag where KMIP requires the Attributes structure tag, and Create Split Key used Register's operation enumeration. Candidate fixes are in the separate KMIPKIT-0014 branch; do not merge those production changes into this integration-test specification.
 - A typed response parser may expose a defect only when a real server returns a value shape not represented by unit fixtures. Any production behavior fix remains outside this integration-test specification and requires its own approved scope.
 - The local OpenSSL generator and Compose bind mount must be validated on supported developer platforms.
 - Docker registry availability is an external prerequisite; this test is not suitable as an always-on offline workspace test.

@@ -65,14 +65,18 @@ path. After correcting raw-TLS response validation to use the OASIS Response
 Message tag, the Discover Versions test passed (1 passed, 0 failed). The pinned
 image resolved to
 `ghcr.io/cosmian/kms@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`.
-The expanded test target currently reports 8 passed and 2 failed when run
-serially. Create fails because the KMIPKit builder sends the wrong Attributes
-tag; Create Split Key is consequently blocked during its test setup. Adjust
-Attribute was probed separately and Cosmian 5.28.0 rejects it as unsupported,
-so it is not included as a supported operation. See
-`specs/015-cosmian-kms-integration/traceability.md` for exact results. A
-successful selected operation is not a broad conformance claim. The hosted
-multi-platform CI and coverage gates passed on 2026-10-09; the local raw
+The initial expanded run on the unpatched KMIPKIT-0015 branch reported 8
+passed and 2 failed: Create used the wrong Attributes tag, and Create Split
+Key stopped during setup. After applying the candidate KMIPKIT-0014 fixes in
+the test checkout, the serial test command reported 10 passed and 0 failed,
+including Create and Create Split Key. The fixes remain in a separate feature
+branch; PR #56 is still draft until those changes are integrated and the suite
+passes on its updated branch. Adjust Attribute was probed separately and
+Cosmian 5.28.0 rejects it as unsupported, so it is not included in the
+supported-operation test target. See
+`specs/015-cosmian-kms-integration/traceability.md` for operation-level
+results. These selected operations are not a broad conformance claim. The
+hosted multi-platform CI and coverage gates passed on 2026-10-09; the local raw
 Windows coverage summary is not the platform-aggregated coverage gate.
 
 ## Stop and remove the server

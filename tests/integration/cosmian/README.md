@@ -63,16 +63,17 @@ response validator was corrected to require the OASIS Response Message tag
 passed, 0 failed. The pinned image resolved to
 `ghcr.io/cosmian/kms@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`.
 
-The expanded serial run reports 8 passed and 2 failed. Discover Versions,
-Create Key Pair, and all six tested attribute operations pass. The Create
-operation is listed as supported by the Cosmian operation matrix, but its test
-receives a Cosmian parse-error response because KMIPKit's Create builder emits tag
-`0x420008` (`Attribute`) where KMIP 2.1 requires tag `0x420125`
-(`Attributes`); Create Split Key is blocked while its source key is created.
-Adjust Attribute was probed separately and Cosmian 5.28.0 rejects it as
-unsupported. See `specs/015-cosmian-kms-integration/traceability.md` for
-operation-by-operation evidence. The results validate only these requests and
-do not establish full KMIP 2.1 conformance or certification.
+The initial expanded run on the unpatched KMIPKIT-0015 branch reported 8
+passed and 2 failed: Create used the wrong tag (`0x420008`, `Attribute`, rather
+than `0x420125`, `Attributes`), and Create Split Key stopped while creating its
+source key. After applying the candidate KMIPKIT-0014 fixes in the test
+checkout, the serial command reported 10 passed and 0 failed. The fixes are
+being reviewed in their own feature branch; PR #56 remains draft until the
+fixes are integrated and the suite passes on the updated branch. Adjust
+Attribute was probed separately and Cosmian 5.28.0 rejects it as unsupported.
+See `specs/015-cosmian-kms-integration/traceability.md` for operation-by-
+operation evidence. These results validate only the tested requests and do
+not establish full KMIP 2.1 conformance or certification.
 
 ## Stop the server
 
