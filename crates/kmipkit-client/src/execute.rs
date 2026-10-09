@@ -585,7 +585,8 @@ impl fmt::Debug for PendingOutcome {
             .field("operation", &self.operation)
             .field("result", &self.result)
             .field("asynchronous_correlation_value", &"[REDACTED]")
-            .finish()
+            // The typed response may contain caller-sensitive attribute data.
+            .finish_non_exhaustive()
     }
 }
 
@@ -2788,6 +2789,39 @@ fn response_outcome(
                 ClientBatchOutcome::Completed,
             )
         }
+        CREATE_OPERATION | CREATE_KEY_PAIR_OPERATION | CREATE_SPLIT_KEY_OPERATION => {
+            creation_response_outcome(operation, item)
+        }
+        ADD_ATTRIBUTE_OPERATION
+        | ADJUST_ATTRIBUTE_OPERATION
+        | DELETE_ATTRIBUTE_OPERATION
+        | MODIFY_ATTRIBUTE_OPERATION
+        | SET_ATTRIBUTE_OPERATION => attribute_mutation_response_outcome(operation, item),
+        GET_ATTRIBUTES_OPERATION => read_operation_outcome(
+            ClientOperation::GetAttributes,
+            item,
+            GetAttributesResponse::try_from_response_item,
+            GetAttributesResponse::result,
+            PendingResponse::GetAttributes,
+            ClientBatchOutcome::GetAttributes,
+        ),
+        GET_ATTRIBUTE_LIST_OPERATION => read_operation_outcome(
+            ClientOperation::GetAttributeList,
+            item,
+            GetAttributeListResponse::try_from_response_item,
+            GetAttributeListResponse::result,
+            PendingResponse::GetAttributeList,
+            ClientBatchOutcome::GetAttributeList,
+        ),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn creation_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
         CREATE_OPERATION => {
             let response =
                 CreateResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
@@ -2824,6 +2858,15 @@ fn response_outcome(
                 ClientBatchOutcome::CreateSplitKeyCompleted,
             )
         }
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn attribute_mutation_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
         ADD_ATTRIBUTE_OPERATION => {
             let response = AddAttributeResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
@@ -2884,22 +2927,6 @@ fn response_outcome(
                 ClientBatchOutcome::SetAttribute,
             )
         }
-        GET_ATTRIBUTES_OPERATION => read_operation_outcome(
-            ClientOperation::GetAttributes,
-            item,
-            GetAttributesResponse::try_from_response_item,
-            GetAttributesResponse::result,
-            PendingResponse::GetAttributes,
-            ClientBatchOutcome::GetAttributes,
-        ),
-        GET_ATTRIBUTE_LIST_OPERATION => read_operation_outcome(
-            ClientOperation::GetAttributeList,
-            item,
-            GetAttributeListResponse::try_from_response_item,
-            GetAttributeListResponse::result,
-            PendingResponse::GetAttributeList,
-            ClientBatchOutcome::GetAttributeList,
-        ),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }

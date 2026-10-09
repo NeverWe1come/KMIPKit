@@ -84,6 +84,14 @@ const OTHER_VENDOR_IDENTIFIER: &str = "KMIPKit_TestVendor";
 const ATTRIBUTE_NAME_SENTINEL: &str = "Opaque.ExecutionAttribute";
 const PERMISSION_DENIED: u32 = 0x0000_000C;
 
+type CapturedRequestOwner = Rc<RefCell<Option<zeroize::Zeroizing<Vec<u8>>>>>;
+type SingleExchangeResult = (
+    ClientBatchResponse,
+    Rc<RefCell<ScriptedTransport>>,
+    CapturedRequestOwner,
+);
+type ServerAuthoritativeCase = (ClientRequest, u32, &'static str);
+
 fn tag(raw_tag: u32) -> Tag {
     RawTag::new(raw_tag)
         .expect("fixture tag fits the 24-bit KMIP field")
@@ -201,14 +209,7 @@ fn request_field_tags(payload: &StructureView<'_>) -> Vec<(u32, ItemType)> {
         .collect()
 }
 
-fn run_once(
-    request: ClientRequest,
-    operation: u32,
-) -> (
-    ClientBatchResponse,
-    Rc<RefCell<ScriptedTransport>>,
-    Rc<RefCell<Option<zeroize::Zeroizing<Vec<u8>>>>>,
-) {
+fn run_once(request: ClientRequest, operation: u32) -> SingleExchangeResult {
     let (mut client, fake, captured_request) = client_for(ExchangeScript::Success {
         response: failure_response_bytes(operation),
         request_write_chunks: Vec::new(),
@@ -995,12 +996,11 @@ fn every_inspectable_vendor_attribute_y_value_and_name_reference_is_rejected() {
     }
 }
 
-#[test]
-fn tag_references_unknown_names_and_non_y_vendor_attributes_are_server_authoritative() {
+fn tag_reference_and_unknown_attribute_cases() -> Vec<ServerAuthoritativeCase> {
     // Table 161 tag form carries no Vendor Identification. The unknown tag is
     // in the §11.56 Table 487 Extensions range 0x540000–0x54FFFF and is
     // allocation-valid under KMIPKit-0004/ADR-0010, without a policy entry.
-    let cases = [
+    vec![
         (
             ClientRequest::adjust_attribute(AdjustAttributeRequest::new(
                 Some(OBJECT_IDENTIFIER.to_owned()),
@@ -1063,6 +1063,11 @@ fn tag_references_unknown_names_and_non_y_vendor_attributes_are_server_authorita
             DELETE_ATTRIBUTE_OPERATION,
             "unknown name-form Delete reference with vendor identifier other than y is server-authoritative",
         ),
+    ]
+}
+
+fn non_y_vendor_attribute_cases() -> Vec<ServerAuthoritativeCase> {
+    vec![
         (
             ClientRequest::add_attribute(AddAttributeRequest::new(
                 Some(OBJECT_IDENTIFIER.to_owned()),
@@ -1132,9 +1137,21 @@ fn tag_references_unknown_names_and_non_y_vendor_attributes_are_server_authorita
             DELETE_ATTRIBUTE_OPERATION,
             "§4.60 does not prohibit name-form Delete reference with identifier x",
         ),
-    ];
+    ]
+}
 
-    for (request, operation, context) in cases {
+#[test]
+fn tag_references_and_unknown_attributes_are_server_authoritative() {
+    for (request, operation, context) in tag_reference_and_unknown_attribute_cases() {
+        let (response, fake, captured_request) = run_once(request, operation);
+        assert_one_exchange(&fake, &captured_request, context);
+        assert_server_result(&response, PERMISSION_DENIED, context);
+    }
+}
+
+#[test]
+fn non_y_vendor_attribute_values_are_server_authoritative() {
+    for (request, operation, context) in non_y_vendor_attribute_cases() {
         let (response, fake, captured_request) = run_once(request, operation);
         assert_one_exchange(&fake, &captured_request, context);
         assert_server_result(&response, PERMISSION_DENIED, context);

@@ -281,6 +281,7 @@ def render_rust(catalog: dict[str, Any]) -> str:
         "    }",
         "}",
         "",
+        "#[rustfmt::skip]",
         "pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[",
     ]
     for policy in policies:
@@ -307,7 +308,14 @@ def render_rust(catalog: dict[str, Any]) -> str:
         lines.extend(_render_rules("source_operation_restrictions", policy["source_operation_restrictions"]))
         lines.extend(_render_rules("source_conditional_rules", policy["source_conditional_rules"]))
         lines.append("    },")
-    lines.extend(["];", "", "pub(super) const VENDOR_ATTRIBUTE_POLICY: VendorAttributePolicy = VendorAttributePolicy {"])
+    lines.extend(
+        [
+            "];",
+            "",
+            "#[rustfmt::skip]",
+            "pub(super) const VENDOR_ATTRIBUTE_POLICY: VendorAttributePolicy = VendorAttributePolicy {",
+        ]
+    )
     lines.extend(["    source_refs: &["])
     lines.extend(f"        {line}" for line in _render_source_refs(vendor["source_refs"]))
     lines.extend(

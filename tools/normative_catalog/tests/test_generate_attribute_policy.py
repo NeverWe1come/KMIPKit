@@ -185,6 +185,16 @@ class AttributePolicyRenderingTests(unittest.TestCase):
     def _render(self, catalog: dict[str, Any] | None = None) -> str:
         return _load_renderer(self)(self.catalog if catalog is None else catalog)
 
+    def test_generated_policy_tables_are_explicitly_skipped_by_rustfmt(self) -> None:
+        rendered = self._render()
+
+        self.assertIn(
+            'SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.1" },',
+            rendered,
+        )
+        self.assertIn("#[rustfmt::skip]\npub(super) const ATTRIBUTE_POLICIES", rendered)
+        self.assertIn("#[rustfmt::skip]\npub(super) const VENDOR_ATTRIBUTE_POLICY", rendered)
+
     def _standard_attributes(self) -> list[dict[str, Any]]:
         return [
             item

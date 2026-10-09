@@ -43,6 +43,7 @@ impl VendorAttributePolicy {
     }
 }
 
+#[rustfmt::skip]
 pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     AttributePolicy {
         tag: 0x42_00_01,
@@ -1547,6 +1548,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
 ];
 
+#[rustfmt::skip]
 pub(super) const VENDOR_ATTRIBUTE_POLICY: VendorAttributePolicy = VendorAttributePolicy {
     source_refs: &[
         SourceRef { source_id: "KMIPKIT-SRC-spec", section: "4.60" },
