@@ -100,6 +100,10 @@ mod archive_operation_tests;
 mod destroy_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/recover_operation_tests.rs"]
+mod recover_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_tests.rs"]
 mod create_key_pair_tests;
 
