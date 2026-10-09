@@ -75,3 +75,11 @@ Shared message and result requirements outside §§4–5.7 retain their existing
 - Shared message/result requirements: applicable structures in §§8.1–8.6, 9.1–9.2, 9.5–9.9, 9.12–9.13, 9.16, and 9.19–9.21.
 
 The exact upstream source files remain immutable under `specification/oasis/kmip-2.1/upstream/`.
+
+### Mutation policy catalog Red evidence (T011)
+
+The Red tests in `tools/normative_catalog/tests/test_validate.py` use the pinned KMIP Specification checksum to independently extract the 62 standard attribute rule tables, their exact second-table identifiers, source-cell values, and qualified text. A closed oracle compares each attribute's `source_operation_restrictions` and `source_conditional_rules` by exact `source_text` and exact source-reference pairs, including empty sets; missing, duplicate, misreferenced, contradictory, or unsupported entries are rejected. The rule oracle includes the applicable source-backed §§4.28, 4.30, 4.57, and 4.59 restrictions, §§6.1.2, 6.1.3, 6.1.13, and 6.1.51 prohibitions, Table 392's Usage Limits Count row, and conditional/lifecycle source text for the named attributes. Qualified `Yes`/`No` values remain verbatim in conditional entries rather than being treated as unconditional values.
+
+The Vendor Attribute has a separate §4.60 `source_value_policies` entry tied to Table 150 and the Vendor Identification member. Its exact server-created `y` prose and all six source actions are retained; the phrase `created (provided during object creation)` is not converted into a `Create` operation identifier. The §4.60 prose remains traced to FR-015 without an invented normative requirement ID. The catalog contract does not define general operation-ID mapping for these source action verbs; mapping and runtime behavior are deferred to the policy generation and operation tests (T013 onward), with no inference made here.
+
+T011 Red evidence is recorded in signed commits `d754414`, `3481158`, `278f252`, and `5b57da5`. The focused command ran the 10 T011 tests in 63.076s and failed with 16 expected assertions because the catalog metadata is not implemented yet and the existing validator accepts incomplete policy records. There were no syntax or source-fixture setup errors. Independent QA approved the final Red oracle as ready for T012.
