@@ -13,6 +13,85 @@ const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
 const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 
+/// A client-initiated KMIP operation that can mutate an object attribute.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ClientAttributeMutation {
+    /// Add a distinct attribute value.
+    Add,
+    /// Adjust an existing attribute value.
+    Adjust,
+    /// Delete an attribute value.
+    Delete,
+    /// Modify an existing attribute value.
+    Modify,
+    /// Set an attribute value.
+    Set,
+}
+
+impl ClientAttributeMutation {
+    const fn operation_name(self) -> &'static str {
+        match self {
+            Self::Add => "Add Attribute",
+            Self::Adjust => "Adjust Attribute",
+            Self::Delete => "Delete Attribute",
+            Self::Modify => "Modify Attribute",
+            Self::Set => "Set Attribute",
+        }
+    }
+}
+
+/// Returns whether the generated source-backed policy unconditionally
+/// prohibits a client mutation of a catalogued standard attribute.
+///
+/// Unknown tags return `false`; `KMIPKit` does not infer policy for unrecognized
+/// standard, extension, or vendor attributes. Qualified attribute rules that
+/// require remote object state remain the server's decision.
+#[must_use]
+pub fn client_attribute_mutation_is_prohibited(
+    tag: u32,
+    mutation: ClientAttributeMutation,
+) -> bool {
+    let Some(policy) = crate::attribute_policy::ATTRIBUTE_POLICIES
+        .iter()
+        .find(|policy| policy.tag == tag)
+    else {
+        return false;
+    };
+
+    let client_capability = match mutation {
+        ClientAttributeMutation::Delete => policy.source_deletable_by_client,
+        ClientAttributeMutation::Add
+        | ClientAttributeMutation::Adjust
+        | ClientAttributeMutation::Modify
+        | ClientAttributeMutation::Set => policy.source_modifiable_by_client,
+    };
+    source_says_no(client_capability)
+        || policy.source_operation_restrictions.iter().any(|rule| {
+            let text = rule.source_text;
+            (text.contains("SHALL NOT") || text.contains("MUST NOT"))
+                && text.contains(mutation.operation_name())
+        })
+}
+
+/// Returns whether the generated §4.60 policy prohibits the supplied client
+/// mutation for this Vendor Identification.
+#[must_use]
+pub fn client_vendor_attribute_mutation_is_prohibited(
+    vendor_identification: &str,
+    mutation: ClientAttributeMutation,
+) -> bool {
+    let policy = crate::attribute_policy::VENDOR_ATTRIBUTE_POLICY;
+    policy.matches_vendor_identification(vendor_identification)
+        && policy
+            .prohibited_client_operations
+            .contains(&mutation.operation_name())
+}
+
+fn source_says_no(value: &str) -> bool {
+    value == "No" || value.starts_with("No,") || value.starts_with("No ")
+}
+
 pub(crate) fn copy_text_string(value: &ValueView<'_>) -> Option<String> {
     match value {
         ValueView::TextString(text) => Some((*text).to_owned()),
