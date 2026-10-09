@@ -132,7 +132,8 @@ fn request_encodes_only_the_optional_unique_identifier_from_table_226() {
     let payload = request
         .to_ttlv_payload()
         .expect("the Table 226 request field uses an allocated tag");
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     assert_eq!(
         fields
@@ -321,4 +322,31 @@ fn successful_response_requires_one_identifier_then_one_or_more_references() {
             "Table 227 requires a Unique Identifier followed by at least one valid Attribute Reference"
         );
     }
+}
+
+#[test]
+fn successful_response_rejects_name_reference_with_reversed_table_161_members() {
+    // OASIS §10.1.4 and §5.5 Table 161 define the name-form structure in
+    // Vendor Identification, then Attribute Name order.
+    let reversed_reference = item(
+        ATTRIBUTE_REFERENCE,
+        Value::structure(structure([
+            item(
+                ATTRIBUTE_NAME,
+                Value::text_string("Opaque.Alpha".to_owned()),
+            ),
+            item(VENDOR_IDENTIFICATION, Value::text_string(VENDOR.to_owned())),
+        ])),
+    );
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([reversed_reference])),
+    );
+
+    assert!(
+        GetAttributeListResponse::try_from_response_item(response_item(&message)).is_err(),
+        "a name-form Attribute Reference with Attribute Name before Vendor Identification is malformed"
+    );
 }
