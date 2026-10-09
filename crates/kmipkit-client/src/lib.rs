@@ -110,6 +110,10 @@ mod execute_boundary_tests;
 mod attestation_indicator_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/attribute_read_execution_tests.rs"]
+mod attribute_read_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/transport_contract_tests.rs"]
 mod transport_contract_tests;
 

@@ -47,11 +47,22 @@ const ATTRIBUTE_NAME_SENTINEL: &str = "Opaque.ExecutionAttribute";
 const RESULT_MESSAGE_SENTINEL: &str = "attribute read rejected by server";
 
 // OASIS KMIP v2.1 §6.1.20/Table 225 lists Invalid Attribute plus all nine
-// Table 228 reasons. Those shared reasons use the same KMIPKIT-0006 result
-// model; they are exercised once here, with one Table 228 reason also sent
-// through Get Attribute List below to cover both operation dispatch paths.
+// Table 228 reasons. Each operation table is exercised through its own client
+// dispatch path so status, reason, message, and one-exchange behavior are
+// verified for both typed response models.
 const TABLE_225_REASONS: [u32; 10] = [
     0x2C, // Invalid Attribute
+    0x37, // Object Not Found
+    0x15, // Attestation Failed
+    0x14, // Attestation Required
+    0x08, // Feature Not Supported
+    0x07, // Invalid Field
+    0x04, // Invalid Message
+    0x05, // Operation Not Supported
+    0x0C, // Permission Denied
+    0x02, // Response Too Large
+];
+const TABLE_228_REASONS: [u32; 9] = [
     0x37, // Object Not Found
     0x15, // Attestation Failed
     0x14, // Attestation Required
@@ -71,7 +82,10 @@ fn attributes_response_payload() -> Structure {
         ),
         test_item(
             ATTRIBUTES,
-            Value::structure(test_structure([test_item(0x0042_002F, Value::integer(17))])),
+            Value::structure(test_structure([test_item(
+                0x0042_002F,
+                Value::date_time(1_700_000_000),
+            )])),
         ),
     ])
 }
@@ -401,42 +415,47 @@ fn get_attributes_preserves_table_225_failures_and_does_not_retry() {
 }
 
 #[test]
-fn get_attribute_list_preserves_table_228_result_fields_and_does_not_retry() {
-    let request = GetAttributeListRequest::try_new(None)
-        .expect("Table 226 permits omission of the Unique Identifier");
-    let (mut client, fake, _) = client_for(ExchangeScript::Success {
-        response: response_bytes(
-            GET_ATTRIBUTE_LIST_OPERATION,
-            1,
-            Some(0x37), // Object Not Found, also listed in Table 228.
-            Some(RESULT_MESSAGE_SENTINEL),
-            None,
-        ),
-        request_write_chunks: Vec::new(),
-    });
-    let result = client
-        .execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::get_attribute_list(
-                request,
-            ))),
-            &CodecLimits::defaults(),
-        )
-        .expect("Table 228 operation failure remains a typed response");
-    let response = completed_get_attribute_list(
-        result
-            .get(0)
-            .expect("one operation result is returned")
-            .outcome(),
-    );
+fn get_attribute_list_preserves_every_table_228_failure_result_without_retry() {
+    for reason in TABLE_228_REASONS {
+        let request = GetAttributeListRequest::try_new(None)
+            .expect("Table 226 permits omission of the Unique Identifier");
+        let (mut client, fake, _) = client_for(ExchangeScript::Success {
+            response: response_bytes(
+                GET_ATTRIBUTE_LIST_OPERATION,
+                1,
+                Some(reason),
+                Some(RESULT_MESSAGE_SENTINEL),
+                None,
+            ),
+            request_write_chunks: Vec::new(),
+        });
+        let result = client
+            .execute(
+                ClientBatch::new(ClientBatchItem::new(ClientRequest::get_attribute_list(
+                    request,
+                ))),
+                &CodecLimits::defaults(),
+            )
+            .expect("Table 228 failures remain typed responses");
+        let response = completed_get_attribute_list(
+            result
+                .get(0)
+                .expect("one operation result is returned")
+                .outcome(),
+        );
 
-    assert_eq!(fake.borrow().exchange_count(), 1);
-    assert_eq!(response.result().status().raw(), 1);
-    assert_eq!(
-        response.result().reason().map(ResultReason::raw),
-        Some(0x37)
-    );
-    assert_eq!(
-        response.result().message().map(|message| message.as_str()),
-        Some(RESULT_MESSAGE_SENTINEL)
-    );
+        assert_eq!(fake.borrow().exchange_count(), 1, "reason {reason:#x}");
+        assert_eq!(response.result().status().raw(), 1, "reason {reason:#x}");
+        assert_eq!(
+            response.result().reason().map(ResultReason::raw),
+            Some(reason),
+            "Table 228 reason {reason:#x} remains unchanged"
+        );
+        assert_eq!(
+            response.result().message().map(|message| message.as_str()),
+            Some(RESULT_MESSAGE_SENTINEL),
+            "Result Message remains unchanged for reason {reason:#x}"
+        );
+        assert!(response.attribute_references().is_none());
+    }
 }
