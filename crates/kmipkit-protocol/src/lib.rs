@@ -1,10 +1,6 @@
 //! KMIP 2.1 protocol models and validation for `KMIPKit`.
 #![forbid(unsafe_code)]
 
-#[expect(
-    dead_code,
-    reason = "the later KMIPKIT-0016 runtime consumer task will use this generated lookup"
-)]
 mod attribute_policy {
     include!("generated/attribute_policy.rs");
 }
