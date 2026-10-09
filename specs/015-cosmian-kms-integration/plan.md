@@ -1,4 +1,4 @@
-# Implementation Plan: Local Cosmian KMS Integration Smoke Test
+# Implementation Plan: Local Cosmian KMS Integration Tests
 
 **Branch**: `feature/KMIPKIT-0015-cosmian-kms-integration` | **Date**: 2026-10-08 | **Spec**: [spec.md](spec.md)
 
@@ -6,7 +6,7 @@
 
 ## Summary
 
-Provide an opt-in interoperability smoke test for the existing typed KMIP 2.1 Discover Versions path against a local, pinned Cosmian KMS 5.28.0 instance. Docker Compose generates disposable mTLS credentials, configures the binary KMIP TTLV socket on loopback, and stores server data only in the disposable container. The first live run exposed that the raw-TLS adapter expected the Request Message root tag on responses; correct the adapter to require the Response Message tag defined by OASIS KMIP v2.1 §8.4, Table 397, and §11.56.
+Provide opt-in interoperability tests for the ten KMIP 2.1 operations in `spec.md` against a local, pinned Cosmian KMS 5.28.0 instance. Docker Compose generates disposable mTLS credentials, configures the binary KMIP TTLV socket on loopback, and stores server data only in the disposable container. Retain the raw-TLS Response Message root validation established by the first live run. Exercise each operation through the current typed Rust production client, assert typed response contracts when supported, and record observed blockers without logging secret values.
 
 ## Technical Context
 
@@ -16,15 +16,15 @@ Provide an opt-in interoperability smoke test for the existing typed KMIP 2.1 Di
 
 **Storage**: Cosmian SQLite database under the container filesystem, cleared at server startup and removed with the container; generated PKI in ignored `.local/cosmian-kms/certs`.
 
-**Testing**: One opt-in integration target `crates/kmipkit-client/tests/cosmian_kms.rs`; executed successfully against the local pinned Cosmian KMS 5.28.0 deployment after correcting a response-root tag defect in the raw-TLS transport.
+**Testing**: Opt-in integration target `crates/kmipkit-client/tests/cosmian_kms.rs`; it contains one ignored test per operation. Run only after starting the local pinned Cosmian KMS 5.28.0 deployment.
 
 **Target Platform**: Local Docker Desktop or Docker Engine, with Rust 1.94+ host.
 
 **Project Type**: Existing Rust workspace plus local integration-test infrastructure.
 
-**Constraints**: No production API changes; no public demo access; no key lifecycle operations; port 5696 bound only to 127.0.0.1; no automatic retries; no committed credentials; live test remains ignored.
+**Constraints**: No production API changes; no public demo access; no import or object-destroy operations; test-generated objects and attribute changes stay in container-local storage; port 5696 bound only to 127.0.0.1; no automatic retries; no committed credentials; every live test remains ignored.
 
-**Scale/Scope**: One server, one client, one typed request, one response, one returned version.
+**Scale/Scope**: One local server; typed tests for Discover Versions, Create, Create Key Pair, Create Split Key, and six attribute operations. Each test owns its object state and uses one configured KMIPKit client.
 
 ## Constitution Check
 
@@ -36,13 +36,14 @@ Provide an opt-in interoperability smoke test for the existing typed KMIP 2.1 Di
 
 ## Design
 
-1. Put a version-pinned KMS configuration and Compose manifest in `tests/integration/cosmian/`.
-2. Generate CA/server/client credentials into the workspace's ignored `.local/cosmian-kms/certs/` bind mount before starting KMS. The server certificate carries `DNS:localhost` SAN and `serverAuth`; the client certificate carries `clientAuth`.
-3. Publish `5696` only on `127.0.0.1`. Do not publish the unused HTTP UI or HTTP JSON TTLV port.
-4. Add an ignored Cargo integration test which reads the generated PEM files, creates the existing raw-TLS client configuration, sends typed Discover Versions, and checks successful status plus version `(2, 1)`.
-5. Validate the response frame root as the OASIS Response Message Structure; reject a Request Message root on the response path.
-6. Provide a PowerShell helper and English quickstart with start, status, logs, stop, cleanup, and explicit test commands.
-7. Record exact live test outcomes and resolve observed protocol incompatibilities without weakening the assertions.
+1. Keep the version-pinned KMS configuration and Compose manifest in `tests/integration/cosmian/`.
+2. Generate CA/server/client credentials into ignored `.local/cosmian-kms/certs/`; the server certificate carries `DNS:localhost` SAN and `serverAuth`, and the client certificate carries `clientAuth`.
+3. Publish `5696` only on `127.0.0.1`; do not publish the unused HTTP UI or HTTP JSON TTLV port.
+4. Extend the ignored Cargo test target with a shared mTLS client builder, server-generated test-object helper, and one named test per operation. Use the typed KMIPKit request and response APIs; create separate objects for each attribute test and assert operation success plus operation-specific result fields where the server supports the operation.
+5. Use independently generated server-side RSA public keys for object-dependent attribute tests because Cosmian accepts the attribute operations for those objects. Use Create Key Pair for its own test and attempt an XOR two-of-two request over a test key for Create Split Key; record that the current Create builder defect prevents the latter's source-key setup.
+6. Retain Response Message root validation as defined by OASIS KMIP v2.1 §8.4, Table 397, and §11.56.
+7. Update the English and Spanish-facing integration documentation and requirement traceability with the exact OASIS section/table and observed result for every operation.
+8. Run the full opt-in suite against the local deployment; record failed KMIP Result Status/Reason without treating server rejection as transport success or weakening typed parsing.
 
 ## Project Structure
 
@@ -67,11 +68,14 @@ specs/015-cosmian-kms-integration/
 
 - Static/configuration-only checks may validate formatting, PowerShell syntax, shell syntax, and `docker compose config`.
 - Focused raw-TLS adapter tests must accept Response Message tag `0x42007B` and reject Request Message tag `0x420078` on the response path.
-- The live run used `.\scripts\integration\cosmian-kms.ps1 -Action test`, which invokes `cargo test -p kmipkit-client --test cosmian_kms -- --ignored`; retain the observed result and Cosmian image digest as evidence.
-- Do not claim broader KMIP 2.1 interoperability or profile conformance from this single operation.
+- The live run uses `.\scripts\integration\cosmian-kms.ps1 -Action test`, which invokes `cargo test -p kmipkit-client --test cosmian_kms -- --ignored --test-threads=1`; retain per-operation results and the Cosmian image digest as evidence.
+- Run `cargo fmt --all --check`, focused client and transport tests, `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`, and `cargo test --workspace --all-features --locked --quiet` after synchronization and test changes.
+- Do not claim broader KMIP 2.1 interoperability or profile conformance from the selected operations.
 
 ## Risks
 
-- Later KMIP operations could return response shapes that the typed result parser does not yet support; expand coverage only through separately scoped tests without widening this one-operation smoke test silently.
+- Cosmian may reject an operation because its version, configuration, authorization, or object-specific constraints differ from the supported-operation matrix; retain each observed response precisely and report the limitation.
+- The current Create request builder uses the Attribute tag where KMIP requires the Attributes structure tag. This library behavior defect blocks Create and Create Split Key fixture setup; record it and defer any production fix to its own approved specification.
+- A typed response parser may expose a defect only when a real server returns a value shape not represented by unit fixtures. Any production behavior fix remains outside this integration-test specification and requires its own approved scope.
 - The local OpenSSL generator and Compose bind mount must be validated on supported developer platforms.
 - Docker registry availability is an external prerequisite; this test is not suitable as an always-on offline workspace test.

@@ -1,7 +1,8 @@
-# Quickstart: Local Cosmian KMS Smoke Test
+# Quickstart: Local Cosmian KMS Integration Tests
 
-This quickstart deploys Cosmian KMS 5.28.0 locally and provides an opt-in
-Discover Versions test. It does not claim broad protocol conformance.
+This quickstart deploys Cosmian KMS 5.28.0 locally and provides opt-in typed
+test cases for the ten operation paths in KMIPKIT-0015. It does not claim
+broad protocol conformance.
 
 ## Prerequisites
 
@@ -30,20 +31,47 @@ run the live test explicitly:
 .\scripts\integration\cosmian-kms.ps1 -Action test
 ```
 
-The test sends one typed Discover Versions request, defined by OASIS KMIP
-Specification v2.1 §6.1.16, Tables 211–213, and asserts a successful result
-with returned version `(2, 1)` as encoded under §9.16, Table 421.
+The test target sends typed requests for Discover Versions; Create; Create Key
+Pair; Create Split Key; Add Attribute; Delete Attribute; Get Attributes; Get
+Attribute List; Modify Attribute; and Set Attribute. Start
+with the full ignored integration target:
+
+```powershell
+cargo test -p kmipkit-client --test cosmian_kms -- --ignored --test-threads=1
+```
+
+To run one operation test, add its exact Rust test name before `-- --ignored --exact --test-threads=1`, for example:
+
+```powershell
+cargo test -p kmipkit-client --test cosmian_kms cosmian_kms_accepts_kmip_2_1_discover_versions_over_mutual_tls -- --ignored --exact --test-threads=1
+```
+
+The test requests follow OASIS KMIP Specification v2.1 §6.1.16, Tables
+211–213; §6.1.8, Tables 186–188; §6.1.9, Tables 189–192; §6.1.10, Tables
+193–195; §6.1.2, Tables 167–169; §6.1.13, Tables 202–204; §6.1.20, Tables
+223–225; §6.1.21, Tables 226–228; §6.1.34, Tables
+265–267; and §6.1.51, Tables 322–324. Discover Versions must return success
+and include version `(2, 1)` as encoded under §9.16, Table 421. Each other
+operation must return a successful typed response with its required response
+fields. The tests create server-generated objects and test metadata in the
+container-local database; the database is discarded when the container is
+removed.
 
 ## Recorded result
 
 On 2026-10-08 the first live attempt reached Cosmian over verified mTLS but
 failed because KMIPKit expected the Request Message root tag on the response
-path. After correcting the raw-TLS response validation to use the OASIS
-Response Message tag, the live test passed (1 passed, 0 failed). The pinned
+path. After correcting raw-TLS response validation to use the OASIS Response
+Message tag, the Discover Versions test passed (1 passed, 0 failed). The pinned
 image resolved to
 `ghcr.io/cosmian/kms@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`.
-This result covers only Discover Versions and is not a broad conformance
-claim.
+The expanded test target currently reports 8 passed and 2 failed when run
+serially. Create fails because the KMIPKit builder sends the wrong Attributes
+tag; Create Split Key is consequently blocked during its test setup. Adjust
+Attribute was probed separately and Cosmian 5.28.0 rejects it as unsupported,
+so it is not included as a supported operation. See
+`specs/015-cosmian-kms-integration/traceability.md` for exact results. A
+successful selected operation is not a broad conformance claim.
 
 ## Stop and remove the server
 

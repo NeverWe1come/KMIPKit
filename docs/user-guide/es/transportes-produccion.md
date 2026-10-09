@@ -185,6 +185,14 @@ Consulta la [arquitectura de seguridad del transporte](../../architecture/transp
 y la [guía de ejecución del cliente](ejecucion-cliente.md) para ver los
 contratos detallados de la API y la entrega.
 
+## Pruebas de integración locales con Cosmian
+
+El repositorio incluye un despliegue optativo de Cosmian KMS 5.28.0 con Docker
+Compose y pruebas reales ignoradas por defecto que usan el cliente Rust tipado
+con TLS mutuo. Consulta la [guía de pruebas locales con Cosmian](../../../tests/integration/cosmian/README.md)
+para ver la configuración, los comandos, las operaciones probadas y los
+resultados de interoperabilidad actuales.
+
 ## Ejemplo local y ejecutable de una petición
 
 Crear un lote tipado no se conecta a un servidor. Este ejemplo se ejecuta como

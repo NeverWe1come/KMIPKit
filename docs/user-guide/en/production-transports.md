@@ -176,6 +176,13 @@ rejection is not by itself evidence of a client protocol defect. Consult the
 and [client execution guide](client-execution.md) for the detailed API and
 delivery contracts.
 
+## Local Cosmian integration tests
+
+The repository includes an opt-in Docker Compose deployment of Cosmian KMS
+5.28.0 and ignored live tests that use the typed Rust client over mutually
+authenticated TLS. Follow the [local Cosmian test guide](../../../tests/integration/cosmian/README.md)
+for setup, commands, tested operations, and current interoperability results.
+
 ## A local, executable request example
 
 Building a typed batch does not contact a server. This example is run as a
