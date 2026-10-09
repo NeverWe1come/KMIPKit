@@ -11,7 +11,7 @@ use kmipkit_protocol::{
     GetAttributesResponse, ResultReason,
 };
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_ttlv::codec::{CodecLimits, decode};
+use kmipkit_ttlv::codec::{decode, CodecLimits};
 use kmipkit_ttlv::{Item, ItemType, Structure, StructureView, Value, ValueView};
 
 use crate::asynchronous_execution_test_support::client_for;
@@ -311,8 +311,7 @@ fn get_attributes_encodes_selected_references_and_exchanges_once() {
 
 #[test]
 fn get_attribute_list_sends_only_uid_and_preserves_typed_response_once() {
-    let request = GetAttributeListRequest::try_new(Some(OBJECT_IDENTIFIER.to_owned()))
-        .expect("Table 226 permits the Unique Identifier");
+    let request = GetAttributeListRequest::new(Some(OBJECT_IDENTIFIER.to_owned()));
     let (mut client, fake, captured_request) = client_for(ExchangeScript::Success {
         response: response_bytes(
             GET_ATTRIBUTE_LIST_OPERATION,
@@ -406,7 +405,10 @@ fn get_attributes_preserves_table_225_failures_and_does_not_retry() {
             "Table 225 reason {reason:#x} remains unchanged"
         );
         assert_eq!(
-            response.result().message().map(|message| message.as_str()),
+            response
+                .result()
+                .message()
+                .map(kmipkit_protocol::ResultMessage::as_str),
             Some(RESULT_MESSAGE_SENTINEL),
             "Result Message remains unchanged for reason {reason:#x}"
         );
@@ -417,8 +419,7 @@ fn get_attributes_preserves_table_225_failures_and_does_not_retry() {
 #[test]
 fn get_attribute_list_preserves_every_table_228_failure_result_without_retry() {
     for reason in TABLE_228_REASONS {
-        let request = GetAttributeListRequest::try_new(None)
-            .expect("Table 226 permits omission of the Unique Identifier");
+        let request = GetAttributeListRequest::new(None);
         let (mut client, fake, _) = client_for(ExchangeScript::Success {
             response: response_bytes(
                 GET_ATTRIBUTE_LIST_OPERATION,
@@ -452,7 +453,10 @@ fn get_attribute_list_preserves_every_table_228_failure_result_without_retry() {
             "Table 228 reason {reason:#x} remains unchanged"
         );
         assert_eq!(
-            response.result().message().map(|message| message.as_str()),
+            response
+                .result()
+                .message()
+                .map(kmipkit_protocol::ResultMessage::as_str),
             Some(RESULT_MESSAGE_SENTINEL),
             "Result Message remains unchanged for reason {reason:#x}"
         );

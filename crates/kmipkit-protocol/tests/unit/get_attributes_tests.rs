@@ -375,14 +375,12 @@ fn response_without_requested_values_keeps_required_identifier_and_empty_attribu
 fn response_without_references_preserves_the_full_direct_attribute_set_in_order() {
     let request = GetAttributesRequest::try_new(None, [])
         .expect("Table 223 allows no Attribute Reference to request all attributes");
-    assert!(
-        request
-            .to_ttlv_payload()
-            .expect("valid request")
-            .view()
-            .children()
-            .is_empty()
-    );
+    assert!(request
+        .to_ttlv_payload()
+        .expect("valid request")
+        .view()
+        .children()
+        .is_empty());
 
     let message = response_message(
         0,
@@ -433,7 +431,7 @@ fn response_preserves_every_table_225_failure_reason_status_and_message() {
             Some(ResultReason::from_raw(expected_reason))
         );
         assert_eq!(
-            actual.result().message().map(|message| message.as_str()),
+            actual.result().message().map(crate::ResultMessage::as_str),
             Some("Get Attributes rejected by server")
         );
         assert!(actual.attributes().is_none());
@@ -499,8 +497,8 @@ fn response_rejects_payloads_missing_required_fields_or_violating_table_224_shap
 #[test]
 fn response_rejects_vendor_attribute_fields_outside_table_150_order() {
     // OASIS KMIP v2.1 §4.60, Table 150 lists Vendor Identification, Attribute
-    // Name, then Attribute Value. Section 10.1 requires Structure fields to
-    // appear in the order in which they are defined.
+    // Name, then Attribute Value. Section 10.1.2 requires Structure fields to
+    // appear in their defined order; §8 states the general field-order rule.
     let out_of_order_vendor_attribute = item(
         VENDOR_ATTRIBUTE,
         Value::structure(structure([

@@ -2,8 +2,8 @@
 
 //! Derived request/response vectors for OASIS KMIP v2.1 §6.1.21, Tables
 //! 226–228, with Attribute Reference encoding from §5.5, Table 161.
-//! Traceability: KMIPKIT-0016-FR-007/FR-010 and SC-002/SC-004. These are
-//! derived structural tests; they do not claim an official OASIS case passed.
+//! Traceability: KMIPKIT-0016-FR-007/FR-010/FR-011 and SC-002/SC-004/SC-005.
+//! These are derived structural tests; they do not claim an official OASIS case passed.
 
 use crate::{
     AttributeReference, GetAttributeListRequest, GetAttributeListResponse, ResponseBatchItemView,
@@ -127,8 +127,7 @@ fn successful_payload(references: impl IntoIterator<Item = Item>) -> Structure {
 
 #[test]
 fn request_encodes_only_the_optional_unique_identifier_from_table_226() {
-    let request = GetAttributeListRequest::try_new(Some(OBJECT_IDENTIFIER.to_owned()))
-        .expect("Table 226 permits the Unique Identifier to be supplied");
+    let request = GetAttributeListRequest::new(Some(OBJECT_IDENTIFIER.to_owned()));
     let payload = request
         .to_ttlv_payload()
         .expect("the Table 226 request field uses an allocated tag");
@@ -150,16 +149,13 @@ fn request_encodes_only_the_optional_unique_identifier_from_table_226() {
         Some(OBJECT_IDENTIFIER.as_bytes().to_vec())
     );
 
-    let request_without_identifier =
-        GetAttributeListRequest::try_new(None).expect("Table 226 makes Unique Identifier optional");
-    assert!(
-        request_without_identifier
-            .to_ttlv_payload()
-            .expect("an omitted identifier remains omitted")
-            .view()
-            .children()
-            .is_empty()
-    );
+    let request_without_identifier = GetAttributeListRequest::new(None);
+    assert!(request_without_identifier
+        .to_ttlv_payload()
+        .expect("an omitted identifier remains omitted")
+        .view()
+        .children()
+        .is_empty());
 }
 
 #[test]
@@ -191,6 +187,15 @@ fn response_returns_the_full_name_list_and_preserves_repeated_names_in_wire_orde
         ),
         "the full response list retains exact names, repetitions, and wire order"
     );
+    let references = actual
+        .attribute_references()
+        .expect("successful response contains the required references");
+    assert_eq!(
+        references[0].name_parts(),
+        Some((VENDOR, "Opaque.Alpha")),
+        "name-form references expose vendor and exact attribute name"
+    );
+    assert_eq!(references[0].tag_value(), None);
 }
 
 #[test]
@@ -209,6 +214,14 @@ fn response_preserves_tag_form_attribute_references() {
         actual.attribute_references(),
         Some(&[AttributeReference::tag(TAG_FORM_REFERENCE)][..]),
         "the Attribute Reference Enumeration retains the exact tag value"
+    );
+    assert_eq!(
+        actual
+            .attribute_references()
+            .expect("successful response contains the required references")[0]
+            .name_parts(),
+        None,
+        "tag-form references do not expose name components"
     );
 }
 
@@ -235,7 +248,7 @@ fn response_preserves_every_table_228_failure_reason_status_and_message() {
             Some(ResultReason::from_raw(expected_reason))
         );
         assert_eq!(
-            actual.result().message().map(|message| message.as_str()),
+            actual.result().message().map(crate::ResultMessage::as_str),
             Some("Get Attribute List rejected by server")
         );
         assert!(actual.attribute_references().is_none());
@@ -326,9 +339,9 @@ fn successful_response_requires_one_identifier_then_one_or_more_references() {
 
 #[test]
 fn successful_response_rejects_name_reference_with_reversed_table_161_members() {
-    // OASIS §5.5 Table 161 defines the name-form members as Vendor
-    // Identification followed by Attribute Name; §10.1 requires Structure
-    // fields to use their order in the structure description.
+    // OASIS KMIP v2.1 §5.5, Table 161 defines Vendor Identification followed
+    // by Attribute Name; §10.1.2 requires Structure fields to use their
+    // defined order, consistent with the general field-order rule in §8.
     let reversed_reference = item(
         ATTRIBUTE_REFERENCE,
         Value::structure(structure([
