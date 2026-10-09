@@ -2,7 +2,7 @@
 
 //! Fake-transport Destroy execution checks derived from OASIS KMIP v2.1
 //! §6.1.15, Tables 208–210; Unique Identifier encodings follow §4.58 Tables
-//! 145–146, and the tag assignment follows §11.56; shared response and
+//! 145–146, and §11.56 Table 487 assigns the tag; shared response and
 //! asynchronous rules follow §§8.6, 9.1, and 9.2, Tables
 //! 399–401; §11.3/Table 431; and the KMIPKIT-0007/0009 client contracts.
 //! Traceability:

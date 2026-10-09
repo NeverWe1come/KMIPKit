@@ -42,7 +42,7 @@ No ADR or architecture boundary change is required. Implementation MUST NOT begi
 
 ## Phase 0: Research Decisions
 
-See [research.md](research.md). The pinned source and release catalog confirm the four request/response/error table ranges, the optional request and required successful-response Unique Identifier shape, its encodings in §4.58 Tables 145–146, the tag assignment in §11.56, the Archive and Recover client MAY requirements, and the server-only classification of Activate and Destroy prose clauses. Recover reuses the existing asynchronous outcome model; no additional state machine is needed.
+See [research.md](research.md). The pinned source and release catalog confirm the four request/response/error table ranges, the optional request and required successful-response Unique Identifier shape, its encodings in §4.58 Tables 145–146, the tag assignment in §11.56 Table 487, the Archive and Recover client MAY requirements, and the server-only classification of Activate and Destroy prose clauses. Recover reuses the existing asynchronous outcome model; no additional state machine is needed.
 
 The catalog has no requirement-specific official Test Cases IDs for the Archive and Recover client requirements. Use derived vectors and report that limitation; do not claim official-case passes. Activate and Destroy operation-table behavior still requires executable coverage even though their prose clauses are server-only.
 

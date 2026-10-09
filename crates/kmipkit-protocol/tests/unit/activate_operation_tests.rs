@@ -1,6 +1,6 @@
 //! Activate payload tests derived from OASIS KMIP Specification v2.1 §6.1.1,
 //! Tables 164–166; §4.58 Tables 145–146 define permitted Unique Identifier
-//! encodings, and §11.56 assigns the tag. These are source-derived tests, not
+//! encodings, and §11.56 Table 487 assigns the tag. These are source-derived tests, not
 //! official OASIS Test Cases.
 //!
 //! Traceability: `KMIPKIT-ELEM-OP-C2S-ACTIVATE`; KMIPKIT-0018 FR-001, FR-002,

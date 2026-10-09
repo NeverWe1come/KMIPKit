@@ -2,7 +2,7 @@
 
 //! Fake-transport Activate execution checks derived from OASIS KMIP v2.1
 //! §6.1.1, Tables 164–166; Unique Identifier encodings follow §4.58 Tables
-//! 145–146, and the tag assignment follows §11.56; shared response and
+//! 145–146, and §11.56 Table 487 assigns the tag; shared response and
 //! asynchronous rules follow §§8.6, 9.1, and 9.2, Tables 399–401,
 //! and the KMIPKIT-0007/0009 client contracts. Traceability:
 //! `KMIPKIT-ELEM-OP-C2S-ACTIVATE`, KMIPKIT-0018 FR-001, FR-002, FR-003,
