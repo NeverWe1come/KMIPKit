@@ -34,7 +34,7 @@
 
 - [x] T007 [P] [US1] Add Activate request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs`.
 - [x] T008 [P] [US1] Add Destroy request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs`.
-- [ ] T009 [P] [US1] Add Activate fake-transport execution tests in `crates/kmipkit-client/tests/unit/activate_execution_tests.rs`.
+- [x] T009 [P] [US1] Add Activate fake-transport execution tests in `crates/kmipkit-client/tests/unit/activate_execution_tests.rs`.
 - [ ] T010 [P] [US1] Add Destroy fake-transport execution tests in `crates/kmipkit-client/tests/unit/destroy_execution_tests.rs`.
 - [ ] T011 [US1] Run the focused Activate and Destroy tests and record expected Red failures before implementation.
 
