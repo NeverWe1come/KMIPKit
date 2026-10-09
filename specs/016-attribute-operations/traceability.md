@@ -143,3 +143,21 @@ The Red workflow-contract test was added in signed commit `3c8503a`; `python -B 
 Refactor/reproducibility evidence: `python -B -m unittest -v scripts.tests.test_workflow` passed all 37 tests; `python -B -m unittest -v tools.normative_catalog.tests.test_generate_attribute_policy` passed all 10 tests; and `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v` passed 197 tests with seven Windows symlink-privilege skips. Two consecutive generator `--write` runs produced the same SHA-256, `3EACAA65E0F3AF0758EB80F1609F709DD020EC427A810BD6FCD47678E4663DE9`, and the subsequent generator `--check` passed. The `ci.yml` YAML parsed successfully with ephemeral PyYAML via `uv run --no-project --with PyYAML`; `git diff --check` passed.
 
 Exact changed-source coverage for T015: `.github/workflows/ci.yml` adds one Linux normative-inventory drift check; `scripts/tests/test_workflow.py` asserts that the named step and exact command remain wired. The generator and generated Rust output were unchanged by T015. The evidence and task closure are recorded in this distinct signed Refactor documentation commit.
+
+### Attribute read-operation Red evidence (T016–T019)
+
+Signed Red commits add the Get Attributes protocol vectors (`69de061`, corrected by `efa4f38`), Get Attribute List vectors (`d8005a3`, extended by `fd507fd`), and fake-transport execution vectors (`ad52ae3`, corrected by `86dc6db`). The protocol test modules are registered under `#[cfg(test)]` in `crates/kmipkit-protocol/src/lib.rs`; the execution test module is registered in `crates/kmipkit-client/src/lib.rs`. All three test files are derived vectors, not official OASIS conformance cases. Independent reviews passed after corrections to the Attribute Reference TTLV type, the Attributes tag, malformed-case isolation, tag-form response coverage, client semantic values, operation-specific error coverage, and test-harness registration.
+
+T019 ran the registered Red targets:
+
+```text
+cargo test --locked --offline -p kmipkit-protocol --lib get_attributes_tests
+cargo test --locked --offline -p kmipkit-protocol --lib get_attribute_list_tests
+cargo test --locked --offline -p kmipkit-client --lib attribute_read_execution_tests
+```
+
+Each command exited during compilation with the expected missing-feature diagnostics: the protocol targets report unresolved `AttributeReference`, `GetAttributesRequest`, `GetAttributesResponse`, `GetAttributeListRequest`, and `GetAttributeListResponse` models; the client target reports those missing protocol models plus the not-yet-added `ClientRequest` constructors and `ClientBatchOutcome` variants. No test body executed, and no fixture or assertion diagnostic was reported. This is the Red state for T020–T023, which add those models and dispatch paths. `rustfmt --check` for each changed Rust file and `git diff --check` passed.
+
+#### Recorded source discrepancy for Get Attributes no-match responses
+
+OASIS KMIP v2.1 §6.1.20 prose says that when none of the requested attributes is found, the response payload consists only of Unique Identifier; Table 224 requires both Unique Identifier and Attributes. The approved KMIPKIT-0016 response contract reuses the typed `AttributeSet` and requires the Table 224 Attributes field. Accordingly, the derived no-match vector follows Table 224 and the approved contract: it contains the requested Unique Identifier and an empty Attributes Structure, with no fabricated attribute Item. This is an explicit implementation ruling, not a claim that the source discrepancy is resolved. If the prose-only interpretation is the intended wire rule, this choice can reject a conforming server response that omits Attributes; accepting UID-only instead would conflict with Table 224 and the currently approved typed response contract. Any change to that behavior requires updating the approved specification and its vectors before Green is considered complete.
