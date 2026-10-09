@@ -3,7 +3,7 @@
 **Input**: Design documents in specs/019-cryptographic-operations/
 **Prerequisites**: spec.md, plan.md, research.md, data-model.md, contracts/operation-payloads.md, traceability.md
 **Tests**: Required; strict Red, Green, Refactor with separate evidence commits.
-**Organization**: T001–T004 prepare the specification PR. Implementation tasks remain gated on the approved specification and dependencies being present on release/1.0.0.
+**Organization**: T001–T004 prepare the specification PR. Implementation is authorized under the maintainer's standing direct instruction; the implementation branch must still be based on release/1.0.0 with all listed dependencies present. This records scope authorization, not a claim of separate line-by-line review. Reviewer-owned checklists remain untouched.
 
 ## Specification PR preparation
 
