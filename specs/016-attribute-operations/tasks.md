@@ -129,19 +129,19 @@
 
 ### Tests for User Story 3 — Red
 
-- [ ] T044 [P] [US3] Add FR-011/SC-005 round-trip cases for unknown Attribute Names, allocated and §11.56 extension tags, repeated attributes, unknown Enumeration values, and valid Adjustment Type extensions in `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`; add negative Reserved-tag/enum cases.
-- [ ] T045 [P] [US3] Add FR-013/SC-002 malformed and over-limit response cases for all seven operations, including received Reserved Tags rejected before generic `Item` construction under OASIS KMIP 2.1 Chapter 11/§11.56 allocation classification and accepted KMIPKit policy ADR-0011, in `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`.
-- [ ] T046 [P] [US3] Add FR-013 redaction assertions for attribute values in `crates/kmipkit-protocol/tests/attribute_redaction.rs`.
-- [ ] T047 [P] [US3] Add FR-012/SC-007 delivery-state, pending-result, and no-retry assertions across all seven operations in `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`.
-- [ ] T048 [US3] Run `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`, `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`, `crates/kmipkit-protocol/tests/attribute_redaction.rs`, and `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`; record failing Red evidence in the implementation PR.
+- [x] T044 [P] [US3] Add FR-011/SC-005 round-trip cases for unknown Attribute Names, allocated and §11.56 extension tags, repeated attributes, unknown Enumeration values, and valid Adjustment Type extensions in `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`; add negative Reserved-tag/enum cases.
+- [x] T045 [P] [US3] Add FR-013/SC-002 malformed and over-limit response cases for all seven operations, including received Reserved Tags rejected before generic `Item` construction under OASIS KMIP 2.1 Chapter 11/§11.56 allocation classification and accepted KMIPKit policy ADR-0011, in `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`.
+- [x] T046 [P] [US3] Add FR-013 redaction assertions for attribute values in `crates/kmipkit-protocol/tests/attribute_redaction.rs`.
+- [x] T047 [P] [US3] Add FR-012/SC-007 delivery-state, pending-result, and no-retry assertions across all seven operations in `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`.
+- [x] T048 [US3] Run `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`, `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`, `crates/kmipkit-protocol/tests/attribute_redaction.rs`, and `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`; record failing Red evidence in the implementation PR.
 
 ### Implementation for User Story 3 — Green
 
-- [ ] T049 [US3] Preserve exact Attribute Names, complete tagged values, repeated entries, and wire order for FR-011 in `crates/kmipkit-protocol/src/attribute.rs`.
-- [ ] T050 [US3] Preserve valid unknown Adjustment Type extension values and reject Reserved enum values without synthesizing tags for FR-004/FR-011 in `crates/kmipkit-protocol/src/adjust_attribute.rs`.
-- [ ] T051 [US3] Route malformed/over-limit responses through existing bounded decoder and shared error handling for FR-013 in `crates/kmipkit-client/src/execute.rs`.
-- [ ] T052 [US3] Ensure typed attribute Debug/error formatting redacts values for FR-013 in `crates/kmipkit-protocol/src/attribute.rs` and operation error conversions in `crates/kmipkit-client/src/execute.rs`.
-- [ ] T053 [US3] Run the tests in `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`, `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`, `crates/kmipkit-protocol/tests/attribute_redaction.rs`, and `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`; record Green evidence in a separate implementation commit.
+- [x] T049 [US3] Preserve exact Attribute Names, complete tagged values, repeated entries, and wire order for FR-011 in `crates/kmipkit-protocol/src/attribute.rs`.
+- [x] T050 [US3] Preserve valid unknown Adjustment Type extension values and reject Reserved enum values without synthesizing tags for FR-004/FR-011 in `crates/kmipkit-protocol/src/adjust_attribute.rs`.
+- [x] T051 [US3] Route malformed/over-limit responses through existing bounded decoder and shared error handling for FR-013 in `crates/kmipkit-client/src/execute.rs`.
+- [x] T052 [US3] Ensure typed attribute Debug/error formatting redacts values for FR-013 in `crates/kmipkit-protocol/src/attribute.rs` and operation error conversions in `crates/kmipkit-client/src/execute.rs`.
+- [x] T053 [US3] Run the tests in `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`, `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`, `crates/kmipkit-protocol/tests/attribute_redaction.rs`, and `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`; record Green evidence in a separate implementation commit.
 
 ### Refactor for User Story 3
 
