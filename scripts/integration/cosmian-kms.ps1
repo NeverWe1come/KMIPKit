@@ -34,7 +34,7 @@ switch ($Action) {
     'test' {
         Push-Location $repositoryRoot
         try {
-            cargo test -p kmipkit-client --test cosmian_kms -- --ignored
+            cargo test -p kmipkit-client --test cosmian_kms -- --ignored --test-threads=1
             exit $LASTEXITCODE
         }
         finally {

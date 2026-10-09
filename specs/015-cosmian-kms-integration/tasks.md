@@ -1,7 +1,7 @@
-# Tasks: Local Cosmian KMS Integration Smoke Test
+# Tasks: Local Cosmian KMS Integration Tests
 
-**Status**: Draft for human review. The feature specification and implementation
-are not approved for merge; coverage and hosted CI gates also remain open.
+**Status**: In progress. The maintainer approved expanded operation coverage on
+2026-10-09. Coverage and hosted CI gates remain open.
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md)
 
@@ -32,4 +32,16 @@ are not approved for merge; coverage and hosted CI gates also remain open.
 - [x] T014 Verify the focused raw-TLS and production-client suites and the live Cosmian test.
 - [x] T015 Retain distinct Red, Green, and Refactor commits: `c74dbd1` (Red), `7094217` (Green), and `30c8fea` (Refactor).
 - [x] T016 Run local workspace verification: `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`, `cargo test --workspace --all-features --locked --quiet`, and `git diff --check` all passed. The explicitly selected Cosmian integration test passed (1/1).
-- [ ] T017 Run the required multiplatform coverage and CI gates, then extend the Cosmian test target as additional typed operations are implemented. Keep the PR in draft until the planned operation coverage and gates are complete.
+- [x] T017 Run the KMIPKIT-0013 continuation branch's required local checks and retain the original one-operation live evidence before the release branch advanced.
+
+## Expanded typed-operation integration coverage
+
+- [x] T018 Synchronize the feature branch with `release/1.0.0`, resolve the overlapping Response Message fixture changes, and retarget PR #56 to `release/1.0.0`.
+- [x] T019 Update the specification, implementation plan, and traceability scope for ten selected typed operations; cite the exact OASIS v2.1 section and tables. Record Adjust Attribute separately as unsupported by Cosmian 5.28.0.
+- [x] T020 Add diagnostic test-first cases for Create, Create Key Pair, and Create Split Key in `crates/kmipkit-client/tests/cosmian_kms.rs`; run each through KMIPKit's typed client over the existing raw-TLS mTLS transport.
+- [x] T021 Add Get Attributes and Get Attribute List cases using a fresh server-generated object per test; assert result success and the requested/listed attributes in the typed result.
+- [x] T022 Add Add Attribute, Delete Attribute, Modify Attribute, and Set Attribute cases using independent server-generated objects; assert operation success and returned identifiers. Adjust Attribute is excluded after Cosmian rejects it as unsupported.
+- [x] T023 Run the complete ignored Cosmian suite against the pinned local image, record each operation's result independently, and fix only test input/setup defects in this integration PR. Record and stop at the out-of-scope Create builder defect.
+- [x] T024 Update `specs/015-cosmian-kms-integration/traceability.md`, `quickstart.md`, `tests/integration/cosmian/README.md`, and bilingual client integration documentation with exact commands, operation clauses, and live outcomes.
+- [ ] T025 Run focused client/transport suites, `cargo fmt --all --check`, workspace Clippy, workspace tests, catalog checks, and the required coverage/hosted-platform CI gates; record commands and outcomes. Local client/transport tests, format, Clippy, workspace tests, Compose/syntax checks, immutable-source/audit/catalog/generated-output checks pass. Local `cargo llvm-cov --workspace --all-features --summary-only` reports 83.80% line coverage, below the 90% workspace threshold; hosted multi-platform coverage aggregation remains pending.
+- [ ] T026 Review every FR and SC against the expanded tests; leave PR #56 open as draft until coverage and CI gates pass.
