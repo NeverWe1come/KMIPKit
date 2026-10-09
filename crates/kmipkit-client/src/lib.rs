@@ -103,6 +103,10 @@ mod create_split_key_execution_tests;
 mod activate_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/destroy_execution_tests.rs"]
+mod destroy_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/process_execution_tests.rs"]
 mod process_execution_tests;
 
