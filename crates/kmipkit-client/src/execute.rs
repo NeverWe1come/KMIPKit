@@ -2265,22 +2265,18 @@ fn vendor_attribute_item_is_prohibited(item: &Item, mutation: ClientAttributeMut
         let ValueView::Structure(structure) = value else {
             return false;
         };
-        let mut identifiers = structure
+        structure
             .children()
             .iter()
-            .filter(|field| field.tag().raw() == VENDOR_IDENTIFICATION_TAG);
-        let Some(identifier) = identifiers.next() else {
-            return false;
-        };
-        if identifiers.next().is_some() {
-            return false;
-        }
-        identifier.with_value(|value| match value {
-            ValueView::TextString(value) => {
-                client_vendor_attribute_mutation_is_prohibited(value, mutation)
-            }
-            _ => false,
-        })
+            .filter(|field| field.tag().raw() == VENDOR_IDENTIFICATION_TAG)
+            .any(|identifier| {
+                identifier.with_value(|value| match value {
+                    ValueView::TextString(value) => {
+                        client_vendor_attribute_mutation_is_prohibited(value, mutation)
+                    }
+                    _ => false,
+                })
+            })
     })
 }
 
