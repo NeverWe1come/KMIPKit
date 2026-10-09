@@ -1,6 +1,7 @@
 use super::{
     DnsQueryType, FixtureMetrics, FixtureState, LocalDnsFixture, MAX_QUERY_BYTES, TcpMetrics,
-    build_response, read_u16, serve_tcp_with_spawner, validate_records,
+    TcpWorkerKind, TcpWorkerSpawner, build_response, read_u16, serve_tcp_with_spawner,
+    validate_records,
 };
 use std::collections::BTreeMap;
 use std::io::{self, Read, Write};
@@ -275,33 +276,8 @@ fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
     )]);
-    let listener =
-        TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback test listener should bind");
-    listener
-        .set_nonblocking(true)
-        .expect("loopback listener should use nonblocking accept");
-    let local_addr = listener
-        .local_addr()
-        .expect("loopback test listener should expose its address");
-    let state = Arc::new(FixtureState {
-        stop: AtomicBool::new(false),
-        metrics: Mutex::new(FixtureMetrics::default()),
-        response_released: (Mutex::new(true), Condvar::new()),
-        active_responses: AtomicUsize::new(0),
-        peak_active_responses: AtomicUsize::new(0),
-        next_tcp_connection: AtomicUsize::new(1),
-        tcp_metrics: Mutex::new(TcpMetrics::default()),
-    });
-    let spawn_attempts = Arc::new(AtomicUsize::new(0));
-    let server_state = Arc::clone(&state);
-    let server_spawn_attempts = Arc::clone(&spawn_attempts);
-    let server = thread::spawn(move || {
-        serve_tcp_with_spawner(&listener, &records, &server_state, move |job| {
-            server_spawn_attempts.fetch_add(1, Ordering::AcqRel);
-            drop(job);
-            Err(io::Error::other("injected connection-worker spawn failure"))
-        });
-    });
+    let (spawner, spawn_attempts) = tcp_worker_spawner_failing(TcpWorkerKind::Connection);
+    let (local_addr, state, server) = start_tcp_server_for_spawn_test(records, spawner);
 
     let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
     client
@@ -325,11 +301,96 @@ fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
     state.stop.store(true, Ordering::Release);
     let server_result = server.join();
 
-    assert_eq!(spawn_attempts.load(Ordering::Acquire), 1);
+    assert_eq!(spawn_attempts.load(Ordering::Acquire), 2);
     assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
     let response = response.expect("accepted query should still receive a DNS response");
     assert_eq!(read_u16(&response, 0), Some(0));
     assert_eq!(read_u16(&response, 6), Some(1));
+}
+
+#[test]
+fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
+    let records = BTreeMap::from([(
+        "fixture.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
+    )]);
+    let (spawner, spawn_attempts) = tcp_worker_spawner_failing(TcpWorkerKind::Response);
+    let (local_addr, state, server) = start_tcp_server_for_spawn_test(records, spawner);
+
+    let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
+    client
+        .set_read_timeout(Some(Duration::from_secs(1)))
+        .expect("DNS TCP read timeout should be configured");
+    let request = fixture_query(1);
+    let length = u16::try_from(request.len()).expect("DNS request length fits its frame");
+    client
+        .write_all(&length.to_be_bytes())
+        .and_then(|()| client.write_all(&request))
+        .expect("framed DNS question should be sent");
+
+    let mut response_length = [0_u8; 2];
+    let response = client.read_exact(&mut response_length).and_then(|()| {
+        let length = usize::from(u16::from_be_bytes(response_length));
+        let mut response = vec![0; length];
+        client.read_exact(&mut response)?;
+        Ok(response)
+    });
+    let _shutdown_result = client.shutdown(Shutdown::Both);
+    state.stop.store(true, Ordering::Release);
+    let server_result = server.join();
+
+    assert_eq!(spawn_attempts.load(Ordering::Acquire), 2);
+    assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
+    let response = response.expect("DNS response should be sent if its worker cannot start");
+    assert_eq!(read_u16(&response, 0), Some(0));
+    assert_eq!(read_u16(&response, 6), Some(1));
+}
+
+fn tcp_worker_spawner_failing(failed_kind: TcpWorkerKind) -> (TcpWorkerSpawner, Arc<AtomicUsize>) {
+    let attempts = Arc::new(AtomicUsize::new(0));
+    let spawner_attempts = Arc::clone(&attempts);
+    let spawner: TcpWorkerSpawner = Arc::new(move |kind, job| {
+        spawner_attempts.fetch_add(1, Ordering::AcqRel);
+        if kind == failed_kind {
+            drop(job);
+            Err(io::Error::other("injected DNS worker spawn failure"))
+        } else {
+            thread::Builder::new().spawn(job).map(drop)
+        }
+    });
+    (spawner, attempts)
+}
+
+fn start_tcp_server_for_spawn_test(
+    records: BTreeMap<String, Vec<IpAddr>>,
+    spawner: TcpWorkerSpawner,
+) -> (
+    std::net::SocketAddr,
+    Arc<FixtureState>,
+    thread::JoinHandle<()>,
+) {
+    let listener =
+        TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback test listener should bind");
+    listener
+        .set_nonblocking(true)
+        .expect("loopback listener should use nonblocking accept");
+    let local_addr = listener
+        .local_addr()
+        .expect("loopback test listener should expose its address");
+    let state = Arc::new(FixtureState {
+        stop: AtomicBool::new(false),
+        metrics: Mutex::new(FixtureMetrics::default()),
+        response_released: (Mutex::new(true), Condvar::new()),
+        active_responses: AtomicUsize::new(0),
+        peak_active_responses: AtomicUsize::new(0),
+        next_tcp_connection: AtomicUsize::new(1),
+        tcp_metrics: Mutex::new(TcpMetrics::default()),
+    });
+    let server_state = Arc::clone(&state);
+    let server = thread::spawn(move || {
+        serve_tcp_with_spawner(&listener, &records, &server_state, spawner);
+    });
+    (local_addr, state, server)
 }
 
 #[test]
