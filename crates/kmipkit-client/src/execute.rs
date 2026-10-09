@@ -1529,6 +1529,17 @@ impl ClientBatchResponse {
     }
 }
 
+fn take_single_item_response(
+    mut items: Vec<ClientBatchItemResponse>,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    items.pop().ok_or_else(|| {
+        protocol_failure_at(
+            protocol_error(ProtocolErrorKind::MalformedMessage),
+            RequestDeliveryState::ResponseStarted,
+        )
+    })
+}
+
 impl fmt::Debug for ClientBatchResponse {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
@@ -1764,17 +1775,12 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let mut response = self.execute_with_options(
+        let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Activate(request))),
             limits,
             request_options,
         )?;
-        response.items.pop().ok_or_else(|| {
-            protocol_failure_at(
-                protocol_error(ProtocolErrorKind::MalformedMessage),
-                RequestDeliveryState::ResponseStarted,
-            )
-        })
+        take_single_item_response(response.items)
     }
 
     /// Executes one typed Archive request through the shared batch writer.
@@ -1813,17 +1819,12 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let mut response = self.execute_with_options(
+        let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Archive(request))),
             limits,
             request_options,
         )?;
-        response.items.pop().ok_or_else(|| {
-            protocol_failure_at(
-                protocol_error(ProtocolErrorKind::MalformedMessage),
-                RequestDeliveryState::ResponseStarted,
-            )
-        })
+        take_single_item_response(response.items)
     }
 
     /// Executes one typed Destroy request through the shared batch writer.
@@ -1862,17 +1863,12 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let mut response = self.execute_with_options(
+        let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Destroy(request))),
             limits,
             request_options,
         )?;
-        response.items.pop().ok_or_else(|| {
-            protocol_failure_at(
-                protocol_error(ProtocolErrorKind::MalformedMessage),
-                RequestDeliveryState::ResponseStarted,
-            )
-        })
+        take_single_item_response(response.items)
     }
 
     /// Executes one typed Recover request through the shared batch writer.
@@ -1910,17 +1906,12 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let mut response = self.execute_with_options(
+        let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Recover(request))),
             limits,
             request_options,
         )?;
-        response.items.pop().ok_or_else(|| {
-            protocol_failure_at(
-                protocol_error(ProtocolErrorKind::MalformedMessage),
-                RequestDeliveryState::ResponseStarted,
-            )
-        })
+        take_single_item_response(response.items)
     }
 
     /// Executes one typed Create request through the shared batch writer.
