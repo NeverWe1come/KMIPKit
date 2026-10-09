@@ -8,6 +8,7 @@ mod attribute_policy {
 mod activate;
 mod add_attribute;
 mod adjust_attribute;
+mod archive;
 mod asynchronous;
 pub mod attribute;
 mod attribute_reference;
@@ -37,6 +38,7 @@ pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResp
 pub use adjust_attribute::{
     AdjustAttributeError, AdjustAttributeRequest, AdjustAttributeResponse, AdjustmentType,
 };
+pub use archive::{ArchiveError, ArchiveRequest, ArchiveResponse};
 pub use asynchronous::AsynchronousOperationError;
 pub use attribute::{AttributeSet, AttributeSetError, CurrentAttribute, NewAttribute};
 pub use attribute_reference::AttributeReference;
