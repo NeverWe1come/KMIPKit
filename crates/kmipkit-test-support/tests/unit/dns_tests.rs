@@ -266,7 +266,7 @@ fn accepted_tcp_stream_is_blocking_before_a_delayed_read() {
         TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback TCP listener should bind");
     let mut writer = TcpStream::connect(listener.local_addr().expect("listener address exists"))
         .expect("loopback TCP client should connect");
-    let (accepted, _) = listener
+    let (mut accepted, _) = listener
         .accept()
         .expect("loopback TCP connection should be accepted");
 
