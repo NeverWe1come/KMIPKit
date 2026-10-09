@@ -302,4 +302,3 @@ def expected_attribute_policies(raw: bytes) -> tuple[dict[str, dict[str, Any]], 
         ],
     }
     return standard, vendor
-
