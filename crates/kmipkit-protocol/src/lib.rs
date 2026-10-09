@@ -163,3 +163,7 @@ mod attribute_roundtrip_tests;
 #[cfg(test)]
 #[path = "../tests/unit/attribute_limits_tests.rs"]
 mod attribute_limits_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/attribute_coverage_contract_tests.rs"]
+mod attribute_coverage_contract_tests;

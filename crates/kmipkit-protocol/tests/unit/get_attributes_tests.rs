@@ -398,6 +398,8 @@ fn response_without_references_preserves_the_full_direct_attribute_set_in_order(
     );
     let actual = GetAttributesResponse::try_from_response_item(response_item(&message))
         .expect("all direct attributes are valid Table 224 response members");
+    let debug = format!("{actual:?}");
+    assert!(debug.contains("GetAttributesResponse"));
     let attributes = actual
         .attributes()
         .expect("successful result has Attributes");
