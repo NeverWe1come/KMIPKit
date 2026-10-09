@@ -1,11 +1,14 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
-//! The typed request enum supports explicit Discover Versions, Create,
-//! Create Key Pair, and Create Split Key operations. The synchronous
-//! [`Client`] is constructed from an immutable
+//! The typed request enum supports explicit Discover Versions, Create, Create
+//! Key Pair, Create Split Key, Get Attributes, and Get Attribute List
+//! operations. The synchronous [`Client`] is constructed from an immutable
 //! client configuration and validated production transport configuration;
 //! callers cannot inject an arbitrary transport or submit raw KMIP bytes.
 //! Timeout overrides are available through the options-bearing typed methods.
+//!
+//! [`ClientBatchOutcome::response`] returns a [`ClientResponseView`] with a
+//! common operation-result accessor and typed accessors for each response.
 //!
 //! The following example prepares a typed batch without sending a request:
 //!
@@ -121,6 +124,6 @@ pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
-    ClientRequest, PendingOutcome,
+    ClientRequest, ClientResponseView, PendingOutcome,
 };
 pub use kmipkit_transport::RequestOptions;

@@ -9,10 +9,12 @@ use kmipkit_protocol::{
     AsynchronousOperationError, CancelRequest, CancelResponse, CancellationResult,
     CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
     CreateSplitKeyRequest, CreateSplitKeyResponse, DiscoverVersionsRequest,
-    DiscoverVersionsResponse, KmipOperationResult, MessageExtensionView, PollRequest, PollResponse,
-    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, RequestMessage,
-    ResponseBatchItemView, ResponseMessage, ResultStatus,
+    DiscoverVersionsResponse, GetAttributeListRequest, GetAttributeListResponse,
+    GetAttributesRequest, GetAttributesResponse, KmipOperationResult, MessageExtensionView,
+    PollRequest, PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory,
+    ProtocolError, ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest,
+    QueryAsyncRequestsResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus,
 };
 #[cfg(test)]
 use kmipkit_transport::Transport;
@@ -80,9 +82,8 @@ const RESULT_STATUS_PENDING: u32 = 2;
 
 /// One request variant admitted by the typed client execution path.
 ///
-/// The typed client request operations admitted by this release.
-///
-/// Generic TTLV items and caller-provided wire bytes are not accepted.
+/// Only explicitly requested typed operations are accepted. Generic TTLV items
+/// and caller-provided wire bytes are not accepted.
 #[non_exhaustive]
 pub enum ClientRequest {
     /// An explicit client-to-server Discover Versions request.
@@ -93,6 +94,10 @@ pub enum ClientRequest {
     CreateKeyPair(CreateKeyPairRequest),
     /// An explicit client-to-server Create Split Key request.
     CreateSplitKey(CreateSplitKeyRequest),
+    /// An explicit client-to-server Get Attributes request.
+    GetAttributes(GetAttributesRequest),
+    /// An explicit client-to-server Get Attribute List request.
+    GetAttributeList(GetAttributeListRequest),
 }
 
 impl ClientRequest {
@@ -102,12 +107,26 @@ impl ClientRequest {
         Self::DiscoverVersions(DiscoverVersionsRequest::new())
     }
 
+    /// Creates a typed Get Attributes request variant.
+    #[must_use]
+    pub fn get_attributes(request: GetAttributesRequest) -> Self {
+        Self::GetAttributes(request)
+    }
+
+    /// Creates a typed Get Attribute List request variant.
+    #[must_use]
+    pub fn get_attribute_list(request: GetAttributeListRequest) -> Self {
+        Self::GetAttributeList(request)
+    }
+
     const fn operation(&self) -> u32 {
         match self {
             Self::DiscoverVersions(_) => DISCOVER_VERSIONS_OPERATION,
             Self::Create(_) => CREATE_OPERATION,
             Self::CreateKeyPair(_) => CREATE_KEY_PAIR_OPERATION,
             Self::CreateSplitKey(_) => CREATE_SPLIT_KEY_OPERATION,
+            Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
+            Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
         }
     }
 
@@ -117,6 +136,8 @@ impl ClientRequest {
             Self::Create(request) => request.into_ttlv_payload(),
             Self::CreateKeyPair(request) => request.into_ttlv_payload(),
             Self::CreateSplitKey(request) => request.into_ttlv_payload(),
+            Self::GetAttributes(request) => request.to_ttlv_payload(),
+            Self::GetAttributeList(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -128,9 +149,20 @@ impl fmt::Debug for ClientRequest {
             Self::Create(_) => formatter.write_str("Create([REDACTED])"),
             Self::CreateKeyPair(_) => formatter.write_str("CreateKeyPair([REDACTED])"),
             Self::CreateSplitKey(_) => formatter.write_str("CreateSplitKey([REDACTED])"),
+            Self::GetAttributes(request) => formatter
+                .debug_tuple("GetAttributes")
+                .field(request)
+                .finish(),
+            Self::GetAttributeList(request) => formatter
+                .debug_tuple("GetAttributeList")
+                .field(request)
+                .finish(),
         }
     }
 }
+
+const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
+const GET_ATTRIBUTE_LIST_OPERATION: u32 = 0x0000_000C;
 
 /// One closed typed request and its optional Unique Batch Item ID.
 pub struct ClientBatchItem {
@@ -362,7 +394,39 @@ impl fmt::Debug for ClientMessageExtension {
     }
 }
 
-/// A Pending result and its opaque correlation capability.
+enum PendingResponse {
+    DiscoverVersions(DiscoverVersionsResponse),
+    Create(CreateResponse),
+    CreateKeyPair(CreateKeyPairResponse),
+    CreateSplitKey(CreateSplitKeyResponse),
+    GetAttributes(GetAttributesResponse),
+    GetAttributeList(GetAttributeListResponse),
+}
+
+impl PendingResponse {
+    const fn view(&self) -> ClientResponseView<'_> {
+        let response = match self {
+            Self::DiscoverVersions(response) => ClientResponseRef::DiscoverVersions(response),
+            Self::Create(response) => ClientResponseRef::Create(response),
+            Self::CreateKeyPair(response) => ClientResponseRef::CreateKeyPair(response),
+            Self::CreateSplitKey(response) => ClientResponseRef::CreateSplitKey(response),
+            Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
+            Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
+        };
+        ClientResponseView { response }
+    }
+}
+
+impl fmt::Debug for PendingResponse {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_tuple("PendingResponse")
+            .field(&self.view())
+            .finish()
+    }
+}
+
+/// A Pending result for one typed operation and its opaque correlation capability.
 ///
 /// The correlation bytes are available only through the borrowed accessor and
 /// remain in zeroizing-owned storage for this value's lifetime.
@@ -379,6 +443,7 @@ impl fmt::Debug for ClientMessageExtension {
 pub struct PendingOutcome {
     operation: ClientOperation,
     result: KmipOperationResult,
+    response: PendingResponse,
     asynchronous_correlation_value: Zeroizing<Vec<u8>>,
 }
 
@@ -393,6 +458,12 @@ impl PendingOutcome {
     #[must_use]
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
+    }
+
+    /// Returns a borrowed view of the original operation's typed response.
+    #[must_use]
+    pub const fn response(&self) -> ClientResponseView<'_> {
+        self.response.view()
     }
 
     /// Lends the exact opaque Asynchronous Correlation Value.
@@ -426,6 +497,10 @@ pub enum ClientOperation {
     CreateKeyPair,
     /// Create Split Key.
     CreateSplitKey,
+    /// Get Attributes.
+    GetAttributes,
+    /// Get Attribute List.
+    GetAttributeList,
     /// Poll one previously Pending operation.
     Poll,
     /// Cancel one previously Pending operation.
@@ -547,7 +622,164 @@ impl fmt::Debug for ClientOperationOutcome {
     }
 }
 
-/// A completed operation response or an explicitly resumable Pending result.
+#[derive(Clone, Copy)]
+enum ClientResponseRef<'a> {
+    DiscoverVersions(&'a DiscoverVersionsResponse),
+    Create(&'a CreateResponse),
+    CreateKeyPair(&'a CreateKeyPairResponse),
+    CreateSplitKey(&'a CreateSplitKeyResponse),
+    GetAttributes(&'a GetAttributesResponse),
+    GetAttributeList(&'a GetAttributeListResponse),
+}
+
+/// A borrowed view of one typed response in a [`ClientBatchOutcome`].
+///
+/// The operation result is available uniformly. Operation-specific response
+/// data remains accessible through the corresponding typed accessor.
+#[derive(Clone, Copy)]
+pub struct ClientResponseView<'a> {
+    response: ClientResponseRef<'a>,
+}
+
+impl ClientResponseView<'_> {
+    /// Returns the complete KMIP status, reason, and optional Result Message.
+    #[must_use]
+    pub const fn result(&self) -> &KmipOperationResult {
+        match self.response {
+            ClientResponseRef::DiscoverVersions(response) => response.result(),
+            ClientResponseRef::Create(response) => response.result(),
+            ClientResponseRef::CreateKeyPair(response) => response.result(),
+            ClientResponseRef::CreateSplitKey(response) => response.result(),
+            ClientResponseRef::GetAttributes(response) => response.result(),
+            ClientResponseRef::GetAttributeList(response) => response.result(),
+        }
+    }
+
+    /// Returns the server-advertised versions for Discover Versions.
+    ///
+    /// Other operations return `None`.
+    #[must_use]
+    pub fn supported_versions(&self) -> Option<&[ProtocolVersion]> {
+        match self.response {
+            ClientResponseRef::DiscoverVersions(response) => response.supported_versions(),
+            ClientResponseRef::Create(_)
+            | ClientResponseRef::CreateKeyPair(_)
+            | ClientResponseRef::CreateSplitKey(_)
+            | ClientResponseRef::GetAttributes(_)
+            | ClientResponseRef::GetAttributeList(_) => None,
+        }
+    }
+
+    /// Returns the Discover Versions response when this view represents it.
+    #[must_use]
+    pub const fn discover_versions(&self) -> Option<&DiscoverVersionsResponse> {
+        match self.response {
+            ClientResponseRef::DiscoverVersions(response) => Some(response),
+            ClientResponseRef::Create(_)
+            | ClientResponseRef::CreateKeyPair(_)
+            | ClientResponseRef::CreateSplitKey(_)
+            | ClientResponseRef::GetAttributes(_)
+            | ClientResponseRef::GetAttributeList(_) => None,
+        }
+    }
+
+    /// Returns the Create response when this view represents it.
+    #[must_use]
+    pub const fn create(&self) -> Option<&CreateResponse> {
+        match self.response {
+            ClientResponseRef::Create(response) => Some(response),
+            ClientResponseRef::DiscoverVersions(_)
+            | ClientResponseRef::CreateKeyPair(_)
+            | ClientResponseRef::CreateSplitKey(_)
+            | ClientResponseRef::GetAttributes(_)
+            | ClientResponseRef::GetAttributeList(_) => None,
+        }
+    }
+
+    /// Returns the Create Key Pair response when this view represents it.
+    #[must_use]
+    pub const fn create_key_pair(&self) -> Option<&CreateKeyPairResponse> {
+        match self.response {
+            ClientResponseRef::CreateKeyPair(response) => Some(response),
+            ClientResponseRef::DiscoverVersions(_)
+            | ClientResponseRef::Create(_)
+            | ClientResponseRef::CreateSplitKey(_)
+            | ClientResponseRef::GetAttributes(_)
+            | ClientResponseRef::GetAttributeList(_) => None,
+        }
+    }
+
+    /// Returns the Create Split Key response when this view represents it.
+    #[must_use]
+    pub const fn create_split_key(&self) -> Option<&CreateSplitKeyResponse> {
+        match self.response {
+            ClientResponseRef::CreateSplitKey(response) => Some(response),
+            ClientResponseRef::DiscoverVersions(_)
+            | ClientResponseRef::Create(_)
+            | ClientResponseRef::CreateKeyPair(_)
+            | ClientResponseRef::GetAttributes(_)
+            | ClientResponseRef::GetAttributeList(_) => None,
+        }
+    }
+
+    /// Returns the Get Attributes response when this view represents it.
+    #[must_use]
+    pub const fn get_attributes(&self) -> Option<&GetAttributesResponse> {
+        match self.response {
+            ClientResponseRef::GetAttributes(response) => Some(response),
+            ClientResponseRef::DiscoverVersions(_)
+            | ClientResponseRef::Create(_)
+            | ClientResponseRef::CreateKeyPair(_)
+            | ClientResponseRef::CreateSplitKey(_)
+            | ClientResponseRef::GetAttributeList(_) => None,
+        }
+    }
+
+    /// Returns the Get Attribute List response when this view represents it.
+    #[must_use]
+    pub const fn get_attribute_list(&self) -> Option<&GetAttributeListResponse> {
+        match self.response {
+            ClientResponseRef::GetAttributeList(response) => Some(response),
+            ClientResponseRef::DiscoverVersions(_)
+            | ClientResponseRef::Create(_)
+            | ClientResponseRef::CreateKeyPair(_)
+            | ClientResponseRef::CreateSplitKey(_)
+            | ClientResponseRef::GetAttributes(_) => None,
+        }
+    }
+}
+
+impl fmt::Debug for ClientResponseView<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.response {
+            ClientResponseRef::DiscoverVersions(response) => formatter
+                .debug_tuple("DiscoverVersions")
+                .field(response)
+                .finish(),
+            ClientResponseRef::Create(response) => {
+                formatter.debug_tuple("Create").field(response).finish()
+            }
+            ClientResponseRef::CreateKeyPair(response) => formatter
+                .debug_tuple("CreateKeyPair")
+                .field(response)
+                .finish(),
+            ClientResponseRef::CreateSplitKey(response) => formatter
+                .debug_tuple("CreateSplitKey")
+                .field(response)
+                .finish(),
+            ClientResponseRef::GetAttributes(response) => formatter
+                .debug_tuple("GetAttributes")
+                .field(response)
+                .finish(),
+            ClientResponseRef::GetAttributeList(response) => formatter
+                .debug_tuple("GetAttributeList")
+                .field(response)
+                .finish(),
+        }
+    }
+}
+
+/// A typed operation response or an explicitly resumable Pending result.
 #[non_exhaustive]
 pub enum ClientBatchOutcome {
     /// The server returned a non-Pending KMIP result.
@@ -560,6 +792,10 @@ pub enum ClientBatchOutcome {
     CreateSplitKeyCompleted(CreateSplitKeyResponse),
     /// The server returned Pending with its required capability-like value.
     Pending(PendingOutcome),
+    /// The server returned a Get Attributes result.
+    GetAttributes(GetAttributesResponse),
+    /// The server returned a Get Attribute List result.
+    GetAttributeList(GetAttributeListResponse),
 }
 
 impl ClientBatchOutcome {
@@ -570,7 +806,9 @@ impl ClientBatchOutcome {
             Self::Completed(_)
             | Self::CreateCompleted(_)
             | Self::CreateKeyPairCompleted(_)
-            | Self::CreateSplitKeyCompleted(_) => None,
+            | Self::CreateSplitKeyCompleted(_)
+            | Self::GetAttributes(_)
+            | Self::GetAttributeList(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
     }
@@ -583,6 +821,8 @@ impl ClientBatchOutcome {
             Self::CreateCompleted(response) => response.result(),
             Self::CreateKeyPairCompleted(response) => response.result(),
             Self::CreateSplitKeyCompleted(response) => response.result(),
+            Self::GetAttributes(response) => response.result(),
+            Self::GetAttributeList(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
     }
@@ -595,6 +835,8 @@ impl ClientBatchOutcome {
             Self::CreateCompleted(_) => ClientOperation::Create,
             Self::CreateKeyPairCompleted(_) => ClientOperation::CreateKeyPair,
             Self::CreateSplitKeyCompleted(_) => ClientOperation::CreateSplitKey,
+            Self::GetAttributes(_) => ClientOperation::GetAttributes,
+            Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Pending(pending) => pending.operation(),
         }
     }
@@ -607,6 +849,8 @@ impl ClientBatchOutcome {
             Self::CreateCompleted(_)
             | Self::CreateKeyPairCompleted(_)
             | Self::CreateSplitKeyCompleted(_)
+            | Self::GetAttributes(_)
+            | Self::GetAttributeList(_)
             | Self::Pending(_) => None,
         }
     }
@@ -619,6 +863,8 @@ impl ClientBatchOutcome {
             Self::Completed(_)
             | Self::CreateKeyPairCompleted(_)
             | Self::CreateSplitKeyCompleted(_)
+            | Self::GetAttributes(_)
+            | Self::GetAttributeList(_)
             | Self::Pending(_) => None,
         }
     }
@@ -631,6 +877,8 @@ impl ClientBatchOutcome {
             Self::Completed(_)
             | Self::CreateCompleted(_)
             | Self::CreateSplitKeyCompleted(_)
+            | Self::GetAttributes(_)
+            | Self::GetAttributeList(_)
             | Self::Pending(_) => None,
         }
     }
@@ -643,7 +891,38 @@ impl ClientBatchOutcome {
             Self::Completed(_)
             | Self::CreateCompleted(_)
             | Self::CreateKeyPairCompleted(_)
+            | Self::GetAttributes(_)
+            | Self::GetAttributeList(_)
             | Self::Pending(_) => None,
+        }
+    }
+
+    /// Returns a borrowed view of the typed operation response.
+    ///
+    /// Existing Discover Versions result access remains available through
+    /// [`ClientResponseView::result`] and [`ClientResponseView::supported_versions`].
+    #[must_use]
+    pub const fn response(&self) -> ClientResponseView<'_> {
+        match self {
+            Self::Completed(response) => ClientResponseView {
+                response: ClientResponseRef::DiscoverVersions(response),
+            },
+            Self::CreateCompleted(response) => ClientResponseView {
+                response: ClientResponseRef::Create(response),
+            },
+            Self::CreateKeyPairCompleted(response) => ClientResponseView {
+                response: ClientResponseRef::CreateKeyPair(response),
+            },
+            Self::CreateSplitKeyCompleted(response) => ClientResponseView {
+                response: ClientResponseRef::CreateSplitKey(response),
+            },
+            Self::Pending(pending) => pending.response(),
+            Self::GetAttributes(response) => ClientResponseView {
+                response: ClientResponseRef::GetAttributes(response),
+            },
+            Self::GetAttributeList(response) => ClientResponseView {
+                response: ClientResponseRef::GetAttributeList(response),
+            },
         }
     }
 }
@@ -667,6 +946,14 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Pending(pending) => formatter.debug_tuple("Pending").field(pending).finish(),
+            Self::GetAttributes(response) => formatter
+                .debug_tuple("GetAttributes")
+                .field(response)
+                .finish(),
+            Self::GetAttributeList(response) => formatter
+                .debug_tuple("GetAttributeList")
+                .field(response)
+                .finish(),
         }
     }
 }
@@ -684,7 +971,13 @@ impl fmt::Display for ClientBatchOutcome {
             Self::CreateSplitKeyCompleted(response) => {
                 write!(formatter, "CreateSplitKeyCompleted({})", response.result())
             }
-            Self::Pending(pending) => write!(formatter, "Pending({})", pending.result()),
+            Self::Pending(pending) => write!(formatter, "Pending({})", pending.response().result()),
+            Self::GetAttributes(response) => {
+                write!(formatter, "GetAttributes({})", response.result())
+            }
+            Self::GetAttributeList(response) => {
+                write!(formatter, "GetAttributeList({})", response.result())
+            }
         }
     }
 }
@@ -2134,9 +2427,11 @@ fn response_outcome(
                 .map_err(invalid_typed_response)?;
             operation_outcome(
                 ClientOperation::DiscoverVersions,
-                response.result().clone(),
+                response,
                 item,
-                ClientBatchOutcome::Completed(response),
+                DiscoverVersionsResponse::result,
+                PendingResponse::DiscoverVersions,
+                ClientBatchOutcome::Completed,
             )
         }
         CREATE_OPERATION => {
@@ -2144,9 +2439,11 @@ fn response_outcome(
                 CreateResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
             operation_outcome(
                 ClientOperation::Create,
-                response.result().clone(),
+                response,
                 item,
-                ClientBatchOutcome::CreateCompleted(response),
+                CreateResponse::result,
+                PendingResponse::Create,
+                ClientBatchOutcome::CreateCompleted,
             )
         }
         CREATE_KEY_PAIR_OPERATION => {
@@ -2154,9 +2451,11 @@ fn response_outcome(
                 .map_err(invalid_typed_response)?;
             operation_outcome(
                 ClientOperation::CreateKeyPair,
-                response.result().clone(),
+                response,
                 item,
-                ClientBatchOutcome::CreateKeyPairCompleted(response),
+                CreateKeyPairResponse::result,
+                PendingResponse::CreateKeyPair,
+                ClientBatchOutcome::CreateKeyPairCompleted,
             )
         }
         CREATE_SPLIT_KEY_OPERATION => {
@@ -2164,9 +2463,35 @@ fn response_outcome(
                 .map_err(invalid_typed_response)?;
             operation_outcome(
                 ClientOperation::CreateSplitKey,
-                response.result().clone(),
+                response,
                 item,
-                ClientBatchOutcome::CreateSplitKeyCompleted(response),
+                CreateSplitKeyResponse::result,
+                PendingResponse::CreateSplitKey,
+                ClientBatchOutcome::CreateSplitKeyCompleted,
+            )
+        }
+        GET_ATTRIBUTES_OPERATION => {
+            let response = GetAttributesResponse::try_from_response_item(item)
+                .map_err(invalid_typed_response)?;
+            operation_outcome(
+                ClientOperation::GetAttributes,
+                response,
+                item,
+                GetAttributesResponse::result,
+                PendingResponse::GetAttributes,
+                ClientBatchOutcome::GetAttributes,
+            )
+        }
+        GET_ATTRIBUTE_LIST_OPERATION => {
+            let response = GetAttributeListResponse::try_from_response_item(item)
+                .map_err(invalid_typed_response)?;
+            operation_outcome(
+                ClientOperation::GetAttributeList,
+                response,
+                item,
+                GetAttributeListResponse::result,
+                PendingResponse::GetAttributeList,
+                ClientBatchOutcome::GetAttributeList,
             )
         }
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
@@ -2187,6 +2512,7 @@ where
 fn pending_outcome(
     operation: ClientOperation,
     result: KmipOperationResult,
+    response: PendingResponse,
     item: ResponseBatchItemView<'_>,
 ) -> Result<PendingOutcome, ProtocolError> {
     let asynchronous_correlation_value = item
@@ -2195,20 +2521,25 @@ fn pending_outcome(
     Ok(PendingOutcome {
         operation,
         result,
+        response,
         asynchronous_correlation_value,
     })
 }
 
-fn operation_outcome(
+fn operation_outcome<T>(
     operation: ClientOperation,
-    result: KmipOperationResult,
+    response: T,
     item: ResponseBatchItemView<'_>,
-    completed: ClientBatchOutcome,
+    result: impl FnOnce(&T) -> &KmipOperationResult,
+    into_pending: impl FnOnce(T) -> PendingResponse,
+    into_completed: impl FnOnce(T) -> ClientBatchOutcome,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
+    let result = result(&response).clone();
     if result.status().raw() == RESULT_STATUS_PENDING {
-        pending_outcome(operation, result, item).map(ClientBatchOutcome::Pending)
+        pending_outcome(operation, result, into_pending(response), item)
+            .map(ClientBatchOutcome::Pending)
     } else {
-        Ok(completed)
+        Ok(into_completed(response))
     }
 }
 
@@ -2263,7 +2594,9 @@ fn validate_async_response(
         ClientOperation::DiscoverVersions
         | ClientOperation::Create
         | ClientOperation::CreateKeyPair
-        | ClientOperation::CreateSplitKey => {
+        | ClientOperation::CreateSplitKey
+        | ClientOperation::GetAttributes
+        | ClientOperation::GetAttributeList => {
             return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
         }
         ClientOperation::Poll => {
