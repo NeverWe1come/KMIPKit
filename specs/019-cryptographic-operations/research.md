@@ -14,7 +14,7 @@ A successful operation payload requires Unique Identifier. Non-success results c
 
 §6.1 says the initial request sets Init Indicator true, later requests include the Correlation Value returned by the server, and the last request sets Final Indicator true. It also says Data is required except when either Init or Final Indicator is true. Therefore an ordinary middle part, with both indicators absent/false, requires Data. AAD and Decrypt Authenticated Encryption Tag, when supplied in multipart calls, are carried on the initial request.
 
-The single-part tables mark Data required, while the general §6.1 rule permits omission if Init or Final is true. A single request with both indicators true has both meanings. KMIPKIT-DISC-045 records this conflict. The typed client gates this form with a local pre-transmission validation error until an authoritative decision resolves the conflict; this scope gate does not select Data requiredness under either OASIS reading.
+The single-part tables mark Data required, while the general §6.1 rule permits omission if Init or Final is true. A single request with Init=true, Final=true, and no Correlation Value is explicitly permitted by §6.1 as a single-part operation; when Data is present, both readings are satisfied. Only omission of Data creates the conflict recorded by KMIPKIT-DISC-045. The typed client accepts the Data-present form and gates only the Data-absent form with a local pre-transmission validation error until an authoritative decision resolves the conflict.
 
 ## Decision 4: Enforce locally knowable Cryptographic Parameters only
 
@@ -42,7 +42,7 @@ The catalog links Decrypt to KMIPKIT-TEST-CN01-2-100 based on its HTML descripti
 
 ## Remaining uncertainty and evidence
 
-- KMIPKIT-DISC-045: single-request Init=true/Final=true Data optionality remains unresolved between Tables 196/214 and §6.1; the typed client returns a local validation error before transmission for that form pending authoritative resolution, without choosing Data requiredness.
+- KMIPKIT-DISC-045: single-request Init=true/Final=true Data omission remains unresolved between Tables 196/214 and §6.1; the typed client accepts the Data-present form and returns a local validation error before transmission only when Data is omitted, pending authoritative resolution.
 - The Table 59 header extraction is an excluded source-clause audit record, not an open OASIS discrepancy or a requirement to make the Cryptographic Parameters request field mandatory.
 - No approved KMIP 2.1 erratum is pinned; the checked-in OASIS v2.1 Standard remains the source.
 - The server may reject based on implementation support, key state, or policy; that alone does not demonstrate client payload nonconformance.
