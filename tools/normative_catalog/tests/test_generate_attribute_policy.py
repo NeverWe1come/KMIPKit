@@ -185,16 +185,37 @@ class AttributePolicyRenderingTests(unittest.TestCase):
     def _render(self, catalog: dict[str, Any] | None = None) -> str:
         return _load_renderer(self)(self.catalog if catalog is None else catalog)
 
-    def test_renders_a_tag_keyed_record_for_every_standard_attribute(self) -> None:
-        rendered = self._render()
-        standard_attributes = [
+    def _standard_attributes(self) -> list[dict[str, Any]]:
+        return [
             item
             for item in self.catalog["elements"]
             if item.get("kind") == "attribute" and item.get("source_policy_table")
         ]
 
+    def _tag_addressable_standard_attributes(self) -> list[dict[str, Any]]:
+        return [item for item in self._standard_attributes() if item["parent_element_ids"]]
+
+    def test_renders_a_tag_keyed_record_for_every_tag_addressable_standard_attribute(self) -> None:
+        rendered = self._render()
+        standard_attributes = self._standard_attributes()
+        tag_addressable_attributes = self._tag_addressable_standard_attributes()
+
         self.assertEqual(len(standard_attributes), 62)
-        for attribute in standard_attributes:
+        self.assertEqual(len(tag_addressable_attributes), 61)
+        policy_records = [
+            record
+            for record in _rust_struct_records(rendered, "AttributePolicy")
+            if _tag_value_from_record(record) is not None
+        ]
+        expected_tags = {
+            int(_tag_value_by_id(self.catalog, attribute["parent_element_ids"][0]), 16)
+            for attribute in tag_addressable_attributes
+        }
+        actual_tags = {_tag_value_from_record(record) for record in policy_records}
+        self.assertEqual(len(policy_records), 61)
+        self.assertEqual(actual_tags, expected_tags)
+
+        for attribute in tag_addressable_attributes:
             with self.subTest(attribute=attribute["name"]):
                 self.assertEqual(len(attribute["parent_element_ids"]), 1)
                 tag = _tag_value_by_id(self.catalog, attribute["parent_element_ids"][0])
@@ -215,13 +236,45 @@ class AttributePolicyRenderingTests(unittest.TestCase):
                         for source_ref in rule["source_refs"]:
                             _assert_source_literal(self, record, source_ref["section"])
 
+    def test_certificate_attributes_table_40_has_no_tag_keyed_runtime_mapping(self) -> None:
+        rendered = self._render()
+        certificate_attributes = next(
+            item
+            for item in self._standard_attributes()
+            if item["name"] == "Certificate Attributes"
+        )
+
+        self.assertEqual(certificate_attributes["source_policy_table"], "Table 40")
+        self.assertEqual(certificate_attributes["source_refs"][0]["section"], "4.6")
+        self.assertEqual(certificate_attributes["parent_element_ids"], [])
+        self.assertEqual(certificate_attributes["source_initially_set_by"], "Server")
+        self.assertEqual(certificate_attributes["source_modifiable_by_client"], "No")
+        self.assertEqual(certificate_attributes["source_deletable_by_client"], "No")
+        self.assertEqual(certificate_attributes["source_always_required"], "No")
+        self.assertEqual(certificate_attributes["source_operation_restrictions"], [])
+        self.assertEqual(certificate_attributes["source_conditional_rules"], [])
+
+        # 0x4200A4 is Extension Information in §11.56, not a tag for Certificate Attributes.
+        extension_information_tag = _tag_value_by_id(self.catalog, "KMIPKIT-ELEM-TAG-4200A4")
+        self.assertEqual(extension_information_tag, "4200a4")
+        rendered_records = [
+            record
+            for record in _rust_struct_records(rendered, "AttributePolicy")
+            if _tag_value_from_record(record) is not None
+        ]
+        self.assertEqual(
+            [_tag_value_from_record(record) for record in rendered_records].count(0x4200A4),
+            0,
+            "the unrelated Extension Information tag must not be invented as a Certificate Attributes key",
+        )
+        self.assertFalse(
+            any("Table 40" in record for record in rendered_records),
+            "Table 40 metadata must not be emitted as a tag-keyed runtime policy",
+        )
+
     def test_preserves_conditional_rule_text_and_qualified_source_values(self) -> None:
         rendered = self._render()
-        conditional_attributes = [
-            item
-            for item in self.catalog["elements"]
-            if item.get("kind") == "attribute" and item.get("source_policy_table")
-        ]
+        conditional_attributes = self._tag_addressable_standard_attributes()
         for attribute in conditional_attributes:
             tag = _tag_value_by_id(self.catalog, attribute["parent_element_ids"][0])
             record = _attribute_policy_record(self, rendered, tag)
@@ -311,7 +364,7 @@ class AttributePolicyRenderingTests(unittest.TestCase):
             if _tag_value_from_record(record) is not None
         ]
 
-        self.assertEqual(len(policy_records), 62)
+        self.assertEqual(len(policy_records), 61)
         for record in policy_records:
             with self.subTest(record=record[:100]):
                 self.assertIsNotNone(_tag_value_from_record(record))
