@@ -60,9 +60,10 @@ impl ActivateRequest {
 
 /// A typed Activate result for one validated KMIP response batch item.
 ///
-/// A successful response exposes the required Unique Identifier in its exact
-/// §6.1.1, Table 165 wire form. Non-success results retain the shared KMIP
-/// operation result and have no typed success identifier. The source
+/// A successful response exposes the required Unique Identifier from
+/// §6.1.1, Table 165, preserving an encoding permitted by §4.58, Table 145.
+/// Non-success results retain the shared KMIP operation result and have no
+/// typed success identifier. The source
 /// [`crate::ResponseMessage`] retains the complete generic payload, including
 /// unknown or future fields.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -76,8 +77,8 @@ impl ActivateResponse {
     ///
     /// The item must identify the client-to-server Activate operation (`0x12`).
     /// Successful payload parsing requires exactly one Unique Identifier in a
-    /// form permitted by §11.56. Unknown fields remain available from the
-    /// original response message.
+    /// form permitted by §4.58, Table 145. Unknown fields remain available
+    /// from the original response message.
     ///
     /// # Errors
     ///
