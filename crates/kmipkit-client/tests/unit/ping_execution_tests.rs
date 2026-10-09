@@ -67,6 +67,11 @@ fn ping_sends_one_empty_payload_and_returns_success() {
 
     assert_eq!(ping.result().status().raw(), 0);
     assert_eq!(outcome.outcome().operation(), ClientOperation::Ping);
+    assert_eq!(outcome.outcome().result().status().raw(), 0);
+    let response = outcome.outcome().response();
+    assert!(response.ping().is_some());
+    assert!(response.query().is_none());
+    assert_eq!(response.result().status().raw(), 0);
     assert_eq!(
         request_shape(captured.borrow().as_deref().expect("request was captured")),
         Some((PING, 0))

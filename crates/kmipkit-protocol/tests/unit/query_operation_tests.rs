@@ -5,8 +5,9 @@ use crate::query_ping_fixtures::{
     OBJECT_GROUP, OBJECT_GROUPS, QUERY_FUNCTION, QUERY_OPERATION, QUERY_RESPONSE_TAGS, item,
     response_item, response_message, structure,
 };
-use crate::{QueryFunction, QueryRequest, QueryResponse};
-use kmipkit_ttlv::{Value, ValueView};
+use crate::{QueryError, QueryFunction, QueryRequest, QueryResponse, ResultValidationError};
+use kmipkit_ttlv::{ModelError, Value, ValueView};
+use std::error::Error;
 
 const STANDARD_QUERY_FUNCTIONS: [u32; 14] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 
@@ -30,6 +31,10 @@ fn names_all_standard_query_function_values_and_preserves_future_values() {
     ];
     assert_eq!(named.map(QueryFunction::raw), STANDARD_QUERY_FUNCTIONS);
     assert_eq!(QueryFunction::from_raw(0x8000_0042).raw(), 0x8000_0042);
+    assert_eq!(
+        format!("{:?}", QueryFunction::OPERATIONS),
+        "QueryFunction(1)"
+    );
     assert!(
         QueryRequest::new([QueryFunction::from_raw(15)])
             .to_ttlv_payload()
@@ -46,6 +51,22 @@ fn query_request_preserves_required_repeated_functions_and_object_group_order() 
         QueryFunction::from_raw(0x8000_0042),
     ])
     .with_object_groups(["group-b", "group-a", "group-b"]);
+    assert_eq!(
+        request
+            .functions()
+            .iter()
+            .map(|value| value.raw())
+            .collect::<Vec<_>>(),
+        [1, 2, 1, 0x8000_0042]
+    );
+    assert_eq!(
+        request.object_groups().expect("Object Groups is present"),
+        ["group-b", "group-a", "group-b"]
+    );
+    let request_debug = format!("{request:?}");
+    assert!(request_debug.contains("function_count: 4"));
+    assert!(request_debug.contains("object_group_count: Some(3)"));
+    assert!(!request_debug.contains("group-b"));
     let payload = request
         .to_ttlv_payload()
         .expect("valid Query values are representable");
@@ -197,10 +218,27 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
         item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
         item(
             0x0042_0012,
-            Value::structure(structure([item(
-                0x0042_0057,
-                Value::byte_string(vec![0, 1, 2, 3]),
-            )])),
+            Value::structure(structure([
+                item(QUERY_RESPONSE_TAGS[0], Value::long_integer(-8)),
+                item(QUERY_RESPONSE_TAGS[1], Value::integer(7)),
+                item(QUERY_RESPONSE_TAGS[2], Value::big_integer(vec![0x01, 0x02])),
+                item(QUERY_RESPONSE_TAGS[3], Value::boolean(true)),
+                item(
+                    QUERY_RESPONSE_TAGS[4],
+                    Value::text_string("nested text".to_owned()),
+                ),
+                item(QUERY_RESPONSE_TAGS[5], Value::byte_string(vec![0, 1, 2, 3])),
+                item(QUERY_RESPONSE_TAGS[6], Value::date_time(42)),
+                item(QUERY_RESPONSE_TAGS[7], Value::interval(9)),
+                item(QUERY_RESPONSE_TAGS[8], Value::date_time_extended(-42)),
+                item(
+                    QUERY_RESPONSE_TAGS[9],
+                    Value::structure(structure([item(
+                        QUERY_RESPONSE_TAGS[10],
+                        Value::enumeration(0x8000_0047),
+                    )])),
+                ),
+            ])),
         ),
     ];
     let message = response_message(
@@ -268,6 +306,58 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
     assert!(response.defaults_information().is_some());
     assert!(response.protection_storage_masks().is_some());
     assert_eq!(response.unknown_items().count(), 1);
+    assert_eq!(
+        response
+            .response_fields()
+            .iter()
+            .map(|field| format!("{field:?}"))
+            .collect::<Vec<_>>(),
+        [
+            "Operation",
+            "Operation",
+            "ObjectType",
+            "VendorIdentification",
+            "ServerInformation",
+            "ApplicationNamespace",
+            "ApplicationNamespace",
+            "ExtensionInformation",
+            "AttestationType",
+            "RngParameters",
+            "ProfileInformation",
+            "ValidationInformation",
+            "CapabilityInformation",
+            "ClientRegistrationMethod",
+            "DefaultsInformation",
+            "ProtectionStorageMasks",
+            "Unknown",
+        ]
+    );
+    assert_eq!(
+        response
+            .response_fields()
+            .iter()
+            .map(|field| field.with_ttlv(|item| item.tag().raw()))
+            .collect::<Vec<_>>(),
+        [
+            None,
+            None,
+            None,
+            None,
+            Some(QUERY_RESPONSE_TAGS[3]),
+            None,
+            None,
+            Some(QUERY_RESPONSE_TAGS[5]),
+            None,
+            Some(QUERY_RESPONSE_TAGS[7]),
+            Some(QUERY_RESPONSE_TAGS[8]),
+            Some(QUERY_RESPONSE_TAGS[9]),
+            Some(QUERY_RESPONSE_TAGS[10]),
+            None,
+            Some(QUERY_RESPONSE_TAGS[12]),
+            Some(QUERY_RESPONSE_TAGS[13]),
+            Some(0x0042_0012),
+        ]
+    );
     response
         .response_fields()
         .last()
@@ -275,12 +365,60 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
         .with_ttlv(|unknown_item| {
             unknown_item.with_value(|value| match value {
                 ValueView::Structure(nested) => {
-                    assert_eq!(nested.children().len(), 1);
-                    assert_eq!(nested.children()[0].tag().raw(), 0x0042_0057);
+                    assert_eq!(nested.children().len(), 10);
+                    assert_eq!(nested.children()[0].tag().raw(), QUERY_RESPONSE_TAGS[0]);
+                    assert_eq!(nested.children()[9].tag().raw(), QUERY_RESPONSE_TAGS[9]);
                 }
                 _ => panic!("unknown response item remains a Structure"),
             });
         });
+}
+
+#[test]
+fn query_known_text_and_structure_members_reject_wrong_ttlv_types() {
+    for (tag, value) in [
+        (QUERY_RESPONSE_TAGS[2], Value::integer(4)),
+        (QUERY_RESPONSE_TAGS[5], Value::enumeration(1)),
+    ] {
+        let message = response_message(
+            QUERY_OPERATION,
+            0,
+            None,
+            None,
+            Some(structure([
+                item(tag, value),
+                item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+            ])),
+        );
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+}
+
+#[test]
+fn query_errors_format_safely_and_expose_only_typed_sources() {
+    let errors = [
+        QueryError::UnexpectedOperation,
+        QueryError::MissingResultStatus,
+        QueryError::InvalidOperationResult(ResultValidationError::FailureRequiresReason),
+        QueryError::MissingResponsePayload,
+        QueryError::MalformedResponsePayload,
+        QueryError::MissingProtectionStorageMasks,
+        QueryError::RepeatedSingletonField,
+        QueryError::TtlvModel(ModelError::TagNotAllocated),
+    ];
+    for error in errors {
+        assert_ne!(error.to_string(), "");
+        assert_eq!(
+            error.source().is_some(),
+            matches!(
+                error,
+                QueryError::InvalidOperationResult(_) | QueryError::TtlvModel(_)
+            )
+        );
+    }
 }
 
 #[test]

@@ -10,7 +10,6 @@ use crate::{
 
 const PING_OPERATION: u32 = 0x0000_003b;
 const SUCCESS: u32 = 0;
-const PENDING: u32 = 2;
 
 /// A client-to-server Ping request from OASIS KMIP v2.1 §6.1.36.
 ///
@@ -60,9 +59,6 @@ impl PingResponse {
             return Err(PingError::UnexpectedOperation);
         }
         let status = item.result_status().ok_or(PingError::MissingResultStatus)?;
-        if status.raw() == PENDING {
-            return Err(PingError::PendingNotSupported);
-        }
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(PingError::InvalidOperationResult)?;
@@ -74,8 +70,6 @@ impl PingResponse {
             if member_count != 0 {
                 return Err(PingError::MalformedResponsePayload);
             }
-        } else if item.with_response_payload(|_| ()).is_some() {
-            return Err(PingError::UnexpectedResponsePayload);
         }
 
         Ok(Self { result })
@@ -97,16 +91,12 @@ pub enum PingError {
     UnexpectedOperation,
     /// The validated response item is missing Result Status.
     MissingResultStatus,
-    /// Ping returned Operation Pending, which has no asynchronous contract.
-    PendingNotSupported,
     /// The common result metadata is inconsistent.
     InvalidOperationResult(ResultValidationError),
     /// A successful Ping response omitted its empty Response Payload Structure.
     MissingResponsePayload,
     /// A successful Ping response payload contains one or more fields.
     MalformedResponsePayload,
-    /// A failure response unexpectedly carries a Response Payload.
-    UnexpectedResponsePayload,
 }
 
 impl fmt::Display for PingError {
@@ -114,13 +104,11 @@ impl fmt::Display for PingError {
         let message = match self {
             Self::UnexpectedOperation => "response item is not Ping",
             Self::MissingResultStatus => "Ping result status is missing",
-            Self::PendingNotSupported => "Ping does not support an Operation Pending result",
             Self::InvalidOperationResult(error) => {
                 return write!(formatter, "invalid Ping operation result: {error}");
             }
             Self::MissingResponsePayload => "successful Ping response payload is missing",
             Self::MalformedResponsePayload => "successful Ping response payload is not empty",
-            Self::UnexpectedResponsePayload => "failed Ping response has a payload",
         };
         formatter.write_str(message)
     }
@@ -132,10 +120,8 @@ impl Error for PingError {
             Self::InvalidOperationResult(error) => Some(error),
             Self::UnexpectedOperation
             | Self::MissingResultStatus
-            | Self::PendingNotSupported
             | Self::MissingResponsePayload
-            | Self::MalformedResponsePayload
-            | Self::UnexpectedResponsePayload => None,
+            | Self::MalformedResponsePayload => None,
         }
     }
 }

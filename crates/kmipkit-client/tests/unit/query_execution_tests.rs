@@ -126,6 +126,11 @@ fn query_sends_one_request_with_repeated_functions_and_ordered_object_groups() {
 
     assert_eq!(query.response_fields().len(), 1);
     assert_eq!(outcome.outcome().operation(), ClientOperation::Query);
+    assert_eq!(outcome.outcome().result().status().raw(), 0);
+    let response = outcome.outcome().response();
+    assert!(response.query().is_some());
+    assert!(response.ping().is_none());
+    assert_eq!(response.result().status().raw(), 0);
     assert_eq!(
         query_request_shape(captured.borrow().as_deref().expect("request captured")),
         Some((

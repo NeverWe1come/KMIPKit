@@ -509,7 +509,6 @@ enum PendingResponse {
     SetAttribute(SetAttributeResponse),
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
-    Ping(PingResponse),
 }
 
 impl PendingResponse {
@@ -526,7 +525,6 @@ impl PendingResponse {
             Self::SetAttribute(response) => ClientResponseRef::SetAttribute(response),
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
-            Self::Ping(response) => ClientResponseRef::Ping(response),
         };
         ClientResponseView { response }
     }
@@ -1414,6 +1412,17 @@ impl fmt::Debug for ClientBatchResponse {
     }
 }
 
+fn take_single_response(
+    mut response: ClientBatchResponse,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    response.items.pop().ok_or_else(|| {
+        protocol_failure_at(
+            protocol_error(ProtocolErrorKind::MalformedMessage),
+            RequestDeliveryState::ResponseStarted,
+        )
+    })
+}
+
 /// Synchronous typed KMIP client execution foundation.
 ///
 /// Admitted operations are explicit variants of the typed [`ClientRequest`]
@@ -1629,17 +1638,12 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let mut response = self.execute_with_options(
+        let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::ping()),
             limits,
             request_options,
         )?;
-        response.items.pop().ok_or_else(|| {
-            protocol_failure_at(
-                protocol_error(ProtocolErrorKind::MalformedMessage),
-                RequestDeliveryState::ResponseStarted,
-            )
-        })
+        take_single_response(response)
     }
 
     /// Executes one explicit Query request through the shared exchange path.
@@ -1673,17 +1677,12 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let mut response = self.execute_with_options(
+        let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::query(request)),
             limits,
             request_options,
         )?;
-        response.items.pop().ok_or_else(|| {
-            protocol_failure_at(
-                protocol_error(ProtocolErrorKind::MalformedMessage),
-                RequestDeliveryState::ResponseStarted,
-            )
-        })
+        take_single_response(response)
     }
 
     /// Executes one typed Create request through the shared batch writer.
@@ -2961,14 +2960,7 @@ fn response_outcome(
         PING_OPERATION => {
             let response =
                 PingResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
-            operation_outcome(
-                ClientOperation::Ping,
-                response,
-                item,
-                PingResponse::result,
-                PendingResponse::Ping,
-                ClientBatchOutcome::Ping,
-            )
+            Ok(ClientBatchOutcome::Ping(response))
         }
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
@@ -3521,3 +3513,7 @@ mod private_error_tests;
 #[cfg(test)]
 #[path = "../tests/unit/execute_provenance_order_tests.rs"]
 mod provenance_order_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/single_response_tests.rs"]
+mod single_response_tests;

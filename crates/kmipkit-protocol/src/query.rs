@@ -14,7 +14,6 @@ const QUERY_FUNCTION: u32 = 0x0042_0074;
 const OBJECT_GROUPS: u32 = 0x0042_0166;
 const OBJECT_GROUP: u32 = 0x0042_0056;
 const SUCCESS: u32 = 0;
-const PENDING: u32 = 2;
 const ENUMERATION_EXTENSION_MIN: u32 = 0x8000_0000;
 const ENUMERATION_EXTENSION_MAX: u32 = 0x8fff_ffff;
 
@@ -324,17 +323,11 @@ impl QueryResponse {
         let status = item
             .result_status()
             .ok_or(QueryError::MissingResultStatus)?;
-        if status.raw() == PENDING {
-            return Err(QueryError::PendingNotSupported);
-        }
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(QueryError::InvalidOperationResult)?;
 
         if status.raw() != SUCCESS {
-            if item.with_response_payload(|_| ()).is_some() {
-                return Err(QueryError::UnexpectedResponsePayload);
-            }
             return Ok(Self {
                 result,
                 empty_payload: false,
@@ -713,14 +706,10 @@ pub enum QueryError {
     UnexpectedOperation,
     /// The response item is missing Result Status.
     MissingResultStatus,
-    /// Query returned Operation Pending, which has no asynchronous contract.
-    PendingNotSupported,
     /// Common KMIP result metadata is inconsistent.
     InvalidOperationResult(ResultValidationError),
     /// A successful Query response omitted its Response Payload Structure.
     MissingResponsePayload,
-    /// A failed Query response unexpectedly includes a Response Payload.
-    UnexpectedResponsePayload,
     /// A known response member has an invalid Item Type or shape.
     MalformedResponsePayload,
     /// A structured successful response omitted its Table 283 required member.
@@ -736,12 +725,10 @@ impl fmt::Display for QueryError {
         let message = match self {
             Self::UnexpectedOperation => "response item is not Query",
             Self::MissingResultStatus => "Query result status is missing",
-            Self::PendingNotSupported => "Query does not support an Operation Pending result",
             Self::InvalidOperationResult(error) => {
                 return write!(formatter, "invalid Query operation result: {error}");
             }
             Self::MissingResponsePayload => "successful Query response payload is missing",
-            Self::UnexpectedResponsePayload => "failed Query response has a payload",
             Self::MalformedResponsePayload => "Query response payload is malformed",
             Self::MissingProtectionStorageMasks => {
                 "structured Query response is missing Protection Storage Masks"
@@ -760,9 +747,7 @@ impl Error for QueryError {
             Self::TtlvModel(error) => Some(error),
             Self::UnexpectedOperation
             | Self::MissingResultStatus
-            | Self::PendingNotSupported
             | Self::MissingResponsePayload
-            | Self::UnexpectedResponsePayload
             | Self::MalformedResponsePayload
             | Self::MissingProtectionStorageMasks
             | Self::RepeatedSingletonField => None,
