@@ -126,7 +126,8 @@ fn request_follows_table_223_order_and_allows_repeated_reference_fields() {
     let payload = request
         .to_ttlv_payload()
         .expect("Table 223 request fields use allocated KMIP tags");
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     let actual = fields
         .iter()
