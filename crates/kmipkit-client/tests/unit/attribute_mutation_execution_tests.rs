@@ -74,7 +74,7 @@ const USAGE_LIMITS: u32 = 0x0042_0095;
 const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
 const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
 const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
-const ALLOCATION_VALID_UNKNOWN_TAG: u32 = 0x0042_0173;
+const ALLOCATION_VALID_UNKNOWN_TAG: u32 = 0x0054_0001;
 
 const OBJECT_IDENTIFIER: &str = "object-id-17";
 const VALUE_SENTINEL: &str = "KMIPKIT_ATTRIBUTE_VALUE_SENTINEL";
@@ -465,6 +465,21 @@ fn attribute_reference_request_form(field: &Item) -> Option<Vec<(u32, ItemType)>
     })
 }
 
+fn attribute_reference_texts(field: &Item) -> Option<(String, String)> {
+    field.with_value(|value| {
+        let ValueView::Structure(reference) = value else {
+            return None;
+        };
+        let [vendor_identification, attribute_name] = reference.children() else {
+            return None;
+        };
+        Some((
+            text_value(vendor_identification)?,
+            text_value(attribute_name)?,
+        ))
+    })
+}
+
 #[test]
 fn adjust_sends_both_tag_and_name_attribute_reference_forms_once() {
     let requests = [
@@ -522,6 +537,16 @@ fn adjust_sends_both_tag_and_name_attribute_reference_forms_once() {
                 expected_name_form,
                 "Table 161 retains the selected reference form"
             );
+            if reference_type == ItemType::Structure {
+                assert_eq!(
+                    attribute_reference_texts(&payload.children()[1]),
+                    Some((
+                        OTHER_VENDOR_IDENTIFIER.to_owned(),
+                        "Opaque.FutureCounter".to_owned(),
+                    )),
+                    "Table 161 preserves both name-form reference strings"
+                );
+            }
             if reference_type == ItemType::Enumeration {
                 assert_eq!(enumeration_value(&payload.children()[1]), Some(COMMENT));
             }
@@ -593,6 +618,16 @@ fn delete_sends_both_reference_forms_and_the_supplied_current_attribute() {
                 expected_name_form,
                 "Table 161 retains the selected reference form"
             );
+            if reference_type == ItemType::Structure {
+                assert_eq!(
+                    attribute_reference_texts(&payload.children()[2]),
+                    Some((
+                        OTHER_VENDOR_IDENTIFIER.to_owned(),
+                        "Opaque.FutureAttribute".to_owned(),
+                    )),
+                    "Table 161 preserves both name-form reference strings"
+                );
+            }
             if reference_type == ItemType::Enumeration {
                 assert_eq!(enumeration_value(&payload.children()[2]), Some(COMMENT));
             }
@@ -963,9 +998,9 @@ fn every_inspectable_vendor_attribute_y_value_and_name_reference_is_rejected() {
 
 #[test]
 fn tag_references_unknown_names_and_non_y_vendor_attributes_are_server_authoritative() {
-    // Table 161 tag form carries no Vendor Identification. The extension tag
-    // is allocation-valid under the KMIPKit-0004/ADR-0010 gate; it is not
-    // assigned a known standard-attribute policy.
+    // Table 161 tag form carries no Vendor Identification. The unknown tag is
+    // in the §11.56 Table 487 Extensions range 0x540000–0x54FFFF and is
+    // allocation-valid under KMIPKit-0004/ADR-0010, without a policy entry.
     let cases = [
         (
             ClientRequest::adjust_attribute(AdjustAttributeRequest::new(
