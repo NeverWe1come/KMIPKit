@@ -32,4 +32,4 @@ Before editing, the focused existing accepted-connection tests passed on the unc
 
 ## Remaining concern
 
-Cross-platform CI, including macOS, was not run in this local follow-up. The T034 cross-platform CI gate remains pending as recorded in the task file.
+The coordinator reports CI run `37919458298` on base `56eeca4` currently failing the macOS Coverage job at “Export LLVM JSON coverage” and the Core/macOS stable + 1.94 workspace test job. Logs were unavailable while the run was in progress, so this report does not infer a cause or claim these failures are resolved by the added tests. The cross-platform gate remains unresolved pending completed logs or a reproduction.
