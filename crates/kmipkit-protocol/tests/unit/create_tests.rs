@@ -201,6 +201,7 @@ fn create_only_oasis_fixtures_decode_with_the_expected_fields() {
         value,
         ValueView::Enumeration(value) if *value == 7
     )));
+    assert_eq!(typed_fields[1].tag().raw(), ATTRIBUTES);
     typed_fields[1].with_value(|value| match value {
         ValueView::Structure(attributes) => {
             let items = attributes.children();
