@@ -20,7 +20,7 @@ The common message and batch rules come from OASIS KMIP Specification v2.1 §§8
 
 The catalog contains one applicable client MAY for Archive (`KMIPKIT-REQ-SPEC-6.1.4-001`) and two for Recover (`KMIPKIT-REQ-SPEC-6.1.42-001-001` and `KMIPKIT-REQ-SPEC-6.1.42-001-002`). The catalog classifies the Activate and Destroy prose clauses as server-only; those clauses do not create client-side object-state requirements. The operations remain in the client's 1.0 scope because their client request/response payloads are defined in the tables above. No requirement-specific official Test Cases IDs are linked for the Archive and Recover client requirements in the catalog; derived tests must not be described as official-case passes.
 
-Each operation table defines an optional request Unique Identifier and a required successful-response Unique Identifier. Existing message, batch, ID Placeholder, delivery-state, and Pending rules apply without being redefined here.
+Each operation table defines an optional request Unique Identifier and a required successful-response Unique Identifier. The allowed Unique Identifier encodings are defined in §4.58 Tables 145–146; §11.56 assigns the Unique Identifier tag. These field rules support all four operation tables and do not expand the operation scope. Existing message, batch, ID Placeholder, delivery-state, and Pending rules apply without being redefined here.
 
 ## Product boundaries and exclusions
 

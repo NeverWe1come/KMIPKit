@@ -1,6 +1,7 @@
 //! Destroy payload tests derived from OASIS KMIP Specification v2.1 §6.1.15,
-//! Tables 208–210, and §11.56. These are source-derived tests, not official
-//! OASIS Test Cases.
+//! Tables 208–210; §4.58 Tables 145–146 define permitted Unique Identifier
+//! encodings, and §11.56 assigns the tag. These are source-derived tests, not
+//! official OASIS Test Cases.
 //!
 //! Traceability: `KMIPKIT-ELEM-OP-C2S-DESTROY`; KMIPKIT-0018 FR-001, FR-002,
 //! FR-003, FR-006, FR-008, FR-009; SC-001 and SC-002.

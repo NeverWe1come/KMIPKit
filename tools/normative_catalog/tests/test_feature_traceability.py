@@ -53,7 +53,8 @@ LIFECYCLE_OPERATION_TABLES = {
     "KMIPKIT-ELEM-OP-C2S-RECOVER": ("6.1.42", "288–290"),
 }
 LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE = "§4.58 Tables 145–146"
-LIFECYCLE_UNIQUE_IDENTIFIER_TEST_MODULES = {
+LIFECYCLE_UNIQUE_IDENTIFIER_REFERENCES = {
+    "crates/kmipkit-protocol/src/activate.rs",
     "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
     "crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs",
     "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
@@ -242,10 +243,14 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 self.assertIn(
                     LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE, rows_by_id[element_id][1]
                 )
-        for test_module in LIFECYCLE_UNIQUE_IDENTIFIER_TEST_MODULES:
-            with self.subTest(identifier_source_test=test_module):
-                _, test_source = _read_confined_test_source(test_module) or (None, "")
-                self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE, test_source)
+        for source_path in LIFECYCLE_UNIQUE_IDENTIFIER_REFERENCES:
+            with self.subTest(identifier_source_reference=source_path):
+                _, source = _read_confined_test_source(source_path) or (None, "")
+                comment_text = re.sub(r"(?m)^\s*//[/!] ?", "", source)
+                self.assertIn(
+                    LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE,
+                    " ".join(comment_text.split()),
+                )
 
         for requirement_id in LIFECYCLE_CLIENT_REQUIREMENT_IDS:
             with self.subTest(requirement_id=requirement_id):
