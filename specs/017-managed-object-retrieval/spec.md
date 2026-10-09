@@ -132,7 +132,7 @@ As a KMIPKit caller, I can inspect operation results and retain future or vendor
 
 ### Measurable Outcomes
 
-- **KMIPKIT-0017-SC-001**: Both operation request and response models represent every field in Tables 220, 221, 247, and 248 with the specified presence, type, repetition, and order.
+- **KMIPKIT-0017-SC-001**: Both operation request and response models represent every field in Tables 220–222 and 247–249, including operation-specific error fields, with the specified presence, type, repetition, and order.
 - **KMIPKIT-0017-SC-002**: Fake-transport tests demonstrate exact request preservation and one-exchange behavior for all Get and Locate success, error, Pending, omission, empty, repeated, and batch-placeholder cases in scope.
 - **KMIPKIT-0017-SC-003**: Tests demonstrate lossless preservation of a returned object containing nested values, unknown allocated tags/enumerations, and repeated fields, while developer diagnostics contain none of the sentinel object payloads.
 - **KMIPKIT-0017-SC-004**: Tests cover every source-linked OASIS case whose fixture is available; each missing fixture has a traceable local derived vector and is explicitly not reported as an official-case pass.
