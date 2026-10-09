@@ -89,6 +89,10 @@ mod create_tests;
 mod activate_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/archive_operation_tests.rs"]
+mod archive_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/destroy_operation_tests.rs"]
 mod destroy_operation_tests;
 
