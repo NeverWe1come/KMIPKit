@@ -1,7 +1,10 @@
 //! KMIP 2.1 protocol models and validation for `KMIPKit`.
 #![forbid(unsafe_code)]
 
-#[expect(dead_code, reason = "the later KMIPKIT-0016 runtime consumer task will use this generated lookup")]
+#[expect(
+    dead_code,
+    reason = "the later KMIPKIT-0016 runtime consumer task will use this generated lookup"
+)]
 mod attribute_policy {
     include!("generated/attribute_policy.rs");
 }
@@ -9,6 +12,7 @@ mod attribute_policy {
 mod asynchronous;
 pub mod attribute;
 mod attribute_types_generated;
+mod attribute_reference;
 mod cancel;
 mod create;
 mod create_key_pair;
@@ -17,6 +21,8 @@ mod credential;
 mod discover_versions;
 mod error;
 pub mod extension;
+mod get_attribute_list;
+mod get_attributes;
 mod message;
 mod poll;
 mod process;
@@ -25,6 +31,7 @@ mod result;
 
 pub use asynchronous::AsynchronousOperationError;
 pub use attribute::{AttributeSet, AttributeSetError};
+pub use attribute_reference::AttributeReference;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
 pub use create_key_pair::{CreateKeyPairError, CreateKeyPairRequest, CreateKeyPairResponse};
@@ -41,6 +48,10 @@ pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
 pub use error::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
+pub use get_attribute_list::{
+    GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
+};
+pub use get_attributes::{GetAttributesError, GetAttributesRequest, GetAttributesResponse};
 pub use message::{
     MessageExtensionView, MessageValidationError, MessageValidationErrorKind, ProtocolVersion,
     RequestBatchItemView, RequestHeaderView, RequestMessage, ResponseBatchItemView,
