@@ -5,8 +5,10 @@ mod attribute_policy {
     include!("generated/attribute_policy.rs");
 }
 
+mod activate;
 mod add_attribute;
 mod adjust_attribute;
+mod archive;
 mod asynchronous;
 pub mod attribute;
 mod attribute_reference;
@@ -17,11 +19,13 @@ mod create_key_pair;
 mod create_split_key;
 mod credential;
 mod delete_attribute;
+mod destroy;
 mod discover_versions;
 mod error;
 pub mod extension;
 mod get_attribute_list;
 mod get_attributes;
+mod lifecycle;
 mod message;
 mod modify_attribute;
 mod ping;
@@ -29,13 +33,16 @@ mod poll;
 mod process;
 mod query;
 mod query_async_requests;
+mod recover;
 mod result;
 mod set_attribute;
 
+pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
 pub use adjust_attribute::{
     AdjustAttributeError, AdjustAttributeRequest, AdjustAttributeResponse, AdjustmentType,
 };
+pub use archive::{ArchiveError, ArchiveRequest, ArchiveResponse};
 pub use asynchronous::AsynchronousOperationError;
 pub use attribute::{AttributeSet, AttributeSetError, CurrentAttribute, NewAttribute};
 pub use attribute_reference::AttributeReference;
@@ -52,6 +59,7 @@ pub use credential::{
     SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
+pub use destroy::{DestroyError, DestroyRequest, DestroyResponse};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
@@ -71,6 +79,7 @@ pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
 pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
+pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
@@ -83,6 +92,22 @@ mod discover_versions_tests;
 #[cfg(test)]
 #[path = "../tests/unit/create_tests.rs"]
 mod create_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/activate_operation_tests.rs"]
+mod activate_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/archive_operation_tests.rs"]
+mod archive_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/destroy_operation_tests.rs"]
+mod destroy_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/recover_operation_tests.rs"]
+mod recover_operation_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/create_key_pair_tests.rs"]
@@ -107,6 +132,14 @@ mod ping_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/query_operation_tests.rs"]
 mod query_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/support/lifecycle_fixtures.rs"]
+mod lifecycle_fixtures;
+
+#[cfg(test)]
+#[path = "../tests/unit/lifecycle_fixtures_tests.rs"]
+mod lifecycle_fixtures_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/asynchronous_tests.rs"]

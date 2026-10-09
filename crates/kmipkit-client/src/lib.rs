@@ -1,13 +1,14 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
-//! The typed request enum supports explicit Discover Versions, Create, Create
-//! Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
-//! Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
-//! Attribute, Query, and Ping operations. Separate methods execute Poll,
-//! Cancel, Process, and Query Asynchronous Requests. The synchronous [`Client`] is constructed from an immutable
-//! client configuration and validated production transport configuration;
-//! callers cannot inject an arbitrary transport or submit raw KMIP bytes.
-//! Timeout overrides are available through the options-bearing typed methods.
+//! The typed request enum supports explicit Discover Versions, Activate,
+//! Archive, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
+//! Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
+//! Attribute List, Modify Attribute, Set Attribute, Query, and Ping operations.
+//! Separate methods execute Poll, Cancel, Process, and Query Asynchronous
+//! Requests. The synchronous [`Client`] is constructed from an immutable client
+//! configuration and validated production transport configuration; callers
+//! cannot inject an arbitrary transport or submit raw KMIP bytes. Timeout
+//! overrides are available through the options-bearing typed methods.
 //!
 //! [`ClientBatchOutcome::response`] returns a [`ClientResponseView`] with a
 //! common operation-result accessor and typed accessors for each response.
@@ -97,6 +98,30 @@ mod create_key_pair_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/create_split_key_execution_tests.rs"]
 mod create_split_key_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/activate_execution_tests.rs"]
+mod activate_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/archive_execution_tests.rs"]
+mod archive_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/destroy_execution_tests.rs"]
+mod destroy_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/recover_execution_tests.rs"]
+mod recover_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/lifecycle_redaction_tests.rs"]
+mod lifecycle_redaction_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/lifecycle_execution_tests.rs"]
+mod lifecycle_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/process_execution_tests.rs"]

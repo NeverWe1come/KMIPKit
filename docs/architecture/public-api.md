@@ -8,8 +8,9 @@ The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
 not implement the general builder surface. The current typed client exposes
 Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
 Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
-Attribute, and Set Attribute for batch execution, along with separate Poll,
-Cancel, Process, and Query Asynchronous Requests methods.
+Attribute, Set Attribute, Activate, Archive, Destroy, and Recover for batch
+execution, with single-operation convenience methods for lifecycle calls and
+separate Poll, Cancel, Process, and Query Asynchronous Requests methods.
 KMIPKIT-0013 adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
 configuration. The typed client accepts neither raw request bytes nor an
@@ -38,9 +39,9 @@ KMIPKIT-0007 provides synchronous `Client::execute` over an ordered `ClientBatch
 with a closed typed request set. The currently implemented operation variants
 are Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
 Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
-Attribute, and Set Attribute. The API does not accept generic Item values, raw
-message bytes, or caller-implemented conversions. Discover Versions is explicit
-and is never a hidden preflight.
+Attribute, Set Attribute, Activate, Archive, Destroy, and Recover. The API does
+not accept generic Item values, raw message bytes, or caller-implemented
+conversions. Discover Versions is explicit and is never a hidden preflight.
 Per-call `CodecLimits` bound request encoding and response decoding and supply
 the transport response-byte cap.
 
@@ -50,6 +51,20 @@ configuration without arbitrary transport injection. The public low-level
 API under ADR-0014. A typed result does not expose raw response bytes. See the
 [client execution guide](../user-guide/en/client-execution.md) and
 [ADR-0014](../adr/0014-public-transport-exchange-contract.md).
+
+### Managed-object lifecycle
+
+KMIPKIT-0018 adds typed `Client::activate`, `Client::archive`,
+`Client::destroy`, and `Client::recover` methods and matching request and
+response models. Each convenience call performs one exchange and returns the
+server result. It does not simulate server object state, retry, or claim that
+Archive completed. The convenience methods use default batch options; callers
+that want to accept `Operation Pending` use `Client::execute` with an explicit
+Asynchronous Indicator and choose any later Poll/Get action themselves.
+Unknown result values and accepted non-critical Message Extensions remain
+available without inferred policy. See the
+[lifecycle guide](../user-guide/en/lifecycle-operations.md) for request and
+result examples and operation-specific limits.
 
 ### Credential and Authentication values
 
