@@ -31,6 +31,7 @@ mod modify_attribute;
 mod poll;
 mod process;
 mod query_async_requests;
+mod recover;
 mod result;
 mod set_attribute;
 
@@ -74,6 +75,7 @@ pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyA
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
+pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
