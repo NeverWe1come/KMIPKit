@@ -219,7 +219,9 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                 redirect_stdout(StringIO()),
             ):
                 self.assertEqual(generator.main(["--repo-root", str(root), "--write"]), 0)
-            write.assert_called_once_with(root, generator.OUTPUT_PATH, expected)
+            write.assert_called_once_with(
+                root.resolve(strict=True), generator.OUTPUT_PATH, expected
+            )
 
             with (
                 patch.object(generator, "safe_read_bytes", side_effect=[catalog_bytes, expected]),
