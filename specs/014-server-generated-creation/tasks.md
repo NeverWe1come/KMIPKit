@@ -55,6 +55,7 @@
 ## Phase 6: Convergence
 
 - [ ] T029 [US1, US2, US3] Add Red tests proving that every recognized attribute with a catalog-declared `source_encoding` rejects a TTLV value of the wrong type in Create, Create Key Pair, and Create Split Key; specifically cover all four Table 191 attributes so equal but wrongly typed values cannot pass consistency validation. Preserve unknown tags and unknown Enumeration values losslessly. Implement a deterministic, pinned generator that derives the runtime attribute-tag-to-TTLV-type table from `specification/catalog/kmip-2.1.json`, check in its generated Rust output, and make CI regeneration fail on drift. Validate attributes through this table without changing wire order or repeated-item behavior; update normative traceability and generator tests. Keep Red, Green, and Refactor evidence in distinct commits and rerun convergence.
+- [ ] T030 [US1, US2, US3] Resolve the QA P2 coverage gap for `tools/normative_catalog/generate_attribute_types.py`: measure its line coverage in the Linux adapter-coverage CI job with the pinned coverage.py dependency, enforce at least 95%, add missing focused generator tests, and document the enforced gate. Keep Red, Green, and Refactor evidence in distinct commits; verify the workflow contract and current-head CI.
 
 ## Dependencies and sequencing
 

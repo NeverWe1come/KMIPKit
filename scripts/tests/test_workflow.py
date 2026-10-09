@@ -322,6 +322,23 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, job)
 
+    def test_adapter_coverage_job_enforces_normative_generator_line_coverage(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "adapter-coverage")
+
+        self.assertIn("- name: Verify normative generator line coverage", job)
+        self.assertIn(
+            "python -m coverage run --data-file=coverage-normative/.coverage "
+            "--source=tools.normative_catalog.generate_attribute_types -m unittest "
+            "tools.normative_catalog.tests.test_generate_attribute_types",
+            job,
+        )
+        self.assertIn(
+            "python -m coverage report --data-file=coverage-normative/.coverage "
+            "--include=tools/normative_catalog/generate_attribute_types.py --fail-under=95",
+            job,
+        )
+
     def test_linux_coverage_job_collects_and_uploads_the_ffi_c_consumer_report(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "coverage")
