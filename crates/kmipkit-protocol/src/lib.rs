@@ -1,6 +1,11 @@
 //! KMIP 2.1 protocol models and validation for `KMIPKit`.
 #![forbid(unsafe_code)]
 
+#[allow(dead_code)]
+mod attribute_policy {
+    include!("generated/attribute_policy.rs");
+}
+
 mod asynchronous;
 pub mod attribute;
 mod attribute_types_generated;
