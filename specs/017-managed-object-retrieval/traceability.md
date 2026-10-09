@@ -33,7 +33,7 @@
 
 ## Official OASIS case links
 
-Catalog IDs and official case labels are separate fields. All listed fixtures are marked unavailable. KMIPKIT-DISC-032 leaves the Get PKCS#12 case label-to-fixture-basename mapping unresolved; the catalog's mapping confidence for those Get rows is weak.
+Catalog IDs and official case labels are separate fields. All listed fixtures are marked unavailable. For the Get PKCS#12 cases, the pinned test-case source headings and hyperlink targets use `TC-PKCS12-…`, while visible link text inserts a hyphen as `TC-PKCS-12-…`. KMIPKIT-DISC-032 records the target paths but leaves fixture paths null and mapping confidence weak; no official-case pass is claimed.
 
 | Catalog test ID | Official case label in catalog | Operation / evidence class | Fixture and claim |
 | --- | --- | --- | --- |

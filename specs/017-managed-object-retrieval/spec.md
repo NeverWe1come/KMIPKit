@@ -16,7 +16,7 @@ This specification defines the Rust client models and execution path for exactly
 
 The linked requirement records are KMIPKIT-REQ-SPEC-6.1.19-001 and -002, and KMIPKIT-REQ-SPEC-6.1.28-001, -002, -004-001, -004-002, -007, -008-001, -008-002, -009-001, -009-002, -011, -012, -013-001, and -013-002. This is fifteen records total. Their actor, direction, and applicability are recorded individually in traceability.md; a link to an operation does not imply that every server obligation is implementable by a client library.
 
-The pinned OASIS KMIP 2.1 source and reviewed catalog are authoritative. Usage Guide examples are informative. KMIPKIT-DISC-015 leaves the PKCS#12 output wording unresolved; KMIPKIT-DISC-032 leaves two PKCS#12 test labels and fixture basenames unresolved. All seven linked fixtures are unavailable. Derived vectors can test client-visible TTLV behavior but cannot be reported as official test passes or profile conformance. These open catalog questions must be resolved before making the affected conformance claims.
+The pinned OASIS KMIP 2.1 source and reviewed catalog are authoritative. Usage Guide examples are informative. KMIPKIT-DISC-015 records lowercase “shall” in the §6.1.19 PKCS#12 output description, while §1.2 presents uppercase terms as normative keywords; the paragraph's normative status is unresolved. KMIPKIT-DISC-032 records that §§2.68–2.69 headings and hyperlink targets use `TC-PKCS12-…`, while visible link text inserts an extra hyphen as `TC-PKCS-12-…`. The catalog retains those target paths, but each `fixture_path` is null, fixture availability is unavailable, and mapping confidence is weak. All seven linked fixtures are unavailable. Derived vectors can test client-visible TTLV behavior but cannot be reported as official test passes or profile conformance. These open catalog questions must be resolved before making the affected conformance claims.
 
 Shared identifier, generic TTLV, message, batch, response-result, decoder-limit, and error contracts remain owned by their existing specifications and are referenced rather than redefined here.
 
@@ -141,8 +141,8 @@ As a KMIPKit caller, I can inspect operation results and retain future or vendor
 
 ## Open Inventory Questions
 
-- KMIPKIT-DISC-015 is open: lowercase “shall” in the Get PKCS#12 output paragraph may be mandatory output behavior or descriptive guidance. This feature preserves caller options and opaque server output; it does not claim that the disputed container rules are conformant.
-- KMIPKIT-DISC-032 is open: the two PKCS#12 case labels do not match their fixture basenames. The catalog marks both fixtures unavailable and mapping confidence weak.
+- KMIPKIT-DISC-015 is open: §6.1.19 uses lowercase “shall” for PKCS#12 output behavior, while §1.2 lists uppercase normative keywords. This feature preserves caller options and opaque server output; it does not claim that the disputed container rules are conformant.
+- KMIPKIT-DISC-032 is open: in §§2.68–2.69, the headings and hyperlink targets use `TC-PKCS12-…`, but the visible link text uses `TC-PKCS-12-…`. The catalog records the target paths but has no fixture paths, marks the fixtures unavailable, and assigns weak mapping confidence; the target spelling does not establish fixture contents or an official test pass.
 - The six Locate rows KMIPKIT-REQ-SPEC-6.1.28-004-002, -008-001, -008-002, -009-001, -009-002, and -012 describe ID Placeholder, group-selection, or returned-status behavior performed by the server, while their catalog actor metadata identifies the client. This feature preserves request/result values but does not enforce server behavior. Correct or disposition these catalog rows before using them as client conformance gates.
 
 These open items block affected conformance claims and implementation assertions. They do not authorize the client to invent, filter, or normalize server data.
