@@ -18,7 +18,8 @@ const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 /// attributes with catalogued encodings are checked against their permitted
 /// TTLV item types. Unknown assigned and extension tags remain generic items;
 /// this type does not infer attribute names or synthesize tags. A Table 150
-/// Vendor Attribute remains a distinct structure and is checked separately.
+/// Vendor Attribute remains a distinct structure and is checked for its
+/// required fields and source order.
 pub struct AttributeSet {
     items: Vec<Item>,
 }
@@ -49,6 +50,9 @@ pub enum AttributeSetError {
     DuplicateAttributeValue,
     /// A recognized attribute's TTLV type is outside the catalog encoding.
     AttributeTtlvTypeMismatch,
+    /// The required Vendor Attribute members violate §4.60 Table 150 order,
+    /// applying the field order rule in §8 and the Structure encoding rule in §10.1.2.
+    VendorAttributeFieldOrder,
 }
 
 impl Display for AttributeSetError {
@@ -70,6 +74,9 @@ impl Display for AttributeSetError {
             Self::DuplicateAttributeValue => "Attribute Value is repeated",
             Self::AttributeTtlvTypeMismatch => {
                 "attribute TTLV type does not match its catalog encoding"
+            }
+            Self::VendorAttributeFieldOrder => {
+                "Vendor Attribute fields do not follow Table 150 order"
             }
         };
         formatter.write_str(message)
@@ -98,12 +105,13 @@ impl AttributeSet {
     ///
     /// Repeated tags and values are retained. Recognized attribute types are
     /// checked against catalogued encodings. A Vendor Attribute is validated
-    /// against the distinct structure in §4.60, Table 150.
+    /// against the distinct structure and member order in §4.60, Table 150.
     ///
     /// # Errors
     ///
     /// Returns a payload-free [`AttributeSetError`] when a recognized
-    /// attribute has the wrong TTLV type or a Vendor Attribute is malformed.
+    /// attribute has the wrong TTLV type or a Vendor Attribute is malformed,
+    /// including required-field or Table 150 member-order violations.
     pub fn try_new(items: impl IntoIterator<Item = Item>) -> Result<Self, AttributeSetError> {
         let mut set = Self::new();
         for item in items {
@@ -116,9 +124,10 @@ impl AttributeSet {
     ///
     /// # Errors
     ///
-    /// Returns a payload-free [`AttributeSetError`] for a recognized attribute
-    /// with the wrong TTLV type or an invalid Vendor Attribute structure.
-    /// Unknown attribute values remain unchanged.
+    /// Returns a payload-free [`AttributeSetError`] for an invalid Vendor
+    /// Attribute structure, including Table 150 member order. Other generic
+    /// attribute values remain unchanged. Recognized standard attributes must
+    /// use their catalogued TTLV types.
     pub fn try_push(&mut self, item: Item) -> Result<(), AttributeSetError> {
         validate_catalogued_item_type(&item)?;
         if item.tag().raw() == VENDOR_ATTRIBUTE_TAG {
@@ -176,6 +185,7 @@ fn validate_vendor_attribute(structure: &StructureView<'_>) -> Result<(), Attrib
     let mut vendor_identification = false;
     let mut attribute_name = false;
     let mut attribute_value = false;
+    let mut last_required_field_rank = 0;
 
     for field in structure.children() {
         match field.tag().raw() {
@@ -183,6 +193,7 @@ fn validate_vendor_attribute(structure: &StructureView<'_>) -> Result<(), Attrib
                 if vendor_identification {
                     return Err(AttributeSetError::DuplicateVendorIdentification);
                 }
+                ensure_required_field_order(&mut last_required_field_rank, 1)?;
                 vendor_identification = true;
                 validate_vendor_identification(field)?;
             }
@@ -190,6 +201,7 @@ fn validate_vendor_attribute(structure: &StructureView<'_>) -> Result<(), Attrib
                 if attribute_name {
                     return Err(AttributeSetError::DuplicateAttributeName);
                 }
+                ensure_required_field_order(&mut last_required_field_rank, 2)?;
                 attribute_name = true;
                 validate_attribute_name(field)?;
             }
@@ -197,6 +209,7 @@ fn validate_vendor_attribute(structure: &StructureView<'_>) -> Result<(), Attrib
                 if attribute_value {
                     return Err(AttributeSetError::DuplicateAttributeValue);
                 }
+                ensure_required_field_order(&mut last_required_field_rank, 3)?;
                 attribute_value = true;
             }
             _ => {}
@@ -212,6 +225,17 @@ fn validate_vendor_attribute(structure: &StructureView<'_>) -> Result<(), Attrib
     if !attribute_value {
         return Err(AttributeSetError::MissingAttributeValue);
     }
+    Ok(())
+}
+
+fn ensure_required_field_order(
+    last_required_field_rank: &mut u8,
+    current_field_rank: u8,
+) -> Result<(), AttributeSetError> {
+    if current_field_rank < *last_required_field_rank {
+        return Err(AttributeSetError::VendorAttributeFieldOrder);
+    }
+    *last_required_field_rank = current_field_rank;
     Ok(())
 }
 
