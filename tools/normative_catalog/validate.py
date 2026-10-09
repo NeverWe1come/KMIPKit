@@ -107,6 +107,18 @@ ELEMENT_FIELDS = {
     "source_always_required", "source_policy_table", "source_operation_restrictions",
     "source_conditional_rules", "source_value_policies",
 }
+ATTRIBUTE_POLICY_FIELDS = frozenset(
+    {
+        "source_initially_set_by",
+        "source_modifiable_by_client",
+        "source_deletable_by_client",
+        "source_always_required",
+        "source_policy_table",
+        "source_operation_restrictions",
+        "source_conditional_rules",
+        "source_value_policies",
+    }
+)
 ELEMENT_KINDS = {
     "operation", "message_field", "structure_member", "credential", "data_type",
     "object_type", "object_structure", "attribute", "attribute_structure",
@@ -482,17 +494,9 @@ def _attribute_rule_signature(value: Any, field: str) -> tuple[str, tuple[tuple[
 
 
 def _check_attribute_policy_metadata(catalog: dict[str, Any], repo_root: Path) -> None:
-    standard_fields = {
-        "source_initially_set_by",
-        "source_modifiable_by_client",
-        "source_deletable_by_client",
-        "source_always_required",
-        "source_policy_table",
-        "source_operation_restrictions",
-        "source_conditional_rules",
-    }
+    standard_fields = ATTRIBUTE_POLICY_FIELDS - {"source_value_policies"}
     attributes = [element for element in catalog["elements"] if element.get("kind") == "attribute"]
-    policy_fields = standard_fields | {"source_value_policies"}
+    policy_fields = ATTRIBUTE_POLICY_FIELDS
     feature_catalog = any(attribute.get("feature_spec") == "KMIPKIT-0016" for attribute in attributes)
     has_policy_metadata = any(policy_fields.intersection(attribute) for attribute in attributes)
     if not feature_catalog and not has_policy_metadata:
@@ -938,6 +942,8 @@ def _check_semantics(
         if not {"feature_spec", "implementation_refs", "verification_refs"}.issubset(element):
             _fail("protocol element is missing coverage assignment fields")
         _enum(element.get("kind"), ELEMENT_KINDS, "protocol element kind")
+        if element["kind"] != "attribute" and ATTRIBUTE_POLICY_FIELDS.intersection(element):
+            _fail("attribute policy metadata applies only to attribute records")
         if not isinstance(element.get("name"), str) or not element["name"].strip():
             _fail("protocol element name is required")
         if element["kind"] == "structure_member":
