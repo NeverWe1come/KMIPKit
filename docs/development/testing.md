@@ -199,6 +199,14 @@ set. This provides the same Python minor version across GitHub-hosted platforms.
 and Ninja 1.13.2 and selects Ninja explicitly on every platform, so the build
 does not depend on the runner image's default CMake generator.
 
+The Linux adapter-coverage job also measures the checked-in normative attribute
+type generator separately from the adapter aggregate. It runs the focused
+`tools.normative_catalog.tests.test_generate_attribute_types` suite under the
+pinned coverage.py 7.10.6 and enforces at least 95 percent line coverage for
+`tools/normative_catalog/generate_attribute_types.py`. This makes changes to
+the catalog-to-runtime mapping generator subject to the repository's changed
+code coverage requirement without counting tooling as a runtime adapter.
+
 The Rust C ABI implementation, including generated Rust FFI code, is measured
 by `cargo llvm-cov` in `kmipkit-ffi`. Its Linux-only `coverage-c-consumer`
 feature compiles the existing public C consumer test into the Rust integration
