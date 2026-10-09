@@ -44,9 +44,9 @@
 
 ### Tests first (Red)
 
-- [ ] T011 [P] [US2] Add Query request/response model tests for all 14 standard Query Function values, valid extension/future values, repeated function ordering, optional Object Groups with zero, one, and repeated Object Group Text String attributes, empty-function rejection, Table 283 cardinalities, unknown nested Items, empty payload and structured response forms, and an empty Protection Storage Masks list in `crates/kmipkit-protocol/tests/unit/query_operation_tests.rs`.
-- [ ] T012 [P] [US2] Add fake-transport tests for Query success/failure, all returned members, one exchange, no retry/follow-up, result and delivery preservation, and request/error redaction in `crates/kmipkit-client/tests/unit/query_execution_tests.rs`.
-- [ ] T013 [US2] Run focused Query tests before implementation and record the expected Red result in the Red commit.
+- [x] T011 [P] [US2] Add Query request/response model tests for all 14 standard Query Function values, valid extension/future values, repeated function ordering, optional Object Groups with zero, one, and repeated Object Group Text String attributes, empty-function rejection, Table 283 cardinalities, unknown nested Items, empty payload and structured response forms, and an empty Protection Storage Masks list in `crates/kmipkit-protocol/tests/unit/query_operation_tests.rs`.
+- [x] T012 [P] [US2] Add fake-transport tests for Query success/failure, all returned members, one exchange, no retry/follow-up, result and delivery preservation, and request/error redaction in `crates/kmipkit-client/tests/unit/query_execution_tests.rs`.
+- [x] T013 [US2] Run focused Query tests before implementation and record the expected Red result in the Red commit.
 
 ### Implementation (Green)
 

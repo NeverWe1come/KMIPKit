@@ -107,6 +107,10 @@ mod process_execution_tests;
 mod ping_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/query_execution_tests.rs"]
+mod query_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/query_async_execution_tests.rs"]
 mod query_async_execution_tests;
 

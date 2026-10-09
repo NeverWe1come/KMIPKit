@@ -103,6 +103,10 @@ mod query_ping_fixtures;
 mod ping_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/query_operation_tests.rs"]
+mod query_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/asynchronous_tests.rs"]
 mod asynchronous_tests;
 
