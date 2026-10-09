@@ -1,5 +1,5 @@
 //! Fake-transport Create Split Key execution tests derived from KMIP 2.1
-//! §6.1.10, Tables 193–195, §8.6/Table 399, §9.12/Table 417, and
+//! §6.1.10, Tables 193–195, §8.6/Table 399, §9.12/Table 417, §11.36/Table 470, and
 //! §9.13/Table 418. These are
 //! table-derived project tests; the pinned OASIS work product has no direct
 //! Create Split Key test case.
@@ -27,7 +27,7 @@ use crate::execute::{
 use crate::execute_test_support::{test_item, test_structure};
 use crate::extension_registry::{self, ClientConfiguration, ClientExtensionRegistry};
 
-const CREATE_SPLIT_KEY: u32 = 0x0000_0003;
+const CREATE_SPLIT_KEY: u32 = 0x0000_0028;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ATTRIBUTES: u32 = 0x0042_0008;
 const RESPONSE_HEADER: u32 = 0x0042_007a;
@@ -163,6 +163,34 @@ fn maximum_response_size(request: &[u8]) -> Option<i32> {
     })
 }
 
+fn request_operation(request: &[u8]) -> u32 {
+    let decoded = decode_with_limits(request, &CodecLimits::defaults())
+        .expect("the captured request remains valid TTLV");
+    decoded
+        .with_value(|value| {
+            let ValueView::Structure(root) = value else {
+                return None;
+            };
+            root.children()
+                .iter()
+                .find(|field| field.tag().raw() == BATCH_ITEM)?
+                .with_value(|value| {
+                    let ValueView::Structure(batch_item) = value else {
+                        return None;
+                    };
+                    batch_item
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == OPERATION)?
+                        .with_value(|value| match value {
+                            ValueView::Enumeration(operation) => Some(*operation),
+                            _ => None,
+                        })
+                })
+        })
+        .expect("the captured request includes an Operation enumeration")
+}
+
 fn empty_request() -> CreateSplitKeyRequest {
     CreateSplitKeyRequest::new(
         ObjectType::from_raw(7),
@@ -187,6 +215,31 @@ fn secret_request() -> CreateSplitKeyRequest {
 fn create_split_key_item(id: &[u8]) -> ClientBatchItem {
     ClientBatchItem::new(ClientRequest::CreateSplitKey(empty_request()))
         .with_unique_batch_item_id(id.to_vec())
+}
+
+#[test]
+fn create_split_key_encodes_the_kmip_2_1_operation_enumeration() {
+    let response = response_bytes([response_batch_item(
+        None,
+        SUCCESS,
+        None,
+        None,
+        None,
+        Some(success_payload("split-part-1", "split-part-2")),
+    )]);
+    let (transport, capture) = bounded_transport(response);
+    let mut client = Client::for_test(transport);
+
+    let _ = client
+        .create_split_key(empty_request(), &CodecLimits::defaults())
+        .expect("the standard Create Split Key response is typed successfully");
+
+    let capture = capture.borrow();
+    let request = capture
+        .captured_request
+        .as_deref()
+        .expect("the fake transport captured the encoded request");
+    assert_eq!(request_operation(request), CREATE_SPLIT_KEY);
 }
 
 fn client_for(script: ExchangeScript) -> (Client, Rc<RefCell<ScriptedTransport>>) {
