@@ -25,8 +25,12 @@ conformance claim is made.
 The Object Group request structure is represented as an optional `Structure`
 containing zero or more repeated Text String attributes. The separate
 `KMIPKIT-ELEM-ENUMERATION-OBJECT-GROUP-MEMBER` (§11.33) is not part of this
-Query request field. Neither operation has an asynchronous-response assignment
-in the catalog.
+Query request field. The catalog has no operation-specific asynchronous
+assignment for Ping or Query; both inherit typed-batch behavior from KMIPKIT-0007
+FR-008 and KMIP v2.1 §§9.1–9.2, §11.3, Tables 400–401 and 431–432. If the
+effective indicator permits Pending, the client preserves the typed response
+and exact correlation bytes. The operation conveniences use the default
+synchronous indicator, and no automatic Poll, retry, or follow-up is issued.
 
 ## Query response members in Table 283
 
@@ -41,7 +45,7 @@ nested unknown Item.
 | Operation | `QueryResponse::operations` | `query_operation_tests::query_response_exposes_all_table_283_members_and_unknown_nested_items` |
 | Object Type | `QueryResponse::object_types` | same test |
 | Vendor Identification | `QueryResponse::vendor_identification` | same test; `query_response_rejects_repeated_singleton_table_283_fields` |
-| Server Information | `QueryResponse::server_information` | same test; `query_response_rejects_repetitions_of_each_singleton_table_283_member` |
+| Server Information | `QueryResponse::server_information` | same test; `query_response_rejects_repetitions_of_each_singleton_table_283_member`; `query_server_information_rejects_non_structure_ttlv_values` |
 | Application Namespace | `QueryResponse::application_namespaces` | same test |
 | Extension Information | `QueryResponse::extension_information` | same test |
 | Attestation Type | `QueryResponse::attestation_types` | same test |
@@ -75,5 +79,8 @@ The catalog assigns the two applicable client Query requirements to KMIPKIT-0020
 and records executable implementation and verification references. Server-only
 response obligations remain server requirements. `KMIPKIT-DISC-002` is limited
 to HTTPS profile evidence; `KMIPKIT-DISC-039` applies to Query Asynchronous
-Requests (§6.1.41), not ordinary Query. No profile support, interoperability
-certification, or official OASIS test-suite pass is claimed.
+Requests (§6.1.41), not ordinary Query. Ping and Query async outcomes are
+covered by `ping_pending_preserves_typed_response_and_correlation_without_follow_up`
+and `query_pending_preserves_typed_response_and_correlation_without_follow_up`;
+they exercise only the shared client batch contract. No profile support,
+interoperability certification, or official OASIS test-suite pass is claimed.

@@ -52,7 +52,7 @@ Add typed Rust Ping and Query models and explicit client methods on top of the e
 
 - Add typed variants and response conversion to the existing client dispatch in `crates/kmipkit-client/src/execute.rs`.
 - Add explicit `Client::query` and `Client::ping` conveniences following existing operation methods; both use the common batch/exchange path exactly once.
-- Preserve common success/failure, result reason/message, batch correlation, and delivery state. Neither operation adds asynchronous correlation handling; do not retry, poll, or issue hidden follow-up operations.
+- Preserve common success/failure, result reason/message, batch correlation, and delivery state. When a typed batch's Asynchronous Indicator permits Pending, use the shared `PendingOutcome` path to preserve the typed Query/Ping response and exact correlation bytes (KMIP v2.1 §§9.1–9.2, §11.3, Tables 400–401 and 431–432; KMIPKIT-0007 FR-008). The Ping/Query convenience methods keep their default synchronous indicator. Do not retry, poll, or issue hidden follow-up operations.
 - No transport implementation or language binding changes.
 
 ### Normative catalog
