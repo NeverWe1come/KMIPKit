@@ -85,10 +85,14 @@ fn request_follows_table_170_field_order_and_preserves_tag_reference_and_paramet
     // §6.1.3 Table 170 orders the optional Unique Identifier before the
     // required Attribute Reference and Adjustment Type, then optional Value.
     // §5.5 Table 161 defines tag form as an Enumeration; Table 429 assigns
-    // Increment=1. The parameter remains the caller's value (Table 428).
+    // Increment=1. Cryptographic Length is an Integer Attribute (§4.15 Table
+    // 57; §11.56 Table 487), matching the supplied Integer Adjustment Value.
+    // It is read-only and always required (§4.15 Table 58), so this vector
+    // checks only request wire shape and preservation; it does not assert the
+    // request is applicable or permitted for an object.
     let request = request(
         Some(OBJECT_IDENTIFIER),
-        AttributeReference::tag(0x0042_002F),
+        AttributeReference::tag(CRYPTOGRAPHIC_LENGTH),
         1,
         Some(Value::integer(7)),
     );
@@ -117,7 +121,7 @@ fn request_follows_table_170_field_order_and_preserves_tag_reference_and_paramet
         }),
         Some(OBJECT_IDENTIFIER.to_owned())
     );
-    assert_eq!(enumeration_value(&fields[1]), Some(0x0042_002F));
+    assert_eq!(enumeration_value(&fields[1]), Some(CRYPTOGRAPHIC_LENGTH));
     assert_eq!(enumeration_value(&fields[2]), Some(1));
     assert_eq!(
         fields[3].with_value(|value| match value {
@@ -286,11 +290,14 @@ impl AdjustmentParameterVector {
 }
 
 #[test]
-fn table_428_adjustment_parameter_types_and_values_are_transmitted_unchanged() {
-    // Table 428 applies Increment/Decrement to Integer, Long Integer, Big
-    // Integer, Interval, Date Time, and Date Time Extended; Negate applies to
-    // Integer, Long Integer, Big Integer, and Boolean. These assert parameter
-    // preservation only, not server arithmetic or resulting attribute values.
+fn table_428_parameters_and_table_170_optional_values_are_transmitted_unchanged() {
+    // §11.1 Table 428 lists Adjustment Parameter Item Types for Increment and
+    // Decrement: Integer, Long Integer, Big Integer, Interval, Date Time, and
+    // Date Time Extended. It specifies no Adjustment Parameter Item Type for
+    // Negate. The Negate vectors below supply values only to check generic
+    // §6.1.3 Table 170 optional Adjustment Value wire preservation; they do
+    // not claim a valid Table 428 Negate parameter pair or server acceptance.
+    // No vector asserts server arithmetic or a resulting attribute value.
     // Raw values 1, 2, and 3 are Increment, Decrement, and Negate (§11.1
     // Table 429).
     // Standard type-matched tags are Cryptographic Length (Integer, §4.15
