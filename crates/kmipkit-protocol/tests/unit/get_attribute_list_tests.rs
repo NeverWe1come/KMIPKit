@@ -150,12 +150,14 @@ fn request_encodes_only_the_optional_unique_identifier_from_table_226() {
     );
 
     let request_without_identifier = GetAttributeListRequest::new(None);
-    assert!(request_without_identifier
-        .to_ttlv_payload()
-        .expect("an omitted identifier remains omitted")
-        .view()
-        .children()
-        .is_empty());
+    assert!(
+        request_without_identifier
+            .to_ttlv_payload()
+            .expect("an omitted identifier remains omitted")
+            .view()
+            .children()
+            .is_empty()
+    );
 }
 
 #[test]

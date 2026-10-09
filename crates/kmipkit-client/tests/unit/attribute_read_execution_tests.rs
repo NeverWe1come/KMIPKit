@@ -11,7 +11,7 @@ use kmipkit_protocol::{
     GetAttributesResponse, ResultReason,
 };
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_ttlv::codec::{decode, CodecLimits};
+use kmipkit_ttlv::codec::{CodecLimits, decode};
 use kmipkit_ttlv::{Item, ItemType, Structure, StructureView, Value, ValueView};
 
 use crate::asynchronous_execution_test_support::client_for;

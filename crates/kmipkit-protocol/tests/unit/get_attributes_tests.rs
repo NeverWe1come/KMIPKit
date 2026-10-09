@@ -375,12 +375,14 @@ fn response_without_requested_values_keeps_required_identifier_and_empty_attribu
 fn response_without_references_preserves_the_full_direct_attribute_set_in_order() {
     let request = GetAttributesRequest::try_new(None, [])
         .expect("Table 223 allows no Attribute Reference to request all attributes");
-    assert!(request
-        .to_ttlv_payload()
-        .expect("valid request")
-        .view()
-        .children()
-        .is_empty());
+    assert!(
+        request
+            .to_ttlv_payload()
+            .expect("valid request")
+            .view()
+            .children()
+            .is_empty()
+    );
 
     let message = response_message(
         0,
