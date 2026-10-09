@@ -11,17 +11,17 @@ use kmipkit_protocol::attribute::{
 use kmipkit_protocol::extension::ExtensionIdentity;
 use kmipkit_protocol::{
     ActivateRequest, ActivateResponse, AddAttributeRequest, AddAttributeResponse,
-    AdjustAttributeRequest, AdjustAttributeResponse, AsynchronousOperationError,
-    AttributeReference, CancelRequest, CancelResponse, CancellationResult, CreateKeyPairRequest,
-    CreateKeyPairResponse, CreateRequest, CreateResponse, CreateSplitKeyRequest,
-    CreateSplitKeyResponse, DeleteAttributeRequest, DeleteAttributeResponse, DestroyRequest,
-    DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse, GetAttributeListRequest,
-    GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse, KmipOperationResult,
-    MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute,
-    PollRequest, PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory,
-    ProtocolError, ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest,
-    QueryAsyncRequestsResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus, SetAttributeRequest, SetAttributeResponse,
+    AdjustAttributeRequest, AdjustAttributeResponse, ArchiveRequest, ArchiveResponse,
+    AsynchronousOperationError, AttributeReference, CancelRequest, CancelResponse,
+    CancellationResult, CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
+    CreateSplitKeyRequest, CreateSplitKeyResponse, DeleteAttributeRequest, DeleteAttributeResponse,
+    DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
+    GetAttributeListRequest, GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse,
+    KmipOperationResult, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
+    NewAttribute, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, RequestMessage, ResponseBatchItemView,
+    ResponseMessage, ResultStatus, SetAttributeRequest, SetAttributeResponse,
 };
 #[cfg(test)]
 use kmipkit_transport::Transport;
@@ -76,6 +76,7 @@ const CREATE_OPERATION: u32 = 0x0000_0001;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
 const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
+const ARCHIVE_OPERATION: u32 = 0x0000_0013; // KMIP v2.1 §6.1.4, Table 173.
 const DESTROY_OPERATION: u32 = 0x0000_0014; // KMIP v2.1 §6.1.15, Table 208.
 const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
 const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
@@ -104,6 +105,8 @@ pub enum ClientRequest {
     DiscoverVersions(DiscoverVersionsRequest),
     /// An explicit client-to-server Activate request.
     Activate(ActivateRequest),
+    /// An explicit client-to-server Archive request.
+    Archive(ArchiveRequest),
     /// An explicit client-to-server Destroy request.
     Destroy(DestroyRequest),
     /// An explicit client-to-server Create request.
@@ -139,6 +142,12 @@ impl ClientRequest {
     #[must_use]
     pub fn activate(request: ActivateRequest) -> Self {
         Self::Activate(request)
+    }
+
+    /// Creates a typed Archive request variant.
+    #[must_use]
+    pub fn archive(request: ArchiveRequest) -> Self {
+        Self::Archive(request)
     }
 
     /// Creates a typed Destroy request variant.
@@ -193,6 +202,7 @@ impl ClientRequest {
         match self {
             Self::DiscoverVersions(_) => DISCOVER_VERSIONS_OPERATION,
             Self::Activate(_) => ACTIVATE_OPERATION,
+            Self::Archive(_) => ARCHIVE_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Create(_) => CREATE_OPERATION,
             Self::CreateKeyPair(_) => CREATE_KEY_PAIR_OPERATION,
@@ -211,6 +221,7 @@ impl ClientRequest {
         match self {
             Self::DiscoverVersions(request) => request.to_ttlv_payload(),
             Self::Activate(request) => request.to_ttlv_payload(),
+            Self::Archive(request) => request.to_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Create(request) => request.into_ttlv_payload(),
             Self::CreateKeyPair(request) => request.into_ttlv_payload(),
@@ -231,6 +242,7 @@ impl fmt::Debug for ClientRequest {
         match self {
             Self::DiscoverVersions(_) => formatter.write_str("DiscoverVersions"),
             Self::Activate(_) => formatter.write_str("Activate([REDACTED])"),
+            Self::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Create(_) => formatter.write_str("Create([REDACTED])"),
             Self::CreateKeyPair(_) => formatter.write_str("CreateKeyPair([REDACTED])"),
@@ -488,6 +500,7 @@ impl fmt::Debug for ClientMessageExtension {
 enum PendingResponse {
     DiscoverVersions(DiscoverVersionsResponse),
     Activate(ActivateResponse),
+    Archive(ArchiveResponse),
     Destroy(DestroyResponse),
     Create(CreateResponse),
     CreateKeyPair(CreateKeyPairResponse),
@@ -506,6 +519,7 @@ impl PendingResponse {
         let response = match self {
             Self::DiscoverVersions(response) => ClientResponseRef::DiscoverVersions(response),
             Self::Activate(response) => ClientResponseRef::Activate(response),
+            Self::Archive(response) => ClientResponseRef::Archive(response),
             Self::Destroy(response) => ClientResponseRef::Destroy(response),
             Self::Create(response) => ClientResponseRef::Create(response),
             Self::CreateKeyPair(response) => ClientResponseRef::CreateKeyPair(response),
@@ -628,6 +642,8 @@ pub enum ClientOperation {
     DiscoverVersions,
     /// Activate.
     Activate,
+    /// Archive.
+    Archive,
     /// Destroy.
     Destroy,
     /// Create.
@@ -775,6 +791,7 @@ impl fmt::Debug for ClientOperationOutcome {
 enum ClientResponseRef<'a> {
     DiscoverVersions(&'a DiscoverVersionsResponse),
     Activate(&'a ActivateResponse),
+    Archive(&'a ArchiveResponse),
     Destroy(&'a DestroyResponse),
     Create(&'a CreateResponse),
     CreateKeyPair(&'a CreateKeyPairResponse),
@@ -804,6 +821,7 @@ impl<'a> ClientResponseView<'a> {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => response.result(),
             ClientResponseRef::Activate(response) => response.result(),
+            ClientResponseRef::Archive(response) => response.result(),
             ClientResponseRef::Destroy(response) => response.result(),
             ClientResponseRef::Create(response) => response.result(),
             ClientResponseRef::CreateKeyPair(response) => response.result(),
@@ -827,6 +845,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::DiscoverVersions(response) => response.supported_versions(),
             ClientResponseRef::Create(_)
             | ClientResponseRef::Activate(_)
+            | ClientResponseRef::Archive(_)
             | ClientResponseRef::Destroy(_)
             | ClientResponseRef::CreateKeyPair(_)
             | ClientResponseRef::CreateSplitKey(_)
@@ -847,6 +866,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::DiscoverVersions(response) => Some(response),
             ClientResponseRef::Create(_)
             | ClientResponseRef::Activate(_)
+            | ClientResponseRef::Archive(_)
             | ClientResponseRef::Destroy(_)
             | ClientResponseRef::CreateKeyPair(_)
             | ClientResponseRef::CreateSplitKey(_)
@@ -874,6 +894,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn activate(&self) -> Option<&'a ActivateResponse> {
         match self.response {
             ClientResponseRef::Activate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Archive response when this view represents it.
+    #[must_use]
+    pub const fn archive(&self) -> Option<&'a ArchiveResponse> {
+        match self.response {
+            ClientResponseRef::Archive(response) => Some(response),
             _ => None,
         }
     }
@@ -980,6 +1009,7 @@ impl fmt::Debug for ClientResponseView<'_> {
                 formatter.debug_tuple("Create").field(response).finish()
             }
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
+            ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             ClientResponseRef::CreateKeyPair(response) => formatter
                 .debug_tuple("CreateKeyPair")
@@ -1028,6 +1058,8 @@ pub enum ClientBatchOutcome {
     Completed(DiscoverVersionsResponse),
     /// The server returned an Activate result.
     Activate(ActivateResponse),
+    /// The server returned an Archive result.
+    Archive(ArchiveResponse),
     /// The server returned a Destroy result.
     Destroy(DestroyResponse),
     /// The server returned a non-Pending Create result.
@@ -1061,6 +1093,7 @@ impl ClientBatchOutcome {
         match self {
             Self::Completed(_)
             | Self::Activate(_)
+            | Self::Archive(_)
             | Self::Destroy(_)
             | Self::CreateCompleted(_)
             | Self::CreateKeyPairCompleted(_)
@@ -1082,6 +1115,7 @@ impl ClientBatchOutcome {
         match self {
             Self::Completed(response) => response.result(),
             Self::Activate(response) => response.result(),
+            Self::Archive(response) => response.result(),
             Self::Destroy(response) => response.result(),
             Self::CreateCompleted(response) => response.result(),
             Self::CreateKeyPairCompleted(response) => response.result(),
@@ -1103,6 +1137,7 @@ impl ClientBatchOutcome {
         match self {
             Self::Completed(_) => ClientOperation::DiscoverVersions,
             Self::Activate(_) => ClientOperation::Activate,
+            Self::Archive(_) => ClientOperation::Archive,
             Self::Destroy(_) => ClientOperation::Destroy,
             Self::CreateCompleted(_) => ClientOperation::Create,
             Self::CreateKeyPairCompleted(_) => ClientOperation::CreateKeyPair,
@@ -1132,6 +1167,15 @@ impl ClientBatchOutcome {
     pub const fn activate_response(&self) -> Option<&ActivateResponse> {
         match self {
             Self::Activate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Archive response, when this is one.
+    #[must_use]
+    pub const fn archive_response(&self) -> Option<&ArchiveResponse> {
+        match self {
+            Self::Archive(response) => Some(response),
             _ => None,
         }
     }
@@ -1185,6 +1229,9 @@ impl ClientBatchOutcome {
             Self::Activate(response) => ClientResponseView {
                 response: ClientResponseRef::Activate(response),
             },
+            Self::Archive(response) => ClientResponseView {
+                response: ClientResponseRef::Archive(response),
+            },
             Self::Destroy(response) => ClientResponseView {
                 response: ClientResponseRef::Destroy(response),
             },
@@ -1230,6 +1277,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 formatter.debug_tuple("Completed").field(response).finish()
             }
             Self::Activate(_) => formatter.write_str("Activate([REDACTED])"),
+            Self::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::CreateCompleted(response) => formatter
                 .debug_tuple("CreateCompleted")
@@ -1281,6 +1329,7 @@ impl fmt::Display for ClientBatchOutcome {
         match self {
             Self::Completed(response) => write!(formatter, "Completed({})", response.result()),
             Self::Activate(response) => write!(formatter, "Activate({})", response.result()),
+            Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
             Self::CreateCompleted(response) => {
                 write!(formatter, "CreateCompleted({})", response.result())
@@ -1646,6 +1695,55 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let mut response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Activate(request))),
+            limits,
+            request_options,
+        )?;
+        response.items.pop().ok_or_else(|| {
+            protocol_failure_at(
+                protocol_error(ProtocolErrorKind::MalformedMessage),
+                RequestDeliveryState::ResponseStarted,
+            )
+        })
+    }
+
+    /// Executes one typed Archive request through the shared batch writer.
+    ///
+    /// Use [`Self::execute`] with a one-item batch and an explicit
+    /// Asynchronous Indicator when the caller wants to accept Operation
+    /// Pending. This convenience method leaves batch options at their defaults.
+    /// Archive is a server-directed preference; this method does not claim
+    /// archival has completed.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn archive(
+        &mut self,
+        request: ArchiveRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.archive_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Archive request with transport timeout overrides.
+    ///
+    /// The request uses the shared writer, response bounds, and one-exchange
+    /// lifecycle. It expresses the caller's archival preference and returns
+    /// the server's result without claiming that archival has completed.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn archive_with_options(
+        &mut self,
+        request: ArchiveRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let mut response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Archive(request))),
             limits,
             request_options,
         )?;
@@ -2420,6 +2518,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         }
         ClientRequest::DiscoverVersions(_)
         | ClientRequest::Activate(_)
+        | ClientRequest::Archive(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Create(_)
         | ClientRequest::CreateKeyPair(_)
@@ -2981,6 +3080,14 @@ fn response_outcome(
             PendingResponse::Activate,
             ClientBatchOutcome::Activate,
         ),
+        ARCHIVE_OPERATION => read_operation_outcome(
+            ClientOperation::Archive,
+            item,
+            ArchiveResponse::try_from_response_item,
+            ArchiveResponse::result,
+            PendingResponse::Archive,
+            ClientBatchOutcome::Archive,
+        ),
         DESTROY_OPERATION => read_operation_outcome(
             ClientOperation::Destroy,
             item,
@@ -3238,6 +3345,7 @@ fn validate_async_response(
     let (result, cancellation_result) = match kind {
         ClientOperation::DiscoverVersions
         | ClientOperation::Activate
+        | ClientOperation::Archive
         | ClientOperation::Destroy
         | ClientOperation::Create
         | ClientOperation::CreateKeyPair
