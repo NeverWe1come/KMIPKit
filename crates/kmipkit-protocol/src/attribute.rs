@@ -11,6 +11,13 @@ const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
 const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 
+pub(crate) fn copy_text_string(value: &ValueView<'_>) -> Option<String> {
+    match value {
+        ValueView::TextString(text) => Some((*text).to_owned()),
+        _ => None,
+    }
+}
+
 /// An ordered collection of direct §4 Object Attribute TTLV items.
 ///
 /// Items retain their original tag, typed value, repetitions, and insertion

@@ -417,6 +417,35 @@ impl PendingResponse {
     }
 }
 
+fn read_response_error<E: Error + 'static>(error: E) -> ProtocolError {
+    ProtocolError::new(
+        ProtocolErrorKind::InvalidValue,
+        ProtocolCauseCategory::InvalidValue,
+        error,
+    )
+}
+
+fn read_operation_outcome<T, E>(
+    operation: ClientOperation,
+    item: ResponseBatchItemView<'_>,
+    convert: impl FnOnce(ResponseBatchItemView<'_>) -> Result<T, E>,
+    result_of: impl FnOnce(&T) -> &KmipOperationResult,
+    into_pending_response: impl FnOnce(T) -> PendingResponse,
+    into_completed_outcome: impl FnOnce(T) -> ClientBatchOutcome,
+) -> Result<ClientBatchOutcome, ProtocolError>
+where
+    E: Error + 'static,
+{
+    let response = convert(item).map_err(read_response_error)?;
+    let result = result_of(&response).clone();
+    if result.status().raw() == RESULT_STATUS_PENDING {
+        pending_outcome(operation, result, into_pending_response(response), item)
+            .map(ClientBatchOutcome::Pending)
+    } else {
+        Ok(into_completed_outcome(response))
+    }
+}
+
 impl fmt::Debug for PendingResponse {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
@@ -2470,30 +2499,22 @@ fn response_outcome(
                 ClientBatchOutcome::CreateSplitKeyCompleted,
             )
         }
-        GET_ATTRIBUTES_OPERATION => {
-            let response = GetAttributesResponse::try_from_response_item(item)
-                .map_err(invalid_typed_response)?;
-            operation_outcome(
-                ClientOperation::GetAttributes,
-                response,
-                item,
-                GetAttributesResponse::result,
-                PendingResponse::GetAttributes,
-                ClientBatchOutcome::GetAttributes,
-            )
-        }
-        GET_ATTRIBUTE_LIST_OPERATION => {
-            let response = GetAttributeListResponse::try_from_response_item(item)
-                .map_err(invalid_typed_response)?;
-            operation_outcome(
-                ClientOperation::GetAttributeList,
-                response,
-                item,
-                GetAttributeListResponse::result,
-                PendingResponse::GetAttributeList,
-                ClientBatchOutcome::GetAttributeList,
-            )
-        }
+        GET_ATTRIBUTES_OPERATION => read_operation_outcome(
+            ClientOperation::GetAttributes,
+            item,
+            GetAttributesResponse::try_from_response_item,
+            GetAttributesResponse::result,
+            PendingResponse::GetAttributes,
+            ClientBatchOutcome::GetAttributes,
+        ),
+        GET_ATTRIBUTE_LIST_OPERATION => read_operation_outcome(
+            ClientOperation::GetAttributeList,
+            item,
+            GetAttributeListResponse::try_from_response_item,
+            GetAttributeListResponse::result,
+            PendingResponse::GetAttributeList,
+            ClientBatchOutcome::GetAttributeList,
+        ),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }

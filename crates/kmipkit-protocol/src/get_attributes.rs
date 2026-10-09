@@ -9,7 +9,7 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 use crate::{
     AttributeReference, AttributeSet, AttributeSetError, KmipOperationResult,
     ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ResponseBatchItemView, ResultMessage,
-    ResultValidationError,
+    ResultValidationError, attribute::copy_text_string,
 };
 
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
@@ -255,10 +255,7 @@ fn parse_success_payload(
     }
 
     let unique_identifier = fields[0]
-        .with_value(|value| match value {
-            ValueView::TextString(text) => Some(text.to_owned()),
-            _ => None,
-        })
+        .with_value(|value| copy_text_string(&value))
         .ok_or(GetAttributesError::MalformedSuccessPayload)?;
 
     let attributes = fields[1]

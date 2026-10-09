@@ -3,9 +3,10 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{Structure, StructureView, Value};
 
 use crate::asynchronous::{is_success, item, model_error};
+use crate::attribute::copy_text_string;
 use crate::{
     AttributeReference, KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultMessage,
     ResultValidationError,
@@ -214,10 +215,7 @@ fn parse_success_payload(
     for child in payload.children() {
         match child.tag().raw() {
             UNIQUE_IDENTIFIER if unique_identifier.is_none() && attribute_references.is_empty() => {
-                unique_identifier = child.with_value(|value| match value {
-                    ValueView::TextString(value) => Some(value.to_owned()),
-                    _ => None,
-                });
+                unique_identifier = child.with_value(|value| copy_text_string(&value));
                 if unique_identifier.is_none() {
                     return Err(GetAttributeListError::MalformedSuccessPayload);
                 }
