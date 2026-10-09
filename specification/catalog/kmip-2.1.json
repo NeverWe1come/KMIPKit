@@ -30961,8 +30961,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "",
       "source_name": "Attribute",
@@ -55462,8 +55472,19 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -55525,8 +55546,19 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -55950,8 +55982,19 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -56320,8 +56363,19 @@
         "KMIPKIT-TEST-PROF-5-12-6-3"
       ],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attribute_list.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -56403,8 +56457,19 @@
         "KMIPKIT-TEST-PROF-5-12-6-3"
       ],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -56990,8 +57055,19 @@
         "KMIPKIT-TEST-PROF-5-12-6-3"
       ],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -57693,8 +57769,19 @@
         "KMIPKIT-TEST-CN01-2-94"
       ],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -61856,8 +61943,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "source_encoding": "Text String",
       "source_requiredness": "Yes"
     },
@@ -61884,8 +61981,18 @@
         "KMIPKIT-TEST-CN01-2-42"
       ],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "source_encoding": "Varies, depending on attribute.",
       "source_requiredness": "Yes, except for the Notify operation"
     },
@@ -61910,8 +62017,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "source_encoding": "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])",
       "source_requiredness": "Yes"
     },
@@ -84857,8 +84974,30 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -84892,8 +85031,26 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -84929,8 +85086,30 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -84964,8 +85143,25 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -84996,8 +85192,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -85663,8 +85870,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -85731,8 +85957,30 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87028,8 +87276,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -87065,8 +87332,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -87100,8 +87386,21 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -87135,8 +87434,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/vendor_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87353,8 +87662,30 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87390,8 +87721,28 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87606,8 +87957,26 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attribute_list.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87642,8 +88011,26 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/get_attribute_list.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87676,8 +88063,21 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -87711,8 +88111,23 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -88195,8 +88610,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -88227,8 +88653,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/delete_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -88859,8 +89296,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -88891,8 +89339,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/add_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -88923,8 +89382,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -88955,8 +89425,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -88987,8 +89468,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -89739,8 +90231,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/adjust_attribute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
@@ -90041,8 +90544,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -90073,8 +90587,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -90105,8 +90630,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -90137,8 +90673,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/modify_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
@@ -91369,8 +91916,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/set_attribute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
