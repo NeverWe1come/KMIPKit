@@ -389,14 +389,7 @@ fn tcp_worker_spawner_failing(
     let (connection_worker_done_sender, connection_worker_done) = mpsc::channel();
     let (connection_worker_started_sender, connection_worker_started) = mpsc::channel();
     let spawner: TcpWorkerSpawner = Arc::new(move |kind, job| {
-        match kind {
-            TcpWorkerKind::Connection => {
-                spawner_attempts.connection.fetch_add(1, Ordering::AcqRel);
-            }
-            TcpWorkerKind::Response => {
-                spawner_attempts.response.fetch_add(1, Ordering::AcqRel);
-            }
-        }
+        spawner_attempts.record_attempt(kind);
         if kind == failed_kind {
             if kind == TcpWorkerKind::Connection {
                 let _ = connection_worker_started_sender.send(false);
@@ -427,6 +420,16 @@ fn tcp_worker_spawner_failing(
 struct TcpWorkerSpawnAttempts {
     connection: AtomicUsize,
     response: AtomicUsize,
+}
+
+impl TcpWorkerSpawnAttempts {
+    fn record_attempt(&self, kind: TcpWorkerKind) {
+        let attempts = match kind {
+            TcpWorkerKind::Connection => &self.connection,
+            TcpWorkerKind::Response => &self.response,
+        };
+        attempts.fetch_add(1, Ordering::AcqRel);
+    }
 }
 
 fn start_tcp_server_for_spawn_test<F>(
