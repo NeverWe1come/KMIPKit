@@ -24,7 +24,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Normative requirements | 567 |
 | Profiles | 35 |
 | Test cases | 203 |
-| Open discrepancies | 44 |
+| Open discrepancies | 45 |
 | Project policies | 4 |
 
 ### Elements by kind
@@ -3193,6 +3193,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-DISC-044 | open | blocked for affected records | 6 requirements, 1 elements | Locate server obligations attributed to the client actor | KMIPKIT-SRC-spec §6.1.28 |
 | KMIPKIT-DISC-045 | open | blocked for affected records | 5 elements | Single-request Encrypt/Decrypt Data optionality when both Init and Final Indicator are true | KMIPKIT-SRC-spec §6.1, KMIPKIT-SRC-spec §6.1.11, KMIPKIT-SRC-spec §6.1.17 |
 | KMIPKIT-DISC-046 | open | blocked for affected records | 1 elements | Streaming test case descriptions and linked XML disagree on Decrypt items | KMIPKIT-SRC-testcases §2.100, KMIPKIT-SRC-testcases §2.101 |
+| KMIPKIT-DISC-047 | open | blocked for affected records | 1 elements | Query empty-response prose conflicts with required Protection Storage Masks field | KMIPKIT-SRC-spec §6.1.40 |
 
 ## Project policies
 
