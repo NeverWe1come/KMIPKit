@@ -93,6 +93,14 @@ mod create_split_key_tests;
 mod async_operation_fixtures;
 
 #[cfg(test)]
+#[path = "../tests/support/lifecycle_fixtures.rs"]
+mod lifecycle_fixtures;
+
+#[cfg(test)]
+#[path = "../tests/unit/lifecycle_fixtures_tests.rs"]
+mod lifecycle_fixtures_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/asynchronous_tests.rs"]
 mod asynchronous_tests;
 
