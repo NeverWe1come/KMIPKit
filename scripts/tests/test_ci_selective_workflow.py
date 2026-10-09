@@ -46,7 +46,7 @@ class SelectiveWorkflowTests(unittest.TestCase):
                 job = self.job(job_id)
                 self.assertIn("needs:", job)
                 self.assertIn("impact-plan", job)
-                self.assertRegex(job, r"(?m)^        os: \[ubuntu-latest, windows-latest, macos-latest\]")
+                self.assertRegex(job, r"(?m)^        os: \[ubuntu-latest, windows-2022, macos-latest\]")
         self.assertNotIn("  language-bindings:\n", self.contents)
 
     def test_sanitizer_and_adapter_coverage_producers_are_independently_selectable(self) -> None:
@@ -106,7 +106,7 @@ class SelectiveWorkflowTests(unittest.TestCase):
 
     def test_docs_only_validator_is_lightweight_and_checks_traceability(self) -> None:
         docs = self.job("docs-contracts")
-        self.assertIn("test_requirement_traceability.py", docs)
+        self.assertIn("scripts.tests.test_requirement_traceability", docs)
         self.assertIn("test_feature_traceability.py", docs)
         self.assertNotIn("cargo", docs)
         self.assertNotIn("mvn", docs)

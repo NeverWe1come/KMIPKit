@@ -117,6 +117,7 @@ class CiSummaryTests(unittest.TestCase):
             "repository": "NeverWe1come/KMIPKit",
             "ref": "refs/pull/42/merge",
             "sha": "a" * 40,
+            "base_sha": "b" * 40,
             "run_id": "123456789",
             "run_attempt": "2",
         }
@@ -134,7 +135,7 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("Core matrix", markdown)
         self.assertIn("Script contracts", markdown)
         self.assertIn("Normative inventory", markdown)
-        self.assertIn("Coverage collection", markdown)
+        self.assertIn("Rust and FFI coverage", markdown)
         self.assertIn("Coverage gate", markdown)
         self.assertIn("Dependency policy", markdown)
         self.assertIn("Not applicable", markdown)
@@ -236,7 +237,8 @@ class CiSummaryTests(unittest.TestCase):
 
         self.assertEqual(0, exit_code)
         self.assertIn("CI result: PASS", markdown)
-        self.assertIn("Impact: documentation", markdown)
+        self.assertIn("**Impact:** Selective CI", markdown)
+        self.assertIn("Components:** documentation", markdown)
         self.assertIn("Only documentation changed", markdown)
         self.assertIn("Not affected", markdown)
         self.assertIn("Rust", markdown)

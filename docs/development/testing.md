@@ -6,6 +6,25 @@ Tests demonstrate protocol correctness, parser robustness, cross-language
 parity, ABI stability, interoperability, and safe failure. Coverage is a gate,
 not a substitute for behavior and requirement traceability.
 
+## Pull-request CI selection
+
+Every pull request gets a new impact-classifier job. It compares the exact
+base commit with the merge commit for that run; results from earlier commits
+are never reused. A documentation-only change runs documentation and
+traceability contracts plus the final Summary. Isolated Java or Python changes
+run that language's tests on Linux, Windows, and macOS and its own coverage
+gate. C consumer changes run the C checks on all three platforms, the C FFI
+sanitizer, and the Rust/FFI coverage scopes. JNI changes run Java/JNI checks on
+all three platforms, the JNI sanitizer, and JNI coverage. Mixed changes combine
+these checks.
+
+Changes to shared Rust code, CI, scripts, manifests, generators, normative
+inputs, unknown paths, or classifier errors select the full pull-request CI.
+The final Summary lists every job and explains why a skipped job was not
+selected. The scheduled workflow is unchanged. Selective execution does not
+change the thresholds below; every selected report remains required, and a
+missing or malformed selected report fails the gate.
+
 ## Test layers
 
 ### Unit tests
@@ -100,8 +119,9 @@ framing, forbidden redirect/compression behavior, and connection reuse.
 - Run panic-containment and memory ownership tests.
 - Run sanitizer jobs for the FFI surface.
 - Pull-request CI runs the Linux C consumer through the Rust ABI under
-  AddressSanitizer and runs the JNI zeroizing-owner test under AddressSanitizer
-  and UndefinedBehaviorSanitizer in `ffi-sanitizer`.
+  AddressSanitizer in `ffi-sanitizer-c` and runs the JNI zeroizing-owner test
+  under AddressSanitizer and UndefinedBehaviorSanitizer in
+  `ffi-sanitizer-jni`.
 - Pull-request CI checks generated API and cross-adapter fixture outputs and
   runs the extension fixture generator's rejection tests in `script-contracts`
   using the Python 3.12 executable inside the uv-managed `VIRTUAL_ENV` and the

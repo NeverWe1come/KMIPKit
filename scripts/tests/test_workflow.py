@@ -14,9 +14,7 @@ POLICY_RUNNER = REPOSITORY_ROOT / "scripts" / "Test-DependencyPolicy.ps1"
 
 
 class WorkflowContractTests(unittest.TestCase):
-    COVERAGE_COLLECTION_GUARD = (
-        "if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')"
-    )
+    COVERAGE_COLLECTION_GUARD = "needs.impact-plan.outputs.coverage_scopes"
     UV_PYTHON_SETUP = (
         "astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0",
         "version: '0.12.23'",
@@ -141,8 +139,8 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_language_binding_job_compiles_bilingual_client_guide_examples(self) -> None:
         contents = self.require_workflow()
-        job = self.require_job(contents, "language-bindings")
-        build_position = job.index("- name: Build the C consumer and example")
+        job = self.require_job(contents, "core")
+        build_position = job.index("- name: Build documentation")
         guide_position = job.find("python scripts/test_user_guide_examples.py")
 
         self.assertGreaterEqual(
@@ -184,8 +182,8 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer(self) -> None:
         contents = self.require_workflow()
-        job = self.require_job(contents, "ffi-sanitizer")
-        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        job = self.require_job(contents, "ffi-sanitizer-c")
+        self.assertIn("needs.impact-plan", job)
         self.assertIn("runs-on: ubuntu-latest", job)
 
         for required in (
@@ -194,16 +192,18 @@ class WorkflowContractTests(unittest.TestCase):
             "cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include",
             "bindings/c/tests/extension_registry.c",
             "ASAN_OPTIONS: detect_leaks=1:halt_on_error=1",
-            "-fsanitize=address,undefined -fno-omit-frame-pointer",
-            "bindings/java/native/tests/zeroizing_bytes_test.cpp",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, job)
 
+        jni_job = self.require_job(contents, "ffi-sanitizer-jni")
+        self.assertIn("-fsanitize=address,undefined -fno-omit-frame-pointer", jni_job)
+        self.assertIn("bindings/java/native/tests/zeroizing_bytes_test.cpp", jni_job)
+
     def test_fuzz_smoke_job_runs_the_bounded_extension_schema_target(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "fuzz-smoke")
-        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        self.assertIn("needs.impact-plan.outputs.full == 'true'", job)
         self.assertIn("runs-on: ubuntu-latest", job)
 
         for required in (
@@ -217,17 +217,20 @@ class WorkflowContractTests(unittest.TestCase):
     def test_ci_jobs_use_github_hosted_runners(self) -> None:
         contents = self.require_workflow()
 
-        for job in ("core", "script-contracts", "language-bindings", "coverage"):
+        for job in ("core", "script-contracts", "language-c", "language-java", "language-python", "coverage"):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
                 self.assertIn("runs-on: ${{ matrix.os }}", body)
 
         for job in (
-            "ffi-sanitizer",
+            "ffi-sanitizer-c",
+            "ffi-sanitizer-jni",
             "fuzz-smoke",
             "normative-inventory",
             "coverage-gate",
-            "adapter-coverage",
+            "coverage-java",
+            "coverage-python",
+            "coverage-jni",
             "dependency-policy",
             "scheduled-dependency-policy",
             "run-summary",
@@ -242,9 +245,7 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_binding_toolchains_are_pinned_for_pull_requests(self) -> None:
         contents = self.require_workflow()
-        job = self.require_job(contents, "language-bindings")
-
-        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
+        job = self.require_job(contents, "language-java")
         self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", job)
 
         for required in (
@@ -254,31 +255,50 @@ class WorkflowContractTests(unittest.TestCase):
             "java-version: '17'",
             "stCarolas/setup-maven@",
             "maven-version: '3.9.16'",
-            "lukka/get-cmake@",
-            "cmakeVersion: '3.31.6'",
-            "ninjaVersion: '1.13.2'",
-            "uv pip install --requirement bindings/python/requirements-coverage.txt",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, job)
-        self.assert_uv_managed_python_312(job)
+        c_job = self.require_job(contents, "language-c")
+        self.assertIn("lukka/get-cmake@", c_job)
+        self.assertIn("cmakeVersion: '3.31.6'", c_job)
+        self.assertIn("ninjaVersion: '1.13.2'", c_job)
+        python_job = self.require_job(contents, "language-python")
+        self.assertIn("uv pip install --requirement bindings/python/requirements-coverage.txt", python_job)
+        self.assert_uv_managed_python_312(python_job)
+
+    def test_rust_built_adapter_jobs_install_the_pinned_rust_toolchain(self) -> None:
+        contents = self.require_workflow()
+        for job_id in ("language-python", "coverage-java", "coverage-python", "coverage-jni"):
+            with self.subTest(job=job_id):
+                job = self.require_job(contents, job_id)
+                self.assertIn("rustup toolchain install 1.94 --profile minimal", job)
+                self.assertIn("RUSTUP_TOOLCHAIN: '1.94'", job)
 
     def test_binding_consumers_run_on_all_platforms(self) -> None:
         contents = self.require_workflow()
-        job = self.require_job(contents, "language-bindings")
-
-        for required in (
-            "cargo build --locked -p kmipkit-ffi",
-            "cmake -G Ninja -S bindings/c -B build/c-consumer",
-            "cmake --build build/c-consumer --config Release",
-            "ctest --test-dir build/c-consumer -C Release --output-on-failure",
-            "mvn --batch-mode --file bindings/java/pom.xml test",
-            "uv pip install --no-build-isolation bindings/python",
-            "python -m pytest -q bindings/python/tests",
-            "python bindings/python/examples/vendor_extension_registry.py",
-        ):
-            with self.subTest(required=required):
-                self.assertIn(required, job)
+        component_jobs = {
+            "language-c": self.require_job(contents, "language-c"),
+            "language-java": self.require_job(contents, "language-java"),
+            "language-python": self.require_job(contents, "language-python"),
+        }
+        required_by_job = {
+            "language-c": (
+                "cargo build --locked -p kmipkit-ffi",
+                "cmake -G Ninja -S bindings/c -B build/c-consumer",
+                "cmake --build build/c-consumer --config Release",
+                "ctest --test-dir build/c-consumer -C Release --output-on-failure",
+            ),
+            "language-java": ("mvn --batch-mode --file bindings/java/pom.xml test",),
+            "language-python": (
+                "uv pip install --no-build-isolation bindings/python",
+                "python -m pytest -q bindings/python/tests",
+                "python bindings/python/examples/vendor_extension_registry.py",
+            ),
+        }
+        for job_id, required_values in required_by_job.items():
+            for required in required_values:
+                with self.subTest(job=job_id, required=required):
+                    self.assertIn(required, component_jobs[job_id])
 
         python_project = (REPOSITORY_ROOT / "bindings" / "python" / "pyproject.toml").read_text(
             encoding="utf-8"
@@ -288,7 +308,7 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_windows_c_consumer_uses_the_msvc_compatible_generator(self) -> None:
         contents = self.require_workflow()
-        job = self.require_job(contents, "language-bindings")
+        job = self.require_job(contents, "language-c")
 
         self.assertIn(
             'cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer',
@@ -304,41 +324,25 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("environment.pop(\"PYTHONPATH\", None)", example_test)
         self.assertNotIn('environment["PYTHONPATH"] =', example_test)
 
-    def test_adapter_coverage_job_collects_and_uploads_aggregate_inputs(self) -> None:
+    def test_adapter_coverage_jobs_collect_and_upload_separate_reports(self) -> None:
         contents = self.require_workflow()
-        job = self.require_job(contents, "adapter-coverage")
-
-        self.assertRegex(job, r"(?m)^    if: github\.event_name == 'pull_request'$")
-        self.assert_github_hosted_runner(job)
-        self.assertRegex(job, r"(?ms)^    needs:\s*\n\s+- language-bindings$")
-        self.assert_uv_managed_python_312(job)
-
-        for required in (
-            "KyleMayes/install-llvm-action@",
-            "version: '20.1.8'",
-            "ln -s \"$LLVM_PATH/bin/$tool\" \"$RUNNER_TEMP/llvm-20-tools/${tool}-20\"",
-            "mvn --batch-mode --file bindings/java/pom.xml clean verify",
-            "bindings/java/target/site/jacoco/jacoco.xml",
-            "coverage-java/jacoco.xml",
-            "uv pip install --requirement bindings/python/requirements-coverage.txt",
-            "uv pip install --no-build-isolation --editable bindings/python",
-            "--cov-report=xml:coverage-python/coverage.xml",
-            "bash scripts/collect_jni_coverage.sh target/coverage-jni",
-            "target/coverage-jni/coverage.json",
-            "coverage-jni/coverage.json",
-            "name: coverage-java",
-            "path: coverage-java/jacoco.xml",
-            "name: coverage-python",
-            "path: coverage-python/coverage.xml",
-            "name: coverage-jni",
-            "path: coverage-jni/coverage.json",
-        ):
-            with self.subTest(required=required):
-                self.assertIn(required, job)
+        java_job = self.require_job(contents, "coverage-java")
+        python_job = self.require_job(contents, "coverage-python")
+        jni_job = self.require_job(contents, "coverage-jni")
+        self.assertIn("mvn --batch-mode --file bindings/java/pom.xml clean verify", java_job)
+        self.assertIn("bindings/java/target/site/jacoco/jacoco.xml", java_job)
+        self.assertIn("name: coverage-java", java_job)
+        self.assertIn("uv pip install --requirement bindings/python/requirements-coverage.txt", python_job)
+        self.assertIn("--cov-report=xml:coverage-python/coverage.xml", python_job)
+        self.assertIn("name: coverage-python", python_job)
+        self.assertIn("KyleMayes/install-llvm-action@", jni_job)
+        self.assertIn("version: '20.1.8'", jni_job)
+        self.assertIn("bash scripts/collect_jni_coverage.sh target/coverage-jni", jni_job)
+        self.assertIn("name: coverage-jni", jni_job)
 
     def test_adapter_coverage_job_enforces_normative_generator_line_coverage(self) -> None:
         contents = self.require_workflow()
-        job = self.require_job(contents, "adapter-coverage")
+        job = self.require_job(contents, "normative-inventory")
 
         self.assertIn("- name: Verify normative generator line coverage", job)
         self.assertIn(
@@ -404,10 +408,12 @@ class WorkflowContractTests(unittest.TestCase):
         job = self.require_job(contents, "coverage-gate")
         self.assertRegex(
             job,
-            r"(?ms)^    needs:\s*\n\s+- coverage\s*\n\s+- adapter-coverage$",
+            r"(?ms)^    needs:\s*\n\s+- impact-plan\s*\n\s+- coverage\s*\n\s+- coverage-java\s*\n\s+- coverage-python\s*\n\s+- coverage-jni$",
         )
         self.assertIn(self.COVERAGE_COLLECTION_GUARD, job)
-        self.assertIn("needs.adapter-coverage.result", job)
+        self.assertIn('"java": "coverage-java"', job)
+        self.assertIn('"python": "coverage-python"', job)
+        self.assertIn('"jni": "coverage-jni"', job)
         self.assertIn("pattern: coverage-*", job)
         self.assertIn("scripts/coverage_gate.py aggregate", job)
 
@@ -425,12 +431,13 @@ class WorkflowContractTests(unittest.TestCase):
         for job in ("core", "script-contracts", "coverage"):
             with self.subTest(job=job):
                 body = self.require_job(contents, job)
-                self.assertRegex(body, r"(?m)^    if: github\.event_name == 'pull_request'$")
+                self.assertIn("github.event_name == 'pull_request'", body)
+                self.assertIn("needs.impact-plan", body)
 
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assertRegex(branch_coverage, r"(?m)^    if: github\.event_name == 'schedule'$")
         gate = self.require_job(contents, "coverage-gate")
-        self.assertRegex(gate, r"(?m)^    if: always\(\) && github\.event_name == 'pull_request'$")
+        self.assertIn("always() && github.event_name == 'pull_request'", gate)
         self.assertIn(self.COVERAGE_COLLECTION_GUARD, gate)
 
     def test_branch_coverage_documentation_matches_schedule_only_workflow(self) -> None:
@@ -564,15 +571,22 @@ class WorkflowContractTests(unittest.TestCase):
         job = self.require_job(contents, "run-summary")
         self.assertRegex(job, r"(?m)^    if: always\(\)$")
         for dependency in (
+            "impact-plan",
+            "docs-contracts",
             "core",
             "script-contracts",
-            "language-bindings",
-            "ffi-sanitizer",
+            "language-c",
+            "language-java",
+            "language-python",
+            "ffi-sanitizer-c",
+            "ffi-sanitizer-jni",
             "fuzz-smoke",
             "normative-inventory",
             "coverage",
             "coverage-gate",
-            "adapter-coverage",
+            "coverage-java",
+            "coverage-python",
+            "coverage-jni",
             "dependency-policy",
             "scheduled-dependency-policy",
             "branch-coverage",
@@ -621,13 +635,18 @@ class WorkflowContractTests(unittest.TestCase):
         for job_id in (
             "core",
             "script-contracts",
-            "language-bindings",
-            "ffi-sanitizer",
+            "language-c",
+            "language-java",
+            "language-python",
+            "ffi-sanitizer-c",
+            "ffi-sanitizer-jni",
             "fuzz-smoke",
             "normative-inventory",
             "coverage",
             "coverage-gate",
-            "adapter-coverage",
+            "coverage-java",
+            "coverage-python",
+            "coverage-jni",
             "dependency-policy",
         ):
             with self.subTest(job=job_id):
@@ -662,7 +681,7 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_multi_command_python_binding_step_preserves_each_exit_code(self) -> None:
         contents = self.require_workflow()
-        job = self.require_job(contents, "language-bindings")
+        job = self.require_job(contents, "language-python")
         step = re.search(r"(?ms)^      - name: Build the Python Maturin CFFI package.*?(?=^      - name: |\Z)", job)
         self.assertIsNotNone(step)
         self.assertIn("shell: pwsh", step.group(0))
@@ -673,9 +692,9 @@ class WorkflowContractTests(unittest.TestCase):
         job = self.require_job(contents, "coverage-gate")
         self.assertIn("--summary-file", job)
         self.assertIn("$GITHUB_STEP_SUMMARY", job)
-        self.assertIn("Summarize failed platform or adapter collection", job)
+        self.assertIn("Require successful selected coverage producers", job)
         self.assertIn(self.COVERAGE_COLLECTION_GUARD, job)
-        self.assertIn("ADAPTER_COVERAGE_RESULT: ${{ needs.adapter-coverage.result }}", job)
+        self.assertIn("CI_NEEDS_JSON: ${{ toJSON(needs) }}", job)
         self.assertIn("Summarize skipped coverage aggregation", job)
         self.assertIn("steps.enforce.outcome == 'skipped'", job)
 

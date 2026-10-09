@@ -48,6 +48,16 @@ class CiImpactTests(unittest.TestCase):
         self.assertEqual([], plan["coverage_scopes"])
         self.assertFalse(plan["full"])
 
+    def test_empty_diff_selects_documentation_contracts_and_is_valid(self) -> None:
+        impact = self.require_impact()
+        plan = impact.classify_changes([], base_sha="a" * 40, merge_sha="b" * 40)
+
+        self.assertFalse(plan["full"])
+        self.assertEqual(["documentation"], plan["classes"])
+        self.assertEqual(["docs-contracts"], plan["selected_jobs"])
+        self.assertEqual([], plan["coverage_scopes"])
+        self.assertTrue(impact.validate_plan(plan)[0])
+
     def test_root_and_feature_markdown_are_documentation(self) -> None:
         for path in ("README.md", "specs/015-selective-ci/spec.md", "changelog.d/001-ci.md"):
             with self.subTest(path=path):

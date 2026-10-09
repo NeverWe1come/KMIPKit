@@ -230,7 +230,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             source.parent.mkdir(parents=True)
             source.write_text("def operation():\n    return True\n", encoding="utf-8")
 
-            with self.assertRaisesRegex(GATE.CoverageDataError, "Python adapters coverage report is required"):
+            with self.assertRaisesRegex(GATE.CoverageDataError, "Required Python adapters coverage report is missing"):
                 GATE._evaluate_coverage(root, {}, "", adapter_reports={}, required_scopes={"python"})
 
             with self.assertRaisesRegex(GATE.CoverageDataError, "Unknown coverage scope"):

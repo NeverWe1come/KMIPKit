@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-08
 
-**Status**: Draft — requires maintainer approval before CI implementation
+**Status**: Approved for implementation — 2026-10-09
 
 **Input**: User-approved plan to retain a CI run for each pull-request update while running only the checks affected by the changed files, reporting proven skips in the GitHub run Summary, and falling back to full CI whenever impact is uncertain.
 
