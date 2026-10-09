@@ -16239,10 +16239,12 @@
       "source_keywords": [
         "SHALL"
       ],
-      "disposition": "server_only",
-      "requirement_ids": [],
-      "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
-      "role": "both",
+      "disposition": "requirement",
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1-002-001"
+      ],
+      "exclusion_rationale": null,
+      "role": "server",
       "direction": "client_to_server",
       "scope_state": "server_only",
       "condition": null
@@ -16265,9 +16267,9 @@
         "KMIPKIT-REQ-SPEC-6.1-003-002"
       ],
       "exclusion_rationale": null,
-      "role": "client",
-      "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "role": "both",
+      "direction": "both",
+      "scope_state": "mixed",
       "condition": null
     },
     {
@@ -16696,9 +16698,9 @@
         "KMIPKIT-REQ-SPEC-6.1.11-003"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "server",
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "condition": "When a valid ID Placeholder is available."
     },
     {
@@ -17571,9 +17573,9 @@
         "KMIPKIT-REQ-SPEC-6.1.17-004"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "server",
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "condition": "When a valid ID Placeholder is available."
     },
     {
@@ -88253,6 +88255,36 @@
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1-002-001",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1"
+        }
+      ],
+      "source_keyword": "SHALL",
+      "normative_strength": "mandatory",
+      "subject": "ID Placeholder server lifecycle",
+      "summary": "The key management server SHALL implement a temporary ID Placeholder variable, valid only during a batch, and SHALL discard or invalidate it after the batch.",
+      "role": "server",
+      "direction": "client_to_server",
+      "condition": "During execution of a batch of operations.",
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "This is the server-side temporary-variable and lifecycle obligation in §6.1 paragraph 2. It is retained in the normative catalog but excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-001",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-6.1-003"
@@ -88265,22 +88297,22 @@
       ],
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
-      "subject": "ID Placeholder",
-      "summary": "A client may use the ID Placeholder instead of an explicit Unique Identifier in an eligible later operation.",
-      "role": "client",
+      "subject": "ID Placeholder assignment",
+      "summary": "When an eligible operation successfully returns a Unique Identifier, the server SHALL copy it into the ID Placeholder for use during the remainder of the batch.",
+      "role": "server",
       "direction": "client_to_server",
-      "condition": "When a preceding eligible operation returned an identifier that remains valid in the same batch and batch ordering permits reuse.",
-      "scope_state": "client_1_0",
+      "condition": "When one of the operations listed in §6.1 successfully completes and returns a Unique Identifier.",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0019",
+      "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "This is the server-side assignment obligation in §6.1 paragraph 3. It is retained in the normative catalog but excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
@@ -88477,22 +88509,22 @@
       ],
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
-      "subject": "Decrypt key identifier",
-      "summary": "A client may omit Unique Identifier when a valid ID Placeholder identifies the decryption key.",
-      "role": "client",
+      "subject": "Decrypt ID Placeholder substitution",
+      "summary": "When Unique Identifier is omitted from an eligible Decrypt request, the server SHALL use the ID Placeholder value as the Unique Identifier.",
+      "role": "server",
       "direction": "client_to_server",
-      "condition": "When a valid ID Placeholder is available.",
-      "scope_state": "client_1_0",
+      "condition": "When an eligible Decrypt request omits Unique Identifier and a valid ID Placeholder is available.",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0019",
+      "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "This operation-table row states server substitution behavior. Client permission to omit Unique Identifier is represented by the §6.1 MAY requirement; this server-only row is excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-004-001",
@@ -89133,22 +89165,22 @@
       ],
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
-      "subject": "Encrypt key identifier",
-      "summary": "A client may omit Unique Identifier when a valid ID Placeholder identifies the encryption key.",
-      "role": "client",
+      "subject": "Encrypt ID Placeholder substitution",
+      "summary": "When Unique Identifier is omitted from an eligible Encrypt request, the server SHALL use the ID Placeholder value as the Unique Identifier.",
+      "role": "server",
       "direction": "client_to_server",
-      "condition": "When a valid ID Placeholder is available.",
-      "scope_state": "client_1_0",
+      "condition": "When an eligible Encrypt request omits Unique Identifier and a valid ID Placeholder is available.",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0019",
+      "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "This operation-table row states server substitution behavior. Client permission to omit Unique Identifier is represented by the §6.1 MAY requirement; this server-only row is excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.17-005-001",
@@ -105803,7 +105835,7 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Exclude the one-request Init=true/Final=true form from the typed Encrypt/Decrypt feature and do not claim conformance for it until an authoritative interpretation resolves the conflict. Ordinary single-part and multipart forms remain implementable.",
+      "downstream_impact": "Accept the one-request Init=true/Final=true Encrypt/Decrypt form when Data is present, as permitted by §6.1 and required by Tables 196 and 214. While this conflict remains unresolved, gate only the Data-omission variant with a local validation error before transmission; ordinary single-part and multipart forms remain implementable.",
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []

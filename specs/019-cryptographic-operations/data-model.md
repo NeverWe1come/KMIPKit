@@ -57,7 +57,8 @@ Separate request types prevent Decrypt-only input from being encoded in Encrypt.
 | Initial multipart part | true | absent or false | absent | Optional under §6.1 |
 | Middle multipart part | absent or false | absent or false | Required, copied from first response | Required under §6.1 |
 | Final multipart part after an earlier part | absent or false | true | Required, copied from first response | Optional under §6.1 |
-| Single request framed as both first and final | true | true | absent | Typed client returns a local validation error before transmission while KMIPKIT-DISC-045 remains open. This gates support without selecting Data requiredness. |
+| Single request framed as both first and final, with Data | true | true | absent | Allowed by §6.1 single-part sequence and satisfies Tables 196/214 |
+| Single request framed as both first and final, without Data | true | true | absent | Typed client returns a local validation error before transmission while KMIPKIT-DISC-045 remains open; the conflicting Data-omission reading remains unresolved. |
 
 The first response's Correlation Value is used on every later multipart request, including the final request. Each request is one caller-driven exchange. The client does not create a stream, retain server stream state, invent a correlation value, or submit a follow-up automatically.
 

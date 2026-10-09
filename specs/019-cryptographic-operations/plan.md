@@ -30,14 +30,14 @@ Add typed KMIP 2.1 Encrypt and Decrypt request/response models and route them th
 
 ## Constitution Check
 
-- **Specification and traceability**: This plan covers exactly Encrypt and Decrypt, assigns 24 applicable catalog requirements plus the two operation elements, six shared operation-structure elements, and the Cryptographic Parameters attribute, and maps three OASIS test-case records. Shared batch contracts retain their existing owner and are explicitly inherited.
+- **Specification and traceability**: This plan covers exactly Encrypt and Decrypt, assigns 21 applicable client catalog requirements plus the two operation elements, six shared operation-structure elements, and the Cryptographic Parameters attribute, and maps three OASIS test-case records. Related server-only ID Placeholder requirements remain cataloged but are outside the client feature count. Shared batch contracts retain their existing owner and are explicitly inherited.
 - **TDD and conformance**: Write operation-specific failing protocol and fake-transport tests first, preserve Red/Green/Refactor commits, and distinguish derived vectors from the three pinned official OASIS cases.
 - **One Rust core**: Extend the existing protocol and client crates. Do not add another crate or language-specific implementation.
 - **Security**: Use the existing redacted, zeroizing TTLV `Value` and protocol `SecretBytes` ownership contracts. Keep payload bytes out of Debug, Display, errors, and logs. Reuse bounded decoding and transport delivery classification.
 - **Human governance**: No implementation starts from this draft. The draft PR remains subject to human review; agents do not approve, merge, or publish.
 - **Source integrity**: Read only the checked-in OASIS source copy. Do not modify it or download/scrape it during builds. Regenerate the coverage report using the pinned repository tool.
 
-**Gate status**: The ordinary single-part and multipart forms are bounded. While KMIPKIT-DISC-045 remains open, the typed client returns a local validation error before transmission for a one-request form with both Init and Final true; no OASIS Data-requiredness interpretation is selected. The catalog retains the Table 59 header extraction only as an excluded source-clause audit record because “REQUIRED” is a column heading, not a Cryptographic Parameters row value. All three assigned official fixtures are pinned; every in-scope Encrypt/Decrypt item must pass fixture-derived operation-item tests before implementation review. These item tests are not full official-case passes. Complete workflow execution remains a 1.0 interoperability gate after the other operations in each workflow are implemented and supported.
+**Gate status**: The ordinary single-part and multipart forms are bounded. §6.1 permits a one-request form with both Init and Final true when Data is present, and Tables 196/214 require Data for single-part operations. While KMIPKIT-DISC-045 remains open, the typed client gates only the Data-omission variant before transmission; no interpretation of that conflict is selected. The catalog retains the Table 59 header extraction only as an excluded source-clause audit record because “REQUIRED” is a column heading, not a Cryptographic Parameters row value. All three assigned official fixtures are pinned; every in-scope Encrypt/Decrypt item must pass fixture-derived operation-item tests before implementation review. These item tests are not full official-case passes. Complete workflow execution remains a 1.0 interoperability gate after the other operations in each workflow are implemented and supported.
 
 ## Design Decisions and Alternatives
 
@@ -97,14 +97,14 @@ Resolve field ownership and validation from pinned Tables 196–198 and 214–21
 
 ## Phase 1: Design
 
-Document operation entities, the Data/multipart validity matrix, result-shape rules, and validation in data-model.md; exact public request/response field contracts in contracts/operation-payloads.md; and repeatable checks in quickstart.md. Add traceability.md mapping the 24 assigned applicable catalog requirements, two operation elements, six shared operation-structure elements, the Cryptographic Parameters attribute, inherited batch requirements, and three OASIS test-case records to planned source paths and test names. The specification PR maps feature_spec in the canonical catalog and regenerates coverage-report.md; implementation and verification references are completed with the implementation PR.
+Document operation entities, the Data/multipart validity matrix, result-shape rules, and validation in data-model.md; exact public request/response field contracts in contracts/operation-payloads.md; and repeatable checks in quickstart.md. Add traceability.md mapping the 21 assigned applicable client catalog requirements, two operation elements, six shared operation-structure elements, the Cryptographic Parameters attribute, inherited batch requirements, and three OASIS test-case records to planned source paths and test names. The specification PR maps feature_spec in the canonical catalog and regenerates coverage-report.md; implementation and verification references are completed with the implementation PR.
 
 ## Constitution Recheck
 
 - No architectural boundary or workspace dependency changes.
 - Each request and response owns or borrows byte material only through redacted/zeroizing types; runtime-owned copies outside KMIPKit remain outside this crate's guarantee.
-- Single-part unframed Data is required; initial/final multipart Data may be omitted and a middle part requires Data. While KMIPKIT-DISC-045 remains unresolved, the typed client returns a local validation error before transmission for a one-request Init=true/Final=true form, without selecting Data requiredness.
-- Every applicable operation and shared source clause has an explicit owner or inherited dependency; all 24 applicable requirements are traceable, and the Table 59 header extraction is retained only as an excluded source-clause audit record.
+- Single-part unframed Data is required; initial/final multipart Data may be omitted and a middle part requires Data. §6.1 permits a one-request Init=true/Final=true form without Correlation Value, and Tables 196/214 require Data for that single-part form. While KMIPKIT-DISC-045 remains unresolved, gate only its Data-omission variant before transmission.
+- Every applicable operation and shared source clause has an explicit owner or inherited dependency; all 21 applicable client requirements are traceable, and server-only requirements remain cataloged outside the client acceptance count. The Table 59 header extraction is retained only as an excluded source-clause audit record.
 - Do not implement while this draft is awaiting review and approval.
 
 ## Complexity Tracking

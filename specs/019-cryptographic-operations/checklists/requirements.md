@@ -15,7 +15,7 @@
 ## Requirement Completeness
 
 - [ ] Request Data preserves Byte String, Enumeration, and Integer from §7.9; response Data preserves the Byte String-only table form.
-- [ ] All 24 applicable stable catalog requirements link to feature requirements, planned implementation paths, and executable evidence targets.
+- [ ] All 21 applicable client stable catalog requirements link to feature requirements, planned implementation paths, and executable evidence targets; server-only requirements remain excluded from client acceptance counts.
 - [ ] The six shared operation-structure elements, Cryptographic Parameters attribute element, and three source-linked OASIS test-case records are assigned.
 - [ ] Shared batch, result, transport, and asynchronous dependencies have named owners and evidence.
 - [x] Success criteria require all in-scope Encrypt/Decrypt items from the pinned OASIS fixtures to pass as fixture-derived evidence; partial results do not imply complete-case or profile conformance.
@@ -26,5 +26,5 @@
 - [ ] Zeroization ownership and foreign-runtime limitations are explicit.
 - [ ] Cryptographic Parameter IV Length and Tag Length conditions are covered without inferring server-side object state.
 - [x] No algorithm, key, size, mode, IV, or nonce is selected implicitly.
-- [ ] KMIPKIT-DISC-045 remains open with the affected one-request form excluded; source clause KMIPKIT-CLAUSE-SPEC-4.16-004 is excluded with rationale and no requirement link.
+- [ ] KMIPKIT-DISC-045 remains open with only the Data-omission variant of the one-request Init=true/Final=true form gated; the Data-present single-part form remains supported. Source clause KMIPKIT-CLAUSE-SPEC-4.16-004 is excluded with rationale and no requirement link.
 - [ ] Plan, tasks, contracts, checklists, and traceability pass cross-artifact analysis.

@@ -7,7 +7,7 @@
 ## Normative scope
 
 - [ ] CHK001 Are Encrypt and Decrypt bounded to exact KMIP 2.1 sections and request, response, and error tables?
-- [ ] CHK002 Are all 24 applicable catalog requirements and two operation elements mapped without assigning server-only Usage Limits work?
+- [ ] CHK002 Are all 21 applicable client catalog requirements and two operation elements mapped without assigning server-only ID Placeholder or Usage Limits work?
 - [ ] CHK003 Are the six shared operation-structure elements, Cryptographic Parameters attribute element, and all three source-linked OASIS Test Case records assigned?
 - [ ] CHK004 Are shared batching, client execution, and Pending requirements explicitly inherited from their existing owners?
 
@@ -16,7 +16,7 @@
 - [ ] CHK005 Does request Data preserve all §7.9 Byte String, Enumeration, and Integer encodings while response Data remains Byte String?
 - [ ] CHK006 Do request members preserve Table 196/214 order, singleton cardinality, and exact TTLV forms?
 - [ ] CHK007 Does the multipart matrix require initial Init, later server Correlation Value, final Final, and middle-part Data?
-- [ ] CHK008 Does the typed client return a local pre-transmission validation error for Init=true/Final=true while KMIPKIT-DISC-045 remains open, without selecting Data requiredness?
+- [ ] CHK008 Does the typed client accept Init=true/Final=true with Data, and gate only Data omission while KMIPKIT-DISC-045 remains open without selecting the disputed omission interpretation?
 - [ ] CHK009 Are Cryptographic Parameters optional at the operation field level, unknown members preserved, and KMIPKIT-CLAUSE-SPEC-4.16-004 excluded with rationale and no requirement link because “REQUIRED” is a Table 59 column heading?
 - [ ] CHK010 Are §4.16 IV Length and GCM Tag Length obligations tested where caller-supplied parameters expose the mode?
 - [ ] CHK011 Do successful, failed, and Pending response shapes match Tables 197/215 and the shared ClientBatchOutcome contract?

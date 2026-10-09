@@ -7,7 +7,7 @@
 
 ## Specification PR preparation
 
-- [x] T001 Update the normative catalog for KMIPKIT-0019: assign Encrypt/Decrypt, six shared operation-structure elements, the Cryptographic Parameters attribute, all 24 applicable requirements, and linked test-case records; pin the three exact official OASIS fixtures with source URLs and hashes; add KMIPKIT-DISC-045 and the §2.100 test-evidence source defect KMIPKIT-DISC-046; exclude source clause KMIPKIT-CLAUSE-SPEC-4.16-004 with rationale and no requirement link, and correct the §4.16-001-002 summary without editing upstream OASIS files.
+- [x] T001 Update the normative catalog for KMIPKIT-0019: assign Encrypt/Decrypt, six shared operation-structure elements, the Cryptographic Parameters attribute, all 21 applicable client requirements, and linked test-case records; pin the three exact official OASIS fixtures with source URLs and hashes; add KMIPKIT-DISC-045 and the §2.100 test-evidence source defect KMIPKIT-DISC-046; exclude source clause KMIPKIT-CLAUSE-SPEC-4.16-004 with rationale and no requirement link, and correct the §4.16-001-002 summary without editing upstream OASIS files. Retain related ID Placeholder server-only requirements in the catalog without assigning them to this client feature.
 - [x] T002 Regenerate specification/catalog/coverage-report.md using the pinned report generator; run catalog validation, report --check, and immutable-source verification against the release base.
 - [x] T003 Reconcile specs/019-cryptographic-operations/traceability.md against every assigned catalog ID, feature requirement, planned code path, test target, inherited owner, and the in-scope operation items extracted from each official case fixture.
 - [x] T004 Run speckit-analyze after tasks exist, fix all critical/high inconsistencies, and leave reviewer-owned checklist boxes unchecked. Record the analyzed revision and unresolved discrepancies in the PR description.
@@ -15,7 +15,7 @@
 ## Phase 1: Dependency and source gate
 
 - [ ] T005 Confirm this implementation branch is based on the latest release/1.0.0 and the merged KMIPKIT-0005 TTLV codec, KMIPKIT-0006 message/batch model, KMIPKIT-0007 client execution, KMIPKIT-0009 Pending handling, and KMIPKIT-0013 production transport, and KMIPKIT-0018 Recover; record exact commits in traceability.md.
-- [ ] T006 Reconfirm Tables 196–198, Tables 214–216, §4.16, §§6.1/7.3/7.4/7.8/7.9/7.14/7.17 against the pinned source and verify all required tags are generated. Keep DISC-045 open and require a local pre-transmission validation error for the ambiguous one-request form without selecting Data requiredness; explain the §4.16-004 source-clause disposition.
+- [ ] T006 Reconfirm Tables 196–198, Tables 214–216, §4.16, §§6.1/7.3/7.4/7.8/7.9/7.14/7.17 against the pinned source and verify all required tags are generated. Keep DISC-045 open and require a local pre-transmission validation error only for the ambiguous single-part form where both Init and Final are true and Data is omitted; accept the same form when Data is present. Explain the §4.16-004 source-clause disposition.
 
 ## Phase 2: Shared request data and validation
 
@@ -40,7 +40,7 @@
 
 ### Red
 
-- [ ] T015 Add failing tests for a test-only OASIS XML fixture adapter in `crates/kmipkit-test-support`: pair request/response messages by sequence, preserve case/step identity, resolve only documented deterministic `$NOW`, `$UNIQUE_IDENTIFIER_0`, and `$CORRELATION_VALUE` tokens, reject unknown tokens, and yield all 28 in-scope pairs (24 Encrypt, 4 Decrypt) with no skipped item. Add failing Table 214 Encrypt request tests for exact member order, optional fields, and every allowed Data encoding in `crates/kmipkit-protocol/tests/unit/encrypt_tests.rs`.
+- [ ] T015 Add failing tests for a test-only OASIS XML fixture adapter in crates/kmipkit-test-support: pair request/response messages by sequence, preserve case/step identity, filter to Encrypt/Decrypt items before validating symbols, resolve only deterministic $NOW, $UNIQUE_IDENTIFIER_0, and $CORRELATION_VALUE tokens in those selected messages, reject unknown symbols there, and yield all 28 in-scope pairs (24 Encrypt, 4 Decrypt) with no skipped item. Do not validate symbols in out-of-scope setup/cleanup items. Add failing Table 214 Encrypt request tests for exact member order, optional fields, and every allowed Data encoding in crates/kmipkit-protocol/tests/unit/encrypt_tests.rs.
 - [ ] T016 Add failing Table 196 Decrypt request tests for exact order, Decrypt-only Authenticated Encryption Tag, and all four fixture-derived Decrypt items from §2.101 in `crates/kmipkit-protocol/tests/unit/decrypt_tests.rs`.
 - [ ] T017 Add failing success-payload tests for Tables 215 and 197; require Unique Identifier, preserve optional fields, allow UID-only success, preserve Byte String response Data, and cover all 24 Encrypt and 4 Decrypt fixture-derived response items.
 - [ ] T018 Add failing failure-response tests proving no success Unique Identifier is required and shared Result Reasons outside Tables 198/216 remain valid; add a Pending-shape test distinguishing async and multipart correlation values.
@@ -62,14 +62,14 @@
 
 ### Red
 
-- [ ] T026 Add failing matrix tests for unframed single-part, initial, middle, and final request forms; middle parts require Data. Add a client test that the Init=true/Final=true one-request form returns a sanitized validation error before transport while KMIPKIT-DISC-045 is open, without testing or selecting Data requiredness.
+- [ ] T026 Add failing matrix tests for unframed single-part, framed single-part with Data, initial, middle, final, and framed single-part without Data. Confirm Data-present Init=true/Final=true is accepted; while KMIPKIT-DISC-045 remains open, only the Data-omission form returns a sanitized validation error before transport.
 - [ ] T027 Add failing multipart tests proving the initial response Correlation Value appears unchanged on each subsequent/final request and AAD/Decrypt Tag stay on the initial request.
 - [ ] T028 Add failing client-layer ID Placeholder tests: reject locally detectable ineligible shapes before send; encode a structurally eligible later item with the required Batch Order Option; and preserve the server's per-item result when an earlier operation fails at the server.
-- [ ] T029 Run focused multipart/batch tests and capture Red evidence. Assert the typed client rejects Init=true/Final=true before encoding/transmission while leaving the Data-conflict interpretation unselected.
+- [ ] T029 Run focused multipart/batch tests and capture Red evidence. Assert the typed client accepts Init=true/Final=true with Data and rejects only the ambiguous Data-omission form before encoding/transmission while the discrepancy remains open.
 
 ### Green
 
-- [ ] T030 Implement the explicit supported multipart Data matrix and caller-provided indicator/correlation validation; reuse the existing local validation-error path to gate Init=true/Final=true before transmission until KMIPKIT-DISC-045 has an authoritative disposition; perform only one exchange per invocation.
+- [ ] T030 Implement the explicit supported multipart Data matrix and caller-provided indicator/correlation validation; accept a one-request Init=true/Final=true form with Data, and reuse the existing local validation-error path to gate only its Data-omission form until KMIPKIT-DISC-045 has an authoritative disposition; perform only one exchange per invocation.
 - [ ] T031 Integrate Encrypt/Decrypt with KMIPKIT-0006 ID Placeholder/batch contracts; do not redefine batch ordering or Batch Order Option behavior.
 - [ ] T032 Run multipart and batch tests Green, including a server-returned Correlation Value round trip.
 
@@ -99,7 +99,7 @@
 ## Phase 6: Fuzzing, traceability, docs, and release checks
 
 - [ ] T042 Add or extend parser fuzz/property coverage for arbitrary Data variants, malformed request payloads, Result Reason values, and bounded decoding; verify no panic or secret formatting.
-- [ ] T043 Update traceability.md with final implementation/test symbols, exact requirement status, source locators, and evidence; all 24 requirements must have 100% traceability.
+- [ ] T043 Update traceability.md with final implementation/test symbols, exact requirement status, source locators, and evidence; all 21 applicable client requirements must have 100% traceability.
 - [ ] T044 Add executable English and Spanish Rust API examples for single-part and multipart Encrypt/Decrypt, caller-selected values, Pending handling, and explicit Recover-before-use; compile both examples as doctests or dedicated examples.
 - [ ] T045 Execute all 28 in-scope Encrypt/Decrypt request-response pairs from the three pinned XML fixtures through the client test harness: 10 Encrypt pairs from §2.99, 10 Encrypt pairs from §2.100, and 4 Encrypt plus 4 Decrypt pairs from §2.101. Record case ID, fixture item, command, and result as fixture-derived operation-item evidence, never as a complete official-case pass. Run table-derived vectors and negative tests separately. Complete workflows remain a 1.0 interoperability gate after all operations in each scenario are supported.
 - [ ] T046 Run cargo fmt --all --check, workspace clippy with all targets/features and -D warnings, all workspace tests, rustdoc/doctests, cargo llvm-cov, and API/ABI compatibility checks available for Rust scope. Enforce >=95% protocol/changed-code coverage and the existing >=90% workspace gate; record exact evidence.
