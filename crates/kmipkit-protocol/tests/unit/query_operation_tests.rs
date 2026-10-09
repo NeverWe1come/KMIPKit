@@ -110,7 +110,7 @@ fn query_request_distinguishes_absent_and_present_empty_object_groups() {
         .to_ttlv_payload()
         .expect("one function is valid");
     let present_empty = QueryRequest::new([QueryFunction::OPERATIONS])
-        .with_object_groups([String::new()].into_iter().take(0))
+        .with_object_groups(std::iter::empty::<String>())
         .to_ttlv_payload()
         .expect("an empty Object Groups structure is valid");
 
@@ -338,4 +338,31 @@ fn query_response_rejects_repeated_singleton_table_283_fields() {
 fn query_response_rejects_a_different_operation() {
     let message = response_message(0x0000_001e, 0, None, None, Some(structure([])));
     assert!(QueryResponse::try_from_response_item(response_item(&message)).is_err());
+}
+
+#[test]
+fn query_response_rejects_repetitions_of_each_singleton_table_283_member() {
+    let singleton_items = [
+        (
+            QUERY_RESPONSE_TAGS[2],
+            Value::text_string("vendor".to_owned()),
+        ),
+        (QUERY_RESPONSE_TAGS[3], Value::structure(structure([]))),
+        (QUERY_RESPONSE_TAGS[12], Value::structure(structure([]))),
+        (QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+    ];
+    for (tag, value) in singleton_items {
+        let message = response_message(
+            QUERY_OPERATION,
+            0,
+            None,
+            None,
+            Some(structure([
+                item(tag, value),
+                item(tag, Value::structure(structure([]))),
+                item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+            ])),
+        );
+        assert!(QueryResponse::try_from_response_item(response_item(&message)).is_err());
+    }
 }

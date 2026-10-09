@@ -56,7 +56,7 @@
 
 ### Refactor
 
-- [ ] T017 [US2] Review Query model/decoder helpers for invariant duplication and loss of optionality/order; make only justified refactors and rerun focused suites, recording Refactor evidence.
+- [x] T017 [US2] Review Query model/decoder helpers for invariant duplication and loss of optionality/order; make only justified refactors and rerun focused suites, recording Refactor evidence.
 
 ## Phase 4: Documentation and cross-cutting verification
 

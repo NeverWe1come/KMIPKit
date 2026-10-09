@@ -725,8 +725,6 @@ pub enum QueryError {
     MissingProtectionStorageMasks,
     /// A singleton Table 283 member occurred more than once.
     RepeatedSingletonField,
-    /// An invalid local Query Function list or reserved enumeration was supplied.
-    InvalidQueryFunction,
     /// A nested TTLV value could not be represented by the local model.
     TtlvModel(ModelError),
 }
@@ -747,7 +745,6 @@ impl fmt::Display for QueryError {
                 "structured Query response is missing Protection Storage Masks"
             }
             Self::RepeatedSingletonField => "Query response repeats a singleton member",
-            Self::InvalidQueryFunction => "Query request contains no or an invalid Query Function",
             Self::TtlvModel(_) => "Query TTLV model is invalid",
         };
         formatter.write_str(message)
@@ -766,8 +763,7 @@ impl Error for QueryError {
             | Self::UnexpectedResponsePayload
             | Self::MalformedResponsePayload
             | Self::MissingProtectionStorageMasks
-            | Self::RepeatedSingletonField
-            | Self::InvalidQueryFunction => None,
+            | Self::RepeatedSingletonField => None,
         }
     }
 }
