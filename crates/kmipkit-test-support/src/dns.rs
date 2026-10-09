@@ -382,6 +382,10 @@ fn serve_tcp_with_spawner_and_cloner<F>(
     while !state.stop.load(Ordering::Acquire) {
         match listener.accept() {
             Ok((stream, _)) => {
+                if prepare_accepted_tcp_stream(&stream).is_err() {
+                    drop(stream);
+                    continue;
+                }
                 let connection_id = state.next_tcp_connection.fetch_add(1, Ordering::AcqRel);
                 let Ok(worker_stream) = clone_stream(&stream) else {
                     serve_tcp_connection(
@@ -427,6 +431,10 @@ fn serve_tcp_with_spawner_and_cloner<F>(
             Err(_) => break,
         }
     }
+}
+
+fn prepare_accepted_tcp_stream(stream: &TcpStream) -> io::Result<()> {
+    stream.set_nonblocking(false)
 }
 
 fn serve_tcp_connection<F>(
