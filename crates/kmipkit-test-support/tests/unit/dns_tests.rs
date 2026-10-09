@@ -262,6 +262,7 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
 
 #[test]
 fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
+    let _guard = lock_network_fixture();
     let records = BTreeMap::from([(
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
@@ -300,15 +301,22 @@ fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
 
 #[test]
 fn accepted_tcp_connection_is_served_inline_when_accepted_stream_clone_fails() {
+    let _guard = lock_network_fixture();
     let records = BTreeMap::from([(
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
     )]);
     let (spawner, spawn_attempts, _connection_worker_done, _connection_worker_started) =
         tcp_worker_spawner_failing(TcpWorkerKind::Response);
+    let clone_attempts = Arc::new(AtomicUsize::new(0));
+    let observed_clone_attempts = Arc::clone(&clone_attempts);
     let (local_addr, state, server) =
-        start_tcp_server_for_spawn_test(records, spawner, |_: &TcpStream| {
-            Err(io::Error::other("injected accepted-stream clone failure"))
+        start_tcp_server_for_spawn_test(records, spawner, move |stream: &TcpStream| {
+            if observed_clone_attempts.fetch_add(1, Ordering::AcqRel) == 0 {
+                Err(io::Error::other("injected accepted-stream clone failure"))
+            } else {
+                stream.try_clone()
+            }
         });
 
     let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
@@ -322,6 +330,7 @@ fn accepted_tcp_connection_is_served_inline_when_accepted_stream_clone_fails() {
     state.stop.store(true, Ordering::Release);
     let server_result = server.join();
 
+    assert_eq!(clone_attempts.load(Ordering::Acquire), 2);
     assert_eq!(spawn_attempts.connection.load(Ordering::Acquire), 0);
     assert_eq!(spawn_attempts.response.load(Ordering::Acquire), 1);
     assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
@@ -331,7 +340,51 @@ fn accepted_tcp_connection_is_served_inline_when_accepted_stream_clone_fails() {
 }
 
 #[test]
+fn accepted_tcp_connection_is_served_inline_when_both_stream_clones_fail() {
+    let _guard = lock_network_fixture();
+    let records = BTreeMap::from([(
+        "fixture.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
+    )]);
+    let (spawner, spawn_attempts, _connection_worker_done, _connection_worker_started) =
+        tcp_worker_spawner_failing(TcpWorkerKind::Response);
+    let clone_attempts = Arc::new(AtomicUsize::new(0));
+    let observed_clone_attempts = Arc::clone(&clone_attempts);
+    let (local_addr, state, server) =
+        start_tcp_server_for_spawn_test(records, spawner, move |_: &TcpStream| {
+            observed_clone_attempts.fetch_add(1, Ordering::AcqRel);
+            Err(io::Error::other("injected TCP stream clone failure"))
+        });
+
+    let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
+    client
+        .set_read_timeout(Some(Duration::from_secs(1)))
+        .expect("DNS TCP read timeout should be configured");
+    write_tcp_dns_query(&mut client, &fixture_query(1))
+        .expect("framed DNS question should be sent");
+    let response = read_tcp_dns_response(&mut client);
+    let _shutdown_result = client.shutdown(Shutdown::Both);
+    state.stop.store(true, Ordering::Release);
+    let server_result = server.join();
+
+    assert_eq!(clone_attempts.load(Ordering::Acquire), 2);
+    assert_eq!(spawn_attempts.connection.load(Ordering::Acquire), 0);
+    assert_eq!(spawn_attempts.response.load(Ordering::Acquire), 0);
+    assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
+    let response = response.expect("accepted query should receive an inline DNS response");
+    assert_eq!(read_u16(&response, 0), Some(0));
+    assert_eq!(read_u16(&response, 6), Some(1));
+    let metrics = state
+        .tcp_metrics
+        .lock()
+        .expect("TCP metrics should remain available");
+    assert_eq!(metrics.active_by_connection.get(&1), Some(&0));
+    assert_eq!(metrics.peak_by_connection.get(&1), Some(&1));
+}
+
+#[test]
 fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
+    let _guard = lock_network_fixture();
     let records = BTreeMap::from([(
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
