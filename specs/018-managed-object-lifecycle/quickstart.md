@@ -17,7 +17,7 @@ From the repository root, run the final test targets named by `tasks.md`. The im
 ```powershell
 python -B tools/normative_catalog/validate.py --repo-root .
 python -B tools/normative_catalog/report.py --check
-python -B tools/normative_catalog/check_immutable_sources.py --base-sha 227e3f9104f14494810598d078c013c389c24f8f --repo-root .
+python -B tools/normative_catalog/check_immutable_sources.py --base-sha 3448c197b964a4b3b9374d364b3e0d8bcc414864 --repo-root .
 ```
 
 Expected outcome: the four operation records and three applicable client requirement records are assigned to KMIPKIT-0018, the generated coverage report is current, and the pinned upstream OASIS copies are unchanged.
