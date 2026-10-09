@@ -34,7 +34,7 @@
 
 ### Refactor
 
-- [ ] T010 [US1] Review Ping conversion and dispatch for duplicated shared logic; refactor only where justified and rerun the focused suites, recording Refactor evidence.
+- [x] T010 [US1] Review Ping conversion and dispatch for duplicated shared logic; refactor only where justified and rerun the focused suites, recording Refactor evidence.
 
 ## Phase 3: User Story 2 — Query (Priority: P1)
 
