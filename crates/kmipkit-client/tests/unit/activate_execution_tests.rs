@@ -231,6 +231,8 @@ fn activate_success_returns_server_result_without_simulating_object_state() {
             .expect("the response view retains the Activate response");
         assert_eq!(outcome.operation(), ClientOperation::Activate);
         assert_eq!(outcome.result().status().raw(), SUCCESS);
+        assert!(!format!("{outcome:?}").contains(response_identifier));
+        assert!(!format!("{:?}", outcome.response()).contains(response_identifier));
         assert_eq!(
             typed.unique_identifier(),
             Some(&UniqueIdentifier::TextString(
@@ -345,9 +347,9 @@ fn activate_pending_preserves_exact_correlation_without_poll_or_follow_up() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let request = ClientRequest::Activate(ActivateRequest::new(None));
+    let typed_request = ClientRequest::Activate(ActivateRequest::new(None));
     let batch = ClientBatch::new(
-        ClientBatchItem::new(request).with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
+        ClientBatchItem::new(typed_request).with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
     )
     .with_asynchronous_indicator(1);
 
