@@ -313,6 +313,27 @@ fn vendor_attribute(vendor: &str) -> Item {
     )
 }
 
+fn vendor_attribute_with_identifications(identifications: &[&str]) -> Item {
+    let mut fields = identifications
+        .iter()
+        .map(|vendor| {
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string((*vendor).to_owned()),
+            )
+        })
+        .collect::<Vec<_>>();
+    fields.push(item(
+        ATTRIBUTE_NAME,
+        Value::text_string(ATTRIBUTE_NAME_SENTINEL.to_owned()),
+    ));
+    fields.push(item(
+        ATTRIBUTE_VALUE,
+        Value::byte_string(VENDOR_VALUE_SENTINEL.to_vec()),
+    ));
+    item(VENDOR_ATTRIBUTE, Value::structure(structure(fields)))
+}
+
 fn usage_limits_value() -> Item {
     // OASIS KMIP v2.1 §7.40 Table 392 requires Usage Limits Count in this
     // structure. Total and Unit are included as source-defined members too.
@@ -988,6 +1009,74 @@ fn every_inspectable_vendor_attribute_y_value_and_name_reference_is_rejected() {
             )),
             DELETE_ATTRIBUTE_OPERATION,
             "§4.60 reference-only Delete Attribute name-form reference with Vendor Identification y",
+        ),
+    ];
+
+    for (request, operation, context) in cases {
+        assert_payload_free_not_sent(request, operation, context);
+    }
+}
+
+#[test]
+fn duplicate_vendor_identification_containing_y_is_rejected_before_exchange() {
+    // A duplicate field is malformed under §4.60 Table 150. The policy gate
+    // must still notice an inspectable `y` value after a non-y occurrence;
+    // otherwise malformed input could bypass the client prohibition.
+    let vendor_value = || {
+        NewAttribute::new(vendor_attribute_with_identifications(&[
+            OTHER_VENDOR_IDENTIFIER,
+            VENDOR_CREATED_IDENTIFIER,
+        ]))
+    };
+    let vendor_current = || {
+        CurrentAttribute::new(vendor_attribute_with_identifications(&[
+            OTHER_VENDOR_IDENTIFIER,
+            VENDOR_CREATED_IDENTIFIER,
+        ]))
+    };
+    let cases = [
+        (
+            ClientRequest::add_attribute(AddAttributeRequest::new(
+                Some(OBJECT_IDENTIFIER.to_owned()),
+                vendor_value(),
+            )),
+            ADD_ATTRIBUTE_OPERATION,
+            "Add Attribute duplicate Vendor Identification includes y",
+        ),
+        (
+            ClientRequest::set_attribute(SetAttributeRequest::new(
+                Some(OBJECT_IDENTIFIER.to_owned()),
+                vendor_value(),
+            )),
+            SET_ATTRIBUTE_OPERATION,
+            "Set Attribute duplicate Vendor Identification includes y",
+        ),
+        (
+            ClientRequest::modify_attribute(ModifyAttributeRequest::new(
+                Some(OBJECT_IDENTIFIER.to_owned()),
+                Some(vendor_current()),
+                NewAttribute::new(direct_comment()),
+            )),
+            MODIFY_ATTRIBUTE_OPERATION,
+            "Modify Attribute Current Attribute duplicate includes y",
+        ),
+        (
+            ClientRequest::modify_attribute(ModifyAttributeRequest::new(
+                Some(OBJECT_IDENTIFIER.to_owned()),
+                Some(CurrentAttribute::new(direct_comment())),
+                vendor_value(),
+            )),
+            MODIFY_ATTRIBUTE_OPERATION,
+            "Modify Attribute New Attribute duplicate includes y",
+        ),
+        (
+            ClientRequest::delete_attribute(DeleteAttributeRequest::new(
+                Some(OBJECT_IDENTIFIER.to_owned()),
+                Some(vendor_current()),
+                None,
+            )),
+            DELETE_ATTRIBUTE_OPERATION,
+            "Delete Attribute Current Attribute duplicate includes y",
         ),
     ];
 
