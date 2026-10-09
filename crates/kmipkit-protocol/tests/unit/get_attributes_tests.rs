@@ -109,9 +109,9 @@ fn response_item(message: &ResponseMessage) -> ResponseBatchItemView<'_> {
         .expect("fixture contains one response batch item")
 }
 
-fn attribute_integer(attribute: &Item) -> Option<i32> {
+fn attribute_date_time(attribute: &Item) -> Option<i64> {
     attribute.with_value(|value| match value {
-        ValueView::Integer(value) => Some(*value),
+        ValueView::DateTime(value) => Some(*value),
         _ => None,
     })
 }
@@ -325,8 +325,9 @@ fn response_preserves_direct_attribute_instances_and_omits_missing_values() {
         None,
         None,
         Some(successful_payload([
-            item(0x0042_002F, Value::integer(7)),
-            item(0x0042_002F, Value::integer(19)),
+            // §4.18 Table 63 assigns Date-Time to Deactivation Date.
+            item(0x0042_002F, Value::date_time(7)),
+            item(0x0042_002F, Value::date_time(19)),
         ])),
     );
     let actual = GetAttributesResponse::try_from_response_item(response_item(&message))
@@ -343,7 +344,7 @@ fn response_preserves_direct_attribute_instances_and_omits_missing_values() {
         attributes
             .as_items()
             .iter()
-            .map(|attribute| (attribute.tag().raw(), attribute_integer(attribute)))
+            .map(|attribute| (attribute.tag().raw(), attribute_date_time(attribute)))
             .collect::<Vec<_>>(),
         [(0x0042_002F, Some(7)), (0x0042_002F, Some(19))]
     );
@@ -390,7 +391,8 @@ fn response_without_references_preserves_the_full_direct_attribute_set_in_order(
         None,
         Some(successful_payload([
             item(0x0042_0057, Value::enumeration(3)),
-            item(0x0042_002F, Value::integer(7)),
+            // §4.18 Table 63 assigns Date-Time to Deactivation Date.
+            item(0x0042_002F, Value::date_time(7)),
             item(0x0042_0057, Value::enumeration(4)),
         ])),
     );
@@ -404,9 +406,13 @@ fn response_without_references_preserves_the_full_direct_attribute_set_in_order(
         attributes
             .as_items()
             .iter()
-            .map(|attribute| attribute.tag().raw())
+            .map(|attribute| (attribute.tag().raw(), attribute.item_type()))
             .collect::<Vec<_>>(),
-        [0x0042_0057, 0x0042_002F, 0x0042_0057]
+        [
+            (0x0042_0057, ItemType::Enumeration),
+            (0x0042_002F, ItemType::DateTime),
+            (0x0042_0057, ItemType::Enumeration),
+        ]
     );
 }
 
