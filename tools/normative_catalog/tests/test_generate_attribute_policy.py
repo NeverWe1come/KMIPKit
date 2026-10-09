@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from tools.normative_catalog.validate import load_validated_catalog
+from tools.normative_catalog.validate import ELEMENT_FIELDS, ELEMENT_KINDS, load_validated_catalog
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -259,7 +259,6 @@ class AttributePolicyRenderingTests(unittest.TestCase):
         self.assertEqual(unknown_records, [])
 
     def test_does_not_infer_policy_from_an_unmapped_name_form_reference(self) -> None:
-        rendered = self._render()
         standard_attribute = next(
             item
             for item in self.catalog["elements"]
@@ -269,6 +268,41 @@ class AttributePolicyRenderingTests(unittest.TestCase):
             "vendor_identification": "KMIPKit.UnmappedVendor",
             "attribute_name": standard_attribute["source_name"],
         }
+        attribute_reference_structure = next(
+            item
+            for item in self.catalog["elements"]
+            if item.get("kind") == "attribute_structure" and item.get("name") == "Attribute Reference"
+        )
+        # A message_field's allowed source_comment carries the request probe into renderer input.
+        probe_field = {
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-NAME-FORM-PROBE",
+            "kind": "message_field",
+            "name": "Attribute Reference",
+            "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "5.5"}],
+            "direction": "client_to_server",
+            "scope_state": "client_1_0",
+            "parent_element_ids": [attribute_reference_structure["element_id"]],
+            "requirement_ids": [],
+            "profile_ids": [],
+            "test_case_ids": [],
+            "feature_spec": "KMIPKIT-0016",
+            "implementation_refs": [],
+            "verification_refs": [],
+            "source_encoding": "Structure",
+            "source_requiredness": "Optional",
+            "source_comment": (
+                "Name-form reference probe: "
+                f"Vendor Identification={name_form_reference['vendor_identification']}; "
+                f"Attribute Name={name_form_reference['attribute_name']}"
+            ),
+        }
+        self.assertIn(probe_field["kind"], ELEMENT_KINDS)
+        self.assertFalse(set(probe_field) - ELEMENT_FIELDS)
+        catalog = {
+            **self.catalog,
+            "elements": [*self.catalog["elements"], probe_field],
+        }
+        rendered = self._render(catalog)
         standard_tag = _tag_value_by_id(self.catalog, standard_attribute["parent_element_ids"][0])
         standard_record = _attribute_policy_record(self, rendered, standard_tag)
         policy_records = [
