@@ -567,9 +567,8 @@ fn parse_known_response_field(
         VENDOR_IDENTIFICATION => Ok(QueryResponseField::VendorIdentification(text()?)),
         SERVER_INFORMATION => {
             structure()?;
-            Ok(QueryResponseField::ServerInformation(clone_item(
-                tag, value,
-            )?))
+            let server_information = clone_item(tag, value)?;
+            Ok(QueryResponseField::ServerInformation(server_information))
         }
         APPLICATION_NAMESPACE => Ok(QueryResponseField::ApplicationNamespace(text()?)),
         EXTENSION_INFORMATION => {
