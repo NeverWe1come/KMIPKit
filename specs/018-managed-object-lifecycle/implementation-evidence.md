@@ -78,7 +78,7 @@ change and shared assertion extraction:
 
 Full package verification also passed:
 
-- `cargo test -p kmipkit-protocol --all-features`: 217 unit tests, 144
+- `cargo test -p kmipkit-protocol --all-features`: 217 unit tests, 150
   integration tests, and 2 doctests passed.
 - `cargo test -p kmipkit-client --all-features`: 260 unit tests, 62
   integration/UI tests, and 9 doctests passed.
@@ -100,10 +100,62 @@ coverage thresholds or the remaining lifecycle operations are complete.
 The Activate and Destroy convenience methods both route through
 `Client::execute_with_options`, and their response conversion already shares
 `read_operation_outcome`. Their remaining repeated code is the operation-
-specific request construction and wrapper method signatures; extracting it
-would add a generic helper without simplifying the flow. No behavior-preserving
-production encoding or response helper refactor was justified. The test-only
-identifier redaction assertion was consolidated in shared lifecycle fixtures
-in commit `061815c`; focused protocol tests passed after extraction. This
-completes the T016 review without making the operation-specific protocol
-modules less distinct.
+specific request construction and wrapper method signatures. The common
+identifier TTLV mechanics became a clear three-operation duplication once
+Archive was added and were extracted in the lifecycle Refactor below.
+
+## T017–T019 Red: Archive contracts
+
+- `d572297 test(KMIPKIT-0018): add Archive protocol contracts` added ten
+  source-derived request, response, malformed-success, result, and redaction
+  tests. `cargo test -p kmipkit-protocol --lib archive_operation_tests
+  --all-features` failed as expected because `ArchiveRequest`, `ArchiveResponse`,
+  and `ArchiveError` were not yet exported.
+- `e1808a6 test(KMIPKIT-0018): add Archive client contracts` added fake-transport
+  Success, Failure, Pending, malformed-success, one-exchange, redaction, and
+  optional-identifier assertions. `cargo test -p kmipkit-client --lib
+  archive_execution_tests --all-features` failed as expected because
+  `Client::archive`, `ClientRequest::Archive`, and
+  `ClientOperation::Archive` did not exist.
+
+Archive vectors cite OASIS KMIP Specification v2.1 §6.1.4 Tables 173–175,
+§4.58 Tables 145–146, and §11.56 Table 487. Table 175's `Object Archived`
+result is preserved as a failure result. These derived tests are not claimed as
+official OASIS Test Cases.
+
+## T020–T022 Green: Archive model and client
+
+- `1b68113 feat(KMIPKIT-0018): add Archive protocol model` added typed request
+  and response models and protocol exports. The request preserves an omitted or
+  supplied identifier; success requires exactly one supported response
+  identifier; failure retains the KMIP result.
+- `1622a84 feat(KMIPKIT-0018): dispatch Archive requests` added the client
+  request variant, operation identity, typed response view, and
+  `Client::archive`/`archive_with_options` through the shared one-exchange path.
+  Its API documentation describes Archive as a preference and does not claim
+  completion.
+- `cargo test -p kmipkit-protocol --lib archive_operation_tests --all-features`
+  passed (10 tests).
+- `cargo test -p kmipkit-client --lib archive_execution_tests --all-features`
+  passed (4 tests).
+- `cargo test -p kmipkit-protocol --all-features`: 227 unit tests, 150
+  integration tests, and 2 doctests passed after the Archive refactor.
+- `cargo test -p kmipkit-client --all-features`: 264 unit tests, 62
+  integration/UI tests, and 9 doctests passed.
+- Protocol and client all-target/all-feature Clippy with `-D warnings` passed;
+  `cargo fmt --all --check` passed.
+- Normative traceability tests passed (15 tests, one Windows symlink-permission
+  skip); `git diff --check` passed.
+
+## T016/T023 Refactor: shared lifecycle TTLV mechanics
+
+`543dd69 refactor(KMIPKIT-0018): share lifecycle TTLV mechanics` extracted
+optional request identifier encoding and successful response identifier
+validation into private protocol support used by Activate, Archive, and
+Destroy. The operation modules retain distinct operation identifiers, public
+types, response errors, and source table documentation.
+
+After extraction, the focused Activate, Archive, and Destroy protocol suites
+passed (10, 10, and 13 tests respectively), and protocol Clippy with `-D
+warnings` passed. Full protocol/client suites, client Clippy, formatting, and
+traceability checks also passed after this refactor.

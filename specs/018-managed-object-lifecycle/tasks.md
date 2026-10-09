@@ -59,19 +59,19 @@
 
 ### Tests first (Red)
 
-- [ ] T017 [P] [US2] Add Archive request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs`.
-- [ ] T018 [P] [US2] Add Archive fake-transport execution tests in `crates/kmipkit-client/tests/unit/archive_execution_tests.rs`.
-- [ ] T019 [US2] Run focused Archive tests and record expected Red failures before implementation.
+- [x] T017 [P] [US2] Add Archive request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs`.
+- [x] T018 [P] [US2] Add Archive fake-transport execution tests in `crates/kmipkit-client/tests/unit/archive_execution_tests.rs`.
+- [x] T019 [US2] Run focused Archive tests and record expected Red failures before implementation.
 
 ### Implementation (Green)
 
-- [ ] T020 [US2] Implement the Archive typed request/response model in `crates/kmipkit-protocol/src/archive.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
-- [ ] T021 [US2] Add Archive request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
-- [ ] T022 [US2] Run focused Archive tests and record Green evidence.
+- [x] T020 [US2] Implement the Archive typed request/response model in `crates/kmipkit-protocol/src/archive.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
+- [x] T021 [US2] Add Archive request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
+- [x] T022 [US2] Run focused Archive tests and record Green evidence.
 
 ### Refactor
 
-- [ ] T023 [US2] Refactor Archive code only where justified by established lifecycle patterns and rerun its focused tests.
+- [x] T023 [US2] Refactor Archive code only where justified by established lifecycle patterns and rerun its focused tests.
 
 ---
 
