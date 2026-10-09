@@ -145,8 +145,8 @@
 
 ### Refactor for User Story 3
 
-- [ ] T054 [US3] [Refactor] Refactor shared preservation, redaction, and client result conversion without reducing unknown-value coverage in `crates/kmipkit-protocol/src/attribute.rs` and `crates/kmipkit-client/src/execute.rs`.
-- [ ] T055 [US3] Re-run `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`, `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`, `crates/kmipkit-protocol/tests/attribute_redaction.rs`, and `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`; record Refactor evidence in a separate implementation commit.
+- [x] T054 [US3] [Refactor] Refactor shared preservation, redaction, and client result conversion without reducing unknown-value coverage in `crates/kmipkit-protocol/src/attribute.rs` and `crates/kmipkit-client/src/execute.rs`.
+- [x] T055 [US3] Re-run `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`, `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`, `crates/kmipkit-protocol/tests/attribute_redaction.rs`, and `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`; record Refactor evidence in a separate implementation commit.
 
 **Checkpoint**: All three user stories pass with no value loss, unbounded allocation, local state mutation, or secret-bearing diagnostics.
 
