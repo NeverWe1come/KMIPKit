@@ -26,7 +26,7 @@ The two normative client requirements above are the applicable standalone requir
 
 ## Open source conflict
 
-`KMIPKIT-DISC-045` records two conflicting statements in OASIS KMIP Specification v2.1 §6.1.40: the prose says the response payload is empty when there are no values to return, while Table 283 marks Protection Storage Masks as required and says a server may provide an empty list when unable or unwilling to provide that information. The client contract accepts both forms without choosing a server-conformance interpretation. This feature does not close the discrepancy; an approved OASIS erratum or project decision is required before asserting server conformance for the disputed case.
+`KMIPKIT-DISC-047` records two conflicting statements in OASIS KMIP Specification v2.1 §6.1.40: the prose says the response payload is empty when there are no values to return, while Table 283 marks Protection Storage Masks as required and says a server may provide an empty list when unable or unwilling to provide that information. The client contract accepts both forms without choosing a server-conformance interpretation. This feature does not close the discrepancy; an approved OASIS erratum or project decision is required before asserting server conformance for the disputed case.
 
 ## OASIS test-case mapping and limitations
 

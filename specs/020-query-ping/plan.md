@@ -44,7 +44,7 @@ Add typed Rust Ping and Query models and explicit client methods on top of the e
 - Add operation-specific Query and Ping request/response models under `crates/kmipkit-protocol/src/`.
 - Query request stores an ordered non-empty list of Query Function values and optional Object Groups. Object Groups contains zero or more repeated Object Group attributes; each attribute carries its Text String value (§6.1.40, Table 282; §7.23, Table 375; §4.35, Tables 99–100).
 - Query response exposes Table 283 members with exact occurrence rules. Scalar enumerations use the existing open-value model. Complex nested structures and unknown Items remain available as structurally valid `kmipkit_ttlv::Item` values.
-- The Query decoder accepts both response forms described by §6.1.40 and Table 283, whose empty-payload and required Protection Storage Masks statements conflict. Keep `KMIPKIT-DISC-045` open and do not make a server-conformance claim until an approved resolution exists.
+- The Query decoder accepts both response forms described by §6.1.40 and Table 283, whose empty-payload and required Protection Storage Masks statements conflict. Keep `KMIPKIT-DISC-047` open and do not make a server-conformance claim until an approved resolution exists.
 - Ping request and response operation payloads contain no fields.
 - Conversion validates required top-level structure and correct item types without narrowing unknown values.
 
@@ -58,7 +58,7 @@ Add typed Rust Ping and Query models and explicit client methods on top of the e
 ### Normative catalog
 
 - Assign Query, Ping, Query Function, its 14 named values and extension range, Object Groups structure/member and Object Group attribute, and the two client requirement IDs to KMIPKIT-0020.
-- Record the contradictory Query response-shape text as open `KMIPKIT-DISC-045`; do not assign an interpretation to the normative server obligation.
+- Record the contradictory Query response-shape text as open `KMIPKIT-DISC-047`; do not assign an interpretation to the normative server obligation.
 - Keep server-only clause dispositions and existing test/profile mappings intact.
 - Regenerate `specification/catalog/coverage-report.md`; do not edit generated output manually.
 - Record exact test paths and references in `traceability.md` when implementation exists. No code/test refs are fabricated in this spec-preparation PR.

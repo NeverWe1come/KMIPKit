@@ -10,7 +10,7 @@
 ## Client entry points and outcomes
 
 - `Client::ping` and `Client::query` each make one call through the shared `Client::execute` exchange path.
-- `QueryResponse` represents either the empty operation payload described in §6.1.40 or the structured Table 283 form, including its required Protection Storage Masks member (which may contain an empty list). It preserves unknown values/items and does not resolve the source conflict tracked as `KMIPKIT-DISC-045`.
+- `QueryResponse` represents either the empty operation payload described in §6.1.40 or the structured Table 283 form, including its required Protection Storage Masks member (which may contain an empty list). It preserves unknown values/items and does not resolve the source conflict tracked as `KMIPKIT-DISC-047`.
 - Ping success means the server returned a successful Ping response. It is not a general health or readiness guarantee.
 - Failures preserve the common KMIP result, reason, permitted message, and delivery state.
 - No API retries, polls, or issues follow-up calls automatically.

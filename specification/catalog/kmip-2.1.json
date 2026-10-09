@@ -105768,7 +105768,7 @@
       "erratum_source_refs": []
     },
     {
-      "discrepancy_id": "KMIPKIT-DISC-045",
+      "discrepancy_id": "KMIPKIT-DISC-047",
       "summary": "Query empty-response prose conflicts with required Protection Storage Masks field",
       "source_refs": [
         {

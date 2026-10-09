@@ -10,7 +10,7 @@ The Query request contains one or more ordered Query Function values and optiona
 
 ## QueryResponse
 
-A successful Query response is represented as either an empty operation payload or a structured response. Section 6.1.40 says the payload is empty when no values are available, while Table 283 marks Protection Storage Masks as required and allows its list to be empty. This source conflict is tracked as open `KMIPKIT-DISC-045`; the decoder accepts both forms and makes no server-conformance determination. For the structured form, each member's required/optional and repeatable status follows Table 283.
+A successful Query response is represented as either an empty operation payload or a structured response. Section 6.1.40 says the payload is empty when no values are available, while Table 283 marks Protection Storage Masks as required and allows its list to be empty. This source conflict is tracked as open `KMIPKIT-DISC-047`; the decoder accepts both forms and makes no server-conformance determination. For the structured form, each member's required/optional and repeatable status follows Table 283.
 
 | Member | Wire shape represented by the typed model |
 | --- | --- |

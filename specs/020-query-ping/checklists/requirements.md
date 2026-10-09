@@ -21,7 +21,7 @@
 ## Requirement Completeness
 
 - [ ] CHK006 Every applicable normative client requirement has its stable catalog ID and exact OASIS reference.
-- [ ] CHK007 Query Function required/repeated semantics, Object Groups structure/member/attribute shape, all Table 283 members/cardinalities, the open `KMIPKIT-DISC-045` response-shape conflict, and Query error values are represented.
+- [ ] CHK007 Query Function required/repeated semantics, Object Groups structure/member/attribute shape, all Table 283 members/cardinalities, the open `KMIPKIT-DISC-047` response-shape conflict, and Query error values are represented.
 - [ ] CHK008 Ping empty request/response and common result semantics are represented.
 - [ ] CHK009 Empty, repeated, failure, transport, malformed, unknown-value, and no-retry cases are testable.
 - [ ] CHK010 Future/vendor enum and extension preservation is specified.
