@@ -25,6 +25,8 @@ tests, and the conformance matrix.
 
 - [Typed client execution (English)](user-guide/en/client-execution.md)
 - [Typed client execution (Español)](user-guide/es/ejecucion-cliente.md)
+- [Query and Ping (English)](user-guide/en/query-ping.md)
+- [Operaciones Query y Ping (Español)](user-guide/es/operaciones-query-ping.md)
 - [Inspecting KMIP messages (English)](user-guide/en/message-model.md)
 - [Inspeccionar mensajes KMIP (Español)](user-guide/es/modelo-mensaje.md)
 

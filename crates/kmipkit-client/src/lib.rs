@@ -2,9 +2,9 @@
 //!
 //! The typed request enum supports explicit Discover Versions, Create, Create
 //! Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
-//! Attribute, Get Attributes, Get Attribute List, Modify Attribute, and Set
-//! Attribute operations. Separate methods execute Poll, Cancel, Process, and
-//! Query Asynchronous Requests. The synchronous [`Client`] is constructed from an immutable
+//! Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
+//! Attribute, Query, and Ping operations. Separate methods execute Poll,
+//! Cancel, Process, and Query Asynchronous Requests. The synchronous [`Client`] is constructed from an immutable
 //! client configuration and validated production transport configuration;
 //! callers cannot inject an arbitrary transport or submit raw KMIP bytes.
 //! Timeout overrides are available through the options-bearing typed methods.
@@ -109,6 +109,10 @@ mod ping_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/query_execution_tests.rs"]
 mod query_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/query_ping_redaction_tests.rs"]
+mod query_ping_redaction_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/query_async_execution_tests.rs"]

@@ -57301,7 +57301,8 @@
         "crates/kmipkit-protocol/tests/unit/ping_operation_tests.rs::ping_request_has_an_empty_operation_payload",
         "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::ping_sends_one_empty_payload_and_returns_success",
         "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::ping_failure_preserves_transport_delivery_and_does_not_retry",
-        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::malformed_ping_response_is_rejected_after_one_exchange"
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::malformed_ping_response_is_rejected_after_one_exchange",
+        "crates/kmipkit-client/tests/unit/query_ping_redaction_tests.rs::query_and_ping_error_chains_redact_malformed_response_payloads"
       ],
       "payload_tables": [
         {
@@ -57489,7 +57490,8 @@
         "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
         "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
         "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_failure_preserves_kmip_result_and_transport_delivery_without_retry",
-        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange"
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_rejects_malformed_response_after_one_exchange",
+        "crates/kmipkit-client/tests/unit/query_ping_redaction_tests.rs::query_and_ping_error_chains_redact_malformed_response_payloads"
       ],
       "payload_tables": [
         {
@@ -91313,7 +91315,8 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
-        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent"
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
+        "crates/kmipkit-client/tests/unit/query_ping_redaction_tests.rs::query_and_ping_error_chains_redact_malformed_response_payloads"
       ],
       "negative_verification_required": false,
       "decision_id": null,

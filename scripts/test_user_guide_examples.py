@@ -89,6 +89,7 @@ def write_project(root: Path, project: Path, examples: list[Example]) -> None:
     dependencies = {
         "kmipkit-client": repository / "crates" / "kmipkit-client",
         "kmipkit-protocol": repository / "crates" / "kmipkit-protocol",
+        "kmipkit-ttlv": repository / "crates" / "kmipkit-ttlv",
     }
 
     manifest = [

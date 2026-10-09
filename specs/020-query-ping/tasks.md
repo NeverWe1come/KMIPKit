@@ -60,10 +60,10 @@
 
 ## Phase 4: Documentation and cross-cutting verification
 
-- [ ] T018 [P] Add executable Rust usage examples for Query and Ping in `crates/kmipkit-protocol/tests/query_ping_guide_examples.rs`.
-- [ ] T019 [P] Document Query/Ping request choices, server-reported capability limits, Ping semantics, errors, and no-retry behavior in `docs/user-guide/en/query-ping.md` and `docs/user-guide/es/operaciones-query-ping.md`.
-- [ ] T020 Complete `specs/020-query-ping/traceability.md` with final code and executable test references for each applicable requirement and response element.
-- [ ] T021 Add regression checks that Query/Ping Debug, Display, and error source chains do not expose raw KMIP bodies in `crates/kmipkit-client/tests/unit/query_ping_redaction_tests.rs`.
+- [x] T018 [P] Add executable Rust usage examples for Query and Ping in `crates/kmipkit-protocol/tests/query_ping_guide_examples.rs`.
+- [x] T019 [P] Document Query/Ping request choices, server-reported capability limits, Ping semantics, errors, and no-retry behavior in `docs/user-guide/en/query-ping.md` and `docs/user-guide/es/operaciones-query-ping.md`.
+- [x] T020 Complete `specs/020-query-ping/traceability.md` with final code and executable test references for each applicable requirement and response element.
+- [x] T021 Add regression checks that Query/Ping Debug, Display, and error source chains do not expose raw KMIP bodies in `crates/kmipkit-client/tests/unit/query_ping_redaction_tests.rs`.
 - [ ] T022 Run catalog validation, generated-report check, immutable OASIS source check, formatting, Clippy, focused and workspace tests, coverage, documentation tests, and the full required CI matrix; meet the repository gates (95% protocol/model and changed code, 85% transport/FFI/bindings, 90% workspace) and record platform and coverage results in the implementation PR.
 
 ## Dependencies and execution order

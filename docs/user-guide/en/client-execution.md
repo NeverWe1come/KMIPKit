@@ -1,10 +1,12 @@
 # Typed client execution
 
 This guide describes the typed execution foundation introduced by
-KMIPKIT-0007 and its current operation APIs: Discover Versions, Create, Create
-Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete Attribute,
-Get Attributes, Get Attribute List, Modify Attribute, and Set Attribute. For
-configuring a production connection, see the [TLS and HTTPS transport guide](production-transports.md).
+KMIPKIT-0007 and its operation APIs: Discover Versions, Create, Create Key
+Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete Attribute,
+Get Attributes, Get Attribute List, Modify Attribute, Set Attribute, Query,
+and Ping. For configuring a production connection, see the [TLS and HTTPS
+transport guide](production-transports.md). See the [Query and Ping guide](query-ping.md)
+for their operation-specific behavior.
 
 ## Typed request boundary
 
@@ -12,8 +14,8 @@ The synchronous `kmipkit_client::Client::execute` API accepts a
 `ClientBatch` containing only the closed `ClientRequest` variants. The client
 supports explicitly requested client-to-server Discover Versions, Create,
 Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
-Attribute, Get Attributes, Get Attribute List, Modify Attribute, and Set
-Attribute requests. Discover Versions advertises exactly the KMIP 2.1 version pair (2,
+Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
+Attribute, Query, and Ping requests. Discover Versions advertises exactly the KMIP 2.1 version pair (2,
 1), as specified by OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.
 Get Attributes and Get Attribute List use their typed request and response
 models from §§6.1.20–6.1.21.

@@ -1,10 +1,12 @@
 # Ejecución tipada del cliente
 
 Esta guía describe la base de ejecución tipada introducida por KMIPKIT-0007 y
-las API actuales: Discover Versions, Create, Create Key Pair, Create Split Key,
+sus operaciones: Discover Versions, Create, Create Key Pair, Create Split Key,
 Add Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
-Attribute List, Modify Attribute y Set Attribute. Para configurar una conexión
-de producción, consulta la [guía de transportes TLS y HTTPS](transportes-produccion.md).
+Attribute List, Modify Attribute, Set Attribute, Query y Ping. Para configurar
+una conexión de producción, consulta la [guía de transportes TLS y HTTPS](transportes-produccion.md).
+Consulta la [guía de Query y Ping](operaciones-query-ping.md) para conocer sus
+detalles específicos.
 
 ## Límite de peticiones tipadas
 
@@ -12,8 +14,8 @@ La API síncrona `kmipkit_client::Client::execute` acepta un `ClientBatch` que
 contiene únicamente variantes del conjunto cerrado `ClientRequest`. El cliente
 admite peticiones explícitas del cliente al servidor para Discover Versions,
 Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
-Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute y Set
-Attribute. Discover Versions anuncia el par de versión KMIP 2.1 (2, 1), conforme a
+Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
+Attribute, Query y Ping. Discover Versions anuncia el par de versión KMIP 2.1 (2, 1), conforme a
 OASIS KMIP Specification v2.1 §6.1.16, Tablas 211–213. Get Attributes y Get
 Attribute List usan sus modelos tipados de petición y respuesta de
 §§6.1.20–6.1.21. La API no admite valores TTLV genéricos `Item` o `Structure`,
