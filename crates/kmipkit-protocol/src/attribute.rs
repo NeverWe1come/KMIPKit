@@ -4,7 +4,9 @@
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 
-use kmipkit_ttlv::{Item, StructureView, ValueView};
+use kmipkit_ttlv::{Item, ModelError, StructureView, Value, ValueView};
+
+use crate::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 
 const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
 const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
@@ -29,6 +31,113 @@ pub(crate) fn copy_text_string(value: &ValueView<'_>) -> Option<String> {
 /// required fields and source order.
 pub struct AttributeSet {
     items: Vec<Item>,
+}
+
+/// One direct object-attribute Item used to select an existing attribute value.
+///
+/// OASIS KMIP v2.1 §5.6, Table 162 defines Current Attribute as a Structure
+/// containing exactly one direct §4 attribute Item. Its tag identifies the
+/// attribute; the Item value is kept as generic TTLV.
+pub struct CurrentAttribute {
+    item: Item,
+}
+
+impl CurrentAttribute {
+    /// Wraps one direct generic TTLV Item as a Current Attribute.
+    #[must_use]
+    pub fn new(item: Item) -> Self {
+        Self { item }
+    }
+
+    /// Borrows the exact direct attribute Item supplied to [`Self::new`].
+    #[must_use]
+    pub const fn item(&self) -> &Item {
+        &self.item
+    }
+}
+
+impl Debug for CurrentAttribute {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("CurrentAttribute")
+            .field("item", &"[REDACTED]")
+            .finish()
+    }
+}
+
+/// One direct object-attribute Item supplied as a new attribute value.
+///
+/// OASIS KMIP v2.1 §5.7, Table 163 defines New Attribute as a Structure
+/// containing exactly one direct §4 attribute Item. Its tag identifies the
+/// attribute; the Item value is kept as generic TTLV.
+pub struct NewAttribute {
+    item: Item,
+}
+
+impl NewAttribute {
+    /// Wraps one direct generic TTLV Item as a New Attribute.
+    #[must_use]
+    pub fn new(item: Item) -> Self {
+        Self { item }
+    }
+
+    /// Borrows the exact direct attribute Item supplied to [`Self::new`].
+    #[must_use]
+    pub const fn item(&self) -> &Item {
+        &self.item
+    }
+}
+
+impl Debug for NewAttribute {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("NewAttribute")
+            .field("item", &"[REDACTED]")
+            .finish()
+    }
+}
+
+/// Copies one generic TTLV Item without changing its tag or value.
+///
+/// Request payload builders borrow their typed request, so they need an owned
+/// copy of the direct Item when constructing the generic TTLV tree.
+pub(crate) fn clone_item(item: &Item) -> Result<Item, ProtocolError> {
+    let value = item.with_value(clone_value)?;
+    Item::new(item.tag(), value).map_err(model_error)
+}
+
+fn clone_value(value: ValueView<'_>) -> Result<Value, ProtocolError> {
+    match value {
+        ValueView::Structure(structure) => {
+            let mut children = kmipkit_ttlv::Structure::new();
+            for child in structure.children() {
+                children.try_push(clone_item(child)?).map_err(model_error)?;
+            }
+            Ok(Value::structure(children))
+        }
+        ValueView::Integer(value) => Ok(Value::integer(*value)),
+        ValueView::LongInteger(value) => Ok(Value::long_integer(*value)),
+        ValueView::BigInteger(value) => Ok(Value::big_integer(value.to_vec())),
+        ValueView::Enumeration(value) => Ok(Value::enumeration(*value)),
+        ValueView::Boolean(value) => Ok(Value::boolean(*value)),
+        ValueView::TextString(value) => Ok(Value::text_string((*value).to_owned())),
+        ValueView::ByteString(value) => Ok(Value::byte_string(value.to_vec())),
+        ValueView::DateTime(value) => Ok(Value::date_time(*value)),
+        ValueView::Interval(value) => Ok(Value::interval(*value)),
+        ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
+        _ => Err(ProtocolError::categorized(
+            ProtocolErrorKind::InvalidValue,
+            ProtocolCauseCategory::InvalidValue,
+        )),
+    }
+}
+
+fn model_error(error: ModelError) -> ProtocolError {
+    ProtocolError::new(
+        ProtocolErrorKind::InvalidValue,
+        ProtocolCauseCategory::InvalidValue,
+        error,
+    )
 }
 
 /// A payload-free error describing an invalid Vendor Attribute structure.

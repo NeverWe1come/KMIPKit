@@ -9,6 +9,8 @@ mod attribute_policy {
     include!("generated/attribute_policy.rs");
 }
 
+mod add_attribute;
+mod adjust_attribute;
 mod asynchronous;
 pub mod attribute;
 mod attribute_types_generated;
@@ -18,19 +20,26 @@ mod create;
 mod create_key_pair;
 mod create_split_key;
 mod credential;
+mod delete_attribute;
 mod discover_versions;
 mod error;
 pub mod extension;
 mod get_attribute_list;
 mod get_attributes;
 mod message;
+mod modify_attribute;
 mod poll;
 mod process;
 mod query_async_requests;
 mod result;
+mod set_attribute;
 
+pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
+pub use adjust_attribute::{
+    AdjustAttributeError, AdjustAttributeRequest, AdjustAttributeResponse, AdjustmentType,
+};
 pub use asynchronous::AsynchronousOperationError;
-pub use attribute::{AttributeSet, AttributeSetError};
+pub use attribute::{AttributeSet, AttributeSetError, CurrentAttribute, NewAttribute};
 pub use attribute_reference::AttributeReference;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
@@ -44,6 +53,7 @@ pub use credential::{
     HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, SecretBytes,
     SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
+pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
@@ -57,12 +67,14 @@ pub use message::{
     RequestBatchItemView, RequestHeaderView, RequestMessage, ResponseBatchItemView,
     ResponseHeaderView, ResponseMessage,
 };
+pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
+pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
