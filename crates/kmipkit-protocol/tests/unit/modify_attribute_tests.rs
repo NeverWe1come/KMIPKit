@@ -4,12 +4,13 @@
 //! §6.1.34, Tables 265–266; §§4.2, 5.6–5.7, Tables 31–32 and 162–163;
 //! §11.2 Table 430; §§11.36 and 11.56. Traceability: KMIPKIT-0016-FR-008/
 //! FR-010 and SC-002/SC-003.
-//! Table 267 operation errors are covered by the client result tests in T032;
-//! these structural vectors do not claim that an official OASIS case passed.
+//! Table 267 Result Reasons and Operation Failed are checked against §§11.46–11.47,
+//! Tables 479–480. T032 covers transport propagation; these vectors do not claim that
+//! an official OASIS case passed.
 
 use crate::{
     CurrentAttribute, ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute,
-    ResponseBatchItemView, ResponseMessage, ResultStatus,
+    ResponseBatchItemView, ResponseMessage, ResultMessage, ResultReason, ResultStatus,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
@@ -30,8 +31,27 @@ const BATCH_COUNT: u32 = 0x0042_000D;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATION: u32 = 0x0042_005C;
 const RESULT_STATUS: u32 = 0x0042_007F;
+const RESULT_REASON: u32 = 0x0042_007E;
+const RESULT_MESSAGE: u32 = 0x0042_007D;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const OBJECT_IDENTIFIER: &str = "object-id-17";
+const MODIFY_ATTRIBUTE_ERROR_MESSAGE: &str = "Modify Attribute rejected by server";
+const TABLE_267_REASONS: [(&str, u32); 14] = [
+    ("Attribute Instance Not Found", 0x0000_0020),
+    ("Attribute Not Found", 0x0000_0021),
+    ("Attribute Read Only", 0x0000_0022),
+    ("Non Unique Name Attribute", 0x0000_0035),
+    ("Object Not Found", 0x0000_0037),
+    ("Attestation Failed", 0x0000_0015),
+    ("Attestation Required", 0x0000_0014),
+    ("Feature Not Supported", 0x0000_0008),
+    ("Invalid Field", 0x0000_0007),
+    ("Invalid Message", 0x0000_0004),
+    ("Operation Not Supported", 0x0000_0005),
+    ("Permission Denied", 0x0000_000C),
+    ("Response Too Large", 0x0000_0002),
+    ("Wrong Key Lifecycle State", 0x0000_0043),
+];
 
 fn tag(raw_tag: u32) -> Tag {
     RawTag::new(raw_tag)
@@ -149,7 +169,12 @@ fn assert_alternative_name_wrapper(field: &Item, expected_value: &str) {
     );
 }
 
-fn successful_response_message(payload: Structure) -> ResponseMessage {
+fn response_message(
+    status: u32,
+    reason: Option<u32>,
+    result_message: Option<&str>,
+    payload: Option<Structure>,
+) -> ResponseMessage {
     let version = structure([
         item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
         item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
@@ -159,16 +184,31 @@ fn successful_response_message(payload: Structure) -> ResponseMessage {
         item(TIME_STAMP, Value::date_time(1)),
         item(BATCH_COUNT, Value::integer(1)),
     ]);
-    let batch = structure([
+    let mut batch = vec![
         item(OPERATION, Value::enumeration(MODIFY_ATTRIBUTE_OPERATION)),
-        item(RESULT_STATUS, Value::enumeration(0)),
-        item(RESPONSE_PAYLOAD, Value::structure(payload)),
-    ]);
+        item(RESULT_STATUS, Value::enumeration(status)),
+    ];
+    if let Some(reason) = reason {
+        batch.push(item(RESULT_REASON, Value::enumeration(reason)));
+    }
+    if let Some(result_message) = result_message {
+        batch.push(item(
+            RESULT_MESSAGE,
+            Value::text_string(result_message.to_owned()),
+        ));
+    }
+    if let Some(payload) = payload {
+        batch.push(item(RESPONSE_PAYLOAD, Value::structure(payload)));
+    }
     let message = structure([
         item(RESPONSE_HEADER, Value::structure(header)),
-        item(BATCH_ITEM, Value::structure(batch)),
+        item(BATCH_ITEM, Value::structure(structure(batch))),
     ]);
     ResponseMessage::try_from_ttlv(message).expect("fixture is a valid KMIP 2.1 response message")
+}
+
+fn successful_response_message(payload: Structure) -> ResponseMessage {
+    response_message(0, None, None, Some(payload))
 }
 
 fn response_item(message: &ResponseMessage) -> ResponseBatchItemView<'_> {
@@ -291,4 +331,51 @@ fn successful_response_contains_the_required_unique_identifier() {
 
     assert_eq!(response.result().status(), ResultStatus::from_raw(0));
     assert_eq!(response.unique_identifier(), Some(OBJECT_IDENTIFIER));
+}
+
+#[test]
+fn successful_response_without_unique_identifier_is_rejected() {
+    // Table 266 requires Unique Identifier even when Result Status is Success.
+    let message = successful_response_message(Structure::new());
+    let response = ModifyAttributeResponse::try_from_response_item(response_item(&message));
+
+    assert!(
+        response.is_err(),
+        "a successful Table 266 response without Unique Identifier is malformed"
+    );
+}
+
+#[test]
+fn response_preserves_all_table_267_operation_failed_reasons_and_message() {
+    // Table 267 assigns Operation Failed to these 14 reasons. Their raw values
+    // come from §11.46 Table 479; Operation Failed is 0x00000001 in §11.47
+    // Table 480. The server's exact Result Message remains available unchanged.
+    for (reason_name, raw_reason) in TABLE_267_REASONS {
+        let message = response_message(
+            0x0000_0001,
+            Some(raw_reason),
+            Some(MODIFY_ATTRIBUTE_ERROR_MESSAGE),
+            None,
+        );
+        let response = ModifyAttributeResponse::try_from_response_item(response_item(&message))
+            .expect("Table 267 failure preserves the common operation result");
+        let result = response.result();
+
+        assert_eq!(
+            result.status(),
+            ResultStatus::from_raw(0x0000_0001),
+            "{reason_name} retains Operation Failed"
+        );
+        assert_eq!(
+            result.reason(),
+            Some(ResultReason::from_raw(raw_reason)),
+            "{reason_name} retains its §11.46 Table 479 raw value"
+        );
+        assert_eq!(
+            result.message().map(ResultMessage::as_str),
+            Some(MODIFY_ATTRIBUTE_ERROR_MESSAGE),
+            "{reason_name} retains the server's exact Result Message"
+        );
+        assert!(response.unique_identifier().is_none());
+    }
 }
