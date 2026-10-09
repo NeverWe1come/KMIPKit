@@ -117,6 +117,10 @@ mod attestation_indicator_tests;
 mod attribute_read_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/attribute_mutation_execution_tests.rs"]
+mod attribute_mutation_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/transport_contract_tests.rs"]
 mod transport_contract_tests;
 
