@@ -17,7 +17,7 @@ use kmipkit_ttlv::{Item, ItemType, Structure, StructureView, Value, ValueView};
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::encode_message_for_test;
 use crate::execute_test_support::{test_item, test_structure};
-use crate::{ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequest};
+use crate::{ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest};
 
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const GET_ATTRIBUTE_LIST_OPERATION: u32 = 0x0000_000C;
@@ -246,6 +246,7 @@ fn enumeration_value(item: &Item) -> Option<u32> {
 }
 
 fn completed_get_attributes(outcome: &ClientBatchOutcome) -> &GetAttributesResponse {
+    assert_completed_read_outcome(outcome, ClientOperation::GetAttributes);
     let ClientBatchOutcome::GetAttributes(response) = outcome else {
         panic!("Get Attributes execution returns its typed response");
     };
@@ -253,10 +254,59 @@ fn completed_get_attributes(outcome: &ClientBatchOutcome) -> &GetAttributesRespo
 }
 
 fn completed_get_attribute_list(outcome: &ClientBatchOutcome) -> &GetAttributeListResponse {
+    assert_completed_read_outcome(outcome, ClientOperation::GetAttributeList);
     let ClientBatchOutcome::GetAttributeList(response) = outcome else {
         panic!("Get Attribute List execution returns its typed response");
     };
     response
+}
+
+fn assert_completed_read_outcome(outcome: &ClientBatchOutcome, operation: ClientOperation) {
+    assert_eq!(outcome.operation(), operation);
+    assert_eq!(outcome.asynchronous_correlation_value(), None);
+
+    let response = outcome.response();
+    assert_eq!(response.result(), outcome.result());
+    assert!(response.supported_versions().is_none());
+    assert!(response.discover_versions().is_none());
+    assert!(response.create().is_none());
+    assert!(response.create_key_pair().is_none());
+    assert!(response.create_split_key().is_none());
+    assert_eq!(
+        response.add_attribute().is_some(),
+        operation == ClientOperation::AddAttribute
+    );
+    assert_eq!(
+        response.adjust_attribute().is_some(),
+        operation == ClientOperation::AdjustAttribute
+    );
+    assert_eq!(
+        response.delete_attribute().is_some(),
+        operation == ClientOperation::DeleteAttribute
+    );
+    assert_eq!(
+        response.modify_attribute().is_some(),
+        operation == ClientOperation::ModifyAttribute
+    );
+    assert_eq!(
+        response.set_attribute().is_some(),
+        operation == ClientOperation::SetAttribute
+    );
+    assert_eq!(
+        response.get_attributes().is_some(),
+        operation == ClientOperation::GetAttributes
+    );
+    assert_eq!(
+        response.get_attribute_list().is_some(),
+        operation == ClientOperation::GetAttributeList
+    );
+
+    let outcome_debug = format!("{outcome:?}");
+    let outcome_display = outcome.to_string();
+    let response_debug = format!("{response:?}");
+    for rendered in [&outcome_debug, &outcome_display, &response_debug] {
+        assert!(rendered.contains(&format!("{operation:?}")));
+    }
 }
 
 #[test]

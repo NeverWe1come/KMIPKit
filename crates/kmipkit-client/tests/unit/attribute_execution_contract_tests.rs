@@ -194,6 +194,12 @@ fn response_matches(operation: ClientOperation, outcome: &ClientBatchOutcome) ->
 #[test]
 fn all_seven_attribute_operations_preserve_pending_results_and_do_not_retry() {
     for case in cases() {
+        let request_debug = format!("{:?}", case.request);
+        assert!(
+            !request_debug.contains("caller comment"),
+            "{:?} must redact caller-supplied attribute values",
+            case.client_operation
+        );
         let (mut client, fake, _) = client_for(ExchangeScript::Success {
             response: response_bytes(case.operation),
             request_write_chunks: Vec::new(),

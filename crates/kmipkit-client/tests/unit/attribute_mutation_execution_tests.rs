@@ -28,7 +28,8 @@ use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::encode_message_for_test;
 use crate::execute_test_support::{test_item, test_structure};
 use crate::{
-    ClientBatch, ClientBatchItem, ClientBatchResponse, ClientErrorCategory, ClientRequest,
+    ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientBatchResponse, ClientErrorCategory,
+    ClientOperation, ClientRequest,
 };
 
 // Consume the same generated source policy used by KMIPKit-0016 T040. Keeping
@@ -227,7 +228,8 @@ fn assert_server_result(response: &ClientBatchResponse, expected_reason: u32, co
     let item = response
         .get(0)
         .expect("the single request has one response");
-    let response_view = item.outcome().response();
+    let outcome = item.outcome();
+    let response_view = outcome.response();
     let result = response_view.result();
     assert_eq!(result.status().raw(), 1, "{context}: Result Status");
     assert_eq!(
@@ -242,6 +244,67 @@ fn assert_server_result(response: &ClientBatchResponse, expected_reason: u32, co
         Some(RESULT_MESSAGE_SENTINEL),
         "{context}: Result Message"
     );
+
+    let operation = match outcome {
+        ClientBatchOutcome::AddAttribute(_) => ClientOperation::AddAttribute,
+        ClientBatchOutcome::AdjustAttribute(_) => ClientOperation::AdjustAttribute,
+        ClientBatchOutcome::DeleteAttribute(_) => ClientOperation::DeleteAttribute,
+        ClientBatchOutcome::ModifyAttribute(_) => ClientOperation::ModifyAttribute,
+        ClientBatchOutcome::SetAttribute(_) => ClientOperation::SetAttribute,
+        _ => panic!("mutation response uses its operation-specific outcome: {context}"),
+    };
+    assert_eq!(outcome.operation(), operation, "{context}: operation view");
+    assert_eq!(outcome.result(), result, "{context}: result view");
+    assert_eq!(
+        outcome.asynchronous_correlation_value(),
+        None,
+        "{context}: completed failures are not pending"
+    );
+
+    assert!(response_view.discover_versions().is_none(), "{context}");
+    assert!(response_view.supported_versions().is_none(), "{context}");
+    assert!(response_view.create().is_none(), "{context}");
+    assert!(response_view.create_key_pair().is_none(), "{context}");
+    assert!(response_view.create_split_key().is_none(), "{context}");
+    assert_eq!(
+        response_view.add_attribute().is_some(),
+        operation == ClientOperation::AddAttribute,
+        "{context}: Add Attribute accessor"
+    );
+    assert_eq!(
+        response_view.adjust_attribute().is_some(),
+        operation == ClientOperation::AdjustAttribute,
+        "{context}: Adjust Attribute accessor"
+    );
+    assert_eq!(
+        response_view.delete_attribute().is_some(),
+        operation == ClientOperation::DeleteAttribute,
+        "{context}: Delete Attribute accessor"
+    );
+    assert_eq!(
+        response_view.modify_attribute().is_some(),
+        operation == ClientOperation::ModifyAttribute,
+        "{context}: Modify Attribute accessor"
+    );
+    assert_eq!(
+        response_view.set_attribute().is_some(),
+        operation == ClientOperation::SetAttribute,
+        "{context}: Set Attribute accessor"
+    );
+    assert!(response_view.get_attributes().is_none(), "{context}");
+    assert!(response_view.get_attribute_list().is_none(), "{context}");
+
+    let outcome_debug = format!("{outcome:?}");
+    let outcome_display = outcome.to_string();
+    let response_debug = format!("{response_view:?}");
+    for rendered in [&outcome_debug, &outcome_display, &response_debug] {
+        assert!(rendered.contains(&format!("{operation:?}")), "{context}");
+        assert!(!rendered.contains(VALUE_SENTINEL), "{context}");
+        assert!(
+            !rendered.contains("KMIPKIT_VENDOR_ATTRIBUTE_VALUE_SENTINEL"),
+            "{context}"
+        );
+    }
 }
 
 fn assert_one_exchange(
