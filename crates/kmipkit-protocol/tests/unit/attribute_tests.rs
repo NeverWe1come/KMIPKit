@@ -111,6 +111,60 @@ fn attribute_set_preserves_unknown_standard_and_vendor_item_tags() {
 }
 
 #[test]
+fn recognized_attributes_reject_types_outside_the_catalog_encoding() {
+    let wrong_types = [
+        (0x0042_0028, Value::integer(7)), // Cryptographic Algorithm: Enumeration
+        (0x0042_0029, Value::boolean(true)), // Cryptographic Domain Parameters: Structure
+        (0x0042_002a, Value::enumeration(7)), // Cryptographic Length: Integer
+        (0x0042_002b, Value::byte_string(vec![7])), // Cryptographic Parameters: Structure
+        (0x0042_0057, Value::text_string("Secret Key".to_owned())), // Object Type: Enumeration
+        (0x0042_0094, Value::boolean(true)), // Unique Identifier: Text String, Enumeration, or Integer
+    ];
+
+    for (raw_tag, value) in wrong_types {
+        let result = AttributeSet::try_new([item(raw_tag, value)]);
+        assert!(result.is_err(), "attribute tag {raw_tag:#08x} accepted a wrong TTLV type");
+    }
+}
+
+#[test]
+fn recognized_enumeration_attributes_preserve_unknown_values() {
+    let attributes = AttributeSet::try_new([item(
+        0x0042_0028,
+        Value::enumeration(u32::MAX),
+    )])
+    .expect("an unknown Enumeration value keeps the catalog-declared TTLV type");
+
+    assert_eq!(attributes.as_items()[0].item_type(), ItemType::Enumeration);
+    assert_eq!(
+        attributes.as_items()[0].with_value(|value| match value {
+            ValueView::Enumeration(raw) => Some(*raw),
+            _ => None,
+        }),
+        Some(u32::MAX)
+    );
+}
+
+#[test]
+fn unique_identifier_accepts_each_catalog_declared_ttlv_type() {
+    let attributes = AttributeSet::try_new([
+        item(0x0042_0094, Value::text_string("id".to_owned())),
+        item(0x0042_0094, Value::enumeration(u32::MAX)),
+        item(0x0042_0094, Value::integer(-7)),
+    ])
+    .expect("the catalog declares all three permitted Unique Identifier wire forms");
+
+    assert_eq!(
+        attributes
+            .as_items()
+            .iter()
+            .map(Item::item_type)
+            .collect::<Vec<_>>(),
+        [ItemType::TextString, ItemType::Enumeration, ItemType::Integer]
+    );
+}
+
+#[test]
 fn attribute_set_preserves_the_distinct_vendor_attribute_structure() {
     let attributes = AttributeSet::try_new([valid_vendor_attribute()])
         .expect("Table 150 vendor structure has its required members");
