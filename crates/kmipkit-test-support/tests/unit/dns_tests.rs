@@ -242,21 +242,10 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
         .set_read_timeout(Some(Duration::from_secs(1)))
         .expect("DNS TCP read timeout should be configured");
     let request = fixture_query(1);
-    let length = u16::try_from(request.len()).expect("DNS request length fits its frame");
-    client
-        .write_all(&length.to_be_bytes())
-        .and_then(|()| client.write_all(&request))
-        .expect("framed DNS question should be sent");
+    write_tcp_dns_query(&mut client, &request).expect("framed DNS question should be sent");
 
-    let mut response_length = [0_u8; 2];
-    client
-        .read_exact(&mut response_length)
-        .expect("fixture should return a framed DNS response");
-    let response_length = usize::from(u16::from_be_bytes(response_length));
-    let mut response = vec![0_u8; response_length];
-    client
-        .read_exact(&mut response)
-        .expect("complete DNS response should be returned");
+    let response =
+        read_tcp_dns_response(&mut client).expect("fixture should return a framed DNS response");
     assert_eq!(read_u16(&response, 6), Some(1));
 
     client
@@ -284,19 +273,8 @@ fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
         .set_read_timeout(Some(Duration::from_secs(1)))
         .expect("DNS TCP read timeout should be configured");
     let request = fixture_query(1);
-    let length = u16::try_from(request.len()).expect("DNS request length fits its frame");
-    client
-        .write_all(&length.to_be_bytes())
-        .and_then(|()| client.write_all(&request))
-        .expect("framed DNS question should be sent");
-
-    let mut response_length = [0_u8; 2];
-    let response = client.read_exact(&mut response_length).and_then(|()| {
-        let length = usize::from(u16::from_be_bytes(response_length));
-        let mut response = vec![0; length];
-        client.read_exact(&mut response)?;
-        Ok(response)
-    });
+    write_tcp_dns_query(&mut client, &request).expect("framed DNS question should be sent");
+    let response = read_tcp_dns_response(&mut client);
     let _shutdown_result = client.shutdown(Shutdown::Both);
     state.stop.store(true, Ordering::Release);
     let server_result = server.join();
@@ -322,19 +300,8 @@ fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
         .set_read_timeout(Some(Duration::from_secs(1)))
         .expect("DNS TCP read timeout should be configured");
     let request = fixture_query(1);
-    let length = u16::try_from(request.len()).expect("DNS request length fits its frame");
-    client
-        .write_all(&length.to_be_bytes())
-        .and_then(|()| client.write_all(&request))
-        .expect("framed DNS question should be sent");
-
-    let mut response_length = [0_u8; 2];
-    let response = client.read_exact(&mut response_length).and_then(|()| {
-        let length = usize::from(u16::from_be_bytes(response_length));
-        let mut response = vec![0; length];
-        client.read_exact(&mut response)?;
-        Ok(response)
-    });
+    write_tcp_dns_query(&mut client, &request).expect("framed DNS question should be sent");
+    let response = read_tcp_dns_response(&mut client);
     let _shutdown_result = client.shutdown(Shutdown::Both);
     state.stop.store(true, Ordering::Release);
     let server_result = server.join();
@@ -449,6 +416,22 @@ fn fixture_query(record_type: u16) -> Vec<u8> {
         record_type,
         1,
     )
+}
+
+fn write_tcp_dns_query(client: &mut TcpStream, request: &[u8]) -> io::Result<()> {
+    let length = u16::try_from(request.len())
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidInput, error))?;
+    client.write_all(&length.to_be_bytes())?;
+    client.write_all(request)
+}
+
+fn read_tcp_dns_response(client: &mut TcpStream) -> io::Result<Vec<u8>> {
+    let mut response_length = [0_u8; 2];
+    client.read_exact(&mut response_length)?;
+    let length = usize::from(u16::from_be_bytes(response_length));
+    let mut response = vec![0_u8; length];
+    client.read_exact(&mut response)?;
+    Ok(response)
 }
 
 fn query(question_name: &[u8], record_type: u16, record_class: u16) -> Vec<u8> {
