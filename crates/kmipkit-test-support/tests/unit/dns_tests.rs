@@ -10,7 +10,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::mpsc::{self, Receiver};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 static NETWORK_FIXTURE_LOCK: Mutex<()> = Mutex::new(());
 
@@ -262,6 +262,9 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
 
 #[test]
 fn accepted_tcp_stream_is_blocking_before_a_delayed_read() {
+    const WRITER_DELAY: Duration = Duration::from_secs(1);
+    const MINIMUM_BLOCKING_WAIT: Duration = Duration::from_millis(250);
+
     let listener =
         TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback TCP listener should bind");
     let mut writer = TcpStream::connect(listener.local_addr().expect("listener address exists"))
@@ -271,7 +274,7 @@ fn accepted_tcp_stream_is_blocking_before_a_delayed_read() {
         .expect("loopback TCP connection should be accepted");
 
     accepted
-        .set_read_timeout(Some(Duration::from_secs(1)))
+        .set_read_timeout(Some(Duration::from_secs(3)))
         .expect("accepted TCP stream should have a finite read timeout");
     accepted
         .set_nonblocking(true)
@@ -280,18 +283,24 @@ fn accepted_tcp_stream_is_blocking_before_a_delayed_read() {
         .expect("accepted stream should be normalized before its handler reads");
 
     let writer_thread = thread::spawn(move || {
-        thread::sleep(Duration::from_millis(25));
+        thread::sleep(WRITER_DELAY);
         writer.write_all(&[0x5a])
     });
     let mut byte = [0_u8; 1];
+    let read_started_at = Instant::now();
     accepted
         .read_exact(&mut byte)
         .expect("blocking read should wait for the delayed writer");
+    let read_elapsed = read_started_at.elapsed();
     writer_thread
         .join()
         .expect("writer thread should not panic")
         .expect("delayed byte should be written");
 
+    assert!(
+        read_elapsed >= MINIMUM_BLOCKING_WAIT,
+        "read_exact returned after {read_elapsed:?}, before it waited for the delayed writer"
+    );
     assert_eq!(byte, [0x5a]);
 }
 
