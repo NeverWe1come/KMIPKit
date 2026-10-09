@@ -7,15 +7,14 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, Tag, Value, ValueView};
+use kmipkit_ttlv::Structure;
 
 use crate::{
-    KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, UniqueIdentifier,
+    KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier,
 };
 
 const DESTROY_OPERATION: u32 = 0x0000_0014;
-const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const SUCCESS: u32 = 0;
 
 /// A typed KMIP v2.1 Destroy request payload from §6.1.15, Table 208.
@@ -48,18 +47,7 @@ impl DestroyRequest {
     /// Returns a sanitized protocol error if the fixed tag or resulting TTLV
     /// item cannot be represented.
     pub fn to_ttlv_payload(&self) -> Result<Structure, ProtocolError> {
-        let mut payload = Structure::new();
-        if let Some(identifier) = &self.unique_identifier {
-            let value = match identifier {
-                UniqueIdentifier::TextString(value) => Value::text_string(value.clone()),
-                UniqueIdentifier::Enumeration(value) => Value::enumeration(*value),
-                UniqueIdentifier::Integer(value) => Value::integer(*value),
-            };
-            payload
-                .try_push(item(UNIQUE_IDENTIFIER, value)?)
-                .map_err(model_error)?;
-        }
-        Ok(payload)
+        super::lifecycle::request_payload(self.unique_identifier.as_ref())
     }
 }
 
@@ -112,7 +100,10 @@ impl DestroyResponse {
         }
 
         let unique_identifier = item
-            .with_response_payload(|payload| parse_success_payload(&payload))
+            .with_response_payload(|payload| {
+                super::lifecycle::successful_response_identifier(&payload)
+                    .ok_or(DestroyError::MalformedSuccessPayload)
+            })
             .ok_or(DestroyError::MalformedSuccessPayload)??;
         Ok(Self {
             result,
@@ -172,50 +163,4 @@ impl Error for DestroyError {
             _ => None,
         }
     }
-}
-
-fn parse_success_payload(
-    payload: &kmipkit_ttlv::StructureView<'_>,
-) -> Result<UniqueIdentifier, DestroyError> {
-    let mut unique_identifier = None;
-    for field in payload.children() {
-        if field.tag().raw() == UNIQUE_IDENTIFIER {
-            if unique_identifier.is_some() {
-                return Err(DestroyError::MalformedSuccessPayload);
-            }
-            unique_identifier = parse_unique_identifier(field);
-            if unique_identifier.is_none() {
-                return Err(DestroyError::MalformedSuccessPayload);
-            }
-        }
-    }
-
-    unique_identifier.ok_or(DestroyError::MalformedSuccessPayload)
-}
-
-fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
-    field.with_value(|value| match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-        _ => None,
-    })
-}
-
-fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {
-    Item::new(tag(raw_tag)?, value).map_err(model_error)
-}
-
-fn tag(raw_tag: u32) -> Result<Tag, ProtocolError> {
-    RawTag::new(raw_tag)
-        .and_then(|raw| raw.try_checked())
-        .map_err(model_error)
-}
-
-fn model_error(error: ModelError) -> ProtocolError {
-    ProtocolError::new(
-        ProtocolErrorKind::InvalidValue,
-        ProtocolCauseCategory::InvalidValue,
-        error,
-    )
 }

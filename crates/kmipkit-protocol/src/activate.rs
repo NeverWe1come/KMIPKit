@@ -3,15 +3,14 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, Tag, Value, ValueView};
+use kmipkit_ttlv::Structure;
 
 use crate::{
-    KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, UniqueIdentifier,
+    KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier,
 };
 
 const ACTIVATE_OPERATION: u32 = 0x0000_0012;
-const UNIQUE_IDENTIFIER: u32 = 0x0042_0094; // §11.56 Table 487 assigns tag 0x420094 to Unique Identifier.
 const SUCCESS: u32 = 0;
 
 /// A typed KMIP 2.1 Activate request payload from §6.1.1, Table 164.
@@ -43,18 +42,7 @@ impl ActivateRequest {
     /// Returns a sanitized protocol error if the fixed tag or resulting TTLV
     /// item cannot be represented.
     pub fn to_ttlv_payload(&self) -> Result<Structure, ProtocolError> {
-        let mut payload = Structure::new();
-        if let Some(identifier) = &self.unique_identifier {
-            let value = match identifier {
-                UniqueIdentifier::TextString(value) => Value::text_string(value.clone()),
-                UniqueIdentifier::Enumeration(value) => Value::enumeration(*value),
-                UniqueIdentifier::Integer(value) => Value::integer(*value),
-            };
-            payload
-                .try_push(item(UNIQUE_IDENTIFIER, value)?)
-                .map_err(model_error)?;
-        }
-        Ok(payload)
+        super::lifecycle::request_payload(self.unique_identifier.as_ref())
     }
 }
 
@@ -106,7 +94,10 @@ impl ActivateResponse {
         }
 
         let unique_identifier = item
-            .with_response_payload(|payload| parse_success_payload(&payload))
+            .with_response_payload(|payload| {
+                super::lifecycle::successful_response_identifier(&payload)
+                    .ok_or(ActivateError::MalformedSuccessPayload)
+            })
             .ok_or(ActivateError::MalformedSuccessPayload)??;
         Ok(Self {
             result,
@@ -163,50 +154,4 @@ impl Error for ActivateError {
             _ => None,
         }
     }
-}
-
-fn parse_success_payload(
-    payload: &kmipkit_ttlv::StructureView<'_>,
-) -> Result<UniqueIdentifier, ActivateError> {
-    let mut unique_identifier = None;
-    for field in payload.children() {
-        if field.tag().raw() == UNIQUE_IDENTIFIER {
-            if unique_identifier.is_some() {
-                return Err(ActivateError::MalformedSuccessPayload);
-            }
-            unique_identifier = parse_unique_identifier(field);
-            if unique_identifier.is_none() {
-                return Err(ActivateError::MalformedSuccessPayload);
-            }
-        }
-    }
-
-    unique_identifier.ok_or(ActivateError::MalformedSuccessPayload)
-}
-
-fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
-    field.with_value(|value| match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-        _ => None,
-    })
-}
-
-fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {
-    Item::new(tag(raw_tag)?, value).map_err(model_error)
-}
-
-fn tag(raw_tag: u32) -> Result<Tag, ProtocolError> {
-    RawTag::new(raw_tag)
-        .and_then(|raw| raw.try_checked())
-        .map_err(model_error)
-}
-
-fn model_error(error: ModelError) -> ProtocolError {
-    ProtocolError::new(
-        ProtocolErrorKind::InvalidValue,
-        ProtocolCauseCategory::InvalidValue,
-        error,
-    )
 }

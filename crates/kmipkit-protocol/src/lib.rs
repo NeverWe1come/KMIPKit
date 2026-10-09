@@ -25,6 +25,7 @@ mod error;
 pub mod extension;
 mod get_attribute_list;
 mod get_attributes;
+mod lifecycle;
 mod message;
 mod modify_attribute;
 mod poll;
