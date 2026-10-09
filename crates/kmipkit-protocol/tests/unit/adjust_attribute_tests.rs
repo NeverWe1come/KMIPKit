@@ -291,6 +291,8 @@ fn table_428_adjustment_parameter_types_and_values_are_transmitted_unchanged() {
     // Integer, Interval, Date Time, and Date Time Extended; Negate applies to
     // Integer, Long Integer, Big Integer, and Boolean. These assert parameter
     // preservation only, not server arithmetic or resulting attribute values.
+    // Raw values 1, 2, and 3 are Increment, Decrement, and Negate (§11.1
+    // Table 429).
     // Standard type-matched tags are Cryptographic Length (Integer, §4.15
     // Table 57; §11.56 Table 487), Protection Period (Interval, §4.43 Table
     // 115), Activation Date (Date Time, §4.1 Table 29), and Quantum Safe
@@ -333,9 +335,48 @@ fn table_428_adjustment_parameter_types_and_values_are_transmitted_unchanged() {
             AdjustmentParameterVector::DateTime(1_700_000_000),
         ),
         (
+            1,
+            AttributeReference::name(
+                generic_vendor,
+                "Opaque.GenericDateTimeExtendedIncrementWireVector",
+            ),
+            AdjustmentParameterVector::DateTimeExtended(1_700_000_000_234_567),
+        ),
+        (
             2,
             AttributeReference::name(generic_vendor, "Opaque.GenericDateTimeExtendedWireVector"),
             AdjustmentParameterVector::DateTimeExtended(1_700_000_000_123_456),
+        ),
+        (
+            2,
+            AttributeReference::tag(CRYPTOGRAPHIC_LENGTH),
+            AdjustmentParameterVector::Integer(19),
+        ),
+        (
+            2,
+            AttributeReference::name(
+                generic_vendor,
+                "Opaque.GenericLongIntegerDecrementWireVector",
+            ),
+            AdjustmentParameterVector::LongInteger(9_223_372_036),
+        ),
+        (
+            2,
+            AttributeReference::name(
+                generic_vendor,
+                "Opaque.GenericBigIntegerDecrementWireVector",
+            ),
+            AdjustmentParameterVector::BigInteger(&[0x10, 0x20, 0x30]),
+        ),
+        (
+            2,
+            AttributeReference::tag(PROTECTION_PERIOD),
+            AdjustmentParameterVector::Interval(43),
+        ),
+        (
+            2,
+            AttributeReference::tag(ACTIVATION_DATE),
+            AdjustmentParameterVector::DateTime(1_700_000_001),
         ),
         (
             3,
