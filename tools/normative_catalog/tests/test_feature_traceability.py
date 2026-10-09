@@ -52,6 +52,13 @@ LIFECYCLE_OPERATION_TABLES = {
     "KMIPKIT-ELEM-OP-C2S-DESTROY": ("6.1.15", "208–210"),
     "KMIPKIT-ELEM-OP-C2S-RECOVER": ("6.1.42", "288–290"),
 }
+LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE = "§4.58 Tables 145–146"
+LIFECYCLE_UNIQUE_IDENTIFIER_TEST_MODULES = {
+    "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs",
+    "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
+}
 LIFECYCLE_CLIENT_REQUIREMENT_IDS = {
     "KMIPKIT-REQ-SPEC-6.1.4-001",
     "KMIPKIT-REQ-SPEC-6.1.42-001-001",
@@ -228,6 +235,17 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 self.assertEqual(
                     tuple(map(int, payload_range.groups())), payload_numbers
                 )
+
+        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE, specification)
+        for element_id in LIFECYCLE_OPERATION_TABLES:
+            with self.subTest(identifier_source_row=element_id):
+                self.assertIn(
+                    LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE, rows_by_id[element_id][1]
+                )
+        for test_module in LIFECYCLE_UNIQUE_IDENTIFIER_TEST_MODULES:
+            with self.subTest(identifier_source_test=test_module):
+                _, test_source = _read_confined_test_source(test_module) or (None, "")
+                self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE, test_source)
 
         for requirement_id in LIFECYCLE_CLIENT_REQUIREMENT_IDS:
             with self.subTest(requirement_id=requirement_id):
