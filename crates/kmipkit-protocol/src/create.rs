@@ -36,8 +36,11 @@ impl ObjectType {
 }
 
 /// A Table 187 Unique Identifier value in its original TTLV wire form.
+///
+/// Its [`Debug`] representation redacts the wire value because identifiers can
+/// appear in lifecycle operation requests and responses.
 #[non_exhaustive]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub enum UniqueIdentifier {
     /// A KMIP Text String identifier.
     TextString(String),
@@ -45,6 +48,12 @@ pub enum UniqueIdentifier {
     Enumeration(u32),
     /// A signed KMIP Integer identifier.
     Integer(i32),
+}
+
+impl fmt::Debug for UniqueIdentifier {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("UniqueIdentifier([REDACTED])")
+    }
 }
 
 /// A typed KMIP 2.1 Create request payload.
