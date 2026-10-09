@@ -382,11 +382,8 @@ fn serve_tcp_with_spawner_and_cloner<F>(
     while !state.stop.load(Ordering::Acquire) {
         match listener.accept() {
             Ok((stream, _)) => {
-                // Keep the ownership gate explicit before dispatching any accepted socket.
-                #[allow(clippy::manual_let_else)]
-                let stream = match prepare_accepted_tcp_stream(stream) {
-                    Ok(stream) => stream,
-                    Err(_) => continue,
+                let Ok(stream) = prepare_accepted_tcp_stream(stream) else {
+                    continue;
                 };
                 let connection_id = state.next_tcp_connection.fetch_add(1, Ordering::AcqRel);
                 let Ok(worker_stream) = clone_stream(&stream) else {
