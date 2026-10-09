@@ -366,13 +366,7 @@ fn serve_tcp_with_spawner(
     state: &Arc<FixtureState>,
     spawn_worker: &TcpWorkerSpawner,
 ) {
-    serve_tcp_with_spawner_and_cloner(
-        listener,
-        records,
-        state,
-        spawn_worker,
-        &TcpStream::try_clone,
-    );
+    serve_tcp_with_spawner_and_cloner(listener, records, state, spawn_worker, TcpStream::try_clone);
 }
 
 fn serve_tcp_with_spawner_and_cloner<F>(
@@ -380,21 +374,30 @@ fn serve_tcp_with_spawner_and_cloner<F>(
     records: &BTreeMap<String, Vec<IpAddr>>,
     state: &Arc<FixtureState>,
     spawn_worker: &TcpWorkerSpawner,
-    clone_stream: &F,
+    clone_stream: F,
 ) where
-    F: Fn(&TcpStream) -> io::Result<TcpStream>,
+    F: Fn(&TcpStream) -> io::Result<TcpStream> + Send + Sync + 'static,
 {
+    let clone_stream = Arc::new(clone_stream);
     while !state.stop.load(Ordering::Acquire) {
         match listener.accept() {
             Ok((stream, _)) => {
                 let connection_id = state.next_tcp_connection.fetch_add(1, Ordering::AcqRel);
                 let Ok(worker_stream) = clone_stream(&stream) else {
-                    serve_tcp_connection(stream, records, state, connection_id, spawn_worker);
+                    serve_tcp_connection(
+                        stream,
+                        records,
+                        state,
+                        connection_id,
+                        spawn_worker,
+                        clone_stream.as_ref(),
+                    );
                     continue;
                 };
                 let connection_state = Arc::clone(state);
                 let connection_records = records.clone();
                 let connection_spawner = Arc::clone(spawn_worker);
+                let connection_cloner = Arc::clone(&clone_stream);
                 let job: TcpConnectionJob = Box::new(move || {
                     serve_tcp_connection(
                         worker_stream,
@@ -402,12 +405,20 @@ fn serve_tcp_with_spawner_and_cloner<F>(
                         &connection_state,
                         connection_id,
                         &connection_spawner,
+                        connection_cloner.as_ref(),
                     );
                 });
                 if spawn_worker(TcpWorkerKind::Connection, job).is_err() {
                     // Keep the accepted socket alive if resource pressure blocks worker creation.
                     // This rare fallback can delay new accepts until the connection closes.
-                    serve_tcp_connection(stream, records, state, connection_id, spawn_worker);
+                    serve_tcp_connection(
+                        stream,
+                        records,
+                        state,
+                        connection_id,
+                        spawn_worker,
+                        clone_stream.as_ref(),
+                    );
                 }
             }
             Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
@@ -418,17 +429,19 @@ fn serve_tcp_with_spawner_and_cloner<F>(
     }
 }
 
-fn serve_tcp_connection(
+fn serve_tcp_connection<F>(
     mut reader: TcpStream,
     records: &BTreeMap<String, Vec<IpAddr>>,
     state: &Arc<FixtureState>,
     connection_id: usize,
     spawn_worker: &TcpWorkerSpawner,
-) {
-    let Ok(writer) = reader.try_clone() else {
-        return;
-    };
-    let writer = Arc::new(Mutex::new(writer));
+    clone_stream: &F,
+) where
+    F: Fn(&TcpStream) -> io::Result<TcpStream>,
+{
+    let writer = clone_stream(&reader)
+        .ok()
+        .map(|writer| Arc::new(Mutex::new(writer)));
     while !state.stop.load(Ordering::Acquire) {
         let mut length = [0_u8; 2];
         if reader.read_exact(&mut length).is_err() {
@@ -453,9 +466,13 @@ fn serve_tcp_connection(
             continue;
         };
         begin_tcp_request(state, connection_id);
-        let response_state = Arc::clone(state);
-        let response_writer = Arc::clone(&writer);
         let response = Arc::new(response);
+        let Some(writer) = writer.as_ref() else {
+            send_tcp_response_inline(state, &mut reader, connection_id, &response);
+            continue;
+        };
+        let response_state = Arc::clone(state);
+        let response_writer = Arc::clone(writer);
         let worker_response = Arc::clone(&response);
         let response_spawner = Arc::clone(spawn_worker);
         let response_job: TcpConnectionJob = Box::new(move || {
@@ -467,7 +484,7 @@ fn serve_tcp_connection(
             );
         });
         if response_spawner(TcpWorkerKind::Response, response_job).is_err() {
-            send_tcp_response(state, &writer, connection_id, &response);
+            send_tcp_response(state, writer, connection_id, &response);
         }
     }
 }
@@ -484,6 +501,21 @@ fn send_tcp_response(
     {
         let _ = stream.write_all(&response_length.to_be_bytes());
         let _ = stream.write_all(response);
+    }
+    finish_tcp_request(state, connection_id);
+}
+
+fn send_tcp_response_inline(
+    state: &FixtureState,
+    writer: &mut TcpStream,
+    connection_id: usize,
+    response: &[u8],
+) {
+    if wait_for_response_release(state)
+        && let Ok(response_length) = u16::try_from(response.len())
+    {
+        let _ = writer.write_all(&response_length.to_be_bytes());
+        let _ = writer.write_all(response);
     }
     finish_tcp_request(state, connection_id);
 }

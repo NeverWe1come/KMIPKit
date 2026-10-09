@@ -495,7 +495,7 @@ fn start_tcp_server_for_spawn_test<F>(
     thread::JoinHandle<()>,
 )
 where
-    F: Fn(&TcpStream) -> io::Result<TcpStream> + Send + 'static,
+    F: Fn(&TcpStream) -> io::Result<TcpStream> + Send + Sync + 'static,
 {
     let listener =
         TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback test listener should bind");
@@ -521,7 +521,7 @@ where
             &records,
             &server_state,
             &spawner,
-            &clone_stream,
+            clone_stream,
         );
     });
     (local_addr, state, server)
