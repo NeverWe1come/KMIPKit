@@ -7,7 +7,7 @@
 
 ## Specification PR preparation
 
-- [x] T001 Update the normative catalog for KMIPKIT-0019: assign Encrypt/Decrypt, six shared operation-structure elements, the Cryptographic Parameters attribute, all 24 applicable requirements, and linked test-case records; pin the three exact official OASIS fixtures with source URLs and hashes; add KMIPKIT-DISC-045, exclude source clause KMIPKIT-CLAUSE-SPEC-4.16-004 with rationale and no requirement link, and correct the §4.16-001-002 summary without editing upstream OASIS files.
+- [x] T001 Update the normative catalog for KMIPKIT-0019: assign Encrypt/Decrypt, six shared operation-structure elements, the Cryptographic Parameters attribute, all 24 applicable requirements, and linked test-case records; pin the three exact official OASIS fixtures with source URLs and hashes; add KMIPKIT-DISC-045 and the §2.100 test-evidence source defect KMIPKIT-DISC-046; exclude source clause KMIPKIT-CLAUSE-SPEC-4.16-004 with rationale and no requirement link, and correct the §4.16-001-002 summary without editing upstream OASIS files.
 - [x] T002 Regenerate specification/catalog/coverage-report.md using the pinned report generator; run catalog validation, report --check, and immutable-source verification against the release base.
 - [x] T003 Reconcile specs/019-cryptographic-operations/traceability.md against every assigned catalog ID, feature requirement, planned code path, test target, inherited owner, and the in-scope operation items extracted from each official case fixture.
 - [x] T004 Run speckit-analyze after tasks exist, fix all critical/high inconsistencies, and leave reviewer-owned checklist boxes unchecked. Record the analyzed revision and unresolved discrepancies in the PR description.

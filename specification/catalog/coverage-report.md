@@ -24,7 +24,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Normative requirements | 566 |
 | Profiles | 35 |
 | Test cases | 203 |
-| Open discrepancies | 42 |
+| Open discrepancies | 43 |
 | Project policies | 4 |
 
 ### Elements by kind
@@ -1332,7 +1332,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-4.14-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-REQ-SPEC-4.14-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-REQ-SPEC-4.16-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.16 |
-| KMIPKIT-REQ-SPEC-4.16-001-002 | The source states a MAY permission; it does not require local type gating. Preserve caller values and do not infer unavailable server object types. | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-REQ-SPEC-4.16-001-002 | The source states a MAY permission; it does not require local type gating. Preserve caller values and do not infer unavailable server object types. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. | KMIPKIT-SRC-spec §4.16 |
 | KMIPKIT-REQ-SPEC-4.16-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.16 |
 | KMIPKIT-REQ-SPEC-4.16-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.16 |
 | KMIPKIT-REQ-SPEC-4.17-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.17 |
@@ -3230,6 +3230,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-DISC-041 | open | blocked for affected records | 1 requirements, 1 elements | The lowercase “must” in section 9.4 has unresolved RFC 2119 classification under the uppercase key-word definition in section 1.2. | KMIPKIT-SRC-spec §1.2, KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-DISC-042 | open | blocked for affected records | 1 requirements, 6 elements | The section 9.11 requirement to provide at least one Device Credential field does not specify its field set. | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-DISC-045 | open | blocked for affected records | 5 elements | Single-request Encrypt/Decrypt Data optionality when both Init and Final Indicator are true | KMIPKIT-SRC-spec §6.1, KMIPKIT-SRC-spec §6.1.11, KMIPKIT-SRC-spec §6.1.17 |
+| KMIPKIT-DISC-046 | open | blocked for affected records | 1 elements | Streaming test case descriptions and linked XML disagree on Decrypt items | KMIPKIT-SRC-testcases §2.100, KMIPKIT-SRC-testcases §2.101 |
 
 ## Project policies
 

@@ -49,13 +49,13 @@ KMIPKIT-REQ-SPEC-6.1-001-003 is assigned to KMIPKIT-0019 because the feature exp
 
 ## OASIS Test Case records
 
-The three fixtures contain 13, 13, and 11 request-response exchanges. The adapter selects 10 Encrypt pairs from §2.99, 10 Encrypt pairs from §2.100, and 4 Encrypt plus 4 Decrypt pairs from §2.101: 28 in-scope pairs total. The remaining Create/Register/Revoke/Destroy items are outside KMIPKIT-0019. `$NOW`, `$UNIQUE_IDENTIFIER_0`, and `$CORRELATION_VALUE` are the only symbolic values in these fixtures; tests substitute deterministic values for them and fail on unrecognized symbols. Extracted item evidence is not a complete official-case pass.
+The three fixtures contain 13, 13, and 11 request-response exchanges. The adapter selects 10 Encrypt pairs from §2.99, 10 Encrypt pairs from §2.100, and 4 Encrypt plus 4 Decrypt pairs from §2.101: 28 in-scope pairs total. Catalog operation-to-case associations follow the HTML descriptions: §2.100 names both Encrypt and Decrypt, while §2.101 names Encrypt only. The linked §2.100 XML has no Decrypt item, and the §2.101 XML does contain four Decrypt pairs. KMIPKIT-DISC-046 records this mismatch between case descriptions and executable fixture items. Tests use only messages actually present in each XML file. The remaining Create/Register/Revoke/Destroy items are outside KMIPKIT-0019. `$NOW`, `$UNIQUE_IDENTIFIER_0`, and `$CORRELATION_VALUE` are the only symbolic values in these fixtures; tests substitute deterministic values for them and fail on unrecognized symbols. Extracted item evidence is not a complete official-case pass.
 
 | Catalog test ID | Official case | Mapping | Evidence status |
 | --- | --- | --- | --- |
 | KMIPKIT-TEST-CN01-2-99 | TC-STREAM-ENC-1-21, §2.99 | 10 Encrypt pairs; workflow also contains Create, Revoke, and Destroy | Pinned at `specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-1-21.xml`; test the in-scope item as fixture-derived evidence, not a complete case pass |
-| KMIPKIT-TEST-CN01-2-100 | TC-STREAM-ENC-2-21, §2.100 | 10 Encrypt pairs; workflow also contains Register, Revoke, and Destroy | Pinned at `specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml`; test the in-scope item as fixture-derived evidence, not a complete case pass |
-| KMIPKIT-TEST-CN01-2-101 | TC-STREAM-ENCDEC-1-21, §2.101 | 4 Encrypt and 4 Decrypt pairs; workflow also contains Register, Revoke, and Destroy | Pinned at `specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml`; test the in-scope items as fixture-derived evidence, not a complete case pass |
+| KMIPKIT-TEST-CN01-2-100 | TC-STREAM-ENC-2-21, §2.100 | HTML describes Encrypt and Decrypt; linked XML contains 10 Encrypt pairs only; workflow also contains Register, Revoke, and Destroy | Pinned at `specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml`; test only the Encrypt items present as fixture-derived evidence, not a complete case pass |
+| KMIPKIT-TEST-CN01-2-101 | TC-STREAM-ENCDEC-1-21, §2.101 | HTML describes Encrypt; linked XML contains 4 Encrypt and 4 Decrypt pairs, plus Register, Revoke, and Destroy | Pinned at `specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml`; test the in-scope items present as fixture-derived evidence, not a complete case pass |
 
 ## Feature requirement and success-criteria coverage
 

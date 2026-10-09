@@ -84113,7 +84113,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "The source states a MAY permission; it does not require local type gating. Preserve caller values and do not infer unavailable server object types."
+      "review_note": "The source states a MAY permission; it does not require local type gating. Preserve caller values and do not infer unavailable server object types. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.16-002",
@@ -101850,6 +101850,7 @@
       "requirement_ids": [],
       "element_ids": [
         "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT",
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-STREAM-ENC-2-21.xml",
@@ -101868,7 +101869,6 @@
       "requirement_ids": [],
       "element_ids": [
         "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
-        "KMIPKIT-ELEM-OP-C2S-DECRYPT",
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-STREAM-ENCDEC-1-21.xml",
@@ -104026,6 +104026,36 @@
       "affected_profile_ids": [],
       "affected_policy_ids": [],
       "downstream_impact": "Exclude the one-request Init=true/Final=true form from the typed Encrypt/Decrypt feature and do not claim conformance for it until an authoritative interpretation resolves the conflict. Ordinary single-part and multipart forms remain implementable.",
+      "state": "open",
+      "decision_id": null,
+      "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-046",
+      "summary": "Streaming test case descriptions and linked XML disagree on Decrypt items",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-testcases",
+          "section": "2.100"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-testcases",
+          "section": "2.101"
+        }
+      ],
+      "source_authority": "test_evidence",
+      "normative_status": "source_defect",
+      "alternatives": [
+        "The §2.100 HTML description names Encrypt and Decrypt, but its linked XML contains no Decrypt item; the §2.101 HTML description names Encrypt only.",
+        "The linked §2.101 XML contains four Decrypt request/response pairs despite its HTML description."
+      ],
+      "affected_requirement_ids": [],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Catalog operation-to-case associations follow the HTML descriptions, while fixture-derived tests use only operation items present in XML. The actual Decrypt pairs in KMIPKIT-0019 come from §2.101, not §2.100; do not synthesize missing items or claim a complete case pass.",
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
