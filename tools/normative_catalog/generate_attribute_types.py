@@ -88,10 +88,7 @@ def _attribute_encodings(catalog: dict[str, Any]) -> list[tuple[int, list[str]]]
             raise ValueError("catalog attributes share a duplicate TTLV tag")
         seen_attribute_tags.add(raw_tag)
 
-        names = [part.strip() for part in re.split(r",|\s+or\s+", source_encoding) if part.strip()]
-        if not names or any(name not in _TYPE_NAMES for name in names):
-            raise ValueError("catalog attribute has an unsupported source encoding")
-        types = list(dict.fromkeys(_TYPE_NAMES[name] for name in names))
+        types = _item_types_for_encoding(source_encoding)
         attributes.append((raw_tag, types))
 
     if not attributes:
@@ -101,6 +98,13 @@ def _attribute_encodings(catalog: dict[str, Any]) -> list[tuple[int, list[str]]]
 
 def _rust_number(value: int) -> str:
     return f"0x{value >> 16:02X}_{(value >> 8) & 0xFF:02X}_{value & 0xFF:02X}"
+
+
+def _item_types_for_encoding(source_encoding: str) -> list[str]:
+    names = [part.strip() for part in re.split(r",|\s+or\s+", source_encoding) if part.strip()]
+    if not names or any(name not in _TYPE_NAMES for name in names):
+        raise ValueError("catalog attribute has an unsupported source encoding")
+    return list(dict.fromkeys(_TYPE_NAMES[name] for name in names))
 
 
 def render_rust(catalog: dict[str, Any]) -> str:

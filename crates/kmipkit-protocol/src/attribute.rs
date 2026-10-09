@@ -120,11 +120,7 @@ impl AttributeSet {
     /// with the wrong TTLV type or an invalid Vendor Attribute structure.
     /// Unknown attribute values remain unchanged.
     pub fn try_push(&mut self, item: Item) -> Result<(), AttributeSetError> {
-        if crate::attribute_types_generated::expected_types(item.tag().raw())
-            .is_some_and(|expected| !expected.contains(&item.item_type()))
-        {
-            return Err(AttributeSetError::AttributeTtlvTypeMismatch);
-        }
+        validate_catalogued_item_type(&item)?;
         if item.tag().raw() == VENDOR_ATTRIBUTE_TAG {
             item.with_value(|value| match value {
                 ValueView::Structure(structure) => validate_vendor_attribute(&structure),
@@ -157,6 +153,16 @@ impl AttributeSet {
     #[must_use]
     pub fn into_items(self) -> Vec<Item> {
         self.items
+    }
+}
+
+fn validate_catalogued_item_type(item: &Item) -> Result<(), AttributeSetError> {
+    if crate::attribute_types_generated::expected_types(item.tag().raw())
+        .is_some_and(|expected| !expected.contains(&item.item_type()))
+    {
+        Err(AttributeSetError::AttributeTtlvTypeMismatch)
+    } else {
+        Ok(())
     }
 }
 
