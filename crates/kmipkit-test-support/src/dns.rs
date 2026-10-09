@@ -366,17 +366,28 @@ fn serve_tcp_with_spawner(
         match listener.accept() {
             Ok((stream, _)) => {
                 let connection_id = state.next_tcp_connection.fetch_add(1, Ordering::AcqRel);
+                let worker_stream = match stream.try_clone() {
+                    Ok(worker_stream) => worker_stream,
+                    Err(_) => {
+                        serve_tcp_connection(stream, records, state, connection_id);
+                        continue;
+                    }
+                };
                 let connection_state = Arc::clone(state);
                 let connection_records = records.clone();
                 let job: TcpConnectionJob = Box::new(move || {
                     serve_tcp_connection(
-                        stream,
+                        worker_stream,
                         &connection_records,
                         &connection_state,
                         connection_id,
                     );
                 });
-                let _spawn_result = spawn_connection(job);
+                if spawn_connection(job).is_err() {
+                    // Keep the accepted socket alive if resource pressure blocks worker creation.
+                    // This rare fallback can delay new accepts until the connection closes.
+                    serve_tcp_connection(stream, records, state, connection_id);
+                }
             }
             Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
                 thread::sleep(READ_POLL_INTERVAL);
