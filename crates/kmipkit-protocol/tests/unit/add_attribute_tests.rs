@@ -52,7 +52,8 @@ fn request_encodes_optional_identifier_before_the_exact_new_attribute_value() {
     let payload = request
         .to_ttlv_payload()
         .expect("Table 167 request fields use allocated KMIP tags");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -123,7 +124,8 @@ fn request_preserves_nested_vendor_value_when_identifier_is_omitted() {
     let payload = request
         .to_ttlv_payload()
         .expect("Table 167 request fields use allocated KMIP tags");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields

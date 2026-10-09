@@ -98,7 +98,8 @@ fn request_preserves_current_attribute_as_one_direct_item_in_table_202_order() {
     let payload = request
         .to_ttlv_payload()
         .expect("Table 202 request fields use allocated KMIP tags");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -174,7 +175,8 @@ fn request_omits_current_attribute_and_preserves_name_reference() {
     let payload = request
         .to_ttlv_payload()
         .expect("name-form Attribute Reference is valid");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields

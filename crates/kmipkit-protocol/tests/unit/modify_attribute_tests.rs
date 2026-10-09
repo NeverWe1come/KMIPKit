@@ -232,7 +232,8 @@ fn request_preserves_exact_current_and_new_items_in_table_265_order() {
     let payload = request
         .to_ttlv_payload()
         .expect("Table 265 request fields use allocated KMIP tags");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -266,7 +267,8 @@ fn request_omits_current_attribute_without_selecting_an_instance_locally() {
     let payload = request
         .to_ttlv_payload()
         .expect("optional Unique Identifier and Current Attribute may be omitted");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -293,7 +295,8 @@ fn request_preserves_each_permitted_alternative_name_instance_selector() {
         let payload = request
             .to_ttlv_payload()
             .expect("each supplied Current Attribute uses the Table 162 shape");
-        let fields = payload.view().children();
+        let payload_view = payload.view();
+        let fields = payload_view.children();
 
         assert_eq!(
             fields

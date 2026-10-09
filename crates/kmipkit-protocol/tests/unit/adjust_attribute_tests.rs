@@ -99,7 +99,8 @@ fn request_follows_table_170_field_order_and_preserves_tag_reference_and_paramet
     let payload = request
         .to_ttlv_payload()
         .expect("the Table 170 request uses assigned tags and enum values");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -146,7 +147,8 @@ fn request_preserves_name_reference_order_and_omits_identifier_and_adjustment_va
     let payload = request
         .to_ttlv_payload()
         .expect("name-form Attribute Reference is valid");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -243,7 +245,8 @@ fn omitted_adjustment_value_stays_absent_for_standard_attribute_type_categories(
             ],
             "omission for the {target_kind} target does not add an Adjustment Value field"
         );
-        let fields = payload.view().children();
+        let payload_view = payload.view();
+        let fields = payload_view.children();
         assert_eq!(enumeration_value(&fields[0]), Some(target_tag));
         assert_eq!(enumeration_value(&fields[1]), Some(raw_adjustment_type));
     }
@@ -417,7 +420,8 @@ fn table_428_parameters_and_table_170_optional_values_are_transmitted_unchanged(
         let payload = request
             .to_ttlv_payload()
             .expect("Table 428 Adjustment Value Item Type is valid");
-        let fields = payload.view().children();
+        let payload_view = payload.view();
+        let fields = payload_view.children();
 
         assert_eq!(
             fields
@@ -495,7 +499,8 @@ fn every_assigned_and_extension_boundary_adjustment_type_is_encodable_verbatim()
         let payload = request
             .to_ttlv_payload()
             .expect("Table 429 assigned and extension values are allowed");
-        let fields = payload.view().children();
+        let payload_view = payload.view();
+        let fields = payload_view.children();
         assert_eq!(enumeration_value(&fields[1]), Some(raw_adjustment_type));
     }
 }
@@ -662,7 +667,8 @@ fn standard_reference_identity_does_not_synthesize_a_local_starting_value() {
         let payload = request
             .to_ttlv_payload()
             .expect("the typed request preserves its Attribute Reference");
-        let fields = payload.view().children();
+        let payload_view = payload.view();
+        let fields = payload_view.children();
 
         assert_eq!(
             fields

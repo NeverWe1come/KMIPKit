@@ -110,7 +110,8 @@ fn request_preserves_the_required_new_attribute_direct_item_and_table_322_order(
     let payload = request
         .to_ttlv_payload()
         .expect("Table 322 fields use allocated KMIP tags");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -173,7 +174,8 @@ fn request_omits_optional_identifier_without_changing_new_attribute() {
     let payload = request
         .to_ttlv_payload()
         .expect("the optional Unique Identifier may be omitted");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     assert_eq!(
         fields
@@ -219,7 +221,8 @@ fn existing_instance_cardinality_does_not_change_the_server_authoritative_reques
     let payload = request
         .to_ttlv_payload()
         .expect("the request shape does not depend on remote instance cardinality");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
 
     for server_scenario in server_scenarios {
         assert_eq!(
