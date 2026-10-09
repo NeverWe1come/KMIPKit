@@ -113,3 +113,5 @@ Both passed.
 ```
 
 The catalog tests use small synthetic inputs for unrelated schema checks; attribute-policy enforcement activates for the assigned KMIPKIT-0016 catalog or when policy metadata is present. On the project inventory it requires the full 62-record source set.
+
+The independent T012 review found that globally allowlisting the policy fields could permit them on non-attribute element kinds. Regression Red commit `7a43eff` demonstrated that the validator accepted all eight policy fields on an operation record. Green fix `0b4f43f` scopes the complete field set to attribute records; the regression passed, and the scoped reviewer re-review found the issue addressed with no apparent regression. The check runs before element-specific semantics so every non-attribute kind is covered.
