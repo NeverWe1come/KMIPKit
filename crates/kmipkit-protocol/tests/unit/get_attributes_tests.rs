@@ -1,7 +1,8 @@
 #![cfg(test)]
 
 //! Derived request/response vectors for OASIS KMIP v2.1 §6.1.20, Tables
-//! 223–225. Traceability: KMIPKIT-0016-FR-006/FR-010 and SC-002/SC-004.
+//! 223–225. Traceability: KMIPKIT-0016-FR-006/FR-010/FR-011 and
+//! SC-002/SC-004/SC-005.
 //! These are derived structural tests; they do not claim an official OASIS case passed.
 
 use crate::{
@@ -244,6 +245,58 @@ fn request_rejects_a_reserved_tag_form_reference_before_encoding() {
     assert!(
         request.to_ttlv_payload().is_err(),
         "a reserved §11.56 tag cannot be encoded as an Attribute Reference"
+    );
+}
+
+#[test]
+fn request_preserves_an_accepted_extension_tag_form_reference() {
+    // OASIS KMIP v2.1 §11.56 and ADR-0010 allow this accepted Extension tag.
+    const EXTENSION_TAG: u32 = 0x0054_0000;
+
+    let request = GetAttributesRequest::try_new(None, [AttributeReference::tag(EXTENSION_TAG)])
+        .expect("the extension raw tag is retained while constructing the reference");
+    let payload = request
+        .to_ttlv_payload()
+        .expect("the accepted extension tag passes the §11.56 allocation gate");
+    let view = payload.view();
+    let fields = view.children();
+
+    assert_eq!(fields.len(), 1);
+    assert_eq!(fields[0].tag().raw(), ATTRIBUTE_REFERENCE);
+    assert_eq!(
+        fields[0].with_value(|value| match value {
+            ValueView::Enumeration(raw_tag) => Some(*raw_tag),
+            _ => None,
+        }),
+        Some(EXTENSION_TAG),
+        "the accepted raw extension tag is encoded unchanged"
+    );
+}
+
+#[test]
+fn attribute_reference_preserves_unknown_raw_tag_enumeration() {
+    // §5.5, Table 161 carries the tag form as an Enumeration; future or
+    // extension values remain available without narrowing the raw value.
+    const UNKNOWN_EXTENSION_TAG: u32 = 0x0054_0000;
+
+    let item = item(
+        ATTRIBUTE_REFERENCE,
+        Value::enumeration(UNKNOWN_EXTENSION_TAG),
+    );
+    let decoded = AttributeReference::try_from_ttlv_item(&item)
+        .expect("Table 161 tag form preserves an unknown raw Enumeration");
+
+    assert_eq!(decoded.tag_value(), Some(UNKNOWN_EXTENSION_TAG));
+    let encoded = decoded
+        .to_ttlv_item()
+        .expect("an accepted extension tag remains encodable");
+    assert_eq!(
+        encoded.with_value(|value| match value {
+            ValueView::Enumeration(raw_tag) => Some(*raw_tag),
+            _ => None,
+        }),
+        Some(UNKNOWN_EXTENSION_TAG),
+        "decode and encode retain every bit of the raw tag Enumeration"
     );
 }
 
