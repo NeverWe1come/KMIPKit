@@ -366,11 +366,29 @@ fn serve_tcp_with_spawner(
     state: &Arc<FixtureState>,
     spawn_worker: &TcpWorkerSpawner,
 ) {
+    serve_tcp_with_spawner_and_cloner(
+        listener,
+        records,
+        state,
+        spawn_worker,
+        &TcpStream::try_clone,
+    );
+}
+
+fn serve_tcp_with_spawner_and_cloner<F>(
+    listener: &TcpListener,
+    records: &BTreeMap<String, Vec<IpAddr>>,
+    state: &Arc<FixtureState>,
+    spawn_worker: &TcpWorkerSpawner,
+    clone_stream: &F,
+) where
+    F: Fn(&TcpStream) -> io::Result<TcpStream>,
+{
     while !state.stop.load(Ordering::Acquire) {
         match listener.accept() {
             Ok((stream, _)) => {
                 let connection_id = state.next_tcp_connection.fetch_add(1, Ordering::AcqRel);
-                let Ok(worker_stream) = stream.try_clone() else {
+                let Ok(worker_stream) = clone_stream(&stream) else {
                     serve_tcp_connection(stream, records, state, connection_id, spawn_worker);
                     continue;
                 };
