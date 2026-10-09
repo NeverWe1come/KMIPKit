@@ -135,3 +135,7 @@ mod adjust_attribute_tests;
 #[cfg(test)]
 #[path = "../tests/unit/delete_attribute_tests.rs"]
 mod delete_attribute_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/modify_attribute_tests.rs"]
+mod modify_attribute_tests;
