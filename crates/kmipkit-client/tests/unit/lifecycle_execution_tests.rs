@@ -29,7 +29,8 @@ const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
 const VENDOR_EXTENSION: u32 = 0x0042_009C;
-const FUTURE_EXTENSION_TAG: u32 = 0x0042_0173;
+const DISCRIMINATOR_TAG: u32 = 0x0042_0173;
+const FUTURE_EXTENSION_TAG: u32 = 0x0042_0174;
 
 const UNKNOWN_STATUS: u32 = 0xA1B2_C3D4;
 const UNKNOWN_REASON: u32 = 0xC3D4_E5F6;
@@ -121,15 +122,21 @@ fn unknown_result_response(operation: u32) -> Vec<u8> {
     let extension = test_structure([
         test_item(
             VENDOR_IDENTIFICATION,
-            Value::text_string("KMIPKitLifecycleFixture".to_owned()),
+            Value::text_string("FixtureVendor".to_owned()),
         ),
         test_item(CRITICALITY_INDICATOR, Value::boolean(false)),
         test_item(
             VENDOR_EXTENSION,
-            Value::structure(test_structure([test_item(
-                FUTURE_EXTENSION_TAG,
-                Value::enumeration(UNKNOWN_EXTENSION_ENUMERATION),
-            )])),
+            Value::structure(test_structure([
+                test_item(
+                    DISCRIMINATOR_TAG,
+                    Value::byte_string(b"lifecycle-v1".to_vec()),
+                ),
+                test_item(
+                    FUTURE_EXTENSION_TAG,
+                    Value::enumeration(UNKNOWN_EXTENSION_ENUMERATION),
+                ),
+            ])),
         ),
     ]);
     let batch_item = test_structure([
@@ -139,12 +146,13 @@ fn unknown_result_response(operation: u32) -> Vec<u8> {
         test_item(RESPONSE_PAYLOAD, Value::structure(test_structure([]))),
         test_item(MESSAGE_EXTENSION, Value::structure(extension)),
     ]);
-    encode_message_for_test(
-        test_structure([
-            test_item(RESPONSE_HEADER, Value::structure(header)),
-            test_item(BATCH_ITEM, Value::structure(batch_item)),
-        ]),
-        &CodecLimits::defaults(),
-    )
-    .expect("unknown-value lifecycle response remains a valid TTLV message")
+    let tree = test_structure([
+        test_item(RESPONSE_HEADER, Value::structure(header)),
+        test_item(BATCH_ITEM, Value::structure(batch_item)),
+    ]);
+    let tree = kmipkit_protocol::ResponseMessage::try_from_ttlv(tree)
+        .expect("the constructed unknown-value response is protocol-valid")
+        .into_ttlv();
+    encode_message_for_test(tree, &CodecLimits::defaults())
+        .expect("unknown-value lifecycle response remains a valid TTLV message")
 }
