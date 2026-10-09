@@ -13,7 +13,7 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView, cod
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007c;
 const OBJECT_TYPE: u32 = 0x0042_0057;
-const ATTRIBUTES: u32 = 0x0042_0008;
+const ATTRIBUTES: u32 = 0x0042_0125; // KMIP v2.1 §11.56 tag assignment for §5.1.
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -201,6 +201,7 @@ fn create_only_oasis_fixtures_decode_with_the_expected_fields() {
         value,
         ValueView::Enumeration(value) if *value == 7
     )));
+    assert_eq!(typed_fields[1].tag().raw(), ATTRIBUTES);
     typed_fields[1].with_value(|value| match value {
         ValueView::Structure(attributes) => {
             let items = attributes.children();
