@@ -115,3 +115,17 @@ Both passed.
 The catalog tests use small synthetic inputs for unrelated schema checks; attribute-policy enforcement activates for the assigned KMIPKIT-0016 catalog or when policy metadata is present. On the project inventory it requires the full 62-record source set.
 
 The independent T012 review found that globally allowlisting the policy fields could permit them on non-attribute element kinds. Regression Red commit `7a43eff` demonstrated that the validator accepted all eight policy fields on an operation record. Green fix `0b4f43f` scopes the complete field set to attribute records; the regression passed, and the scoped reviewer re-review found the issue addressed with no apparent regression. The check runs before element-specific semantics so every non-attribute kind is covered.
+
+### Attribute policy generator Red evidence (T013)
+
+The generator tests specify deterministic Rust output and `--check` drift behavior for all 62 standard policies, preserve qualified conditional values and source references, omit unknown tags, avoid inferring a policy from an unmapped Vendor Identification/name pair, and retain the separate Vendor Attribute `y` predicate without matching `x`. Standard policy assertions extract each `AttributePolicy` by numeric assigned tag and verify its source policy table and source-backed fields in that exact record. Vendor assertions inspect the isolated `VendorAttributePolicy` record.
+
+Signed Red commits are `b1a4c7e` (initial tests), `f34bb96` (review-driven record-level assertions and renderer contract), and `5a3e211` (review-driven name-form fixture passed through `_render(catalog)`). The focused command was:
+
+```text
+python -B -m unittest -v tools.normative_catalog.tests.test_generate_attribute_policy
+Ran 9 tests in 2.306s
+FAILED (failures=9)
+```
+
+These are the expected Red failures: six renderer tests stop at the explicit missing-generator assertion, and three CLI tests report the not-yet-created generator script. The test-only name-form record has a recognized catalog kind, valid parent and source reference, and allowed fields; its fixture-shape check and `git diff --check` passed. Independent review initially found the standard-record assertions insufficient and the name-form fixture disconnected from renderer input. The first finding was corrected in `f34bb96`; the second in `5a3e211`. Final read-only re-review passed, confirmed the name-form fixture is appended to a copied catalog actually supplied to `_render(catalog)`, and reported no remaining findings. T014 implements the generator; no generated or production source was changed in T013.
