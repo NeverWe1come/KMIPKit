@@ -24,7 +24,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Normative requirements | 567 |
 | Profiles | 35 |
 | Test cases | 203 |
-| Open discrepancies | 43 |
+| Open discrepancies | 45 |
 | Project policies | 4 |
 
 ### Elements by kind
@@ -58,14 +58,14 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Strength | permission\_or\_optional | 180 |
 | Strength | prohibited | 47 |
 | Strength | recommended | 21 |
-| Scope | client\_1\_0 | 369 |
+| Scope | client\_1\_0 | 365 |
 | Scope | out\_of\_scope | 1 |
 | Scope | profile\_conditional | 194 |
-| Scope | server\_only | 3 |
+| Scope | server\_only | 7 |
 | Direction | both | 14 |
-| Direction | client\_to\_server | 378 |
+| Direction | client\_to\_server | 379 |
 | Direction | server\_to\_client | 16 |
-| Direction | unclear | 159 |
+| Direction | unclear | 158 |
 
 ## Tag allocation and ranges
 
@@ -92,10 +92,10 @@ This report records inventory coverage and evidence state. It does not claim pro
 | --- | --- |
 | informative\_context | 118 |
 | later\_1\_1 | 38 |
-| non\_applicable | 345 |
+| non\_applicable | 346 |
 | profile\_conditional | 184 |
 | requirement | 263 |
-| server\_only | 436 |
+| server\_only | 435 |
 | source\_discrepancy | 27 |
 
 ## Source clause review by section
@@ -289,7 +289,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-SRC-spec | 4.13 | 2 | server\_only: 2 |
 | KMIPKIT-SRC-spec | 4.14 | 5 | informative\_context: 4, requirement: 1 |
 | KMIPKIT-SRC-spec | 4.15 | 2 | server\_only: 2 |
-| KMIPKIT-SRC-spec | 4.16 | 5 | informative\_context: 1, requirement: 4 |
+| KMIPKIT-SRC-spec | 4.16 | 5 | informative\_context: 1, non\_applicable: 1, requirement: 3 |
 | KMIPKIT-SRC-spec | 4.17 | 2 | requirement: 1, server\_only: 1 |
 | KMIPKIT-SRC-spec | 4.18 | 2 | informative\_context: 1, requirement: 1 |
 | KMIPKIT-SRC-spec | 4.19 | 1 | informative\_context: 1 |
@@ -344,7 +344,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-SRC-spec | 5.5 | 2 | requirement: 2 |
 | KMIPKIT-SRC-spec | 5.6 | 1 | requirement: 1 |
 | KMIPKIT-SRC-spec | 5.7 | 1 | requirement: 1 |
-| KMIPKIT-SRC-spec | 6.1 | 10 | informative\_context: 4, requirement: 4, server\_only: 2 |
+| KMIPKIT-SRC-spec | 6.1 | 10 | informative\_context: 4, requirement: 5, server\_only: 1 |
 | KMIPKIT-SRC-spec | 6.1.1 | 3 | non\_applicable: 2, server\_only: 1 |
 | KMIPKIT-SRC-spec | 6.1.1.1 | 2 | non\_applicable: 1, server\_only: 1 |
 | KMIPKIT-SRC-spec | 6.1.2 | 3 | non\_applicable: 2, requirement: 1 |
@@ -803,7 +803,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-4.16-001-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
 | KMIPKIT-REQ-SPEC-4.16-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
 | KMIPKIT-REQ-SPEC-4.16-003 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
-| KMIPKIT-REQ-SPEC-4.16-004 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §4.16 |
 | KMIPKIT-REQ-SPEC-4.17-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §4.17 |
 | KMIPKIT-REQ-SPEC-4.17-001-002 | prohibited | client\_1\_0 | KMIPKIT-SRC-spec §4.17 |
 | KMIPKIT-REQ-SPEC-4.18-001-001 | prohibited | client\_1\_0 | KMIPKIT-SRC-spec §4.18 |
@@ -872,14 +871,15 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-001-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-001-003 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1 |
-| KMIPKIT-REQ-SPEC-6.1-003-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1 |
+| KMIPKIT-REQ-SPEC-6.1-002-001 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1 |
+| KMIPKIT-REQ-SPEC-6.1-003-001 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-003-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-004 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-005 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1.10-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.10 |
 | KMIPKIT-REQ-SPEC-6.1.11-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-001-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.11 |
-| KMIPKIT-REQ-SPEC-6.1.11-003 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.11 |
+| KMIPKIT-REQ-SPEC-6.1.11-003 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-004-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-004-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-005 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.11 |
@@ -898,7 +898,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.16-004 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.16 |
 | KMIPKIT-REQ-SPEC-6.1.17-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.17 |
 | KMIPKIT-REQ-SPEC-6.1.17-001-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.17 |
-| KMIPKIT-REQ-SPEC-6.1.17-004 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.17 |
+| KMIPKIT-REQ-SPEC-6.1.17-004 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.17 |
 | KMIPKIT-REQ-SPEC-6.1.17-005-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.17 |
 | KMIPKIT-REQ-SPEC-6.1.17-005-002 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.17 |
 | KMIPKIT-REQ-SPEC-6.1.17-006 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.17 |
@@ -1303,10 +1303,9 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-4.14-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-REQ-SPEC-4.14-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.14 |
 | KMIPKIT-REQ-SPEC-4.16-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.16 |
-| KMIPKIT-REQ-SPEC-4.16-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.16 |
+| KMIPKIT-REQ-SPEC-4.16-001-002 | The source states a MAY permission; it does not require local type gating. Preserve caller values and do not infer unavailable server object types. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. | KMIPKIT-SRC-spec §4.16 |
 | KMIPKIT-REQ-SPEC-4.16-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.16 |
 | KMIPKIT-REQ-SPEC-4.16-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.16 |
-| KMIPKIT-REQ-SPEC-4.16-004 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.16 |
 | KMIPKIT-REQ-SPEC-4.17-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.17 |
 | KMIPKIT-REQ-SPEC-4.17-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.17 |
 | KMIPKIT-REQ-SPEC-4.18-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §4.18 |
@@ -1387,14 +1386,15 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-001-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1 |
-| KMIPKIT-REQ-SPEC-6.1-003-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1 |
+| KMIPKIT-REQ-SPEC-6.1-002-001 | This is the server-side temporary-variable and lifecycle obligation in §6.1 paragraph 2. It is retained in the normative catalog but excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. | KMIPKIT-SRC-spec §6.1 |
+| KMIPKIT-REQ-SPEC-6.1-003-001 | This is the server-side assignment obligation in §6.1 paragraph 3. It is retained in the normative catalog but excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-003-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-004 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1-005 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1 |
 | KMIPKIT-REQ-SPEC-6.1.10-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.10 |
 | KMIPKIT-REQ-SPEC-6.1.11-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.11 |
-| KMIPKIT-REQ-SPEC-6.1.11-003 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.11 |
+| KMIPKIT-REQ-SPEC-6.1.11-003 | This operation-table row states server substitution behavior. Client permission to omit Unique Identifier is represented by the §6.1 MAY requirement; this server-only row is excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-004-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-004-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.11 |
 | KMIPKIT-REQ-SPEC-6.1.11-005 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.11 |
@@ -1415,7 +1415,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.16-004 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.16 |
 | KMIPKIT-REQ-SPEC-6.1.17-001-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.17 |
 | KMIPKIT-REQ-SPEC-6.1.17-001-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.17 |
-| KMIPKIT-REQ-SPEC-6.1.17-004 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.17 |
+| KMIPKIT-REQ-SPEC-6.1.17-004 | This operation-table row states server substitution behavior. Client permission to omit Unique Identifier is represented by the §6.1 MAY requirement; this server-only row is excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources. | KMIPKIT-SRC-spec §6.1.17 |
 | KMIPKIT-REQ-SPEC-6.1.17-005-001 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.17 |
 | KMIPKIT-REQ-SPEC-6.1.17-005-002 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.17 |
 | KMIPKIT-REQ-SPEC-6.1.17-006 | No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. | KMIPKIT-SRC-spec §6.1.17 |
@@ -3125,9 +3125,9 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-TEST-CN01-2-96 | TC-SJ-2-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-97 | TC-SJ-3-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-98 | TC-SJ-4-21 | unavailable | — |
-| KMIPKIT-TEST-CN01-2-99 | TC-STREAM-ENC-1-21 | unavailable | — |
-| KMIPKIT-TEST-CN01-2-100 | TC-STREAM-ENC-2-21 | unavailable | — |
-| KMIPKIT-TEST-CN01-2-101 | TC-STREAM-ENCDEC-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-99 | TC-STREAM-ENC-1-21 | available | specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-1-21.xml |
+| KMIPKIT-TEST-CN01-2-100 | TC-STREAM-ENC-2-21 | available | specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml |
+| KMIPKIT-TEST-CN01-2-101 | TC-STREAM-ENCDEC-1-21 | available | specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml |
 | KMIPKIT-TEST-CN01-2-102 | TC-STREAM-HASH-1-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-103 | TC-STREAM-HASH-2-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-104 | TC-STREAM-HASH-3-21 | unavailable | — |
@@ -3142,8 +3142,8 @@ Every row summarizes audited candidate locators by their pinned source section. 
 
 | Fixture state | Count |
 | --- | --- |
-| available | 1 |
-| unavailable | 202 |
+| available | 4 |
+| unavailable | 199 |
 
 ## Open discrepancies
 
@@ -3184,13 +3184,15 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-DISC-033 | open | review before dependent implementation | none linked | RSA digest fixture href omits the dot before xml | KMIPKIT-SRC-testcases §2.90 |
 | KMIPKIT-DISC-034 | open | review before dependent implementation | none linked | Set Attribute test labels and fixture basenames use different abbreviations | KMIPKIT-SRC-testcases §2.92, KMIPKIT-SRC-testcases §2.93, KMIPKIT-SRC-testcases §2.94 |
 | KMIPKIT-DISC-035 | open | review before dependent implementation | none linked | Signed JSON test section 2.97 links to the previous case | KMIPKIT-SRC-testcases §2.96, KMIPKIT-SRC-testcases §2.97 |
-| KMIPKIT-DISC-036 | open | review before dependent implementation | none linked | All 203 referenced XML fixtures are absent from the pinned source tree | KMIPKIT-SRC-profiles §5.1.3.1, KMIPKIT-SRC-testcases §2.1 |
+| KMIPKIT-DISC-036 | open | review before dependent implementation | none linked | 199 of 203 referenced XML fixtures are absent from the pinned source tree | KMIPKIT-SRC-profiles §5.1.3.1, KMIPKIT-SRC-testcases §2.1 |
 | KMIPKIT-DISC-038 | open | blocked for affected records | 3 elements, 2 profiles | JSON profile example uses Template for a reserved Object Type value | KMIPKIT-SRC-profiles §5.5.4.1, KMIPKIT-SRC-spec §11.34 |
 | KMIPKIT-DISC-039 | open | blocked for affected records | 1 elements | Query Asynchronous Requests response table is labeled as a PKCS#11 response | KMIPKIT-SRC-spec §6.1.41 |
 | KMIPKIT-DISC-040 | open | blocked for affected records | 1 elements | Table 315 RNG Retrieve Errors caption is stranded in Re-Provision error handling | KMIPKIT-SRC-spec §6.1.48.1 |
 | KMIPKIT-DISC-041 | open | blocked for affected records | 1 requirements, 1 elements | The lowercase “must” in section 9.4 has unresolved RFC 2119 classification under the uppercase key-word definition in section 1.2. | KMIPKIT-SRC-spec §1.2, KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-DISC-042 | open | blocked for affected records | 1 requirements, 6 elements | The section 9.11 requirement to provide at least one Device Credential field does not specify its field set. | KMIPKIT-SRC-spec §9.11 |
 | KMIPKIT-DISC-044 | open | blocked for affected records | 6 requirements, 1 elements | Locate server obligations attributed to the client actor | KMIPKIT-SRC-spec §6.1.28 |
+| KMIPKIT-DISC-045 | open | blocked for affected records | 5 elements | Single-request Encrypt/Decrypt Data optionality when both Init and Final Indicator are true | KMIPKIT-SRC-spec §6.1, KMIPKIT-SRC-spec §6.1.11, KMIPKIT-SRC-spec §6.1.17 |
+| KMIPKIT-DISC-046 | open | blocked for affected records | 1 elements | Streaming test case descriptions and linked XML disagree on Decrypt items | KMIPKIT-SRC-testcases §2.100, KMIPKIT-SRC-testcases §2.101 |
 | KMIPKIT-DISC-047 | open | blocked for affected records | 1 elements | Query empty-response prose conflicts with required Protection Storage Masks field | KMIPKIT-SRC-spec §6.1.40 |
 
 ## Project policies

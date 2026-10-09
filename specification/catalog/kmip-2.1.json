@@ -13210,15 +13210,13 @@
       "source_keywords": [
         "REQUIRED"
       ],
-      "disposition": "requirement",
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-4.16-004"
-      ],
-      "exclusion_rationale": null,
-      "role": "client",
-      "direction": "unclear",
-      "scope_state": "client_1_0",
-      "condition": null
+      "disposition": "non_applicable",
+      "requirement_ids": [],
+      "exclusion_rationale": "The extracted REQUIRED token is the Table 59 column heading; the Cryptographic Parameters row has an empty requiredness cell, while §§6.1.11 and 6.1.17 mark the operation request field optional.",
+      "role": "not_applicable",
+      "direction": "not_applicable",
+      "scope_state": "out_of_scope",
+      "condition": "Catalog extraction selected the table header instead of a row requirement."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-4.16-005",
@@ -15584,9 +15582,9 @@
         "REQUIRED"
       ],
       "disposition": "requirement",
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-4.60-001"
-      ],
+    "requirement_ids": [
+      "KMIPKIT-REQ-SPEC-4.60-001"
+    ],
       "exclusion_rationale": null,
       "role": "client",
       "direction": "unclear",
@@ -16241,10 +16239,12 @@
       "source_keywords": [
         "SHALL"
       ],
-      "disposition": "server_only",
-      "requirement_ids": [],
-      "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
-      "role": "both",
+      "disposition": "requirement",
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1-002-001"
+      ],
+      "exclusion_rationale": null,
+      "role": "server",
       "direction": "client_to_server",
       "scope_state": "server_only",
       "condition": null
@@ -16267,9 +16267,9 @@
         "KMIPKIT-REQ-SPEC-6.1-003-002"
       ],
       "exclusion_rationale": null,
-      "role": "client",
-      "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "role": "both",
+      "direction": "both",
+      "scope_state": "mixed",
       "condition": null
     },
     {
@@ -16698,9 +16698,9 @@
         "KMIPKIT-REQ-SPEC-6.1.11-003"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "server",
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "condition": "When a valid ID Placeholder is available."
     },
     {
@@ -17573,9 +17573,9 @@
         "KMIPKIT-REQ-SPEC-6.1.17-004"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "server",
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "condition": "When a valid ID Placeholder is available."
     },
     {
@@ -28728,7 +28728,7 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Structure",
@@ -55857,7 +55857,26 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1-001-001",
+        "KMIPKIT-REQ-SPEC-6.1-001-002",
+        "KMIPKIT-REQ-SPEC-6.1-001-003",
+        "KMIPKIT-REQ-SPEC-6.1-003-001",
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIPKIT-REQ-SPEC-6.1-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-003",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-7.8-001"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-COMPLETE-SERVER",
         "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-SERVER",
@@ -55867,7 +55886,7 @@
       "test_case_ids": [
         "KMIPKIT-TEST-CN01-2-100"
       ],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "payload_tables": [
@@ -56164,7 +56183,25 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1-001-001",
+        "KMIPKIT-REQ-SPEC-6.1-001-002",
+        "KMIPKIT-REQ-SPEC-6.1-001-003",
+        "KMIPKIT-REQ-SPEC-6.1-003-001",
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIPKIT-REQ-SPEC-6.1-005",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-004",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-7.8-001"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-COMPLETE-SERVER",
         "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-SERVER",
@@ -56176,7 +56213,7 @@
         "KMIPKIT-TEST-CN01-2-101",
         "KMIPKIT-TEST-CN01-2-99"
       ],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "payload_tables": [
@@ -58400,7 +58437,7 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Boolean"
@@ -58463,7 +58500,7 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Boolean"
@@ -58783,10 +58820,13 @@
       "direction": "both",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Byte String",
@@ -59027,10 +59067,12 @@
       "direction": "both",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Byte String",
@@ -59159,10 +59201,12 @@
       "direction": "both",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.8-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Byte String"
@@ -59183,7 +59227,7 @@
       "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "source_encoding": "Byte String, Enumeration or Integer"
@@ -85432,7 +85476,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -85454,7 +85498,7 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Type-specific Cryptographic Parameters",
-      "summary": "Specific Cryptographic Parameters fields may apply only to certain Managed Object types; the client should gate those fields by object type.",
+      "summary": "Specific Cryptographic Parameters fields MAY pertain only to certain types of Managed Objects.",
       "role": "client",
       "direction": "unclear",
       "condition": "Specific fields may apply only to certain Managed Object types.",
@@ -85462,13 +85506,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "The source states a MAY permission; it does not require local type gating. Preserve caller values and do not infer unavailable server object types. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.16-002",
@@ -85492,7 +85536,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -85522,37 +85566,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
-    },
-    {
-      "requirement_id": "KMIPKIT-REQ-SPEC-4.16-004",
-      "source_clause_ids": [
-        "KMIPKIT-CLAUSE-SPEC-4.16-004"
-      ],
-      "source_refs": [
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "4.16"
-        }
-      ],
-      "source_keyword": "REQUIRED",
-      "normative_strength": "mandatory",
-      "subject": "Cryptographic Parameters Item",
-      "summary": "The Cryptographic Parameters Item encoding is required.",
-      "role": "client",
-      "direction": "unclear",
-      "condition": null,
-      "scope_state": "client_1_0",
-      "element_ids": [],
-      "profile_ids": [],
-      "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88175,7 +88189,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88205,7 +88219,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88235,13 +88249,43 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1-002-001",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-6.1-002"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1"
+        }
+      ],
+      "source_keyword": "SHALL",
+      "normative_strength": "mandatory",
+      "subject": "ID Placeholder server lifecycle",
+      "summary": "The key management server SHALL implement a temporary ID Placeholder variable, valid only during a batch, and SHALL discard or invalidate it after the batch.",
+      "role": "server",
+      "direction": "client_to_server",
+      "condition": "During execution of a batch of operations.",
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [],
+      "negative_verification_required": false,
+      "decision_id": null,
+      "status": "unassigned",
+      "review_note": "This is the server-side temporary-variable and lifecycle obligation in §6.1 paragraph 2. It is retained in the normative catalog but excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-001",
@@ -88256,12 +88300,12 @@
       ],
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
-      "subject": "ID Placeholder",
-      "summary": "A client may use the ID Placeholder instead of an explicit Unique Identifier in an eligible later operation.",
-      "role": "client",
+      "subject": "ID Placeholder assignment",
+      "summary": "When an eligible operation successfully returns a Unique Identifier, the server SHALL copy it into the ID Placeholder for use during the remainder of the batch.",
+      "role": "server",
       "direction": "client_to_server",
-      "condition": "When a preceding eligible operation returned an identifier that remains valid in the same batch and batch ordering permits reuse.",
-      "scope_state": "client_1_0",
+      "condition": "When one of the operations listed in §6.1 successfully completes and returns a Unique Identifier.",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -88271,7 +88315,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "This is the server-side assignment obligation in §6.1 paragraph 3. It is retained in the normative catalog but excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
@@ -88295,7 +88339,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88355,7 +88399,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88417,7 +88461,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88447,7 +88491,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88468,12 +88512,12 @@
       ],
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
-      "subject": "Decrypt key identifier",
-      "summary": "A client may omit Unique Identifier when a valid ID Placeholder identifies the decryption key.",
-      "role": "client",
+      "subject": "Decrypt ID Placeholder substitution",
+      "summary": "When Unique Identifier is omitted from an eligible Decrypt request, the server SHALL use the ID Placeholder value as the Unique Identifier.",
+      "role": "server",
       "direction": "client_to_server",
-      "condition": "When a valid ID Placeholder is available.",
-      "scope_state": "client_1_0",
+      "condition": "When an eligible Decrypt request omits Unique Identifier and a valid ID Placeholder is available.",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -88483,7 +88527,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "This operation-table row states server substitution behavior. Client permission to omit Unique Identifier is represented by the §6.1 MAY requirement; this server-only row is excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-004-001",
@@ -88507,7 +88551,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88537,7 +88581,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88567,7 +88611,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88597,7 +88641,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -89073,7 +89117,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -89103,7 +89147,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -89124,12 +89168,12 @@
       ],
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
-      "subject": "Encrypt key identifier",
-      "summary": "A client may omit Unique Identifier when a valid ID Placeholder identifies the encryption key.",
-      "role": "client",
+      "subject": "Encrypt ID Placeholder substitution",
+      "summary": "When Unique Identifier is omitted from an eligible Encrypt request, the server SHALL use the ID Placeholder value as the Unique Identifier.",
+      "role": "server",
       "direction": "client_to_server",
-      "condition": "When a valid ID Placeholder is available.",
-      "scope_state": "client_1_0",
+      "condition": "When an eligible Encrypt request omits Unique Identifier and a valid ID Placeholder is available.",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -89139,7 +89183,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "This operation-table row states server substitution behavior. Client permission to omit Unique Identifier is represented by the §6.1 MAY requirement; this server-only row is excluded from client feature assignment and acceptance counts. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.17-005-001",
@@ -89163,7 +89207,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -89193,7 +89237,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -89223,7 +89267,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -93700,7 +93744,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -103577,8 +103621,8 @@
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-STREAM-ENC-1-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-1-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -103596,8 +103640,8 @@
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-STREAM-ENC-2-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -103614,8 +103658,8 @@
         "KMIPKIT-ELEM-OP-C2S-ENCRYPT"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-STREAM-ENCDEC-1-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml",
+      "fixture_availability": "available",
       "mapping_confidence": "explicit"
     },
     {
@@ -105052,7 +105096,7 @@
     },
     {
       "discrepancy_id": "KMIPKIT-DISC-036",
-      "summary": "All 203 referenced XML fixtures are absent from the pinned source tree",
+      "summary": "199 of 203 referenced XML fixtures are absent from the pinned source tree",
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-profiles",
@@ -105066,14 +105110,14 @@
       "source_authority": "profile_normative",
       "normative_status": "evidence_gap",
       "alternatives": [
-        "The pinned sources intentionally publish identifiers and links without fixture bytes.",
-        "The missing fixture files are an incomplete local evidence package; availability outside the pinned tree is unknown."
+        "The OASIS documents publish fixture identifiers and canonical links separately from the HTML documents.",
+        "The local fixture set remains incomplete; additional linked cases may be available from the canonical OASIS URLs."
       ],
       "affected_requirement_ids": [],
       "affected_element_ids": [],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Fixture-level assertions and reproducible conformance evidence cannot be run from this source set.",
+      "downstream_impact": "Fixture-level assertions and reproducible conformance evidence are available only for the checked-in XML files; the 199 absent fixtures remain unavailable in local checks.",
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
@@ -105763,6 +105807,74 @@
       "affected_profile_ids": [],
       "affected_policy_ids": [],
       "downstream_impact": "Locate conformance scope, requirement ownership, client test expectations, and the 1.0 coverage claim.",
+      "state": "open",
+      "decision_id": null,
+      "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-045",
+      "summary": "Single-request Encrypt/Decrypt Data optionality when both Init and Final Indicator are true",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.11"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.17"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "normative_conflict",
+      "alternatives": [
+        "Apply Tables 196 and 214 single-part Data Yes rows to any one-request operation; a single-part request requires Data even if both indicators are present.",
+        "Apply §6.1's general exception literally; Data may be absent in any request when Init Indicator or Final Indicator is true, including a one-request form with both indicators true."
+      ],
+      "affected_requirement_ids": [],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Accept the one-request Init=true/Final=true Encrypt/Decrypt form when Data is present, as permitted by §6.1 and required by Tables 196 and 214. While this conflict remains unresolved, gate only the Data-omission variant with a local validation error before transmission; ordinary single-part and multipart forms remain implementable.",
+      "state": "open",
+      "decision_id": null,
+      "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-046",
+      "summary": "Streaming test case descriptions and linked XML disagree on Decrypt items",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-testcases",
+          "section": "2.100"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-testcases",
+          "section": "2.101"
+        }
+      ],
+      "source_authority": "test_evidence",
+      "normative_status": "source_defect",
+      "alternatives": [
+        "The §2.100 HTML description names Encrypt and Decrypt, but its linked XML contains no Decrypt item; the §2.101 HTML description names Encrypt only.",
+        "The linked §2.101 XML contains four Decrypt request/response pairs despite its HTML description."
+      ],
+      "affected_requirement_ids": [],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Catalog operation-to-case associations follow the HTML descriptions, while fixture-derived tests use only operation items present in XML. The actual Decrypt pairs in KMIPKIT-0019 come from §2.101, not §2.100; do not synthesize missing items or claim a complete case pass.",
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
