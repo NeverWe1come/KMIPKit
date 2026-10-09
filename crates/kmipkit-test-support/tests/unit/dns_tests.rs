@@ -1,10 +1,13 @@
 use super::{
-    DnsQueryType, LocalDnsFixture, MAX_QUERY_BYTES, build_response, read_u16, validate_records,
+    DnsQueryType, FixtureMetrics, FixtureState, LocalDnsFixture, MAX_QUERY_BYTES, TcpMetrics,
+    build_response, read_u16, serve_tcp_with_spawner, validate_records,
 };
 use std::collections::BTreeMap;
 use std::io::{self, Read, Write};
-use std::net::{IpAddr, Ipv4Addr, TcpStream, UdpSocket};
-use std::sync::{Mutex, MutexGuard};
+use std::net::{IpAddr, Ipv4Addr, Shutdown, TcpListener, TcpStream, UdpSocket};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::{Arc, Condvar, Mutex, MutexGuard};
+use std::thread;
 use std::time::Duration;
 
 static NETWORK_FIXTURE_LOCK: Mutex<()> = Mutex::new(());
@@ -264,6 +267,69 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
         is_close_result(&read_result),
         "fixture closes an invalid short frame; client read returned {read_result:?}"
     );
+}
+
+#[test]
+fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
+    let records = BTreeMap::from([(
+        "fixture.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
+    )]);
+    let listener =
+        TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback test listener should bind");
+    listener
+        .set_nonblocking(true)
+        .expect("loopback listener should use nonblocking accept");
+    let local_addr = listener
+        .local_addr()
+        .expect("loopback test listener should expose its address");
+    let state = Arc::new(FixtureState {
+        stop: AtomicBool::new(false),
+        metrics: Mutex::new(FixtureMetrics::default()),
+        response_released: (Mutex::new(true), Condvar::new()),
+        active_responses: AtomicUsize::new(0),
+        peak_active_responses: AtomicUsize::new(0),
+        next_tcp_connection: AtomicUsize::new(1),
+        tcp_metrics: Mutex::new(TcpMetrics::default()),
+    });
+    let spawn_attempts = Arc::new(AtomicUsize::new(0));
+    let server_state = Arc::clone(&state);
+    let server_spawn_attempts = Arc::clone(&spawn_attempts);
+    let server = thread::spawn(move || {
+        serve_tcp_with_spawner(&listener, &records, &server_state, move |job| {
+            server_spawn_attempts.fetch_add(1, Ordering::AcqRel);
+            drop(job);
+            Err(io::Error::other("injected connection-worker spawn failure"))
+        });
+    });
+
+    let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
+    client
+        .set_read_timeout(Some(Duration::from_secs(1)))
+        .expect("DNS TCP read timeout should be configured");
+    let request = fixture_query(1);
+    let length = u16::try_from(request.len()).expect("DNS request length fits its frame");
+    client
+        .write_all(&length.to_be_bytes())
+        .and_then(|()| client.write_all(&request))
+        .expect("framed DNS question should be sent");
+
+    let mut response_length = [0_u8; 2];
+    let response = client.read_exact(&mut response_length).and_then(|()| {
+        let length = usize::from(u16::from_be_bytes(response_length));
+        let mut response = vec![0; length];
+        client.read_exact(&mut response)?;
+        Ok(response)
+    });
+    let _shutdown_result = client.shutdown(Shutdown::Both);
+    state.stop.store(true, Ordering::Release);
+    let server_result = server.join();
+
+    assert_eq!(spawn_attempts.load(Ordering::Acquire), 1);
+    assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
+    let response = response.expect("accepted query should still receive a DNS response");
+    assert_eq!(read_u16(&response, 0), Some(0));
+    assert_eq!(read_u16(&response, 6), Some(1));
 }
 
 #[test]

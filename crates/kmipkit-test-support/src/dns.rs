@@ -54,6 +54,8 @@ struct TcpMetrics {
     peak_by_connection: BTreeMap<usize, usize>,
 }
 
+type TcpConnectionJob = Box<dyn FnOnce() + Send + 'static>;
+
 impl LocalDnsFixture {
     /// Binds an ephemeral UDP/TCP port pair and serves the supplied loopback addresses.
     ///
@@ -346,22 +348,35 @@ fn serve_tcp(
     records: &BTreeMap<String, Vec<IpAddr>>,
     state: &Arc<FixtureState>,
 ) {
+    serve_tcp_with_spawner(listener, records, state, |job| {
+        thread::Builder::new()
+            .name("kmipkit-local-dns-tcp-connection".to_owned())
+            .spawn(job)
+            .map(drop)
+    });
+}
+
+fn serve_tcp_with_spawner(
+    listener: &TcpListener,
+    records: &BTreeMap<String, Vec<IpAddr>>,
+    state: &Arc<FixtureState>,
+    mut spawn_connection: impl FnMut(TcpConnectionJob) -> io::Result<()>,
+) {
     while !state.stop.load(Ordering::Acquire) {
         match listener.accept() {
             Ok((stream, _)) => {
                 let connection_id = state.next_tcp_connection.fetch_add(1, Ordering::AcqRel);
                 let connection_state = Arc::clone(state);
                 let connection_records = records.clone();
-                let _spawn_result = thread::Builder::new()
-                    .name("kmipkit-local-dns-tcp-connection".to_owned())
-                    .spawn(move || {
-                        serve_tcp_connection(
-                            stream,
-                            &connection_records,
-                            &connection_state,
-                            connection_id,
-                        );
-                    });
+                let job: TcpConnectionJob = Box::new(move || {
+                    serve_tcp_connection(
+                        stream,
+                        &connection_records,
+                        &connection_state,
+                        connection_id,
+                    );
+                });
+                let _spawn_result = spawn_connection(job);
             }
             Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
                 thread::sleep(READ_POLL_INTERVAL);
