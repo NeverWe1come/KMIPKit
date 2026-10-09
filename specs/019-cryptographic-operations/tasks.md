@@ -21,10 +21,10 @@
 
 ### Red
 
-- [ ] T007 Add failing unit tests for OperationData preserving Byte String, Enumeration, and Integer request encodings, exact values, and ordering in crates/kmipkit-protocol/tests/unit/operation_data_tests.rs.
+- [x] T007 Add failing unit tests for OperationData preserving Byte String, Enumeration, and Integer request encodings, exact values, and ordering in crates/kmipkit-protocol/tests/unit/operation_data_tests.rs.
 - [ ] T008 Add failing tests proving Debug/Display redact every OperationData variant and owned Byte String storage uses the existing zeroizing path.
 - [ ] T009 Add failing tests for §4.16 recognized parameter conditions: variable-IV mode requires IV Length, GCM requires Tag Length, unknown parameter members survive, and parameters derived from remote object attributes are not guessed locally.
-- [ ] T010 Run the focused new test targets and record the expected Red failures and command output in the Red commit.
+- [x] T010 Run the focused new test targets and record the expected Red failures and command output in the Red commit. **Red evidence:** `cargo test -p kmipkit-protocol --lib operation_data_tests` exits 1 during test compilation with E0432 for the intentionally not-yet-implemented `EncryptRequest` and `OperationData` public APIs; after correcting a test-only temporary-borrow error, these are the only diagnostics. No test body can run until the Green implementation adds those APIs.
 
 ### Green
 
