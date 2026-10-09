@@ -103,6 +103,10 @@ mod create_split_key_execution_tests;
 mod process_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/ping_execution_tests.rs"]
+mod ping_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/query_async_execution_tests.rs"]
 mod query_async_execution_tests;
 

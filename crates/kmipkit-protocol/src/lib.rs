@@ -93,6 +93,14 @@ mod create_split_key_tests;
 mod async_operation_fixtures;
 
 #[cfg(test)]
+#[path = "../tests/support/query_ping_fixtures.rs"]
+mod query_ping_fixtures;
+
+#[cfg(test)]
+#[path = "../tests/unit/ping_operation_tests.rs"]
+mod ping_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/asynchronous_tests.rs"]
 mod asynchronous_tests;
 
