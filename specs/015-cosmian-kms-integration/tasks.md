@@ -1,7 +1,8 @@
 # Tasks: Local Cosmian KMS Integration Tests
 
 **Status**: In progress. The maintainer approved expanded operation coverage on
-2026-10-09. Coverage and hosted CI gates remain open.
+2026-10-09. Hosted CI and aggregated coverage pass; Create and Create Split Key
+remain blocked pending a separately approved Create builder fix.
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md)
 
@@ -43,5 +44,5 @@
 - [x] T022 Add Add Attribute, Delete Attribute, Modify Attribute, and Set Attribute cases using independent server-generated objects; assert operation success and returned identifiers. Adjust Attribute is excluded after Cosmian rejects it as unsupported.
 - [x] T023 Run the complete ignored Cosmian suite against the pinned local image, record each operation's result independently, and fix only test input/setup defects in this integration PR. Record and stop at the out-of-scope Create builder defect.
 - [x] T024 Update `specs/015-cosmian-kms-integration/traceability.md`, `quickstart.md`, `tests/integration/cosmian/README.md`, and bilingual client integration documentation with exact commands, operation clauses, and live outcomes.
-- [ ] T025 Run focused client/transport suites, `cargo fmt --all --check`, workspace Clippy, workspace tests, catalog checks, and the required coverage/hosted-platform CI gates; record commands and outcomes. Local client/transport tests, format, Clippy, workspace tests, Compose/syntax checks, immutable-source/audit/catalog/generated-output checks pass. Local `cargo llvm-cov --workspace --all-features --summary-only` reports 83.80% line coverage, below the 90% workspace threshold; hosted multi-platform coverage aggregation remains pending.
-- [ ] T026 Review every FR and SC against the expanded tests; leave PR #56 open as draft until coverage and CI gates pass.
+- [x] T025 Run focused client/transport suites, `cargo fmt --all --check`, workspace Clippy, workspace tests, catalog checks, and the required coverage/hosted-platform CI gates; record commands and outcomes. Local client/transport tests, format, Clippy, workspace tests, Compose/syntax checks, immutable-source/audit/catalog/generated-output checks pass. The local single-platform `cargo llvm-cov --workspace --all-features --summary-only` report is 83.80% line coverage; the hosted multi-platform platform/adapter aggregate passed its configured coverage gate on 2026-10-09.
+- [x] T026 Review every FR and SC against the expanded tests. Hosted coverage and CI gates pass; keep PR #56 open as draft pending the separately scoped Create builder fix and successful Create/Create Split Key integration results.

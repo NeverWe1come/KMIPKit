@@ -71,7 +71,9 @@ tag; Create Split Key is consequently blocked during its test setup. Adjust
 Attribute was probed separately and Cosmian 5.28.0 rejects it as unsupported,
 so it is not included as a supported operation. See
 `specs/015-cosmian-kms-integration/traceability.md` for exact results. A
-successful selected operation is not a broad conformance claim.
+successful selected operation is not a broad conformance claim. The hosted
+multi-platform CI and coverage gates passed on 2026-10-09; the local raw
+Windows coverage summary is not the platform-aggregated coverage gate.
 
 ## Stop and remove the server
 
