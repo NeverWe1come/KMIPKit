@@ -16,6 +16,7 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME: u32 = 0x0042_000A;
+const TAG_FORM_REFERENCE: u32 = 0x0042_002F;
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
@@ -63,6 +64,10 @@ fn name_reference(attribute_name: &str) -> Item {
             ),
         ])),
     )
+}
+
+fn tag_reference(attribute_tag: u32) -> Item {
+    item(ATTRIBUTE_REFERENCE, Value::enumeration(attribute_tag))
 }
 
 fn response_message(
@@ -188,6 +193,25 @@ fn response_returns_the_full_name_list_and_preserves_repeated_names_in_wire_orde
 }
 
 #[test]
+fn response_preserves_tag_form_attribute_references() {
+    // §5.5 Table 161 allows Attribute Reference to use Enumeration (Tag).
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([tag_reference(TAG_FORM_REFERENCE)])),
+    );
+    let actual = GetAttributeListResponse::try_from_response_item(response_item(&message))
+        .expect("Table 227 accepts a valid tag-form Attribute Reference");
+
+    assert_eq!(
+        actual.attribute_references(),
+        Some(&[AttributeReference::tag(TAG_FORM_REFERENCE)][..]),
+        "the Attribute Reference Enumeration retains the exact tag value"
+    );
+}
+
+#[test]
 fn response_preserves_every_table_228_failure_reason_status_and_message() {
     // Table 228: Object Not Found, Attestation Failed, Attestation Required,
     // Feature Not Supported, Invalid Field, Invalid Message, Operation Not
@@ -243,6 +267,19 @@ fn successful_response_requires_one_identifier_then_one_or_more_references() {
                 Value::text_string(OBJECT_IDENTIFIER.to_owned()),
             ),
             item(ATTRIBUTE_REFERENCE, Value::structure(Structure::new())),
+        ]),
+        structure([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(OBJECT_IDENTIFIER.to_owned()),
+            ),
+            item(
+                ATTRIBUTE_REFERENCE,
+                Value::structure(structure([item(
+                    ATTRIBUTE_NAME,
+                    Value::text_string("Opaque.Alpha".to_owned()),
+                )])),
+            ),
         ]),
         structure([
             item(
