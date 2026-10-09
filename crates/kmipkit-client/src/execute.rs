@@ -566,6 +566,8 @@ enum PendingResponse {
     SetAttribute(SetAttributeResponse),
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
+    Ping(PingResponse),
+    Query(QueryResponse),
 }
 
 impl PendingResponse {
@@ -586,6 +588,8 @@ impl PendingResponse {
             Self::SetAttribute(response) => ClientResponseRef::SetAttribute(response),
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
+            Self::Ping(response) => ClientResponseRef::Ping(response),
+            Self::Query(response) => ClientResponseRef::Query(response),
         };
         ClientResponseView { response }
     }
@@ -3374,16 +3378,22 @@ fn response_outcome(
             PendingResponse::Recover,
             ClientBatchOutcome::Recover,
         ),
-        QUERY_OPERATION => {
-            let response =
-                QueryResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
-            Ok(ClientBatchOutcome::Query(response))
-        }
-        PING_OPERATION => {
-            let response =
-                PingResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
-            Ok(ClientBatchOutcome::Ping(response))
-        }
+        QUERY_OPERATION => read_operation_outcome(
+            ClientOperation::Query,
+            item,
+            QueryResponse::try_from_response_item,
+            QueryResponse::result,
+            PendingResponse::Query,
+            ClientBatchOutcome::Query,
+        ),
+        PING_OPERATION => read_operation_outcome(
+            ClientOperation::Ping,
+            item,
+            PingResponse::try_from_response_item,
+            PingResponse::result,
+            PendingResponse::Ping,
+            ClientBatchOutcome::Ping,
+        ),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;

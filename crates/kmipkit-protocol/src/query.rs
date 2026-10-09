@@ -565,9 +565,12 @@ fn parse_known_response_field(
         OPERATION => Ok(QueryResponseField::Operation(enumeration()?)),
         OBJECT_TYPE => Ok(QueryResponseField::ObjectType(enumeration()?)),
         VENDOR_IDENTIFICATION => Ok(QueryResponseField::VendorIdentification(text()?)),
-        SERVER_INFORMATION => Ok(QueryResponseField::ServerInformation(clone_item(
-            tag, value,
-        )?)),
+        SERVER_INFORMATION => {
+            structure()?;
+            Ok(QueryResponseField::ServerInformation(clone_item(
+                tag, value,
+            )?))
+        }
         APPLICATION_NAMESPACE => Ok(QueryResponseField::ApplicationNamespace(text()?)),
         EXTENSION_INFORMATION => {
             structure()?;
