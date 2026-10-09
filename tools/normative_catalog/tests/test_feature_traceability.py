@@ -100,11 +100,18 @@ LIFECYCLE_SUPPORT_TEST_MODULES = {
     "crates/kmipkit-client/tests/unit/lifecycle_redaction_tests.rs",
     "crates/kmipkit-client/tests/unit/lifecycle_execution_tests.rs",
 }
+LIFECYCLE_OPERATION_EXECUTION_MODULES = {
+    "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
+}
 LIFECYCLE_PLANNED_CODE_PATHS = {
     "crates/kmipkit-protocol/src/activate.rs",
     "crates/kmipkit-protocol/src/archive.rs",
     "crates/kmipkit-protocol/src/destroy.rs",
     "crates/kmipkit-protocol/src/recover.rs",
+    "crates/kmipkit-protocol/src/lib.rs",
     "crates/kmipkit-client/src/execute.rs",
     "crates/kmipkit-client/src/lib.rs",
 }
@@ -159,12 +166,19 @@ def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
     return path, source
 
 
+def _markdown_table_rows(document: str) -> list[list[str]]:
+    return [
+        [cell.strip() for cell in line.strip().strip("|").split("|")]
+        for line in document.splitlines()
+        if line.startswith("| ")
+    ]
+
+
 def _markdown_catalog_rows(document: str) -> dict[str, list[str]]:
     rows_by_id: dict[str, list[str]] = {}
-    for line in document.splitlines():
-        if not line.startswith("| `"):
+    for cells in _markdown_table_rows(document):
+        if not cells[0].startswith("`"):
             continue
-        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
         match = re.search(r"`([^`]+)`", cells[0])
         if match:
             rows_by_id[match.group(1)] = cells
@@ -193,10 +207,27 @@ class FeatureTraceabilityTests(unittest.TestCase):
         clauses_by_id = {item["clause_id"]: item for item in catalog["source_clauses"]}
         for element_id, (section, tables) in LIFECYCLE_OPERATION_TABLES.items():
             with self.subTest(element_id=element_id):
-                self.assertEqual(elements_by_id[element_id]["feature_spec"], "KMIPKIT-0018")
+                element = elements_by_id[element_id]
+                self.assertEqual(element["feature_spec"], "KMIPKIT-0018")
                 expected_source = f"KMIP 2.1 §{section} Tables {tables}"
-                self.assertEqual(rows_by_id[element_id][1], expected_source)
+                source = rows_by_id[element_id][1]
+                self.assertTrue(source.startswith(expected_source))
                 self.assertIn(f"§{section} | Tables {tables}", specification)
+
+                payload_tables = element["payload_tables"]
+                self.assertEqual(
+                    [table["role"] for table in payload_tables], ["request", "response"]
+                )
+                payload_numbers = tuple(
+                    table["table_number"] for table in payload_tables
+                )
+                payload_range = re.search(
+                    r"request/response payloads: Tables (\d+)–(\d+)", source
+                )
+                self.assertIsNotNone(payload_range)
+                self.assertEqual(
+                    tuple(map(int, payload_range.groups())), payload_numbers
+                )
 
         for requirement_id in LIFECYCLE_CLIENT_REQUIREMENT_IDS:
             with self.subTest(requirement_id=requirement_id):
@@ -219,6 +250,22 @@ class FeatureTraceabilityTests(unittest.TestCase):
             with self.subTest(planned_test_module=module):
                 self.assertIn(f"`{module}`", tasks)
                 self.assertIn(f"`{module}`", traceability)
+
+        table_rows = {cells[0]: cells for cells in _markdown_table_rows(traceability)}
+        common_verification = table_rows[
+            "Common message, batch, and result model"
+        ][4]
+        for module in LIFECYCLE_OPERATION_EXECUTION_MODULES:
+            with self.subTest(shared_execution_module=module):
+                self.assertIn(module, common_verification)
+        self.assertNotIn(
+            "crates/kmipkit-client/tests/unit/lifecycle_execution_tests.rs",
+            common_verification,
+        )
+        self.assertIn(
+            "crates/kmipkit-client/tests/unit/lifecycle_execution_tests.rs",
+            table_rows["Generic TTLV and secret handling"][4],
+        )
 
         for code_path in LIFECYCLE_PLANNED_CODE_PATHS:
             with self.subTest(planned_code_path=code_path):
