@@ -82,10 +82,10 @@ impl DestroyResponse {
     ///
     /// The item must identify the client-to-server Destroy operation (`0x14`).
     /// Successful payload parsing requires exactly one Unique Identifier in a
-    /// form permitted by §4.58 Tables 145–146. Non-success payloads are not
-    /// interpreted as successful response data; unknown result values remain
-    /// available in the shared result. Unknown fields remain available from
-    /// the original response message.
+    /// form permitted by §4.58 Tables 145–146. Only Success parses the payload for
+    /// this field. Non-success payloads are not interpreted as successful response
+    /// data; unknown result values remain available in the shared result. Unknown
+    /// fields remain available from the original response message.
     ///
     /// # Errors
     ///
@@ -134,6 +134,9 @@ impl DestroyResponse {
 }
 
 /// A payload-free error converting a validated Destroy response item.
+///
+/// Malformed-success errors do not include the response body or any field
+/// values.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum DestroyError {
