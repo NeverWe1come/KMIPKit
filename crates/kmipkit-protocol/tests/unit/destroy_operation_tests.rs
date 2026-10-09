@@ -3,7 +3,7 @@
 //! OASIS Test Cases.
 //!
 //! Traceability: `KMIPKIT-ELEM-OP-C2S-DESTROY`; KMIPKIT-0018 FR-001, FR-002,
-//! FR-003, FR-006, FR-009; SC-001 and SC-002.
+//! FR-003, FR-006, FR-008, FR-009; SC-001 and SC-002.
 
 use crate::async_operation_fixtures::response_message;
 use crate::lifecycle_fixtures::{
@@ -20,6 +20,9 @@ const ACTIVATE_OPERATION: u32 = 0x0000_0012;
 const DESTROY_OPERATION: u32 = 0x0000_0014;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+// Table 210 maps Object Not Found to catalog record
+// KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-OBJECT-NOT-FOUND-00000037.
+const OBJECT_NOT_FOUND_RESULT_REASON: u32 = 0x0000_0037;
 
 fn identifier_forms() -> [UniqueIdentifier; 3] {
     [
@@ -131,12 +134,11 @@ fn successful_response_rejects_duplicate_unique_identifiers() {
 }
 
 #[test]
-fn failure_response_preserves_the_result_without_a_typed_success_identifier() {
-    let reason = 0xF001_0001;
+fn failure_response_preserves_object_not_found_without_a_typed_success_identifier() {
     let message = response_message(
         DESTROY_OPERATION,
         OPERATION_FAILED,
-        Some(reason),
+        Some(OBJECT_NOT_FOUND_RESULT_REASON),
         None,
         None,
     );
@@ -148,10 +150,30 @@ fn failure_response_preserves_the_result_without_a_typed_success_identifier() {
         ResultStatus::from_raw(OPERATION_FAILED)
     );
     assert_eq!(
-        response.result().reason(),
-        Some(ResultReason::from_raw(reason))
+        response.result().reason().map(ResultReason::raw),
+        Some(OBJECT_NOT_FOUND_RESULT_REASON)
     );
     assert!(response.unique_identifier().is_none());
+}
+
+#[test]
+fn failure_response_preserves_an_unknown_result_reason_for_fr008() {
+    // KMIPKIT-0018 FR-008 requires unknown values to remain unchanged.
+    let unknown_reason = 0xF001_0001;
+    let message = response_message(
+        DESTROY_OPERATION,
+        OPERATION_FAILED,
+        Some(unknown_reason),
+        None,
+        None,
+    );
+    let response = DestroyResponse::try_from_response_item(response_item(&message))
+        .expect("an unknown Result Reason remains a valid non-success result");
+
+    assert_eq!(
+        response.result().reason().map(ResultReason::raw),
+        Some(unknown_reason)
+    );
 }
 
 #[test]
