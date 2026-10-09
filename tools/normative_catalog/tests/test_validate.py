@@ -2690,6 +2690,26 @@ class CatalogValidationTests(unittest.TestCase):
                 with self.assertRaises(CatalogValidationError):
                     validate(catalog)
 
+    def test_rejects_attribute_policy_metadata_on_non_attribute_records(self) -> None:
+        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        operation = next(element for element in catalog["elements"] if element.get("kind") == "operation")
+        operation.update(
+            {
+                "source_initially_set_by": "Server",
+                "source_modifiable_by_client": "Yes",
+                "source_deletable_by_client": "No",
+                "source_always_required": "No",
+                "source_policy_table": "Table 30",
+                "source_operation_restrictions": [],
+                "source_conditional_rules": [],
+                "source_value_policies": [],
+            }
+        )
+
+        with self.assertRaises(CatalogValidationError):
+            validate(catalog)
+
     def test_options_and_result_values_have_explicit_inventory_records(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
