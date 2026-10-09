@@ -19,6 +19,11 @@ const ADJUSTMENT_TYPE: u32 = 0x0042_0158;
 const ADJUSTMENT_VALUE: u32 = 0x0042_0162;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME: u32 = 0x0042_000A;
+const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+const ACTIVATION_DATE: u32 = 0x0042_0001;
+const PROTECTION_PERIOD: u32 = 0x0042_0146;
+const QUANTUM_SAFE: u32 = 0x0042_0147;
+const COMMENT: u32 = 0x0042_00FD;
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
@@ -186,15 +191,35 @@ fn request_preserves_name_reference_order_and_omits_identifier_and_adjustment_va
 }
 
 #[test]
-fn omitted_adjustment_value_is_not_materialized_by_the_client() {
-    // §6.1.3 Table 170 makes Adjustment Value optional. §11.1 Table 428 defines
-    // defaults only for Increment/Decrement server processing; it defines no
-    // Negate parameter default. The request preserves caller omission for all
-    // assigned types and never calculates an adjusted attribute value.
-    for raw_adjustment_type in [1, 2, 3] {
+fn omitted_adjustment_value_stays_absent_for_standard_attribute_type_categories() {
+    // §6.1.3 Table 170 makes Adjustment Value optional. §11.1 Table 428 lists
+    // Integer, Interval, and Date Time among the supported Increment/Decrement
+    // categories. Its text defines omitted parameter values for numeric types,
+    // Date Time, and Date Time Extended; it does not state a default for
+    // Interval. This vector checks only that omission stays omitted and does
+    // not materialize or calculate a default. The reference types are defined
+    // by §4.15 Table 57 (Cryptographic Length, Integer; §4.15 Table 58 makes
+    // it required/read-only), §4.43 Table 115 (Protection Period, Interval),
+    // §4.1 Table 29 (Activation Date, Date Time), §4.45 Table 119 (Quantum
+    // Safe, Boolean), and §4.9 Table 45 (Comment, Text String). Their assigned
+    // tags are from §11.56. No §4 attribute has a Date Time Extended type, so
+    // this test does not invent a standard tag for that parameter category.
+    // Boolean/Negate covers a Table 428 adjustment with no parameter default;
+    // Text String/Increment has no Table 428 applicability. Table
+    // 30 constrains Activation Date modification to Pre-Active state; this
+    // serializer vector does not assert that the target object is in that state.
+    let vectors = [
+        ("numeric", CRYPTOGRAPHIC_LENGTH, 1),
+        ("interval", PROTECTION_PERIOD, 2),
+        ("date time", ACTIVATION_DATE, 1),
+        ("boolean", QUANTUM_SAFE, 3),
+        ("other", COMMENT, 1),
+    ];
+
+    for (target_kind, target_tag, raw_adjustment_type) in vectors {
         let request = request(
             None,
-            AttributeReference::tag(0x0042_002F),
+            AttributeReference::tag(target_tag),
             raw_adjustment_type,
             None,
         );
@@ -206,11 +231,17 @@ fn omitted_adjustment_value_is_not_materialized_by_the_client() {
                 .view()
                 .children()
                 .iter()
-                .map(|field| field.tag().raw())
+                .map(|field| (field.tag().raw(), field.item_type()))
                 .collect::<Vec<_>>(),
-            [ATTRIBUTE_REFERENCE, ADJUSTMENT_TYPE],
-            "omission does not cause a default Adjustment Value field to be sent"
+            [
+                (ATTRIBUTE_REFERENCE, ItemType::Enumeration),
+                (ADJUSTMENT_TYPE, ItemType::Enumeration),
+            ],
+            "omission for the {target_kind} target does not add an Adjustment Value field"
         );
+        let fields = payload.view().children();
+        assert_eq!(enumeration_value(&fields[0]), Some(target_tag));
+        assert_eq!(enumeration_value(&fields[1]), Some(raw_adjustment_type));
     }
 }
 
@@ -461,25 +492,47 @@ fn response_preserves_every_table_172_failure_reason_and_message() {
 }
 
 #[test]
-fn absent_attribute_starting_value_remains_server_authoritative() {
+fn standard_reference_identity_does_not_synthesize_a_local_starting_value() {
     // §6.1.3 prose assigns an absent target value of 0 for numeric types and
     // intervals, false for Boolean, and an error for other types to server
-    // processing. Table 170 has no Current Attribute field. This derived
-    // vector only proves the client emits the request selector/operation and
-    // does not synthesize a current or replacement value from object state.
-    let request = request(None, AttributeReference::tag(0x0042_002F), 1, None);
-    let payload = request
-        .to_ttlv_payload()
-        .expect("the client can request a server-side adjustment without local state");
+    // processing. The Attribute Reference identifies a standard attribute by
+    // its §11.56 tag: Cryptographic Length is Integer (§4.15, Table 57),
+    // Protection Period is Interval (§4.43, Table 115), Quantum Safe is
+    // Boolean (§4.45, Table 119), and Comment is Text String (§4.9, Table 45).
+    // §6.1.3 Table 170 has no Current Attribute field. This protocol-level
+    // vector checks only that the request keeps the selected tag and supplied
+    // operation; it does not model remote presence or a calculated value.
+    // Table 58 marks Cryptographic Length server-set, Read-Only, and always
+    // required, so its case is explicitly wire-shape only: it does not claim
+    // that absence is a valid object state or that the request is permitted.
+    let targets = [
+        ("numeric", CRYPTOGRAPHIC_LENGTH, 1),
+        ("interval", PROTECTION_PERIOD, 1),
+        ("boolean", QUANTUM_SAFE, 3),
+        ("other", COMMENT, 1),
+    ];
 
-    assert_eq!(
-        payload
-            .view()
-            .children()
-            .iter()
-            .map(|field| field.tag().raw())
-            .collect::<Vec<_>>(),
-        [ATTRIBUTE_REFERENCE, ADJUSTMENT_TYPE],
-        "the request contains no client-invented current value or adjustment parameter"
-    );
+    for (target_kind, target_tag, raw_adjustment_type) in targets {
+        let request = request(
+            None,
+            AttributeReference::tag(target_tag),
+            raw_adjustment_type,
+            None,
+        );
+        let payload = request
+            .to_ttlv_payload()
+            .expect("the typed request preserves its Attribute Reference");
+        let fields = payload.view().children();
+
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>(),
+            [ATTRIBUTE_REFERENCE, ADJUSTMENT_TYPE],
+            "the {target_kind} request contains no synthesized current or replacement value"
+        );
+        assert_eq!(enumeration_value(&fields[0]), Some(target_tag));
+        assert_eq!(enumeration_value(&fields[1]), Some(raw_adjustment_type));
+    }
 }
