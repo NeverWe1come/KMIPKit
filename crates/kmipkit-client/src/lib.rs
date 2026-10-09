@@ -1,10 +1,16 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
-//! The current typed request enum supports an explicit Discover Versions
-//! operation. The synchronous [`Client`] is constructed from an immutable
+//! The typed request enum supports explicit Discover Versions, Create, Create
+//! Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
+//! Attribute, Get Attributes, Get Attribute List, Modify Attribute, and Set
+//! Attribute operations. Separate methods execute Poll, Cancel, Process, and
+//! Query Asynchronous Requests. The synchronous [`Client`] is constructed from an immutable
 //! client configuration and validated production transport configuration;
 //! callers cannot inject an arbitrary transport or submit raw KMIP bytes.
 //! Timeout overrides are available through the options-bearing typed methods.
+//!
+//! [`ClientBatchOutcome::response`] returns a [`ClientResponseView`] with a
+//! common operation-result accessor and typed accessors for each response.
 //!
 //! The following example prepares a typed batch without sending a request:
 //!
@@ -81,6 +87,18 @@ mod poll_execution_tests;
 mod cancel_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/create_execution_tests.rs"]
+mod create_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_key_pair_execution_tests.rs"]
+mod create_key_pair_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_split_key_execution_tests.rs"]
+mod create_split_key_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/process_execution_tests.rs"]
 mod process_execution_tests;
 
@@ -97,6 +115,18 @@ mod execute_boundary_tests;
 mod attestation_indicator_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/attribute_read_execution_tests.rs"]
+mod attribute_read_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/attribute_mutation_execution_tests.rs"]
+mod attribute_mutation_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/attribute_execution_contract_tests.rs"]
+mod attribute_execution_contract_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/transport_contract_tests.rs"]
 mod transport_contract_tests;
 
@@ -104,6 +134,6 @@ pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
-    ClientRequest, PendingOutcome,
+    ClientRequest, ClientResponseView, PendingOutcome,
 };
 pub use kmipkit_transport::RequestOptions;

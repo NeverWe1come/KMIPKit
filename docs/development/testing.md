@@ -79,6 +79,15 @@ Regenerate assigned result-value lookup tables with
 CI runs the same generator in `--check` mode after validating the normative
 catalog. Generated Rust output must not be edited by hand.
 
+The protocol crate's recognized-attribute TTLV type lookup is generated from
+each catalog attribute's `source_encoding` and tag parent with
+`python -B tools/normative_catalog/generate_attribute_types.py --repo-root . --write`.
+`AttributeSet` validates those declared types while preserving unknown tags,
+unknown Enumeration values, repeated items, and their wire order. The distinct
+Table 150 Vendor Attribute remains validated by its dedicated structure rules.
+CI runs this generator in `--check` mode so the committed Rust lookup cannot
+drift from the reviewed catalog.
+
 ### Transport tests
 
 An ephemeral PKI creates CA, server, and client material. Test valid mTLS,
@@ -189,6 +198,14 @@ and activates a clean virtual environment before installing this requirements
 set. This provides the same Python minor version across GitHub-hosted platforms. The C consumer CI pins CMake 3.31.6
 and Ninja 1.13.2 and selects Ninja explicitly on every platform, so the build
 does not depend on the runner image's default CMake generator.
+
+The Linux adapter-coverage job also measures the checked-in normative attribute
+type generator separately from the adapter aggregate. It runs the focused
+`tools.normative_catalog.tests.test_generate_attribute_types` suite under the
+pinned coverage.py 7.10.6 and enforces at least 95 percent line coverage for
+`tools/normative_catalog/generate_attribute_types.py`. This makes changes to
+the catalog-to-runtime mapping generator subject to the repository's changed
+code coverage requirement without counting tooling as a runtime adapter.
 
 The Rust C ABI implementation, including generated Rust FFI code, is measured
 by `cargo llvm-cov` in `kmipkit-ffi`. Its Linux-only `coverage-c-consumer`

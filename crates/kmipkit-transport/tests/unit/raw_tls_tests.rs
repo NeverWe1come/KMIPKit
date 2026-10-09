@@ -13,7 +13,7 @@ use crate::transport_test_support::{
     server_config, spawn_raw_tls_peer,
 };
 
-const RESPONSE_FRAME: &[u8] = &[0x42, 0x00, 0x7b, 0x01, 0, 0, 0, 0];
+const RESPONSE_FRAME: &[u8] = &[0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 0];
 
 #[test]
 fn verified_raw_tls_exchange_sends_one_request_and_reads_one_frame() {

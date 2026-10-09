@@ -87,6 +87,20 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(contents, r"(?ms)^permissions:\s*\n\s*contents:\s*read\b")
         self.assertNotRegex(contents, r"(?m)^\s*(?:write-all|packages:\s*write|contents:\s*write)\b")
 
+    def test_normative_inventory_checks_generated_attribute_policy(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "normative-inventory")
+        step = re.search(
+            r"(?ms)^      - name: Verify generated attribute policy lookup\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step, "The pull-request normative inventory job must check generated attribute policy.")
+        self.assertRegex(step.group(1), r"(?m)^        id: verify-generated-attribute-policy-lookup$")
+        self.assertRegex(
+            step.group(1),
+            r"(?m)^        run: python3 -B tools/normative_catalog/generate_attribute_policy\.py --repo-root \. --check$",
+        )
+
     def test_external_actions_use_full_commit_sha_and_release_comment(self) -> None:
         contents = self.require_workflow()
         action_lines = [line for line in contents.splitlines() if " uses:" in line]
@@ -124,6 +138,19 @@ class WorkflowContractTests(unittest.TestCase):
             job,
             "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
         )
+
+    def test_language_binding_job_compiles_bilingual_client_guide_examples(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "language-bindings")
+        build_position = job.index("- name: Build the C consumer and example")
+        guide_position = job.find("python scripts/test_user_guide_examples.py")
+
+        self.assertGreaterEqual(
+            guide_position,
+            0,
+            "Every supported platform must compile the marked bilingual Rust examples.",
+        )
+        self.assertGreater(guide_position, build_position)
 
     def test_script_contract_job_runs_negative_extension_fixture_generator_tests(self) -> None:
         contents = self.require_workflow()
@@ -308,6 +335,23 @@ class WorkflowContractTests(unittest.TestCase):
         ):
             with self.subTest(required=required):
                 self.assertIn(required, job)
+
+    def test_adapter_coverage_job_enforces_normative_generator_line_coverage(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "adapter-coverage")
+
+        self.assertIn("- name: Verify normative generator line coverage", job)
+        self.assertIn(
+            "python -m coverage run --data-file=coverage-normative/.coverage "
+            "--source=tools.normative_catalog.generate_attribute_types -m unittest "
+            "tools.normative_catalog.tests.test_generate_attribute_types",
+            job,
+        )
+        self.assertIn(
+            "python -m coverage report --data-file=coverage-normative/.coverage "
+            "--include=tools/normative_catalog/generate_attribute_types.py --fail-under=95",
+            job,
+        )
 
     def test_linux_coverage_job_collects_and_uploads_the_ffi_c_consumer_report(self) -> None:
         contents = self.require_workflow()

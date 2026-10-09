@@ -13,8 +13,11 @@ retries a failed request.
 ## Response framing
 
 1. Read the 8-byte TTLV header into fixed-size stack storage.
-2. Validate root tag/type, declared length alignment, checked arithmetic, and
-   the effective `max_response_bytes` limit.
+2. Validate that the root is a Response Message (`0x42007B`) of Structure
+   type; reject a Request Message root (`0x420078`). OASIS KMIP Specification
+   Version 2.1 §8.4 Table 397 specifies the root structure, and §11.56 assigns
+   the tag values. Also validate declared length alignment, checked arithmetic,
+   and the effective `max_response_bytes` limit.
 3. Only after those checks, allocate one response buffer with fallible bounded
    reservation. Never grow it after response bytes are initialized.
 4. Read exactly the declared value and padding for one frame. EOF before

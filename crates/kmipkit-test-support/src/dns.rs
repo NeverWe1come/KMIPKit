@@ -54,6 +54,16 @@ struct TcpMetrics {
     peak_by_connection: BTreeMap<usize, usize>,
 }
 
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum TcpWorkerKind {
+    Connection,
+    Response,
+}
+
+type TcpConnectionJob = Box<dyn FnOnce() + Send + 'static>;
+type TcpWorkerSpawner =
+    Arc<dyn Fn(TcpWorkerKind, TcpConnectionJob) -> io::Result<()> + Send + Sync + 'static>;
+
 impl LocalDnsFixture {
     /// Binds an ephemeral UDP/TCP port pair and serves the supplied loopback addresses.
     ///
@@ -346,22 +356,73 @@ fn serve_tcp(
     records: &BTreeMap<String, Vec<IpAddr>>,
     state: &Arc<FixtureState>,
 ) {
+    let spawn_worker: TcpWorkerSpawner = Arc::new(spawn_tcp_worker);
+    serve_tcp_with_spawner(listener, records, state, &spawn_worker);
+}
+
+fn serve_tcp_with_spawner(
+    listener: &TcpListener,
+    records: &BTreeMap<String, Vec<IpAddr>>,
+    state: &Arc<FixtureState>,
+    spawn_worker: &TcpWorkerSpawner,
+) {
+    serve_tcp_with_spawner_and_cloner(listener, records, state, spawn_worker, TcpStream::try_clone);
+}
+
+fn serve_tcp_with_spawner_and_cloner<F>(
+    listener: &TcpListener,
+    records: &BTreeMap<String, Vec<IpAddr>>,
+    state: &Arc<FixtureState>,
+    spawn_worker: &TcpWorkerSpawner,
+    clone_stream: F,
+) where
+    F: Fn(&TcpStream) -> io::Result<TcpStream> + Send + Sync + 'static,
+{
+    let clone_stream = Arc::new(clone_stream);
     while !state.stop.load(Ordering::Acquire) {
         match listener.accept() {
             Ok((stream, _)) => {
+                let Ok(stream) = prepare_accepted_tcp_stream(stream) else {
+                    continue;
+                };
                 let connection_id = state.next_tcp_connection.fetch_add(1, Ordering::AcqRel);
+                let Ok(worker_stream) = clone_stream(&stream) else {
+                    serve_tcp_connection(
+                        stream,
+                        records,
+                        state,
+                        connection_id,
+                        spawn_worker,
+                        clone_stream.as_ref(),
+                    );
+                    continue;
+                };
                 let connection_state = Arc::clone(state);
                 let connection_records = records.clone();
-                let _spawn_result = thread::Builder::new()
-                    .name("kmipkit-local-dns-tcp-connection".to_owned())
-                    .spawn(move || {
-                        serve_tcp_connection(
-                            stream,
-                            &connection_records,
-                            &connection_state,
-                            connection_id,
-                        );
-                    });
+                let connection_spawner = Arc::clone(spawn_worker);
+                let connection_cloner = Arc::clone(&clone_stream);
+                let job: TcpConnectionJob = Box::new(move || {
+                    serve_tcp_connection(
+                        worker_stream,
+                        &connection_records,
+                        &connection_state,
+                        connection_id,
+                        &connection_spawner,
+                        connection_cloner.as_ref(),
+                    );
+                });
+                if spawn_worker(TcpWorkerKind::Connection, job).is_err() {
+                    // Keep the accepted socket alive if resource pressure blocks worker creation.
+                    // This rare fallback can delay new accepts until the connection closes.
+                    serve_tcp_connection(
+                        stream,
+                        records,
+                        state,
+                        connection_id,
+                        spawn_worker,
+                        clone_stream.as_ref(),
+                    );
+                }
             }
             Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
                 thread::sleep(READ_POLL_INTERVAL);
@@ -371,16 +432,24 @@ fn serve_tcp(
     }
 }
 
-fn serve_tcp_connection(
+fn prepare_accepted_tcp_stream(stream: TcpStream) -> io::Result<TcpStream> {
+    stream.set_nonblocking(false)?;
+    Ok(stream)
+}
+
+fn serve_tcp_connection<F>(
     mut reader: TcpStream,
     records: &BTreeMap<String, Vec<IpAddr>>,
     state: &Arc<FixtureState>,
     connection_id: usize,
-) {
-    let Ok(writer) = reader.try_clone() else {
-        return;
-    };
-    let writer = Arc::new(Mutex::new(writer));
+    spawn_worker: &TcpWorkerSpawner,
+    clone_stream: &F,
+) where
+    F: Fn(&TcpStream) -> io::Result<TcpStream>,
+{
+    let writer = clone_stream(&reader)
+        .ok()
+        .map(|writer| Arc::new(Mutex::new(writer)));
     while !state.stop.load(Ordering::Acquire) {
         let mut length = [0_u8; 2];
         if reader.read_exact(&mut length).is_err() {
@@ -405,24 +474,71 @@ fn serve_tcp_connection(
             continue;
         };
         begin_tcp_request(state, connection_id);
+        let response = Arc::new(response);
+        let Some(writer) = writer.as_ref() else {
+            send_tcp_response_inline(state, &mut reader, connection_id, &response);
+            continue;
+        };
         let response_state = Arc::clone(state);
-        let response_writer = Arc::clone(&writer);
-        let spawn_result = thread::Builder::new()
-            .name("kmipkit-local-dns-tcp-response".to_owned())
-            .spawn(move || {
-                if wait_for_response_release(&response_state)
-                    && let Ok(mut stream) = response_writer.lock()
-                    && let Ok(response_length) = u16::try_from(response.len())
-                {
-                    let _ = stream.write_all(&response_length.to_be_bytes());
-                    let _ = stream.write_all(&response);
-                }
-                finish_tcp_request(&response_state, connection_id);
-            });
-        if spawn_result.is_err() {
-            finish_tcp_request(state, connection_id);
+        let response_writer = Arc::clone(writer);
+        let worker_response = Arc::clone(&response);
+        let response_spawner = Arc::clone(spawn_worker);
+        let response_job: TcpConnectionJob = Box::new(move || {
+            send_tcp_response(
+                &response_state,
+                &response_writer,
+                connection_id,
+                &worker_response,
+            );
+        });
+        if response_spawner(TcpWorkerKind::Response, response_job).is_err() {
+            send_tcp_response(state, writer, connection_id, &response);
         }
     }
+}
+
+fn send_tcp_response(
+    state: &FixtureState,
+    writer: &Mutex<TcpStream>,
+    connection_id: usize,
+    response: &[u8],
+) {
+    if wait_for_response_release(state)
+        && let Ok(mut stream) = writer.lock()
+    {
+        write_tcp_response_frame(&mut stream, response);
+    }
+    finish_tcp_request(state, connection_id);
+}
+
+fn send_tcp_response_inline(
+    state: &FixtureState,
+    writer: &mut TcpStream,
+    connection_id: usize,
+    response: &[u8],
+) {
+    if wait_for_response_release(state) {
+        write_tcp_response_frame(writer, response);
+    }
+    finish_tcp_request(state, connection_id);
+}
+
+fn write_tcp_response_frame(writer: &mut TcpStream, response: &[u8]) {
+    if let Ok(response_length) = u16::try_from(response.len()) {
+        let _ = writer.write_all(&response_length.to_be_bytes());
+        let _ = writer.write_all(response);
+    }
+}
+
+fn spawn_tcp_worker(kind: TcpWorkerKind, job: TcpConnectionJob) -> io::Result<()> {
+    let name = match kind {
+        TcpWorkerKind::Connection => "kmipkit-local-dns-tcp-connection",
+        TcpWorkerKind::Response => "kmipkit-local-dns-tcp-response",
+    };
+    thread::Builder::new()
+        .name(name.to_owned())
+        .spawn(job)
+        .map(drop)
 }
 
 fn record_question(state: &FixtureState, name: &str, query_type: DnsQueryType) -> bool {

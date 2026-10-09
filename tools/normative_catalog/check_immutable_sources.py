@@ -1,16 +1,26 @@
-"""Compare the complete OASIS source subtree with an exact Git base commit."""
+"""Protect pinned OASIS copies while allowing narrow project-authored additions."""
 
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 
+OASIS_ROOT = "specification/oasis/"
+UPSTREAM_ROOT = "specification/oasis/kmip-2.1/upstream/"
+FIXTURE_ROOT = "specification/oasis/kmip-2.1/fixtures/"
+PROJECT_INVENTORY_PATHS = {
+    "specification/oasis/kmip-2.1/README.md",
+    "specification/oasis/kmip-2.1/SOURCES.md",
+}
+
+
 class ImmutableSourceError(ValueError):
-    """Raised when the protected OASIS source tree differs from its base."""
+    """Raised when protected OASIS source paths differ from their base."""
 
 
 def _git(root: Path, *arguments: str) -> bytes:
@@ -27,28 +37,94 @@ def _git(root: Path, *arguments: str) -> bytes:
     return result.stdout
 
 
-def _git_differs(root: Path, *arguments: str) -> bool:
-    """Use Git's status code so changed-path output is never buffered."""
-    try:
-        result = subprocess.run(
-            ["git", "diff", "--quiet", *arguments],
-            cwd=root,
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+def _changed_paths(root: Path, base_sha: str, *, staged: bool) -> dict[str, set[str]]:
+    """Return NUL-delimited changed OASIS paths and statuses relative to ``base_sha``."""
+    arguments = ["diff"]
+    if staged:
+        arguments.append("--cached")
+    output = _git(
+        root,
+        *arguments,
+        "--name-status",
+        "-z",
+        "--no-renames",
+        base_sha,
+        "--",
+        OASIS_ROOT,
+    )
+    fields = output.split(b"\0")
+    if fields and not fields[-1]:
+        fields.pop()
+    if len(fields) % 2:
+        raise ImmutableSourceError("Git returned a malformed changed-path listing")
+    changed: dict[str, set[str]] = {}
+    for index in range(0, len(fields), 2):
+        try:
+            status = fields[index].decode("ascii")
+        except UnicodeDecodeError as error:
+            raise ImmutableSourceError("Git returned an invalid changed-path status") from error
+        path = os.fsdecode(fields[index + 1])
+        changed.setdefault(path, set()).add(status)
+    return changed
+
+
+def _base_inventory_paths(root: Path, base_sha: str) -> set[str]:
+    """Return project-authored inventory files present in the exact base commit."""
+    output = _git(
+        root,
+        "ls-tree",
+        "--full-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        base_sha,
+        "--",
+        *sorted(PROJECT_INVENTORY_PATHS),
+    )
+    return {os.fsdecode(path) for path in output.split(b"\0") if path}
+
+
+def _is_permitted_change(
+    path: str,
+    statuses: set[str],
+    existing_fixture_paths: set[str],
+    existing_inventory_paths: set[str],
+) -> bool:
+    """Allow only edits to tracked inventories and additions of new fixtures."""
+    if path.startswith(UPSTREAM_ROOT):
+        return False
+    if path in PROJECT_INVENTORY_PATHS:
+        return path in existing_inventory_paths and statuses == {"M"}
+    if path.startswith(FIXTURE_ROOT):
+        return (
+            path not in existing_fixture_paths
+            and "A" in statuses
+            and statuses <= {"A", "M"}
         )
-    except OSError as error:
-        raise ImmutableSourceError("could not inspect the repository's Git tree") from error
-    if result.returncode not in {0, 1}:
-        raise ImmutableSourceError("could not inspect the repository's Git tree")
-    return result.returncode == 1
+    return False
 
 
-def _has_untracked_sources(root: Path) -> bool:
-    """Read one byte of the NUL-delimited listing and stop at the first path."""
+def _base_fixture_paths(root: Path, base_sha: str) -> set[str]:
+    """Return fixture paths already present in the exact base commit."""
+    output = _git(
+        root,
+        "ls-tree",
+        "--full-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        base_sha,
+        "--",
+        FIXTURE_ROOT,
+    )
+    return {os.fsdecode(path) for path in output.split(b"\0") if path}
+
+
+def _untracked_fixture_count(root: Path) -> tuple[bool, int]:
+    """Stream untracked OASIS paths and reject the first path outside fixtures."""
     try:
         process = subprocess.Popen(
-            ["git", "ls-files", "--others", "-z", "--", "specification/oasis/"],
+            ["git", "ls-files", "--others", "-z", "--", OASIS_ROOT],
             cwd=root,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
@@ -59,10 +135,19 @@ def _has_untracked_sources(root: Path) -> bool:
         process.kill()
         process.wait()
         raise ImmutableSourceError("Git did not provide a readable untracked-path stream")
+    fixture_count = 0
+    remainder = b""
     try:
-        has_path = bool(process.stdout.read(1))
-        if has_path:
-            process.kill()
+        while chunk := process.stdout.read(4096):
+            paths = (remainder + chunk).split(b"\0")
+            remainder = paths.pop()
+            for path in paths:
+                if path and not os.fsdecode(path).startswith(FIXTURE_ROOT):
+                    process.kill()
+                    process.wait()
+                    return True, fixture_count
+                if path:
+                    fixture_count += 1
         return_code = process.wait()
     except OSError as error:
         process.kill()
@@ -70,13 +155,15 @@ def _has_untracked_sources(root: Path) -> bool:
         raise ImmutableSourceError("could not inspect untracked OASIS paths") from error
     finally:
         process.stdout.close()
-    if not has_path and return_code != 0:
+    if remainder:
+        raise ImmutableSourceError("Git returned a malformed untracked-path listing")
+    if return_code != 0:
         raise ImmutableSourceError("could not inspect the repository's Git tree")
-    return has_path
+    return False, fixture_count
 
 
 def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]:
-    """Require every tracked and untracked OASIS path to match ``base_sha``."""
+    """Protect upstream sources while permitting tracked inventory edits and new fixtures."""
     root = repo_root.resolve(strict=True)
     if re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", base_sha) is None:
         raise ImmutableSourceError("base must be a full lowercase Git commit SHA")
@@ -88,27 +175,30 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
     if resolved != base_sha:
         raise ImmutableSourceError("base SHA does not resolve to that exact commit")
 
-    working_tree_diff = _git_differs(
-        root,
-        "--no-renames",
-        "--no-ext-diff",
-        base_sha,
-        "--",
-        "specification/oasis/",
-    )
-    index_diff = _git_differs(
-        root,
-        "--cached",
-        "--no-renames",
-        "--no-ext-diff",
-        base_sha,
-        "--",
-        "specification/oasis/",
-    )
-    untracked = _has_untracked_sources(root)
-    if working_tree_diff or index_diff or untracked:
-        raise ImmutableSourceError("specification/oasis differs from the exact base commit")
-    return {"base_sha": base_sha, "changed_path_count": 0}
+    changed_statuses = _changed_paths(root, base_sha, staged=False)
+    for path, statuses in _changed_paths(root, base_sha, staged=True).items():
+        changed_statuses.setdefault(path, set()).update(statuses)
+    existing_fixture_paths = _base_fixture_paths(root, base_sha)
+    existing_inventory_paths = _base_inventory_paths(root, base_sha)
+    unsupported_paths = {
+        path
+        for path, statuses in changed_statuses.items()
+        if not _is_permitted_change(
+            path,
+            statuses,
+            existing_fixture_paths,
+            existing_inventory_paths,
+        )
+    }
+    has_unsupported_untracked, untracked_fixture_count = _untracked_fixture_count(root)
+    if unsupported_paths or has_unsupported_untracked:
+        raise ImmutableSourceError(
+            "only project OASIS README/SOURCES edits and new KMIP 2.1 fixture additions are permitted"
+        )
+    return {
+        "base_sha": base_sha,
+        "changed_path_count": len(changed_statuses) + untracked_fixture_count,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -121,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
     except ImmutableSourceError as error:
         print(f"immutable-source check failed: {error}", file=sys.stderr)
         return 1
-    print(f"OASIS source tree matches base {result['base_sha']}")
+    print(f"Pinned OASIS upstream sources match base {result['base_sha']}")
     return 0
 
 

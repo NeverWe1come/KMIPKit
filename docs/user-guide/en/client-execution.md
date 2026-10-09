@@ -1,16 +1,22 @@
 # Typed client execution
 
 This guide describes the typed execution foundation introduced by
-KMIPKIT-0007 and its current operation APIs. For configuring a production
-connection, see the [TLS and HTTPS transport guide](production-transports.md).
+KMIPKIT-0007 and its current operation APIs: Discover Versions, Create, Create
+Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete Attribute,
+Get Attributes, Get Attribute List, Modify Attribute, and Set Attribute. For
+configuring a production connection, see the [TLS and HTTPS transport guide](production-transports.md).
 
 ## Typed request boundary
 
 The synchronous `kmipkit_client::Client::execute` API accepts a
-`ClientBatch` containing only the closed `ClientRequest` variants. This first
-slice has one operation: an explicitly requested client-to-server Discover
-Versions request. It advertises exactly the KMIP 2.1 version pair (2, 1),
-as specified by OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.
+`ClientBatch` containing only the closed `ClientRequest` variants. The client
+supports explicitly requested client-to-server Discover Versions, Create,
+Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
+Attribute, Get Attributes, Get Attribute List, Modify Attribute, and Set
+Attribute requests. Discover Versions advertises exactly the KMIP 2.1 version pair (2,
+1), as specified by OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.
+Get Attributes and Get Attribute List use their typed request and response
+models from §§6.1.20–6.1.21.
 Passing generic TTLV `Item` or
 `Structure` values, encoded message bytes, or caller-defined conversion hooks
 to this API is not supported.
@@ -21,12 +27,94 @@ operation. The response reports versions only; it does not establish support
 for other operations. An empty version list or a server's `Operation Not
 Supported` result is returned as an ordinary typed outcome.
 
+Each batch item retains its operation-specific response. Calling
+`ClientBatchOutcome::response()` returns a borrowed `ClientResponseView` with
+the shared `result()` accessor and typed accessors for Discover Versions,
+Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
+Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, and
+Set Attribute. When an operation is Pending, its `PendingOutcome` retains that typed
+response and lends the opaque correlation value through
+`asynchronous_correlation_value()`. KMIPKit does not poll or retry
+automatically.
+
 KMIPKit 1.0 is scoped to KMIP 2.1. This slice emits and accepts Protocol
 Version 2.1 only under the product decision recorded for
 [`KMIPKIT-DISC-022`](../../../specs/007-client-execution/spec.md); this is not a
 claim that the implementation provides KMIP §9.16 same-major backward
 compatibility. See [ADR-0002](../../adr/0002-kmip-21-release-scope.md) for the release
 scope.
+
+## Server-generated creation operations
+
+Create, Create Key Pair, and Create Split Key send caller-selected typed
+requests through the same `ClientBatch` writer. Constructing a batch does not
+open a connection; pass it to `Client::execute` when a production client and
+transport configuration are available. Each marked example is compiled by
+`python scripts/test_user_guide_examples.py`.
+
+### Create
+
+Supply the KMIP Object Type and an `AttributeSet`. Create always encodes the
+required outer Attributes Structure, even when it has no members. KMIPKit does
+not choose cryptographic attributes or protection policy.
+
+```rust,kmipkit-test
+use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
+use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType};
+
+fn main() {
+    let request = CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new());
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Create(request)));
+    assert_eq!(batch.items().len(), 1);
+}
+```
+
+### Create Key Pair
+
+The three attribute groups stay distinct. Add only values selected by the
+caller; KMIPKit does not choose an algorithm, length, parameters, or key usage.
+
+```rust,kmipkit-test
+use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
+use kmipkit_protocol::{AttributeSet, CreateKeyPairRequest};
+
+fn main() {
+    let request = CreateKeyPairRequest::new()
+        .with_common_attributes(AttributeSet::new());
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::CreateKeyPair(request)));
+    assert_eq!(batch.items().len(), 1);
+}
+```
+
+### Create Split Key
+
+Supply the object type, part count, threshold, split method, and required
+Attributes Structure. The optional input Unique Identifier is sent only when
+provided. For Polynomial Sharing Prime Field, KMIPKit's FR-015 policy requires
+the caller to provide Prime Field Size explicitly.
+
+```rust,kmipkit-test
+use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
+use kmipkit_protocol::{AttributeSet, CreateSplitKeyRequest, ObjectType, SplitKeyMethod};
+
+fn main() {
+    let request = CreateSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        3,
+        2,
+        SplitKeyMethod::XOR,
+        AttributeSet::new(),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::CreateSplitKey(request)));
+    assert_eq!(batch.items().len(), 1);
+}
+```
+
+Create Split Key may return repeated Unique Identifiers. Its request advertises
+`Maximum Response Size` as the smaller of the local response byte limit and
+the largest signed KMIP Integer. The client independently enforces its local
+byte cap before entering the TTLV decoder, including when a peer ignores the
+advertised size.
 
 `Client::new` constructs a production client from an immutable client
 configuration and a validated `TransportConfig`. It accepts raw TTLV over TLS
@@ -146,12 +234,13 @@ same borrowed `CodecLimits` value is used for request encoding and response
 decoding. Its `max_message_bytes()` is also the exact response-byte cap passed
 to the transport, and the client checks the returned length before decoding.
 There is no separate per-value byte limit; the complete-message limit bounds
-any one value. These are local resource limits, not KMIP header fields.
+any one value. These limits apply locally to every operation.
 
-Discover Versions is not classified as a likely-large response, so this API
-does not include the peer-visible Maximum Response Size field. That field is
-distinct from the local byte cap. Operation specifications assess their
-response sizes separately. Production connect, write, read, and total
+Discover Versions does not advertise the peer-visible Maximum Response Size
+field. Create Split Key does, because its response may contain repeated
+identifiers. That field is distinct from the local byte cap: the client still
+rejects a response that exceeds its configured limit before decoding it.
+Production connect, write, read, and total
 deadlines are described in the [transport guide](production-transports.md).
 
 ## Errors, delivery state, and redaction

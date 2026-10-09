@@ -25,4 +25,4 @@ This guide becomes runnable when implementation tasks are complete. It assumes a
 
 ## Verify
 
-Run focused protocol and client tests, including the separately identified Create-only TTLV derivation from `TC-CREATE-SD-1-21` and table-derived cases, protocol/client coverage gates, formatting, Clippy, documentation build, and the cross-platform CI matrix. The derivation excludes the source case's Get batch item and is not reported as a pass of the complete official case. Table-derived tests are not described as official OASIS cases.
+Run focused protocol and client tests, including the Create-only TTLV derivation from the locally pinned `specification/oasis/kmip-2.1/fixtures/TC-CREATE-SD-1-21.xml` and table-derived cases, protocol/client coverage gates, formatting, Clippy, documentation build, and the cross-platform CI matrix. The derivation excludes the source case's Get request/response items and is not reported as a pass of the complete official case. Table-derived tests are not described as official OASIS cases.

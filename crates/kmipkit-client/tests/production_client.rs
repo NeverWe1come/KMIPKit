@@ -10,7 +10,8 @@
 //! Profiles v2.1 Operating System Profile §5.3.1 items 3–4. Direct adapter
 //! tests use opaque TTLV frames and make no profile-conformance claim. The
 //! Message Extension structure follows OASIS KMIP Specification v2.1 §9.13,
-//! Table 418.
+//! Table 418. Response roots use Response Message (`0x42007B`) under OASIS
+//! KMIP Specification v2.1 §8.4 Table 397 and §11.56.
 //! Request and response boundaries additionally trace to OASIS KMIP
 //! Specification v2.1 §9.12, Table 417, and §§10.1.1–10.1.5; byte-limit and
 //! typed-decoding acceptance is defined by KMIPKIT-0013 FR-014 and FR-017.
@@ -43,7 +44,7 @@ use tokio::runtime::Builder;
 
 const SERVER_NAME: &str = "server.kmipkit.test";
 const REQUEST_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0];
-const SIMPLE_RESPONSE_FRAME: [u8; 8] = [0x42, 0x00, 0x7b, 0x01, 0, 0, 0, 0];
+const SIMPLE_RESPONSE_FRAME: [u8; 8] = [0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 0];
 const PEER_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[derive(Clone, Copy)]

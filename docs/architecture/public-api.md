@@ -6,8 +6,10 @@
 
 The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
 not implement the general builder surface. The current typed client exposes
-Discover Versions for batch execution and separate Poll, Cancel, Process, and
-Query Asynchronous Requests methods.
+Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
+Attribute, and Set Attribute for batch execution, along with separate Poll,
+Cancel, Process, and Query Asynchronous Requests methods.
 KMIPKIT-0013 adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
 configuration. The typed client accepts neither raw request bytes nor an
@@ -33,11 +35,14 @@ from the typed client. Direct users may call each adapter's bounded byte API.
 ### Typed protocol
 
 KMIPKIT-0007 provides synchronous `Client::execute` over an ordered `ClientBatch`
-with a closed typed request set. The initial and only request variant is
-Discover Versions. The API does not accept generic Item values, raw message
-bytes, or caller-implemented conversions. Discover Versions is an explicit
-operation and is never a hidden preflight. Per-call `CodecLimits` bound request
-encoding and response decoding and supply the transport response-byte cap.
+with a closed typed request set. The currently implemented operation variants
+are Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
+Attribute, and Set Attribute. The API does not accept generic Item values, raw
+message bytes, or caller-implemented conversions. Discover Versions is explicit
+and is never a hidden preflight.
+Per-call `CodecLimits` bound request encoding and response decoding and supply
+the transport response-byte cap.
 
 KMIPKIT-0013 constructs the typed client from validated transport
 configuration without arbitrary transport injection. The public low-level
@@ -160,10 +165,14 @@ call itself.
 The 1.0 target includes explicit follow-up operations for KMIP asynchronous
 results. KMIPKIT-0007 represents a Pending item as
 `ClientBatchOutcome::Pending(PendingOutcome)`, preserving the opaque
-Asynchronous Correlation Value behind an explicit borrowed accessor. Its
-formatted output is redacted and KMIPKit-owned storage is zeroized when the
-Pending value is dropped. Poll, Cancel, result processing, automatic waiting,
-and background execution are not implemented by this foundation; see the
+Asynchronous Correlation Value behind an explicit borrowed accessor. The
+Pending value retains the originating typed response; `response()` returns a
+borrowed `ClientResponseView` with a shared operation-result accessor and
+operation-specific accessors. The view also preserves Discover Versions'
+supported-version accessor. Formatted output is redacted and KMIPKit-owned
+correlation storage is zeroized when the Pending value is dropped. Poll,
+Cancel, result processing, automatic waiting, and background execution are not
+implemented by this foundation; see the
 [client execution guide](../user-guide/en/client-execution.md).
 
 ## Secrets
