@@ -5,6 +5,7 @@ mod attribute_policy {
     include!("generated/attribute_policy.rs");
 }
 
+mod activate;
 mod add_attribute;
 mod adjust_attribute;
 mod asynchronous;
@@ -30,6 +31,7 @@ mod query_async_requests;
 mod result;
 mod set_attribute;
 
+pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
 pub use adjust_attribute::{
     AdjustAttributeError, AdjustAttributeRequest, AdjustAttributeResponse, AdjustmentType,
