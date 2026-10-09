@@ -13,8 +13,10 @@ from pathlib import Path
 from typing import Any
 
 if __package__:
+    from .attribute_policy_source import expected_attribute_policies
     from .safe_io import PathSecurityError, confined_path, safe_read_bytes
 else:
+    from attribute_policy_source import expected_attribute_policies
     from safe_io import PathSecurityError, confined_path, safe_read_bytes
 
 
@@ -101,6 +103,9 @@ ELEMENT_FIELDS = {
     "requirement_ids", "profile_ids", "test_case_ids", "feature_spec",
     "implementation_refs", "verification_refs", "payload_tables", "asynchronous_response",
     "source_encoding", "source_requiredness", "source_comment", "source_name",
+    "source_initially_set_by", "source_modifiable_by_client", "source_deletable_by_client",
+    "source_always_required", "source_policy_table", "source_operation_restrictions",
+    "source_conditional_rules", "source_value_policies",
 }
 ELEMENT_KINDS = {
     "operation", "message_field", "structure_member", "credential", "data_type",
@@ -444,6 +449,158 @@ def _source_refs(value: Any, sources: set[str], field: str) -> None:
             _fail(f"{field} refers to an unknown source")
         if not isinstance(reference["section"], str) or not re.fullmatch(r"[0-9]+(?:\.[0-9]+)*", reference["section"]):
             _fail(f"{field} contains an invalid source section")
+
+
+def _attribute_rule_signature(value: Any, field: str) -> tuple[str, tuple[tuple[str, str], ...], str | None]:
+    if not isinstance(value, dict):
+        _fail(f"{field} contains a malformed source rule")
+    expected_fields = {"source_refs", "source_text"}
+    structure_table = value.get("structure_table")
+    if "structure_table" in value:
+        expected_fields.add("structure_table")
+        if not isinstance(structure_table, str) or not structure_table.strip():
+            _fail(f"{field} contains an invalid structure table reference")
+    if set(value) != expected_fields:
+        _fail(f"{field} contains missing or unsupported rule fields")
+    source_text = value.get("source_text")
+    if not isinstance(source_text, str) or not source_text:
+        _fail(f"{field} contains empty source text")
+    references = value.get("source_refs")
+    if not isinstance(references, list) or not references:
+        _fail(f"{field} contains no source references")
+    pairs: list[tuple[str, str]] = []
+    for reference in references:
+        if not isinstance(reference, dict) or set(reference) != {"source_id", "section"}:
+            _fail(f"{field} contains a malformed source reference")
+        source_id, section = reference.get("source_id"), reference.get("section")
+        if not isinstance(source_id, str) or not isinstance(section, str):
+            _fail(f"{field} contains a malformed source reference")
+        pairs.append((source_id, section))
+    if len(pairs) != len(set(pairs)):
+        _fail(f"{field} contains duplicate source references")
+    return source_text, tuple(sorted(pairs)), structure_table
+
+
+def _check_attribute_policy_metadata(catalog: dict[str, Any], repo_root: Path) -> None:
+    standard_fields = {
+        "source_initially_set_by",
+        "source_modifiable_by_client",
+        "source_deletable_by_client",
+        "source_always_required",
+        "source_policy_table",
+        "source_operation_restrictions",
+        "source_conditional_rules",
+    }
+    attributes = [element for element in catalog["elements"] if element.get("kind") == "attribute"]
+    policy_fields = standard_fields | {"source_value_policies"}
+    feature_catalog = any(attribute.get("feature_spec") == "KMIPKIT-0016" for attribute in attributes)
+    has_policy_metadata = any(policy_fields.intersection(attribute) for attribute in attributes)
+    if not feature_catalog and not has_policy_metadata:
+        return
+
+    specification_source = next(
+        (source for source in catalog["sources"] if source.get("source_id") == "KMIPKIT-SRC-spec"),
+        None,
+    )
+    if specification_source is None:
+        _fail("attribute policy validation requires the pinned KMIP Specification source")
+    try:
+        raw = safe_read_bytes(repo_root, specification_source["local_path"], max_bytes=MAX_BYTES)
+        expected_standard, expected_vendor = expected_attribute_policies(raw)
+    except (OSError, UnicodeError, PathSecurityError, ValueError) as error:
+        raise CatalogValidationError("pinned KMIP attribute policy source is unavailable or invalid") from error
+
+    elements = catalog["elements"]
+    standard_by_section: dict[str, dict[str, Any]] = {}
+    vendor_attributes: list[dict[str, Any]] = []
+    for attribute in attributes:
+        sections = [
+            reference["section"]
+            for reference in attribute.get("source_refs", [])
+            if reference.get("source_id") == "KMIPKIT-SRC-spec"
+            and isinstance(reference.get("section"), str)
+            and reference["section"].startswith("4.")
+        ]
+        relevant_sections = [section for section in sections if section in expected_standard or section == "4.60"]
+        if len(relevant_sections) > 1:
+            _fail("attribute source policy has ambiguous §4 source references")
+        section = relevant_sections[0] if relevant_sections else None
+        if section in expected_standard:
+            if section in standard_by_section:
+                _fail("standard attribute source policy section is assigned more than once")
+            standard_by_section[section] = attribute
+            if "source_value_policies" in attribute:
+                _fail("standard attribute cannot contain a Vendor Attribute value policy")
+        elif section == "4.60":
+            vendor_attributes.append(attribute)
+            if standard_fields.intersection(attribute):
+                _fail("Vendor Attribute cannot contain standard attribute mutation fields")
+        elif standard_fields.intersection(attribute) or "source_value_policies" in attribute:
+            _fail("attribute policy metadata is attached to an unsupported attribute")
+
+    if set(standard_by_section) != set(expected_standard):
+        _fail("catalog must contain exactly the 62 pinned standard attribute policy records")
+    for section, attribute in standard_by_section.items():
+        expected = expected_standard[section]
+        if not standard_fields.issubset(attribute):
+            _fail("standard attribute is missing required source policy metadata")
+        for field in (
+            "source_initially_set_by",
+            "source_modifiable_by_client",
+            "source_deletable_by_client",
+            "source_always_required",
+            "source_policy_table",
+        ):
+            if attribute.get(field) != expected[field]:
+                _fail(f"standard attribute {field} does not match its pinned source cell")
+        for field in ("source_operation_restrictions", "source_conditional_rules"):
+            actual = attribute.get(field)
+            source_field = field
+            wanted = expected[source_field]
+            if not isinstance(actual, list):
+                _fail(f"standard attribute {field} must be an array")
+            actual_signatures = [_attribute_rule_signature(entry, field) for entry in actual]
+            wanted_signatures = [_attribute_rule_signature(entry, field) for entry in wanted]
+            if len(actual_signatures) != len(set(actual_signatures)) or sorted(actual_signatures) != sorted(wanted_signatures):
+                _fail(f"standard attribute {field} does not match its exact pinned source rules")
+
+    if len(vendor_attributes) != 1:
+        _fail("catalog must contain one separately traceable Vendor Attribute policy record")
+    vendor_attribute = vendor_attributes[0]
+    policies = vendor_attribute.get("source_value_policies")
+    if not isinstance(policies, list) or len(policies) != 1 or policies[0] != expected_vendor:
+        _fail("Vendor Attribute value policy does not match pinned §4.60 and Table 150")
+
+    member_expectations = {
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME": "Attribute Name",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE": "Attribute Value",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION": "Vendor Identification",
+    }
+    by_id = {element["element_id"]: element for element in elements}
+    for member_id, name in member_expectations.items():
+        member = by_id.get(member_id)
+        if (
+            member is None
+            or member.get("kind") != "structure_member"
+            or member.get("name") != name
+            or vendor_attribute["element_id"] not in member.get("parent_element_ids", [])
+            or not any(
+                reference.get("source_id") == "KMIPKIT-SRC-spec" and reference.get("section") == "4.60"
+                for reference in member.get("source_refs", [])
+            )
+        ):
+            _fail("Vendor Attribute Table 150 member linkage is incomplete")
+    source_test = next(
+        (test for test in catalog["test_cases"] if test.get("test_id") == "KMIPKIT-TEST-CN01-2-42"),
+        None,
+    )
+    if (
+        source_test is None
+        or source_test.get("official_case_id") != "TC-I18N-3-21"
+        or source_test.get("source_id") != "KMIPKIT-SRC-testcases"
+        or "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE" not in source_test.get("element_ids", [])
+    ):
+        _fail("Vendor Attribute source-linked test case is not assigned to its Table 150 value member")
 
 
 def _check_clause_scope_metadata(clause: dict[str, Any]) -> None:
@@ -871,6 +1028,8 @@ def _check_semantics(
                 _fail("operation asynchronous_response must be a string or null")
         elif "payload_tables" in element or "asynchronous_response" in element:
             _fail("payload traceability fields apply only to operation elements")
+
+    _check_attribute_policy_metadata(catalog, repo_root)
 
     for requirement in catalog["requirements"]:
         _check_link_ids(requirement, "element_ids", set(elements), "requirement")
