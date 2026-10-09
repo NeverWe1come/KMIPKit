@@ -539,6 +539,7 @@ def _pinned_fr015_operation_rules() -> list[dict[str, object]]:
         ("4.30", "6.1.3", ("Read-Only attributes SHALL NOT be added or modified using this operation",)),
         ("4.30", "6.1.51", ("Read-Only attributes SHALL NOT be added or modified using this operation",)),
         ("4.57", "4.57", ("The State SHALL NOT be changed by using the Modify Attribute operation",)),
+        ("4.57", "4.57", ("The State SHALL only be changed by the server as a part of other operations",)),
         (
             "4.59",
             "4.59",
@@ -578,21 +579,61 @@ def _pinned_fr015_operation_rules() -> list[dict[str, object]]:
 
 
 def _pinned_fr015_conditional_rules() -> list[dict[str, object]]:
-    """Return §4 prose rules whose literal condition must remain preserved."""
-    return [
-        {
-            "attribute_section": "4.34",
-            "source_text": _pinned_policy_sentence(
-                "4.34", "Although the attribute is optional, once set, MAY NOT be deleted or modified"
-            ),
-            "source_sections": ["4.34"],
-        }
+    """Return reviewed table-qualified values and mutation conditions from §4."""
+    prose_specs = [
+        ("4.1", "Once the state transition from Pre-Active has occurred, then this attribute SHALL NOT be changed or deleted"),
+        ("4.7", "The Certificate Type value SHALL be set by the server when the certificate is created or registered and then SHALL NOT be changed or deleted"),
+        ("4.8", "The Certificate Length SHALL be set by the server when the object is created or registered, and then SHALL NOT be changed or deleted"),
+        ("4.13", "This attribute SHALL be set by the server when the object is created or registered and then SHALL NOT be changed or deleted"),
+        ("4.15", "This attribute SHALL be set by the server when the object is created or registered, and then SHALL NOT be changed or deleted"),
+        ("4.18", "This attribute SHALL NOT be changed or deleted before the object is destroyed, unless the object is in the Pre-Active or Active state"),
+        ("4.21", "The digest(s) are static and SHALL be set by the server when the object is created or registered"),
+        ("4.22", "This attribute SHALL be set by the server when the object is created or registered and then SHALL NOT be changed or deleted"),
+        ("4.25", "This attribute SHALL be set by the server when the object is created or registered, and then SHALL NOT be changed or deleted"),
+        ("4.34", "Although the attribute is optional, once set, MAY NOT be deleted or modified"),
+        ("4.36", "SHALL be set by the server when the object is created or registered and then SHALL NOT be changed or deleted"),
+        ("4.37", "The Opaque Data Type of an Opaque Object SHALL be set by the server when the object is registered and then SHALL NOT be changed or deleted"),
+        ("4.38", "In all cases, once the Original Creation Date is set, it SHALL NOT be deleted or updated"),
+        ("4.40", "Once the Process Start Date has occurred, then this attribute SHALL NOT be changed or deleted"),
+        ("4.41", "Once the Protect Stop Date has occurred, then this attribute SHALL NOT be changed or deleted"),
+        ("4.46", "In all cases, once the Random Number Generator attribute is set, it SHALL NOT be deleted or updated"),
+        ("4.56", "This attribute SHALL be assigned by the key management system upon creation or registration of a Unique Identifier, and then SHALL NOT be changed or deleted"),
+        ("4.58", "This attribute SHALL be assigned by the key management system at creation or registration time, and then SHALL NOT be changed or deleted"),
+        ("4.59", "Changes made via the Modify Attribute operation reflect corrections to the Usage Limits Total value, but they SHALL NOT be changed once the Usage Limits Count value has changed by a Get Usage Allocation operation"),
+        ("4.61", "The X.509 Certificate Identifier SHALL be set by the server when the X.509 certificate is created or registered and then SHALL NOT be changed or deleted"),
+        ("4.62", "These values SHALL NOT be changed or deleted before the object is destroyed"),
+        ("4.63", "The X.509 Certificate Subject SHALL be set by the server based on the information it extracts from the X.509 certificate"),
     ]
+    rules_by_signature: dict[tuple[str, str], dict[str, object]] = {}
+    for section, marker in prose_specs:
+        source_text = _pinned_policy_sentence(section, marker)
+        rules_by_signature[(section, source_text)] = {
+            "attribute_section": section,
+            "source_text": source_text,
+            "source_sections": [section],
+        }
+
+    # Preserve the whole qualified value, including Yes/No and its condition.
+    for section, source in _pinned_attribute_mutation_policies().items():
+        for field in (
+            "source_always_required_text",
+            "source_modifiable_by_client",
+            "source_deletable_by_client",
+        ):
+            source_text = source[field]
+            if source_text in {"Yes", "No"}:
+                continue
+            rules_by_signature[(section, source_text)] = {
+                "attribute_section": section,
+                "source_text": source_text,
+                "source_sections": [section],
+            }
+    return list(rules_by_signature.values())
 
 
 def _rule_entry_matches(entry: object, expected: dict[str, object]) -> bool:
     """Check exact source text, complete source references, and optional table ID."""
-    if not isinstance(entry, dict) or expected["source_text"] not in _nested_strings(entry):
+    if not isinstance(entry, dict) or entry.get("source_text") != expected["source_text"]:
         return False
     references = entry.get("source_refs")
     expected_references = [
@@ -615,6 +656,14 @@ def _rule_entry_matches(entry: object, expected: dict[str, object]) -> bool:
     if "structure_table" in expected and entry.get("structure_table") != expected["structure_table"]:
         return False
     return True
+
+
+def _policy_rule_signature(rule: dict[str, object]) -> tuple[str, tuple[tuple[str, str], ...]]:
+    """Return the pinned rule text and exact ordered source-reference signature."""
+    references = tuple(
+        sorted(("KMIPKIT-SRC-spec", section) for section in rule["source_sections"])
+    )
+    return rule["source_text"], references
 
 
 def _replace_nested_source_text(value: object, old_text: str, new_text: str) -> bool:
@@ -2069,7 +2118,9 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
     def test_actionable_standard_attribute_rules_match_independent_pinned_sources(self) -> None:
-        expected_rules = _pinned_fr015_operation_rules()
+        source_policies = _pinned_attribute_mutation_policies()
+        expected_operation_rules = _pinned_fr015_operation_rules()
+        expected_conditional_rules = _pinned_fr015_conditional_rules()
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         attributes_by_section = {
             reference["section"]: element
@@ -2080,20 +2131,42 @@ class CatalogValidationTests(unittest.TestCase):
             and reference["section"].startswith("4.")
         }
         mismatches = []
-        for expected in expected_rules:
-            section = expected["attribute_section"]
-            entries = attributes_by_section[section].get("source_operation_restrictions")
-            if not isinstance(entries, list) or not any(
-                _rule_entry_matches(entry, expected) for entry in entries
-            ):
-                mismatches.append(
-                    f"section {section}: missing exact rule {expected['source_text']!r} "
-                    f"with source sections {expected['source_sections']!r}"
-                )
+        expected_by_field = {
+            "source_operation_restrictions": expected_operation_rules,
+            "source_conditional_rules": expected_conditional_rules,
+        }
+        for section in source_policies:
+            element = attributes_by_section[section]
+            for field, all_expected in expected_by_field.items():
+                expected = [
+                    rule for rule in all_expected if rule["attribute_section"] == section
+                ]
+                actual = element.get(field)
+                if not isinstance(actual, list):
+                    mismatches.append(f"section {section}: missing explicit {field} array")
+                    continue
+
+                actual_signatures = []
+                for index, entry in enumerate(actual):
+                    matches = [rule for rule in expected if _rule_entry_matches(entry, rule)]
+                    if len(matches) != 1:
+                        mismatches.append(
+                            f"section {section}: unsupported or ambiguous {field}[{index}] "
+                            "source text/reference signature"
+                        )
+                        continue
+                    actual_signatures.append(_policy_rule_signature(matches[0]))
+
+                expected_signatures = sorted(_policy_rule_signature(rule) for rule in expected)
+                if sorted(actual_signatures) != expected_signatures:
+                    mismatches.append(
+                        f"section {section}: {field} is not the exact pinned-source set; "
+                        f"expected {expected_signatures!r}, matched {sorted(actual_signatures)!r}"
+                    )
         self.assertEqual(
             mismatches[:8],
             [],
-            f"{len(mismatches)} pinned-source operation rules are missing or contradictory; "
+            f"{len(mismatches)} pinned-source policy entries are missing, contradictory, or unsupported; "
             f"examples: {mismatches[:8]!r}",
         )
 
@@ -2178,13 +2251,12 @@ class CatalogValidationTests(unittest.TestCase):
                     with self.assertRaises(CatalogValidationError):
                         validate(catalog)
 
-    def test_validator_rejects_removed_or_contradictory_key_value_present_register_rule(self) -> None:
-        expected = next(
+    def test_validator_rejects_removed_or_contradictory_key_value_present_register_modify_rules(self) -> None:
+        expected_rules = [
             rule
             for rule in _pinned_fr015_operation_rules()
             if rule["attribute_section"] == "4.28"
-            and "Register request" in rule["source_text"]
-        )
+        ]
         catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
         baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
         target = next(
@@ -2194,17 +2266,81 @@ class CatalogValidationTests(unittest.TestCase):
             and any(reference.get("section") == "4.28" for reference in element["source_refs"])
         )
         restrictions = target.get("source_operation_restrictions")
-        rule_is_present = isinstance(restrictions, list) and any(
-            _rule_entry_matches(entry, expected) for entry in restrictions
+        rules_are_present = isinstance(restrictions, list) and all(
+            any(_rule_entry_matches(entry, expected) for entry in restrictions)
+            for expected in expected_rules
         )
-        if not rule_is_present:
+        if not rules_are_present:
             with self.assertRaises(CatalogValidationError):
                 validate(baseline)
             return
 
         self.assertIsNotNone(validate(baseline))
-        for mutation in ("removed", "contradictory"):
-            with self.subTest(mutation=mutation):
+        for expected in expected_rules:
+            rule_name = "Register" if "Register request" in expected["source_text"] else "Modify"
+            for mutation in ("removed", "contradictory"):
+                with self.subTest(rule=rule_name, mutation=mutation):
+                    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+                    target = next(
+                        element
+                        for element in catalog["elements"]
+                        if element.get("kind") == "attribute"
+                        and any(
+                            reference.get("source_id") == "KMIPKIT-SRC-spec"
+                            and reference.get("section") == "4.28"
+                            for reference in element["source_refs"]
+                        )
+                    )
+                    restrictions = target["source_operation_restrictions"]
+                    index = next(
+                        index
+                        for index, entry in enumerate(restrictions)
+                        if _rule_entry_matches(entry, expected)
+                    )
+                    if mutation == "removed":
+                        del restrictions[index]
+                    elif not _replace_nested_source_text(
+                        restrictions[index], expected["source_text"], "contradictory source restriction"
+                    ):
+                        self.fail(f"could not mutate the exact section 4.28 {rule_name} restriction")
+                    with self.assertRaises(CatalogValidationError):
+                        validate(catalog)
+
+    def test_validator_rejects_unsupported_standard_policy_entries(self) -> None:
+        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
+        standard_attributes = [
+            element
+            for element in baseline["elements"]
+            if element.get("kind") == "attribute"
+            and any(
+                reference.get("source_id") == "KMIPKIT-SRC-spec"
+                and reference.get("section", "").startswith("4.")
+                and reference.get("section") != "4.60"
+                for reference in element["source_refs"]
+            )
+        ]
+        required_fields = {
+            "source_initially_set_by",
+            "source_modifiable_by_client",
+            "source_deletable_by_client",
+            "source_always_required",
+            "source_policy_table",
+            "source_operation_restrictions",
+            "source_conditional_rules",
+        }
+        complete = len(standard_attributes) == 62 and all(
+            required_fields.issubset(element) for element in standard_attributes
+        )
+        if not complete:
+            with self.assertRaises(CatalogValidationError):
+                validate(baseline)
+            return
+
+        self.assertIsNotNone(validate(baseline))
+        source_reference = {"source_id": "KMIPKIT-SRC-spec", "section": "4.28"}
+        for field in ("source_operation_restrictions", "source_conditional_rules"):
+            with self.subTest(field=field):
                 catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
                 target = next(
                     element
@@ -2216,18 +2352,12 @@ class CatalogValidationTests(unittest.TestCase):
                         for reference in element["source_refs"]
                     )
                 )
-                restrictions = target["source_operation_restrictions"]
-                index = next(
-                    index
-                    for index, entry in enumerate(restrictions)
-                    if _rule_entry_matches(entry, expected)
+                target[field].append(
+                    {
+                        "source_text": "Create operation is prohibited by an unsupported source rule.",
+                        "source_refs": [source_reference],
+                    }
                 )
-                if mutation == "removed":
-                    del restrictions[index]
-                elif not _replace_nested_source_text(
-                    restrictions[index], expected["source_text"], "contradictory source restriction"
-                ):
-                    self.fail("could not mutate the exact section 4.28 Register restriction")
                 with self.assertRaises(CatalogValidationError):
                     validate(catalog)
 
@@ -2286,7 +2416,11 @@ class CatalogValidationTests(unittest.TestCase):
                     validate(catalog)
 
     def test_validator_rejects_removed_or_contradictory_nist_key_type_condition(self) -> None:
-        expected = _pinned_fr015_conditional_rules()[0]
+        expected = next(
+            rule
+            for rule in _pinned_fr015_conditional_rules()
+            if rule["attribute_section"] == "4.34"
+        )
         catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
         baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
         target = next(
