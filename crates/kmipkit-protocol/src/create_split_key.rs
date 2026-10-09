@@ -11,7 +11,7 @@ use crate::{
     UniqueIdentifier,
 };
 
-const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0003;
+const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const SUCCESS: u32 = 0;
 
 const OBJECT_TYPE: u32 = 0x0042_0057;
