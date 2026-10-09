@@ -1399,7 +1399,7 @@ class CatalogValidationTests(unittest.TestCase):
         link_cases((100,), "KMIPKIT-ELEM-OP-C2S-ENCRYPT", "KMIPKIT-ELEM-OP-C2S-DECRYPT")
         link_cases(range(102, 105), "KMIPKIT-ELEM-OP-C2S-HASH")
         link_cases((105,), "KMIPKIT-ELEM-OP-C2S-MAC")
-        link_cases((106,), sign)
+        link_cases((106, 38), sign)
         link_cases((107,), sign, verify)
 
         link(
