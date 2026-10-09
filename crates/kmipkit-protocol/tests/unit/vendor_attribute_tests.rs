@@ -16,6 +16,12 @@ use attribute_fixtures::{
     vendor_attribute_table_150,
 };
 
+const TABLE_150_REQUIRED_FIELDS: [(u32, ItemType); 3] = [
+    (VENDOR_IDENTIFICATION_TAG, ItemType::TextString),
+    (ATTRIBUTE_NAME_TAG, ItemType::TextString),
+    (ATTRIBUTE_VALUE_TAG, ItemType::ByteString),
+];
+
 #[test]
 fn vendor_attribute_table_150_preserves_required_members_in_order() {
     let attributes = AttributeSet::try_new([vendor_attribute_table_150()])
@@ -35,12 +41,5 @@ fn vendor_attribute_table_150_preserves_required_members_in_order() {
     });
     let fields = fields.expect("Vendor Attribute is a Structure");
 
-    assert_eq!(
-        fields,
-        vec![
-            (VENDOR_IDENTIFICATION_TAG, ItemType::TextString),
-            (ATTRIBUTE_NAME_TAG, ItemType::TextString),
-            (ATTRIBUTE_VALUE_TAG, ItemType::ByteString),
-        ]
-    );
+    assert_eq!(fields, TABLE_150_REQUIRED_FIELDS);
 }
