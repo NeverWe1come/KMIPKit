@@ -85,6 +85,10 @@ mod create_tests;
 mod activate_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/destroy_operation_tests.rs"]
+mod destroy_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_tests.rs"]
 mod create_key_pair_tests;
 
