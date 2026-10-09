@@ -38,6 +38,8 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
 const ATTRIBUTES: u32 = 0x0042_0125;
+const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME: u32 = 0x0042_000A;
 
@@ -45,6 +47,8 @@ const OBJECT_IDENTIFIER: &str = "object-id-17";
 const VENDOR: &str = "KMIPKit_TestVendor";
 const ATTRIBUTE_NAME_SENTINEL: &str = "Opaque.ExecutionAttribute";
 const RESULT_MESSAGE_SENTINEL: &str = "attribute read rejected by server";
+const REQUEST_BATCH_ID: &[u8] = b"attribute-read-batch-id";
+const ASYNC_CORRELATION_SENTINEL: &[u8] = &[0xA5, 0x00, 0x5A, 0xFF];
 
 // OASIS KMIP v2.1 §6.1.20/Table 225 lists Invalid Attribute plus all nine
 // Table 228 reasons. Each operation table is exercised through its own client
@@ -150,6 +154,40 @@ fn response_bytes(
         &CodecLimits::defaults(),
     )
     .expect("the response fixture has valid KMIP 2.1 TTLV framing")
+}
+
+fn pending_response_bytes(operation: u32, response_payload: Structure) -> Vec<u8> {
+    let version = test_structure([
+        test_item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        test_item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+    ]);
+    let header = test_structure([
+        test_item(PROTOCOL_VERSION, Value::structure(version)),
+        test_item(TIME_STAMP, Value::date_time(1)),
+        test_item(BATCH_COUNT, Value::integer(1)),
+    ]);
+    let batch_item = test_structure([
+        test_item(OPERATION, Value::enumeration(operation)),
+        test_item(
+            UNIQUE_BATCH_ITEM_ID,
+            Value::byte_string(REQUEST_BATCH_ID.to_vec()),
+        ),
+        test_item(RESULT_STATUS, Value::enumeration(2)),
+        test_item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(ASYNC_CORRELATION_SENTINEL.to_vec()),
+        ),
+        test_item(RESPONSE_PAYLOAD, Value::structure(response_payload)),
+    ]);
+
+    encode_message_for_test(
+        test_structure([
+            test_item(RESPONSE_HEADER, Value::structure(header)),
+            test_item(BATCH_ITEM, Value::structure(batch_item)),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("the Pending response fixture has valid KMIP 2.1 TTLV framing")
 }
 
 fn with_request_payload<R>(bytes: &[u8], callback: impl FnOnce(StructureView<'_>) -> R) -> R {
@@ -461,5 +499,85 @@ fn get_attribute_list_preserves_every_table_228_failure_result_without_retry() {
             "Result Message remains unchanged for reason {reason:#x}"
         );
         assert!(response.attribute_references().is_none());
+    }
+}
+
+#[test]
+fn pending_attribute_reads_preserve_typed_response_and_correlation_without_retry() {
+    for (operation, request) in [
+        (
+            GET_ATTRIBUTES_OPERATION,
+            ClientRequest::get_attributes(
+                GetAttributesRequest::try_new(None, [])
+                    .expect("the empty Attribute Reference list is valid"),
+            ),
+        ),
+        (
+            GET_ATTRIBUTE_LIST_OPERATION,
+            ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+        ),
+    ] {
+        let (mut client, fake, _) = client_for(ExchangeScript::Success {
+            response: pending_response_bytes(
+                operation,
+                if operation == GET_ATTRIBUTES_OPERATION {
+                    attributes_response_payload()
+                } else {
+                    attribute_list_response_payload()
+                },
+            ),
+            request_write_chunks: Vec::new(),
+        });
+        let result = client
+            .execute(
+                ClientBatch::new(
+                    ClientBatchItem::new(request)
+                        .with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
+                )
+                .with_asynchronous_indicator(1),
+                &CodecLimits::defaults(),
+            )
+            .expect("a permitted Pending result remains an explicit outcome");
+
+        assert_eq!(
+            fake.borrow().exchange_count(),
+            1,
+            "operation {operation:#x}"
+        );
+        let item = result.get(0).expect("one response is associated");
+        assert_eq!(
+            item.unique_batch_item_id(),
+            Some(REQUEST_BATCH_ID),
+            "the response remains associated with its request ID"
+        );
+        assert_eq!(
+            item.outcome().asynchronous_correlation_value(),
+            Some(ASYNC_CORRELATION_SENTINEL),
+            "the opaque correlation value is preserved byte-for-byte"
+        );
+        let ClientBatchOutcome::Pending(pending) = item.outcome() else {
+            panic!("an accepted Pending result must remain a Pending outcome");
+        };
+        assert_eq!(
+            pending.asynchronous_correlation_value(),
+            ASYNC_CORRELATION_SENTINEL,
+            "the opaque correlation value is preserved byte-for-byte"
+        );
+        let response = item.outcome().response();
+        assert_eq!(response.result().status().raw(), 2);
+        if operation == GET_ATTRIBUTES_OPERATION {
+            assert!(response.get_attributes().is_some());
+            assert!(response.get_attribute_list().is_none());
+        } else {
+            assert!(response.get_attributes().is_none());
+            assert!(response.get_attribute_list().is_some());
+        }
+
+        let rendered = format!("{:?}", item.outcome());
+        let visible_correlation = format!("{ASYNC_CORRELATION_SENTINEL:?}");
+        assert!(!rendered.contains("A5005AFF"));
+        assert!(!rendered.contains(&visible_correlation));
+        assert!(!format!("{}", item.outcome()).contains("A5005AFF"));
+        assert!(!format!("{}", item.outcome()).contains(&visible_correlation));
     }
 }
