@@ -41,3 +41,13 @@ redacted. The T012/T013 protocol models still derive Debug over their
 `DestroyResponse` can expose a server-returned text identifier. That
 protocol-model redaction gap predates T014 and is reported separately for
 security review; it was not changed within this client-dispatch task.
+
+## T014 Refactor review
+
+The Activate and Destroy convenience methods both route through
+`Client::execute_with_options`, and their response conversion already shares
+`read_operation_outcome`. Their remaining repeated code is the operation-specific
+request construction and wrapper method signatures; extracting it would add a
+generic helper without simplifying the flow. No behavior-preserving refactor was
+justified. The full client tests and checks recorded above were rerun after the
+Debug regression fix and passed.
