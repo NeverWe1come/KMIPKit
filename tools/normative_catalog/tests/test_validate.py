@@ -531,6 +531,7 @@ def _pinned_usage_limits_count_table() -> tuple[str, list[str]]:
 def _pinned_fr015_operation_rules() -> list[dict[str, object]]:
     """Return actionable attribute rules and exact source sections from FR-015's source list."""
     rule_specs = [
+        ("4.28", "4.28", ("It SHALL NOT be specified by the client in a Register request",)),
         ("4.28", "4.28", ("Key Value Present SHALL NOT be modified by either the client or the server",)),
         ("4.30", "4.30", ("This attribute is read-only for clients",)),
         ("4.30", "4.30", ("It SHALL be modified by the server only",)),
@@ -2177,6 +2178,59 @@ class CatalogValidationTests(unittest.TestCase):
                     with self.assertRaises(CatalogValidationError):
                         validate(catalog)
 
+    def test_validator_rejects_removed_or_contradictory_key_value_present_register_rule(self) -> None:
+        expected = next(
+            rule
+            for rule in _pinned_fr015_operation_rules()
+            if rule["attribute_section"] == "4.28"
+            and "Register request" in rule["source_text"]
+        )
+        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
+        target = next(
+            element
+            for element in baseline["elements"]
+            if element.get("kind") == "attribute"
+            and any(reference.get("section") == "4.28" for reference in element["source_refs"])
+        )
+        restrictions = target.get("source_operation_restrictions")
+        rule_is_present = isinstance(restrictions, list) and any(
+            _rule_entry_matches(entry, expected) for entry in restrictions
+        )
+        if not rule_is_present:
+            with self.assertRaises(CatalogValidationError):
+                validate(baseline)
+            return
+
+        self.assertIsNotNone(validate(baseline))
+        for mutation in ("removed", "contradictory"):
+            with self.subTest(mutation=mutation):
+                catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+                target = next(
+                    element
+                    for element in catalog["elements"]
+                    if element.get("kind") == "attribute"
+                    and any(
+                        reference.get("source_id") == "KMIPKIT-SRC-spec"
+                        and reference.get("section") == "4.28"
+                        for reference in element["source_refs"]
+                    )
+                )
+                restrictions = target["source_operation_restrictions"]
+                index = next(
+                    index
+                    for index, entry in enumerate(restrictions)
+                    if _rule_entry_matches(entry, expected)
+                )
+                if mutation == "removed":
+                    del restrictions[index]
+                elif not _replace_nested_source_text(
+                    restrictions[index], expected["source_text"], "contradictory source restriction"
+                ):
+                    self.fail("could not mutate the exact section 4.28 Register restriction")
+                with self.assertRaises(CatalogValidationError):
+                    validate(catalog)
+
     def test_validator_rejects_removed_or_contradictory_usage_limits_qualified_condition(self) -> None:
         source_text = _pinned_attribute_mutation_policies()["4.59"]["source_modifiable_by_client"]
         source_reference = {"source_id": "KMIPKIT-SRC-spec", "section": "4.59"}
@@ -2314,7 +2368,14 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsInstance(prohibited_operations, list)
         self.assertCountEqual(
             prohibited_operations,
-            ["Set Attribute", "Add Attribute", "Adjust Attribute", "Modify Attribute", "Delete Attribute"],
+            [
+                "created (provided during object creation)",
+                "Set Attribute",
+                "Add Attribute",
+                "Adjust Attribute",
+                "Modify Attribute",
+                "Delete Attribute",
+            ],
         )
         self.assertEqual(len(prohibited_operations), len(set(prohibited_operations)))
 
@@ -2429,6 +2490,29 @@ class CatalogValidationTests(unittest.TestCase):
             ("wrong source predicate value", "equals", "x"),
             ("wrong origin meaning", "source_indicates_origin", "client_created"),
             ("missing prohibited operations", "prohibited_client_operations", None),
+            (
+                "missing created source action",
+                "prohibited_client_operations",
+                ["Set Attribute", "Add Attribute", "Adjust Attribute", "Modify Attribute", "Delete Attribute"],
+            ),
+            (
+                "created source action incorrectly mapped to Create",
+                "prohibited_client_operations",
+                ["Create", "Set Attribute", "Add Attribute", "Adjust Attribute", "Modify Attribute", "Delete Attribute"],
+            ),
+            (
+                "unsupported operation accepted as prohibited",
+                "prohibited_client_operations",
+                [
+                    "created (provided during object creation)",
+                    "Set Attribute",
+                    "Add Attribute",
+                    "Adjust Attribute",
+                    "Modify Attribute",
+                    "Delete Attribute",
+                    "Register",
+                ],
+            ),
         ]
         for label, field, value in mutations:
             with self.subTest(case=label):
@@ -2451,6 +2535,7 @@ class CatalogValidationTests(unittest.TestCase):
                             "source_indicates_origin": "server_created",
                         },
                         "prohibited_client_operations": [
+                            "created (provided during object creation)",
                             "Set Attribute", "Add Attribute", "Adjust Attribute", "Modify Attribute", "Delete Attribute",
                         ],
                     }
@@ -2463,7 +2548,7 @@ class CatalogValidationTests(unittest.TestCase):
                     predicate = policy.setdefault("value_predicate", {})
                     assert isinstance(predicate, dict)
                     predicate[field] = value
-                elif field == "prohibited_client_operations":
+                elif field == "prohibited_client_operations" and value is None:
                     policy.pop(field, None)
                 else:
                     policy[field] = value
