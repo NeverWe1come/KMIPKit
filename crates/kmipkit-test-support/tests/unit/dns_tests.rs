@@ -267,7 +267,7 @@ fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
     )]);
-    let (spawner, spawn_attempts, _connection_worker_done, connection_worker_started) =
+    let (spawner, spawn_attempts, _connection_worker_done, connection_worker_started, _) =
         tcp_worker_spawner_failing(TcpWorkerKind::Connection);
     let (local_addr, state, server) =
         start_tcp_server_for_spawn_test(records, spawner, TcpStream::try_clone);
@@ -306,7 +306,7 @@ fn accepted_tcp_connection_is_served_inline_when_accepted_stream_clone_fails() {
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
     )]);
-    let (spawner, spawn_attempts, _connection_worker_done, _connection_worker_started) =
+    let (spawner, spawn_attempts, _connection_worker_done, _connection_worker_started, _) =
         tcp_worker_spawner_failing(TcpWorkerKind::Response);
     let clone_attempts = Arc::new(AtomicUsize::new(0));
     let observed_clone_attempts = Arc::clone(&clone_attempts);
@@ -346,7 +346,7 @@ fn accepted_tcp_connection_is_served_inline_when_both_stream_clones_fail() {
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
     )]);
-    let (spawner, spawn_attempts, _connection_worker_done, _connection_worker_started) =
+    let (spawner, spawn_attempts, _connection_worker_done, _connection_worker_started, _) =
         tcp_worker_spawner_failing(TcpWorkerKind::Response);
     let clone_attempts = Arc::new(AtomicUsize::new(0));
     let observed_clone_attempts = Arc::clone(&clone_attempts);
@@ -389,7 +389,7 @@ fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
         "fixture.kmipkit.test".to_owned(),
         vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
     )]);
-    let (spawner, spawn_attempts, connection_worker_done, connection_worker_started) =
+    let (spawner, spawn_attempts, connection_worker_done, connection_worker_started, _) =
         tcp_worker_spawner_failing(TcpWorkerKind::Response);
     let (local_addr, state, server) =
         start_tcp_server_for_spawn_test(records, spawner, TcpStream::try_clone);
@@ -429,6 +429,190 @@ fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
     assert_eq!(metrics.peak_by_connection.get(&1), Some(&1));
 }
 
+#[test]
+fn dns_response_is_written_inline_when_writer_clone_fails_in_connection_worker() {
+    let _guard = lock_network_fixture();
+    let records = BTreeMap::from([(
+        "fixture.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
+    )]);
+    let (spawner, spawn_attempts, connection_worker_done, connection_worker_started, _) =
+        tcp_worker_spawner_with_failure(None);
+    let clone_attempts = Arc::new(AtomicUsize::new(0));
+    let accepted_clone_succeeded = Arc::new(AtomicUsize::new(0));
+    let injected_writer_clone_failure = Arc::new(AtomicUsize::new(0));
+    let observed_clone_attempts = Arc::clone(&clone_attempts);
+    let observed_accepted_success = Arc::clone(&accepted_clone_succeeded);
+    let observed_writer_failure = Arc::clone(&injected_writer_clone_failure);
+    let (local_addr, state, server) =
+        start_tcp_server_for_spawn_test(records, spawner, move |stream: &TcpStream| {
+            match observed_clone_attempts.fetch_add(1, Ordering::AcqRel) {
+                0 => {
+                    let clone = retry_tcp_stream_clone(stream)?;
+                    observed_accepted_success.fetch_add(1, Ordering::AcqRel);
+                    Ok(clone)
+                }
+                1 => {
+                    observed_writer_failure.fetch_add(1, Ordering::AcqRel);
+                    Err(io::Error::other("injected writer-stream clone failure"))
+                }
+                _ => Err(io::Error::other("unexpected additional TCP stream clone")),
+            }
+        });
+
+    let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
+    client
+        .set_read_timeout(Some(Duration::from_secs(3)))
+        .expect("DNS TCP read timeout should be configured");
+    write_tcp_dns_query(&mut client, &fixture_query(1))
+        .expect("framed DNS question should be sent");
+    let response = read_tcp_dns_response(&mut client);
+    let _shutdown_result = client.shutdown(Shutdown::Both);
+    let connection_worker_started = connection_worker_started
+        .recv_timeout(Duration::from_secs(1))
+        .expect("connection worker spawn should report its outcome");
+    if connection_worker_started {
+        connection_worker_done
+            .recv_timeout(Duration::from_secs(1))
+            .expect("connection worker should finish before metrics are inspected");
+    }
+    state.stop.store(true, Ordering::Release);
+    let server_result = server.join();
+
+    assert!(
+        connection_worker_started,
+        "request must run in a spawned worker"
+    );
+    assert_eq!(clone_attempts.load(Ordering::Acquire), 2);
+    assert_eq!(accepted_clone_succeeded.load(Ordering::Acquire), 1);
+    assert_eq!(injected_writer_clone_failure.load(Ordering::Acquire), 1);
+    assert_eq!(spawn_attempts.connection.load(Ordering::Acquire), 1);
+    assert_eq!(spawn_attempts.response.load(Ordering::Acquire), 0);
+    assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
+    let response = response.expect("writer clone fallback should return a DNS response");
+    assert_eq!(read_u16(&response, 0), Some(0));
+    assert_eq!(read_u16(&response, 6), Some(1));
+    let metrics = state
+        .tcp_metrics
+        .lock()
+        .expect("TCP metrics should remain available");
+    assert_eq!(metrics.active_by_connection.get(&1), Some(&0));
+    assert_eq!(metrics.peak_by_connection.get(&1), Some(&1));
+}
+
+#[test]
+fn connection_worker_spawn_failure_is_reached_after_successful_clones() {
+    let _guard = lock_network_fixture();
+    let records = BTreeMap::from([(
+        "fixture.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
+    )]);
+    let (
+        spawner,
+        spawn_attempts,
+        _connection_worker_done,
+        connection_worker_started,
+        response_worker_done,
+    ) = tcp_worker_spawner_with_failure(Some(TcpWorkerKind::Connection));
+    let clone_attempts = Arc::new(AtomicUsize::new(0));
+    let observed_clone_attempts = Arc::clone(&clone_attempts);
+    let (local_addr, state, server) =
+        start_tcp_server_for_spawn_test(records, spawner, move |stream: &TcpStream| {
+            observed_clone_attempts.fetch_add(1, Ordering::AcqRel);
+            retry_tcp_stream_clone(stream)
+        });
+
+    let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
+    client
+        .set_read_timeout(Some(Duration::from_secs(3)))
+        .expect("DNS TCP read timeout should be configured");
+    write_tcp_dns_query(&mut client, &fixture_query(1))
+        .expect("framed DNS question should be sent");
+    let response = read_tcp_dns_response(&mut client);
+    let _shutdown_result = client.shutdown(Shutdown::Both);
+    let connection_worker_started = connection_worker_started
+        .recv_timeout(Duration::from_secs(1))
+        .expect("injected connection worker failure should report its outcome");
+    response_worker_done
+        .recv_timeout(Duration::from_secs(1))
+        .expect("fallback response worker should finish before metrics are inspected");
+    state.stop.store(true, Ordering::Release);
+    let server_result = server.join();
+
+    assert!(
+        !connection_worker_started,
+        "injected connection spawn must fail"
+    );
+    assert_eq!(clone_attempts.load(Ordering::Acquire), 2);
+    assert_eq!(spawn_attempts.connection.load(Ordering::Acquire), 1);
+    assert_eq!(spawn_attempts.response.load(Ordering::Acquire), 1);
+    assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
+    let response = response.expect("accepted query should receive a DNS response");
+    assert_eq!(read_u16(&response, 0), Some(0));
+    assert_eq!(read_u16(&response, 6), Some(1));
+    let metrics = state
+        .tcp_metrics
+        .lock()
+        .expect("TCP metrics should remain available");
+    assert_eq!(metrics.active_by_connection.get(&1), Some(&0));
+    assert_eq!(metrics.peak_by_connection.get(&1), Some(&1));
+}
+
+#[test]
+fn response_worker_spawn_failure_is_reached_after_successful_clones() {
+    let _guard = lock_network_fixture();
+    let records = BTreeMap::from([(
+        "fixture.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
+    )]);
+    let (spawner, spawn_attempts, connection_worker_done, connection_worker_started, _) =
+        tcp_worker_spawner_with_failure(Some(TcpWorkerKind::Response));
+    let clone_attempts = Arc::new(AtomicUsize::new(0));
+    let observed_clone_attempts = Arc::clone(&clone_attempts);
+    let (local_addr, state, server) =
+        start_tcp_server_for_spawn_test(records, spawner, move |stream: &TcpStream| {
+            observed_clone_attempts.fetch_add(1, Ordering::AcqRel);
+            retry_tcp_stream_clone(stream)
+        });
+
+    let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
+    client
+        .set_read_timeout(Some(Duration::from_secs(3)))
+        .expect("DNS TCP read timeout should be configured");
+    write_tcp_dns_query(&mut client, &fixture_query(1))
+        .expect("framed DNS question should be sent");
+    let response = read_tcp_dns_response(&mut client);
+    let _shutdown_result = client.shutdown(Shutdown::Both);
+    let connection_worker_started = connection_worker_started
+        .recv_timeout(Duration::from_secs(1))
+        .expect("connection worker spawn should report its outcome");
+    if connection_worker_started {
+        connection_worker_done
+            .recv_timeout(Duration::from_secs(1))
+            .expect("connection worker should finish before metrics are inspected");
+    }
+    state.stop.store(true, Ordering::Release);
+    let server_result = server.join();
+
+    assert!(
+        connection_worker_started,
+        "request must run in a spawned worker"
+    );
+    assert_eq!(clone_attempts.load(Ordering::Acquire), 2);
+    assert_eq!(spawn_attempts.connection.load(Ordering::Acquire), 1);
+    assert_eq!(spawn_attempts.response.load(Ordering::Acquire), 1);
+    assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
+    let response = response.expect("DNS response should be sent if its worker cannot start");
+    assert_eq!(read_u16(&response, 0), Some(0));
+    assert_eq!(read_u16(&response, 6), Some(1));
+    let metrics = state
+        .tcp_metrics
+        .lock()
+        .expect("TCP metrics should remain available");
+    assert_eq!(metrics.active_by_connection.get(&1), Some(&0));
+    assert_eq!(metrics.peak_by_connection.get(&1), Some(&1));
+}
+
 fn tcp_worker_spawner_failing(
     failed_kind: TcpWorkerKind,
 ) -> (
@@ -436,14 +620,28 @@ fn tcp_worker_spawner_failing(
     Arc<TcpWorkerSpawnAttempts>,
     Receiver<()>,
     Receiver<bool>,
+    Receiver<()>,
+) {
+    tcp_worker_spawner_with_failure(Some(failed_kind))
+}
+
+fn tcp_worker_spawner_with_failure(
+    failed_kind: Option<TcpWorkerKind>,
+) -> (
+    TcpWorkerSpawner,
+    Arc<TcpWorkerSpawnAttempts>,
+    Receiver<()>,
+    Receiver<bool>,
+    Receiver<()>,
 ) {
     let attempts = Arc::new(TcpWorkerSpawnAttempts::default());
     let spawner_attempts = Arc::clone(&attempts);
     let (connection_worker_done_sender, connection_worker_done) = mpsc::channel();
     let (connection_worker_started_sender, connection_worker_started) = mpsc::channel();
+    let (response_worker_done_sender, response_worker_done) = mpsc::channel();
     let spawner: TcpWorkerSpawner = Arc::new(move |kind, job| {
         spawner_attempts.record_attempt(kind);
-        if kind == failed_kind {
+        if Some(kind) == failed_kind {
             if kind == TcpWorkerKind::Connection {
                 let _ = connection_worker_started_sender.send(false);
             }
@@ -458,7 +656,13 @@ fn tcp_worker_spawner_failing(
             let _ = connection_worker_started_sender.send(spawn_result.is_ok());
             spawn_result.map(drop)
         } else {
-            thread::Builder::new().spawn(job).map(drop)
+            let done_sender = response_worker_done_sender.clone();
+            thread::Builder::new()
+                .spawn(move || {
+                    job();
+                    let _ = done_sender.send(());
+                })
+                .map(drop)
         }
     });
     (
@@ -466,7 +670,27 @@ fn tcp_worker_spawner_failing(
         attempts,
         connection_worker_done,
         connection_worker_started,
+        response_worker_done,
     )
+}
+
+fn retry_tcp_stream_clone(stream: &TcpStream) -> io::Result<TcpStream> {
+    const MAX_CLONE_ATTEMPTS: usize = 100;
+    const RETRY_DELAY: Duration = Duration::from_millis(2);
+
+    let mut last_error = io::Error::other("TCP stream clone attempts were not started");
+    for attempt in 0..MAX_CLONE_ATTEMPTS {
+        match stream.try_clone() {
+            Ok(clone) => return Ok(clone),
+            Err(error) => {
+                last_error = error;
+                if attempt + 1 < MAX_CLONE_ATTEMPTS {
+                    thread::sleep(RETRY_DELAY);
+                }
+            }
+        }
+    }
+    Err(last_error)
 }
 
 #[derive(Default)]
