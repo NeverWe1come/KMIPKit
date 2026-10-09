@@ -497,10 +497,8 @@ fn send_tcp_response(
 ) {
     if wait_for_response_release(state)
         && let Ok(mut stream) = writer.lock()
-        && let Ok(response_length) = u16::try_from(response.len())
     {
-        let _ = stream.write_all(&response_length.to_be_bytes());
-        let _ = stream.write_all(response);
+        write_tcp_response_frame(&mut stream, response);
     }
     finish_tcp_request(state, connection_id);
 }
@@ -511,13 +509,17 @@ fn send_tcp_response_inline(
     connection_id: usize,
     response: &[u8],
 ) {
-    if wait_for_response_release(state)
-        && let Ok(response_length) = u16::try_from(response.len())
-    {
+    if wait_for_response_release(state) {
+        write_tcp_response_frame(writer, response);
+    }
+    finish_tcp_request(state, connection_id);
+}
+
+fn write_tcp_response_frame(writer: &mut TcpStream, response: &[u8]) {
+    if let Ok(response_length) = u16::try_from(response.len()) {
         let _ = writer.write_all(&response_length.to_be_bytes());
         let _ = writer.write_all(response);
     }
-    finish_tcp_request(state, connection_id);
 }
 
 fn spawn_tcp_worker(kind: TcpWorkerKind, job: TcpConnectionJob) -> io::Result<()> {
