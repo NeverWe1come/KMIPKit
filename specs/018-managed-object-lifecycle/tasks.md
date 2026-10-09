@@ -20,7 +20,7 @@
 **Purpose**: Reuse the existing client execution and fake-transport contracts; add only lifecycle-specific fixture support needed by all stories.
 
 - [ ] T005 [P] Add shared lifecycle TTLV fixtures in `crates/kmipkit-protocol/tests/support/lifecycle_fixtures.rs` for optional identifiers, successful response identifiers, and malformed payloads.
-- [ ] T006 Confirm public exports and operation-dispatch extension points in `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit-client/src/lib.rs` without changing existing behavior.
+- [x] T006 Confirm public exports and operation-dispatch extension points in `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit-client/src/lib.rs` without changing existing behavior.
 
 ---
 
