@@ -15,16 +15,8 @@ pub(crate) const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 pub(crate) fn request_payload(identifier: Option<UniqueIdentifier>) -> Structure {
     let mut payload = Structure::new();
     if let Some(identifier) = identifier {
-        let value = match identifier {
-            UniqueIdentifier::TextString(value) => Value::text_string(value),
-            UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-            UniqueIdentifier::Integer(value) => Value::integer(value),
-        };
         payload
-            .try_push(
-                Item::new(unique_identifier_tag(), value)
-                    .expect("fixture identifier has a valid tag and value"),
-            )
+            .try_push(identifier_item(identifier))
             .expect("fixture payload fits model depth limits");
     }
     payload
@@ -32,17 +24,9 @@ pub(crate) fn request_payload(identifier: Option<UniqueIdentifier>) -> Structure
 
 /// Builds a successful response payload with the supplied Unique Identifier.
 pub(crate) fn successful_response_payload(identifier: UniqueIdentifier) -> Structure {
-    let value = match identifier {
-        UniqueIdentifier::TextString(value) => Value::text_string(value),
-        UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-        UniqueIdentifier::Integer(value) => Value::integer(value),
-    };
     let mut payload = Structure::new();
     payload
-        .try_push(
-            Item::new(unique_identifier_tag(), value)
-                .expect("fixture identifier has a valid tag and value"),
-        )
+        .try_push(identifier_item(identifier))
         .expect("fixture payload fits model depth limits");
     payload
 }
@@ -67,19 +51,20 @@ pub(crate) fn success_payload_wrong_identifier_type() -> Structure {
 pub(crate) fn success_payload_duplicate_identifier(identifier: UniqueIdentifier) -> Structure {
     let mut payload = Structure::new();
     for identifier in [identifier.clone(), identifier] {
-        let value = match identifier {
-            UniqueIdentifier::TextString(value) => Value::text_string(value),
-            UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-            UniqueIdentifier::Integer(value) => Value::integer(value),
-        };
         payload
-            .try_push(
-                Item::new(unique_identifier_tag(), value)
-                    .expect("fixture identifier has a valid tag and value"),
-            )
+            .try_push(identifier_item(identifier))
             .expect("fixture payload fits model depth limits");
     }
     payload
+}
+
+fn identifier_item(identifier: UniqueIdentifier) -> Item {
+    let value = match identifier {
+        UniqueIdentifier::TextString(value) => Value::text_string(value),
+        UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
+        UniqueIdentifier::Integer(value) => Value::integer(value),
+    };
+    Item::new(unique_identifier_tag(), value).expect("fixture identifier has a valid tag and value")
 }
 
 fn unique_identifier_tag() -> Tag {

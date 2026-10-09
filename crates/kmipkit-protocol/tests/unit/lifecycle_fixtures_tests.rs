@@ -1,10 +1,10 @@
 use kmipkit_ttlv::{Item, ItemType, ValueView};
 
+use crate::UniqueIdentifier;
 use crate::lifecycle_fixtures::{
     request_payload, success_payload_duplicate_identifier, success_payload_missing_identifier,
     success_payload_wrong_identifier_type, successful_response_payload,
 };
-use crate::UniqueIdentifier;
 
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 
