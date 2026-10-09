@@ -179,6 +179,43 @@ fn failure_response_preserves_an_unknown_result_reason_for_fr008() {
 }
 
 #[test]
+fn unknown_result_status_is_preserved_without_success_payload_validation() {
+    let unknown_status = 0xF001_0001;
+    let malformed_success_payload = success_payload_duplicate_identifier(
+        UniqueIdentifier::TextString("object-identifier".to_owned()),
+    );
+    let message = response_message(
+        DESTROY_OPERATION,
+        unknown_status,
+        None,
+        None,
+        Some(malformed_success_payload),
+    );
+    let response = DestroyResponse::try_from_response_item(response_item(&message))
+        .expect("an unknown status is retained as a non-success result");
+
+    assert_eq!(
+        response.result().status(),
+        ResultStatus::from_raw(unknown_status)
+    );
+    assert!(response.unique_identifier().is_none());
+}
+
+#[test]
+fn malformed_success_errors_do_not_expose_payload_values() {
+    let payload_value = "destroy-payload-value";
+    let payload = success_payload_duplicate_identifier(UniqueIdentifier::TextString(
+        payload_value.to_owned(),
+    ));
+    let error = malformed_success_result(payload)
+        .expect_err("duplicate Unique Identifier fields make the success payload malformed");
+
+    assert_eq!(error, DestroyError::MalformedSuccessPayload);
+    assert!(!error.to_string().contains(payload_value));
+    assert!(!format!("{error:?}").contains(payload_value));
+}
+
+#[test]
 fn response_rejects_a_different_operation() {
     let payload =
         successful_response_payload(UniqueIdentifier::TextString("object-identifier".to_owned()));

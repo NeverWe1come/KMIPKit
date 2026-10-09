@@ -60,6 +60,7 @@ LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM = (
 )
 LIFECYCLE_UNIQUE_IDENTIFIER_REFERENCES = {
     "crates/kmipkit-protocol/src/activate.rs",
+    "crates/kmipkit-protocol/src/destroy.rs",
     "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
     "crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs",
     "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
