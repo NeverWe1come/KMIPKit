@@ -121,6 +121,10 @@ mod attribute_read_execution_tests;
 mod attribute_mutation_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/attribute_execution_contract_tests.rs"]
+mod attribute_execution_contract_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/transport_contract_tests.rs"]
 mod transport_contract_tests;
 

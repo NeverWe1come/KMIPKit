@@ -155,3 +155,11 @@ mod modify_attribute_tests;
 #[cfg(test)]
 #[path = "../tests/unit/set_attribute_tests.rs"]
 mod set_attribute_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/attribute_roundtrip_tests.rs"]
+mod attribute_roundtrip_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/attribute_limits_tests.rs"]
+mod attribute_limits_tests;
