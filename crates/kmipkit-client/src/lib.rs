@@ -120,6 +120,10 @@ mod recover_execution_tests;
 mod lifecycle_redaction_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/lifecycle_execution_tests.rs"]
+mod lifecycle_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/process_execution_tests.rs"]
 mod process_execution_tests;
 
