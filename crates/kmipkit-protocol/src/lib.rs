@@ -123,3 +123,7 @@ mod get_attributes_tests;
 #[cfg(test)]
 #[path = "../tests/unit/get_attribute_list_tests.rs"]
 mod get_attribute_list_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/add_attribute_tests.rs"]
+mod add_attribute_tests;
