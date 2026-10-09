@@ -112,9 +112,9 @@ fn wrapped_attribute_items(field: &Item) -> Option<Vec<(u32, ItemType)>> {
     })
 }
 
-fn alternative_name_members(
-    field: &Item,
-) -> Option<Vec<(u32, ItemType, Option<String>, Option<u32>)>> {
+type AlternativeNameMember = (u32, ItemType, Option<String>, Option<u32>);
+
+fn alternative_name_members(field: &Item) -> Option<Vec<AlternativeNameMember>> {
     field.with_value(|value| match value {
         ValueView::Structure(wrapper) => wrapper.children().first().and_then(|attribute| {
             attribute.with_value(|value| match value {

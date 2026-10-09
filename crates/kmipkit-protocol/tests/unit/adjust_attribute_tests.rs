@@ -279,10 +279,10 @@ impl AdjustmentParameterVector {
     fn matches(self, item: &Item) -> bool {
         item.with_value(|actual| match (self, actual) {
             (Self::Integer(expected), ValueView::Integer(actual)) => expected == *actual,
-            (Self::LongInteger(expected), ValueView::LongInteger(actual)) => expected == *actual,
+            (Self::LongInteger(expected), ValueView::LongInteger(actual))
+            | (Self::DateTime(expected), ValueView::DateTime(actual)) => expected == *actual,
             (Self::BigInteger(expected), ValueView::BigInteger(actual)) => expected == actual,
             (Self::Interval(expected), ValueView::Interval(actual)) => expected == *actual,
-            (Self::DateTime(expected), ValueView::DateTime(actual)) => expected == *actual,
             (Self::DateTimeExtended(expected), ValueView::DateTimeExtended(actual)) => {
                 expected == *actual
             }
@@ -293,6 +293,7 @@ impl AdjustmentParameterVector {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)] // One normative Table 428 matrix keeps all type/value pairs auditable together.
 fn table_428_parameters_and_table_170_optional_values_are_transmitted_unchanged() {
     // §11.1 Table 428 lists Adjustment Parameter Item Types for Increment and
     // Decrement: Integer, Long Integer, Big Integer, Interval, Date Time, and
@@ -433,47 +434,44 @@ fn table_428_parameters_and_table_170_optional_values_are_transmitted_unchanged(
         );
         assert_eq!(fields[1].item_type(), ItemType::Enumeration);
         assert_eq!(fields[2].tag().raw(), ADJUSTMENT_VALUE);
-        match expected_reference.tag_value() {
-            Some(target_tag) => {
-                assert_eq!(fields[0].item_type(), ItemType::Enumeration);
-                assert_eq!(enumeration_value(&fields[0]), Some(target_tag));
-            }
-            None => {
-                let (expected_vendor, expected_name) = expected_reference
-                    .name_parts()
-                    .expect("the vector uses a name-form reference");
-                let reference_members = fields[0].with_value(|value| match value {
-                    ValueView::Structure(reference) => Some(
-                        reference
-                            .children()
-                            .iter()
-                            .map(|field| {
-                                let text = field.with_value(|value| match value {
-                                    ValueView::TextString(value) => Some(value.to_owned()),
-                                    _ => None,
-                                });
-                                (field.tag().raw(), field.item_type(), text)
-                            })
-                            .collect::<Vec<_>>(),
+        if let Some(target_tag) = expected_reference.tag_value() {
+            assert_eq!(fields[0].item_type(), ItemType::Enumeration);
+            assert_eq!(enumeration_value(&fields[0]), Some(target_tag));
+        } else {
+            let (expected_vendor, expected_name) = expected_reference
+                .name_parts()
+                .expect("the vector uses a name-form reference");
+            let reference_members = fields[0].with_value(|value| match value {
+                ValueView::Structure(reference) => Some(
+                    reference
+                        .children()
+                        .iter()
+                        .map(|field| {
+                            let text = field.with_value(|value| match value {
+                                ValueView::TextString(value) => Some(value.to_owned()),
+                                _ => None,
+                            });
+                            (field.tag().raw(), field.item_type(), text)
+                        })
+                        .collect::<Vec<_>>(),
+                ),
+                _ => None,
+            });
+            assert_eq!(
+                reference_members,
+                Some(vec![
+                    (
+                        VENDOR_IDENTIFICATION,
+                        ItemType::TextString,
+                        Some(expected_vendor.to_owned()),
                     ),
-                    _ => None,
-                });
-                assert_eq!(
-                    reference_members,
-                    Some(vec![
-                        (
-                            VENDOR_IDENTIFICATION,
-                            ItemType::TextString,
-                            Some(expected_vendor.to_owned()),
-                        ),
-                        (
-                            ATTRIBUTE_NAME,
-                            ItemType::TextString,
-                            Some(expected_name.to_owned()),
-                        ),
-                    ])
-                );
-            }
+                    (
+                        ATTRIBUTE_NAME,
+                        ItemType::TextString,
+                        Some(expected_name.to_owned()),
+                    ),
+                ])
+            );
         }
         assert!(
             expected_value.matches(&fields[2]),
