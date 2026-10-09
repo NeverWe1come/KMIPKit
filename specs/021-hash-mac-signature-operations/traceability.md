@@ -1,0 +1,62 @@
+# KMIPKIT-0021 Traceability: Hash, MAC, and Signature Operations
+
+This is the design-time assignment for the specification PR. Implementation and verification references remain pending until the separate implementation PR. Table field contracts are traced through the operation element's exact OASIS request/response table metadata and the FRs below; the catalog does not manufacture a `REQ` identifier for each table cell.
+
+## Client normative requirements
+
+| Stable requirement ID | Exact source | Client permission | Spec | Planned implementation | Planned verification |
+| --- | --- | --- | --- | --- | --- |
+| `KMIPKIT-REQ-SPEC-6.1.32-001` | OASIS KMIP Specification v2.1 §6.1.32, opening operation description; catalog clause `KMIPKIT-CLAUSE-SPEC-6.1.32-001` | The client MAY omit Cryptographic Parameters when the managed object's attributes provide them. KMIPKit preserves omission and does not inspect key attributes. | FR-006; US2.2 | `crates/kmipkit-protocol/src/mac.rs`; `crates/kmipkit-client/src/execute.rs` | `mac_request_tests::allows_omitted_parameters`; `mac_execution_tests::preserves_omitted_parameters` |
+| `KMIPKIT-REQ-SPEC-6.1.33-001-001` | §6.1.33, opening operation description; clause `KMIPKIT-CLAUSE-SPEC-6.1.33-001` | The client MAY include original Data when the selected verification algorithm needs it. | FR-006–FR-007; US3.1 | `crates/kmipkit-protocol/src/mac_verify.rs` | `mac_verify_request_tests::preserves_optional_original_data` |
+| `KMIPKIT-REQ-SPEC-6.1.33-001-002` | §6.1.33, opening operation description; clause `KMIPKIT-CLAUSE-SPEC-6.1.33-001` | The client MAY omit Cryptographic Parameters when the managed object's attributes provide them. | FR-006; US3.1 | `crates/kmipkit-protocol/src/mac_verify.rs` | `mac_verify_request_tests::allows_omitted_parameters` |
+| `KMIPKIT-REQ-SPEC-6.1.55-001` | §6.1.55, opening operation description; clause `KMIPKIT-CLAUSE-SPEC-6.1.55-001` | The client MAY omit Cryptographic Parameters when the managed object's attributes provide them. | FR-006; US2.2 | `crates/kmipkit-protocol/src/sign.rs` | `sign_request_tests::allows_omitted_parameters` |
+| `KMIPKIT-REQ-SPEC-6.1.56-001-001` | §6.1.56, opening operation description; clause `KMIPKIT-CLAUSE-SPEC-6.1.56-001` | The client MAY include original Data when the selected verification algorithm needs it. | FR-006–FR-007; US3.1 | `crates/kmipkit-protocol/src/signature_verify.rs` | `signature_verify_request_tests::preserves_optional_original_data` |
+| `KMIPKIT-REQ-SPEC-6.1.56-002` | §6.1.56, Cryptographic Parameters paragraph; clause `KMIPKIT-CLAUSE-SPEC-6.1.56-002` | The client MAY omit Cryptographic Parameters when the managed object's attributes provide them. | FR-006; US3.1 | `crates/kmipkit-protocol/src/signature_verify.rs` | `signature_verify_request_tests::allows_omitted_parameters` |
+
+No standalone client normative-keyword requirement is recorded for Hash §6.1.24. Its requiredness and cardinality are source table contracts and are mapped below to FR-002–FR-003 and Tables 235–236. The `REQUIRED` detector hits `KMIPKIT-CLAUSE-SPEC-6.1.24-001/-002` remain `non_applicable` because those structural rows contain only the table's `REQUIRED` heading, not independent candidate obligations.
+
+## Operation and data assignments
+
+| Catalog element(s) | Exact source | Assigned coverage | Planned verification |
+| --- | --- | --- | --- |
+| `KMIPKIT-ELEM-OP-C2S-HASH` and operation value `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-HASH-00000027` | §6.1.24, Tables 235–237; §11.36 | FR-001–FR-003, FR-009–FR-013 | `hash_operation_tests`; `hash_execution_tests`; all Table 235–237 field, error, and cardinality cases |
+| `KMIPKIT-ELEM-OP-C2S-MAC` and operation value `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-MAC-00000023` | §6.1.32, Tables 259–261; §11.36 | FR-001, FR-004–FR-006, FR-009–FR-013, FR-015 | `mac_operation_tests` (including required response Unique Identifier missing/duplicate/type cases); `mac_execution_tests`; all Table 259–261 cases |
+| `KMIPKIT-ELEM-OP-C2S-MAC-VERIFY` and operation value `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-MAC-VERIFY-00000024` | §6.1.33, Tables 262–264; §11.36 | FR-001, FR-005–FR-011, FR-013, FR-015 | `mac_verify_operation_tests` (including required response Unique Identifier missing/duplicate/type cases); `mac_verify_execution_tests`; all Table 262–264 cases and `KMIPKIT-DISC-048` response forms |
+| `KMIPKIT-ELEM-OP-C2S-SIGN` and operation value `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SIGN-00000021` | §6.1.55, Tables 334–336; §11.36 | FR-001, FR-004–FR-006, FR-009–FR-013, FR-015 | `sign_operation_tests`; `sign_execution_tests`; Data/Digested Data alternatives, Unique Identifier response cardinality, and all Table 334–336 cases, including Test Cases v2.1 §2.38 |
+| `KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY` and operation value `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SIGNATURE-VERIFY-00000022` | §6.1.56, Tables 337–339; §11.36 | FR-001, FR-005–FR-013, FR-015 | `signature_verify_operation_tests` (including required response Unique Identifier missing/duplicate/type cases); `signature_verify_execution_tests`; Data/Digested Data, recovered Data, and `KMIPKIT-DISC-048` cases |
+| `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA`; Data enumeration value `KMIPKIT-ELEM-ENUM-VALUE-DATA-MAC-MAC-DATA-00000004` | §7.20; §11.13; Tables 259–263 | FR-004, FR-007–FR-009 | Byte-string round trips and MAC/MAC Verify field-presence tests |
+| `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-38-SIGNATURE-DATA`; Data enumeration value `KMIPKIT-ELEM-ENUM-VALUE-DATA-SIGN-SIGNATURE-DATA-00000006` | §7.38; §11.13; Tables 334–338 | FR-004, FR-007–FR-009 | Byte-string round trips and Sign/Signature Verify field-presence tests |
+| Data enumeration values `KMIPKIT-ELEM-ENUM-VALUE-DATA-HASH-00000003` and `KMIPKIT-ELEM-ENUM-VALUE-DATA-SIGNATURE-VERIFY-00000007` | §11.13 | FR-002–FR-003, FR-007, FR-009 | Enumeration round trips and unknown-value preservation |
+| `KMIPKIT-ELEM-ENUMERATION-HASHING-ALGORITHM` and every standard value plus its Extensions value | §11.21; §4.16; Table 235 | FR-002, FR-009, FR-013 | `hashing_algorithm_tests`; complete standard-value and extension round trips |
+| `KMIPKIT-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM` and every standard value plus its Extensions value | §11.12; §4.16; Tables 259, 262, 334, 337 | FR-004, FR-006–FR-007, FR-009, FR-013 | `cryptographic_algorithm_tests`; complete standard-value and extension round trips |
+| `KMIPKIT-ELEM-ENUMERATION-DIGITAL-SIGNATURE-ALGORITHM` and every standard value plus its Extensions value | §11.16; §4.16; Tables 334, 337 | FR-004, FR-006–FR-007, FR-009, FR-013 | `digital_signature_algorithm_tests`; complete standard-value and extension round trips |
+| `KMIPKIT-ELEM-ENUMERATION-VALIDITY-INDICATOR` and `Valid`, `Invalid`, `Unknown`, and Extensions values | §11.61; Tables 263 and 338 | FR-008–FR-009 | `validity_indicator_tests`; verification response cardinality and unknown-value tests |
+
+`KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS`, `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`, `...7-8-CORRELATION-VALUE`, `...7-14-FINAL-INDICATOR`, and `...7-17-INIT-INDICATOR` are shared elements assigned to KMIPKIT-0019. KMIPKIT-0021 reuses those established contracts without changing their feature assignment. The named Digested Data payload item is specified directly by Sign Table 334 and Signature Verify Table 337; its tag registration `KMIPKIT-ELEM-TAG-420107` remains assigned to the tag-registry feature KMIPKIT-0004. This catalog version has no separate operation-payload element for that byte-string table item.
+
+The operation table contracts include every printed request, response, and error table: Hash 235–237; MAC 259–261; MAC Verify 262–264; Sign 334–336; Signature Verify 337–339. Client request construction follows request requiredness; response payloads are decoded and exposed. Error result reasons and response production are server behavior. The client never generates an operation result on behalf of the server.
+
+## Server-only source duties and inventory corrections
+
+The following stable records are retained as server-only duties and are not assigned to this client feature: `KMIPKIT-REQ-SPEC-6.1.32-003`, `...32-004-002`, `...33-004`, `...33-005-002`, `...55-004`, `...55-005-002`, `...56-006`, and `...56-007-002`. They cover server ID Placeholder resolution and server failure when key-associated Cryptographic Parameters are absent but required by the selected algorithm. Clause `KMIPKIT-CLAUSE-SPEC-6.1.55-002` is also server-only: the server obtains a Usage Limits allocation before Sign and returns the specified failure if it cannot obtain one; this is not client behavior.
+
+Stable records `...32-004-001`, `...33-005-001`, `...55-005-001`, `...56-007-001`, and `...56-001-002` are retained with status `retired`: the earlier inventory treated descriptive table/paragraph wording as separate client normative statements. The corresponding source-backed table behavior remains covered by operation-field FRs; the actual server failure duty remains in each `...-002` record, and the actual client original-data MAY remains `...56-001-001`. IDs are not recycled.
+
+## Open source conflict
+
+`KMIPKIT-DISC-048` records a conflict between the Validity Indicator rows in Tables 263 and 338, which say “Yes for single-part. No for multi-part,” and the prose in §§6.1.33 and 6.1.56, which requires the indicator for the final multipart response and forbids it on non-final responses. The sources agree that a non-final response omits the indicator but conflict for the final response. The typed client accepts either final-part form without making a conformance claim. The conflict remains open until a pinned OASIS erratum or approved project decision resolves it.
+
+## OASIS test-case mapping and limitations
+
+| Catalog test ID | Official label | Source | Related operation(s) | Fixture status and claim |
+| --- | --- | --- | --- | --- |
+| `KMIPKIT-TEST-CN01-2-102` | `TC-STREAM-HASH-1-21` | Test Cases v2.1 §2.102 | Hash | Fixture unavailable; no official vector pass claim |
+| `KMIPKIT-TEST-CN01-2-103` | `TC-STREAM-HASH-2-21` | §2.103 | Hash | Fixture unavailable; no official vector pass claim |
+| `KMIPKIT-TEST-CN01-2-104` | `TC-STREAM-HASH-3-21` | §2.104 | Hash | Fixture unavailable; no official vector pass claim |
+| `KMIPKIT-TEST-CN01-2-105` | `TC-STREAM-MAC-1-21` | §2.105 | MAC | Fixture unavailable; no official vector pass claim |
+| `KMIPKIT-TEST-CN01-2-106` | `TC-STREAM-SIGN-1-21` | §2.106 | Sign; Signature Verify | Fixture unavailable; no official vector pass claim |
+| `KMIPKIT-TEST-CN01-2-107` | `TC-STREAM-SIGNVFY-1-21` | §2.107 | Sign; Signature Verify | Fixture unavailable; no official vector pass claim |
+| `KMIPKIT-TEST-CN01-2-37` | `TC-ECDSA-SIGN-1-21` | §2.37 | Sign; Signature Verify | Fixture unavailable; no official vector pass claim |
+| `KMIPKIT-TEST-CN01-2-38` | `TC-ECDSA-SIGN-DIGESTEDDATA` | §2.38 | Sign (Digested Data) | Fixture unavailable; no official vector pass claim |
+
+No requirement-specific official test case is linked to the six client MAY records. MAC Verify has no source-linked official Test Case on its operation element. The §2.38 case explicitly covers ECDSA Sign with Digested Data; the catalog links it to the Sign operation and the shared Digested Data tag, but its local fixture is unavailable. Fixtures for the listed cases are unavailable in the pinned source tree; that is an evidence gap, not a test pass or failure. The later implementation PR must add source-derived tests and report fixture status accurately. No profile support, interoperability, or formal conformance claim is made.
