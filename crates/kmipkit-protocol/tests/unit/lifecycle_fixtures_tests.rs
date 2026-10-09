@@ -47,7 +47,8 @@ fn request_payload_omits_an_unsupplied_optional_identifier() {
 fn request_payload_preserves_each_identifier_wire_representation() {
     for identifier in identifier_forms() {
         let payload = request_payload(Some(identifier.clone()));
-        let fields = payload.view().children();
+        let view = payload.view();
+        let fields = view.children();
 
         assert_eq!(fields.len(), 1);
         assert_identifier(&fields[0], &identifier);
@@ -58,7 +59,8 @@ fn request_payload_preserves_each_identifier_wire_representation() {
 fn successful_response_payload_preserves_each_identifier_wire_representation() {
     for identifier in identifier_forms() {
         let payload = successful_response_payload(identifier.clone());
-        let fields = payload.view().children();
+        let view = payload.view();
+        let fields = view.children();
 
         assert_eq!(fields.len(), 1);
         assert_identifier(&fields[0], &identifier);
@@ -75,7 +77,8 @@ fn malformed_success_payload_can_omit_the_required_identifier() {
 #[test]
 fn malformed_success_payload_can_use_a_wrong_identifier_item_type() {
     let payload = success_payload_wrong_identifier_type();
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     assert_eq!(fields.len(), 1);
     assert_eq!(fields[0].tag().raw(), UNIQUE_IDENTIFIER_TAG);
@@ -86,7 +89,8 @@ fn malformed_success_payload_can_use_a_wrong_identifier_item_type() {
 fn malformed_success_payload_can_duplicate_the_identifier() {
     let identifier = UniqueIdentifier::TextString("object-identifier".to_owned());
     let payload = success_payload_duplicate_identifier(identifier.clone());
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     assert_eq!(fields.len(), 2);
     assert_identifier(&fields[0], &identifier);
