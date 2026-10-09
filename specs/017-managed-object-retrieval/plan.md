@@ -56,7 +56,7 @@ See [data-model.md](data-model.md), [contracts/public-rust.md](contracts/public-
 
 ## Implementation Gate
 
-The latest release used for specification preparation is `release/1.0.0` at `227e3f9104f14494810598d078c013c389c24f8f`. That release includes KMIPKIT-0004 generic TTLV, KMIPKIT-0006 messages/batches, KMIPKIT-0007 typed client execution, KMIPKIT-0009 asynchronous outcome models, KMIPKIT-0013 transport, and KMIPKIT-0014 Create/AttributeSet implementation. Get and Locate are not implemented on this base. The pending KMIPKIT-0016 branch is not a dependency: Locate uses KMIPKIT-0014's direct-item `AttributeSet`, not the newer Attribute Reference type.
+The latest release used for specification preparation is `release/1.0.0` at `3448c197b964a4b3b9374d364b3e0d8bcc414864`. That release includes KMIPKIT-0004 generic TTLV, KMIPKIT-0006 messages/batches, KMIPKIT-0007 typed client execution, KMIPKIT-0009 asynchronous outcome models, KMIPKIT-0013 transport, and KMIPKIT-0014 Create/AttributeSet implementation. Get and Locate are not implemented on this base. The pending KMIPKIT-0016 branch is not a dependency: Locate uses KMIPKIT-0014's direct-item `AttributeSet`, not the newer Attribute Reference type.
 
 The specification/catalog assignment PR must be approved and merged before implementation. Before coding, the implementation branch must be created from the active release branch and recheck these dependencies. If an intervening merge changes any shared client contract, update this design and rerun the specification review before implementation.
 
