@@ -81,6 +81,10 @@ mod discover_versions_tests;
 mod create_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/activate_operation_tests.rs"]
+mod activate_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_tests.rs"]
 mod create_key_pair_tests;
 
