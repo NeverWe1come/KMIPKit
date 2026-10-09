@@ -366,12 +366,9 @@ fn serve_tcp_with_spawner(
         match listener.accept() {
             Ok((stream, _)) => {
                 let connection_id = state.next_tcp_connection.fetch_add(1, Ordering::AcqRel);
-                let worker_stream = match stream.try_clone() {
-                    Ok(worker_stream) => worker_stream,
-                    Err(_) => {
-                        serve_tcp_connection(stream, records, state, connection_id);
-                        continue;
-                    }
+                let Ok(worker_stream) = stream.try_clone() else {
+                    serve_tcp_connection(stream, records, state, connection_id);
+                    continue;
                 };
                 let connection_state = Arc::clone(state);
                 let connection_records = records.clone();
