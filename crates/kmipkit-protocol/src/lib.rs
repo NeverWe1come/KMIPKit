@@ -114,6 +114,10 @@ mod recover_operation_tests;
 mod operation_data_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/cryptographic_parameters_tests.rs"]
+mod cryptographic_parameters_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_tests.rs"]
 mod create_key_pair_tests;
 

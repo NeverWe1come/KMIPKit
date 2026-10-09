@@ -5,6 +5,8 @@
 //! Traceability: `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA` and
 //! `KMIPKIT-REQ-SPEC-6.1.17-001-001`.
 
+use std::fmt::{Debug, Display};
+
 use crate::{EncryptRequest, OperationData, SecretBytes, UniqueIdentifier};
 use kmipkit_ttlv::{ItemType, Structure, ValueView};
 
@@ -16,6 +18,9 @@ const CORRELATION_VALUE_TAG: u32 = 0x0042_00D6;
 const INIT_INDICATOR_TAG: u32 = 0x0042_00D7;
 const FINAL_INDICATOR_TAG: u32 = 0x0042_00D8;
 const AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG: u32 = 0x0042_00FE;
+const BYTE_STRING_SENTINELS: &[&str] = &["167", "184", "201", "a7", "b8", "c9"];
+const ENUMERATION_SENTINELS: &[&str] = &["3735928559", "deadbeef"];
+const INTEGER_SENTINELS: &[&str] = &["-2147483648"];
 
 fn request_payload(data: OperationData) -> Structure {
     EncryptRequest::new(Some(UniqueIdentifier::TextString(
@@ -33,6 +38,23 @@ fn data_item_index(payload: &Structure) -> usize {
         .iter()
         .position(|item| item.tag().raw() == DATA_TAG)
         .expect("Table 214 request contains the supplied Data member")
+}
+
+fn assert_redacted<T: Debug + Display>(value: &T, sentinels: &[&str]) {
+    let debug = format!("{value:?}");
+    let display = value.to_string();
+
+    for sentinel in sentinels {
+        let sentinel = sentinel.to_ascii_lowercase();
+        assert!(
+            !debug.to_ascii_lowercase().contains(&sentinel),
+            "Debug representation exposed an OperationData value"
+        );
+        assert!(
+            !display.to_ascii_lowercase().contains(&sentinel),
+            "Display representation exposed an OperationData value"
+        );
+    }
 }
 
 #[test]
@@ -110,4 +132,42 @@ fn request_data_remains_in_table_214_member_order() {
             AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG,
         ]
     );
+}
+
+#[test]
+fn debug_and_display_redact_every_request_data_variant() {
+    let cases = [
+        (
+            OperationData::ByteString(SecretBytes::new(vec![0xA7, 0xB8, 0xC9])),
+            BYTE_STRING_SENTINELS,
+        ),
+        (
+            OperationData::Enumeration(0xDEAD_BEEF),
+            ENUMERATION_SENTINELS,
+        ),
+        (OperationData::Integer(i32::MIN), INTEGER_SENTINELS),
+    ];
+
+    for (data, sentinels) in cases {
+        assert_redacted(&data, sentinels);
+    }
+}
+
+#[test]
+fn byte_string_request_uses_secret_bytes_and_zeroizing_ttlv_ownership() {
+    // This variant requires the existing zeroizing SecretBytes owner. The
+    // request serializes to kmipkit-ttlv's owned ByteString path, whose drop
+    // zeroization is covered by that crate's value_zeroization tests. A safe
+    // public API cannot inspect storage after deallocation.
+    let expected = [0xA7, 0xB8, 0xC9];
+    let payload = request_payload(OperationData::ByteString(SecretBytes::new(
+        expected.to_vec(),
+    )));
+    let view = payload.view();
+    let data = &view.children()[data_item_index(&payload)];
+
+    assert!(data.with_value(|value| {
+        matches!(value, ValueView::ByteString(actual) if *actual == expected)
+    }));
+    drop(payload);
 }
