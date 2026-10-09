@@ -10,8 +10,8 @@ use kmipkit_protocol::{
     ActivateRequest, ArchiveRequest, DestroyRequest, RecoverRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::Value;
+use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::encode_message_for_test;
@@ -186,7 +186,10 @@ fn lifecycle_response(
         batch_fields.push(test_item(0x0042_007E, Value::enumeration(0x37)));
     }
     if let Some(message) = result_message {
-        batch_fields.push(test_item(0x0042_007D, Value::text_string(message.to_owned())));
+        batch_fields.push(test_item(
+            0x0042_007D,
+            Value::text_string(message.to_owned()),
+        ));
     }
     if let Some(payload) = payload {
         batch_fields.push(test_item(RESPONSE_PAYLOAD, Value::structure(payload)));

@@ -212,3 +212,108 @@ identifier request/response TTLV mechanics were extracted in T023 and cover
 Recover as well. No additional Recover-only response helper would reduce
 duplication while preserving the shared operation boundaries. After this
 review, the focused Recover protocol and client suites passed (10 and 5 tests).
+
+## T031–T034 Documentation and traceability
+
+- Added the English and Spanish lifecycle guides with one marked, compile-checked
+  Rust example for each of Activate, Archive, Destroy, and Recover. The examples
+  construct typed requests, invoke the corresponding client method, and inspect
+  the operation result and typed response.
+- Updated both typed client execution guides, the public API reference, and the
+  documentation index to include all four lifecycle operations and their
+  operation-specific limits.
+- Finalized `traceability.md` with pinned KMIP v2.1 sections and tables,
+  operation models, client dispatch, focused protocol/fake-transport tests, and
+  the T037/T038 redaction and preservation tests. It explicitly distinguishes
+  source-derived tests from official OASIS Test Cases.
+- The first new-guide example run exposed that the guide compiler harness did
+  not link `kmipkit-ttlv`, which the public client methods require for
+  `CodecLimits`. Added the existing workspace crate as an offline path
+  dependency in `scripts/test_user_guide_examples.py`.
+- `python scripts/test_user_guide_examples.py --guide
+  docs/user-guide/en/lifecycle-operations.md --guide
+  docs/user-guide/es/operaciones-ciclo-vida.md` passed and compiled all eight
+  new examples in both unlocked and locked offline checks.
+- `python scripts/test_user_guide_examples.py --guide
+  docs/user-guide/en/client-execution.md --guide
+  docs/user-guide/es/ejecucion-cliente.md` passed and compiled all six existing
+  guide examples in both checks.
+
+## T037 Red: lifecycle redaction regressions
+
+- `d349638 test(KMIPKIT-0018): cover lifecycle redaction` added coverage for
+  direct typed request and response Debug output, client outcome/response-view
+  Debug output, untrusted Result Message text, and malformed raw response bytes
+  in public error formatting and its source chain.
+- A temporary mutation that formatted the inner `UniqueIdentifier` value made
+  `lifecycle_request_and_response_debug_redact_unique_identifiers` fail at the
+  typed-request assertion. The mutation was reverted before Green verification.
+
+## T037 Green: lifecycle redaction regressions
+
+- `cargo test -p kmipkit-client --lib lifecycle_redaction_tests --all-features`
+  passed (2 tests) against the restored redacting implementation.
+- `cargo fmt --all --check` and `git diff --check` passed.
+- No production behavior change was needed: the tests protect the existing
+  central `UniqueIdentifier` Debug redaction and sanitized error contract.
+
+## T038 Red: unknown result and extension preservation
+
+- `66e4270 test(KMIPKIT-0018): preserve lifecycle result extensions` added the
+  client regression for all four lifecycle operations, raw unknown Result
+  Status and Reason values, and accepted non-critical generic extension data.
+- The first fixture was rejected because an unknown status still requires the
+  response-payload message shape; the fixture was corrected to include the
+  required empty payload and to match the repository's established generic
+  extension vector. A temporary mutation that omitted response-extension
+  preservation then failed the test with the expected extension-count mismatch.
+- The mutation was reverted. `4384427 test(KMIPKIT-0018): preserve lifecycle
+  result extensions` records the corrected fixture and test.
+
+## T038 Green: unknown result and extension preservation
+
+- `cargo test -p kmipkit-client --lib lifecycle_execution_tests --all-features`
+  passed (1 test) across Activate, Archive, Destroy, and Recover.
+- The test confirms exact raw status, reason, extension-tag, and nested
+  Enumeration preservation; it does not infer server policy from unknown
+  values.
+- `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`,
+  `cargo fmt --all --check`, and `git diff --check` passed.
+
+## T035 Windows coverage and public protocol error coverage
+
+- The Windows workspace coverage command completed all workspace test targets:
+  `cargo llvm-cov --workspace --all-features --locked --json --output-path
+  $env:TEMP\kmipkit-0018-final-coverage-raw.json`.
+- After catalog-aware source filtering, the Windows Rust production report
+  covers 15,111/17,393 executable lines (86.88%). The crate-level measurements
+  are TTLV 99.18%, protocol 96.57%, transport 95.16%, and Rust FFI 22.88% before
+  the required C-consumer overlay. The Rust-only workspace figure is not the
+  aggregate CI gate; the gate also merges three platform reports and the C,
+  Java, Python, and JNI consumer reports.
+- The first coverage pass isolated uncovered lifecycle request accessors and
+  public error `Display`/`Error::source` branches. Added tests for each of the
+  four operation modules. A temporary mutation of Activate's missing-status
+  message made its exact-output assertion fail as expected; the mutation was
+  reverted, and `cargo test -p kmipkit-protocol --lib --all-features --locked`
+  passed all 245 tests.
+- `cargo fmt --all --check`,
+  `cargo clippy --workspace --all-targets --all-features --locked -- -D
+  warnings`, and `cargo test --workspace --all-features --locked` passed on
+  Windows. The workspace run completed 1,527 tests across 70 test targets with
+  zero failures or ignored tests.
+- The final Windows workspace coverage run also exited successfully and
+  executed all test targets. Its normalized, catalog-filtered Rust production
+  coverage was 15,111/17,393 lines (86.88%); the separate package coverage
+  results below show the per-crate thresholds measured on this host.
+- A fresh protocol coverage run then measured all four lifecycle source modules
+  at 96.57% or higher. The remaining one platform Rust measurement, FFI
+  consumer overlay, and Java/Python/JNI measurements will be recorded from the
+  pull-request aggregate gate before T035 is marked complete.
+
+## T035 workspace verification
+
+Formatting, full workspace lint/tests, source/catalog validation, and the
+Windows coverage measurement are complete. The CI aggregate coverage result
+remains pending, so T035 stays open until that gate supplies the Linux, macOS,
+C-consumer, Java, Python, and JNI evidence.
