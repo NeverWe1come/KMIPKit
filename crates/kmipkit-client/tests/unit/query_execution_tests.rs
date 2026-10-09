@@ -166,7 +166,13 @@ fn query_failure_preserves_kmip_result_and_transport_delivery_without_retry() {
     };
 
     assert_eq!(query.result().status().raw(), 1);
-    assert_eq!(query.result().reason().map(|reason| reason.raw()), Some(1));
+    assert_eq!(
+        query
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
+        Some(1)
+    );
     assert!(query.result().message().is_none());
     assert_eq!(transport.borrow().exchange_count(), 1);
 }

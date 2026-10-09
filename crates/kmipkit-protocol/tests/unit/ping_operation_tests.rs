@@ -39,11 +39,14 @@ fn ping_failure_preserves_the_common_result_without_a_success_payload() {
 
     assert_eq!(response.result().status().raw(), 1);
     assert_eq!(
-        response.result().reason().map(|reason| reason.raw()),
+        response.result().reason().map(crate::ResultReason::raw),
         Some(1)
     );
     assert_eq!(
-        response.result().message().map(|message| message.as_str()),
+        response
+            .result()
+            .message()
+            .map(crate::ResultMessage::as_str),
         Some("server refused Ping")
     );
 }

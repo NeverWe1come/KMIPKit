@@ -845,8 +845,8 @@ impl ClientResponseView<'_> {
             | ClientResponseRef::SetAttribute(_)
             | ClientResponseRef::GetAttributes(_)
             | ClientResponseRef::GetAttributeList(_)
-            | ClientResponseRef::Ping(_) => None,
-            ClientResponseRef::Query(_) => None,
+            | ClientResponseRef::Ping(_)
+            | ClientResponseRef::Query(_) => None,
         }
     }
 
@@ -865,8 +865,8 @@ impl ClientResponseView<'_> {
             | ClientResponseRef::SetAttribute(_)
             | ClientResponseRef::GetAttributes(_)
             | ClientResponseRef::GetAttributeList(_)
-            | ClientResponseRef::Ping(_) => None,
-            ClientResponseRef::Query(_) => None,
+            | ClientResponseRef::Ping(_)
+            | ClientResponseRef::Query(_) => None,
         }
     }
 
@@ -1084,8 +1084,8 @@ impl ClientBatchOutcome {
             | Self::SetAttribute(_)
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
-            | Self::Ping(_) => None,
-            Self::Query(_) => None,
+            | Self::Ping(_)
+            | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
     }

@@ -343,7 +343,7 @@ impl QueryResponse {
         }
 
         let parsed = item
-            .with_response_payload(parse_response_payload)
+            .with_response_payload(|payload| parse_response_payload(&payload))
             .ok_or(QueryError::MissingResponsePayload)??;
         Ok(Self {
             result,
@@ -511,7 +511,9 @@ struct ParsedResponsePayload {
     fields: Vec<QueryResponseField>,
 }
 
-fn parse_response_payload(payload: StructureView<'_>) -> Result<ParsedResponsePayload, QueryError> {
+fn parse_response_payload(
+    payload: &StructureView<'_>,
+) -> Result<ParsedResponsePayload, QueryError> {
     if payload.children().is_empty() {
         return Ok(ParsedResponsePayload {
             empty_payload: true,

@@ -144,17 +144,21 @@ fn query_accepts_the_empty_response_payload_form_and_preserves_common_failure_re
         .expect("valid failures preserve the common result");
     assert_eq!(response.result().status().raw(), 1);
     assert_eq!(
-        response.result().reason().map(|reason| reason.raw()),
+        response.result().reason().map(crate::ResultReason::raw),
         Some(1)
     );
     assert_eq!(
-        response.result().message().map(|message| message.as_str()),
+        response
+            .result()
+            .message()
+            .map(crate::ResultMessage::as_str),
         Some("query refused")
     );
     assert!(!response.is_empty_payload());
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
     let response_fields = vec![
         item(QUERY_RESPONSE_TAGS[0], Value::enumeration(0x8000_0042)),
@@ -215,7 +219,7 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
         response
             .response_fields()
             .iter()
-            .map(|field| field.tag())
+            .map(crate::QueryResponseField::tag)
             .collect::<Vec<_>>(),
         [
             QUERY_RESPONSE_TAGS[0],
@@ -275,7 +279,7 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
                     assert_eq!(nested.children()[0].tag().raw(), 0x0042_0057);
                 }
                 _ => panic!("unknown response item remains a Structure"),
-            })
+            });
         });
 }
 

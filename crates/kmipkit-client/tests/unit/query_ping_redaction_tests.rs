@@ -68,10 +68,10 @@ fn query_request_and_success_diagnostics_redact_ttlv_text_values() {
         query_request_debug,
         client_request_debug,
         format!("{:?}", ClientRequest::ping()),
-        format!("{:?}", outcome),
+        format!("{outcome:?}"),
         format!("{:?}", outcome.outcome()),
         format!("{}", outcome.outcome()),
-        format!("{:?}", query),
+        format!("{query:?}"),
         format!("{:?}", outcome.outcome().response()),
     ]
     .join("\n");
@@ -90,10 +90,10 @@ fn query_request_and_success_diagnostics_redact_ttlv_text_values() {
         panic!("the typed outcome is Ping");
     };
     let ping_diagnostics = [
-        format!("{:?}", ping_outcome),
+        format!("{ping_outcome:?}"),
         format!("{:?}", ping_outcome.outcome()),
         format!("{}", ping_outcome.outcome()),
-        format!("{:?}", ping),
+        format!("{ping:?}"),
         format!("{:?}", ping_outcome.outcome().response()),
     ]
     .join("\n");
