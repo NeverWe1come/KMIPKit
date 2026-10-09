@@ -90941,8 +90941,8 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-QUERY",
-        "KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION"
+        "KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION",
+        "KMIPKIT-ELEM-OP-C2S-QUERY"
       ],
       "profile_ids": [],
       "test_case_ids": [],
@@ -90974,8 +90974,8 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-QUERY",
-        "KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION"
+        "KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION",
+        "KMIPKIT-ELEM-OP-C2S-QUERY"
       ],
       "profile_ids": [],
       "test_case_ids": [],
