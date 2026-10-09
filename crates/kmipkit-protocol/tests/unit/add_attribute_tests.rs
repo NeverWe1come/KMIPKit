@@ -149,10 +149,8 @@ fn request_preserves_nested_vendor_value_when_identifier_is_omitted() {
     );
 
     let vendor_members = fields[0].with_value(|value| match value {
-        ValueView::Structure(wrapper) => wrapper
-            .children()
-            .first()
-            .and_then(|attribute| attribute.with_value(|value| match value {
+        ValueView::Structure(wrapper) => wrapper.children().first().and_then(|attribute| {
+            attribute.with_value(|value| match value {
                 ValueView::Structure(vendor) => Some(
                     vendor
                         .children()
@@ -168,7 +166,8 @@ fn request_preserves_nested_vendor_value_when_identifier_is_omitted() {
                         .collect::<Vec<_>>(),
                 ),
                 _ => None,
-            })),
+            })
+        }),
         _ => None,
     });
     assert_eq!(
