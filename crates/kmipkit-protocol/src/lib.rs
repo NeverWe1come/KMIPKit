@@ -95,3 +95,7 @@ mod query_async_response_tests;
 #[cfg(test)]
 #[path = "../tests/unit/attribute_tests.rs"]
 mod attribute_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/vendor_attribute_tests.rs"]
+mod vendor_attribute_tests;
