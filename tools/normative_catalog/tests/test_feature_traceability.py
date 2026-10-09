@@ -54,6 +54,12 @@ LIFECYCLE_OPERATION_TABLES = {
 }
 LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE = "§4.58 Tables 145–146"
 LIFECYCLE_UNIQUE_IDENTIFIER_TAG_SOURCE = "§11.56 Table 487"
+LIFECYCLE_UNIQUE_IDENTIFIER_ENCODING_CLAIM = (
+    "§4.58 Tables 145–146 define permitted Unique Identifier encodings"
+)
+LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM = (
+    "§11.56 Table 487 assigns tag 0x420094"
+)
 LIFECYCLE_UNIQUE_IDENTIFIER_REFERENCES = {
     "crates/kmipkit-protocol/src/activate.rs",
     "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
@@ -238,35 +244,25 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     tuple(map(int, payload_range.groups())), payload_numbers
                 )
 
-        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE, specification)
-        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_TAG_SOURCE, specification)
-        self.assertIn("0x420094", specification)
+        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_ENCODING_CLAIM, specification)
+        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM, specification)
         for element_id in LIFECYCLE_OPERATION_TABLES:
             with self.subTest(identifier_source_row=element_id):
-                self.assertIn(
-                    LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE, rows_by_id[element_id][1]
-                )
-                self.assertIn(
-                    LIFECYCLE_UNIQUE_IDENTIFIER_TAG_SOURCE, rows_by_id[element_id][1]
-                )
+                source = rows_by_id[element_id][1]
+                self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_ENCODING_CLAIM, source)
+                self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM, source)
         for source_path in LIFECYCLE_UNIQUE_IDENTIFIER_REFERENCES:
             with self.subTest(identifier_source_reference=source_path):
                 _, source = _read_confined_test_source(source_path) or (None, "")
                 comment_text = re.sub(r"(?m)^\s*//[/!] ?", "", source)
-                self.assertIn(
-                    LIFECYCLE_UNIQUE_IDENTIFIER_SOURCE,
-                    " ".join(comment_text.split()),
-                )
-                self.assertIn(
-                    LIFECYCLE_UNIQUE_IDENTIFIER_TAG_SOURCE,
-                    " ".join(comment_text.split()),
-                )
+                normalized_comment = " ".join(comment_text.split())
+                self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_ENCODING_CLAIM, normalized_comment)
+                self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM, normalized_comment)
         tag_source_row = _markdown_table_rows(traceability)
         generic_row = next(
             cells for cells in tag_source_row if cells[0] == "Generic TTLV and secret handling"
         )
-        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_TAG_SOURCE, generic_row[1])
-        self.assertIn("0x420094", generic_row[1])
+        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM, generic_row[1])
 
         for requirement_id in LIFECYCLE_CLIENT_REQUIREMENT_IDS:
             with self.subTest(requirement_id=requirement_id):
