@@ -27,6 +27,25 @@ if SUMMARY_PATH.is_file():
 
 
 class CiSummaryTests(unittest.TestCase):
+    PR_JOBS = (
+        "docs-contracts",
+        "core",
+        "script-contracts",
+        "language-c",
+        "language-java",
+        "language-python",
+        "ffi-sanitizer-c",
+        "ffi-sanitizer-jni",
+        "fuzz-smoke",
+        "normative-inventory",
+        "coverage",
+        "coverage-java",
+        "coverage-python",
+        "coverage-jni",
+        "coverage-gate",
+        "dependency-policy",
+    )
+
     def require_summary(self):
         self.assertIsNotNone(
             SUMMARY,
@@ -35,23 +54,62 @@ class CiSummaryTests(unittest.TestCase):
         return SUMMARY
 
     @staticmethod
-    def pull_request_needs(**overrides):
-        results = {
-            "core": "success",
-            "script-contracts": "success",
-            "language-bindings": "success",
-            "ffi-sanitizer": "success",
-            "fuzz-smoke": "success",
-            "normative-inventory": "success",
-            "coverage": "success",
-            "coverage-gate": "success",
-            "adapter-coverage": "success",
-            "dependency-policy": "success",
-            "scheduled-dependency-policy": "skipped",
-            "branch-coverage": "skipped",
+    def pull_request_needs(plan=None, **overrides):
+        plan = plan or {
+            "schema_version": 1,
+            "base_sha": "b" * 40,
+            "merge_sha": "a" * 40,
+            "classes": ["full"],
+            "paths": [],
+            "selected_jobs": list(CiSummaryTests.PR_JOBS),
+            "coverage_scopes": ["rust", "ffi-c", "java", "python", "jni"],
+            "full": True,
+            "reason": "A full-CI trigger was detected.",
+            "fallback": False,
         }
+        results = {job: "success" for job in CiSummaryTests.PR_JOBS}
+        results.update(
+            {
+                "impact-plan": "success",
+                "scheduled-dependency-policy": "skipped",
+                "branch-coverage": "skipped",
+            }
+        )
         results.update(overrides)
-        return {job: {"result": result} for job, result in results.items()}
+        needs = {job: {"result": result} for job, result in results.items()}
+        needs["impact-plan"]["outputs"] = {"plan_json": json.dumps(plan)}
+        return needs
+
+    @staticmethod
+    def documentation_plan():
+        return {
+            "schema_version": 1,
+            "base_sha": "b" * 40,
+            "merge_sha": "a" * 40,
+            "classes": ["documentation"],
+            "paths": [{"path": "docs/development/testing.md", "class": "documentation"}],
+            "selected_jobs": ["docs-contracts"],
+            "coverage_scopes": [],
+            "full": False,
+            "reason": "Only documentation changed.",
+            "fallback": False,
+        }
+
+    @classmethod
+    def documentation_needs(cls, **overrides):
+        results = {job: "skipped" for job in cls.PR_JOBS}
+        results["docs-contracts"] = "success"
+        results.update(
+            {
+                "impact-plan": "success",
+                "scheduled-dependency-policy": "skipped",
+                "branch-coverage": "skipped",
+            }
+        )
+        results.update(overrides)
+        needs = {job: {"result": result} for job, result in results.items()}
+        needs["impact-plan"]["outputs"] = {"plan_json": json.dumps(cls.documentation_plan())}
+        return needs
 
     @staticmethod
     def context():
@@ -101,10 +159,15 @@ class CiSummaryTests(unittest.TestCase):
     def test_every_pull_request_job_failure_is_reported_and_fails_the_summary(self) -> None:
         summary_module = self.require_summary()
         expected_labels = {
-            "language-bindings": "Language bindings",
-            "ffi-sanitizer": "FFI sanitizer",
+            "language-c": "C consumer",
+            "language-java": "Java and JNI",
+            "language-python": "Python bindings",
+            "ffi-sanitizer-c": "C FFI sanitizer",
+            "ffi-sanitizer-jni": "JNI sanitizer",
             "fuzz-smoke": "Fuzz smoke",
-            "adapter-coverage": "Adapter coverage",
+            "coverage-python": "Python coverage",
+            "coverage-java": "Java coverage",
+            "coverage-jni": "JNI coverage",
         }
 
         for job_id, label in expected_labels.items():
@@ -122,7 +185,7 @@ class CiSummaryTests(unittest.TestCase):
 
     def test_required_skipped_and_missing_jobs_cannot_produce_a_passing_summary(self) -> None:
         summary_module = self.require_summary()
-        skipped = self.pull_request_needs(**{"language-bindings": "skipped"})
+        skipped = self.pull_request_needs(**{"language-java": "skipped"})
         missing = self.pull_request_needs()
         del missing["fuzz-smoke"]
 
@@ -139,8 +202,8 @@ class CiSummaryTests(unittest.TestCase):
 
     def test_summary_includes_the_job_level_failure_diagnosis(self) -> None:
         summary_module = self.require_summary()
-        needs = self.pull_request_needs(**{"ffi-sanitizer": "failure"})
-        needs["ffi-sanitizer"]["outputs"] = {
+        needs = self.pull_request_needs(**{"ffi-sanitizer-c": "failure"})
+        needs["ffi-sanitizer-c"]["outputs"] = {
             "diagnostic_details": json.dumps(
                 [
                     {
@@ -161,7 +224,69 @@ class CiSummaryTests(unittest.TestCase):
         self.assertEqual(1, exit_code)
         self.assertIn("Run ASAN consumer", markdown)
         self.assertIn("AddressSanitizer-instrumented C consumer failed", markdown)
-        self.assertIn("FFI sanitizer", markdown)
+        self.assertIn("C FFI sanitizer", markdown)
+
+    def test_documentation_plan_accepts_only_justified_component_skips(self) -> None:
+        summary_module = self.require_summary()
+        markdown, exit_code = summary_module.build_summary(
+            event_name="pull_request",
+            context=self.context(),
+            needs=self.documentation_needs(),
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertIn("CI result: PASS", markdown)
+        self.assertIn("Impact: documentation", markdown)
+        self.assertIn("Only documentation changed", markdown)
+        self.assertIn("Not affected", markdown)
+        self.assertIn("Rust", markdown)
+
+    def test_selected_job_skip_fails_even_when_every_other_job_is_authorized_skipped(self) -> None:
+        summary_module = self.require_summary()
+        needs = self.documentation_needs(**{"docs-contracts": "skipped"})
+        markdown, exit_code = summary_module.build_summary(
+            event_name="pull_request",
+            context=self.context(),
+            needs=needs,
+        )
+
+        self.assertEqual(1, exit_code)
+        self.assertIn("docs-contracts", markdown)
+        self.assertIn("unexpectedly skipped", markdown.lower())
+
+    def test_missing_invalid_or_sha_mismatched_impact_plan_fails_summary(self) -> None:
+        summary_module = self.require_summary()
+        missing = self.documentation_needs()
+        missing["impact-plan"]["outputs"] = {}
+        malformed = self.documentation_needs()
+        malformed["impact-plan"]["outputs"]["plan_json"] = "{not json"
+        mismatched = self.documentation_needs()
+        plan = self.documentation_plan() | {"merge_sha": "c" * 40}
+        mismatched["impact-plan"]["outputs"]["plan_json"] = json.dumps(plan)
+
+        for needs in (missing, malformed, mismatched):
+            with self.subTest(needs=needs):
+                markdown, exit_code = summary_module.build_summary(
+                    event_name="pull_request",
+                    context=self.context(),
+                    needs=needs,
+                )
+                self.assertEqual(1, exit_code)
+                self.assertIn("CI result: FAIL", markdown)
+                self.assertIn("impact plan", markdown.lower())
+
+    def test_classifier_failure_cannot_be_hidden_by_successful_full_jobs(self) -> None:
+        summary_module = self.require_summary()
+        needs = self.pull_request_needs(**{"impact-plan": "failure"})
+        markdown, exit_code = summary_module.build_summary(
+            event_name="pull_request",
+            context=self.context(),
+            needs=needs,
+        )
+
+        self.assertEqual(1, exit_code)
+        self.assertIn("Impact classifier", markdown)
+        self.assertIn("CI result: FAIL", markdown)
 
     def test_schedule_summary_requires_dependency_policy_but_keeps_branch_coverage_informational(self) -> None:
         summary_module = self.require_summary()

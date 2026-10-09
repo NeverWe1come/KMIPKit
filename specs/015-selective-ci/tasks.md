@@ -29,7 +29,7 @@
 - [ ] T005 Extend `scripts/tests/test_workflow.py` to require one always-triggered classifier job, split language jobs, three-platform checks for selected adapters, isolated Linux sanitizer/coverage producers, schedule independence, full fallback for CI/config paths, and no workflow-level path filters or new unpinned actions.
 - [ ] T006 Extend `scripts/tests/test_coverage_gate.py` and `test_multilanguage_coverage.py` to validate each selected scope, preserve its current threshold, reject missing/malformed selected reports, and not require artifacts from unselected scopes; include Rust/FFI full-scope and partial-adapter fixtures.
 - [ ] T007 Extend `scripts/tests/test_ci_summary.py` for valid/malformed/mismatched plans, every authorized skip, selected skip/failure/cancellation/missing results, all-component plans, and schedule results with no PR classifier.
-- [ ] T008 Run focused new tests and confirm they fail for missing behavior rather than test syntax/import errors. Commit RED with `git commit -s` and record exact failing counts/results here.
+- [x] T008 Run focused new tests and confirm they fail for missing behavior rather than test syntax/import errors. RED: `python -B -m unittest scripts.tests.test_ci_impact scripts.tests.test_ci_selective_workflow scripts.tests.test_ci_summary scripts.tests.test_multilanguage_coverage -v` ran 35 tests and exposed 68 assertion/subtest failures plus 1 error against the baseline (missing classifier, split workflow jobs, selected-scope coverage, and plan-aware Summary). Commit the tests separately with `git commit -s`.
 
 ## Phase 3: GREEN — classifier and selected validators
 
