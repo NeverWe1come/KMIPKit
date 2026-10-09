@@ -1,16 +1,16 @@
 # Tasks: KMIP 2.1 Encrypt and Decrypt Operations
 
-**Input**: Design documents in specs/019-cryptographic-operations/  
-**Prerequisites**: spec.md, plan.md, research.md, data-model.md, contracts/operation-payloads.md, traceability.md  
-**Tests**: Required; strict Red, Green, Refactor with separate evidence commits.  
+**Input**: Design documents in specs/019-cryptographic-operations/
+**Prerequisites**: spec.md, plan.md, research.md, data-model.md, contracts/operation-payloads.md, traceability.md
+**Tests**: Required; strict Red, Green, Refactor with separate evidence commits.
 **Organization**: T001–T004 prepare the specification PR. Implementation tasks remain gated on the approved specification and dependencies being present on release/1.0.0.
 
 ## Specification PR preparation
 
-- [ ] T001 Update the normative catalog for KMIPKIT-0019: assign Encrypt/Decrypt, six shared operation-structure elements, the Cryptographic Parameters attribute, all 24 applicable requirements, and linked test-case records; pin the three exact official OASIS fixtures with source URLs and hashes; add KMIPKIT-DISC-045, exclude source clause KMIPKIT-CLAUSE-SPEC-4.16-004 with rationale and no requirement link, and correct the §4.16-001-002 summary without editing upstream OASIS files.
-- [ ] T002 Regenerate specification/catalog/coverage-report.md using the pinned report generator; run catalog validation, report --check, and immutable-source verification against the release base.
-- [ ] T003 Reconcile specs/019-cryptographic-operations/traceability.md against every assigned catalog ID, feature requirement, planned code path, test target, inherited owner, and the in-scope operation items extracted from each official case fixture.
-- [ ] T004 Run speckit-analyze after tasks exist, fix all critical/high inconsistencies, and leave reviewer-owned checklist boxes unchecked. Record the analyzed revision and unresolved discrepancies in the PR description.
+- [x] T001 Update the normative catalog for KMIPKIT-0019: assign Encrypt/Decrypt, six shared operation-structure elements, the Cryptographic Parameters attribute, all 24 applicable requirements, and linked test-case records; pin the three exact official OASIS fixtures with source URLs and hashes; add KMIPKIT-DISC-045, exclude source clause KMIPKIT-CLAUSE-SPEC-4.16-004 with rationale and no requirement link, and correct the §4.16-001-002 summary without editing upstream OASIS files.
+- [x] T002 Regenerate specification/catalog/coverage-report.md using the pinned report generator; run catalog validation, report --check, and immutable-source verification against the release base.
+- [x] T003 Reconcile specs/019-cryptographic-operations/traceability.md against every assigned catalog ID, feature requirement, planned code path, test target, inherited owner, and the in-scope operation items extracted from each official case fixture.
+- [x] T004 Run speckit-analyze after tasks exist, fix all critical/high inconsistencies, and leave reviewer-owned checklist boxes unchecked. Record the analyzed revision and unresolved discrepancies in the PR description.
 
 ## Phase 1: Dependency and source gate
 

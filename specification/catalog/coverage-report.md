@@ -3164,9 +3164,9 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-TEST-CN01-2-96 | TC-SJ-2-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-97 | TC-SJ-3-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-98 | TC-SJ-4-21 | unavailable | — |
-| KMIPKIT-TEST-CN01-2-99 | TC-STREAM-ENC-1-21 | unavailable | — |
-| KMIPKIT-TEST-CN01-2-100 | TC-STREAM-ENC-2-21 | unavailable | — |
-| KMIPKIT-TEST-CN01-2-101 | TC-STREAM-ENCDEC-1-21 | unavailable | — |
+| KMIPKIT-TEST-CN01-2-99 | TC-STREAM-ENC-1-21 | available | specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-1-21.xml |
+| KMIPKIT-TEST-CN01-2-100 | TC-STREAM-ENC-2-21 | available | specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml |
+| KMIPKIT-TEST-CN01-2-101 | TC-STREAM-ENCDEC-1-21 | available | specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml |
 | KMIPKIT-TEST-CN01-2-102 | TC-STREAM-HASH-1-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-103 | TC-STREAM-HASH-2-21 | unavailable | — |
 | KMIPKIT-TEST-CN01-2-104 | TC-STREAM-HASH-3-21 | unavailable | — |
@@ -3181,8 +3181,8 @@ Every row summarizes audited candidate locators by their pinned source section. 
 
 | Fixture state | Count |
 | --- | --- |
-| available | 1 |
-| unavailable | 202 |
+| available | 4 |
+| unavailable | 199 |
 
 ## Open discrepancies
 
@@ -3223,7 +3223,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-DISC-033 | open | review before dependent implementation | none linked | RSA digest fixture href omits the dot before xml | KMIPKIT-SRC-testcases §2.90 |
 | KMIPKIT-DISC-034 | open | review before dependent implementation | none linked | Set Attribute test labels and fixture basenames use different abbreviations | KMIPKIT-SRC-testcases §2.92, KMIPKIT-SRC-testcases §2.93, KMIPKIT-SRC-testcases §2.94 |
 | KMIPKIT-DISC-035 | open | review before dependent implementation | none linked | Signed JSON test section 2.97 links to the previous case | KMIPKIT-SRC-testcases §2.96, KMIPKIT-SRC-testcases §2.97 |
-| KMIPKIT-DISC-036 | open | review before dependent implementation | none linked | All 203 referenced XML fixtures are absent from the pinned source tree | KMIPKIT-SRC-profiles §5.1.3.1, KMIPKIT-SRC-testcases §2.1 |
+| KMIPKIT-DISC-036 | open | review before dependent implementation | none linked | 199 of 203 referenced XML fixtures are absent from the pinned source tree | KMIPKIT-SRC-profiles §5.1.3.1, KMIPKIT-SRC-testcases §2.1 |
 | KMIPKIT-DISC-038 | open | blocked for affected records | 3 elements, 2 profiles | JSON profile example uses Template for a reserved Object Type value | KMIPKIT-SRC-profiles §5.5.4.1, KMIPKIT-SRC-spec §11.34 |
 | KMIPKIT-DISC-039 | open | blocked for affected records | 1 elements | Query Asynchronous Requests response table is labeled as a PKCS#11 response | KMIPKIT-SRC-spec §6.1.41 |
 | KMIPKIT-DISC-040 | open | blocked for affected records | 1 elements | Table 315 RNG Retrieve Errors caption is stranded in Re-Provision error handling | KMIPKIT-SRC-spec §6.1.48.1 |
