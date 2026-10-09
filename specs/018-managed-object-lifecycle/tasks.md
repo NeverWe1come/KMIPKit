@@ -8,10 +8,10 @@
 
 ## Phase 1: Setup and normative traceability
 
-- [ ] T001 Assign Activate, Archive, Destroy, Recover, and the three applicable client requirements to KMIPKIT-0018 in `specification/catalog/kmip-2.1.json`.
-- [ ] T002 Add the Archive and Recover requirement-to-operation links and retain the server-only classification for Activate and Destroy clauses in `specification/catalog/kmip-2.1.json`.
-- [ ] T003 Regenerate `specification/catalog/coverage-report.md` with the pinned catalog generator and verify the report with its `--check` mode.
-- [ ] T004 Complete the planned traceability rows in `specs/018-managed-object-lifecycle/traceability.md` with catalog IDs, concrete source tables, planned code paths, and planned executable tests.
+- [x] T001 Assign Activate, Archive, Destroy, Recover, and the three applicable client requirements to KMIPKIT-0018 in `specification/catalog/kmip-2.1.json`.
+- [x] T002 Add the Archive and Recover requirement-to-operation links and retain the server-only classification for Activate and Destroy clauses in `specification/catalog/kmip-2.1.json`.
+- [x] T003 Regenerate `specification/catalog/coverage-report.md` with the pinned catalog generator and verify the report with its `--check` mode.
+- [x] T004 Complete the planned traceability rows in `specs/018-managed-object-lifecycle/traceability.md` with catalog IDs, concrete source tables, planned code paths, and planned executable tests.
 
 ---
 
@@ -19,8 +19,8 @@
 
 **Purpose**: Reuse the existing client execution and fake-transport contracts; add only lifecycle-specific fixture support needed by all stories.
 
-- [ ] T005 [P] Add shared lifecycle TTLV fixtures in `crates/kmipkit-protocol/tests/support/lifecycle_fixtures.rs` for optional identifiers, successful response identifiers, and malformed payloads.
-- [ ] T006 Confirm public exports and operation-dispatch extension points in `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit-client/src/lib.rs` without changing existing behavior.
+- [x] T005 [P] Add shared lifecycle TTLV fixtures in `crates/kmipkit-protocol/tests/support/lifecycle_fixtures.rs` for optional identifiers, successful response identifiers, and malformed payloads.
+- [x] T006 Confirm public exports and operation-dispatch extension points in `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit-client/src/lib.rs` without changing existing behavior.
 
 ---
 
@@ -32,22 +32,22 @@
 
 ### Tests first (Red)
 
-- [ ] T007 [P] [US1] Add Activate request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs`.
-- [ ] T008 [P] [US1] Add Destroy request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs`.
-- [ ] T009 [P] [US1] Add Activate fake-transport execution tests in `crates/kmipkit-client/tests/unit/activate_execution_tests.rs`.
-- [ ] T010 [P] [US1] Add Destroy fake-transport execution tests in `crates/kmipkit-client/tests/unit/destroy_execution_tests.rs`.
-- [ ] T011 [US1] Run the focused Activate and Destroy tests and record expected Red failures before implementation.
+- [x] T007 [P] [US1] Add Activate request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs`.
+- [x] T008 [P] [US1] Add Destroy request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs`.
+- [x] T009 [P] [US1] Add Activate fake-transport execution tests in `crates/kmipkit-client/tests/unit/activate_execution_tests.rs`.
+- [x] T010 [P] [US1] Add Destroy fake-transport execution tests in `crates/kmipkit-client/tests/unit/destroy_execution_tests.rs`.
+- [x] T011 [US1] Run the focused Activate and Destroy tests and record expected Red failures before implementation.
 
 ### Implementation (Green)
 
-- [ ] T012 [P] [US1] Implement the Activate typed request/response model in `crates/kmipkit-protocol/src/activate.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
-- [ ] T013 [P] [US1] Implement the Destroy typed request/response model in `crates/kmipkit-protocol/src/destroy.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
-- [ ] T014 [US1] Add Activate and Destroy request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
-- [ ] T015 [US1] Run focused protocol and client tests and record Green evidence for Activate and Destroy.
+- [x] T012 [P] [US1] Implement the Activate typed request/response model in `crates/kmipkit-protocol/src/activate.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
+- [x] T013 [P] [US1] Implement the Destroy typed request/response model in `crates/kmipkit-protocol/src/destroy.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
+- [x] T014 [US1] Add Activate and Destroy request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
+- [x] T015 [US1] Run focused protocol and client tests and record Green evidence for Activate and Destroy.
 
 ### Refactor
 
-- [ ] T016 [US1] Refactor shared lifecycle encoding or response helpers only where they remove duplication, keep operation modules distinct, and rerun the focused tests.
+- [x] T016 [US1] Refactor shared lifecycle encoding or response helpers only where they remove duplication, keep operation modules distinct, and rerun the focused tests.
 
 ---
 
@@ -59,19 +59,19 @@
 
 ### Tests first (Red)
 
-- [ ] T017 [P] [US2] Add Archive request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs`.
-- [ ] T018 [P] [US2] Add Archive fake-transport execution tests in `crates/kmipkit-client/tests/unit/archive_execution_tests.rs`.
-- [ ] T019 [US2] Run focused Archive tests and record expected Red failures before implementation.
+- [x] T017 [P] [US2] Add Archive request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs`.
+- [x] T018 [P] [US2] Add Archive fake-transport execution tests in `crates/kmipkit-client/tests/unit/archive_execution_tests.rs`.
+- [x] T019 [US2] Run focused Archive tests and record expected Red failures before implementation.
 
 ### Implementation (Green)
 
-- [ ] T020 [US2] Implement the Archive typed request/response model in `crates/kmipkit-protocol/src/archive.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
-- [ ] T021 [US2] Add Archive request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
-- [ ] T022 [US2] Run focused Archive tests and record Green evidence.
+- [x] T020 [US2] Implement the Archive typed request/response model in `crates/kmipkit-protocol/src/archive.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
+- [x] T021 [US2] Add Archive request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
+- [x] T022 [US2] Run focused Archive tests and record Green evidence.
 
 ### Refactor
 
-- [ ] T023 [US2] Refactor Archive code only where justified by established lifecycle patterns and rerun its focused tests.
+- [x] T023 [US2] Refactor Archive code only where justified by established lifecycle patterns and rerun its focused tests.
 
 ---
 
@@ -83,32 +83,32 @@
 
 ### Tests first (Red)
 
-- [ ] T024 [P] [US3] Add Recover request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs`.
-- [ ] T025 [P] [US3] Add Recover fake-transport success, failure, Pending, delivery-state, and no-follow-up tests in `crates/kmipkit-client/tests/unit/recover_execution_tests.rs`.
-- [ ] T026 [US3] Run focused Recover tests and record expected Red failures before implementation.
+- [x] T024 [P] [US3] Add Recover request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs`.
+- [x] T025 [P] [US3] Add Recover fake-transport success, failure, Pending, delivery-state, and no-follow-up tests in `crates/kmipkit-client/tests/unit/recover_execution_tests.rs`.
+- [x] T026 [US3] Run focused Recover tests and record expected Red failures before implementation.
 
 ### Implementation (Green)
 
-- [ ] T027 [US3] Implement the Recover typed request/response model in `crates/kmipkit-protocol/src/recover.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
-- [ ] T028 [US3] Add Recover request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
-- [ ] T029 [US3] Run focused Recover tests and record Green evidence.
+- [x] T027 [US3] Implement the Recover typed request/response model in `crates/kmipkit-protocol/src/recover.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
+- [x] T028 [US3] Add Recover request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
+- [x] T029 [US3] Run focused Recover tests and record Green evidence.
 
 ### Refactor
 
-- [ ] T030 [US3] Refactor shared lifecycle response handling only where justified, preserve exact correlation bytes, and rerun focused tests.
+- [x] T030 [US3] Refactor shared lifecycle response handling only where justified, preserve exact correlation bytes, and rerun focused tests.
 
 ---
 
 ## Phase 6: Polish and cross-cutting verification
 
-- [ ] T031 [P] Add English lifecycle usage documentation in `docs/user-guide/en/lifecycle-operations.md` with tested request and result examples.
-- [ ] T032 [P] Add Spanish lifecycle usage documentation in `docs/user-guide/es/operaciones-ciclo-vida.md` with equivalent behavior and limitations.
-- [ ] T033 [P] Update the public Rust API reference in `docs/architecture/public-api.md` and API examples to list all four operations and their limits.
-- [ ] T034 Complete `specs/018-managed-object-lifecycle/traceability.md` with final source, implementation, and passing test references for every applicable client requirement.
-- [ ] T035 Run the pinned catalog validation, `cargo fmt --all --check`, focused tests, workspace Clippy, workspace tests, and workspace coverage checks; record platform and coverage results in the PR.
-- [ ] T036 Run the documented quickstart examples for all four operations and correct any example that does not compile or match the public API.
-- [ ] T037 Add regression tests that lifecycle request/response values and raw KMIP bodies never appear in public error or Debug output in `crates/kmipkit-client/tests/unit/lifecycle_redaction_tests.rs`.
-- [ ] T038 Add tests that lifecycle responses preserve supported unknown result values and accepted generic extension data in `crates/kmipkit-client/tests/unit/lifecycle_execution_tests.rs`.
+- [x] T031 [P] Add English lifecycle usage documentation in `docs/user-guide/en/lifecycle-operations.md` with tested request and result examples.
+- [x] T032 [P] Add Spanish lifecycle usage documentation in `docs/user-guide/es/operaciones-ciclo-vida.md` with equivalent behavior and limitations.
+- [x] T033 [P] Update the public Rust API reference in `docs/architecture/public-api.md` and API examples to list all four operations and their limits.
+- [x] T034 Complete `specs/018-managed-object-lifecycle/traceability.md` with final source, implementation, and passing test references for every applicable client requirement.
+- [x] T035 Run the pinned catalog validation, `cargo fmt --all --check`, focused tests, workspace Clippy, workspace tests, and workspace coverage checks; full CI and the aggregate coverage gate passed on head `aea66648` in [run 37992923612](https://github.com/NeverWe1come/KMIPKit/actions/runs/37992923612). Detailed platform and scope measurements are recorded in `implementation-evidence.md`.
+- [x] T036 Run the documented quickstart examples for all four operations and correct any example that does not compile or match the public API.
+- [x] T037 Add regression tests that lifecycle request/response values and raw KMIP bodies never appear in public error or Debug output in `crates/kmipkit-client/tests/unit/lifecycle_redaction_tests.rs`.
+- [x] T038 Add tests that lifecycle responses preserve supported unknown result values and accepted generic extension data in `crates/kmipkit-client/tests/unit/lifecycle_execution_tests.rs`.
 
 ## Dependencies and execution order
 

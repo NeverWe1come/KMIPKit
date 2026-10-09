@@ -35,6 +35,9 @@ CLIENT_EXECUTION_OWNED_REQUIREMENT_IDS = {
     "KMIPKIT-REQ-SPEC-9.21-001-002",
     "KMIPKIT-REQ-SPEC-9.6-001-002",
 }
+LIFECYCLE_TRACEABILITY_PATH = ROOT / "specs/018-managed-object-lifecycle/traceability.md"
+LIFECYCLE_SPEC_PATH = ROOT / "specs/018-managed-object-lifecycle/spec.md"
+LIFECYCLE_TASKS_PATH = ROOT / "specs/018-managed-object-lifecycle/tasks.md"
 CLIENT_EXECUTION_DEFERRED_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-9.20-001-002"
 RESULT_ELEMENT_IDS = {
     "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON",
@@ -42,6 +45,89 @@ RESULT_ELEMENT_IDS = {
     "KMIPKIT-ELEM-RESULT-RESULT-MESSAGE",
     "KMIPKIT-ELEM-RESULT-RESULT-REASON",
     "KMIPKIT-ELEM-RESULT-RESULT-STATUS",
+}
+LIFECYCLE_OPERATION_TABLES = {
+    "KMIPKIT-ELEM-OP-C2S-ACTIVATE": ("6.1.1", "164–166"),
+    "KMIPKIT-ELEM-OP-C2S-ARCHIVE": ("6.1.4", "173–175"),
+    "KMIPKIT-ELEM-OP-C2S-DESTROY": ("6.1.15", "208–210"),
+    "KMIPKIT-ELEM-OP-C2S-RECOVER": ("6.1.42", "288–290"),
+}
+LIFECYCLE_UNIQUE_IDENTIFIER_ENCODING_CLAIM = (
+    "§4.58 Tables 145–146 define permitted Unique Identifier encodings"
+)
+LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM = (
+    "§11.56 Table 487 assigns tag 0x420094 to Unique Identifier"
+)
+LIFECYCLE_UNIQUE_IDENTIFIER_REFERENCES = {
+    "crates/kmipkit-protocol/src/activate.rs",
+    "crates/kmipkit-protocol/src/destroy.rs",
+    "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs",
+    "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
+}
+LIFECYCLE_CLIENT_REQUIREMENT_IDS = {
+    "KMIPKIT-REQ-SPEC-6.1.4-001",
+    "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+    "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+}
+LIFECYCLE_SERVER_ONLY_CLAUSE_IDS = {
+    "KMIPKIT-CLAUSE-SPEC-6.1.1-001",
+    "KMIPKIT-CLAUSE-SPEC-6.1.15-001",
+}
+LIFECYCLE_TEST_MODULES_BY_ROW = {
+    "KMIPKIT-ELEM-OP-C2S-ACTIVATE": (
+        "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
+    ),
+    "KMIPKIT-ELEM-OP-C2S-ARCHIVE": (
+        "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
+    ),
+    "KMIPKIT-ELEM-OP-C2S-DESTROY": (
+        "crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
+    ),
+    "KMIPKIT-ELEM-OP-C2S-RECOVER": (
+        "crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
+    ),
+    "KMIPKIT-CLAUSE-SPEC-6.1.1-001": (
+        "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
+    ),
+    "KMIPKIT-REQ-SPEC-6.1.4-001": (
+        "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
+    ),
+    "KMIPKIT-CLAUSE-SPEC-6.1.15-001": (
+        "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
+    ),
+    "KMIPKIT-REQ-SPEC-6.1.42-001-001": (
+        "crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
+    ),
+    "KMIPKIT-REQ-SPEC-6.1.42-001-002": (
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
+    ),
+}
+LIFECYCLE_SUPPORT_TEST_MODULES = {
+    "crates/kmipkit-client/tests/unit/lifecycle_redaction_tests.rs",
+    "crates/kmipkit-client/tests/unit/lifecycle_execution_tests.rs",
+}
+LIFECYCLE_OPERATION_EXECUTION_MODULES = {
+    "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
+    "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
+}
+LIFECYCLE_PLANNED_CODE_PATHS = {
+    "crates/kmipkit-protocol/src/activate.rs",
+    "crates/kmipkit-protocol/src/archive.rs",
+    "crates/kmipkit-protocol/src/destroy.rs",
+    "crates/kmipkit-protocol/src/recover.rs",
+    "crates/kmipkit-protocol/src/lib.rs",
+    "crates/kmipkit-client/src/execute.rs",
+    "crates/kmipkit-client/src/lib.rs",
 }
 
 
@@ -94,7 +180,141 @@ def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
     return path, source
 
 
+def _markdown_table_rows(document: str) -> list[list[str]]:
+    return [
+        [cell.strip() for cell in line.strip().strip("|").split("|")]
+        for line in document.splitlines()
+        if line.startswith("| ")
+    ]
+
+
+def _markdown_catalog_rows(document: str) -> dict[str, list[str]]:
+    rows_by_id: dict[str, list[str]] = {}
+    for cells in _markdown_table_rows(document):
+        if not cells[0].startswith("`"):
+            continue
+        match = re.search(r"`([^`]+)`", cells[0])
+        if match:
+            rows_by_id[match.group(1)] = cells
+    return rows_by_id
+
+
 class FeatureTraceabilityTests(unittest.TestCase):
+    def test_lifecycle_traceability_covers_catalog_sources_and_planned_modules(self) -> None:
+        traceability = LIFECYCLE_TRACEABILITY_PATH.read_text(encoding="utf-8")
+        specification = LIFECYCLE_SPEC_PATH.read_text(encoding="utf-8")
+        tasks = LIFECYCLE_TASKS_PATH.read_text(encoding="utf-8")
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+
+        rows_by_id = _markdown_catalog_rows(traceability)
+        self.assertEqual(
+            set(rows_by_id),
+            set(LIFECYCLE_OPERATION_TABLES)
+            | LIFECYCLE_CLIENT_REQUIREMENT_IDS
+            | LIFECYCLE_SERVER_ONLY_CLAUSE_IDS,
+        )
+
+        elements_by_id = {item["element_id"]: item for item in catalog["elements"]}
+        requirements_by_id = {
+            item["requirement_id"]: item for item in catalog["requirements"]
+        }
+        clauses_by_id = {item["clause_id"]: item for item in catalog["source_clauses"]}
+        for element_id, (section, tables) in LIFECYCLE_OPERATION_TABLES.items():
+            with self.subTest(element_id=element_id):
+                element = elements_by_id[element_id]
+                self.assertEqual(element["feature_spec"], "KMIPKIT-0018")
+                expected_source = f"KMIP 2.1 §{section} Tables {tables}"
+                source = rows_by_id[element_id][1]
+                self.assertTrue(source.startswith(expected_source))
+                self.assertIn(f"§{section} | Tables {tables}", specification)
+
+                payload_tables = element["payload_tables"]
+                self.assertEqual(
+                    [table["role"] for table in payload_tables], ["request", "response"]
+                )
+                payload_numbers = tuple(
+                    table["table_number"] for table in payload_tables
+                )
+                payload_range = re.search(
+                    r"request/response payloads: Tables (\d+)–(\d+)", source
+                )
+                self.assertIsNotNone(payload_range)
+                self.assertEqual(
+                    tuple(map(int, payload_range.groups())), payload_numbers
+                )
+
+        normalized_specification = " ".join(specification.split())
+        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_ENCODING_CLAIM, normalized_specification)
+        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM, normalized_specification)
+        for element_id in LIFECYCLE_OPERATION_TABLES:
+            with self.subTest(identifier_source_row=element_id):
+                source = rows_by_id[element_id][1]
+                normalized_source = " ".join(source.split())
+                self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_ENCODING_CLAIM, normalized_source)
+                self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM, normalized_source)
+        for source_path in LIFECYCLE_UNIQUE_IDENTIFIER_REFERENCES:
+            with self.subTest(identifier_source_reference=source_path):
+                _, source = _read_confined_test_source(source_path) or (None, "")
+                comment_text = re.sub(r"(?m)^\s*//[/!] ?", "", source)
+                normalized_comment = " ".join(comment_text.split())
+                self.assertIn(
+                    LIFECYCLE_UNIQUE_IDENTIFIER_ENCODING_CLAIM,
+                    normalized_comment,
+                )
+                self.assertIn(
+                    LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM,
+                    normalized_comment,
+                )
+        tag_source_row = _markdown_table_rows(traceability)
+        generic_row = next(
+            cells for cells in tag_source_row if cells[0] == "Generic TTLV and secret handling"
+        )
+        self.assertIn(LIFECYCLE_UNIQUE_IDENTIFIER_TAG_CLAIM, generic_row[1])
+
+        for requirement_id in LIFECYCLE_CLIENT_REQUIREMENT_IDS:
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(
+                    requirements_by_id[requirement_id]["feature_spec"], "KMIPKIT-0018"
+                )
+        for clause_id in LIFECYCLE_SERVER_ONLY_CLAUSE_IDS:
+            with self.subTest(clause_id=clause_id):
+                self.assertEqual(clauses_by_id[clause_id]["scope_state"], "server_only")
+
+        all_planned_test_modules = set().union(
+            *LIFECYCLE_TEST_MODULES_BY_ROW.values(), LIFECYCLE_SUPPORT_TEST_MODULES
+        )
+        for row_id, test_modules in LIFECYCLE_TEST_MODULES_BY_ROW.items():
+            with self.subTest(row_id=row_id):
+                verification = rows_by_id[row_id][4]
+                for module in test_modules:
+                    self.assertIn(module, verification)
+        for module in all_planned_test_modules:
+            with self.subTest(planned_test_module=module):
+                self.assertIn(f"`{module}`", tasks)
+                self.assertIn(f"`{module}`", traceability)
+
+        table_rows = {cells[0]: cells for cells in _markdown_table_rows(traceability)}
+        common_verification = table_rows[
+            "Common message, batch, and result model"
+        ][4]
+        for module in LIFECYCLE_OPERATION_EXECUTION_MODULES:
+            with self.subTest(shared_execution_module=module):
+                self.assertIn(module, common_verification)
+        self.assertNotIn(
+            "crates/kmipkit-client/tests/unit/lifecycle_execution_tests.rs",
+            common_verification,
+        )
+        self.assertIn(
+            "crates/kmipkit-client/tests/unit/lifecycle_execution_tests.rs",
+            table_rows["Generic TTLV and secret handling"][4],
+        )
+
+        for code_path in LIFECYCLE_PLANNED_CODE_PATHS:
+            with self.subTest(planned_code_path=code_path):
+                self.assertIn(f"`{code_path}`", tasks)
+                self.assertIn(f"`{code_path}`", traceability)
+
+
     def test_credentials_and_attestation_traceability_rows_are_complete(self) -> None:
         with CLIENT_CREDENTIALS_REQUIREMENTS_PATH.open(
             encoding="utf-8", newline=""

@@ -25,6 +25,8 @@ tests, and the conformance matrix.
 
 - [Typed client execution (English)](user-guide/en/client-execution.md)
 - [Typed client execution (Español)](user-guide/es/ejecucion-cliente.md)
+- [Managed-object lifecycle operations (English)](user-guide/en/lifecycle-operations.md)
+- [Operaciones de ciclo de vida de objetos (Español)](user-guide/es/operaciones-ciclo-vida.md)
 - [Inspecting KMIP messages (English)](user-guide/en/message-model.md)
 - [Inspeccionar mensajes KMIP (Español)](user-guide/es/modelo-mensaje.md)
 
