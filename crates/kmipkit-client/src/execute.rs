@@ -19,8 +19,9 @@ use kmipkit_protocol::{
     MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute,
     PingRequest, PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
     ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
-    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus, SetAttributeRequest, SetAttributeResponse,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
+    RequestMessage, ResponseBatchItemView, ResponseMessage, ResultStatus, SetAttributeRequest,
+    SetAttributeResponse,
 };
 #[cfg(test)]
 use kmipkit_transport::Transport;
@@ -84,6 +85,7 @@ const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
 const PING_OPERATION: u32 = 0x0000_003B;
+const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -122,6 +124,8 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
+    /// An explicit client-to-server Query request.
+    Query(QueryRequest),
 }
 
 impl ClientRequest {
@@ -135,6 +139,12 @@ impl ClientRequest {
     #[must_use]
     pub const fn ping() -> Self {
         Self::Ping(PingRequest::new())
+    }
+
+    /// Creates a typed client-to-server Query request variant.
+    #[must_use]
+    pub fn query(request: QueryRequest) -> Self {
+        Self::Query(request)
     }
 
     /// Creates a typed Get Attributes request variant.
@@ -193,6 +203,7 @@ impl ClientRequest {
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
+            Self::Query(_) => QUERY_OPERATION,
         }
     }
 
@@ -210,6 +221,7 @@ impl ClientRequest {
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
+            Self::Query(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -235,6 +247,7 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
+            Self::Query(_) => formatter.write_str("Query([REDACTED])"),
         }
     }
 }
@@ -260,6 +273,12 @@ impl ClientBatchItem {
     #[must_use]
     pub const fn ping() -> Self {
         Self::new(ClientRequest::ping())
+    }
+
+    /// Creates a batch item for one typed Query request.
+    #[must_use]
+    pub fn query(request: QueryRequest) -> Self {
+        Self::new(ClientRequest::query(request))
     }
 
     /// Creates a batch item from an admitted typed request.
@@ -639,6 +658,8 @@ pub enum ClientOperation {
     GetAttributeList,
     /// Ping one server connection and observe its KMIP response.
     Ping,
+    /// Query one server for explicitly requested protocol information.
+    Query,
     /// Poll one previously Pending operation.
     Poll,
     /// Cancel one previously Pending operation.
@@ -774,6 +795,7 @@ enum ClientResponseRef<'a> {
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
+    Query(&'a QueryResponse),
 }
 
 /// A borrowed view of one typed response in a [`ClientBatchOutcome`].
@@ -802,6 +824,7 @@ impl ClientResponseView<'_> {
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
+            ClientResponseRef::Query(response) => response.result(),
         }
     }
 
@@ -823,6 +846,7 @@ impl ClientResponseView<'_> {
             | ClientResponseRef::GetAttributes(_)
             | ClientResponseRef::GetAttributeList(_)
             | ClientResponseRef::Ping(_) => None,
+            ClientResponseRef::Query(_) => None,
         }
     }
 
@@ -842,6 +866,7 @@ impl ClientResponseView<'_> {
             | ClientResponseRef::GetAttributes(_)
             | ClientResponseRef::GetAttributeList(_)
             | ClientResponseRef::Ping(_) => None,
+            ClientResponseRef::Query(_) => None,
         }
     }
 
@@ -943,6 +968,15 @@ impl ClientResponseView<'_> {
             _ => None,
         }
     }
+
+    /// Returns the Query response when this view represents it.
+    #[must_use]
+    pub const fn query(&self) -> Option<&QueryResponse> {
+        match self.response {
+            ClientResponseRef::Query(response) => Some(response),
+            _ => None,
+        }
+    }
 }
 
 impl fmt::Debug for ClientResponseView<'_> {
@@ -994,6 +1028,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Ping(response) => {
                 formatter.debug_tuple("Ping").field(response).finish()
             }
+            ClientResponseRef::Query(response) => {
+                formatter.debug_tuple("Query").field(response).finish()
+            }
         }
     }
 }
@@ -1027,6 +1064,8 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
+    /// The server returned a Query result.
+    Query(QueryResponse),
 }
 
 impl ClientBatchOutcome {
@@ -1046,6 +1085,7 @@ impl ClientBatchOutcome {
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
             | Self::Ping(_) => None,
+            Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
     }
@@ -1066,6 +1106,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
+            Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
     }
@@ -1086,6 +1127,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
+            Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
         }
     }
@@ -1170,6 +1212,9 @@ impl ClientBatchOutcome {
             Self::Ping(response) => ClientResponseView {
                 response: ClientResponseRef::Ping(response),
             },
+            Self::Query(response) => ClientResponseView {
+                response: ClientResponseRef::Query(response),
+            },
         }
     }
 }
@@ -1222,6 +1267,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
+            Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
         }
     }
 }
@@ -1262,6 +1308,7 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
+            Self::Query(response) => write!(formatter, "Query({})", response.result()),
         }
     }
 }
@@ -1584,6 +1631,50 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let mut response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::ping()),
+            limits,
+            request_options,
+        )?;
+        response.items.pop().ok_or_else(|| {
+            protocol_failure_at(
+                protocol_error(ProtocolErrorKind::MalformedMessage),
+                RequestDeliveryState::ResponseStarted,
+            )
+        })
+    }
+
+    /// Executes one explicit Query request through the shared exchange path.
+    ///
+    /// The server response reports the values selected by this Query. It does
+    /// not prove that the client independently enforces those capabilities.
+    /// The method performs one exchange and does not retry or issue follow-up
+    /// operations.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn query(
+        &mut self,
+        request: QueryRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.query_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Query request with per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn query_with_options(
+        &mut self,
+        request: QueryRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let mut response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::query(request)),
             limits,
             request_options,
         )?;
@@ -2313,7 +2404,8 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::CreateSplitKey(_)
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
-        | ClientRequest::Ping(_) => false,
+        | ClientRequest::Ping(_)
+        | ClientRequest::Query(_) => false,
     }
 }
 
@@ -2861,6 +2953,11 @@ fn response_outcome(
     item: ResponseBatchItemView<'_>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
     match operation {
+        QUERY_OPERATION => {
+            let response =
+                QueryResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
+            Ok(ClientBatchOutcome::Query(response))
+        }
         PING_OPERATION => {
             let response =
                 PingResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
@@ -3131,7 +3228,8 @@ fn validate_async_response(
         | ClientOperation::SetAttribute
         | ClientOperation::GetAttributes
         | ClientOperation::GetAttributeList
-        | ClientOperation::Ping => {
+        | ClientOperation::Ping
+        | ClientOperation::Query => {
             return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
         }
         ClientOperation::Poll => {

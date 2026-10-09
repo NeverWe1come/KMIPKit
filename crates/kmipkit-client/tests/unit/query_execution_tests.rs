@@ -8,9 +8,7 @@ use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation};
-use crate::execute_test_support::{
-    asynchronous_response_bytes, test_item, test_structure,
-};
+use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use kmipkit_protocol::{QueryFunction, QueryRequest};
 
 const QUERY: u32 = 0x0000_0018;
@@ -126,25 +124,24 @@ fn query_sends_one_request_with_repeated_functions_and_ordered_object_groups() {
         panic!("the typed outcome is Query");
     };
 
-    assert_eq!(query.response_items().len(), 1);
+    assert_eq!(query.response_fields().len(), 1);
     assert_eq!(outcome.outcome().operation(), ClientOperation::Query);
     assert_eq!(
         query_request_shape(captured.borrow().as_deref().expect("request captured")),
-        Some((vec![1, 2, 1], vec!["group-b".into(), "group-a".into(), "group-b".into()]))
+        Some((
+            vec![1, 2, 1],
+            vec!["group-b".into(), "group-a".into(), "group-b".into()]
+        ))
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
 #[test]
 fn empty_query_is_not_sent() {
-    let (mut client, transport, _) = client_for(ExchangeScript::FailAfterPartialWrite {
-        written_bytes: 1,
-    });
+    let (mut client, transport, _) =
+        client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 1 });
     let error = client
-        .query(
-            QueryRequest::new([]),
-            &CodecLimits::defaults(),
-        )
+        .query(QueryRequest::new([]), &CodecLimits::defaults())
         .expect_err("an empty Query Function list is rejected locally");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
@@ -176,7 +173,16 @@ fn query_failure_preserves_kmip_result_and_transport_delivery_without_retry() {
 
 #[test]
 fn query_rejects_malformed_response_after_one_exchange() {
-    let response = asynchronous_response_bytes(QUERY, 0, None, None, Some(test_structure([])));
+    let response = asynchronous_response_bytes(
+        QUERY,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_005c,
+            kmipkit_ttlv::Value::text_string("wrong type".to_owned()),
+        )])),
+    );
     let (mut client, transport, _) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: Vec::new(),
@@ -186,7 +192,7 @@ fn query_rejects_malformed_response_after_one_exchange() {
             QueryRequest::new([QueryFunction::OPERATIONS]),
             &CodecLimits::defaults(),
         )
-        .expect_err("a structured Query result must contain Protection Storage Masks");
+        .expect_err("a known Query response member has its specified type");
     assert!(error.delivery_state().is_some());
     assert_eq!(transport.borrow().exchange_count(), 1);
 }

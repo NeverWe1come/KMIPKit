@@ -50,9 +50,9 @@
 
 ### Implementation (Green)
 
-- [ ] T014 [US2] Implement open Query Function values and typed Query request/response models with Table 282–283 cardinality and generic nested Item preservation in `crates/kmipkit-protocol/src/query.rs`.
-- [ ] T015 [US2] Add Query request/response conversion, operation dispatch, and `Client::query` on the common exchange path in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`.
-- [ ] T016 [US2] Run focused Query protocol and fake-transport tests and record Green evidence.
+- [x] T014 [US2] Implement open Query Function values and typed Query request/response models with Table 282–283 cardinality and generic nested Item preservation in `crates/kmipkit-protocol/src/query.rs`.
+- [x] T015 [US2] Add Query request/response conversion, operation dispatch, and `Client::query` on the common exchange path in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`.
+- [x] T016 [US2] Run focused Query protocol and fake-transport tests and record Green evidence.
 
 ### Refactor
 

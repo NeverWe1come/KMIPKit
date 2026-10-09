@@ -27,6 +27,7 @@ mod modify_attribute;
 mod ping;
 mod poll;
 mod process;
+mod query;
 mod query_async_requests;
 mod result;
 mod set_attribute;
@@ -68,6 +69,7 @@ pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyA
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
+pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
