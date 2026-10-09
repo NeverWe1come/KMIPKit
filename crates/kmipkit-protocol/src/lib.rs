@@ -127,3 +127,7 @@ mod get_attribute_list_tests;
 #[cfg(test)]
 #[path = "../tests/unit/add_attribute_tests.rs"]
 mod add_attribute_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/adjust_attribute_tests.rs"]
+mod adjust_attribute_tests;
