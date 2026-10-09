@@ -43,11 +43,11 @@
 - [x] T012 [P] [US1] Implement the Activate typed request/response model in `crates/kmipkit-protocol/src/activate.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
 - [x] T013 [P] [US1] Implement the Destroy typed request/response model in `crates/kmipkit-protocol/src/destroy.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
 - [x] T014 [US1] Add Activate and Destroy request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
-- [ ] T015 [US1] Run focused protocol and client tests and record Green evidence for Activate and Destroy.
+- [x] T015 [US1] Run focused protocol and client tests and record Green evidence for Activate and Destroy.
 
 ### Refactor
 
-- [ ] T016 [US1] Refactor shared lifecycle encoding or response helpers only where they remove duplication, keep operation modules distinct, and rerun the focused tests.
+- [x] T016 [US1] Refactor shared lifecycle encoding or response helpers only where they remove duplication, keep operation modules distinct, and rerun the focused tests.
 
 ---
 
