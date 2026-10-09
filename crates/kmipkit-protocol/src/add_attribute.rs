@@ -12,7 +12,7 @@ use crate::{
     ResultValidationError,
 };
 
-const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_0004;
+const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const NEW_ATTRIBUTE: u32 = 0x0042_013D;
 
