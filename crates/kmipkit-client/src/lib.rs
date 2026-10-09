@@ -99,6 +99,10 @@ mod create_key_pair_execution_tests;
 mod create_split_key_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/activate_execution_tests.rs"]
+mod activate_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/process_execution_tests.rs"]
 mod process_execution_tests;
 
