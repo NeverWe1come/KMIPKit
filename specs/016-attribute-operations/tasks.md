@@ -78,8 +78,8 @@
 
 ### Refactor for User Story 1
 
-- [ ] T025 [US1] [Refactor] Refactor shared read-operation conversion and typed execution without changing vectors or server-result behavior in `crates/kmipkit-protocol/src/get_attributes.rs`, `crates/kmipkit-protocol/src/get_attribute_list.rs`, and `crates/kmipkit-client/src/execute.rs`.
-- [ ] T026 [US1] Re-run `crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs`, `crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs`, and `crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs`; record Refactor evidence in a separate implementation commit.
+- [x] T025 [US1] [Refactor] Refactor shared read-operation conversion and typed execution without changing vectors or server-result behavior in `crates/kmipkit-protocol/src/get_attributes.rs`, `crates/kmipkit-protocol/src/get_attribute_list.rs`, and `crates/kmipkit-client/src/execute.rs`. Refactor: `5932eab603a053f47ff5e61f5f376e2afdce1cc2`.
+- [x] T026 [US1] Re-run `crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs`, `crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs`, and `crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs`; record Refactor evidence in a separate implementation commit. Evidence: `traceability.md`, “Attribute read-operation Refactor evidence (T025–T026)”.
 
 **Checkpoint**: Both read operations pass independently, including absent and repeated-value cases.
 
