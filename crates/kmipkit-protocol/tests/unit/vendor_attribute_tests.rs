@@ -11,15 +11,12 @@ use kmipkit_ttlv::{ItemType, ValueView};
 #[path = "../support/attribute_fixtures.rs"]
 mod attribute_fixtures;
 
-use attribute_fixtures::{
-    ATTRIBUTE_NAME_TAG, ATTRIBUTE_VALUE_TAG, VENDOR_ATTRIBUTE_TAG, VENDOR_IDENTIFICATION_TAG,
-    vendor_attribute_table_150,
-};
+use attribute_fixtures::vendor_attribute_table_150;
 
 const TABLE_150_REQUIRED_FIELDS: [(u32, ItemType); 3] = [
-    (VENDOR_IDENTIFICATION_TAG, ItemType::TextString),
-    (ATTRIBUTE_NAME_TAG, ItemType::TextString),
-    (ATTRIBUTE_VALUE_TAG, ItemType::ByteString),
+    (0x0042_009D, ItemType::TextString), // Vendor Identification
+    (0x0042_000A, ItemType::TextString), // Attribute Name
+    (0x0042_000B, ItemType::ByteString), // Attribute Value Item
 ];
 
 #[test]
@@ -28,7 +25,7 @@ fn vendor_attribute_table_150_preserves_required_members_in_order() {
         .expect("Table 150 Vendor Attribute contains its required members");
     let attribute = &attributes.as_items()[0];
 
-    assert_eq!(attribute.tag().raw(), VENDOR_ATTRIBUTE_TAG);
+    assert_eq!(attribute.tag().raw(), 0x0042_0008); // Attribute item used for §4.60 Vendor Attribute
     let fields = attribute.with_value(|value| match value {
         ValueView::Structure(structure) => Some(
             structure
