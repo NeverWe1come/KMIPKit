@@ -24,6 +24,7 @@ mod get_attribute_list;
 mod get_attributes;
 mod message;
 mod modify_attribute;
+mod ping;
 mod poll;
 mod process;
 mod query_async_requests;
@@ -64,6 +65,7 @@ pub use message::{
     ResponseHeaderView, ResponseMessage,
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
+pub use ping::{PingError, PingRequest, PingResponse};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};

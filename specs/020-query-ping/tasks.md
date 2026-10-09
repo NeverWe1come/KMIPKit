@@ -10,8 +10,8 @@
 
 **Purpose**: Confirm the approved source contract and prepare source-derived fixtures before operation work.
 
-- [ ] T001 Confirm the active release base, Query/Ping OASIS references, both client requirement IDs, and assigned catalog elements in `specs/020-query-ping/traceability.md`.
-- [ ] T002 Add Query and Ping source-derived TTLV fixture helpers with independent tag/value expectations in `crates/kmipkit-protocol/tests/support/query_ping_fixtures.rs`.
+- [x] T001 Confirm the active release base, Query/Ping OASIS references, both client requirement IDs, and assigned catalog elements in `specs/020-query-ping/traceability.md`.
+- [x] T002 Add Query and Ping source-derived TTLV fixture helpers with independent tag/value expectations in `crates/kmipkit-protocol/tests/support/query_ping_fixtures.rs`.
 - [ ] T003 Add catalog implementation/test references for the approved Query/Ping scope, including the Object Groups member and Object Group attribute, in `specification/catalog/kmip-2.1.json` and regenerate `specification/catalog/coverage-report.md` with `tools/normative_catalog/report.py`.
 
 ## Phase 2: User Story 1 — Ping (Priority: P1)
@@ -22,15 +22,15 @@
 
 ### Tests first (Red)
 
-- [ ] T004 [P] [US1] Add Ping request/response shape, empty payload, malformed message, and source-derived TTLV tests in `crates/kmipkit-protocol/tests/unit/ping_operation_tests.rs`.
-- [ ] T005 [P] [US1] Add fake-transport success, failure, delivery-state, one-exchange, and no-retry tests in `crates/kmipkit-client/tests/unit/ping_execution_tests.rs`.
-- [ ] T006 [US1] Run focused Ping tests before implementation and record the expected Red result in the Red commit.
+- [x] T004 [P] [US1] Add Ping request/response shape, empty payload, malformed message, and source-derived TTLV tests in `crates/kmipkit-protocol/tests/unit/ping_operation_tests.rs`.
+- [x] T005 [P] [US1] Add fake-transport success, failure, delivery-state, one-exchange, and no-retry tests in `crates/kmipkit-client/tests/unit/ping_execution_tests.rs`.
+- [x] T006 [US1] Run focused Ping tests before implementation and record the expected Red result in the Red commit.
 
 ### Implementation (Green)
 
-- [ ] T007 [P] [US1] Implement typed Ping request/response payload models and conversions in `crates/kmipkit-protocol/src/ping.rs`; export public types from `crates/kmipkit-protocol/src/lib.rs`.
-- [ ] T008 [US1] Add Ping request/response dispatch and `Client::ping` to `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`, using the shared execution path once.
-- [ ] T009 [US1] Run focused Ping protocol and fake-transport tests and record Green evidence.
+- [x] T007 [P] [US1] Implement typed Ping request/response payload models and conversions in `crates/kmipkit-protocol/src/ping.rs`; export public types from `crates/kmipkit-protocol/src/lib.rs`.
+- [x] T008 [US1] Add Ping request/response dispatch and `Client::ping` to `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`, using the shared execution path once.
+- [x] T009 [US1] Run focused Ping protocol and fake-transport tests and record Green evidence.
 
 ### Refactor
 
