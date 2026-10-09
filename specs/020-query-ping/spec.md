@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-09
 
-**Status**: Draft for review
+**Status**: Authorized for autonomous implementation under the maintainer's standing direct instruction (2026-10-09); implementation PR [#73](https://github.com/NeverWe1come/KMIPKit/pull/73) was merged on 2026-10-09. This records scope authorization and merge, not a claim of separate line-by-line review of this revision.
 
 **Input**: KMIPKit roadmap Phase D: specify bounded client-initiated Query and Ping operations for KMIP 2.1 over TTLV.
 
@@ -105,7 +105,7 @@ As a KMIPKit caller, I can request one or more kinds of server information and i
 
 ## Success Criteria
 
-- **SC-001**: The Query and Ping operation elements, their operation-enum values, Query Function enumeration and its 14 standard values plus extension range, Object Groups structure/member and Object Group attribute, and both client requirement IDs are assigned to KMIPKIT-0020 in the normative catalog. `KMIPKIT-DISC-047` records the unresolved response-shape conflict. The generated coverage report passes its pinned consistency check and continues to show implementation and verification evidence as pending until the implementation PR.
+- **SC-001**: The Query and Ping operation elements, their operation-enum values, Query Function enumeration and its 14 standard values plus extension range, Object Groups structure/member and Object Group attribute, and both client requirement IDs are assigned to KMIPKIT-0020 in the normative catalog. `KMIPKIT-DISC-047` records the unresolved response-shape conflict. The generated coverage report passes its pinned consistency check and links implementation and repository verification evidence recorded in merged PR #73; unavailable pinned official fixtures remain an explicit limitation, so this is not a formal conformance claim.
 - **SC-002**: Focused protocol and fake-transport tests cover every Ping and Query acceptance scenario, including empty Query rejection, repeated functions, all 14 standard Query Function values, optional/repeated Object Group attributes, optional/repeated response fields, both source-described successful response forms, failures, unknown values, and no retry.
 - **SC-003**: No Query or Ping operation-specific value is lost across typed model conversion to and from TTLV.
 - **SC-004**: No conformance claim relies on an unavailable fixture; all referenced official test-case fixture availability and mapping caveats are documented.
