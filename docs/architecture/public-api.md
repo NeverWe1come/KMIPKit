@@ -6,9 +6,10 @@
 
 The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
 not implement the general builder surface. The current typed client exposes
-Discover Versions, Get Attributes, and Get Attribute List for batch execution,
-along with separate Poll, Cancel, Process, and Query Asynchronous Requests
-methods.
+Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
+Attribute, and Set Attribute for batch execution, along with separate Poll,
+Cancel, Process, and Query Asynchronous Requests methods.
 KMIPKIT-0013 adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
 configuration. The typed client accepts neither raw request bytes nor an
@@ -35,10 +36,11 @@ from the typed client. Direct users may call each adapter's bounded byte API.
 
 KMIPKIT-0007 provides synchronous `Client::execute` over an ordered `ClientBatch`
 with a closed typed request set. The currently implemented operation variants
-are Discover Versions, Get Attributes, and Get Attribute List; the remaining
-attribute operations are assigned to later KMIPKIT-0016 increments. The API
-does not accept generic Item values, raw message bytes, or caller-implemented
-conversions. Discover Versions is explicit and is never a hidden preflight.
+are Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
+Attribute, and Set Attribute. The API does not accept generic Item values, raw
+message bytes, or caller-implemented conversions. Discover Versions is explicit
+and is never a hidden preflight.
 Per-call `CodecLimits` bound request encoding and response decoding and supply
 the transport response-byte cap.
 

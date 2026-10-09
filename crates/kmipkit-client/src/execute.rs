@@ -1321,7 +1321,8 @@ impl fmt::Debug for ClientBatchResponse {
 
 /// Synchronous typed KMIP client execution foundation.
 ///
-/// Admitted operations are explicit Discover Versions and Create requests.
+/// Admitted operations are explicit variants of the typed [`ClientRequest`]
+/// set, including discovery, creation, attribute, and asynchronous operations.
 /// Production construction accepts validated transport
 /// configuration and retains the immutable client extension configuration;
 /// callers cannot inject an arbitrary transport implementation.

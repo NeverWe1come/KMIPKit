@@ -1,17 +1,19 @@
 # Ejecución tipada del cliente
 
 Esta guía describe la base de ejecución tipada introducida por KMIPKIT-0007 y
-las API actuales, incluidas Create, Create Key Pair, Create Split Key, Get
-Attributes y Get Attribute List. Para configurar una conexión de producción,
-consulta la [guía de transportes TLS y HTTPS](transportes-produccion.md).
+las API actuales: Discover Versions, Create, Create Key Pair, Create Split Key,
+Add Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
+Attribute List, Modify Attribute y Set Attribute. Para configurar una conexión
+de producción, consulta la [guía de transportes TLS y HTTPS](transportes-produccion.md).
 
 ## Límite de peticiones tipadas
 
 La API síncrona `kmipkit_client::Client::execute` acepta un `ClientBatch` que
 contiene únicamente variantes del conjunto cerrado `ClientRequest`. El cliente
 admite peticiones explícitas del cliente al servidor para Discover Versions,
-Create, Create Key Pair, Create Split Key, Get Attributes y Get Attribute
-List. Discover Versions anuncia el par de versión KMIP 2.1 (2, 1), conforme a
+Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
+Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute y Set
+Attribute. Discover Versions anuncia el par de versión KMIP 2.1 (2, 1), conforme a
 OASIS KMIP Specification v2.1 §6.1.16, Tablas 211–213. Get Attributes y Get
 Attribute List usan sus modelos tipados de petición y respuesta de
 §§6.1.20–6.1.21. La API no admite valores TTLV genéricos `Item` o `Structure`,
@@ -27,8 +29,9 @@ Supported` del servidor se devuelve como un resultado tipado normal.
 Cada elemento del lote conserva su respuesta tipada por operación. La llamada
 `ClientBatchOutcome::response()` devuelve una vista prestada
 `ClientResponseView`, con el accesor común `result()` y accesores tipados para
-Discover Versions, Create, Create Key Pair, Create Split Key, Get Attributes y
-Get Attribute List. Cuando una operación queda en estado Pending,
+Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
+Attribute y Set Attribute. Cuando una operación queda en estado Pending,
 `PendingOutcome` conserva esa respuesta tipada y presta el valor de correlación
 opaco mediante `asynchronous_correlation_value()`. KMIPKit no ejecuta Poll ni
 reintenta automáticamente.
