@@ -70,11 +70,11 @@
 
 ### Implementation for User Story 1 — Green
 
-- [ ] T020 [P] [US1] Implement typed Get Attributes request/response encoding and decoding for FR-001/FR-002/FR-006/SC-001 in `crates/kmipkit-protocol/src/get_attributes.rs`.
-- [ ] T021 [P] [US1] Implement the UID-only Get Attribute List request, full-name operation result, and required one-or-more Attribute Reference response for FR-001/FR-002/FR-007/SC-001 in `crates/kmipkit-protocol/src/get_attribute_list.rs`.
-- [ ] T022 [US1] Expose both operation models for FR-001/FR-002/FR-011 from `crates/kmipkit-protocol/src/lib.rs` while retaining unknown and repeated values in wire order.
-- [ ] T023 [US1] Add fake-transport dispatch and response handling for FR-001/FR-006/FR-007/FR-010/FR-012 for both read operations in `crates/kmipkit-client/src/execute.rs`.
-- [ ] T024 [US1] Run the focused tests in `crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs`, `crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs`, and `crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs`; confirm they pass and record Green evidence in a separate implementation commit.
+- [x] T020 [P] [US1] Implement typed Get Attributes request/response encoding and decoding for FR-001/FR-002/FR-006/SC-001 in `crates/kmipkit-protocol/src/get_attributes.rs`; enforce shared Vendor Attribute Table 150 member order and reject Reserved/unallocated outbound tag-form references. Green: `547c3185e894932371daa13f321edf3ad631da40`.
+- [x] T021 [P] [US1] Implement the UID-only Get Attribute List request, full-name operation result, and required one-or-more Attribute Reference response for FR-001/FR-002/FR-007/SC-001 in `crates/kmipkit-protocol/src/get_attribute_list.rs`. Green: `789215c39f16900e79a4c2ca6a04c1294198199f`.
+- [x] T022 [US1] Expose both operation models for FR-001/FR-002/FR-011 from `crates/kmipkit-protocol/src/lib.rs` while retaining unknown and repeated values in wire order. Green: `75f2032fcc7adb7ad08f7759560fe65cec511d4b`; workspace formatting follow-up: `5438d85a80459a65b4967824767ecbee180359d1`.
+- [x] T023 [US1] Add fake-transport dispatch and response handling for FR-001/FR-006/FR-007/FR-010/FR-012 for both read operations in `crates/kmipkit-client/src/execute.rs`. Red: `ca17623c7bb29305576e5021dbddb9ed23e98f0f`; Green: `08ba69ab0429748ac4fb538e0c0494804a2a68a9`.
+- [x] T024 [US1] Run the focused tests in `crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs`, `crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs`, and `crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs`; confirm they pass and record Green evidence in a separate implementation commit. Evidence: `traceability.md`, “Attribute read-operation Green evidence (T020–T024)”.
 
 ### Refactor for User Story 1
 
