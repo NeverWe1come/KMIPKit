@@ -89,3 +89,27 @@ python -m unittest -v tools.normative_catalog.tests.test_validate.CatalogValidat
 ```
 
 It ran 10 tests in 63.076s and failed with 16 expected assertions because the catalog metadata is not implemented yet and the existing validator accepts incomplete policy records. There were no syntax or source-fixture setup errors. Independent QA approved the final Red oracle as ready for T012.
+
+### Attribute policy catalog Green evidence (T012)
+
+The catalog now records the exact rule-table identifier and four policy cells for all 62 standard attributes. The checksum-verified offline validator independently reads the pinned Specification and requires exact source text, policy values, references, and closed rule sets; it rejects missing, duplicate, contradictory, or unsupported rules. The catalog preserves all 30 actionable operation restrictions and 33 conditional entries, including qualified table values. Vendor Attribute has the separate §4.60/Table 150 policy, exact server-created `Vendor Identification = y` predicate, and six source actions. The validator also checks that all three Table 150 member records remain children of Vendor Attribute and that the source-linked `TC-I18N-3-21` test remains linked to Attribute Value. No upstream source was changed.
+
+The Green implementation is signed commit `2c52e74`. The exact focused command recorded above passed after implementation: 10 tests in 99.667s. Final validator and catalog-suite evidence, run after the fixture-compatibility adjustment, is:
+
+```text
+python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v
+Ran 186 tests in 133.983s
+OK (skipped=7; platform capabilities unavailable on Windows)
+
+python -B tools/normative_catalog/validate.py --repo-root .
+Catalog valid: sources=4 clauses=1411 records=4024
+
+python -B tools/normative_catalog/report.py --repo-root . --check
+Coverage report verified; no generated report change required.
+
+python -B -m py_compile tools/normative_catalog/attribute_policy_source.py tools/normative_catalog/validate.py
+git diff --check
+Both passed.
+```
+
+The catalog tests use small synthetic inputs for unrelated schema checks; attribute-policy enforcement activates for the assigned KMIPKIT-0016 catalog or when policy metadata is present. On the project inventory it requires the full 62-record source set.
