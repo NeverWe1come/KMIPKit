@@ -314,6 +314,57 @@ review, the focused Recover protocol and client suites passed (10 and 5 tests).
 ## T035 workspace verification
 
 Formatting, full workspace lint/tests, source/catalog validation, and the
-Windows coverage measurement are complete. The CI aggregate coverage result
-remains pending, so T035 stays open until that gate supplies the Linux, macOS,
-C-consumer, Java, Python, and JNI evidence.
+Windows coverage measurement are complete. The full PR CI matrix and selected
+scope coverage gate passed on head `aea66648b5101cd976628b8e5a751cbc56cf5674`
+in [run 37992923612](https://github.com/NeverWe1come/KMIPKit/actions/runs/37992923612).
+The gate merged the Linux, Windows, and macOS Rust reports with C-consumer,
+Java, Python, and JNI coverage and measured:
+
+| Scope | Covered / executable lines | Coverage | Minimum |
+|---|---:|---:|---:|
+| Changed Rust code | 470 / 477 | 98.53% | 95% |
+| `kmipkit-ttlv` | 724 / 730 | 99.18% | 95% |
+| `kmipkit-protocol` | 5,946 / 6,156 | 96.59% | 95% |
+| `kmipkit-transport` | 3,713 / 3,902 | 95.16% | 85% |
+| `kmipkit-ffi` with C-consumer coverage | 2,035 / 2,137 | 95.23% | 85% |
+| Java adapters | 618 / 670 | 92.24% | 85% |
+| Python adapters | 773 / 783 | 98.72% | 85% |
+| JNI bridge | 1,193 / 1,312 | 90.93% | 85% |
+| Rust workspace | 16,725 / 17,386 | 96.20% | 90% |
+
+The JNI measurement includes 21 summary-only lines as uncovered. The aggregate
+gate passed with that conservative accounting. All selected jobs in the CI
+matrix completed successfully, including Rust 1.94 and stable core jobs on
+Linux, Windows, and macOS; platform coverage; C consumers; Java/JNI and Python
+bindings; sanitizers; fuzz smoke; normative inventory; and documentation
+traceability.
+
+## Post-review correction: single-item response extraction
+
+This correction keeps the prior empty single-item response behavior while
+covering its defensive branch without placing test code in a production source
+module.
+
+- **Red**, commit `9980c28` (`test(KMIPKIT-0018): specify empty single-item
+  response handling`):
+  `cargo test -p kmipkit-client --lib --all-features --locked
+  single_item_response_tests::empty_single_item_response_preserves_response_started_delivery`
+  failed as expected with an unresolved import for
+  `super::take_single_item_response`, because the helper did not exist yet.
+- **Green**, commit `d4333d4` (`fix(KMIPKIT-0018): centralize lifecycle response
+  extraction`): the same focused command passed (1 test). The helper is used by
+  Activate, Archive, Destroy, and Recover and retains the malformed-message
+  error category and `ResponseStarted` delivery state.
+- **Refactor**, commit `aea6664` (`test(KMIPKIT-0018): keep unit coverage outside
+  production source`): moved the test into `tests/unit` after coverage preflight
+  correctly rejected an inline test module. The focused test passed again;
+  `python -m unittest discover -s scripts/tests -p test_coverage_gate.py -v`
+  passed 54 tests with 3 Windows symlink-permission skips.
+- Independent QA and security reviews of this correction found no correctness
+  or security issue. The exact correction-range Codex Security scan completed
+  with zero reportable findings and reviewed all seven changed Rust files.
+
+T035 is complete: the focused and workspace checks, documentation and
+traceability contracts, immutable OASIS/catalog checks, cross-platform CI, and
+aggregate coverage thresholds all passed. The evidence records measured
+coverage; no conformance or certification claim is implied.

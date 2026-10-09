@@ -105,7 +105,7 @@
 - [x] T032 [P] Add Spanish lifecycle usage documentation in `docs/user-guide/es/operaciones-ciclo-vida.md` with equivalent behavior and limitations.
 - [x] T033 [P] Update the public Rust API reference in `docs/architecture/public-api.md` and API examples to list all four operations and their limits.
 - [x] T034 Complete `specs/018-managed-object-lifecycle/traceability.md` with final source, implementation, and passing test references for every applicable client requirement.
-- [ ] T035 Run the pinned catalog validation, `cargo fmt --all --check`, focused tests, workspace Clippy, workspace tests, and workspace coverage checks; record platform and coverage results in the PR.
+- [x] T035 Run the pinned catalog validation, `cargo fmt --all --check`, focused tests, workspace Clippy, workspace tests, and workspace coverage checks; full CI and the aggregate coverage gate passed on head `aea66648` in [run 37992923612](https://github.com/NeverWe1come/KMIPKit/actions/runs/37992923612). Detailed platform and scope measurements are recorded in `implementation-evidence.md`.
 - [x] T036 Run the documented quickstart examples for all four operations and correct any example that does not compile or match the public API.
 - [x] T037 Add regression tests that lifecycle request/response values and raw KMIP bodies never appear in public error or Debug output in `crates/kmipkit-client/tests/unit/lifecycle_redaction_tests.rs`.
 - [x] T038 Add tests that lifecycle responses preserve supported unknown result values and accepted generic extension data in `crates/kmipkit-client/tests/unit/lifecycle_execution_tests.rs`.
