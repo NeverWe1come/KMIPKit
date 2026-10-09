@@ -7,7 +7,9 @@ use kmipkit_ttlv::ValueView;
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 
 use crate::asynchronous_execution_test_support::client_for;
-use crate::execute::{ClientBatchOutcome, ClientOperation};
+use crate::execute::{
+    ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
+};
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 
 const PING: u32 = 0x0000_003b;
@@ -91,6 +93,39 @@ fn ping_failure_preserves_transport_delivery_and_does_not_retry() {
     assert_eq!(
         error.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn ping_pending_preserves_typed_response_and_correlation_without_follow_up() {
+    const CORRELATION: &[u8] = b"ping-pending-correlation";
+    let response =
+        asynchronous_response_bytes(PING, 2, None, Some(CORRELATION), Some(test_structure([])));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::ping()))
+        .with_asynchronous_indicator(1);
+
+    let result = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("the request permits an asynchronous Pending response");
+    let outcome = result.get(0).expect("one result exists").outcome();
+    let ClientBatchOutcome::Pending(pending) = outcome else {
+        panic!("Ping Pending remains explicitly resumable");
+    };
+
+    assert_eq!(pending.operation(), ClientOperation::Ping);
+    assert_eq!(pending.result().status().raw(), 2);
+    assert_eq!(pending.asynchronous_correlation_value(), CORRELATION);
+    assert_eq!(
+        pending
+            .response()
+            .ping()
+            .map(|response| response.result().status().raw()),
+        Some(2)
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }

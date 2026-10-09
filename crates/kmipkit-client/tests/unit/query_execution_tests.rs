@@ -7,7 +7,9 @@ use kmipkit_ttlv::ValueView;
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 
 use crate::asynchronous_execution_test_support::client_for;
-use crate::execute::{ClientBatchOutcome, ClientOperation};
+use crate::execute::{
+    ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
+};
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use kmipkit_protocol::{QueryFunction, QueryRequest};
 
@@ -179,6 +181,41 @@ fn query_failure_preserves_kmip_result_and_transport_delivery_without_retry() {
         Some(1)
     );
     assert!(query.result().message().is_none());
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn query_pending_preserves_typed_response_and_correlation_without_follow_up() {
+    const CORRELATION: &[u8] = b"query-pending-correlation";
+    let response =
+        asynchronous_response_bytes(QUERY, 2, None, Some(CORRELATION), Some(test_structure([])));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::query(
+        QueryRequest::new([QueryFunction::OPERATIONS]),
+    )))
+    .with_asynchronous_indicator(1);
+
+    let result = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("the request permits an asynchronous Pending response");
+    let outcome = result.get(0).expect("one result exists").outcome();
+    let ClientBatchOutcome::Pending(pending) = outcome else {
+        panic!("Query Pending remains explicitly resumable");
+    };
+
+    assert_eq!(pending.operation(), ClientOperation::Query);
+    assert_eq!(pending.result().status().raw(), 2);
+    assert_eq!(pending.asynchronous_correlation_value(), CORRELATION);
+    assert_eq!(
+        pending
+            .response()
+            .query()
+            .map(|response| response.result().status().raw()),
+        Some(2)
+    );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
