@@ -89,6 +89,11 @@ stabilized.
 
 ## Phase 6: after 1.0
 
+- Evaluate and specify legacy KMIP version support using the
+  [compatibility feasibility research](design/kmip-legacy-version-feasibility.md).
+  This work starts after KMIPKit 1.0.0 is complete and published; the exact
+  version set and sequence require a separate reviewed ADR and approved
+  specification.
 - 1.1.0 server initiated operations.
 - Additional idiomatic adapters, in order: Go, C++, C#, and JavaScript.
 - Declarative vendor extension SDK.
