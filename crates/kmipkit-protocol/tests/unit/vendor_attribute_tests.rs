@@ -12,8 +12,8 @@ use kmipkit_ttlv::{ItemType, ValueView};
 mod attribute_fixtures;
 
 use attribute_fixtures::{
-    vendor_attribute_table_150, ATTRIBUTE_NAME_TAG, ATTRIBUTE_VALUE_TAG, VENDOR_ATTRIBUTE_TAG,
-    VENDOR_IDENTIFICATION_TAG,
+    ATTRIBUTE_NAME_TAG, ATTRIBUTE_VALUE_TAG, VENDOR_ATTRIBUTE_TAG, VENDOR_IDENTIFICATION_TAG,
+    vendor_attribute_table_150,
 };
 
 #[test]
