@@ -326,8 +326,9 @@ fn successful_response_requires_one_identifier_then_one_or_more_references() {
 
 #[test]
 fn successful_response_rejects_name_reference_with_reversed_table_161_members() {
-    // OASIS §10.1.4 and §5.5 Table 161 define the name-form structure in
-    // Vendor Identification, then Attribute Name order.
+    // OASIS §5.5 Table 161 defines the name-form members as Vendor
+    // Identification followed by Attribute Name; §10.1 requires Structure
+    // fields to use their order in the structure description.
     let reversed_reference = item(
         ATTRIBUTE_REFERENCE,
         Value::structure(structure([
