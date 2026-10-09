@@ -11,7 +11,7 @@ use crate::{
 };
 
 const ACTIVATE_OPERATION: u32 = 0x0000_0012;
-const UNIQUE_IDENTIFIER: u32 = 0x0042_0094; // §11.56 Table 487
+const UNIQUE_IDENTIFIER: u32 = 0x0042_0094; // §11.56 Table 487 assigns tag 0x420094 to Unique Identifier.
 const SUCCESS: u32 = 0;
 
 /// A typed KMIP 2.1 Activate request payload from §6.1.1, Table 164.
@@ -61,7 +61,8 @@ impl ActivateRequest {
 /// A typed Activate result for one validated KMIP response batch item.
 ///
 /// A successful response exposes the required Unique Identifier from
-/// §6.1.1, Table 165, preserving an encoding permitted by §4.58 Tables 145–146.
+/// §6.1.1, Table 165; §4.58 Tables 145–146 define permitted Unique Identifier
+/// encodings, and §11.56 Table 487 assigns tag 0x420094 to Unique Identifier.
 /// Non-success results retain the shared KMIP operation result and have no
 /// typed success identifier. The source
 /// [`crate::ResponseMessage`] retains the complete generic payload, including

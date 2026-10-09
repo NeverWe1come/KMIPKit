@@ -1,6 +1,7 @@
 //! Destroy payload tests derived from OASIS KMIP Specification v2.1 §6.1.15,
 //! Tables 208–210; §4.58 Tables 145–146 define permitted Unique Identifier
-//! encodings, and §11.56 Table 487 assigns the tag. These are source-derived tests, not
+//! encodings, and §11.56 Table 487 assigns tag 0x420094 to Unique Identifier.
+//! These are source-derived tests, not
 //! official OASIS Test Cases.
 //!
 //! Traceability: `KMIPKIT-ELEM-OP-C2S-DESTROY`; KMIPKIT-0018 FR-001, FR-002,
