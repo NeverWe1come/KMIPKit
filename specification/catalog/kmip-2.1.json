@@ -55050,7 +55050,10 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
         "KMIPKIT-PROFILE-AES-XTS-SERVER",
@@ -55093,7 +55096,7 @@
         "KMIPKIT-TEST-CN01-2-69",
         "KMIPKIT-TEST-PROF-5-12-6-3"
       ],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "payload_tables": [
@@ -55509,7 +55512,21 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-007",
+        "KMIPKIT-REQ-SPEC-6.1.28-008-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-008-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-012",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
         "KMIPKIT-PROFILE-AES-XTS-SERVER",
@@ -55553,7 +55570,7 @@
         "KMIPKIT-TEST-CN01-2-64",
         "KMIPKIT-TEST-CN01-2-65"
       ],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "payload_tables": [
@@ -87626,7 +87643,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -87656,7 +87673,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88176,7 +88193,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88206,7 +88223,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88236,7 +88253,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88266,13 +88283,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-007",
@@ -88296,7 +88313,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88326,13 +88343,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-008-002",
@@ -88356,13 +88373,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-009-001",
@@ -88386,13 +88403,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-009-002",
@@ -88416,13 +88433,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-011",
@@ -88446,7 +88463,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88476,13 +88493,13 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-013-001",
@@ -88506,7 +88523,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -88536,7 +88553,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -103978,6 +103995,39 @@
       "downstream_impact": "The 1.0 client needs a defined outbound value policy; generic decoding continues to preserve all raw Enumeration values. The project decision selects assigned-only emission without asserting that OASIS invalidates its extension allocation.",
       "state": "resolved_by_approved_decision",
       "decision_id": "KMIPKIT-DEC-002",
+      "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-044",
+      "summary": "Locate server obligations attributed to the client actor",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.28"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "conditional",
+      "alternatives": [
+        "Keep the linked rows as client-facing constraints and define client evidence that can prove them without implementing a server.",
+        "Split client request/preservation duties from server ID Placeholder, group matching, and Storage Status response duties, then assign each row to its actual actor."
+      ],
+      "affected_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.28-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-008-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-008-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-012"
+      ],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-LOCATE"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Locate conformance scope, requirement ownership, client test expectations, and the 1.0 coverage claim.",
+      "state": "open",
+      "decision_id": null,
       "erratum_source_refs": []
     }
   ],
