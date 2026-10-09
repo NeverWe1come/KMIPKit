@@ -55581,7 +55581,9 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.4-001"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0018",
@@ -57579,7 +57581,10 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.42-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0018",
@@ -90966,7 +90971,9 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-ARCHIVE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0018",
@@ -91062,7 +91069,9 @@
       "direction": "client_to_server",
       "condition": "When retrieving an archived object takes time.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RECOVER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0018",
@@ -91092,7 +91101,9 @@
       "direction": "client_to_server",
       "condition": "After the Recover response.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RECOVER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0018",
