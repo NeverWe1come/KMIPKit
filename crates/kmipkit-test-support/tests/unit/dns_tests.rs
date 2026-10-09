@@ -1,7 +1,7 @@
 use super::{
     DnsQueryType, FixtureMetrics, FixtureState, LocalDnsFixture, MAX_QUERY_BYTES, TcpMetrics,
-    TcpWorkerKind, TcpWorkerSpawner, build_response, read_u16, serve_tcp_with_spawner_and_cloner,
-    validate_records,
+    TcpWorkerKind, TcpWorkerSpawner, build_response, prepare_accepted_tcp_stream, read_u16,
+    serve_tcp_with_spawner_and_cloner, validate_records,
 };
 use std::collections::BTreeMap;
 use std::io::{self, Read, Write};
@@ -258,6 +258,41 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
         is_close_result(&read_result),
         "fixture closes an invalid short frame; client read returned {read_result:?}"
     );
+}
+
+#[test]
+fn accepted_tcp_stream_is_blocking_before_a_delayed_read() {
+    let listener =
+        TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback TCP listener should bind");
+    let mut writer = TcpStream::connect(listener.local_addr().expect("listener address exists"))
+        .expect("loopback TCP client should connect");
+    let (accepted, _) = listener
+        .accept()
+        .expect("loopback TCP connection should be accepted");
+
+    accepted
+        .set_read_timeout(Some(Duration::from_secs(1)))
+        .expect("accepted TCP stream should have a finite read timeout");
+    accepted
+        .set_nonblocking(true)
+        .expect("accepted stream should model an inherited nonblocking mode");
+    prepare_accepted_tcp_stream(&accepted)
+        .expect("accepted stream should be normalized before its handler reads");
+
+    let writer_thread = thread::spawn(move || {
+        thread::sleep(Duration::from_millis(25));
+        writer.write_all(&[0x5a])
+    });
+    let mut byte = [0_u8; 1];
+    accepted
+        .read_exact(&mut byte)
+        .expect("blocking read should wait for the delayed writer");
+    writer_thread
+        .join()
+        .expect("writer thread should not panic")
+        .expect("delayed byte should be written");
+
+    assert_eq!(byte, [0x5a]);
 }
 
 #[test]
