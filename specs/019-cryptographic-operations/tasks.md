@@ -14,8 +14,8 @@
 
 ## Phase 1: Dependency and source gate
 
-- [ ] T005 Confirm this implementation branch is based on the latest release/1.0.0 and the merged KMIPKIT-0005 TTLV codec, KMIPKIT-0006 message/batch model, KMIPKIT-0007 client execution, KMIPKIT-0009 Pending handling, and KMIPKIT-0013 production transport, and KMIPKIT-0018 Recover; record exact commits in traceability.md.
-- [ ] T006 Reconfirm Tables 196–198, Tables 214–216, §4.16, §§6.1/7.3/7.4/7.8/7.9/7.14/7.17 against the pinned source and verify all required tags are generated. Keep DISC-045 open and require a local pre-transmission validation error only for the ambiguous single-part form where both Init and Final are true and Data is omitted; accept the same form when Data is present. Explain the §4.16-004 source-clause disposition.
+- [x] T005 Confirm this implementation branch is based on the latest release/1.0.0 and the merged KMIPKIT-0005 TTLV codec, KMIPKIT-0006 message/batch model, KMIPKIT-0007 client execution, KMIPKIT-0009 Pending handling, and KMIPKIT-0013 production transport, and KMIPKIT-0018 Recover; record exact commits in traceability.md.
+- [x] T006 Reconfirm Tables 196–198, Tables 214–216, §4.16, §§6.1/7.3/7.4/7.8/7.9/7.14/7.17 against the pinned source and verify all required tags are generated. Keep DISC-045 open and require a local pre-transmission validation error only for the ambiguous single-part form where both Init and Final are true and Data is omitted; accept the same form when Data is present. Explain the §4.16-004 source-clause disposition.
 
 ## Phase 2: Shared request data and validation
 
