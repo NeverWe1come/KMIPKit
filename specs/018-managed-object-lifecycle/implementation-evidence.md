@@ -159,3 +159,56 @@ After extraction, the focused Activate, Archive, and Destroy protocol suites
 passed (10, 10, and 13 tests respectively), and protocol Clippy with `-D
 warnings` passed. Full protocol/client suites, client Clippy, formatting, and
 traceability checks also passed after this refactor.
+
+## T024–T026 Red: Recover contracts
+
+- `59dafa1 test(KMIPKIT-0018): add Recover protocol contracts` added ten
+  source-derived request, response, malformed-success, table-error, and
+  redaction tests. Before the model existed,
+  `cargo test -p kmipkit-protocol --lib recover_operation_tests --all-features`
+  failed because `RecoverRequest`, `RecoverResponse`, and `RecoverError` were
+  not exported.
+- `02b2469 test(KMIPKIT-0018): add Recover client contracts` added fake-transport
+  Success, Failure, Pending, exact correlation, no Poll/Get follow-up, malformed
+  response delivery evidence, partial-write delivery evidence, and one-exchange
+  tests.
+- After the protocol model was added but before client dispatch,
+  `cargo test -p kmipkit-client --lib recover_execution_tests --all-features`
+  failed on the missing `Client::recover`, `ClientRequest::Recover`, and
+  `ClientOperation::Recover` API (eight expected compile errors). This is the
+  T026 Red evidence.
+
+Recover tests cite OASIS KMIP Specification v2.1 §6.1.42 Tables 288–290,
+§4.58 Tables 145–146, and §11.56 Table 487. The table-defined `Object Not
+Found` reason is preserved; tests remain source-derived and are not claimed as
+official OASIS Test Cases.
+
+## T027–T029 Green: Recover model and client
+
+- `9be4ac1 feat(KMIPKIT-0018): add Recover protocol model` added the typed
+  request and response exports over the shared lifecycle TTLV mechanics.
+- `37b9792 feat(KMIPKIT-0018): dispatch Recover requests` added the Recover
+  client request, result view, operation identity, and
+  `Client::recover`/`recover_with_options` on the shared one-exchange path.
+  API documentation states that any later Poll or Get is caller initiated.
+- `cargo test -p kmipkit-protocol --lib recover_operation_tests --all-features`
+  passed (10 tests).
+- `cargo test -p kmipkit-client --lib recover_execution_tests --all-features`
+  passed (5 tests).
+- `cargo test -p kmipkit-protocol --all-features`: 237 unit tests, 150
+  integration tests, and 2 doctests passed.
+- `cargo test -p kmipkit-client --all-features`: 269 unit tests, 62
+  integration/UI tests, and 9 doctests passed.
+- Protocol and client all-target/all-feature Clippy with `-D warnings` passed;
+  `cargo fmt --all --check` passed.
+- Normative traceability tests passed (15 tests, one Windows symlink-permission
+  skip); `git diff --check` passed.
+
+## T030 Refactor review
+
+Recover response conversion already uses `read_operation_outcome`, including
+the shared Pending handling and exact correlation ownership. The common
+identifier request/response TTLV mechanics were extracted in T023 and cover
+Recover as well. No additional Recover-only response helper would reduce
+duplication while preserving the shared operation boundaries. After this
+review, the focused Recover protocol and client suites passed (10 and 5 tests).

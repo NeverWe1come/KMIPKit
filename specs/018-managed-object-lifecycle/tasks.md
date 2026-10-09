@@ -83,19 +83,19 @@
 
 ### Tests first (Red)
 
-- [ ] T024 [P] [US3] Add Recover request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs`.
-- [ ] T025 [P] [US3] Add Recover fake-transport success, failure, Pending, delivery-state, and no-follow-up tests in `crates/kmipkit-client/tests/unit/recover_execution_tests.rs`.
-- [ ] T026 [US3] Run focused Recover tests and record expected Red failures before implementation.
+- [x] T024 [P] [US3] Add Recover request/response and malformed-payload tests in `crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs`.
+- [x] T025 [P] [US3] Add Recover fake-transport success, failure, Pending, delivery-state, and no-follow-up tests in `crates/kmipkit-client/tests/unit/recover_execution_tests.rs`.
+- [x] T026 [US3] Run focused Recover tests and record expected Red failures before implementation.
 
 ### Implementation (Green)
 
-- [ ] T027 [US3] Implement the Recover typed request/response model in `crates/kmipkit-protocol/src/recover.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
-- [ ] T028 [US3] Add Recover request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
-- [ ] T029 [US3] Run focused Recover tests and record Green evidence.
+- [x] T027 [US3] Implement the Recover typed request/response model in `crates/kmipkit-protocol/src/recover.rs` and export it from `crates/kmipkit-protocol/src/lib.rs`.
+- [x] T028 [US3] Add Recover request, response, and operation dispatch to `crates/kmipkit-client/src/execute.rs` and public client exports in `crates/kmipkit-client/src/lib.rs`.
+- [x] T029 [US3] Run focused Recover tests and record Green evidence.
 
 ### Refactor
 
-- [ ] T030 [US3] Refactor shared lifecycle response handling only where justified, preserve exact correlation bytes, and rerun focused tests.
+- [x] T030 [US3] Refactor shared lifecycle response handling only where justified, preserve exact correlation bytes, and rerun focused tests.
 
 ---
 
