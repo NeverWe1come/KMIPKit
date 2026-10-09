@@ -5,11 +5,22 @@
 //! §6.1.42 Tables 288–289. The Unique Identifier tag assignment is in §11.56.
 //! These are derived fixtures, not official KMIP test vectors.
 
+use std::fmt::Debug;
+
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
 use crate::UniqueIdentifier;
 
 pub(crate) const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+
+pub(crate) fn assert_debug_redacts_identifier(value: &impl Debug, identifier: &str) {
+    let formatted = format!("{value:?}");
+
+    assert!(
+        !formatted.contains(identifier),
+        "Debug output must not expose a Unique Identifier value"
+    );
+}
 
 /// Builds a minimal request payload with its optional Unique Identifier.
 pub(crate) fn request_payload(identifier: Option<UniqueIdentifier>) -> Structure {

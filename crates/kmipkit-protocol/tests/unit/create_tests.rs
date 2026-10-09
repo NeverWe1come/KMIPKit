@@ -4,6 +4,7 @@
 //! `TC-CREATE-SD-1-21.xml`; the source test case also includes an out-of-scope
 //! Get batch item, so these tests do not claim full official-case coverage.
 
+use crate::lifecycle_fixtures::assert_debug_redacts_identifier;
 use crate::{
     AttributeSet, CreateError, CreateRequest, CreateResponse, ObjectType, ResultReason,
     ResultStatus, ResultValidationError, UniqueIdentifier,
@@ -534,11 +535,6 @@ fn unique_identifier_debug_redacts_each_wire_form() {
     ];
 
     for (identifier, value) in cases {
-        let formatted = format!("{identifier:?}");
-
-        assert!(
-            !formatted.contains(&value),
-            "UniqueIdentifier Debug must not expose a wire value"
-        );
+        assert_debug_redacts_identifier(&identifier, &value);
     }
 }

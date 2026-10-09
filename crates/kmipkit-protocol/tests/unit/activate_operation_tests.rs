@@ -9,8 +9,9 @@
 
 use crate::async_operation_fixtures::response_message;
 use crate::lifecycle_fixtures::{
-    request_payload, success_payload_duplicate_identifier, success_payload_missing_identifier,
-    success_payload_wrong_identifier_type, successful_response_payload,
+    assert_debug_redacts_identifier, request_payload, success_payload_duplicate_identifier,
+    success_payload_missing_identifier, success_payload_wrong_identifier_type,
+    successful_response_payload,
 };
 use crate::{
     ActivateError, ActivateRequest, ActivateResponse, ResponseBatchItemView, ResponseMessage,
@@ -171,32 +172,18 @@ fn response_rejects_a_different_operation() {
 #[test]
 fn request_debug_redacts_the_unique_identifier_value() {
     let sentinel = "activate-request-debug-sentinel";
-    let request = ActivateRequest::new(Some(UniqueIdentifier::TextString(
-        sentinel.to_owned(),
-    )));
+    let request = ActivateRequest::new(Some(UniqueIdentifier::TextString(sentinel.to_owned())));
 
-    let formatted = format!("{request:?}");
-
-    assert!(
-        !formatted.contains(sentinel),
-        "ActivateRequest Debug must not expose the operation identifier"
-    );
+    assert_debug_redacts_identifier(&request, sentinel);
 }
 
 #[test]
 fn response_debug_redacts_the_unique_identifier_value() {
     let sentinel = "activate-response-debug-sentinel";
-    let payload = successful_response_payload(UniqueIdentifier::TextString(
-        sentinel.to_owned(),
-    ));
+    let payload = successful_response_payload(UniqueIdentifier::TextString(sentinel.to_owned()));
     let message = response_message(ACTIVATE_OPERATION, SUCCESS, None, None, Some(payload));
     let response = ActivateResponse::try_from_response_item(response_item(&message))
         .expect("valid Activate response retains the Unique Identifier");
 
-    let formatted = format!("{response:?}");
-
-    assert!(
-        !formatted.contains(sentinel),
-        "ActivateResponse Debug must not expose the operation identifier"
-    );
+    assert_debug_redacts_identifier(&response, sentinel);
 }
