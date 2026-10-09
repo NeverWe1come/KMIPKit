@@ -6,7 +6,7 @@
 
 use crate::{
     AttributeSet, CreateError, CreateRequest, CreateResponse, ObjectType, ResultReason,
-    ResultStatus, UniqueIdentifier,
+    ResultStatus, ResultValidationError, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView, codec};
 
@@ -50,6 +50,22 @@ fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
         structure
             .try_push(child)
             .expect("fixture structure remains within the model depth limit");
+    }
+    structure
+}
+
+fn structure_at_depth(depth: usize) -> Structure {
+    assert!((1..=64).contains(&depth));
+
+    let mut structure = Structure::new();
+    for _ in 1..depth {
+        let child = Item::new(tag(0x0042_0173), Value::structure(structure))
+            .expect("a checked tag and nested Structure must construct an item");
+        let mut parent = Structure::new();
+        parent
+            .try_push(child)
+            .expect("nesting within the model depth limit must succeed");
+        structure = parent;
     }
     structure
 }
@@ -218,6 +234,9 @@ fn create_only_oasis_fixtures_decode_with_the_expected_fields() {
 #[test]
 fn request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields() {
     let request = CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new());
+    assert_eq!(request.object_type(), ObjectType::from_raw(7));
+    assert!(request.attributes().as_items().is_empty());
+    assert!(request.protection_storage_masks().is_none());
     let payload = request
         .into_ttlv_payload()
         .expect("Create payload uses assigned tags and valid model structures");
@@ -245,6 +264,7 @@ fn request_preserves_optional_protection_storage_masks_as_a_structure() {
     let masks = Structure::new();
     let request = CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new())
         .with_protection_storage_masks(masks);
+    assert!(request.protection_storage_masks().is_some());
     let payload = request
         .into_ttlv_payload()
         .expect("the optional generic Structure is representable");
@@ -263,6 +283,21 @@ fn request_preserves_optional_protection_storage_masks_as_a_structure() {
         }),
         Some(0)
     );
+}
+
+#[test]
+fn request_rejects_attribute_trees_that_exceed_the_ttlv_depth_limit() {
+    let attributes = AttributeSet::try_new([item(
+        CRYPTOGRAPHIC_LENGTH,
+        Value::structure(structure_at_depth(63)),
+    )])
+    .expect("generic attribute values retain their nested Structure");
+
+    let error = CreateRequest::new(ObjectType::from_raw(7), attributes)
+        .into_ttlv_payload()
+        .expect_err("the Request Payload wrapper must count toward the model depth limit");
+
+    assert_ne!(error.to_string(), "");
 }
 
 #[test]
@@ -460,4 +495,24 @@ fn non_create_result_shapes_retain_the_existing_result_validation_contract() {
         success_with_reason.unwrap_err().kind(),
         crate::MessageValidationErrorKind::InvalidResult
     );
+}
+
+#[test]
+fn create_error_display_and_source_preserve_the_public_error_contract() {
+    let errors = [
+        CreateError::UnexpectedOperation,
+        CreateError::MissingResultStatus,
+        CreateError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason),
+        CreateError::MissingSuccessPayload,
+        CreateError::MalformedSuccessPayload,
+    ];
+
+    for error in errors {
+        assert_ne!(error.to_string(), "");
+        if matches!(error, CreateError::InvalidOperationResult(_)) {
+            assert!(std::error::Error::source(&error).is_some());
+        } else {
+            assert!(std::error::Error::source(&error).is_none());
+        }
+    }
 }

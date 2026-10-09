@@ -5,7 +5,7 @@
 
 use crate::{
     AttributeSet, CreateSplitKeyError, CreateSplitKeyRequest, CreateSplitKeyResponse, ObjectType,
-    ResultReason, SplitKeyMethod, UniqueIdentifier,
+    ResultReason, ResultValidationError, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
@@ -77,6 +77,22 @@ fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
     structure
 }
 
+fn structure_at_depth(depth: usize) -> Structure {
+    assert!((1..=64).contains(&depth));
+
+    let mut structure = Structure::new();
+    for _ in 1..depth {
+        let child = Item::new(tag(0x0042_0173), Value::structure(structure))
+            .expect("a checked tag and nested Structure must construct an item");
+        let mut parent = Structure::new();
+        parent
+            .try_push(child)
+            .expect("nesting within the model depth limit must succeed");
+        structure = parent;
+    }
+    structure
+}
+
 fn attributes(items: impl IntoIterator<Item = Item>) -> AttributeSet {
     AttributeSet::try_new(items).expect("fixture contains valid direct Object Attribute items")
 }
@@ -142,6 +158,20 @@ fn request_preserves_table_193_fields_order_and_exact_input_identifier() {
     let request = request(2)
         .with_unique_identifier(UniqueIdentifier::Enumeration(41))
         .with_protection_storage_masks(Structure::new());
+    assert_eq!(request.object_type(), ObjectType::from_raw(7));
+    assert_eq!(
+        request.unique_identifier(),
+        Some(&UniqueIdentifier::Enumeration(41))
+    );
+    assert_eq!(request.split_key_parts(), 3);
+    assert_eq!(request.split_key_threshold(), 2);
+    assert_eq!(
+        request.split_key_method(),
+        SplitKeyMethod::POLYNOMIAL_SHARING_GF_2_16
+    );
+    assert_eq!(request.prime_field_size(), None);
+    assert!(request.attributes().as_items().is_empty());
+    assert!(request.protection_storage_masks().is_some());
     let payload = request
         .into_ttlv_payload()
         .expect("non-polynomial method does not require Prime Field Size");
@@ -208,6 +238,42 @@ fn request_always_encodes_required_empty_attributes_without_synthesizing_choices
 }
 
 #[test]
+fn request_preserves_text_and_integer_input_identifier_forms() {
+    for (identifier, expected_type) in [
+        (
+            UniqueIdentifier::TextString("source-key".to_owned()),
+            ItemType::TextString,
+        ),
+        (UniqueIdentifier::Integer(-17), ItemType::Integer),
+    ] {
+        let payload = request(1)
+            .with_unique_identifier(identifier)
+            .into_ttlv_payload()
+            .expect("valid input identifiers retain their exact wire forms");
+        let payload_view = payload.view();
+        let fields = payload_view.children();
+        let unique_identifier = fields
+            .iter()
+            .find(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
+            .expect("the optional input Unique Identifier is present");
+
+        assert_eq!(unique_identifier.item_type(), expected_type);
+    }
+}
+
+#[test]
+fn request_rejects_attribute_trees_that_exceed_the_ttlv_depth_limit() {
+    let attributes = attributes([item(0x0042_002a, Value::structure(structure_at_depth(63)))]);
+
+    let error = request(1)
+        .with_attributes(attributes)
+        .into_ttlv_payload()
+        .expect_err("the Request Payload wrapper must count toward the model depth limit");
+
+    assert_ne!(error.to_string(), "");
+}
+
+#[test]
 fn polynomial_prime_field_request_requires_the_explicit_client_input() {
     let error = request(3)
         .into_ttlv_payload()
@@ -220,8 +286,9 @@ fn polynomial_prime_field_request_requires_the_explicit_client_input() {
 #[test]
 fn polynomial_prime_field_size_is_preserved_as_big_integer() {
     let size = vec![0x01, 0x00, 0x01];
-    let payload = request(3)
-        .with_prime_field_size(size.clone())
+    let request = request(3).with_prime_field_size(size.clone());
+    assert_eq!(request.prime_field_size(), Some(size.as_slice()));
+    let payload = request
         .into_ttlv_payload()
         .expect("explicit Prime Field Size satisfies FR-015");
     let payload_view = payload.view();
@@ -266,6 +333,7 @@ fn response_preserves_repeated_identifiers_and_wire_order() {
     let payload = structure([
         item(UNIQUE_IDENTIFIER, Value::text_string("part-1".to_owned())),
         item(UNIQUE_IDENTIFIER, Value::integer(23)),
+        item(UNIQUE_IDENTIFIER, Value::enumeration(0x8000_0024)),
         item(UNIQUE_IDENTIFIER, Value::text_string("part-1".to_owned())),
     ]);
     let response = response_message(SUCCESS, None, None, Some(payload));
@@ -276,6 +344,7 @@ fn response_preserves_repeated_identifiers_and_wire_order() {
         &[
             UniqueIdentifier::TextString("part-1".to_owned()),
             UniqueIdentifier::Integer(23),
+            UniqueIdentifier::Enumeration(0x8000_0024),
             UniqueIdentifier::TextString("part-1".to_owned()),
         ]
     );
@@ -311,6 +380,27 @@ fn failure_response_preserves_every_table_195_result_reason() {
             Some(*reason)
         );
         assert_eq!(typed.unique_identifiers(), []);
+    }
+}
+
+#[test]
+fn create_split_key_error_display_and_source_preserve_the_public_error_contract() {
+    let errors = [
+        CreateSplitKeyError::UnexpectedOperation,
+        CreateSplitKeyError::MissingResultStatus,
+        CreateSplitKeyError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason),
+        CreateSplitKeyError::MissingSuccessPayload,
+        CreateSplitKeyError::MalformedSuccessPayload,
+        CreateSplitKeyError::PolynomialMethodRequiresPrimeFieldSize,
+    ];
+
+    for error in errors {
+        assert_ne!(error.to_string(), "");
+        if matches!(error, CreateSplitKeyError::InvalidOperationResult(_)) {
+            assert!(std::error::Error::source(&error).is_some());
+        } else {
+            assert!(std::error::Error::source(&error).is_none());
+        }
     }
 }
 

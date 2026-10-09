@@ -2,7 +2,8 @@
 //! Tables 189–192, and attribute groups in §§5.2–5.4, Tables 158–160.
 
 use crate::{
-    AttributeSet, CreateKeyPairRequest, CreateKeyPairResponse, ResultReason, UniqueIdentifier,
+    AttributeSet, CreateKeyPairError, CreateKeyPairRequest, CreateKeyPairResponse, ResultReason,
+    ResultValidationError, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
@@ -85,6 +86,22 @@ fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
     structure
 }
 
+fn structure_at_depth(depth: usize) -> Structure {
+    assert!((1..=64).contains(&depth));
+
+    let mut structure = Structure::new();
+    for _ in 1..depth {
+        let child = Item::new(tag(0x0042_0173), Value::structure(structure))
+            .expect("a checked tag and nested Structure must construct an item");
+        let mut parent = Structure::new();
+        parent
+            .try_push(child)
+            .expect("nesting within the model depth limit must succeed");
+        structure = parent;
+    }
+    structure
+}
+
 fn attributes(items: impl IntoIterator<Item = Item>) -> AttributeSet {
     AttributeSet::try_new(items).expect("fixture contains valid direct Object Attribute items")
 }
@@ -132,6 +149,32 @@ fn table_191_attributes(generation: u32) -> AttributeSet {
             .iter()
             .map(|raw_tag| item(*raw_tag, table_191_value(*raw_tag, generation))),
     )
+}
+
+fn generic_parameter_attribute(child_value: Value) -> AttributeSet {
+    attributes([item(
+        CRYPTOGRAPHIC_PARAMETERS,
+        Value::structure(structure([item(0x0042_0173, child_value)])),
+    )])
+}
+
+fn generic_parameter_attributes() -> AttributeSet {
+    attributes([item(
+        CRYPTOGRAPHIC_PARAMETERS,
+        Value::structure(structure([
+            item(0x0042_0173, Value::structure(Structure::new())),
+            item(0x0042_0173, Value::integer(-19)),
+            item(0x0042_0173, Value::long_integer(-9_223_372_036_854_775_807)),
+            item(0x0042_0173, Value::date_time(-1)),
+            item(0x0042_0173, Value::date_time_extended(i64::MIN)),
+            item(0x0042_0173, Value::big_integer(vec![0x80, 0x01])),
+            item(0x0042_0173, Value::byte_string(vec![0, 0xff])),
+            item(0x0042_0173, Value::enumeration(0xf001_0001)),
+            item(0x0042_0173, Value::interval(u32::MAX)),
+            item(0x0042_0173, Value::boolean(true)),
+            item(0x0042_0173, Value::text_string("generic-value".to_owned())),
+        ])),
+    )])
 }
 
 fn table_191_single_attribute(raw_tag: u32, generation: u32) -> AttributeSet {
@@ -216,6 +259,9 @@ fn request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_ord
         .with_common_protection_storage_masks(Structure::new())
         .with_private_protection_storage_masks(Structure::new())
         .with_public_protection_storage_masks(Structure::new());
+    assert!(request.has_common_attributes());
+    assert!(request.has_private_key_attributes());
+    assert!(request.has_public_key_attributes());
 
     let payload = request
         .into_ttlv_payload()
@@ -262,7 +308,11 @@ fn request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_ord
 
 #[test]
 fn request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices() {
-    let absent = CreateKeyPairRequest::new()
+    let default_request = CreateKeyPairRequest::default();
+    assert!(!default_request.has_common_attributes());
+    assert!(!default_request.has_private_key_attributes());
+    assert!(!default_request.has_public_key_attributes());
+    let absent = default_request
         .into_ttlv_payload()
         .expect("all optional Table 189 fields may be absent");
     assert!(absent.view().children().is_empty());
@@ -384,6 +434,41 @@ fn table_191_rejects_one_sided_effective_values_and_conflicts_for_each_attribute
 }
 
 #[test]
+fn table_191_compares_nested_generic_values_by_type_content_and_order() {
+    let request = request_with_groups(
+        None,
+        Some(generic_parameter_attributes()),
+        Some(generic_parameter_attributes()),
+    );
+
+    request
+        .into_ttlv_payload()
+        .expect("equal nested generic TTLV values must retain their exact structure");
+}
+
+#[test]
+fn table_191_rejects_nested_values_with_different_item_types() {
+    let request = request_with_groups(
+        None,
+        Some(generic_parameter_attribute(Value::integer(1))),
+        Some(generic_parameter_attribute(Value::enumeration(1))),
+    );
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_rejects_attribute_groups_that_exceed_the_ttlv_depth_limit() {
+    let common = attributes([item(
+        CRYPTOGRAPHIC_LENGTH,
+        Value::structure(structure_at_depth(63)),
+    )]);
+    let request = request_with_groups(Some(common), None, None);
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
 fn attribute_group_debug_redacts_a_vendor_attribute_value_sentinel() {
     let sentinel = b"KMIP_KEY_PAIR_ATTRIBUTE_SECRET_SENTINEL_5792";
     let request = request_with_groups(Some(attributes([vendor_attribute(sentinel)])), None, None);
@@ -412,6 +497,29 @@ fn successful_response_preserves_private_and_public_identifier_meaning() {
     assert_eq!(
         typed.public_key_unique_identifier(),
         Some(&UniqueIdentifier::TextString("public-key-id".to_owned()))
+    );
+}
+
+#[test]
+fn successful_response_preserves_enumeration_and_integer_identifier_forms() {
+    let response = response_message(
+        SUCCESS,
+        None,
+        None,
+        Some(response_payload(
+            Value::enumeration(0x8000_0021),
+            Value::integer(-23),
+        )),
+    );
+    let typed = decode_response(&response).expect("Table 190 preserves both identifier forms");
+
+    assert_eq!(
+        typed.private_key_unique_identifier(),
+        Some(&UniqueIdentifier::Enumeration(0x8000_0021))
+    );
+    assert_eq!(
+        typed.public_key_unique_identifier(),
+        Some(&UniqueIdentifier::Integer(-23))
     );
 }
 
@@ -449,6 +557,27 @@ fn malformed_success_response_rejects_missing_duplicate_and_wrong_type_identifie
     );
     assert!(decode_response(&duplicate_private).is_err());
 
+    let duplicate_public = response_message(
+        SUCCESS,
+        None,
+        None,
+        Some(structure([
+            item(
+                PRIVATE_KEY_UNIQUE_IDENTIFIER,
+                Value::text_string("private-key-id".to_owned()),
+            ),
+            item(
+                PUBLIC_KEY_UNIQUE_IDENTIFIER,
+                Value::text_string("public-one".to_owned()),
+            ),
+            item(
+                PUBLIC_KEY_UNIQUE_IDENTIFIER,
+                Value::text_string("public-two".to_owned()),
+            ),
+        ])),
+    );
+    assert!(decode_response(&duplicate_public).is_err());
+
     let wrong_type = response_message(
         SUCCESS,
         None,
@@ -459,6 +588,37 @@ fn malformed_success_response_rejects_missing_duplicate_and_wrong_type_identifie
         )),
     );
     assert!(decode_response(&wrong_type).is_err());
+
+    let wrong_public_type = response_message(
+        SUCCESS,
+        None,
+        None,
+        Some(response_payload(
+            Value::text_string("private-key-id".to_owned()),
+            Value::boolean(true),
+        )),
+    );
+    assert!(decode_response(&wrong_public_type).is_err());
+}
+
+#[test]
+fn create_key_pair_error_display_and_source_preserve_the_public_error_contract() {
+    let errors = [
+        CreateKeyPairError::UnexpectedOperation,
+        CreateKeyPairError::MissingResultStatus,
+        CreateKeyPairError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason),
+        CreateKeyPairError::MissingSuccessPayload,
+        CreateKeyPairError::MalformedSuccessPayload,
+    ];
+
+    for error in errors {
+        assert_ne!(error.to_string(), "");
+        if matches!(error, CreateKeyPairError::InvalidOperationResult(_)) {
+            assert!(std::error::Error::source(&error).is_some());
+        } else {
+            assert!(std::error::Error::source(&error).is_none());
+        }
+    }
 }
 
 #[test]

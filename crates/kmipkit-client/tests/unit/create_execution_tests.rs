@@ -261,6 +261,15 @@ fn create_convenience_method_uses_one_exchange_and_returns_typed_result() {
     let ClientBatchOutcome::CreateCompleted(typed) = response.outcome() else {
         panic!("the convenience method returns the typed Create outcome");
     };
+    let outcome = response.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Create);
+    assert_eq!(outcome.result(), typed.result());
+    assert_eq!(outcome.asynchronous_correlation_value(), None);
+    assert!(outcome.discover_versions_response().is_none());
+    assert!(outcome.create_response().is_some());
+    assert!(outcome.create_key_pair_response().is_none());
+    assert!(outcome.create_split_key_response().is_none());
+    assert!(format!("{outcome:?}").starts_with("CreateCompleted("));
     assert_eq!(typed.result().status().raw(), SUCCESS);
     assert_eq!(
         typed.unique_identifier(),
@@ -339,6 +348,18 @@ fn create_pending_retains_operation_result_and_exact_correlation_without_follow_
     let ClientBatchOutcome::Pending(pending) = result.get(0).unwrap().outcome() else {
         panic!("the Pending result stays Pending");
     };
+    let outcome = result.get(0).unwrap().outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Create);
+    assert_eq!(outcome.result(), pending.result());
+    assert_eq!(
+        outcome.asynchronous_correlation_value(),
+        Some(PENDING_CORRELATION)
+    );
+    assert!(outcome.discover_versions_response().is_none());
+    assert!(outcome.create_response().is_none());
+    assert!(outcome.create_key_pair_response().is_none());
+    assert!(outcome.create_split_key_response().is_none());
+    assert!(format!("{outcome:?}").starts_with("Pending("));
     assert_eq!(pending.operation(), ClientOperation::Create);
     assert_eq!(pending.result().status().raw(), OPERATION_PENDING);
     assert_eq!(

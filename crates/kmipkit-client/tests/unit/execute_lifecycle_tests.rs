@@ -304,7 +304,16 @@ fn server_failure_result_is_preserved_as_a_completed_operation_result() {
         .expect("a valid KMIP Failure is an operation result");
     let outcome = result.get(0).expect("one result").outcome();
 
+    assert_eq!(
+        outcome.operation(),
+        crate::ClientOperation::DiscoverVersions
+    );
     assert_eq!(outcome.result().status().raw(), 1);
+    assert_eq!(outcome.asynchronous_correlation_value(), None);
+    assert!(outcome.create_response().is_none());
+    assert!(outcome.create_key_pair_response().is_none());
+    assert!(outcome.create_split_key_response().is_none());
+    assert!(format!("{outcome:?}").starts_with("Completed("));
     assert_eq!(
         outcome
             .discover_versions_response()
