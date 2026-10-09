@@ -1,10 +1,15 @@
 use super::{
-    DnsQueryType, LocalDnsFixture, MAX_QUERY_BYTES, build_response, read_u16, validate_records,
+    DnsQueryType, FixtureMetrics, FixtureState, LocalDnsFixture, MAX_QUERY_BYTES, TcpMetrics,
+    TcpWorkerKind, TcpWorkerSpawner, build_response, read_u16, serve_tcp_with_spawner,
+    validate_records,
 };
 use std::collections::BTreeMap;
 use std::io::{self, Read, Write};
-use std::net::{IpAddr, Ipv4Addr, TcpStream, UdpSocket};
-use std::sync::{Mutex, MutexGuard};
+use std::net::{IpAddr, Ipv4Addr, Shutdown, TcpListener, TcpStream, UdpSocket};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::mpsc::{self, Receiver};
+use std::sync::{Arc, Condvar, Mutex, MutexGuard};
+use std::thread;
 use std::time::Duration;
 
 static NETWORK_FIXTURE_LOCK: Mutex<()> = Mutex::new(());
@@ -238,21 +243,10 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
         .set_read_timeout(Some(Duration::from_secs(1)))
         .expect("DNS TCP read timeout should be configured");
     let request = fixture_query(1);
-    let length = u16::try_from(request.len()).expect("DNS request length fits its frame");
-    client
-        .write_all(&length.to_be_bytes())
-        .and_then(|()| client.write_all(&request))
-        .expect("framed DNS question should be sent");
+    write_tcp_dns_query(&mut client, &request).expect("framed DNS question should be sent");
 
-    let mut response_length = [0_u8; 2];
-    client
-        .read_exact(&mut response_length)
-        .expect("fixture should return a framed DNS response");
-    let response_length = usize::from(u16::from_be_bytes(response_length));
-    let mut response = vec![0_u8; response_length];
-    client
-        .read_exact(&mut response)
-        .expect("complete DNS response should be returned");
+    let response =
+        read_tcp_dns_response(&mut client).expect("fixture should return a framed DNS response");
     assert_eq!(read_u16(&response, 6), Some(1));
 
     client
@@ -264,6 +258,129 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
         is_close_result(&read_result),
         "fixture closes an invalid short frame; client read returned {read_result:?}"
     );
+}
+
+#[test]
+fn accepted_tcp_connection_is_served_when_connection_worker_spawn_fails() {
+    let records = BTreeMap::from([(
+        "fixture.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
+    )]);
+    let (spawner, spawn_attempts, _connection_worker_done) =
+        tcp_worker_spawner_failing(TcpWorkerKind::Connection);
+    let (local_addr, state, server) = start_tcp_server_for_spawn_test(records, spawner);
+
+    let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
+    client
+        .set_read_timeout(Some(Duration::from_secs(1)))
+        .expect("DNS TCP read timeout should be configured");
+    let request = fixture_query(1);
+    write_tcp_dns_query(&mut client, &request).expect("framed DNS question should be sent");
+    let response = read_tcp_dns_response(&mut client);
+    let _shutdown_result = client.shutdown(Shutdown::Both);
+    state.stop.store(true, Ordering::Release);
+    let server_result = server.join();
+
+    assert_eq!(spawn_attempts.load(Ordering::Acquire), 2);
+    assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
+    let response = response.expect("accepted query should still receive a DNS response");
+    assert_eq!(read_u16(&response, 0), Some(0));
+    assert_eq!(read_u16(&response, 6), Some(1));
+}
+
+#[test]
+fn dns_response_is_written_inline_when_response_worker_spawn_fails() {
+    let records = BTreeMap::from([(
+        "fixture.kmipkit.test".to_owned(),
+        vec![IpAddr::V4(Ipv4Addr::LOCALHOST)],
+    )]);
+    let (spawner, spawn_attempts, connection_worker_done) =
+        tcp_worker_spawner_failing(TcpWorkerKind::Response);
+    let (local_addr, state, server) = start_tcp_server_for_spawn_test(records, spawner);
+
+    let mut client = TcpStream::connect(local_addr).expect("DNS TCP client should connect");
+    client
+        .set_read_timeout(Some(Duration::from_secs(1)))
+        .expect("DNS TCP read timeout should be configured");
+    let request = fixture_query(1);
+    write_tcp_dns_query(&mut client, &request).expect("framed DNS question should be sent");
+    let response = read_tcp_dns_response(&mut client);
+    let _shutdown_result = client.shutdown(Shutdown::Both);
+    state.stop.store(true, Ordering::Release);
+    let server_result = server.join();
+    connection_worker_done
+        .recv_timeout(Duration::from_secs(1))
+        .expect("connection worker should finish before metrics are inspected");
+
+    assert_eq!(spawn_attempts.load(Ordering::Acquire), 2);
+    assert!(server_result.is_ok(), "TCP fixture accept loop should exit");
+    let response = response.expect("DNS response should be sent if its worker cannot start");
+    assert_eq!(read_u16(&response, 0), Some(0));
+    assert_eq!(read_u16(&response, 6), Some(1));
+    let metrics = state
+        .tcp_metrics
+        .lock()
+        .expect("TCP metrics should remain available");
+    assert_eq!(metrics.active_by_connection.get(&1), Some(&0));
+    assert_eq!(metrics.peak_by_connection.get(&1), Some(&1));
+}
+
+fn tcp_worker_spawner_failing(
+    failed_kind: TcpWorkerKind,
+) -> (TcpWorkerSpawner, Arc<AtomicUsize>, Receiver<()>) {
+    let attempts = Arc::new(AtomicUsize::new(0));
+    let spawner_attempts = Arc::clone(&attempts);
+    let (connection_worker_done_sender, connection_worker_done) = mpsc::channel();
+    let spawner: TcpWorkerSpawner = Arc::new(move |kind, job| {
+        spawner_attempts.fetch_add(1, Ordering::AcqRel);
+        if kind == failed_kind {
+            drop(job);
+            Err(io::Error::other("injected DNS worker spawn failure"))
+        } else if kind == TcpWorkerKind::Connection {
+            let done_sender = connection_worker_done_sender.clone();
+            thread::Builder::new()
+                .spawn(move || {
+                    job();
+                    let _ = done_sender.send(());
+                })
+                .map(drop)
+        } else {
+            thread::Builder::new().spawn(job).map(drop)
+        }
+    });
+    (spawner, attempts, connection_worker_done)
+}
+
+fn start_tcp_server_for_spawn_test(
+    records: BTreeMap<String, Vec<IpAddr>>,
+    spawner: TcpWorkerSpawner,
+) -> (
+    std::net::SocketAddr,
+    Arc<FixtureState>,
+    thread::JoinHandle<()>,
+) {
+    let listener =
+        TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback test listener should bind");
+    listener
+        .set_nonblocking(true)
+        .expect("loopback listener should use nonblocking accept");
+    let local_addr = listener
+        .local_addr()
+        .expect("loopback test listener should expose its address");
+    let state = Arc::new(FixtureState {
+        stop: AtomicBool::new(false),
+        metrics: Mutex::new(FixtureMetrics::default()),
+        response_released: (Mutex::new(true), Condvar::new()),
+        active_responses: AtomicUsize::new(0),
+        peak_active_responses: AtomicUsize::new(0),
+        next_tcp_connection: AtomicUsize::new(1),
+        tcp_metrics: Mutex::new(TcpMetrics::default()),
+    });
+    let server_state = Arc::clone(&state);
+    let server = thread::spawn(move || {
+        serve_tcp_with_spawner(&listener, &records, &server_state, &spawner);
+    });
+    (local_addr, state, server)
 }
 
 #[test]
@@ -316,6 +433,22 @@ fn fixture_query(record_type: u16) -> Vec<u8> {
         record_type,
         1,
     )
+}
+
+fn write_tcp_dns_query(client: &mut TcpStream, request: &[u8]) -> io::Result<()> {
+    let length = u16::try_from(request.len())
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidInput, error))?;
+    client.write_all(&length.to_be_bytes())?;
+    client.write_all(request)
+}
+
+fn read_tcp_dns_response(client: &mut TcpStream) -> io::Result<Vec<u8>> {
+    let mut response_length = [0_u8; 2];
+    client.read_exact(&mut response_length)?;
+    let length = usize::from(u16::from_be_bytes(response_length));
+    let mut response = vec![0_u8; length];
+    client.read_exact(&mut response)?;
+    Ok(response)
 }
 
 fn query(question_name: &[u8], record_type: u16, record_class: u16) -> Vec<u8> {

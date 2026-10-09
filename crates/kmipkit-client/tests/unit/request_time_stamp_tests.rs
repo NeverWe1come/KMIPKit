@@ -25,7 +25,7 @@ fn candidate_build_request_header(caller_time_stamp: Option<i64>) -> RequestMess
     if let Some(time_stamp) = caller_time_stamp {
         batch = batch.with_request_time_stamp(time_stamp);
     }
-    request_message_for_test(&batch, &CodecLimits::defaults())
+    request_message_for_test(batch, &CodecLimits::defaults())
         .expect("typed request header is valid")
 }
 

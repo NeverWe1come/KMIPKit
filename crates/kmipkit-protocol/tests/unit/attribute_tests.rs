@@ -10,8 +10,8 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, StructureView, Tag, Value,
 use quickcheck::{Arbitrary, Gen, QuickCheck};
 
 const PROPERTY_SEED: u64 = 0x4B4D_4950_4B49_5434;
-const STANDARD_ATTRIBUTE_TAG: u32 = 0x0042_0001;
-const SECOND_STANDARD_ATTRIBUTE_TAG: u32 = 0x0042_0028;
+const STANDARD_ATTRIBUTE_TAG: u32 = 0x0042_0002;
+const SECOND_STANDARD_ATTRIBUTE_TAG: u32 = 0x0042_0013;
 const VENDOR_EXTENSION_TAG: u32 = 0x0054_1234;
 const TTLV_ENVELOPE_TAG: u32 = 0x0054_1235;
 const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
@@ -29,6 +29,22 @@ fn tag(raw: u32) -> Tag {
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(tag(raw_tag), value).expect("checked tag and value form a generic TTLV item")
+}
+
+fn value_for_item_type(item_type: ItemType) -> Value {
+    match item_type {
+        ItemType::Structure => Value::structure(Structure::new()),
+        ItemType::Integer => Value::integer(7),
+        ItemType::LongInteger => Value::long_integer(7),
+        ItemType::BigInteger => Value::big_integer(vec![7]),
+        ItemType::Enumeration => Value::enumeration(7),
+        ItemType::TextString => Value::text_string("wrong-type".to_owned()),
+        ItemType::ByteString => Value::byte_string(vec![7]),
+        ItemType::DateTime => Value::date_time(7),
+        ItemType::Interval => Value::interval(7),
+        ItemType::DateTimeExtended => Value::date_time_extended(7),
+        _ => Value::boolean(true),
+    }
 }
 
 fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
@@ -108,6 +124,93 @@ fn attribute_set_preserves_unknown_standard_and_vendor_item_tags() {
     assert_eq!(attributes.as_items()[1].item_type(), ItemType::Integer);
     assert_eq!(attributes.as_items()[3].item_type(), ItemType::ByteString);
     assert_eq!(attributes.into_items().len(), 4);
+}
+
+#[test]
+fn recognized_attributes_reject_types_outside_the_catalog_encoding() {
+    let wrong_types = [
+        (0x0042_0028, Value::integer(7)), // Cryptographic Algorithm: Enumeration
+        (0x0042_0029, Value::boolean(true)), // Cryptographic Domain Parameters: Structure
+        (0x0042_002a, Value::enumeration(7)), // Cryptographic Length: Integer
+        (0x0042_002b, Value::byte_string(vec![7])), // Cryptographic Parameters: Structure
+        (0x0042_0057, Value::text_string("Secret Key".to_owned())), // Object Type: Enumeration
+        (0x0042_0094, Value::boolean(true)), // Unique Identifier: Text String, Enumeration, or Integer
+    ];
+
+    for (raw_tag, value) in wrong_types {
+        let error = AttributeSet::try_new([item(raw_tag, value)])
+            .expect_err("catalog-declared attribute encoding rejects a mismatched TTLV type");
+        assert_eq!(error, AttributeSetError::AttributeTtlvTypeMismatch);
+        let diagnostic = format!("{error:?} {error}");
+        assert!(!diagnostic.contains("Secret Key"));
+    }
+}
+
+#[test]
+fn every_catalogued_attribute_rejects_a_ttlv_type_outside_its_encoding() {
+    let all_types = [
+        ItemType::Structure,
+        ItemType::Integer,
+        ItemType::LongInteger,
+        ItemType::BigInteger,
+        ItemType::Enumeration,
+        ItemType::Boolean,
+        ItemType::TextString,
+        ItemType::ByteString,
+        ItemType::DateTime,
+        ItemType::Interval,
+        ItemType::DateTimeExtended,
+    ];
+
+    assert_ne!(crate::attribute_types_generated::ATTRIBUTE_TYPES, []);
+    for (raw_tag, expected_types) in crate::attribute_types_generated::ATTRIBUTE_TYPES {
+        let wrong_type = all_types
+            .iter()
+            .copied()
+            .find(|item_type| !expected_types.contains(item_type))
+            .expect("each catalogued encoding excludes at least one TTLV item type");
+        let error = AttributeSet::try_new([item(*raw_tag, value_for_item_type(wrong_type))])
+            .expect_err("catalogued attributes reject a TTLV type outside their encoding");
+        assert_eq!(error, AttributeSetError::AttributeTtlvTypeMismatch);
+    }
+}
+
+#[test]
+fn recognized_enumeration_attributes_preserve_unknown_values() {
+    let attributes = AttributeSet::try_new([item(0x0042_0028, Value::enumeration(u32::MAX))])
+        .expect("an unknown Enumeration value keeps the catalog-declared TTLV type");
+
+    assert_eq!(attributes.as_items()[0].item_type(), ItemType::Enumeration);
+    assert_eq!(
+        attributes.as_items()[0].with_value(|value| match value {
+            ValueView::Enumeration(raw) => Some(*raw),
+            _ => None,
+        }),
+        Some(u32::MAX)
+    );
+}
+
+#[test]
+fn unique_identifier_accepts_each_catalog_declared_ttlv_type() {
+    let attributes = AttributeSet::try_new([
+        item(0x0042_0094, Value::text_string("id".to_owned())),
+        item(0x0042_0094, Value::enumeration(u32::MAX)),
+        item(0x0042_0094, Value::integer(-7)),
+    ])
+    .expect("the catalog declares all three permitted Unique Identifier wire forms");
+
+    assert_eq!(
+        attributes
+            .as_items()
+            .iter()
+            .map(Item::item_type)
+            .collect::<Vec<_>>(),
+        [
+            ItemType::TextString,
+            ItemType::Enumeration,
+            ItemType::Integer
+        ]
+    );
 }
 
 #[test]

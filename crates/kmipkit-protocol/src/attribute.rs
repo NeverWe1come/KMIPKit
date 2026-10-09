@@ -14,10 +14,11 @@ const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 /// An ordered collection of direct §4 Object Attribute TTLV items.
 ///
 /// Items retain their original tag, typed value, repetitions, and insertion
-/// order as required by OASIS KMIP v2.1 §§5.1–5.4, Tables 157–160. Unknown
-/// assigned and extension tags remain generic items; this type does not infer
-/// attribute names or synthesize tags. A Table 150 Vendor Attribute remains a
-/// distinct structure and is checked for its required fields.
+/// order as required by OASIS KMIP v2.1 §§5.1–5.4, Tables 157–160. Recognized
+/// attributes with catalogued encodings are checked against their permitted
+/// TTLV item types. Unknown assigned and extension tags remain generic items;
+/// this type does not infer attribute names or synthesize tags. A Table 150
+/// Vendor Attribute remains a distinct structure and is checked separately.
 pub struct AttributeSet {
     items: Vec<Item>,
 }
@@ -46,6 +47,8 @@ pub enum AttributeSetError {
     MissingAttributeValue,
     /// Attribute Value occurs more than once.
     DuplicateAttributeValue,
+    /// A recognized attribute's TTLV type is outside the catalog encoding.
+    AttributeTtlvTypeMismatch,
 }
 
 impl Display for AttributeSetError {
@@ -65,6 +68,9 @@ impl Display for AttributeSetError {
             Self::AttributeNameMustBeTextString => "Attribute Name must be a Text String",
             Self::MissingAttributeValue => "Vendor Attribute is missing Attribute Value",
             Self::DuplicateAttributeValue => "Attribute Value is repeated",
+            Self::AttributeTtlvTypeMismatch => {
+                "attribute TTLV type does not match its catalog encoding"
+            }
         };
         formatter.write_str(message)
     }
@@ -90,13 +96,14 @@ impl AttributeSet {
 
     /// Creates a set from direct attribute items in their original order.
     ///
-    /// Repeated tags and generic values are retained. A Vendor Attribute is
-    /// validated against the distinct structure in §4.60, Table 150.
+    /// Repeated tags and values are retained. Recognized attribute types are
+    /// checked against catalogued encodings. A Vendor Attribute is validated
+    /// against the distinct structure in §4.60, Table 150.
     ///
     /// # Errors
     ///
-    /// Returns a payload-free [`AttributeSetError`] when a Vendor Attribute
-    /// has an invalid structure or required field.
+    /// Returns a payload-free [`AttributeSetError`] when a recognized
+    /// attribute has the wrong TTLV type or a Vendor Attribute is malformed.
     pub fn try_new(items: impl IntoIterator<Item = Item>) -> Result<Self, AttributeSetError> {
         let mut set = Self::new();
         for item in items {
@@ -109,9 +116,11 @@ impl AttributeSet {
     ///
     /// # Errors
     ///
-    /// Returns a payload-free [`AttributeSetError`] for an invalid Vendor
-    /// Attribute structure. Other generic attribute values remain unchanged.
+    /// Returns a payload-free [`AttributeSetError`] for a recognized attribute
+    /// with the wrong TTLV type or an invalid Vendor Attribute structure.
+    /// Unknown attribute values remain unchanged.
     pub fn try_push(&mut self, item: Item) -> Result<(), AttributeSetError> {
+        validate_catalogued_item_type(&item)?;
         if item.tag().raw() == VENDOR_ATTRIBUTE_TAG {
             item.with_value(|value| match value {
                 ValueView::Structure(structure) => validate_vendor_attribute(&structure),
@@ -144,6 +153,16 @@ impl AttributeSet {
     #[must_use]
     pub fn into_items(self) -> Vec<Item> {
         self.items
+    }
+}
+
+fn validate_catalogued_item_type(item: &Item) -> Result<(), AttributeSetError> {
+    if crate::attribute_types_generated::expected_types(item.tag().raw())
+        .is_some_and(|expected| !expected.contains(&item.item_type()))
+    {
+        Err(AttributeSetError::AttributeTtlvTypeMismatch)
+    } else {
+        Ok(())
     }
 }
 

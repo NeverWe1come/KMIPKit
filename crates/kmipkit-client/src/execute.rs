@@ -7,10 +7,12 @@ use std::fmt;
 use kmipkit_protocol::extension::ExtensionIdentity;
 use kmipkit_protocol::{
     AsynchronousOperationError, CancelRequest, CancelResponse, CancellationResult,
-    DiscoverVersionsRequest, DiscoverVersionsResponse, MessageExtensionView, PollRequest,
-    PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
-    RequestMessage, ResponseBatchItemView, ResponseMessage, ResultStatus,
+    CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
+    CreateSplitKeyRequest, CreateSplitKeyResponse, DiscoverVersionsRequest,
+    DiscoverVersionsResponse, KmipOperationResult, MessageExtensionView, PollRequest, PollResponse,
+    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, RequestMessage,
+    ResponseBatchItemView, ResponseMessage, ResultStatus,
 };
 #[cfg(test)]
 use kmipkit_transport::Transport;
@@ -43,6 +45,7 @@ pub(super) use private_wire_writer::ZeroizationObserver;
 
 const MESSAGE: u32 = 0x0042_0078;
 const REQUEST_HEADER: u32 = 0x0042_0077;
+const MAXIMUM_RESPONSE_SIZE: u32 = 0x0042_0050;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
@@ -60,6 +63,9 @@ const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
 const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
+const CREATE_OPERATION: u32 = 0x0000_0001;
+const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0003;
 const CANCEL_OPERATION: u32 = 0x0000_0019;
 const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
@@ -74,13 +80,19 @@ const RESULT_STATUS_PENDING: u32 = 2;
 
 /// One request variant admitted by the typed client execution path.
 ///
-/// The initial feature supports only an explicitly requested Discover Versions
-/// operation. Generic TTLV items and caller-provided wire bytes are not accepted.
+/// The typed client request operations admitted by this release.
+///
+/// Generic TTLV items and caller-provided wire bytes are not accepted.
 #[non_exhaustive]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ClientRequest {
     /// An explicit client-to-server Discover Versions request.
     DiscoverVersions(DiscoverVersionsRequest),
+    /// An explicit client-to-server Create request.
+    Create(CreateRequest),
+    /// An explicit client-to-server Create Key Pair request.
+    CreateKeyPair(CreateKeyPairRequest),
+    /// An explicit client-to-server Create Split Key request.
+    CreateSplitKey(CreateSplitKeyRequest),
 }
 
 impl ClientRequest {
@@ -90,15 +102,32 @@ impl ClientRequest {
         Self::DiscoverVersions(DiscoverVersionsRequest::new())
     }
 
-    const fn operation(self) -> u32 {
+    const fn operation(&self) -> u32 {
         match self {
             Self::DiscoverVersions(_) => DISCOVER_VERSIONS_OPERATION,
+            Self::Create(_) => CREATE_OPERATION,
+            Self::CreateKeyPair(_) => CREATE_KEY_PAIR_OPERATION,
+            Self::CreateSplitKey(_) => CREATE_SPLIT_KEY_OPERATION,
         }
     }
 
     fn payload(self) -> Result<Structure, ProtocolError> {
         match self {
             Self::DiscoverVersions(request) => request.to_ttlv_payload(),
+            Self::Create(request) => request.into_ttlv_payload(),
+            Self::CreateKeyPair(request) => request.into_ttlv_payload(),
+            Self::CreateSplitKey(request) => request.into_ttlv_payload(),
+        }
+    }
+}
+
+impl fmt::Debug for ClientRequest {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::DiscoverVersions(_) => formatter.write_str("DiscoverVersions"),
+            Self::Create(_) => formatter.write_str("Create([REDACTED])"),
+            Self::CreateKeyPair(_) => formatter.write_str("CreateKeyPair([REDACTED])"),
+            Self::CreateSplitKey(_) => formatter.write_str("CreateSplitKey([REDACTED])"),
         }
     }
 }
@@ -167,8 +196,8 @@ impl ClientBatchItem {
 
     /// Returns the typed operation request.
     #[must_use]
-    pub const fn request(&self) -> ClientRequest {
-        self.request
+    pub const fn request(&self) -> &ClientRequest {
+        &self.request
     }
 
     /// Lends the optional Unique Batch Item ID.
@@ -333,7 +362,7 @@ impl fmt::Debug for ClientMessageExtension {
     }
 }
 
-/// A Pending Discover Versions result and its opaque correlation capability.
+/// A Pending result and its opaque correlation capability.
 ///
 /// The correlation bytes are available only through the borrowed accessor and
 /// remain in zeroizing-owned storage for this value's lifetime.
@@ -348,15 +377,22 @@ impl fmt::Debug for ClientMessageExtension {
 /// }
 /// ```
 pub struct PendingOutcome {
-    response: DiscoverVersionsResponse,
+    operation: ClientOperation,
+    result: KmipOperationResult,
     asynchronous_correlation_value: Zeroizing<Vec<u8>>,
 }
 
 impl PendingOutcome {
-    /// Returns the typed Discover Versions result metadata.
+    /// Returns the operation that reported Pending.
     #[must_use]
-    pub const fn response(&self) -> &DiscoverVersionsResponse {
-        &self.response
+    pub const fn operation(&self) -> ClientOperation {
+        self.operation
+    }
+
+    /// Returns the exact KMIP result reported by the server.
+    #[must_use]
+    pub const fn result(&self) -> &KmipOperationResult {
+        &self.result
     }
 
     /// Lends the exact opaque Asynchronous Correlation Value.
@@ -370,7 +406,8 @@ impl fmt::Debug for PendingOutcome {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("PendingOutcome")
-            .field("response", &self.response)
+            .field("operation", &self.operation)
+            .field("result", &self.result)
             .field("asynchronous_correlation_value", &"[REDACTED]")
             .finish()
     }
@@ -381,6 +418,14 @@ impl fmt::Debug for PendingOutcome {
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ClientOperation {
+    /// Discover Versions.
+    DiscoverVersions,
+    /// Create.
+    Create,
+    /// Create Key Pair.
+    CreateKeyPair,
+    /// Create Split Key.
+    CreateSplitKey,
     /// Poll one previously Pending operation.
     Poll,
     /// Cancel one previously Pending operation.
@@ -507,6 +552,12 @@ impl fmt::Debug for ClientOperationOutcome {
 pub enum ClientBatchOutcome {
     /// The server returned a non-Pending KMIP result.
     Completed(DiscoverVersionsResponse),
+    /// The server returned a non-Pending Create result.
+    CreateCompleted(CreateResponse),
+    /// The server returned a non-Pending Create Key Pair result.
+    CreateKeyPairCompleted(CreateKeyPairResponse),
+    /// The server returned a non-Pending Create Split Key result.
+    CreateSplitKeyCompleted(CreateSplitKeyResponse),
     /// The server returned Pending with its required capability-like value.
     Pending(PendingOutcome),
 }
@@ -516,17 +567,83 @@ impl ClientBatchOutcome {
     #[must_use]
     pub fn asynchronous_correlation_value(&self) -> Option<&[u8]> {
         match self {
-            Self::Completed(_) => None,
+            Self::Completed(_)
+            | Self::CreateCompleted(_)
+            | Self::CreateKeyPairCompleted(_)
+            | Self::CreateSplitKeyCompleted(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
     }
 
-    /// Returns the typed Discover Versions operation result.
+    /// Returns the exact KMIP result for every completed or Pending operation.
     #[must_use]
-    pub const fn response(&self) -> &DiscoverVersionsResponse {
+    pub const fn result(&self) -> &KmipOperationResult {
         match self {
-            Self::Completed(response) => response,
-            Self::Pending(pending) => pending.response(),
+            Self::Completed(response) => response.result(),
+            Self::CreateCompleted(response) => response.result(),
+            Self::CreateKeyPairCompleted(response) => response.result(),
+            Self::CreateSplitKeyCompleted(response) => response.result(),
+            Self::Pending(pending) => pending.result(),
+        }
+    }
+
+    /// Returns the operation that produced this outcome.
+    #[must_use]
+    pub const fn operation(&self) -> ClientOperation {
+        match self {
+            Self::Completed(_) => ClientOperation::DiscoverVersions,
+            Self::CreateCompleted(_) => ClientOperation::Create,
+            Self::CreateKeyPairCompleted(_) => ClientOperation::CreateKeyPair,
+            Self::CreateSplitKeyCompleted(_) => ClientOperation::CreateSplitKey,
+            Self::Pending(pending) => pending.operation(),
+        }
+    }
+
+    /// Returns the typed Discover Versions response, when this is one.
+    #[must_use]
+    pub const fn discover_versions_response(&self) -> Option<&DiscoverVersionsResponse> {
+        match self {
+            Self::Completed(response) => Some(response),
+            Self::CreateCompleted(_)
+            | Self::CreateKeyPairCompleted(_)
+            | Self::CreateSplitKeyCompleted(_)
+            | Self::Pending(_) => None,
+        }
+    }
+
+    /// Returns the typed Create response, when this is one.
+    #[must_use]
+    pub const fn create_response(&self) -> Option<&CreateResponse> {
+        match self {
+            Self::CreateCompleted(response) => Some(response),
+            Self::Completed(_)
+            | Self::CreateKeyPairCompleted(_)
+            | Self::CreateSplitKeyCompleted(_)
+            | Self::Pending(_) => None,
+        }
+    }
+
+    /// Returns the typed Create Key Pair response, when this is one.
+    #[must_use]
+    pub const fn create_key_pair_response(&self) -> Option<&CreateKeyPairResponse> {
+        match self {
+            Self::CreateKeyPairCompleted(response) => Some(response),
+            Self::Completed(_)
+            | Self::CreateCompleted(_)
+            | Self::CreateSplitKeyCompleted(_)
+            | Self::Pending(_) => None,
+        }
+    }
+
+    /// Returns the typed Create Split Key response, when this is one.
+    #[must_use]
+    pub const fn create_split_key_response(&self) -> Option<&CreateSplitKeyResponse> {
+        match self {
+            Self::CreateSplitKeyCompleted(response) => Some(response),
+            Self::Completed(_)
+            | Self::CreateCompleted(_)
+            | Self::CreateKeyPairCompleted(_)
+            | Self::Pending(_) => None,
         }
     }
 }
@@ -537,6 +654,18 @@ impl fmt::Debug for ClientBatchOutcome {
             Self::Completed(response) => {
                 formatter.debug_tuple("Completed").field(response).finish()
             }
+            Self::CreateCompleted(response) => formatter
+                .debug_tuple("CreateCompleted")
+                .field(response)
+                .finish(),
+            Self::CreateKeyPairCompleted(response) => formatter
+                .debug_tuple("CreateKeyPairCompleted")
+                .field(response)
+                .finish(),
+            Self::CreateSplitKeyCompleted(response) => formatter
+                .debug_tuple("CreateSplitKeyCompleted")
+                .field(response)
+                .finish(),
             Self::Pending(pending) => formatter.debug_tuple("Pending").field(pending).finish(),
         }
     }
@@ -546,7 +675,16 @@ impl fmt::Display for ClientBatchOutcome {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Completed(response) => write!(formatter, "Completed({})", response.result()),
-            Self::Pending(pending) => write!(formatter, "Pending({})", pending.response.result()),
+            Self::CreateCompleted(response) => {
+                write!(formatter, "CreateCompleted({})", response.result())
+            }
+            Self::CreateKeyPairCompleted(response) => {
+                write!(formatter, "CreateKeyPairCompleted({})", response.result())
+            }
+            Self::CreateSplitKeyCompleted(response) => {
+                write!(formatter, "CreateSplitKeyCompleted({})", response.result())
+            }
+            Self::Pending(pending) => write!(formatter, "Pending({})", pending.result()),
         }
     }
 }
@@ -654,8 +792,8 @@ impl fmt::Debug for ClientBatchResponse {
 
 /// Synchronous typed KMIP client execution foundation.
 ///
-/// The only admitted operation in this feature is an explicit Discover
-/// Versions request. Production construction accepts validated transport
+/// Admitted operations are explicit Discover Versions and Create requests.
+/// Production construction accepts validated transport
 /// configuration and retains the immutable client extension configuration;
 /// callers cannot inject an arbitrary transport implementation.
 ///
@@ -817,13 +955,19 @@ impl Client {
             )
         })?;
 
-        let request_message = build_request_message(&batch, &options)
+        let request_identities = batch
+            .items
+            .iter()
+            .map(BatchIdentity::from_request)
+            .collect::<Vec<_>>();
+        let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
+        let request_message = build_request_message(batch, &options, maximum_response_size)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
         let (response_message, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
 
         validate_response(
-            &batch,
+            &request_identities,
             &options,
             response_message,
             self.configuration.extension_registry(),
@@ -832,6 +976,146 @@ impl Client {
             self.pending_owner_observer.as_ref(),
         )
         .map_err(|error| protocol_failure_at(error, response_delivery_state))
+    }
+
+    /// Executes one typed Create request through the shared batch writer.
+    ///
+    /// Use [`Self::execute`] with a one-item batch and an explicit
+    /// Asynchronous Indicator when the caller wants to accept Operation
+    /// Pending. This convenience method leaves batch options at their defaults.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create(
+        &mut self,
+        request: CreateRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.create_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Create request with transport timeout overrides.
+    ///
+    /// The request uses the same writer, response bounds, and one-exchange
+    /// lifecycle as [`Self::execute_with_options`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_with_options(
+        &mut self,
+        request: CreateRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let mut response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Create(request))),
+            limits,
+            request_options,
+        )?;
+        response.items.pop().ok_or_else(|| {
+            protocol_failure_at(
+                protocol_error(ProtocolErrorKind::MalformedMessage),
+                RequestDeliveryState::ResponseStarted,
+            )
+        })
+    }
+
+    /// Executes one typed Create Key Pair request through the shared batch writer.
+    ///
+    /// Use [`Self::execute`] with a one-item batch and an explicit
+    /// Asynchronous Indicator when the caller wants to accept Operation
+    /// Pending. This convenience method leaves batch options at their defaults.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_key_pair(
+        &mut self,
+        request: CreateKeyPairRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.create_key_pair_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Create Key Pair request with transport timeout overrides.
+    ///
+    /// The request uses the same writer, response bounds, and one-exchange
+    /// lifecycle as [`Self::execute_with_options`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_key_pair_with_options(
+        &mut self,
+        request: CreateKeyPairRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let mut response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::CreateKeyPair(request))),
+            limits,
+            request_options,
+        )?;
+        response.items.pop().ok_or_else(|| {
+            protocol_failure_at(
+                protocol_error(ProtocolErrorKind::MalformedMessage),
+                RequestDeliveryState::ResponseStarted,
+            )
+        })
+    }
+
+    /// Executes one typed Create Split Key request through the shared batch writer.
+    ///
+    /// The request advertises the local response byte limit as KMIP
+    /// `Maximum Response Size`, clamped to the field's signed 32-bit range.
+    /// Use [`Self::execute`] with a one-item batch and an explicit
+    /// Asynchronous Indicator when the caller wants to accept Operation
+    /// Pending. This convenience method leaves batch options at their defaults.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_split_key(
+        &mut self,
+        request: CreateSplitKeyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.create_split_key_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Create Split Key request with transport timeout overrides.
+    ///
+    /// The request uses the shared writer, response bounds, and one-exchange
+    /// lifecycle. Its `Maximum Response Size` is derived from `limits`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_split_key_with_options(
+        &mut self,
+        request: CreateSplitKeyRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let mut response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::CreateSplitKey(request))),
+            limits,
+            request_options,
+        )?;
+        response.items.pop().ok_or_else(|| {
+            protocol_failure_at(
+                protocol_error(ProtocolErrorKind::MalformedMessage),
+                RequestDeliveryState::ResponseStarted,
+            )
+        })
     }
 
     fn exchange_operation(
@@ -1413,9 +1697,35 @@ pub(super) fn validate_batch_error_continuation(
 }
 
 fn build_request_message(
+    batch: ClientBatch,
+    options: &ValidatedBatchOptions,
+    maximum_response_size: Option<i32>,
+) -> Result<RequestMessage, ProtocolError> {
+    let header = build_request_header(&batch, options, maximum_response_size)?;
+    let mut tree = Structure::new();
+    push(&mut tree, REQUEST_HEADER, Value::structure(header))?;
+    for item in batch.items {
+        push(
+            &mut tree,
+            BATCH_ITEM,
+            Value::structure(build_request_batch_item(item)?),
+        )?;
+    }
+
+    RequestMessage::try_from_ttlv(tree).map_err(|error| {
+        ProtocolError::new(
+            ProtocolErrorKind::MalformedMessage,
+            ProtocolCauseCategory::InvalidValue,
+            error,
+        )
+    })
+}
+
+fn build_request_header(
     batch: &ClientBatch,
     options: &ValidatedBatchOptions,
-) -> Result<RequestMessage, ProtocolError> {
+    maximum_response_size: Option<i32>,
+) -> Result<Structure, ProtocolError> {
     let mut version_fields = Structure::new();
     push(
         &mut version_fields,
@@ -1434,6 +1744,9 @@ fn build_request_message(
         PROTOCOL_VERSION,
         Value::structure(version_fields),
     )?;
+    if let Some(value) = maximum_response_size {
+        push(&mut header, MAXIMUM_RESPONSE_SIZE, Value::integer(value))?;
+    }
     if let Some(value) = &batch.client_correlation_value {
         push(
             &mut header,
@@ -1474,45 +1787,49 @@ fn build_request_message(
         )
     })?;
     push(&mut header, BATCH_COUNT, Value::integer(count))?;
+    Ok(header)
+}
 
-    let mut tree = Structure::new();
-    push(&mut tree, REQUEST_HEADER, Value::structure(header))?;
-    for item in &batch.items {
-        let mut batch_item = Structure::new();
+fn maximum_response_size_for_batch(batch: &ClientBatch, limits: &CodecLimits) -> Option<i32> {
+    batch
+        .items
+        .iter()
+        .any(|item| item.request.operation() == CREATE_SPLIT_KEY_OPERATION)
+        .then(|| i32::try_from(limits.max_message_bytes()).unwrap_or(i32::MAX))
+}
+
+fn build_request_batch_item(item: ClientBatchItem) -> Result<Structure, ProtocolError> {
+    let ClientBatchItem {
+        request,
+        unique_batch_item_id,
+        message_extensions,
+    } = item;
+    let mut batch_item = Structure::new();
+    push(
+        &mut batch_item,
+        OPERATION,
+        Value::enumeration(request.operation()),
+    )?;
+    if let Some(id) = unique_batch_item_id {
         push(
             &mut batch_item,
-            OPERATION,
-            Value::enumeration(item.request.operation()),
+            UNIQUE_BATCH_ITEM_ID,
+            Value::byte_string(id),
         )?;
-        if let Some(id) = &item.unique_batch_item_id {
-            push(
-                &mut batch_item,
-                UNIQUE_BATCH_ITEM_ID,
-                Value::byte_string(id.clone()),
-            )?;
-        }
-        push(
-            &mut batch_item,
-            REQUEST_PAYLOAD,
-            Value::structure(item.request.payload()?),
-        )?;
-        for extension in &item.message_extensions {
-            push(
-                &mut batch_item,
-                MESSAGE_EXTENSION,
-                Value::structure(message_extension_structure(extension)?),
-            )?;
-        }
-        push(&mut tree, BATCH_ITEM, Value::structure(batch_item))?;
     }
-
-    RequestMessage::try_from_ttlv(tree).map_err(|error| {
-        ProtocolError::new(
-            ProtocolErrorKind::MalformedMessage,
-            ProtocolCauseCategory::InvalidValue,
-            error,
-        )
-    })
+    push(
+        &mut batch_item,
+        REQUEST_PAYLOAD,
+        Value::structure(request.payload()?),
+    )?;
+    for extension in &message_extensions {
+        push(
+            &mut batch_item,
+            MESSAGE_EXTENSION,
+            Value::structure(message_extension_structure(extension)?),
+        )?;
+    }
+    Ok(batch_item)
 }
 
 fn message_extension_structure(
@@ -1756,7 +2073,7 @@ pub(super) fn validate_unknown_extension(critical: bool) -> Result<(), OutcomeVa
 // for the owned, decoded response tree on both success and error paths.
 #[allow(clippy::needless_pass_by_value)]
 fn validate_response(
-    request: &ClientBatch,
+    request_identities: &[BatchIdentity],
     options: &ValidatedBatchOptions,
     response: ResponseMessage,
     registry: &ClientExtensionRegistry,
@@ -1767,17 +2084,12 @@ fn validate_response(
         return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
     }
 
-    let request_identities = request
-        .items
-        .iter()
-        .map(BatchIdentity::from_request)
-        .collect::<Vec<_>>();
     let response_items = response.batch_items().collect::<Vec<_>>();
     let response_identities = response_items
         .iter()
         .map(BatchIdentity::from_response)
         .collect::<Vec<_>>();
-    let association = associate_batch_items(&request_identities, &response_identities)?;
+    let association = associate_batch_items(request_identities, &response_identities)?;
 
     let outcome_states = response_items
         .iter()
@@ -1788,29 +2100,11 @@ fn validate_response(
         .collect::<Vec<_>>();
     validate_pending_states(options.asynchronous_indicator, &outcome_states)?;
 
-    let mut ordered = Vec::with_capacity(request.items.len());
+    let mut ordered = Vec::with_capacity(request_identities.len());
     for (request_index, response_index) in association.into_iter().enumerate() {
         let item = response_items[response_index];
         let extensions = preserve_response_extensions(item, registry, limits)?;
-
-        let typed = DiscoverVersionsResponse::try_from_response_item(item).map_err(|error| {
-            ProtocolError::new(
-                ProtocolErrorKind::InvalidValue,
-                ProtocolCauseCategory::InvalidValue,
-                error,
-            )
-        })?;
-        let outcome = if typed.result().status().raw() == RESULT_STATUS_PENDING {
-            let correlation_value = item
-                .with_asynchronous_correlation_value(|bytes| Zeroizing::new(bytes.to_vec()))
-                .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?;
-            ClientBatchOutcome::Pending(PendingOutcome {
-                response: typed,
-                asynchronous_correlation_value: correlation_value,
-            })
-        } else {
-            ClientBatchOutcome::Completed(typed)
-        };
+        let outcome = response_outcome(request_identities[request_index].operation, item)?;
         #[cfg(test)]
         if let (Some(observer), ClientBatchOutcome::Pending(pending)) =
             (pending_owner_observer, &outcome)
@@ -1818,7 +2112,9 @@ fn validate_response(
             observer.expect_initialized_len(pending.asynchronous_correlation_value.len());
         }
         ordered.push(ClientBatchItemResponse {
-            unique_batch_item_id: request.items[request_index].unique_batch_item_id.clone(),
+            unique_batch_item_id: request_identities[request_index]
+                .unique_batch_item_id
+                .clone(),
             outcome,
             extensions,
             #[cfg(test)]
@@ -1826,6 +2122,94 @@ fn validate_response(
         });
     }
     Ok(ClientBatchResponse { items: ordered })
+}
+
+fn response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        DISCOVER_VERSIONS_OPERATION => {
+            let response = DiscoverVersionsResponse::try_from_response_item(item)
+                .map_err(invalid_typed_response)?;
+            operation_outcome(
+                ClientOperation::DiscoverVersions,
+                response.result().clone(),
+                item,
+                ClientBatchOutcome::Completed(response),
+            )
+        }
+        CREATE_OPERATION => {
+            let response =
+                CreateResponse::try_from_response_item(item).map_err(invalid_typed_response)?;
+            operation_outcome(
+                ClientOperation::Create,
+                response.result().clone(),
+                item,
+                ClientBatchOutcome::CreateCompleted(response),
+            )
+        }
+        CREATE_KEY_PAIR_OPERATION => {
+            let response = CreateKeyPairResponse::try_from_response_item(item)
+                .map_err(invalid_typed_response)?;
+            operation_outcome(
+                ClientOperation::CreateKeyPair,
+                response.result().clone(),
+                item,
+                ClientBatchOutcome::CreateKeyPairCompleted(response),
+            )
+        }
+        CREATE_SPLIT_KEY_OPERATION => {
+            let response = CreateSplitKeyResponse::try_from_response_item(item)
+                .map_err(invalid_typed_response)?;
+            operation_outcome(
+                ClientOperation::CreateSplitKey,
+                response.result().clone(),
+                item,
+                ClientBatchOutcome::CreateSplitKeyCompleted(response),
+            )
+        }
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn invalid_typed_response<E>(error: E) -> ProtocolError
+where
+    E: Error + 'static,
+{
+    ProtocolError::new(
+        ProtocolErrorKind::InvalidValue,
+        ProtocolCauseCategory::InvalidValue,
+        error,
+    )
+}
+
+fn pending_outcome(
+    operation: ClientOperation,
+    result: KmipOperationResult,
+    item: ResponseBatchItemView<'_>,
+) -> Result<PendingOutcome, ProtocolError> {
+    let asynchronous_correlation_value = item
+        .with_asynchronous_correlation_value(|bytes| Zeroizing::new(bytes.to_vec()))
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?;
+    Ok(PendingOutcome {
+        operation,
+        result,
+        asynchronous_correlation_value,
+    })
+}
+
+fn operation_outcome(
+    operation: ClientOperation,
+    result: KmipOperationResult,
+    item: ResponseBatchItemView<'_>,
+    completed: ClientBatchOutcome,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    if result.status().raw() == RESULT_STATUS_PENDING {
+        pending_outcome(operation, result, item).map(ClientBatchOutcome::Pending)
+    } else {
+        Ok(completed)
+    }
 }
 
 fn validate_follow_up_indicator(raw: Option<u32>) -> Result<(), ClientError> {
@@ -1876,6 +2260,12 @@ fn validate_async_response(
     let extensions = preserve_response_extensions(item, registry, limits)?;
 
     let (result, cancellation_result) = match kind {
+        ClientOperation::DiscoverVersions
+        | ClientOperation::Create
+        | ClientOperation::CreateKeyPair
+        | ClientOperation::CreateSplitKey => {
+            return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
+        }
         ClientOperation::Poll => {
             let typed =
                 PollResponse::try_from_response_item(item).map_err(asynchronous_operation_error)?;
@@ -2126,17 +2516,18 @@ fn copy_value(view: ValueView<'_>) -> Result<Value, ProtocolError> {
 
 #[cfg(test)]
 pub(super) fn decode_request_message_for_test(
-    request: &ClientBatch,
-    _limits: &CodecLimits,
+    request: ClientBatch,
+    limits: &CodecLimits,
 ) -> Result<RequestMessage, ProtocolError> {
-    let options = validate_batch_options(request).map_err(|error| {
+    let options = validate_batch_options(&request).map_err(|error| {
         ProtocolError::new(
             ProtocolErrorKind::InvalidValue,
             ProtocolCauseCategory::InvalidValue,
             error,
         )
     })?;
-    build_request_message(request, &options)
+    let maximum_response_size = maximum_response_size_for_batch(&request, limits);
+    build_request_message(request, &options, maximum_response_size)
 }
 
 #[cfg(test)]

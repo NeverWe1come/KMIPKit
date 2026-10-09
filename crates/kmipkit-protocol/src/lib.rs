@@ -3,7 +3,11 @@
 
 mod asynchronous;
 pub mod attribute;
+mod attribute_types_generated;
 mod cancel;
+mod create;
+mod create_key_pair;
+mod create_split_key;
 mod credential;
 mod discover_versions;
 mod error;
@@ -17,6 +21,11 @@ mod result;
 pub use asynchronous::AsynchronousOperationError;
 pub use attribute::{AttributeSet, AttributeSetError};
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
+pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
+pub use create_key_pair::{CreateKeyPairError, CreateKeyPairRequest, CreateKeyPairResponse};
+pub use create_split_key::{
+    CreateSplitKeyError, CreateSplitKeyRequest, CreateSplitKeyResponse, SplitKeyMethod,
+};
 pub use credential::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
     CredentialValidationErrorKind, CredentialValue, CredentialView, DeviceCredential,
@@ -42,6 +51,18 @@ pub use result::{
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
 mod discover_versions_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_tests.rs"]
+mod create_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_key_pair_tests.rs"]
+mod create_key_pair_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_split_key_tests.rs"]
+mod create_split_key_tests;
 
 #[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]

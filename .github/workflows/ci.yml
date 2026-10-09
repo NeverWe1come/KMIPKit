@@ -230,6 +230,10 @@ jobs:
         run: |
           cargo build --locked -p kmipkit-ffi
 
+      - name: Compile bilingual Rust client guide examples
+        id: compile-bilingual-rust-client-guide-examples
+        run: python scripts/test_user_guide_examples.py
+
       - name: Configure the C consumer with MSVC
         id: configure-the-c-consumer-with-msvc
         if: runner.os == 'Windows'
@@ -477,6 +481,10 @@ jobs:
       - name: Verify generated result mappings
         id: verify-generated-result-mappings
         run: python3 -B tools/normative_catalog/generate_result_values.py --repo-root . --check
+
+      - name: Verify generated attribute TTLV types
+        id: verify-generated-attribute-ttlv-types
+        run: python3 -B tools/normative_catalog/generate_attribute_types.py --repo-root . --check
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -799,11 +807,24 @@ jobs:
           mkdir -p coverage-java
           cp bindings/java/target/site/jacoco/jacoco.xml coverage-java/jacoco.xml
 
+      - name: Install pinned Python coverage dependencies
+        id: install-pinned-python-coverage-dependencies
+        shell: bash
+        run: |
+          uv pip install --requirement bindings/python/requirements-coverage.txt
+
+      - name: Verify normative generator line coverage
+        id: verify-normative-generator-line-coverage
+        shell: bash
+        run: |
+          mkdir -p coverage-normative
+          python -m coverage run --data-file=coverage-normative/.coverage --source=tools.normative_catalog.generate_attribute_types -m unittest tools.normative_catalog.tests.test_generate_attribute_types
+          python -m coverage report --data-file=coverage-normative/.coverage --include=tools/normative_catalog/generate_attribute_types.py --fail-under=95
+
       - name: Run Python coverage suite
         id: run-python-coverage-suite
         shell: bash
         run: |
-          uv pip install --requirement bindings/python/requirements-coverage.txt
           uv pip install --no-build-isolation --editable bindings/python
           mkdir -p coverage-python
           python -m pytest -q bindings/python/tests \

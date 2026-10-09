@@ -1,15 +1,17 @@
 # Ejecución tipada del cliente
 
 Esta guía describe la base de ejecución tipada introducida por KMIPKIT-0007 y
-las API actuales de operaciones. Para configurar una conexión de producción,
-consulta la [guía de transportes TLS y HTTPS](transportes-produccion.md).
+las API actuales, incluidas Create, Create Key Pair y Create Split Key. Para
+configurar una conexión de producción, consulta la [guía de transportes TLS y
+HTTPS](transportes-produccion.md).
 
 ## Límite de peticiones tipadas
 
 La API síncrona `kmipkit_client::Client::execute` acepta un `ClientBatch` que
-contiene únicamente variantes del conjunto cerrado `ClientRequest`. Esta
-primera parte incluye una operación: una petición Discover Versions explícita
-del cliente al servidor. Solo anuncia el par de versión KMIP 2.1 (2, 1),
+contiene únicamente variantes del conjunto cerrado `ClientRequest`. El cliente
+admite peticiones explícitas del cliente al servidor para Discover Versions,
+Create, Create Key Pair y Create Split Key. Discover Versions solo anuncia el
+par de versión KMIP 2.1 (2, 1),
 conforme a OASIS KMIP Specification v2.1 §6.1.16, Tablas 211–213. La API no admite valores TTLV
 genéricos `Item` o `Structure`, bytes de mensajes codificados ni hooks de
 conversión definidos por el llamador.
@@ -26,6 +28,81 @@ versión de protocolo 2.1 conforme a la decisión de producto registrada para
 compatibilidad retroactiva entre versiones principales conforme a KMIP §9.16.
 Consulta [ADR-0002](../../adr/0002-kmip-21-release-scope.md) para conocer el
 alcance de la versión.
+
+## Operaciones de creación en el servidor
+
+Create, Create Key Pair y Create Split Key envían peticiones tipadas elegidas
+por el llamador mediante el mismo escritor `ClientBatch`. Construir un lote no
+abre una conexión: pásalo a `Client::execute` cuando tengas un cliente de
+producción y una configuración de transporte. El comando
+`python scripts/test_user_guide_examples.py` compila todos los ejemplos
+marcados.
+
+### Create
+
+Indica el Object Type KMIP y un `AttributeSet`. Create siempre codifica la
+estructura Attributes externa obligatoria, aunque no tenga miembros. KMIPKit
+no elige atributos criptográficos ni una política de protección.
+
+```rust,kmipkit-test
+use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
+use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType};
+
+fn main() {
+    let request = CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new());
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Create(request)));
+    assert_eq!(batch.items().len(), 1);
+}
+```
+
+### Create Key Pair
+
+Los tres grupos de atributos se mantienen separados. Añade solo los valores
+elegidos por el llamador; KMIPKit no selecciona algoritmo, longitud,
+parámetros ni uso de las claves.
+
+```rust,kmipkit-test
+use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
+use kmipkit_protocol::{AttributeSet, CreateKeyPairRequest};
+
+fn main() {
+    let request = CreateKeyPairRequest::new()
+        .with_common_attributes(AttributeSet::new());
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::CreateKeyPair(request)));
+    assert_eq!(batch.items().len(), 1);
+}
+```
+
+### Create Split Key
+
+Indica el tipo de objeto, el número de partes, el umbral, el método de
+separación y la estructura Attributes obligatoria. El Unique Identifier de la
+clave de entrada solo se envía si se proporciona. Según la política FR-015 de
+KMIPKit, para Polynomial Sharing Prime Field el llamador debe proporcionar
+Prime Field Size explícitamente.
+
+```rust,kmipkit-test
+use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
+use kmipkit_protocol::{AttributeSet, CreateSplitKeyRequest, ObjectType, SplitKeyMethod};
+
+fn main() {
+    let request = CreateSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        3,
+        2,
+        SplitKeyMethod::XOR,
+        AttributeSet::new(),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::CreateSplitKey(request)));
+    assert_eq!(batch.items().len(), 1);
+}
+```
+
+Create Split Key puede devolver varios Unique Identifier. Su petición anuncia
+`Maximum Response Size` como el menor valor entre el límite local de bytes de
+respuesta y el mayor KMIP Integer con signo. El cliente también impone el
+límite local antes de entrar en el decoder TTLV, aunque el servidor ignore el
+tamaño anunciado.
 
 `Client::new` construye un cliente de producción a partir de una configuración
 inmutable del cliente y un `TransportConfig` validado. Acepta TTLV sobre TLS
@@ -156,13 +233,13 @@ se usa para codificar la petición y decodificar la respuesta. Su
 que se pasa al transporte, y el cliente comprueba la longitud recibida antes
 de decodificar. No hay un límite independiente por valor: el límite del
 mensaje completo también acota cada valor individual. Son límites locales de
-recursos, no campos de la cabecera KMIP.
+recursos que se aplican a todas las operaciones.
 
-Discover Versions no se clasifica como una respuesta probablemente grande,
-por lo que esta API no incluye el campo Maximum Response Size visible para el
-servidor. Ese campo es distinto del límite local de bytes. Las especificaciones
-de operaciones evalúan por separado el tamaño de sus respuestas. La [guía de
-transporte](transportes-produccion.md) documenta los plazos de conexión,
+Discover Versions no anuncia el campo Maximum Response Size visible para el
+servidor. Create Split Key sí lo anuncia porque su respuesta puede contener
+identificadores repetidos. Ese campo es distinto del límite local de bytes: el
+cliente sigue rechazando antes de decodificar cualquier respuesta que supere
+el límite configurado. La [guía de transporte](transportes-produccion.md) documenta los plazos de conexión,
 escritura, lectura e intercambio completo.
 
 ## Errores, estado de entrega y redacción

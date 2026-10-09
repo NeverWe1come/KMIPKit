@@ -1,7 +1,8 @@
 //! Synchronous typed KMIP client execution foundation for `KMIPKit`.
 //!
-//! The current typed request enum supports an explicit Discover Versions
-//! operation. The synchronous [`Client`] is constructed from an immutable
+//! The typed request enum supports explicit Discover Versions, Create,
+//! Create Key Pair, and Create Split Key operations. The synchronous
+//! [`Client`] is constructed from an immutable
 //! client configuration and validated production transport configuration;
 //! callers cannot inject an arbitrary transport or submit raw KMIP bytes.
 //! Timeout overrides are available through the options-bearing typed methods.
@@ -79,6 +80,18 @@ mod poll_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/cancel_execution_tests.rs"]
 mod cancel_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_execution_tests.rs"]
+mod create_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_key_pair_execution_tests.rs"]
+mod create_key_pair_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_split_key_execution_tests.rs"]
+mod create_split_key_execution_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/process_execution_tests.rs"]

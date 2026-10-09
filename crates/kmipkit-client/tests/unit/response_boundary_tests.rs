@@ -156,7 +156,7 @@ fn response_wrapper_debug_redacts_initialized_response_bytes() {
 #[test]
 fn discover_versions_omits_peer_response_cap_and_server_correlation_fields() {
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
-    let request = request_message_for_test(&batch, &CodecLimits::defaults())
+    let request = request_message_for_test(batch, &CodecLimits::defaults())
         .expect("typed Discover Versions request is valid");
 
     assert_eq!(request.header().maximum_response_size(), None);
