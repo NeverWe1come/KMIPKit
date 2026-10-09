@@ -18,6 +18,7 @@ mod create_key_pair;
 mod create_split_key;
 mod credential;
 mod delete_attribute;
+mod destroy;
 mod discover_versions;
 mod error;
 pub mod extension;
@@ -52,6 +53,7 @@ pub use credential::{
     SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
+pub use destroy::{DestroyError, DestroyRequest, DestroyResponse};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
