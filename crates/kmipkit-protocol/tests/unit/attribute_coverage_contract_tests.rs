@@ -96,9 +96,9 @@ fn successful_unique_identifier_payload() -> Structure {
 
 fn exercise_error<E: Error + Debug>(error: E) {
     let display = error.to_string();
-    assert!(!display.is_empty());
+    assert_ne!(display, "");
     if let Some(source) = error.source() {
-        assert!(!source.to_string().is_empty());
+        assert_ne!(source.to_string(), "");
     }
 }
 

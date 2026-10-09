@@ -133,7 +133,7 @@
 - [x] T045 [P] [US3] Add FR-013/SC-002 malformed and over-limit response cases for all seven operations, including received Reserved Tags rejected before generic `Item` construction under OASIS KMIP 2.1 Chapter 11/§11.56 allocation classification and accepted KMIPKit policy ADR-0011, in `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`.
 - [x] T046 [P] [US3] Add FR-013 redaction assertions for attribute values in `crates/kmipkit-protocol/tests/attribute_redaction.rs`.
 - [x] T047 [P] [US3] Add FR-012/SC-007 delivery-state, pending-result, and no-retry assertions across all seven operations in `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`.
-- [x] T048 [US3] Run `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`, `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`, `crates/kmipkit-protocol/tests/attribute_redaction.rs`, and `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`; record failing Red evidence in the implementation PR.
+- [ ] T048 [US3] Run `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`, `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`, `crates/kmipkit-protocol/tests/attribute_redaction.rs`, and `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`; record failing Red evidence in the implementation PR. Tests passed on the unchanged pre-existing implementation, so the required Red evidence is missing; do not close without an approved no-change disposition or task revision.
 
 ### Implementation for User Story 3 — Green
 
@@ -145,7 +145,7 @@
 
 ### Refactor for User Story 3
 
-- [x] T054 [US3] [Refactor] Refactor shared preservation, redaction, and client result conversion without reducing unknown-value coverage in `crates/kmipkit-protocol/src/attribute.rs` and `crates/kmipkit-client/src/execute.rs`.
+- [ ] T054 [US3] [Refactor] Refactor shared preservation, redaction, and client result conversion without reducing unknown-value coverage in `crates/kmipkit-protocol/src/attribute.rs` and `crates/kmipkit-client/src/execute.rs`. Review found the existing shared paths already centralized and no behavior refactor was warranted; the no-change disposition needs human acceptance before this task can close.
 - [x] T055 [US3] Re-run `crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs`, `crates/kmipkit-protocol/tests/unit/attribute_limits_tests.rs`, `crates/kmipkit-protocol/tests/attribute_redaction.rs`, and `crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs`; record Refactor evidence in a separate implementation commit.
 
 **Checkpoint**: All three user stories pass with no value loss, unbounded allocation, local state mutation, or secret-bearing diagnostics.
@@ -160,7 +160,7 @@
 - [x] T057 Complete FR-001–FR-015/SC-001–SC-008 requirement-to-OASIS-to-catalog-to-code-to-test mappings in `specs/016-attribute-operations/traceability.md` for SC-006. Evidence: FR and success-criteria matrices are complete; all 11 KMIPKIT-0016 catalog elements and 30 requirements now carry implementation and verification paths; 206 catalog tests passed (7 platform skips).
 - [x] T058 Regenerate catalog coverage output with `python tools/normative_catalog/report.py --repo-root . --write` and commit generated output only from the pinned tool in `specification/catalog/coverage-report.md`. Evidence: generator wrote report successfully after catalog references were added.
 - [x] T059 Run `python tools/normative_catalog/report.py --repo-root . --check` and resolve any unmapped applicable clause before review. Evidence: `--check` passed; `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v` passed 206 tests with seven platform skips.
-- [ ] T060 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, focused protocol/client tests, and `cargo llvm-cov --workspace --all-features`; record results and coverage exclusions in `specs/016-attribute-operations/traceability.md`.
+- [x] T060 Run `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, focused protocol/client tests, and `cargo llvm-cov --workspace --all-features`; record results and coverage exclusions in `specs/016-attribute-operations/traceability.md`.
 - [ ] T061 Verify compatibility and inspect the complete diff for generated-file provenance, unsafe code, raw-body/secret logging, and deviations from the seven-operation scope in `specs/016-attribute-operations/traceability.md`.
 - [ ] T062 Rebase/update the feature branch from the latest `release/1.0.0`, resolve conflicts, and rerun all required checks on the synchronized tree; record the final base/head SHAs in `specs/016-attribute-operations/traceability.md`.
 - [ ] T063 Open or update the draft PR from the synchronized feature branch using the terminal; include scope, reason, distinct Red/Green/Refactor evidence, verification results, risks, and known limitations.
