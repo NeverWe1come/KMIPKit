@@ -15,7 +15,7 @@ use crate::lifecycle_fixtures::{
 };
 use crate::{
     DestroyError, DestroyRequest, DestroyResponse, ResponseBatchItemView, ResponseMessage,
-    ResultReason, ResultStatus, UniqueIdentifier,
+    ResultReason, ResultStatus, ResultValidationError, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, Structure, ValueView};
 
@@ -245,4 +245,34 @@ fn response_debug_redacts_the_unique_identifier_value() {
         .expect("valid Destroy response retains the Unique Identifier");
 
     assert_debug_redacts_identifier(&response, sentinel);
+}
+
+#[test]
+fn request_getter_preserves_the_original_optional_identifier() {
+    let identifier = UniqueIdentifier::TextString("destroy-getter-identifier".to_owned());
+    let request = DestroyRequest::new(Some(identifier.clone()));
+
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    assert!(DestroyRequest::new(None).unique_identifier().is_none());
+}
+
+#[test]
+fn error_display_and_source_cover_each_public_variant() {
+    let unexpected = DestroyError::UnexpectedOperation;
+    let missing = DestroyError::MissingResultStatus;
+    let invalid = DestroyError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason);
+    let malformed = DestroyError::MalformedSuccessPayload;
+
+    assert_eq!(unexpected.to_string(), "response item is not Destroy");
+    assert_eq!(missing.to_string(), "Destroy result status is missing");
+    assert_eq!(
+        invalid.to_string(),
+        "Destroy operation result is invalid: Success forbids a Result Reason"
+    );
+    assert_eq!(
+        malformed.to_string(),
+        "successful Destroy response payload is malformed"
+    );
+    assert!(std::error::Error::source(&invalid).is_some());
+    assert!(std::error::Error::source(&unexpected).is_none());
 }

@@ -14,7 +14,7 @@ use crate::lifecycle_fixtures::{
 };
 use crate::{
     RecoverError, RecoverRequest, RecoverResponse, ResponseBatchItemView, ResponseMessage,
-    ResultReason, ResultStatus, UniqueIdentifier,
+    ResultReason, ResultStatus, ResultValidationError, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, Structure, ValueView};
 
@@ -184,4 +184,34 @@ fn response_debug_redacts_the_unique_identifier_value() {
         .expect("valid Recover response retains the Unique Identifier");
 
     assert_debug_redacts_identifier(&response, sentinel);
+}
+
+#[test]
+fn request_getter_preserves_the_original_optional_identifier() {
+    let identifier = UniqueIdentifier::TextString("recover-getter-identifier".to_owned());
+    let request = RecoverRequest::new(Some(identifier.clone()));
+
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    assert!(RecoverRequest::new(None).unique_identifier().is_none());
+}
+
+#[test]
+fn error_display_and_source_cover_each_public_variant() {
+    let unexpected = RecoverError::UnexpectedOperation;
+    let missing = RecoverError::MissingResultStatus;
+    let invalid = RecoverError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason);
+    let malformed = RecoverError::MalformedSuccessPayload;
+
+    assert_eq!(unexpected.to_string(), "response item is not Recover");
+    assert_eq!(missing.to_string(), "Recover result status is missing");
+    assert_eq!(
+        invalid.to_string(),
+        "Recover operation result is invalid: Success forbids a Result Reason"
+    );
+    assert_eq!(
+        malformed.to_string(),
+        "successful Recover response payload is malformed"
+    );
+    assert!(std::error::Error::source(&invalid).is_some());
+    assert!(std::error::Error::source(&unexpected).is_none());
 }

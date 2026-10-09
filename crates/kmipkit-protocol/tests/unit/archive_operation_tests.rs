@@ -14,7 +14,7 @@ use crate::lifecycle_fixtures::{
 };
 use crate::{
     ArchiveError, ArchiveRequest, ArchiveResponse, ResponseBatchItemView, ResponseMessage,
-    ResultReason, ResultStatus, UniqueIdentifier,
+    ResultReason, ResultStatus, ResultValidationError, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, Structure, ValueView};
 
@@ -184,4 +184,34 @@ fn response_debug_redacts_the_unique_identifier_value() {
         .expect("valid Archive response retains the Unique Identifier");
 
     assert_debug_redacts_identifier(&response, sentinel);
+}
+
+#[test]
+fn request_getter_preserves_the_original_optional_identifier() {
+    let identifier = UniqueIdentifier::TextString("archive-getter-identifier".to_owned());
+    let request = ArchiveRequest::new(Some(identifier.clone()));
+
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    assert!(ArchiveRequest::new(None).unique_identifier().is_none());
+}
+
+#[test]
+fn error_display_and_source_cover_each_public_variant() {
+    let unexpected = ArchiveError::UnexpectedOperation;
+    let missing = ArchiveError::MissingResultStatus;
+    let invalid = ArchiveError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason);
+    let malformed = ArchiveError::MalformedSuccessPayload;
+
+    assert_eq!(unexpected.to_string(), "response item is not Archive");
+    assert_eq!(missing.to_string(), "Archive result status is missing");
+    assert_eq!(
+        invalid.to_string(),
+        "Archive operation result is invalid: Success forbids a Result Reason"
+    );
+    assert_eq!(
+        malformed.to_string(),
+        "successful Archive response payload is malformed"
+    );
+    assert!(std::error::Error::source(&invalid).is_some());
+    assert!(std::error::Error::source(&unexpected).is_none());
 }
