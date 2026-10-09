@@ -18,6 +18,7 @@ tests, and the conformance matrix.
 ## Design
 
 - [Project definition](design/project-definition.md)
+- [Legacy KMIP version compatibility research](design/kmip-legacy-version-feasibility.md)
 - [Roadmap](roadmap.md)
 
 ## User guides
