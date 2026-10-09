@@ -230,6 +230,17 @@ fn destroy_success_returns_server_result_without_simulating_object_state() {
             .response()
             .destroy()
             .expect("the response view retains the Destroy response");
+        let response_view = outcome.response();
+        assert_eq!(response_view.result(), typed.result());
+        assert!(response_view.activate().is_none());
+        assert!(response_view.archive().is_none());
+        assert!(response_view.recover().is_none());
+        assert!(response_view.destroy().is_some());
+        assert!(outcome.activate_response().is_none());
+        assert!(outcome.archive_response().is_none());
+        assert!(outcome.recover_response().is_none());
+        assert!(outcome.destroy_response().is_some());
+        assert!(format!("{outcome}").starts_with("Destroy("));
         assert_eq!(outcome.operation(), ClientOperation::Destroy);
         assert_eq!(outcome.result().status().raw(), SUCCESS);
         assert!(!format!("{outcome:?}").contains(response_identifier));
@@ -365,6 +376,12 @@ fn destroy_pending_preserves_exact_correlation_without_poll_or_follow_up() {
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("the permitted server Pending result remains Pending");
     };
+    let response_view = item.outcome().response();
+    assert_eq!(response_view.result(), pending.result());
+    assert!(response_view.activate().is_none());
+    assert!(response_view.archive().is_none());
+    assert!(response_view.recover().is_none());
+    assert!(response_view.destroy().is_some());
 
     assert_eq!(item.unique_batch_item_id(), Some(REQUEST_BATCH_ID));
     assert_eq!(pending.operation(), ClientOperation::Destroy);

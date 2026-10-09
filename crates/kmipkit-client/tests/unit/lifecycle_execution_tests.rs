@@ -4,7 +4,9 @@
 //! verify accepted generic data retention; they are not official OASIS Test
 //! Cases and do not imply server policy for unknown result values.
 
-use kmipkit_protocol::{ActivateRequest, ArchiveRequest, DestroyRequest, RecoverRequest};
+use kmipkit_protocol::{
+    ActivateRequest, ArchiveRequest, DestroyRequest, RecoverRequest, UniqueIdentifier,
+};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Value, ValueView};
@@ -35,6 +37,35 @@ const FUTURE_EXTENSION_TAG: u32 = 0x0042_0174;
 const UNKNOWN_STATUS: u32 = 0xA1B2_C3D4;
 const UNKNOWN_REASON: u32 = 0xC3D4_E5F6;
 const UNKNOWN_EXTENSION_ENUMERATION: u32 = 0xE5F6_A1B2;
+
+#[test]
+fn lifecycle_request_constructors_keep_operation_and_redact_identifier() {
+    let identifier = UniqueIdentifier::TextString("LIFECYCLE_REQUEST_SENTINEL".to_owned());
+    let requests = [
+        (
+            ClientRequest::activate(ActivateRequest::new(Some(identifier.clone()))),
+            "Activate([REDACTED])",
+        ),
+        (
+            ClientRequest::archive(ArchiveRequest::new(Some(identifier.clone()))),
+            "Archive([REDACTED])",
+        ),
+        (
+            ClientRequest::destroy(DestroyRequest::new(Some(identifier.clone()))),
+            "Destroy([REDACTED])",
+        ),
+        (
+            ClientRequest::recover(RecoverRequest::new(Some(identifier))),
+            "Recover([REDACTED])",
+        ),
+    ];
+
+    for (request, expected_debug) in requests {
+        let debug = format!("{request:?}");
+        assert_eq!(debug, expected_debug);
+        assert!(!debug.contains("LIFECYCLE_REQUEST_SENTINEL"));
+    }
+}
 
 #[test]
 fn lifecycle_results_preserve_unknown_status_reason_and_accepted_extension_values() {

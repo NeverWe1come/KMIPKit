@@ -229,6 +229,17 @@ fn activate_success_returns_server_result_without_simulating_object_state() {
             .response()
             .activate()
             .expect("the response view retains the Activate response");
+        let response_view = outcome.response();
+        assert_eq!(response_view.result(), typed.result());
+        assert!(response_view.activate().is_some());
+        assert!(response_view.archive().is_none());
+        assert!(response_view.recover().is_none());
+        assert!(response_view.destroy().is_none());
+        assert!(outcome.activate_response().is_some());
+        assert!(outcome.archive_response().is_none());
+        assert!(outcome.recover_response().is_none());
+        assert!(outcome.destroy_response().is_none());
+        assert!(format!("{outcome}").starts_with("Activate("));
         assert_eq!(outcome.operation(), ClientOperation::Activate);
         assert_eq!(outcome.result().status().raw(), SUCCESS);
         assert!(!format!("{outcome:?}").contains(response_identifier));
@@ -368,6 +379,12 @@ fn activate_pending_preserves_exact_correlation_without_poll_or_follow_up() {
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("the permitted server Pending result remains Pending");
     };
+    let response_view = item.outcome().response();
+    assert_eq!(response_view.result(), pending.result());
+    assert!(response_view.activate().is_some());
+    assert!(response_view.archive().is_none());
+    assert!(response_view.recover().is_none());
+    assert!(response_view.destroy().is_none());
 
     assert_eq!(item.unique_batch_item_id(), Some(REQUEST_BATCH_ID));
     assert_eq!(pending.operation(), ClientOperation::Activate);
