@@ -262,6 +262,42 @@ class MultiLanguageCoverageTests(unittest.TestCase):
         self.assertTrue(any(result.startswith("kmipkit-ffi coverage:") for result in results))
         self.assertFalse(any(result.startswith("Workspace coverage:") for result in results))
 
+    def test_changed_ffi_lines_use_the_c_abi_report_when_rust_and_ffi_are_selected(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/lib.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "".join(f"pub fn operation_{line}() {{}}\n" for line in range(1, 21)),
+                encoding="utf-8",
+            )
+            rust_report = {relative: {line: 1 for line in range(1, 21)}}
+            platform_reports = {platform: rust_report for platform in ("ubuntu", "windows", "macos")}
+            ffi_report = {relative: {line: int(line != 2) for line in range(1, 21)}}
+            diff = "\n".join(
+                (
+                    f"diff --git a/{relative} b/{relative}",
+                    f"--- a/{relative}",
+                    f"+++ b/{relative}",
+                    "@@ -1 +1,2 @@",
+                    " pub fn operation_1() {}",
+                    "+pub fn operation_2() {}",
+                )
+            )
+
+            with self.assertRaisesRegex(
+                GATE.CoverageDataError, "Changed production code coverage 0/1.*95%"
+            ):
+                GATE._evaluate_coverage(
+                    root,
+                    platform_reports,
+                    diff,
+                    ffi_c_consumer_report=ffi_report,
+                    required_scopes={"rust", "ffi-c"},
+                )
+
     def test_changed_java_python_and_jni_production_lines_share_the_95_percent_gate(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:

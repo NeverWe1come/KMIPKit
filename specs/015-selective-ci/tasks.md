@@ -44,8 +44,8 @@
 
 ## Phase 4: REFACTOR and review
 
-- [ ] T017 Refactor classifier, coverage scope selection, and Summary policy for readability without changing approved output or routing; retain full regression coverage.
-- [ ] T018 Re-run focused and full available verification, workflow/security review, coverage fail-closed checks, docs traceability, and `git diff --check`; record REFACTOR evidence and commit separately with `git commit -s`.
+- [x] T017 Refactor the changed-source coverage scope resolution into an explicit helper with C ABI precedence, clarify classifier record validation, and remove the unused job argument from Summary skip rendering. A new FFI regression test failed before the change and passed afterward; the multi-language coverage suite passed 16/16.
+- [x] T018 Re-run focused and full available verification, workflow/security review, coverage fail-closed checks, docs traceability, and `git diff --check`; record REFACTOR evidence and commit separately with `git commit -s`. Evidence: all scripts tests passed (254 tests, 26 optional skips); 206 normative catalog tests passed with 7 platform skips; 16 multi-language coverage tests and 67 impact/Summary/workflow tests passed; workflow YAML parsed; generators and docs report checked; `git diff --check` passed. Full `cargo llvm-cov` was attempted and is limited by Windows loopback socket denial (OS error 10013), recorded under T016.
 - [ ] T019 Rebase on the latest remote `release/1.0.0`, confirm it is the merge base, verify the CI configuration change selects full CI, push the feature branch, and prepare a draft PR with Red/Green/Refactor evidence and known limitations. Never merge.
 
 ## Required Scenario Matrix

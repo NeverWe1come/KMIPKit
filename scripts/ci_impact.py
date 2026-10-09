@@ -188,7 +188,8 @@ def classify_changes(
             kind = status[:1]
             if kind not in KNOWN_STATUSES and kind not in {"R", "C"}:
                 raise ImpactPlanError(f"A changed-file record has an unsupported status: {status!r}.")
-            if kind in {"R", "C"} and len(paths) != 2 or kind not in {"R", "C"} and len(paths) != 1:
+            expected_path_count = 2 if kind in {"R", "C"} else 1
+            if len(paths) != expected_path_count:
                 raise ImpactPlanError(f"Changed-file status {status!r} has the wrong number of paths.")
             for raw_path in paths:
                 if not isinstance(raw_path, str):

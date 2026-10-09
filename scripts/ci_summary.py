@@ -140,7 +140,7 @@ def _impact_plan(
     return plan, "", True
 
 
-def _skip_reason(job_id: str, plan: Mapping[str, Any]) -> str:
+def _skip_reason(plan: Mapping[str, Any]) -> str:
     classes = ", ".join(str(value) for value in plan.get("classes", [])) or "no classified component"
     return f"impact plan selected {classes}; this job is not affected"
 
@@ -234,7 +234,7 @@ def _pull_request_rows(
             rendered = "❓ MISSING — no current-run result"
             passed = False
         elif result == "skipped" and not selected and plan is not None:
-            rendered = f"⚪ Not affected — {_safe_text(_skip_reason(job_id, plan))}"
+            rendered = f"⚪ Not affected — {_safe_text(_skip_reason(plan))}"
             passed = True
         elif result == "skipped":
             rendered = "❌ SKIPPED unexpectedly — selected by the impact plan"

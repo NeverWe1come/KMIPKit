@@ -1546,32 +1546,20 @@ def _evaluate_scoped_coverage(
         )
 
     changed = parse_added_production_lines(diff)
-    selected_sources: set[str] = set()
-    for scope, report in scoped_reports.items():
-        selected_sources.update(report)
+    source_scopes = {
+        source: _coverage_scope_for_source(source, scoped_reports)
+        for source in changed
+    }
     changed_executable = {
         (source, line)
         for source, line_numbers in changed.items()
-        if source in selected_sources
+        if source_scopes[source] is not None
         for line in line_numbers
-        if line in scoped_reports.get(
-            "rust" if source.endswith(".rs") and "rust" in scoped_reports else
-            "ffi-c" if source.startswith("crates/kmipkit-ffi/src/") and "ffi-c" in scoped_reports else
-            "java" if source.startswith("bindings/java/src/") else
-            "python" if source.startswith("bindings/python/src/") else
-            "jni",
-            {},
-        ).get(source, {})
+        if line in scoped_reports[source_scopes[source]].get(source, {})
     }
     if changed_executable:
         covered = sum(
-            scoped_reports[
-                "rust" if source.endswith(".rs") and "rust" in scoped_reports else
-                "ffi-c" if source.startswith("crates/kmipkit-ffi/src/") and "ffi-c" in scoped_reports else
-                "java" if source.startswith("bindings/java/src/") else
-                "python" if source.startswith("bindings/python/src/") else
-                "jni"
-            ][source][line] > 0
+            scoped_reports[source_scopes[source]][source][line] > 0
             for source, line in changed_executable
         )
         extra = sum(count for source, count in summary_excess.items() if source in changed)
@@ -1582,6 +1570,23 @@ def _evaluate_scoped_coverage(
     else:
         results.append("Changed executable production lines: not applicable.")
     return results
+
+
+def _coverage_scope_for_source(
+    source: str, scoped_reports: Mapping[str, Mapping[str, Mapping[int, int]]]
+) -> str | None:
+    """Resolve a changed source to its selected report, preferring ABI coverage for FFI."""
+    if source.startswith("crates/kmipkit-ffi/src/") and "ffi-c" in scoped_reports:
+        return "ffi-c"
+    if source.endswith(".rs") and "rust" in scoped_reports:
+        return "rust"
+    if source.startswith("bindings/java/src/") and "java" in scoped_reports:
+        return "java"
+    if source.startswith("bindings/python/src/") and "python" in scoped_reports:
+        return "python"
+    if source.startswith("bindings/java/native/") and "jni" in scoped_reports:
+        return "jni"
+    return None
 
 
 def _command_preflight(args: argparse.Namespace) -> int:
