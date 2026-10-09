@@ -40,7 +40,9 @@ Do not execute implementation tasks until the KMIPKIT-0017 specification PR is a
 
 - [ ] T010 [US1] Add failing Table 220 tests for each optional field, omission, explicit Enumeration values, and request field order in crates/kmipkit-protocol/tests/unit/get_tests.rs
 - [ ] T011 [US1] Add failing Table 221/222 tests for success/error outcomes, required-field cardinality and types, applicable Result Reasons, unknown values, and nested Any Object preservation including repeated fields in crates/kmipkit-protocol/tests/unit/get_tests.rs
-- [ ] T012 [US1] Add failing fake-transport tests for one exchange, Pending/result preservation, delivery state, and no automatic retry in crates/kmipkit-client/tests/unit/object_read_execution_tests.rs
+- [ ] T012 [US1] Add failing fake-transport tests for one exchange, Pending/result preservation, delivery state, and no automatic retry; include a Get with omitted Unique Identifier after a preceding batch operation
+  establishes server-side ID Placeholder, and assert batch order and no client-side identifier synthesis in
+  crates/kmipkit-client/tests/unit/object_read_execution_tests.rs
 - [ ] T013 Record Red commands/results and commit Get tests before production changes in the KMIPKIT-0017 implementation branch
 
 ### Implementation for User Story 1
