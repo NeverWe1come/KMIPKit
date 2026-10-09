@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+import runpy
+import sys
+import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
-import runpy
-import sys
-import tempfile
 from unittest.mock import patch
 
 import tools.normative_catalog.generate_attribute_types as generator
@@ -87,6 +87,10 @@ def small_catalog() -> dict[str, object]:
 
 
 class AttributeTypeGeneratorTests(unittest.TestCase):
+    def assert_catalog_rejected(self, catalog: dict[str, object]) -> None:
+        with self.assertRaises(ValueError):
+            render_rust(catalog)
+
     def test_renders_sorted_catalog_types_and_all_permitted_wire_forms(self) -> None:
         rendered = render_rust(small_catalog())
 
@@ -152,8 +156,7 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
 
         for catalog in invalid_catalogs:
             with self.subTest(catalog=catalog):
-                with self.assertRaises(ValueError):
-                    render_rust(catalog)
+                self.assert_catalog_rejected(catalog)
 
     def test_rejects_malformed_attribute_encodings_and_vendor_shape(self) -> None:
         for source_encoding in ("", "  ", 12):
@@ -252,13 +255,13 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
     def test_direct_cli_check_exercises_script_import_path(self) -> None:
         script = REPOSITORY_ROOT / "tools" / "normative_catalog" / "generate_attribute_types.py"
         arguments = [str(script), "--repo-root", str(REPOSITORY_ROOT), "--check"]
-        with patch.object(sys, "argv", arguments), redirect_stdout(StringIO()):
-            sys.path.insert(0, str(script.parent))
-            try:
-                with self.assertRaises(SystemExit) as result:
-                    runpy.run_path(str(script), run_name="__main__")
-            finally:
-                sys.path.pop(0)
+        with (
+            patch.object(sys, "argv", arguments),
+            patch.object(sys, "path", [str(script.parent), *sys.path]),
+            redirect_stdout(StringIO()),
+            self.assertRaises(SystemExit) as result,
+        ):
+            runpy.run_path(str(script), run_name="__main__")
         self.assertEqual(result.exception.code, 0)
 
 
