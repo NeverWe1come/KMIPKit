@@ -46,9 +46,12 @@ Split Key stopped during test setup for the same reason. The suite is not a
 full KMIP 2.1 conformance result. The local Compose image is pinned to
 `ghcr.io/cosmian/kms:5.28.0` and resolved in the original deployment to
 `sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`.
-Multiplatform coverage and CI/coverage gates remain pending.
+The hosted GitHub CI workflow, including the multi-platform coverage gate,
+passed on 2026-10-09. The PR remains a draft because Create and Create Split
+Key are blocked by the separately scoped Create builder defect.
 
 The local `cargo llvm-cov --workspace --all-features --summary-only` run on
 2026-10-09 completed with 83.80% line coverage across this Windows workspace
-run. The project's 90% workspace threshold and hosted multi-platform coverage
-aggregation are not yet satisfied by this local result.
+run. This single-platform raw report is not the project's hosted aggregate;
+the cross-platform coverage workflow collected platform and adapter reports
+and passed the 90% workspace threshold.
