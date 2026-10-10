@@ -116,7 +116,7 @@ impl StructureView<'_> {
     pub fn try_clone(&self) -> Result<Structure, ModelError> {
         let mut clone = Structure::new();
         for item in self.children {
-            let value = item.with_value(crate::value::clone_value_view)?;
+            let value = item.with_value(crate::clone_value_view)?;
             clone.try_push(Item::new(item.tag(), value)?)?;
         }
         Ok(clone)

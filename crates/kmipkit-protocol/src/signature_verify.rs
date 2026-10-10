@@ -4,7 +4,7 @@ use std::fmt;
 
 use kmipkit_ttlv::{Structure, StructureView, Value};
 
-use crate::cryptographic_operation as common;
+use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     CryptographicOperationError, KmipOperationResult, OperationData, ProtocolError,
     ResponseBatchItemView, SecretBytes, UniqueIdentifier, ValidityIndicator,
@@ -203,7 +203,7 @@ impl fmt::Debug for SignatureVerifyRequest {
 #[derive(Debug)]
 pub struct SignatureVerifyResponse {
     result: KmipOperationResult,
-    response_ttlv: Structure,
+    response_ttlv: OwnedResponseTtlv,
     unique_identifier: Option<UniqueIdentifier>,
     validity_indicator: Option<ValidityIndicator>,
     recovered_data: Option<SecretBytes>,
@@ -295,7 +295,7 @@ impl SignatureVerifyResponse {
     /// Lends the complete ordered generic TTLV batch item, including unknown
     /// fields and values that the typed accessors do not interpret.
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        callback(self.response_ttlv.view())
+        self.response_ttlv.with_ttlv(callback)
     }
 
     /// Returns the required Unique Identifier from a successful response.

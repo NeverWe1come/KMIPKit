@@ -57,3 +57,4 @@ pub use item::Item;
 pub use structure::{Structure, StructureView};
 pub use tag::{RawTag, Tag};
 pub use value::{ItemType, Value, ValueView, try_clone_value};
+pub(crate) use value::clone_value_view;

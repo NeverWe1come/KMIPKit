@@ -4,7 +4,7 @@ use std::fmt;
 
 use kmipkit_ttlv::{Structure, StructureView};
 
-use crate::cryptographic_operation as common;
+use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     CryptographicOperationError, CryptographicOperationErrorKind,
     CryptographicOperationResponseContext, KmipOperationResult, OperationData, ProtocolError,
@@ -149,7 +149,7 @@ impl fmt::Debug for MacRequest {
 #[derive(Debug)]
 pub struct MacResponse {
     result: KmipOperationResult,
-    response_ttlv: Structure,
+    response_ttlv: OwnedResponseTtlv,
     unique_identifier: Option<UniqueIdentifier>,
     mac_data: Option<SecretBytes>,
     correlation_value: Option<SecretBytes>,
@@ -243,7 +243,7 @@ impl MacResponse {
     /// Lends the complete ordered generic TTLV batch item, including unknown
     /// fields and values that the typed accessors do not interpret.
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        callback(self.response_ttlv.view())
+        self.response_ttlv.with_ttlv(callback)
     }
 
     /// Returns the Unique Identifier reported by a successful response.

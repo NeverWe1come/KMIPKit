@@ -308,10 +308,23 @@ pub(crate) fn parse_result(
 pub(crate) fn clone_response_item(
     item: ResponseBatchItemView<'_>,
     operation: &'static str,
-) -> Result<Structure, CryptographicOperationError> {
+) -> Result<OwnedResponseTtlv, CryptographicOperationError> {
     match item.with_ttlv(|ttlv| ttlv.try_clone()) {
-        Some(Ok(ttlv)) => Ok(ttlv),
+        Some(Ok(ttlv)) => Ok(OwnedResponseTtlv { ttlv }),
         Some(Err(_)) | None => Err(response_shape_error(operation)),
+    }
+}
+
+/// An owned, zeroizing copy of one generic response batch item.
+#[derive(Debug)]
+pub(crate) struct OwnedResponseTtlv {
+    ttlv: Structure,
+}
+
+impl OwnedResponseTtlv {
+    /// Lends the complete generic response item for callback-scoped access.
+    pub(crate) fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
+        callback(self.ttlv.view())
     }
 }
 
