@@ -12,8 +12,8 @@
 use crate::async_operation_fixtures::response_message;
 use crate::operation_test_support::item;
 use crate::{
-    DecryptResponse, ResponseBatchItemView, ResponseMessage, ResultStatus, SecretBytes,
-    UniqueIdentifier,
+    DecryptError, DecryptResponse, ResponseBatchItemView, ResponseMessage, ResultStatus,
+    ResultValidationError, SecretBytes, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Structure, Value};
 
@@ -220,4 +220,45 @@ fn response_converters_reject_items_for_a_different_operation() {
         panic!("the Decrypt pending converter rejects an Encrypt response item");
     };
     assert_eq!(pending_error, crate::DecryptError::UnexpectedOperation);
+}
+
+#[test]
+fn error_display_and_source_cover_each_public_variant() {
+    let invalid = DecryptError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason);
+    let errors = [
+        (
+            DecryptError::UnexpectedOperation,
+            "response item is not Decrypt",
+        ),
+        (
+            DecryptError::MissingResultStatus,
+            "Decrypt result status is missing",
+        ),
+        (
+            DecryptError::PendingOutcomeRequired,
+            "Decrypt result is Pending; route it through the shared PendingOutcome path",
+        ),
+        (
+            DecryptError::NotPendingOutcome,
+            "Decrypt result is not Pending",
+        ),
+        (
+            invalid,
+            "Decrypt operation result is invalid: Success forbids a Result Reason",
+        ),
+        (
+            DecryptError::MissingSuccessPayload,
+            "successful Decrypt response payload is missing",
+        ),
+        (
+            DecryptError::MalformedSuccessPayload,
+            "successful Decrypt response payload is malformed",
+        ),
+    ];
+
+    for (error, expected) in errors {
+        assert_eq!(error.to_string(), expected);
+    }
+    assert!(std::error::Error::source(&invalid).is_some());
+    assert!(std::error::Error::source(&DecryptError::UnexpectedOperation).is_none());
 }

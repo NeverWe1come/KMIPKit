@@ -13,8 +13,8 @@
 use crate::async_operation_fixtures::response_message;
 use crate::operation_test_support::item;
 use crate::{
-    EncryptResponse, ResponseBatchItemView, ResponseMessage, ResultStatus, SecretBytes,
-    UniqueIdentifier,
+    EncryptError, EncryptResponse, ResponseBatchItemView, ResponseMessage, ResultStatus,
+    ResultValidationError, SecretBytes, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Structure, Value};
 
@@ -249,4 +249,45 @@ fn response_converters_reject_items_for_a_different_operation() {
         panic!("the Encrypt pending converter rejects a Decrypt response item");
     };
     assert_eq!(pending_error, crate::EncryptError::UnexpectedOperation);
+}
+
+#[test]
+fn error_display_and_source_cover_each_public_variant() {
+    let invalid = EncryptError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason);
+    let errors = [
+        (
+            EncryptError::UnexpectedOperation,
+            "response item is not Encrypt",
+        ),
+        (
+            EncryptError::MissingResultStatus,
+            "Encrypt result status is missing",
+        ),
+        (
+            EncryptError::PendingOutcomeRequired,
+            "Encrypt result is Pending; route it through the shared PendingOutcome path",
+        ),
+        (
+            EncryptError::NotPendingOutcome,
+            "Encrypt result is not Pending",
+        ),
+        (
+            invalid,
+            "Encrypt operation result is invalid: Success forbids a Result Reason",
+        ),
+        (
+            EncryptError::MissingSuccessPayload,
+            "successful Encrypt response payload is missing",
+        ),
+        (
+            EncryptError::MalformedSuccessPayload,
+            "successful Encrypt response payload is malformed",
+        ),
+    ];
+
+    for (error, expected) in errors {
+        assert_eq!(error.to_string(), expected);
+    }
+    assert!(std::error::Error::source(&invalid).is_some());
+    assert!(std::error::Error::source(&EncryptError::UnexpectedOperation).is_none());
 }
