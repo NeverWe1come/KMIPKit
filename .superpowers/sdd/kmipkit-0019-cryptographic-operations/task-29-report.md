@@ -8,6 +8,8 @@ Branch: `feature/KMIPKIT-0019-encrypt-decrypt-implementation`
 
 Added two fake-transport client contracts in `crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs` for both Encrypt and Decrypt. The accepted form has Init Indicator=true, Final Indicator=true, no Correlation Value, and Data. It asserts exactly one exchange and inspects the transmitted TTLV to verify both indicators and the exact Data bytes. The Data-omission form asserts the exact sanitized `Validation(InvalidInput, NotSent)` display and zero exchanges while KMIPKIT-DISC-045 remains open. The tests add no client state and do not alter production code.
 
+QA review identified a P2 evidence gap: the accepted true/true case did not explicitly assert the single-part form omits Correlation Value. Added `assert_payload_field_absent(&state, 0, CORRELATION_VALUE)` inside the shared operation loop, covering both Encrypt and Decrypt. This pins the expected no-correlation request shape; the assertion remains compile-Red until the planned client API is available. The correction is committed separately and awaits QA re-review.
+
 T027/T028/T029 expected-client tests are compile-Red because `ClientRequest::{Encrypt, Decrypt}` and `ClientResponseView::{encrypt, decrypt}` are deliberately absent until later tasks T031/T038. As a result, client runtime assertions have not run; these tests specify behavior for the future typed dispatch and do not establish it as currently passing. The protocol request-builder matrix remains a separate pre-encoding layer: its valid case passes, while its invalid case fails because validation is not implemented yet.
 
 ## Focused protocol matrix

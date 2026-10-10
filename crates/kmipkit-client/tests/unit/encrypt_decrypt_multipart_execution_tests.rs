@@ -295,6 +295,7 @@ fn client_accepts_framed_single_part_with_data_for_encrypt_and_decrypt() {
 
         assert_eq!(response.len(), 1);
         assert_request_count(&state, 1);
+        assert_payload_field_absent(&state, 0, CORRELATION_VALUE);
         assert_payload_boolean(&state, 0, INIT_INDICATOR, true);
         assert_payload_boolean(&state, 0, FINAL_INDICATOR, true);
         assert_payload_byte_string(&state, 0, DATA, FRAMED_SINGLE_DATA);
