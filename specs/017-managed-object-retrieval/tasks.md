@@ -49,6 +49,8 @@ T013 Red evidence: T010 commit `1badf7dd` adds the Table 220 request cases; `car
 
 Red contract correction: commit `6236b76d` changes the T012 success assertion to compare `GetResponse::object_type()` with `Some(ObjectType::from_raw(2))`, matching the approved public Rust contract and protocol response tests. Re-running `cargo test -p kmipkit-client --lib object_read_execution_tests` still fails only because the Get request and client mapping APIs are absent (15 missing-API diagnostics); `cargo fmt --all --check` and `git diff --check` pass.
 
+Red fixture correction: commit `377b66e9` binds each `StructureView` before borrowing its children and uses the concrete `GetError` in the Get test helper return types; all behavior assertions are retained. With the production draft stashed, `cargo test -p kmipkit-protocol --lib get_tests` fails only on missing Get error/request/response/selector exports, and `cargo test -p kmipkit-client --lib object_read_execution_tests` fails only on 15 missing Get request/operation/mapping APIs. `cargo fmt --all` formats the corrected tests; `cargo fmt --all --check` and `git diff --check` are recorded after this evidence update.
+
 ### Implementation for User Story 1
 
 - [ ] T014 [US1] Implement raw-preserving Get selectors, builder/accessors, and ordered Table 220 payload conversion in crates/kmipkit-protocol/src/get.rs
