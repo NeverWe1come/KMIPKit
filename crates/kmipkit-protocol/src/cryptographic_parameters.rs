@@ -1,6 +1,6 @@
 //! Shared, locally knowable Cryptographic Parameters validation.
 
-use kmipkit_ttlv::{Structure, ValueView};
+use kmipkit_ttlv::{Structure, StructureView, ValueView};
 
 use crate::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 
@@ -41,13 +41,22 @@ pub(crate) fn validate_cryptographic_parameters(
         return Ok(None);
     };
 
-    let view = supplied.view();
+    validate_cryptographic_parameters_view(&supplied.view())?;
+    Ok(parameters)
+}
+
+/// Validates required-member presence while preserving the caller's borrowed
+/// ordered Structure. Typed request boundaries use this when they validate a
+/// generic payload without taking ownership of its nested values.
+pub(crate) fn validate_cryptographic_parameters_view(
+    supplied: &StructureView<'_>,
+) -> Result<(), ProtocolError> {
     let mut requires_iv_length = false;
     let mut requires_tag_length = false;
     let mut has_iv_length = false;
     let mut has_tag_length = false;
 
-    for item in view.children() {
+    for item in supplied.children() {
         match item.tag().raw() {
             BLOCK_CIPHER_MODE => {
                 let mode = item.with_value(|value| match value {
@@ -76,5 +85,5 @@ pub(crate) fn validate_cryptographic_parameters(
         ));
     }
 
-    Ok(parameters)
+    Ok(())
 }

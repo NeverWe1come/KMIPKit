@@ -48,7 +48,7 @@
 
 ### Green
 
-- [ ] T020 Implement EncryptRequest/EncryptResponse wire conversion from Table 214/215, including known Cryptographic Parameters child type/cardinality validation before request transmission.
+- [x] T020 Implement EncryptRequest/EncryptResponse wire conversion from Table 214/215, including known Cryptographic Parameters child type/cardinality validation before request transmission. **Green evidence (2026-10-10):** focused Encrypt request (4), successful response (2), Encrypt failure (1), malformed Encrypt request (4) and response (6), OperationData (5), and Cryptographic Parameters (5) tests pass. `cargo fmt --all --check`, protocol Clippy (`--all-targets --all-features -D warnings`), protocol rustdoc, and `git diff --check` pass. Decrypt-dependent unit registrations were temporarily isolated and restored; the combined malformed and failure test modules were tested through temporary Encrypt-only copies. See `.superpowers/sdd/kmipkit-0019-cryptographic-operations/task-20-report.md` for exact commands, test-source lifetime repair, isolation details, and scope limitations.
 - [ ] T021 Implement DecryptRequest/DecryptResponse wire conversion from Table 196/197, including known Cryptographic Parameters child type/cardinality validation before request transmission.
 - [ ] T022 Reuse the common operation result parser for Result Status, shared/unknown Result Reason, and Result Message; keep Pending in PendingOutcome.
 - [ ] T023 Expose the typed models from kmipkit-protocol while retaining the full generic request/response tree and preserving all unknown values. Implement the OASIS XML adapter only in test support; add no production XML dependency.

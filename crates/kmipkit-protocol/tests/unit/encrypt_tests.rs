@@ -185,8 +185,8 @@ fn request_preserves_supplied_cryptographic_parameters_members_and_order() {
         .to_ttlv_payload()
         .expect("opaque Cryptographic Parameters members remain ordered");
 
-    let parameter_item = actual
-        .view()
+    let actual_view = actual.view();
+    let parameter_item = actual_view
         .children()
         .iter()
         .find(|child| child.tag().raw() == CRYPTOGRAPHIC_PARAMETERS_TAG)
@@ -239,8 +239,8 @@ fn request_preserves_each_data_encoding_allowed_by_section_7_9() {
         let actual = base_request(data)
             .to_ttlv_payload()
             .expect("Data retains its caller-selected §7.9 encoding");
-        let data_item = actual
-            .view()
+        let actual_view = actual.view();
+        let data_item = actual_view
             .children()
             .iter()
             .find(|child| child.tag().raw() == DATA_TAG)

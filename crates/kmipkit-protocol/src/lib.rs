@@ -18,18 +18,11 @@ mod create;
 mod create_key_pair;
 mod create_split_key;
 mod credential;
-// The typed request call sites arrive in the later Encrypt/Decrypt model tasks.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "KMIPKIT-0019 T020/T021 add the typed request conversion call sites."
-    )
-)]
 mod cryptographic_parameters;
 mod delete_attribute;
 mod destroy;
 mod discover_versions;
+mod encrypt;
 mod error;
 pub mod extension;
 mod get_attribute_list;
@@ -73,6 +66,7 @@ pub use destroy::{DestroyError, DestroyRequest, DestroyResponse};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
+pub use encrypt::{EncryptError, EncryptRequest, EncryptResponse};
 pub use error::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 pub use get_attribute_list::{
     GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
