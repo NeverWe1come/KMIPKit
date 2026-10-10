@@ -16,7 +16,9 @@ use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 use zeroize::Zeroizing;
 
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, structure_contains_byte_string, test_item, test_structure,
+};
 use crate::{Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequest};
 
 const MAC_OPERATION: u32 = 0x0000_0023;
@@ -25,6 +27,8 @@ const OPERATION_FAILED: u32 = 1;
 const GENERAL_FAILURE: u32 = 0x0000_0100;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const MAC_DATA: u32 = 0x0042_00C4;
+const GENERIC_RESPONSE_TAG: u32 = 0x0042_00D6;
+const GENERIC_RESPONSE_BYTES: &[u8] = b"mac-client-generic-ttlv";
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
@@ -94,6 +98,10 @@ fn response(status: u32, reason: Option<u32>) -> Vec<u8> {
         test_structure([
             test_item(UNIQUE_IDENTIFIER, Value::text_string("mac-key".to_owned())),
             test_item(MAC_DATA, Value::byte_string(vec![0x00, 0x80, 0xFF])),
+            test_item(
+                GENERIC_RESPONSE_TAG,
+                Value::byte_string(GENERIC_RESPONSE_BYTES.to_vec()),
+            ),
         ])
     });
     asynchronous_response_bytes(MAC_OPERATION, status, reason, None, payload)
@@ -159,12 +167,50 @@ fn explicit_mac_executes_once_and_exposes_server_output() {
         .mac_data()
         .expect("the server produced MAC Data")
         .with_bytes(|actual| assert_eq!(actual, [0x00, 0x80, 0xFF]));
+    assert!(
+        item.outcome()
+            .response()
+            .mac()
+            .expect("the common client response view exposes MAC")
+            .with_ttlv(|tree| {
+                structure_contains_byte_string(&tree, GENERIC_RESPONSE_TAG, GENERIC_RESPONSE_BYTES)
+            })
+    );
     assert_eq!(
         state.borrow().calls,
         1,
         "an explicit MAC makes one exchange"
     );
     assert_eq!(state.borrow().requests.len(), 1);
+}
+
+#[test]
+fn mac_response_shape_error_retains_the_generic_ttlv_item() {
+    let payload = test_structure([
+        test_item(MAC_DATA, Value::byte_string(vec![0x00, 0x80, 0xFF])),
+        test_item(
+            GENERIC_RESPONSE_TAG,
+            Value::byte_string(GENERIC_RESPONSE_BYTES.to_vec()),
+        ),
+    ]);
+    let response = asynchronous_response_bytes(MAC_OPERATION, SUCCESS, None, None, Some(payload));
+    let (mut client, _) = client(response);
+    let error = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(request())),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("MAC success requires exactly one well-formed Unique Identifier");
+
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    assert!(
+        error
+            .response_ttlv()
+            .expect("typed response shape errors retain the generic response")
+            .with_ttlv(|tree| {
+                structure_contains_byte_string(&tree, GENERIC_RESPONSE_TAG, GENERIC_RESPONSE_BYTES)
+            })
+    );
 }
 
 #[test]

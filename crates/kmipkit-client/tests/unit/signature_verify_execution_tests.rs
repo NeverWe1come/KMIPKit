@@ -18,7 +18,9 @@ use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 use zeroize::Zeroizing;
 
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, structure_contains_byte_string, test_item, test_structure,
+};
 use crate::{Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequest};
 
 const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022;
@@ -100,6 +102,10 @@ fn response(indicator: u32) -> Vec<u8> {
             Value::text_string("verification-key".to_owned()),
         ),
         test_item(VALIDITY_INDICATOR, Value::enumeration(indicator)),
+        test_item(
+            RESPONSE_SHAPE_SENTINEL_TAG,
+            Value::byte_string(RESPONSE_SHAPE_SENTINEL.to_vec()),
+        ),
     ]);
     asynchronous_response_bytes(
         SIGNATURE_VERIFY_OPERATION,
@@ -120,13 +126,13 @@ fn response_with_payload(payload: kmipkit_ttlv::Structure) -> Vec<u8> {
     )
 }
 
-fn contains_response_sentinel(tree: kmipkit_ttlv::StructureView<'_>) -> bool {
+fn contains_response_sentinel(tree: &kmipkit_ttlv::StructureView<'_>) -> bool {
     tree.children().iter().any(|item| {
         item.with_value(|value| match value {
             kmipkit_ttlv::ValueView::ByteString(bytes) => {
                 item.tag().raw() == RESPONSE_SHAPE_SENTINEL_TAG && bytes == RESPONSE_SHAPE_SENTINEL
             }
-            kmipkit_ttlv::ValueView::Structure(nested) => contains_response_sentinel(nested),
+            kmipkit_ttlv::ValueView::Structure(nested) => contains_response_sentinel(&nested),
             _ => false,
         })
     })
@@ -177,8 +183,9 @@ fn client_errors_retain_generic_ttlv_for_malformed_success_payloads() {
             Some(RequestDeliveryState::ResponseStarted)
         );
         let sentinel_is_retained = error
-            .with_response_ttlv(contains_response_sentinel)
-            .expect("typed response errors retain the generic response item");
+            .response_ttlv()
+            .expect("typed response errors retain the generic response")
+            .with_ttlv(|tree| contains_response_sentinel(&tree));
         assert!(sentinel_is_retained);
 
         let diagnostics = format!("{error:?}{error}");
@@ -215,8 +222,9 @@ fn client_errors_retain_nonfinal_validity_indicator_response_ttlv() {
 
     assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
     let sentinel_is_retained = error
-        .with_response_ttlv(contains_response_sentinel)
-        .expect("typed response errors retain the generic response item");
+        .response_ttlv()
+        .expect("typed response errors retain the generic response")
+        .with_ttlv(|tree| contains_response_sentinel(&tree));
     assert!(sentinel_is_retained);
 }
 
@@ -293,6 +301,19 @@ fn invalid_and_unknown_indicators_remain_operation_results_with_one_exchange() {
                 .validity_indicator()
                 .map(kmipkit_protocol::ValidityIndicator::raw),
             Some(indicator)
+        );
+        assert!(
+            outcome
+                .response()
+                .signature_verify()
+                .expect("the common client response view exposes Signature Verify")
+                .with_ttlv(|tree| {
+                    structure_contains_byte_string(
+                        &tree,
+                        RESPONSE_SHAPE_SENTINEL_TAG,
+                        RESPONSE_SHAPE_SENTINEL,
+                    )
+                })
         );
         assert_eq!(
             state.borrow().calls,

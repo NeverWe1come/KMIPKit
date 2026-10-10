@@ -17,7 +17,10 @@ use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 use zeroize::Zeroizing;
 
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, structure_contains_byte_string, structure_contains_tag, test_item,
+    test_structure,
+};
 use crate::{Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequest};
 
 const HASH_OPERATION: u32 = 0x0000_0027;
@@ -27,6 +30,8 @@ const GENERAL_FAILURE: u32 = 0x0000_0100;
 const PENDING: u32 = 2;
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const DATA: u32 = 0x0042_00C2;
+const GENERIC_RESPONSE_TAG: u32 = 0x0042_00D6;
+const GENERIC_RESPONSE_BYTES: &[u8] = b"hash-client-generic-ttlv";
 
 #[derive(Default)]
 struct ExchangeState {
@@ -84,12 +89,18 @@ fn request() -> ClientRequest {
 
 fn response(status: u32, reason: Option<u32>, correlation: Option<&[u8]>) -> Vec<u8> {
     let payload = if status == PENDING {
-        Some(test_structure([]))
-    } else if status == SUCCESS {
         Some(test_structure([test_item(
-            DATA,
-            Value::byte_string(vec![0x00, 0x80, 0xFF]),
+            GENERIC_RESPONSE_TAG,
+            Value::byte_string(GENERIC_RESPONSE_BYTES.to_vec()),
         )]))
+    } else if status == SUCCESS {
+        Some(test_structure([
+            test_item(DATA, Value::byte_string(vec![0x00, 0x80, 0xFF])),
+            test_item(
+                GENERIC_RESPONSE_TAG,
+                Value::byte_string(GENERIC_RESPONSE_BYTES.to_vec()),
+            ),
+        ]))
     } else {
         None
     };
@@ -116,6 +127,15 @@ fn explicit_hash_executes_once_and_exposes_the_server_data() {
         .with_bytes(|actual| {
             assert_eq!(actual, [0x00, 0x80, 0xFF]);
         });
+    assert!(
+        item.outcome()
+            .response()
+            .hash()
+            .expect("the common client response view exposes Hash")
+            .with_ttlv(|tree| {
+                structure_contains_byte_string(&tree, GENERIC_RESPONSE_TAG, GENERIC_RESPONSE_BYTES)
+            })
+    );
     assert_eq!(
         state.borrow().calls,
         1,
@@ -144,6 +164,15 @@ fn pending_hash_result_preserves_the_correlation_value() {
     };
     assert_eq!(pending.operation(), crate::ClientOperation::Hash);
     assert_eq!(pending.asynchronous_correlation_value(), correlation);
+    assert!(
+        pending
+            .response()
+            .hash()
+            .expect("the Pending response view exposes Hash")
+            .with_ttlv(|tree| {
+                structure_contains_byte_string(&tree, GENERIC_RESPONSE_TAG, GENERIC_RESPONSE_BYTES)
+            })
+    );
     assert_eq!(state.borrow().calls, 1);
 }
 
@@ -177,6 +206,13 @@ fn operation_failure_preserves_server_status_and_reason() {
             .expect("typed Hash view")
             .data()
             .is_none()
+    );
+    assert!(
+        outcome
+            .response()
+            .hash()
+            .expect("the common client response view exposes failed Hash")
+            .with_ttlv(|tree| structure_contains_tag(&tree, 0x0042_007F))
     );
     assert_eq!(state.borrow().calls, 1);
 }

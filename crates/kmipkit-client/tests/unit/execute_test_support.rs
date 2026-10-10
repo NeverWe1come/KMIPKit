@@ -2,7 +2,7 @@
 
 use kmipkit_transport::{RequestOptions, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
-use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
+use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 use crate::execute::encode_message_for_test;
 
@@ -44,6 +44,30 @@ const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
 const VENDOR_EXTENSION: u32 = 0x0042_009C;
 const EXTENSION_PAYLOAD_TAG: u32 = 0x0042_0173;
+
+pub(crate) fn structure_contains_tag(tree: &StructureView<'_>, tag: u32) -> bool {
+    tree.children().iter().any(|item| {
+        item.tag().raw() == tag
+            || item.with_value(|value| match value {
+                ValueView::Structure(nested) => structure_contains_tag(&nested, tag),
+                _ => false,
+            })
+    })
+}
+
+pub(crate) fn structure_contains_byte_string(
+    tree: &StructureView<'_>,
+    tag: u32,
+    expected: &[u8],
+) -> bool {
+    tree.children().iter().any(|item| {
+        item.with_value(|value| match value {
+            ValueView::ByteString(bytes) => item.tag().raw() == tag && bytes == expected,
+            ValueView::Structure(nested) => structure_contains_byte_string(&nested, tag, expected),
+            _ => false,
+        })
+    })
+}
 
 pub(crate) fn asynchronous_response_bytes(
     operation: u32,

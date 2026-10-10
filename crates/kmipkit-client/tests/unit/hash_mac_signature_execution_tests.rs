@@ -359,7 +359,7 @@ fn public_convenience_methods_views_accessors_and_formatters_cover_all_operation
             assert_eq!(outcome_accessor_presence(outcome), expected);
 
             let rendered = format!("{item:?} {outcome:?} {view:?} {outcome}");
-            assert!(!rendered.is_empty());
+            assert_ne!(rendered, "");
         }
     }
 

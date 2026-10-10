@@ -18,12 +18,16 @@ use kmipkit_ttlv::Value;
 use kmipkit_ttlv::codec::CodecLimits;
 use zeroize::Zeroizing;
 
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, structure_contains_byte_string, test_item, test_structure,
+};
 use crate::{Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequest};
 
 const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
 const SUCCESS: u32 = 0;
 const VALIDITY_INDICATOR: u32 = 0x0042_0128;
+const GENERIC_RESPONSE_TAG: u32 = 0x0042_00D6;
+const GENERIC_RESPONSE_BYTES: &[u8] = b"mac-verify-client-generic-ttlv";
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const BATCH_ITEM: u32 = 0x0042_000F;
@@ -97,6 +101,10 @@ fn response(indicator: u32) -> Vec<u8> {
             Value::text_string("verification-key".to_owned()),
         ),
         test_item(VALIDITY_INDICATOR, Value::enumeration(indicator)),
+        test_item(
+            GENERIC_RESPONSE_TAG,
+            Value::byte_string(GENERIC_RESPONSE_BYTES.to_vec()),
+        ),
     ]);
     asynchronous_response_bytes(MAC_VERIFY_OPERATION, SUCCESS, None, None, Some(payload))
 }
@@ -175,6 +183,19 @@ fn invalid_and_unknown_indicators_remain_operation_results_with_one_exchange() {
                 .map(kmipkit_protocol::ValidityIndicator::raw),
             Some(indicator)
         );
+        assert!(
+            outcome
+                .response()
+                .mac_verify()
+                .expect("the common client response view exposes MAC Verify")
+                .with_ttlv(|tree| {
+                    structure_contains_byte_string(
+                        &tree,
+                        GENERIC_RESPONSE_TAG,
+                        GENERIC_RESPONSE_BYTES,
+                    )
+                })
+        );
         assert_eq!(
             state.borrow().calls,
             1,
@@ -182,6 +203,74 @@ fn invalid_and_unknown_indicators_remain_operation_results_with_one_exchange() {
         );
         assert_eq!(state.borrow().requests.len(), 1);
     }
+}
+
+#[test]
+fn mac_verify_response_shape_error_retains_the_generic_ttlv_item() {
+    let payload = test_structure([
+        test_item(VALIDITY_INDICATOR, Value::enumeration(1)),
+        test_item(
+            GENERIC_RESPONSE_TAG,
+            Value::byte_string(GENERIC_RESPONSE_BYTES.to_vec()),
+        ),
+    ]);
+    let response =
+        asynchronous_response_bytes(MAC_VERIFY_OPERATION, SUCCESS, None, None, Some(payload));
+    let (mut client, _) = client(response);
+    let error = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(request())),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("MAC Verify success requires exactly one well-formed Unique Identifier");
+
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    assert!(
+        error
+            .response_ttlv()
+            .expect("typed response shape errors retain the generic response")
+            .with_ttlv(|tree| {
+                structure_contains_byte_string(&tree, GENERIC_RESPONSE_TAG, GENERIC_RESPONSE_BYTES)
+            })
+    );
+}
+
+#[test]
+fn nonfinal_mac_verify_response_shape_error_retains_generic_ttlv() {
+    let payload = test_structure([
+        test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("verification-key".to_owned()),
+        ),
+        test_item(VALIDITY_INDICATOR, Value::enumeration(1)),
+        test_item(
+            GENERIC_RESPONSE_TAG,
+            Value::byte_string(GENERIC_RESPONSE_BYTES.to_vec()),
+        ),
+    ]);
+    let response =
+        asynchronous_response_bytes(MAC_VERIFY_OPERATION, SUCCESS, None, None, Some(payload));
+    let (mut client, _) = client(response);
+    let request = MacVerifyRequest::new()
+        .with_correlation_value(SecretBytes::new(b"previous-part".to_vec()))
+        .with_init_indicator(false)
+        .with_final_indicator(false);
+    let error = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::mac_verify(request))),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("a non-final MAC Verify response cannot contain Validity Indicator");
+
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    assert!(
+        error
+            .response_ttlv()
+            .expect("typed response shape errors retain the generic response")
+            .with_ttlv(|tree| {
+                structure_contains_byte_string(&tree, GENERIC_RESPONSE_TAG, GENERIC_RESPONSE_BYTES)
+            })
+    );
 }
 
 #[test]
