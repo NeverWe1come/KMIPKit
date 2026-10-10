@@ -80,19 +80,14 @@ fn get_and_locate_models_export_contract_constructors_and_accessors() {
         GetResponse::unique_identifier;
     let _: for<'a> fn(&'a GetResponse) -> Option<&'a Item> = GetResponse::object;
 
-    assert_owned_locate_response_constructor(LocateResponse::try_from_response_item);
+    let _locate_response_constructor = LocateResponse::try_from_response_item;
     let _: fn(&LocateResponse) -> &KmipOperationResult = LocateResponse::result;
     let _located_items_accessor = LocateResponse::located_items;
     let _: for<'a> fn(&'a LocateResponse) -> &'a [UniqueIdentifier] =
         LocateResponse::unique_identifiers;
 }
 
-fn assert_owned_get_response_constructor<'view, Error>(
-    _: fn(ResponseBatchItemView<'view>) -> Result<GetResponse, Error>,
-) {
-}
-
-fn assert_owned_locate_response_constructor<'view, Error>(
-    _: fn(ResponseBatchItemView<'view>) -> Result<LocateResponse, Error>,
+fn assert_owned_get_response_constructor<Error, Response: 'static>(
+    _: for<'view> fn(ResponseBatchItemView<'view>) -> Result<Response, Error>,
 ) {
 }
