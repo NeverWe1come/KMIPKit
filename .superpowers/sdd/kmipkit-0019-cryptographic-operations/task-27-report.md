@@ -31,6 +31,20 @@ wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmi
 
 Result: expected compile failure, exit code 1, exactly two E0308 secret-owner type mismatches and eight E0599 planned missing client API diagnostics.
 
+## Security review correction — Green and Refactor
+
+`response_correlation` now returns `Zeroizing<Vec<u8>>`, wrapping the copied bytes read from `SecretBytes`. Both Encrypt and Decrypt tests retain that zeroizing owner while comparing and reusing the server value. A plain `Vec<u8>` is created only at the `SecretBytes::new` boundary when constructing each subsequent request. The helper comment records this ownership invariant. No production code, client API, protocol behavior, or dependency changed.
+
+Re-ran the focused correction target after Green:
+
+```powershell
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_multipart_execution_tests --offline'
+```
+
+Result: expected compile failure, exit code 1, now only the same eight E0599 missing `ClientRequest::{Encrypt,Decrypt}` variants and `ClientResponseView::{encrypt,decrypt}` accessors planned for T038. Both zeroizing-owner E0308 errors are resolved; there are no unrelated diagnostics. Runtime assertions remain pending T038.
+
+`cargo fmt --all --check` and `git diff --check` both pass after Green and Refactor.
+
 Focused Red command (run through WSL Ubuntu-26.04):
 
 ```powershell

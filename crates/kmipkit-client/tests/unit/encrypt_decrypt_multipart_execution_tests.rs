@@ -138,6 +138,7 @@ fn response_correlation(response: &ClientBatchResponse, operation: u32) -> Zeroi
             .expect("the initial Decrypt response supplies Correlation Value"),
         _ => unreachable!("only Encrypt and Decrypt use this test helper"),
     };
+    // Keep the response-byte copy zeroizing until ownership moves into SecretBytes.
     Zeroizing::new(value.with_bytes(<[u8]>::to_vec))
 }
 
