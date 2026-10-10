@@ -1184,10 +1184,16 @@ def _run(root_path: Path, write: bool) -> int:
         root = root_path.resolve(strict=True)
         manifest = _load_json(root, MANIFEST_PATH, MAX_MANIFEST_BYTES)
         schema = _load_json(root, SCHEMA_PATH, MAX_SCHEMA_BYTES)
-        catalog = _load_json(root, CATALOG_PATH, MAX_CATALOG_BYTES)
-        if not isinstance(manifest, dict) or not isinstance(schema, dict) or not isinstance(catalog, dict):
-            raise ManifestError("manifest, schema, and catalog roots must be JSON objects")
-        _validate_v2_manifest(manifest, schema, catalog, root)
+        if not isinstance(manifest, dict) or not isinstance(schema, dict):
+            raise ManifestError("manifest and schema roots must be JSON objects")
+        if manifest.get("formatVersion") == 2:
+            catalog = _load_json(root, CATALOG_PATH, MAX_CATALOG_BYTES)
+            if not isinstance(catalog, dict):
+                raise ManifestError("normative catalog root must be a JSON object")
+            _validate_v2_manifest(manifest, schema, catalog, root)
+        else:
+            _validate_schema(manifest, schema)
+            _validate_references(manifest)
         outputs = render_outputs(manifest)
         destinations = _preflight_outputs(root, outputs)
         if write:

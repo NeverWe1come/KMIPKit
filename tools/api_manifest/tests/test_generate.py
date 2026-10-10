@@ -19,7 +19,9 @@ ROOT = Path(__file__).resolve().parents[3]
 GENERATOR = ROOT / "tools" / "api_manifest" / "generate.py"
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 SCHEMA = ROOT / "specification" / "api" / "public-api.schema.json"
+CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 MINIMAL_FIXTURE = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "registry-manifest.json"
+PUBLIC_API_V1_FIXTURE = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 GENERATED_OUTPUTS = (
     "crates/kmipkit-ffi/src/extension_registry_generated.rs",
     "bindings/c/include/kmipkit.h",
@@ -86,6 +88,36 @@ def _create_repo(parent: Path) -> Path:
     api_dir.mkdir(parents=True)
     shutil.copy2(MANIFEST, api_dir / MANIFEST.name)
     shutil.copy2(SCHEMA, api_dir / SCHEMA.name)
+    catalog_path = root / "specification" / "catalog" / CATALOG.name
+    catalog_path.parent.mkdir(parents=True)
+    shutil.copy2(CATALOG, catalog_path)
+
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    referenced_paths: set[str] = set()
+    for collection_name in (
+        "operations",
+        "capabilities",
+        "publicDeclarations",
+        "approvedExclusions",
+    ):
+        for record in manifest.get(collection_name, []):
+            for source_name in ("approvalSource", "approvalEvidence", "acceptedEvidence"):
+                source = record.get(source_name)
+                if not isinstance(source, dict):
+                    continue
+                relative_path = source.get("path")
+                if isinstance(relative_path, str):
+                    referenced_paths.add(relative_path)
+                    parts = Path(relative_path).parts
+                    if parts and parts[0] == "specs":
+                        referenced_paths.add(str(Path(*parts[:2]) / "spec.md"))
+            referenced_paths.update(record.get("parityEvidenceIds", []))
+
+    for relative_path in referenced_paths:
+        source_path = ROOT / relative_path
+        destination = root / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, destination)
     return root
 
 
@@ -162,6 +194,10 @@ class ManifestGeneratorCliTests(unittest.TestCase):
     def test_v1_registry_slice_generation_does_not_require_the_v2_catalog(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_fixture_repo(Path(directory))
+            shutil.copy2(
+                PUBLIC_API_V1_FIXTURE,
+                root / "specification" / "api" / "public-api.json",
+            )
 
             result = self._run_generator(root, "--write")
 
@@ -460,8 +496,9 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             root = _create_repo(parent)
             manifest = self._load_manifest(root)
             outputs = manifest["generatedOutputs"]
-            self.assertIsInstance(outputs, dict)
-            outputs["cHeader"] = "../escaped-kmipkit.h"
+            self.assertIsInstance(outputs, list)
+            c_header = next(output for output in outputs if output["name"] == "cHeader")
+            c_header["path"] = "../escaped-kmipkit.h"
             self._write_manifest(root, manifest)
 
             result = self._run_generator(root, "--write")
