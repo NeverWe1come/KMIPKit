@@ -26,6 +26,7 @@
 use crate::decrypt::validate_request_payload as validate_decrypt_request_payload;
 use crate::encrypt::validate_request_payload;
 use crate::operation_test_support::item;
+use crate::{ProtocolCauseCategory, ProtocolErrorKind};
 use kmipkit_ttlv::{Structure, Value};
 
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
@@ -226,6 +227,24 @@ fn validate_decrypt_member_cases(duplicate: bool) -> Vec<&'static str> {
         .collect()
 }
 
+fn assert_table_59_error_parity(
+    encrypt_members: Vec<(u32, Value)>,
+    decrypt_members: Vec<(u32, Value)>,
+) {
+    let encrypt_error = validate_request_payload(&encrypt_payload(encrypt_members))
+        .expect_err("malformed Encrypt Cryptographic Parameters are rejected");
+    let decrypt_error = validate_decrypt_request_payload(&decrypt_payload(decrypt_members))
+        .expect_err("malformed Decrypt Cryptographic Parameters are rejected");
+
+    assert_eq!(encrypt_error, decrypt_error);
+    for error in [&encrypt_error, &decrypt_error] {
+        assert_eq!(error.kind(), ProtocolErrorKind::InvalidValue);
+        assert_eq!(error.cause_category(), ProtocolCauseCategory::InvalidValue);
+        assert_eq!(error.to_string(), "invalid protocol value (invalid value)");
+        assert!(!error.to_string().contains("T025-sensitive-sentinel"));
+    }
+}
+
 #[test]
 fn encrypt_rejects_duplicate_members_for_every_table_59_parameter() {
     let accepted = validate_member_cases(true);
@@ -260,4 +279,25 @@ fn decrypt_rejects_wrong_ttlv_item_type_for_every_table_59_parameter() {
         accepted.is_empty(),
         "Decrypt accepted wrong TTLV Item Type for Table 59 members: {accepted:?}"
     );
+}
+
+#[test]
+fn encrypt_and_decrypt_table_59_errors_are_payload_free_and_identical() {
+    for member in TABLE_59_MEMBERS {
+        let wrong_type = || {
+            vec![(
+                member.tag,
+                Value::text_string("T025-sensitive-sentinel".to_owned()),
+            )]
+        };
+        assert_table_59_error_parity(wrong_type(), wrong_type());
+
+        let duplicate = || {
+            vec![
+                (member.tag, member.item_type.well_typed_value()),
+                (member.tag, member.item_type.well_typed_value()),
+            ]
+        };
+        assert_table_59_error_parity(duplicate(), duplicate());
+    }
 }
