@@ -597,45 +597,17 @@ def _validate_public_declarations(
             raise ManifestError("public declaration references an unknown package")
         if not set(declaration.get("requirementIds", [])) <= requirements:
             raise ManifestError("public declaration references an unknown requirement")
-
-        parity_scope = declaration.get("parityScope")
-        if capability is not None and parity_scope != capability.get("parityScope"):
-            raise ManifestError("public declaration parity scope differs from its capability")
-        if parity_scope == "rust-only-adr":
-            if (
-                package_id != "rust-kmipkit-transport"
-                or package_languages.get(package_id) != "rust"
-                or capability_id != "rust_transport_exchange"
-                or capability is None
-                or capability.get("ownerAdrId") != "ADR-0014"
-                or capability.get("capabilityState") not in {"declared", "verified"}
-                or declaration.get("approvalSource") != capability.get("acceptedEvidence")
-            ):
-                raise ManifestError("Rust-only parity is reserved for accepted ADR-0014 transport declarations")
-        elif parity_scope != "four-language":
-            raise ManifestError("public declaration has an unsupported parity scope")
-
+        parity_scope = _validate_declaration_parity_scope(
+            declaration,
+            capability_id,
+            capability,
+            package_id,
+            package_languages,
+        )
         if declaration.get("declarationState") in {"declared", "verified"}:
-            if capability is not None:
-                owner_spec_id = capability.get("ownerSpecId") or capability.get("candidateSpecId")
-                owner_adr_id = capability.get("ownerAdrId")
-            else:
-                if operation is None or operation.get("apiState") not in {"declared", "verified"}:
-                    raise ManifestError("ready public declaration references a blocked operation")
-                owner_spec_id = operation.get("featureSpecId")
-                owner_adr_id = None
-            if owner_adr_id is not None:
-                if parity_scope != "rust-only-adr":
-                    raise ManifestError("ADR-owned public declaration is not scoped to its accepted Rust-only capability")
-                _validate_approval_source(
-                    declaration.get("approvalSource"), root, adr_id=owner_adr_id
-                )
-            else:
-                if parity_scope != "four-language":
-                    raise ManifestError("feature-owned public declaration has an invalid parity scope")
-                _validate_approval_source(
-                    declaration.get("approvalSource"), root, feature_id=owner_spec_id
-                )
+            _validate_public_declaration_approval(
+                declaration, capability, operation, parity_scope, root
+            )
             mappings = declaration.get("languageMappings", {})
             required_languages = ("rust",) if parity_scope == "rust-only-adr" else (
                 "rust", "c", "java", "python"
@@ -654,6 +626,63 @@ def _validate_public_declarations(
                 raise ManifestError("declaration package differs from its owning language mapping")
         if declaration.get("declarationState") == "verified":
             _validate_parity_evidence(declaration, root)
+
+
+def _validate_declaration_parity_scope(
+    declaration: dict[str, Any],
+    capability_id: Any,
+    capability: dict[str, Any] | None,
+    package_id: Any,
+    package_languages: dict[Any, Any],
+) -> Any:
+    parity_scope = declaration.get("parityScope")
+    if capability is not None and parity_scope != capability.get("parityScope"):
+        raise ManifestError("public declaration parity scope differs from its capability")
+    if parity_scope == "rust-only-adr":
+        accepted_transport_exception = (
+            package_id == "rust-kmipkit-transport"
+            and package_languages.get(package_id) == "rust"
+            and capability_id == "rust_transport_exchange"
+            and capability is not None
+            and capability.get("ownerAdrId") == "ADR-0014"
+            and capability.get("capabilityState") in {"declared", "verified"}
+            and declaration.get("approvalSource") == capability.get("acceptedEvidence")
+        )
+        if not accepted_transport_exception:
+            raise ManifestError("Rust-only parity is reserved for accepted ADR-0014 transport declarations")
+    elif parity_scope != "four-language":
+        raise ManifestError("public declaration has an unsupported parity scope")
+    return parity_scope
+
+
+def _validate_public_declaration_approval(
+    declaration: dict[str, Any],
+    capability: dict[str, Any] | None,
+    operation: dict[str, Any] | None,
+    parity_scope: Any,
+    root: Path,
+) -> None:
+    if capability is not None:
+        owner_spec_id = capability.get("ownerSpecId") or capability.get("candidateSpecId")
+        owner_adr_id = capability.get("ownerAdrId")
+    else:
+        if operation is None or operation.get("apiState") not in {"declared", "verified"}:
+            raise ManifestError("ready public declaration references a blocked operation")
+        owner_spec_id = operation.get("featureSpecId")
+        owner_adr_id = None
+
+    if owner_adr_id is not None:
+        if parity_scope != "rust-only-adr":
+            raise ManifestError("ADR-owned public declaration is not scoped to its accepted Rust-only capability")
+        _validate_approval_source(
+            declaration.get("approvalSource"), root, adr_id=owner_adr_id
+        )
+    else:
+        if parity_scope != "four-language":
+            raise ManifestError("feature-owned public declaration has an invalid parity scope")
+        _validate_approval_source(
+            declaration.get("approvalSource"), root, feature_id=owner_spec_id
+        )
 
 
 def _validate_approved_exclusions(
