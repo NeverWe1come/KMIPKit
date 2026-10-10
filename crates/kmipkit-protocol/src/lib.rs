@@ -130,6 +130,10 @@ mod operation_data_tests;
 mod cryptographic_parameters_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/cryptographic_operation_contract_tests.rs"]
+mod cryptographic_operation_contract_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/encrypt_tests.rs"]
 mod encrypt_tests;
 

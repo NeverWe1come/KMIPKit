@@ -49,6 +49,10 @@ use crate::{ClientCauseCategory, ClientError};
 #[path = "../tests/unit/single_item_response_tests.rs"]
 mod single_item_response_tests;
 
+#[cfg(test)]
+#[path = "../tests/unit/hash_mac_signature_execution_tests.rs"]
+mod hash_mac_signature_execution_tests;
+
 #[path = "wire_encoder.rs"]
 mod private_wire_writer;
 
