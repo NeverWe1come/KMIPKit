@@ -30,6 +30,14 @@ GENERATED_OUTPUTS = (
     "bindings/python/src/kmipkit/_generated/extension_registry.py",
     "tests/fixtures/extensions/generated/registry_parity.json",
 )
+V2_GENERATED_OUTPUTS = (
+    *GENERATED_OUTPUTS,
+    "crates/kmipkit-ffi/src/public_api_generated.rs",
+    "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java",
+    "bindings/java/src/test/java/org/kmipkit/generated/PublicApiParityFixtures.java",
+    "bindings/python/src/kmipkit/_generated/public_api.py",
+    "tests/fixtures/api/generated/public_api_parity.json",
+)
 GENERATED_OUTPUT_MAP = {
     "rustFfi": GENERATED_OUTPUTS[0],
     "cHeader": GENERATED_OUTPUTS[1],
@@ -221,7 +229,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(first.returncode, 0, first.stderr)
             first_outputs = {
                 relative_path: (root / relative_path).read_bytes()
-                for relative_path in GENERATED_OUTPUTS
+                for relative_path in V2_GENERATED_OUTPUTS
             }
             self.assertTrue(all(first_outputs.values()))
 
@@ -229,7 +237,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
             self.assertEqual(second.returncode, 0, second.stderr)
             self.assertEqual(
-                {relative_path: (root / relative_path).read_bytes() for relative_path in GENERATED_OUTPUTS},
+                {relative_path: (root / relative_path).read_bytes() for relative_path in V2_GENERATED_OUTPUTS},
                 first_outputs,
             )
 
@@ -251,7 +259,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 results.append({
                     relative_path: (root / relative_path).read_bytes()
-                    for relative_path in GENERATED_OUTPUTS
+                    for relative_path in V2_GENERATED_OUTPUTS
                 })
 
         self.assertEqual(results[0], results[1])
@@ -263,7 +271,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(first.returncode, 0, first.stderr)
             first_outputs = {
                 relative_path: (root / relative_path).read_bytes()
-                for relative_path in GENERATED_OUTPUTS
+                for relative_path in V2_GENERATED_OUTPUTS
             }
             manifest = self._load_manifest(root)
             reversed_manifest = _reverse_object_keys(manifest)
@@ -274,7 +282,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
             self.assertEqual(second.returncode, 0, second.stderr)
             self.assertEqual(
-                {relative_path: (root / relative_path).read_bytes() for relative_path in GENERATED_OUTPUTS},
+                {relative_path: (root / relative_path).read_bytes() for relative_path in V2_GENERATED_OUTPUTS},
                 first_outputs,
             )
 
@@ -294,7 +302,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 result = self._run_generator(root, "--write")
 
                 self.assertNotEqual(result.returncode, 0)
-                self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+                self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
 
     def test_required_invalid_input_error_mappings_are_enforced(self) -> None:
         mutations = (
@@ -318,7 +326,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 result = self._run_generator(root, "--write")
 
                 self.assertNotEqual(result.returncode, 0)
-                self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+                self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
 
     def test_handle_arrays_preserve_typed_pointer_to_pointer_abi(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -398,7 +406,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 result = self._run_generator(root, "--write")
 
                 self.assertNotEqual(result.returncode, 0)
-                self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+                self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
 
     def test_duplicate_c_parameter_names_are_rejected_before_span_resolution(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -415,7 +423,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             result = self._run_generator(root, "--write")
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+            self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
 
     def test_rust_2024_keywords_are_raw_escaped_and_unescapable_names_rejected(self) -> None:
         for keyword in ("const", "false", "abstract", "gen"):
@@ -442,25 +450,25 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             result = self._run_generator(root, "--write")
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+            self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
 
-    def test_parity_fixture_preserves_complete_manifest_mappings(self) -> None:
+    def test_registry_parity_fixture_preserves_the_v1_registry_slice(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
-            manifest = self._load_manifest(root)
             result = self._run_generator(root, "--write")
             self.assertEqual(result.returncode, 0, result.stderr)
 
             parity = json.loads((root / GENERATED_OUTPUTS[5]).read_text(encoding="utf-8"))
 
-            self.assertEqual(parity, manifest)
+            expected = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
+            self.assertEqual(parity, expected)
 
     def test_check_mode_compares_outputs_without_rewriting_them(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
             write_result = self._run_generator(root, "--write")
             self.assertEqual(write_result.returncode, 0, write_result.stderr)
-            output_paths = [root / path for path in GENERATED_OUTPUTS]
+            output_paths = [root / path for path in V2_GENERATED_OUTPUTS]
             before = {path: path.read_bytes() for path in output_paths}
             timestamp_ns = 946_684_800_000_000_000
             for path in output_paths:
@@ -499,7 +507,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             result = self._run_generator(root, "--write")
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+            self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
 
     def test_rejects_unknown_required_manifest_field_without_writing_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -511,7 +519,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             result = self._run_generator(root, "--write")
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+            self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
 
     def test_rejects_traversal_output_destination_without_writing_outside_root(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -528,7 +536,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse((parent / "escaped-kmipkit.h").exists())
-            self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+            self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
 
     def test_rejects_symlinked_output_file_without_modifying_its_target(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -546,7 +554,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual(external_file.read_bytes(), sentinel)
             self.assertFalse(
-                any((root / path).exists() for path in GENERATED_OUTPUTS if path != GENERATED_OUTPUTS[1])
+                any((root / path).exists() for path in V2_GENERATED_OUTPUTS if path != GENERATED_OUTPUTS[1])
             )
 
     def test_rejects_symlinked_output_parent_without_writing_outside_root(self) -> None:
@@ -563,11 +571,11 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             external_outputs = (
                 external_directory / Path(path).relative_to("bindings")
-                for path in GENERATED_OUTPUTS
+                for path in V2_GENERATED_OUTPUTS
                 if path.startswith("bindings/")
             )
             self.assertFalse(any(path.exists() for path in external_outputs))
-            self.assertFalse(any((root / path).exists() for path in GENERATED_OUTPUTS))
+            self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
 
 
 class ManifestSchemaTests(unittest.TestCase):
