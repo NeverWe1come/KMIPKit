@@ -18,6 +18,10 @@ pub(crate) fn validate_data_multipart_shape(
         has_correlation_value || (final_indicator == Some(true) && !has_data)
     } else if final_indicator == Some(true) {
         !has_correlation_value
+    } else if init_indicator == Some(false) || final_indicator == Some(false) {
+        // Explicit false marks a multipart middle part; only absent indicators
+        // without correlation can use the unframed single-part shape.
+        !has_correlation_value || !has_data
     } else {
         !has_data
     };

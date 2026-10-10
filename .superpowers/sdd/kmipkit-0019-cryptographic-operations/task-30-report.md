@@ -8,7 +8,7 @@ Branch: `feature/KMIPKIT-0019-encrypt-decrypt-implementation`
 
 Implemented the shared private `validate_data_multipart_shape` gate for Encrypt and Decrypt protocol request payload conversion. It enforces required Data for unframed single-part and middle requests, optional Data for initial and final multipart requests, correlation absence on initial and framed one-request shapes, correlation presence on final requests, and Data presence for the framed Init=true/Final=true single request while KMIPKIT-DISC-045 remains open. Failures use the existing payload-free `InvalidValue` protocol error. The per-operation request validators still perform their own accepted-field, type, and singleton checks before invoking this shared matrix.
 
-Two existing all-fields request fixtures used the invalid combination Init=true plus Correlation Value. They now use the valid middle shape Init=false/Final=false with Correlation Value, preserving their field-order assertions. The one-call/one-exchange client contract remains recorded in T027/T029 and awaits typed dispatch in T031/T038; this task did not add client variants. No client variants, production dependencies, generated output, or OASIS sources changed.
+Two existing all-fields request fixtures used the invalid combination Init=true plus Correlation Value. They now use the valid middle shape Init=false/Final=false with Correlation Value, preserving their field-order assertions. T030 covers only protocol pre-encoding Data, indicator, and Correlation Value validation through `to_ttlv_payload`. The one-exchange-per-invocation property remains in FR-008 and is not evidenced by this protocol task; T034/T038 own its fake-client verification. The T027/T029 client tests are compile-Red contracts and do not count as T030 client evidence. No client variants, production dependencies, generated output, or OASIS sources changed.
 
 ## Red evidence
 
@@ -31,6 +31,23 @@ wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmi
 ```
 
 The invalid-case failure is expected Red evidence: Encrypt and Decrypt each accepted explicit false-indicator middle shapes with Data and no Correlation Value. No production code changed in this Red phase.
+
+### QA fix round 1 — Green evidence
+
+The shared protocol validator now rejects explicit `Init=false` and/or `Final=false` middle shapes without Correlation Value, even when Data is present. It still accepts the all-indicators-absent, no-correlation unframed single-part shape; explicit middle shapes with Correlation Value and Data remain valid; framed `Init=true/Final=true` without Correlation Value remains valid only when Data is present under the open DISC-045 ruling. The focused matrix passes 2/2. Encrypt requests pass 4/4; Decrypt requests 4/4; malformed crypto payload tests 14/14; Table 59 parameter-structure tests 5/5. Protocol Clippy, formatting, and whitespace checks pass.
+
+```powershell
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-protocol --lib multipart_validation_tests --offline'
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-protocol --lib encrypt_tests --offline'
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-protocol --lib decrypt_tests --offline'
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-protocol --lib malformed_crypto_payload_tests --offline'
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-protocol --lib encrypt_parameter_structure_tests --offline'
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo clippy -p kmipkit-protocol --all-targets --all-features --offline -- -D warnings'
+cargo fmt --all --check
+git diff --check
+```
+
+The client exchange-count assertion remains pending the fake-transport execution work in T034/T038 under FR-008; T030 adds no client dispatch behavior.
 
 ## Green verification
 
