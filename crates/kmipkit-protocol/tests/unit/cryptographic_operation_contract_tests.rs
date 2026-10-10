@@ -3,13 +3,16 @@
 //! §§11.12, 11.16, 11.21, and 11.61; operation Tables 235, 259, 262, 334,
 //! and 337. These are source-derived contract tests.
 
+use std::error::Error;
+
 use crate::async_operation_fixtures::response_message;
-use crate::cryptographic_operation_test_support::response_item;
+use crate::cryptographic_operation_test_support::{payload, response_item};
 use crate::{
     CryptographicAlgorithm, CryptographicOperationErrorKind, DigitalSignatureAlgorithm,
-    HashRequest, HashResponse, HashingAlgorithm, MacRequest, MacResponse, MacVerifyRequest,
-    MacVerifyResponse, OperationData, SecretBytes, SignRequest, SignResponse,
-    SignatureVerifyRequest, SignatureVerifyResponse, ValidityIndicator,
+    HashRequest, HashResponse, HashingAlgorithm, KmipOperationResult, MacRequest, MacResponse,
+    MacVerifyRequest, MacVerifyResponse, OperationData, ResultReason, ResultStatus, SecretBytes,
+    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse, UniqueIdentifier,
+    ValidityIndicator,
 };
 use kmipkit_ttlv::Item;
 use kmipkit_ttlv::{Structure, Value, ValueView};
@@ -24,6 +27,7 @@ const SUCCESS: u32 = 0;
 const PENDING: u32 = 2;
 const VENDOR_PARAMETER: u32 = 0x0054_1234;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 
 fn parameter_item(raw_tag: u32, value: Value) -> Item {
     crate::operation_test_support::item(raw_tag, value)
@@ -212,10 +216,177 @@ fn typed_response_parsers_cover_pending_and_result_errors() {
     assert!(SignatureVerifyRequest::default().to_ttlv_payload().is_err());
 
     let wrong_operation = response_message(MAC, SUCCESS, None, None, Some(Structure::new()));
+    let error = HashResponse::try_from_response_item(response_item(&wrong_operation))
+        .expect_err("the typed Hash parser rejects a MAC response");
     assert_eq!(
-        HashResponse::try_from_response_item(response_item(&wrong_operation))
-            .expect_err("the typed Hash parser rejects a MAC response")
-            .kind(),
+        error.kind(),
         CryptographicOperationErrorKind::UnexpectedOperation
     );
+    assert!(Error::source(&error).is_none());
+}
+
+#[test]
+fn every_crypto_request_shape_method_accepts_single_part_and_rejects_missing_input() {
+    let data = || OperationData::ByteString(SecretBytes::new(b"shape-input".to_vec()));
+
+    assert!(
+        HashRequest::new(Structure::new())
+            .validate_multipart_shape()
+            .is_err()
+    );
+    assert!(
+        HashRequest::new(Structure::new())
+            .with_data(data())
+            .validate_multipart_shape()
+            .is_ok()
+    );
+
+    assert!(MacRequest::new().validate_multipart_shape().is_err());
+    assert!(
+        MacRequest::new()
+            .with_data(data())
+            .validate_multipart_shape()
+            .is_ok()
+    );
+
+    assert!(MacVerifyRequest::new().validate_multipart_shape().is_err());
+    assert!(
+        MacVerifyRequest::new()
+            .with_mac_data(SecretBytes::new(b"mac".to_vec()))
+            .validate_multipart_shape()
+            .is_ok()
+    );
+
+    assert!(SignRequest::new().validate_multipart_shape().is_err());
+    assert!(
+        SignRequest::new()
+            .with_data(data())
+            .validate_multipart_shape()
+            .is_ok()
+    );
+
+    assert!(
+        SignatureVerifyRequest::new()
+            .validate_multipart_shape()
+            .is_err()
+    );
+    assert!(
+        SignatureVerifyRequest::new()
+            .with_signature_data(SecretBytes::new(b"signature".to_vec()))
+            .validate_multipart_shape()
+            .is_ok()
+    );
+}
+
+#[test]
+fn every_crypto_request_shape_method_redacts_invalid_framing_errors() {
+    let data = || OperationData::ByteString(SecretBytes::new(b"SHAPE-SECRET-SENTINEL".to_vec()));
+    let secret = "SHAPE-SECRET-SENTINEL";
+
+    let errors = [
+        HashRequest::new(Structure::new())
+            .with_data(data())
+            .with_final_indicator(true)
+            .validate_multipart_shape()
+            .expect_err("Hash Final without Correlation Value is invalid"),
+        MacRequest::new()
+            .with_data(data())
+            .with_final_indicator(true)
+            .validate_multipart_shape()
+            .expect_err("MAC Final without Correlation Value is invalid"),
+        MacVerifyRequest::new()
+            .with_mac_data(SecretBytes::new(secret.as_bytes().to_vec()))
+            .with_final_indicator(true)
+            .validate_multipart_shape()
+            .expect_err("MAC Verify Final without Correlation Value is invalid"),
+        SignRequest::new()
+            .with_data(data())
+            .with_final_indicator(true)
+            .validate_multipart_shape()
+            .expect_err("Sign Final without Correlation Value is invalid"),
+        SignatureVerifyRequest::new()
+            .with_signature_data(SecretBytes::new(secret.as_bytes().to_vec()))
+            .with_final_indicator(true)
+            .validate_multipart_shape()
+            .expect_err("Signature Verify Final without Correlation Value is invalid"),
+    ];
+    for error in errors {
+        assert!(!error.to_string().contains(secret));
+    }
+}
+
+#[test]
+fn mac_request_preserves_enumeration_and_integer_unique_identifier_values() {
+    for identifier in [
+        UniqueIdentifier::Enumeration(0xF123_4567),
+        UniqueIdentifier::Integer(-12_345),
+    ] {
+        let payload = MacRequest::new()
+            .with_unique_identifier(identifier.clone())
+            .with_data(OperationData::ByteString(SecretBytes::new(
+                b"input".to_vec(),
+            )))
+            .to_ttlv_payload()
+            .expect("MAC accepts every lossless Unique Identifier form");
+        let view = payload.view();
+        let item = &view.children()[0];
+        assert_eq!(item.tag().raw(), UNIQUE_IDENTIFIER);
+        let preserved = item.with_value(|value| match (identifier, value) {
+            (UniqueIdentifier::Enumeration(expected), ValueView::Enumeration(actual)) => {
+                expected == *actual
+            }
+            (UniqueIdentifier::Integer(expected), ValueView::Integer(actual)) => {
+                expected == *actual
+            }
+            _ => false,
+        });
+        assert!(preserved, "MAC changed the caller-supplied identifier form");
+    }
+}
+
+#[test]
+fn internal_crypto_errors_preserve_sources_without_exposing_sensitive_values() {
+    let result_cause = KmipOperationResult::new(
+        ResultStatus::from_raw(SUCCESS),
+        Some(ResultReason::from_raw(0x0000_0100)),
+        None,
+    )
+    .expect_err("Success with a Result Reason violates the common result contract");
+    let response_error = crate::cryptographic_operation::CryptographicOperationError::new(
+        "Hash",
+        CryptographicOperationErrorKind::InvalidOperationResult(result_cause),
+    );
+    assert!(Error::source(&response_error).is_some());
+    assert!(!response_error.to_string().contains("SHAPE-SECRET-SENTINEL"));
+
+    let model_error = crate::cryptographic_operation::push(
+        &mut Structure::new(),
+        0,
+        Value::byte_string(b"SHAPE-SECRET-SENTINEL".to_vec()),
+    )
+    .expect_err("an unallocated TTLV tag is rejected");
+    assert!(Error::source(&model_error).is_some());
+    assert!(!model_error.to_string().contains("SHAPE-SECRET-SENTINEL"));
+}
+
+#[test]
+fn malformed_successful_unique_identifier_is_rejected_without_echoing_bytes() {
+    let sentinel = b"MALFORMED-IDENTIFIER-SECRET";
+    let response = response_message(
+        MAC,
+        SUCCESS,
+        None,
+        None,
+        Some(payload([(
+            UNIQUE_IDENTIFIER,
+            Value::byte_string(sentinel.to_vec()),
+        )])),
+    );
+    let error = MacResponse::try_from_response_item(response_item(&response))
+        .expect_err("MAC requires a table-defined Unique Identifier value type");
+    assert_eq!(
+        error.kind(),
+        CryptographicOperationErrorKind::MalformedPayload
+    );
+    assert!(!error.to_string().contains("MALFORMED-IDENTIFIER-SECRET"));
 }
