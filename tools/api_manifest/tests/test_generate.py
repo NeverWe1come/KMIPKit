@@ -233,6 +233,29 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 first_outputs,
             )
 
+    def test_v2_outputs_do_not_depend_on_repository_path_or_hash_seed(self) -> None:
+        results: list[dict[str, bytes]] = []
+        for seed in ("1", "987654"):
+            with tempfile.TemporaryDirectory(prefix=f"kmipkit-{seed}-") as directory:
+                root = _create_repo(Path(directory))
+                environment = os.environ.copy()
+                environment["PYTHONHASHSEED"] = seed
+                result = subprocess.run(
+                    [sys.executable, "-B", str(GENERATOR), "--write"],
+                    cwd=root,
+                    env=environment,
+                    capture_output=True,
+                    check=False,
+                    text=True,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                results.append({
+                    relative_path: (root / relative_path).read_bytes()
+                    for relative_path in GENERATED_OUTPUTS
+                })
+
+        self.assertEqual(results[0], results[1])
+
     def test_object_key_order_does_not_change_generated_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
