@@ -11,7 +11,7 @@
 //! SC-001 and SC-002.
 
 use crate::{
-    GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType, ObjectType,
+    GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType, ObjectType,
     ResponseBatchItemView, ResponseMessage, ResultReason, ResultStatus, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
@@ -83,7 +83,8 @@ fn assert_enumeration_field(request: GetRequest, tag: u32, value: u32) {
     let payload = request
         .to_ttlv_payload()
         .expect("a Table 220 Enumeration field is representable");
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     assert_eq!(fields.len(), 1);
     assert_eq!(fields[0].tag().raw(), tag);
@@ -215,7 +216,7 @@ fn response_item(message: &ResponseMessage) -> ResponseBatchItemView<'_> {
         .expect("fixture contains one response batch item")
 }
 
-fn decode_get(message: &ResponseMessage) -> Result<GetResponse, impl std::fmt::Debug> {
+fn decode_get(message: &ResponseMessage) -> Result<GetResponse, GetError> {
     GetResponse::try_from_response_item(response_item(message))
 }
 
@@ -231,7 +232,7 @@ fn valid_successful_payload() -> Structure {
     ])
 }
 
-fn malformed_success(payload: Structure) -> Result<GetResponse, impl std::fmt::Debug> {
+fn malformed_success(payload: Structure) -> Result<GetResponse, GetError> {
     let message = response_message(SUCCESS, None, None, Some(payload));
     decode_get(&message)
 }
@@ -275,7 +276,8 @@ fn request_preserves_the_optional_unique_identifier() {
         .with_unique_identifier(UniqueIdentifier::TextString("object-123".to_owned()))
         .to_ttlv_payload()
         .expect("Table 220 permits the optional Unique Identifier");
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     assert_eq!(
         field_signature(&payload),
@@ -335,7 +337,8 @@ fn request_preserves_the_optional_key_wrapping_specification_structure() {
         .with_key_wrapping_specification(specification)
         .to_ttlv_payload()
         .expect("Table 220 permits the optional Key Wrapping Specification");
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     assert_eq!(
         field_signature(&payload),
