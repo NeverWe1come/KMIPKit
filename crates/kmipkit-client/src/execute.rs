@@ -2848,18 +2848,15 @@ fn validate_cryptographic_request_shapes(batch: &ClientBatch) -> Result<(), Clie
 
 fn validate_id_placeholder_eligibility(batch: &ClientBatch) -> Result<(), BatchValidationError> {
     let batch_ordered = batch.batch_order_option.unwrap_or(true);
-    for (index, item) in batch.items.iter().enumerate() {
-        if !request_omits_identifier_for_id_placeholder(&item.request) {
-            continue;
-        }
-
-        let has_preceding_producer = batch_ordered
-            && batch.items[..index]
-                .iter()
-                .any(|prior| request_is_id_placeholder_producer(&prior.request));
-        if !has_preceding_producer {
+    let mut eligible_producer_seen = false;
+    for item in &batch.items {
+        // Evaluate consumers against the prefix before recording the current item.
+        if request_omits_identifier_for_id_placeholder(&item.request)
+            && !(batch_ordered && eligible_producer_seen)
+        {
             return Err(BatchValidationError::IneligibleIdPlaceholder);
         }
+        eligible_producer_seen |= request_is_id_placeholder_producer(&item.request);
     }
     Ok(())
 }
