@@ -774,30 +774,7 @@ fn read_response_error<E: Error + 'static>(error: E) -> ProtocolError {
 
 struct ResponseValidationError {
     error: ProtocolError,
-    response_ttlv: Option<ClientErrorResponseTtlv>,
-}
-
-impl From<ProtocolError> for ResponseValidationError {
-    fn from(error: ProtocolError) -> Self {
-        Self {
-            error,
-            response_ttlv: None,
-        }
-    }
-}
-
-fn retain_response_shape_error(
-    error: ProtocolError,
-    item: ResponseBatchItemView<'_>,
-) -> ResponseValidationError {
-    let response_ttlv = item
-        .with_ttlv(|tree| tree.try_clone())
-        .and_then(Result::ok)
-        .map(ClientErrorResponseTtlv::new);
-    ResponseValidationError {
-        error,
-        response_ttlv,
-    }
+    response_ttlv: ClientErrorResponseTtlv,
 }
 
 fn read_operation_outcome<T, E>(
@@ -2295,13 +2272,12 @@ impl Client {
             #[cfg(test)]
             self.pending_owner_observer.as_ref(),
         )
-        .map_err(|failure| match failure.response_ttlv {
-            Some(response_ttlv) => ClientError::protocol_response(
+        .map_err(|failure| {
+            ClientError::protocol_response(
                 failure.error,
                 response_delivery_state,
-                response_ttlv,
-            ),
-            None => protocol_failure_at(failure.error, response_delivery_state),
+                failure.response_ttlv,
+            )
         })
     }
 
@@ -3971,8 +3947,31 @@ fn validate_response(
     limits: &CodecLimits,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
 ) -> Result<ClientBatchResponse, ResponseValidationError> {
+    let result = validate_response_inner(
+        request_identities,
+        options,
+        &response,
+        registry,
+        limits,
+        #[cfg(test)]
+        pending_owner_observer,
+    );
+    result.map_err(|error| ResponseValidationError {
+        error,
+        response_ttlv: ClientErrorResponseTtlv::new(response),
+    })
+}
+
+fn validate_response_inner(
+    request_identities: &[BatchIdentity],
+    options: &ValidatedBatchOptions,
+    response: &ResponseMessage,
+    registry: &ClientExtensionRegistry,
+    limits: &CodecLimits,
+    #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
+) -> Result<ClientBatchResponse, ProtocolError> {
     if !protocol_version_is_supported(response.header().protocol_version()) {
-        return Err(protocol_error(ProtocolErrorKind::UnsupportedValue).into());
+        return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
     }
 
     let response_items = response.batch_items().collect::<Vec<_>>();
@@ -4001,8 +4000,7 @@ fn validate_response(
             request_identities[request_index].operation,
             item,
             request_identities[request_index].response_context,
-        )
-        .map_err(|error| retain_response_shape_error(error, item))?;
+        )?;
         #[cfg(test)]
         if let (Some(observer), ClientBatchOutcome::Pending(pending)) =
             (pending_owner_observer, &outcome)

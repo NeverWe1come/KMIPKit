@@ -4,35 +4,40 @@ use std::error::Error;
 use std::fmt;
 use std::sync::Arc;
 
-use kmipkit_protocol::{KmipOperationResult, ProtocolCauseCategory, ProtocolError, ResultStatus};
+use kmipkit_protocol::{
+    KmipOperationResult, ProtocolCauseCategory, ProtocolError, ResponseMessage, ResultStatus,
+};
 use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
-use kmipkit_ttlv::{Structure, StructureView};
+use kmipkit_ttlv::StructureView;
 
-/// An owned generic TTLV batch item retained when typed response decoding fails.
+/// An owned generic TTLV response retained when response validation fails.
 ///
-/// The tree is shared by cloned errors, zeroizes its payloads when the final
-/// owner is dropped, and is never included in formatted diagnostics.
+/// The response is shared by cloned errors, zeroizes its payloads when the
+/// final owner is dropped, and is never included in formatted diagnostics.
 pub struct ClientErrorResponseTtlv {
-    tree: Arc<Structure>,
+    response: Arc<ResponseMessage>,
 }
 
 impl ClientErrorResponseTtlv {
-    pub(crate) fn new(tree: Structure) -> Self {
+    pub(crate) fn new(response: ResponseMessage) -> Self {
         Self {
-            tree: Arc::new(tree),
+            response: Arc::new(response),
         }
     }
 
-    /// Lends the complete ordered generic TTLV batch item for callback-scoped access.
+    /// Lends the complete ordered generic TTLV response for callback-scoped access.
+    ///
+    /// Use [`StructureView::try_clone`] inside the callback only when the view
+    /// must outlive it. The owned copy zeroizes its payloads when dropped.
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        callback(self.tree.view())
+        self.response.with_ttlv(callback)
     }
 }
 
 impl Clone for ClientErrorResponseTtlv {
     fn clone(&self) -> Self {
         Self {
-            tree: Arc::clone(&self.tree),
+            response: Arc::clone(&self.response),
         }
     }
 }
@@ -48,7 +53,7 @@ impl fmt::Debug for ClientErrorResponseTtlv {
 
 impl PartialEq for ClientErrorResponseTtlv {
     fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.tree, &other.tree)
+        Arc::ptr_eq(&self.response, &other.response)
     }
 }
 
@@ -113,13 +118,13 @@ pub enum ClientError {
         /// The strongest available request delivery evidence.
         delivery_state: RequestDeliveryState,
     },
-    /// A typed response failure that retains its original generic batch item.
+    /// A response validation failure that retains the complete generic response.
     ProtocolResponse {
         /// The sanitized protocol cause.
         error: ProtocolError,
         /// The strongest available request delivery evidence.
         delivery_state: RequestDeliveryState,
-        /// The complete generic response batch item for explicit inspection.
+        /// The complete generic response message for explicit inspection.
         response_ttlv: ClientErrorResponseTtlv,
     },
     /// A transport failure with sanitized cause and delivery evidence.
@@ -168,13 +173,15 @@ impl ClientError {
         }
     }
 
-    /// Lends retained generic response TTLV when typed response decoding failed.
-    pub fn with_response_ttlv<R>(
-        &self,
-        callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
-    ) -> Option<R> {
+    /// Returns the complete generic response when response validation failed.
+    ///
+    /// This is `None` for failures that occur before a complete response is
+    /// decoded and for validation or transport failures unrelated to response
+    /// processing. The retained response is not included in diagnostics.
+    #[must_use]
+    pub const fn response_ttlv(&self) -> Option<&ClientErrorResponseTtlv> {
         match self {
-            Self::ProtocolResponse { response_ttlv, .. } => Some(response_ttlv.with_ttlv(callback)),
+            Self::ProtocolResponse { response_ttlv, .. } => Some(response_ttlv),
             Self::Validation { .. }
             | Self::Protocol { .. }
             | Self::Transport(_)
