@@ -7,6 +7,8 @@ mod generated {
 use std::error::Error;
 use std::fmt;
 
+use crate::ResponseBatchItemView;
+
 /// A server-reported KMIP Result Status, retaining unknown 32-bit values.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct ResultStatus(u32);
@@ -162,6 +164,30 @@ impl KmipOperationResult {
     pub const fn message(&self) -> Option<&ResultMessage> {
         self.message.as_ref()
     }
+}
+
+/// A missing or inconsistent common result on a validated response item.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum OperationResultParseError {
+    MissingResultStatus,
+    Invalid(ResultValidationError),
+}
+
+/// Parses the shared Result Status, Result Reason, and Result Message fields.
+///
+/// Operation-specific response converters map this error into their own
+/// payload-free error type. The parsed result retains unknown status/reason
+/// values and leaves Pending available for explicit outcome routing.
+pub(crate) fn parse_operation_result(
+    item: ResponseBatchItemView<'_>,
+) -> Result<KmipOperationResult, OperationResultParseError> {
+    let status = item
+        .result_status()
+        .ok_or(OperationResultParseError::MissingResultStatus)?;
+    let reason = item.result_reason();
+    let message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
+
+    KmipOperationResult::new(status, reason, message).map_err(OperationResultParseError::Invalid)
 }
 
 impl fmt::Debug for KmipOperationResult {
