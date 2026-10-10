@@ -22,6 +22,8 @@ content or make a trademark, conformance, or endorsement claim.
 | Local file | Work product | Stage/date | Canonical URL | SHA-256 |
 |---|---|---|---|---|
 | `fixtures/TC-CREATE-SD-1-21.xml` | Key Management Interoperability Protocol Test Cases Version 2.1 | Committee Note 01, 07 May 2020 | <https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/test-cases/kmip-v2.1/TC-CREATE-SD-1-21.xml> | `882e0f57ff2cc42b214e2ffb40bf9c80105489aab00f07a6ea5e2c1c395474ad` |
+| `fixtures/TC-PKCS12-1-21.xml` | Key Management Interoperability Protocol Test Cases Version 2.1 | Committee Note 01, 07 May 2020 | <https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/test-cases/kmip-v2.1/TC-PKCS12-1-21.xml> | `7ff0578acce3937f157797938ee894dab2b40f80e8b3be054523eca229f8701d` |
+| `fixtures/TC-PKCS12-2-21.xml` | Key Management Interoperability Protocol Test Cases Version 2.1 | Committee Note 01, 07 May 2020 | <https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/test-cases/kmip-v2.1/TC-PKCS12-2-21.xml> | `aa3420f7ee43697988715d625cc133b9c04d88e81ad4426a044c728826720087` |
 | `fixtures/TC-STREAM-ENC-1-21.xml` | Key Management Interoperability Protocol Test Cases Version 2.1 | Committee Note 01, 07 May 2020 | <https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/test-cases/kmip-v2.1/TC-STREAM-ENC-1-21.xml> | `765b8b33b03ff2ae137ff273085e0196857bfdde38bcb078c8003dcfb06e07dc` |
 | `fixtures/TC-STREAM-ENC-2-21.xml` | Key Management Interoperability Protocol Test Cases Version 2.1 | Committee Note 01, 07 May 2020 | <https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/test-cases/kmip-v2.1/TC-STREAM-ENC-2-21.xml> | `8e106a1304899cbc975b283aec41101774aac127988962c34b5daa6a0facc41f` |
 | `fixtures/TC-STREAM-ENCDEC-1-21.xml` | Key Management Interoperability Protocol Test Cases Version 2.1 | Committee Note 01, 07 May 2020 | <https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/test-cases/kmip-v2.1/TC-STREAM-ENCDEC-1-21.xml> | `24ee1de35f5815c53996eacc1baafc780e9d7dea8852db546b03be6660d307f8` |
@@ -31,3 +33,8 @@ These fixtures are byte-identical linked XML work products. Feature tests may co
 The three streaming-operation fixtures were pinned on 2026-10-09 from the
 canonical OASIS links above after confirming the case IDs and operation
 sequences against the pinned Test Cases HTML.
+
+The two PKCS#12 fixtures were pinned on 2026-10-10 from the canonical links
+in Test Cases §§2.68–2.69. The section headings and link targets use
+`TC-PKCS12-*`; the displayed link text adds an extra hyphen. Each downloaded
+XML document parsed successfully, and its checksum is recorded above.

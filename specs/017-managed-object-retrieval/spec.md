@@ -2,12 +2,12 @@
 
 **Feature Branch**: `feature/KMIPKIT-0017-managed-object-retrieval`<br>
 **Created**: 2026-10-09<br>
-**Status**: Draft; catalog actor and PKCS#12 dispositions required before implementation approval<br>
+**Status**: Draft; inventory dispositions recorded, implementation approval pending<br>
 **Input**: KMIPKit roadmap Phase D; the normative inventory identifies Get (§6.1.19) and Locate (§6.1.28) as unimplemented client-initiated operation families.
 
 ## Normative scope
 
-This specification defines the Rust client models and execution path for exactly two client-to-server operations. The catalog currently links two Get requirement rows and thirteen Locate requirement rows to these operation sections. Six Locate rows describe server obligations despite client actor metadata; they remain explicitly under inventory review and are not treated as duties the client implementation can enforce.
+This specification defines the Rust client models and execution path for exactly two client-to-server operations. The catalog links two Get requirement rows and thirteen Locate inventory rows to these operation sections. Of the Locate rows, five are server-only and one Group Member Default extraction is retired because the source has no independent normative keyword. Neither category is a client conformance obligation.
 
 | Operation | Catalog element | Normative source | Payload and error tables | Catalog evidence record IDs | Official case labels recorded by the catalog |
 | --- | --- | --- | --- | --- | --- |
@@ -16,7 +16,7 @@ This specification defines the Rust client models and execution path for exactly
 
 The linked requirement records are KMIPKIT-REQ-SPEC-6.1.19-001 and -002, and KMIPKIT-REQ-SPEC-6.1.28-001, -002, -004-001, -004-002, -007, -008-001, -008-002, -009-001, -009-002, -011, -012, -013-001, and -013-002. This is fifteen records total. Their actor, direction, and applicability are recorded individually in traceability.md; a link to an operation does not imply that every server obligation is implementable by a client library.
 
-The pinned OASIS KMIP 2.1 source and reviewed catalog are authoritative. Usage Guide examples are informative. KMIPKIT-DISC-015 records lowercase “shall” in the §6.1.19 PKCS#12 output description, while §1.2 presents uppercase terms as normative keywords; the paragraph's normative status is unresolved. KMIPKIT-DISC-032 records that §§2.68–2.69 headings and hyperlink targets use `TC-PKCS12-…`, while visible link text inserts an extra hyphen as `TC-PKCS-12-…`. The catalog retains those target paths, but each `fixture_path` is null, fixture availability is unavailable, and mapping confidence is weak. All seven linked fixtures are unavailable. Derived vectors can test client-visible TTLV behavior but cannot be reported as official test passes or profile conformance. These open catalog questions must be resolved before making the affected conformance claims.
+The pinned OASIS KMIP 2.1 source and reviewed catalog are authoritative. Usage Guide examples are informative. KMIPKIT-DEC-003 resolves KMIPKIT-DISC-015: lowercase “shall” in §6.1.19 is descriptive server guidance, while the uppercase key-format duties remain normative. KMIPKIT-DEC-004 resolves KMIPKIT-DISC-032: the case headings and hyperlink targets establish `TC-PKCS12-…` as the official IDs, and both linked XML fixtures are pinned. The visible `TC-PKCS-12-…` link text remains an editorial mismatch. Two of the seven linked fixtures are now available; the other five remain unavailable. Full official-case execution requires the other operations in those XML cases and later executable evidence; fixture availability alone does not constitute a pass or a profile conformance claim. KMIPKIT-DEC-005 classifies five Locate rows as server-only and retires the Group Member Default false extraction. Client behavior remains lossless forwarding and response preservation.
 
 Shared identifier, generic TTLV, message, batch, response-result, decoder-limit, and error contracts remain owned by their existing specifications and are referenced rather than redefined here.
 
@@ -96,7 +96,7 @@ As a KMIPKit caller, I can inspect operation results and retain future or vendor
 - PKCS#12, wrapping, compression, private keys, certificates, or Secret Data appear in Get input/output; all contents remain redacted in diagnostics and zeroized when the KMIPKit-owned TTLV tree is dropped.
 - Locate uses no attributes, an empty Attributes Structure, an optional zero offset, an omitted maximum, or multiple attributes; all forms retain their exact request presence and ordering.
 - Locate returns no matches, omits Located Items, returns Located Items despite an omitted Offset Items, or repeats Unique Identifier fields; the response shape remains lossless.
-- Locate returns archived or destroyed identifiers without the corresponding Storage Status Mask indicator; the client exposes the received values, while the server-side MUST NOT obligation and the catalog actor allocation remain separate conformance questions.
+- Locate returns archived or destroyed identifiers without the corresponding Storage Status Mask indicator; the client exposes the received values, while the server-side SHALL NOT obligations are classified separately in the catalog.
 - Locate contains date attributes as one value, a two-instance range, or a maximum Date value; the client preserves each form and leaves match evaluation to the server.
 - Locate contains a structured attribute with only selected fields, a Cryptographic Usage Mask, Usage Limits, Group Member Fresh, or Group Member Default; the exact source-defined request is sent without client-side candidate evaluation.
 - A batch follows Locate with an operation that relies on ID Placeholder. The request is not split or automatically retried, and result handling does not assume a unique match.
@@ -118,7 +118,7 @@ As a KMIPKit caller, I can inspect operation results and retain future or vendor
 - **KMIPKIT-0017-FR-010**: Batch execution MUST leave ID Placeholder state to the server, preserve Locate results, and avoid splitting, auto-follow-up, retry, or local uniqueness assumptions. Archived object retrieval remains Recover followed by Get and is outside this feature's implementation scope.
 - **KMIPKIT-0017-FR-011**: Get and Locate responses MUST preserve their operation-specific Result Status, Result Reason, and Result Message and reuse the shared Pending and delivery-state contracts without automatic polling or retry.
 - **KMIPKIT-0017-FR-012**: Malformed or over-limit object payloads MUST be rejected under the configured generic TTLV limits before unbounded allocation, and sanitized diagnostics MUST omit raw payload and secret contents.
-- **KMIPKIT-0017-FR-013**: Every normative requirement confirmed as applicable to the client MUST link from the catalog to this specification, implementation, and executable verification. Server-only obligations must be distinguished from client behavior. Unavailable official fixtures and unresolved case mappings MUST be recorded without claiming a pass.
+- **KMIPKIT-0017-FR-013**: Every normative requirement confirmed as applicable to the client MUST link from the catalog to this specification, implementation, and executable verification. Server-only and retired rows must be distinguished from client behavior. Official fixtures and any remaining availability gaps MUST be recorded without claiming a pass before full-case execution.
 
 ### Key Entities
 
@@ -139,13 +139,13 @@ As a KMIPKit caller, I can inspect operation results and retain future or vendor
 - **KMIPKIT-0017-SC-005**: Every client-applicable requirement has a catalog-to-spec-to-code-to-test path; server-side obligations are explicitly distinguished and never presented as behavior implemented by the client.
 - **KMIPKIT-0017-SC-006**: Formatting, lint, documentation, workspace test, coverage, and supported-platform CI checks pass the repository's applicable gates before the implementation PR is review-ready.
 
-## Open Inventory Questions
+## Inventory Dispositions
 
-- KMIPKIT-DISC-015 is open: §6.1.19 uses lowercase “shall” for PKCS#12 output behavior, while §1.2 lists uppercase normative keywords. This feature preserves caller options and opaque server output; it does not claim that the disputed container rules are conformant.
-- KMIPKIT-DISC-032 is open: in §§2.68–2.69, the headings and hyperlink targets use `TC-PKCS12-…`, but the visible link text uses `TC-PKCS-12-…`. The catalog records the target paths but has no fixture paths, marks the fixtures unavailable, and assigns weak mapping confidence; the target spelling does not establish fixture contents or an official test pass.
-- The six Locate rows KMIPKIT-REQ-SPEC-6.1.28-004-002, -008-001, -008-002, -009-001, -009-002, and -012 describe ID Placeholder, group-selection, or returned-status behavior performed by the server, while their catalog actor metadata identifies the client. This feature preserves request/result values but does not enforce server behavior. Correct or disposition these catalog rows before using them as client conformance gates.
+- KMIPKIT-DISC-015 is resolved by KMIPKIT-DEC-003: the §6.1.19 lowercase “shall” paragraph describes server PKCS#12 output and does not create a separate RFC 2119 client duty. This feature preserves caller options and opaque server output without local container validation.
+- KMIPKIT-DISC-032 is resolved by KMIPKIT-DEC-004: in Test Cases §§2.68–2.69, section headings and link targets identify `TC-PKCS12-…`; the visible `TC-PKCS-12-…` text is inconsistent. Both target XML files are pinned by URL and checksum. Their presence is not an official-case pass.
+- KMIPKIT-DISC-044 is resolved by KMIPKIT-DEC-005: KMIPKIT-REQ-SPEC-6.1.28-004-002, -008-001, -009-001, -009-002, and -012 are server-only. KMIPKIT-REQ-SPEC-6.1.28-008-002 is retired because the Group Member Default sentence has no separate normative keyword. The client preserves request/result values but does not enforce server behavior.
 
-These open items block affected conformance claims and implementation assertions. They do not authorize the client to invent, filter, or normalize server data.
+These dispositions do not authorize the client to invent, filter, or normalize server data. Implementation and conformance claims still require executable evidence and human specification approval.
 
 ## Assumptions
 

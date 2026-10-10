@@ -16,7 +16,7 @@ Implement typed TTLV request/response models and single-exchange client executio
 **Project Type**: Rust client library protocol feature.<br>
 **Performance Goals**: No feature-specific throughput target. Respect existing response-size, depth, and element limits; do not allocate an unbounded object body.<br>
 **Constraints**: KMIP 2.1, client initiated, TTLV only, raw TTLV over TLS or TTLV over HTTPS/HTTP 1.1, TLS 1.3 mutual TLS, rustls with aws-lc-rs; no local cryptographic provider, retry, automatic polling, Recover follow-up, or language-parity claim.<br>
-**Scale/Scope**: Exactly two operations and the 15 linked catalog requirement rows (2 Get and 13 Locate); shared protocol requirements remain with their existing feature owners.
+**Scale/Scope**: Exactly two operations and 15 linked catalog inventory rows (2 Get and 13 Locate): 7 client-applicable Locate, 5 server-only Locate, and 1 retired Locate extraction. Shared protocol requirements remain with their existing feature owners.
 
 ## Constitution Check
 
@@ -29,11 +29,11 @@ Implement typed TTLV request/response models and single-exchange client executio
 - Unknown tags, enumeration values, bitmask bits, and extensions remain subject to the existing generic TTLV allocation and lossless-preservation contracts.
 - Tests and traces cite exact OASIS sections/tables and stable catalog identifiers. Tests and implementation are gated on approved specification review.
 
-**Post-design gate**: CONDITIONAL; the model and scope are bounded, but the open catalog decisions listed below prevent affected conformance claims. The design introduces two operation modules and adds variants to shared client dispatch. The release branch already contains the foundations needed for the feature. The API/dispatch changes may conflict with the in-flight KMIPKIT-0016 implementation branch; integration must update from `release/1.0.0` after that PR changes the release, then rerun the full checks. No branch may be based on the unmerged KMIPKIT-0016 feature branch.
+**Post-design gate**: CONDITIONAL; the model and scope are bounded and KMIPKIT-DEC-003 through -005 resolve the catalog issues. Human approval of the revised specification and merge of the disposition PR remain required before implementation. The design introduces two operation modules and adds variants to shared client dispatch. The release branch already contains the foundations needed for the feature. The API/dispatch changes may conflict with other in-flight operation branches; integration must update from `release/1.0.0` after such changes merge, then rerun the required checks.
 
 ## Phase 0: Research Decisions
 
-See [research.md](research.md). The design follows OASIS Tables 220–222 and 247–249, cataloged requirements, and already-approved lossless/secret TTLV contracts. Open catalog issues KMIPKIT-DISC-015 and KMIPKIT-DISC-032 affect PKCS#12 guidance and test mapping. Six Locate requirement rows also have server-action summaries under client actor metadata. These are recorded in research.md and block conformance claims for the affected rules until catalog disposition. Locate's server matching rules and ID Placeholder state are preserved rather than implemented locally.
+See [research.md](research.md). The design follows OASIS Tables 220–222 and 247–249, cataloged requirements, and already-approved lossless/secret TTLV contracts. KMIPKIT-DEC-003 treats lowercase PKCS#12 “shall” as descriptive server guidance. KMIPKIT-DEC-004 maps and pins both official PKCS#12 fixtures. KMIPKIT-DEC-005 classifies five Locate rows as server-only and retires one false normative extraction. Locate's server matching rules and ID Placeholder state remain server-owned.
 
 ## Phase 1: Design & Contracts
 
@@ -58,7 +58,7 @@ See [data-model.md](data-model.md), [contracts/public-rust.md](contracts/public-
 
 The latest release used for specification preparation is `release/1.0.0` at `3448c197b964a4b3b9374d364b3e0d8bcc414864`. That release includes KMIPKIT-0004 generic TTLV, KMIPKIT-0006 messages/batches, KMIPKIT-0007 typed client execution, KMIPKIT-0009 asynchronous outcome models, KMIPKIT-0013 transport, and KMIPKIT-0014 Create/AttributeSet implementation. Get and Locate are not implemented on this base. The pending KMIPKIT-0016 branch is not a dependency: Locate uses KMIPKIT-0014's direct-item `AttributeSet`, not the newer Attribute Reference type.
 
-The specification/catalog assignment PR must be approved and merged before implementation. Before coding, the implementation branch must be created from the active release branch and recheck these dependencies. If an intervening merge changes any shared client contract, update this design and rerun the specification review before implementation.
+The revised specification and catalog disposition PR must be approved and merged before implementation. Before coding, the implementation branch must be created from the active release branch and recheck these dependencies. If an intervening merge changes any shared client contract, update this design and rerun the specification review before implementation.
 
 ## Project Structure
 

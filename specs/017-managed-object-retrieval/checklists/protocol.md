@@ -9,7 +9,7 @@
 
 - [ ] CHK001 Does the feature identify all 15 catalog rows as 2 Get plus 13 Locate and avoid describing all 15 as proven client obligations? [Completeness, Spec §Normative scope]
 - [ ] CHK002 Are request, success-response, and error payload rules linked to exact OASIS sections and tables? [Traceability, Spec §Normative scope]
-- [ ] CHK003 Does the Get format text preserve the open DISC-015 decision without claiming PKCS#12 output conformance? [Clarity, Spec §Open Inventory Questions]
+- [ ] CHK003 Does the Get format text apply KMIPKIT-DEC-003 without claiming local PKCS#12 container validation or server output conformance? [Clarity, Spec §Inventory Dispositions]
 - [ ] CHK004 Does the case table separate catalog IDs, official labels, profile cases, fixture availability, and mapping confidence? [Evidence, traceability.md]
 
 ## Actor and behavior boundaries
@@ -22,5 +22,5 @@
 
 - [ ] CHK008 Are Any Object payloads opaque, redacted, and zeroized only while held in KMIPKit-owned storage? [Security, Spec FR-004]
 - [ ] CHK009 Are malformed and over-limit response cases testable with sanitized diagnostics? [Coverage, Spec FR-012]
-- [ ] CHK010 Are all seven unavailable fixtures explicitly barred from being reported as official passes? [Measurability, Spec FR-013]
+- [ ] CHK010 Are the two available PKCS#12 fixtures and five unavailable linked fixtures distinguished, with no official pass claim before full-case execution? [Measurability, Spec FR-013]
 - [ ] CHK011 Does the feature avoid claiming profile support, cross-language parity, two-server interoperability, or certification? [Boundary, Spec Out of Scope]
