@@ -20,16 +20,16 @@ The revised KMIPKIT-0017 specification and catalog-disposition changes are merge
 - [ ] T002 Add deterministic generic TTLV test builders for Get and Locate request/response payloads in crates/kmipkit-protocol/tests/support/
 - [ ] T003 Add fake-transport helpers that capture one request batch and return controlled response batches in crates/kmipkit-client/tests/support/
 
-## Phase 2: Foundational contracts
+## Phase 2: Foundational ownership contract
 
-**Purpose**: Establish closed typed dispatch and typed-outcome boundaries used by both stories.
+**Purpose**: Establish the fallible, zeroizing TTLV item-copy primitive required to retain Get's callback-scoped Any Object. Get/Locate client dispatch and typed outcomes are added with their operation models and decoders in T017 and T027.
 
 - [ ] T004 Add failing public-surface tests for `Item::try_clone` deep-copy/roundtrip behavior plus Get/Locate request exports and model accessors in crates/kmipkit-ttlv/tests/public_item_contract.rs and crates/kmipkit-protocol/tests/public_operation_contract.rs
-- [ ] T005 Add failing client-boundary tests for request variants, operation identifiers, completed-only outcome accessors, unified `ClientResponseView` accessors, and valid Pending response mapping in crates/kmipkit-client/tests/operation_boundary.rs
+- [ ] T005 Add a failing client-boundary integration contract for request variants, operation identifiers, completed-only outcome accessors, unified `ClientResponseView` accessors, and valid Pending response mapping in crates/kmipkit-client/tests/operation_boundary.rs. Its compile-time Red remains until the Get/Locate models and client mappings are implemented in T014–T017 and T024–T027; execute its runtime scenario in T028.
 - [ ] T006 Record focused Red commands/results and commit the contract tests before production edits in the KMIPKIT-0017 implementation branch
-- [ ] T007 Implement the fallible zeroizing `Item::try_clone` in crates/kmipkit-ttlv/src/item.rs, then add only the shared Get/Locate request variants, operation IDs, typed outcome slots, Pending mapping, and unified response-view accessors in crates/kmipkit-client/src/execute.rs
-- [ ] T008 Run focused TTLV and client-boundary tests, record Green evidence, and commit the `Item::try_clone` and shared dispatch Green implementation separately from the Red tests in the KMIPKIT-0017 implementation branch
-- [ ] T009 Review shared dispatch for a justified behavior-preserving Refactor; if warranted, test and commit it separately in crates/kmipkit-client/src/execute.rs
+- [ ] T007 Implement the fallible zeroizing `Item::try_clone` in crates/kmipkit-ttlv/src/item.rs
+- [ ] T008 Run `public_item_contract` and focused TTLV tests, record Green evidence, and commit the `Item::try_clone` Green implementation separately from the Red tests in the KMIPKIT-0017 implementation branch. The combined client-boundary test remains deferred to T028 because its typed response models are introduced in the operation stories.
+- [ ] T009 Review `Item::try_clone` for a justified behavior-preserving Refactor; if warranted, test and commit it separately in crates/kmipkit-ttlv/src/item.rs
 
 ## Phase 3: User Story 1 — Retrieve one managed object (Priority: P1)
 
@@ -72,7 +72,7 @@ The revised KMIPKIT-0017 specification and catalog-disposition changes are merge
 - [ ] T025 [US2] Implement Table 248 conversion for optional Integer and zero-or-more ordered Unique Identifiers in crates/kmipkit-protocol/src/locate.rs
 - [ ] T026 [US2] Export Locate request/response/error types and public rustdoc from crates/kmipkit-protocol/src/lib.rs
 - [ ] T027 [US2] Add Locate request serialization, completed and Pending response decoding, typed outcome storage, direct completed accessor, and unified response-view mapping in crates/kmipkit-client/src/execute.rs
-- [ ] T028 Run focused Locate protocol/client tests, record Green evidence, and commit the Green implementation separately in the KMIPKIT-0017 implementation branch
+- [ ] T028 Run focused Locate protocol/client tests and the combined `operation_boundary` integration contract after both Get and Locate client mappings exist; record Green evidence and commit the Locate/client Green implementation separately in the KMIPKIT-0017 implementation branch
 - [ ] T029 Perform a behavior-preserving Locate Refactor only where test evidence justifies it; run tests and commit any change separately in crates/kmipkit-protocol/src/locate.rs and crates/kmipkit-client/src/execute.rs
 
 ## Phase 5: User Story 3 — Preserve results and protect object contents (Priority: P1)
@@ -104,7 +104,7 @@ The revised KMIPKIT-0017 specification and catalog-disposition changes are merge
 ## Dependencies and execution order
 
 - Specification approval and merge gate T001.
-- Setup T001–T003 precedes shared client contracts T004–T009.
+- Setup T001–T003 precedes contract Red tests T004–T006. T007–T009 establish only the TTLV ownership primitive; T017 adds Get client dispatch with Get models, and T027 extends dispatch with Locate models. T005's runtime scenario therefore runs at T028, after both operation paths exist; do not add temporary public models to make it pass earlier.
 - US1 T010–T019 and US2 T020–T029 depend on the shared foundation. Their protocol files are separate, but shared dispatch and public exports overlap; implement sequentially with one active implementer. No tasks are marked parallel.
 - US3 T030–T036 follows both request/response paths.
 - Polish T037–T046 follows all stories.
