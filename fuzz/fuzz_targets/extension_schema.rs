@@ -3,11 +3,14 @@
 
 use std::sync::OnceLock;
 
+#[path = "support/ttlv_clone.rs"]
+mod ttlv_clone;
+
 use kmipkit_protocol::extension::{
     self, ExtensionDefinition, ExtensionOrderConstraint, ExtensionSchema,
 };
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
-use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
+use kmipkit_ttlv::{ItemType, RawTag, Tag, Value, ValueView};
 use libfuzzer_sys::fuzz_target;
 
 const MAX_INPUT_BYTES: usize = 4 * 1024;
@@ -65,32 +68,6 @@ fn definition() -> Option<ExtensionDefinition> {
     extension::extension_definition(identity, compatibility, discriminator, schema()?).ok()
 }
 
-fn clone_structure(source: &kmipkit_ttlv::StructureView<'_>) -> Option<Structure> {
-    let mut copy = Structure::new();
-    for child in source.children() {
-        let value = child.with_value(clone_value)?;
-        copy.try_push(Item::new(child.tag(), value).ok()?).ok()?;
-    }
-    Some(copy)
-}
-
-fn clone_value(source: ValueView<'_>) -> Option<Value> {
-    match source {
-        ValueView::Structure(value) => Some(Value::structure(clone_structure(&value)?)),
-        ValueView::Integer(value) => Some(Value::integer(*value)),
-        ValueView::LongInteger(value) => Some(Value::long_integer(*value)),
-        ValueView::BigInteger(value) => Some(Value::big_integer(value.to_vec())),
-        ValueView::Enumeration(value) => Some(Value::enumeration(*value)),
-        ValueView::Boolean(value) => Some(Value::boolean(*value)),
-        ValueView::TextString(value) => Some(Value::text_string((*value).to_owned())),
-        ValueView::ByteString(value) => Some(Value::byte_string(value.to_vec())),
-        ValueView::DateTime(value) => Some(Value::date_time(*value)),
-        ValueView::Interval(value) => Some(Value::interval(*value)),
-        ValueView::DateTimeExtended(value) => Some(Value::date_time_extended(*value)),
-        _ => None,
-    }
-}
-
 fuzz_target!(|data: &[u8]| {
     if data.len() > MAX_INPUT_BYTES {
         return;
@@ -106,7 +83,7 @@ fuzz_target!(|data: &[u8]| {
         return;
     };
     let Some(payload) = decoded.with_value(|value| match value {
-        ValueView::Structure(structure) => clone_structure(&structure),
+        ValueView::Structure(structure) => ttlv_clone::clone_structure(&structure),
         _ => None,
     }) else {
         return;
