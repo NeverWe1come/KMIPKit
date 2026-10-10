@@ -331,6 +331,28 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         native_handle = by_name["org.kmipkit.internal.NativeHandle"]
         self.assertEqual(native_handle["declarationState"], "blocked")
 
+    def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
+        declarations = [
+            declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration["packageId"] == "python-kmipkit"
+        ]
+        self.assertEqual(len(declarations), 259)
+        by_name = {declaration["exportName"]: declaration for declaration in declarations}
+        close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
+        self.assertEqual(close_method["kind"], "python-export")
+        self.assertEqual(close_method["declarationState"], "blocked")
+        item_type = by_name["kmipkit.ttlv.ItemType"]
+        self.assertEqual(item_type["declarationState"], "blocked")
+        enum_value = by_name["kmipkit.ttlv.ItemType.Structure"]
+        self.assertEqual(enum_value["declarationState"], "blocked")
+        error_type = by_name["kmipkit.errors.CompatibilityMismatchError"]
+        self.assertEqual(error_type["kind"], "type")
+        registry_field = by_name[
+            "kmipkit.extensions.ExtensionRegistryLimits.max_definitions"
+        ]
+        self.assertEqual(registry_field["kind"], "field")
+
     def test_schema_identifies_the_complete_v2_contract(self) -> None:
         self.assertEqual(
             self.schema["$id"], "urn:kmipkit:schemas:public-api-manifest:2"
