@@ -13,7 +13,7 @@ The Rust checks below were run in WSL Ubuntu 26.04 with Rust 1.94. Focused and f
 | `cargo test -p kmipkit-protocol --all-features` | Full protocol suite passed, including all corrected multipart response fixtures. |
 | `cargo test -p kmipkit-client --all-features` | Full client suite passed, including Hash/MAC/Sign framing and reordered batch association. |
 | `cargo test --workspace --all-features` | Full workspace tests and doctests passed; the C ABI consumer integration test passed. |
-| `cargo llvm-cov --workspace --all-features --json` | Fresh instrumented workspace tests completed without test failures, but LLVM report generation failed because a generated `trybuild` `invoked.timestamp` file was treated as an object. No current full-workspace coverage report was produced; T040 remains open. |
+| `cargo llvm-cov --workspace --all-features --json` | Earlier WSL report export failed when LLVM treated a generated `trybuild` `invoked.timestamp` file as an object. This local tooling failure is superseded by the complete three-platform PR coverage run below. |
 | `pwsh -NoProfile -File .\scripts\tests\Test-Wsl.ps1` | All 8 PowerShell WSL runner contract tests passed. |
 | `cargo test -p kmipkit-protocol cryptographic_operation_contract_tests` | 12/12 focused contract tests passed after the framing-context fix. |
 | `cargo test -p kmipkit-client hash_mac_signature_execution_tests` | 12/12 client framing/dispatch tests passed after Refactor. |
@@ -29,7 +29,25 @@ The Rust checks below were run in WSL Ubuntu 26.04 with Rust 1.94. Focused and f
 | Earlier protocol coverage snapshot | 8,440/8,969 (94.10%) and changed/new production 1,049/1,088 (96.42%); historical only and below the protocol threshold. |
 | Earlier fresh coverage retry | An instrumented link failed because a cached `libtrybuild` archive was truncated at 16 MiB. A new target directory rebuilt dependencies and an earlier complete run passed; this historical run does not close the current coverage gate. |
 
-The 98.27% TTLV, 95.45% protocol, 95.11% client, 92.16% workspace, and 97.41% changed-production measurements came from an earlier run and are retained as historical evidence. The latest full instrumented test run passed its tests but failed while exporting coverage because of a generated `trybuild` scratch file. T040 remains open until a valid full-workspace report verifies every local threshold; PR CI is expected to provide another reproducible report.
+The 98.27% TTLV, 95.45% protocol, 95.11% client, 92.16% workspace, and 97.41% changed-production measurements came from an earlier run and are retained as historical evidence.
+
+## Completed PR CI coverage
+
+Draft PR [#78](https://github.com/NeverWe1come/KMIPKit/pull/78) CI run [38080294447](https://github.com/NeverWe1come/KMIPKit/actions/runs/38080294447) completed successfully on Linux, Windows, and macOS. It resolved the earlier coverage gate failure caused by LLVM merging function-instantiation summaries separately from physical file-segment coverage; a regression test models the distinct-line union and verifies that summary-uncovered residuals remain conservative.
+
+| Scope | Covered | Threshold | Result |
+| --- | ---: | ---: | --- |
+| Changed Rust lines | 1573/1620 (97.10%) | 95% | Passed |
+| TTLV | 731/737 (99.19%) | 95% | Passed |
+| Protocol | 8347/8641 (96.60%) | 95% | Passed |
+| Transport | 3713/3902 (95.16%) | 85% | Passed |
+| FFI | 2035/2137 (95.23%) | 85% | Passed |
+| Java adapters | 618/670 (92.24%) | 85% | Passed |
+| Python adapters | 773/783 (98.72%) | 85% | Passed |
+| JNI bridge | 1193/1312 (90.93%) | 85% | Passed |
+| Rust workspace | 20121/20911 (96.22%) | 90% | Passed |
+
+The Python script suite passed 255 tests with 26 environment-dependent skips. T040 is closed. T043 is closed after independent reviews and successful cross-platform CI. T041 remains open because the formal security scan could not start after its selected working-tree snapshot became stale; independent reviewers reported no branch-introduced finding, and CI passed its dependency-policy, C/JNI sanitizer, and fuzz-smoke jobs.
 
 ## Windows catalog and dependency-policy evidence
 
@@ -88,7 +106,7 @@ python tools/normative_catalog/report.py --check
 git diff --check
 ```
 
-T040 remains open because no current full-workspace coverage report is available. Independent security review found no branch-introduced finding, but T041 remains open because the formal security scan could not start after its selected working-tree snapshot became stale. Native sanitizer and fuzz checks, when run in the full workflow, and multi-platform PR CI remain under T043. T043 requires PR CI after a terminal-created draft PR.
+T040 and T043 are complete based on the successful PR CI run above. T041 remains open because no sealed formal security-scan report is available; the previous scan attempt could not start after its selected working-tree snapshot became stale.
 
 ## Response discrepancy and official evidence
 
