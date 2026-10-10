@@ -297,10 +297,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             ("rust-kmipkit", "kmipkit::ClientBatchItem")
         ]
         self.assertEqual(facade_item["declarationState"], "blocked")
+        self.assertEqual(facade_item["candidateSpecId"], "KMIPKIT-0012")
+        self.assertNotIn("languageMappings", facade_item)
         unknown_owner = by_package_and_name[
             (
                 "rust-kmipkit-protocol",
-                "kmipkit_protocol::cryptographic_operation::CryptographicAlgorithm",
+                "kmipkit_protocol::CryptographicAlgorithm",
             )
         ]
         self.assertEqual(unknown_owner["declarationState"], "blocked")
