@@ -83,8 +83,16 @@ fn request() -> ClientRequest {
 }
 
 fn response(status: u32, reason: Option<u32>, correlation: Option<&[u8]>) -> Vec<u8> {
-    let payload = (status == SUCCESS)
-        .then(|| test_structure([test_item(DATA, Value::byte_string(vec![0x00, 0x80, 0xFF]))]));
+    let payload = if status == PENDING {
+        Some(test_structure([]))
+    } else if status == SUCCESS {
+        Some(test_structure([test_item(
+            DATA,
+            Value::byte_string(vec![0x00, 0x80, 0xFF]),
+        )]))
+    } else {
+        None
+    };
     asynchronous_response_bytes(HASH_OPERATION, status, reason, correlation, payload)
 }
 
@@ -122,7 +130,7 @@ fn pending_hash_result_preserves_the_correlation_value() {
     let (mut client, state) = client(response(PENDING, None, Some(&correlation)));
     let result = client
         .execute(
-            ClientBatch::new(ClientBatchItem::new(request())),
+            ClientBatch::new(ClientBatchItem::new(request())).with_asynchronous_indicator(1),
             &CodecLimits::defaults(),
         )
         .expect("a valid Pending Hash result is returned to the caller");

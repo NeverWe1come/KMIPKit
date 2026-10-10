@@ -77,11 +77,9 @@ fn snapshot(item: &Item) -> (u32, Vec<u8>) {
 #[test]
 fn request_emits_table_235_fields_in_order_and_preserves_caller_values() {
     let input = [0x00, 0x7F, 0x80, 0xFF];
-    let correlation = [0x11, 0x22, 0x80, 0xFF];
     let actual = HashRequest::new(parameters(6))
         .with_data(OperationData::ByteString(SecretBytes::new(input.to_vec())))
-        .with_correlation_value(SecretBytes::new(correlation.to_vec()))
-        .with_init_indicator(false)
+        .with_init_indicator(true)
         .with_final_indicator(true)
         .to_ttlv_payload()
         .expect("Table 235 fields form a valid single-part request");
@@ -93,13 +91,7 @@ fn request_emits_table_235_fields_in_order_and_preserves_caller_values() {
             .iter()
             .map(|field| field.tag().raw())
             .collect::<Vec<_>>(),
-        [
-            0x0042_002B,
-            DATA,
-            CORRELATION_VALUE,
-            INIT_INDICATOR,
-            FINAL_INDICATOR,
-        ],
+        [0x0042_002B, DATA, INIT_INDICATOR, FINAL_INDICATOR,],
         "present Table 235 fields retain their normative order"
     );
     let parameter_values = fields[0].with_value(|value| match value {
@@ -127,15 +119,11 @@ fn request_emits_table_235_fields_in_order_and_preserves_caller_values() {
     );
     assert_eq!(snapshot(&fields[1]), (DATA, input.to_vec()));
     assert_eq!(
-        snapshot(&fields[2]),
-        (CORRELATION_VALUE, correlation.to_vec())
-    );
-    assert_eq!(
-        fields[3].with_value(|value| matches!(value, ValueView::Boolean(false))),
+        fields[2].with_value(|value| matches!(value, ValueView::Boolean(true))),
         true
     );
     assert_eq!(
-        fields[4].with_value(|value| matches!(value, ValueView::Boolean(true))),
+        fields[3].with_value(|value| matches!(value, ValueView::Boolean(true))),
         true
     );
 }
@@ -187,6 +175,11 @@ fn request_requires_single_part_data_and_omits_it_for_multipart() {
             INIT_INDICATOR,
             FINAL_INDICATOR
         ]
+    );
+    let multipart_view = multipart.view();
+    assert_eq!(
+        snapshot(&multipart_view.children()[1]),
+        (CORRELATION_VALUE, b"stream-id".to_vec())
     );
 }
 

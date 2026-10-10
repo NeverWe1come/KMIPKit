@@ -33,6 +33,7 @@ const FAILURE: u32 = 1;
 const OPERATION: u32 = 0x0042_005C;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const HASHING_ALGORITHM: u32 = 0x0042_0038;
 
 #[derive(Clone, Copy)]
 struct OperationFixture {
@@ -67,7 +68,13 @@ impl OperationFixture {
     fn request(self) -> ClientRequest {
         let bytes = || OperationData::ByteString(SecretBytes::new(b"message".to_vec()));
         match self.code {
-            HASH => ClientRequest::hash(HashRequest::new(test_structure([])).with_data(bytes())),
+            HASH => ClientRequest::hash(
+                HashRequest::new(test_structure([test_item(
+                    HASHING_ALGORITHM,
+                    Value::enumeration(6),
+                )]))
+                .with_data(bytes()),
+            ),
             MAC => ClientRequest::mac(MacRequest::new().with_data(bytes())),
             MAC_VERIFY => ClientRequest::mac_verify(
                 MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"mac".to_vec())),

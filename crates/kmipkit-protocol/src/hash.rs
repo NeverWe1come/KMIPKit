@@ -2,12 +2,12 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, Value};
+use kmipkit_ttlv::{Structure, StructureView, Value, ValueView};
 
 use crate::cryptographic_operation as common;
 use crate::{
-    CryptographicOperationError, KmipOperationResult, OperationData, ProtocolError,
-    ResponseBatchItemView, SecretBytes,
+    CryptographicOperationError, CryptographicOperationErrorKind, KmipOperationResult,
+    OperationData, ProtocolError, ResponseBatchItemView, SecretBytes,
 };
 
 const OPERATION: u32 = 0x0000_0027;
@@ -79,7 +79,7 @@ impl HashRequest {
     /// Returns a sanitized error for invalid Cryptographic Parameters or
     /// invalid single-part/multipart framing.
     pub fn to_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        common::validate_parameters(&self.parameters)?;
+        validate_hashing_parameters(&self.parameters)?;
         common::validate_framing(
             self.data.is_some(),
             self.correlation.is_some(),
@@ -121,6 +121,8 @@ impl fmt::Debug for HashRequest {
 #[derive(Debug)]
 pub struct HashResponse {
     result: KmipOperationResult,
+    data: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
 }
 
 impl HashResponse {
@@ -128,15 +130,37 @@ impl HashResponse {
     pub fn try_from_pending_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, HashError> {
+        let result = common::parse_result(item, OPERATION, "Hash", Some(true))?;
         Ok(Self {
-            result: common::parse_result(item, OPERATION, "Hash", Some(true))?,
+            result,
+            data: None,
+            correlation_value: None,
         })
     }
 
     /// Converts a completed Hash response item.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, HashError> {
+        let result = common::parse_result(item, OPERATION, "Hash", Some(false))?;
+        if result.status().raw() != common::SUCCESS {
+            return Ok(Self {
+                result,
+                data: None,
+                correlation_value: None,
+            });
+        }
+
+        let parsed = item
+            .with_response_payload(|payload| parse_success_payload(&payload))
+            .ok_or_else(|| {
+                CryptographicOperationError::new(
+                    "Hash",
+                    CryptographicOperationErrorKind::MissingSuccessPayload,
+                )
+            })??;
         Ok(Self {
-            result: common::parse_result(item, OPERATION, "Hash", Some(false))?,
+            result,
+            data: parsed.data,
+            correlation_value: parsed.correlation_value,
         })
     }
 
@@ -144,6 +168,18 @@ impl HashResponse {
     #[must_use]
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
+    }
+
+    /// Returns the optional digest Data returned by the server.
+    #[must_use]
+    pub const fn data(&self) -> Option<&SecretBytes> {
+        self.data.as_ref()
+    }
+
+    /// Returns the optional multipart Correlation Value returned by the server.
+    #[must_use]
+    pub const fn correlation_value(&self) -> Option<&SecretBytes> {
+        self.correlation_value.as_ref()
     }
 }
 
@@ -170,4 +206,55 @@ fn append_framing(
         common::push(payload, common::FINAL_INDICATOR, Value::boolean(final_part))?;
     }
     Ok(())
+}
+
+struct ParsedHashPayload {
+    data: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
+}
+
+fn parse_success_payload(payload: &StructureView<'_>) -> Result<ParsedHashPayload, HashError> {
+    let mut data = None;
+    let mut correlation_value = None;
+
+    for field in payload.children() {
+        match field.tag().raw() {
+            common::DATA => {
+                if data.is_some() {
+                    return Err(malformed_response());
+                }
+                data = Some(common::parse_secret(field).ok_or_else(malformed_response)?);
+            }
+            common::CORRELATION_VALUE => {
+                if correlation_value.is_some() {
+                    return Err(malformed_response());
+                }
+                correlation_value =
+                    Some(common::parse_secret(field).ok_or_else(malformed_response)?);
+            }
+            _ => {}
+        }
+    }
+
+    Ok(ParsedHashPayload {
+        data,
+        correlation_value,
+    })
+}
+
+fn malformed_response() -> HashError {
+    CryptographicOperationError::new("Hash", CryptographicOperationErrorKind::MalformedPayload)
+}
+
+fn validate_hashing_parameters(parameters: &Structure) -> Result<(), ProtocolError> {
+    common::validate_parameters(parameters)?;
+    let includes_hashing_algorithm = parameters.view().children().iter().any(|field| {
+        field.tag().raw() == common::HASHING_ALGORITHM
+            && field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+    });
+    if includes_hashing_algorithm {
+        Ok(())
+    } else {
+        Err(common::request_error())
+    }
 }

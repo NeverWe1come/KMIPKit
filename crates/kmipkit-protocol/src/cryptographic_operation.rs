@@ -12,6 +12,7 @@ use crate::{
 
 pub(crate) const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 pub(crate) const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+pub(crate) const HASHING_ALGORITHM: u32 = 0x0042_0038;
 pub(crate) const DATA: u32 = 0x0042_00C2;
 pub(crate) const DIGESTED_DATA: u32 = 0x0042_0107;
 pub(crate) const CORRELATION_VALUE: u32 = 0x0042_00D6;
