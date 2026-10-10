@@ -210,6 +210,45 @@ pub struct EncryptResponse {
 }
 
 impl EncryptResponse {
+    /// Converts one validated Pending Encrypt response batch item.
+    ///
+    /// This conversion validates the operation result and Pending status but
+    /// does not parse success-only response payload fields. The shared client
+    /// Pending path validates and owns the Asynchronous Correlation Value.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`EncryptError`] for a different operation, invalid result
+    /// metadata, or a result status other than Operation Pending.
+    pub fn try_from_pending_response_item(
+        item: ResponseBatchItemView<'_>,
+    ) -> Result<Self, EncryptError> {
+        if item.operation() != Some(ENCRYPT_OPERATION) {
+            return Err(EncryptError::UnexpectedOperation);
+        }
+
+        let result = crate::result::parse_operation_result(item).map_err(|error| match error {
+            crate::result::OperationResultParseError::MissingResultStatus => {
+                EncryptError::MissingResultStatus
+            }
+            crate::result::OperationResultParseError::Invalid(cause) => {
+                EncryptError::InvalidOperationResult(cause)
+            }
+        })?;
+        if !is_pending(result.status()) {
+            return Err(EncryptError::NotPendingOutcome);
+        }
+
+        Ok(Self {
+            result,
+            unique_identifier: None,
+            data: None,
+            iv_counter_nonce: None,
+            correlation_value: None,
+            authenticated_encryption_tag: None,
+        })
+    }
+
     /// Converts one already validated, completed Encrypt response batch item.
     ///
     /// Success payload fields follow Table 215. Unknown fields remain
@@ -313,6 +352,8 @@ pub enum EncryptError {
     /// The response is pending and must be routed through the shared
     /// `PendingOutcome` path instead of completed-response conversion.
     PendingOutcomeRequired,
+    /// The pending-only response converter received a non-Pending result.
+    NotPendingOutcome,
     /// The represented KMIP result violates the shared status/reason contract.
     InvalidOperationResult(ResultValidationError),
     /// A successful Encrypt result omitted its Response Payload.
@@ -329,6 +370,7 @@ impl fmt::Display for EncryptError {
             Self::PendingOutcomeRequired => formatter.write_str(
                 "Encrypt result is Pending; route it through the shared PendingOutcome path",
             ),
+            Self::NotPendingOutcome => formatter.write_str("Encrypt result is not Pending"),
             Self::InvalidOperationResult(cause) => {
                 write!(formatter, "Encrypt operation result is invalid: {cause}")
             }
