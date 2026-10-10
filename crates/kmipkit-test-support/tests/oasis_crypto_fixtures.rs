@@ -561,6 +561,47 @@ fn fixture_adapter_rejects_unknown_symbols_in_selected_operation_messages() {
 }
 
 #[test]
+fn fixture_adapter_preserves_unknown_extension_tags_and_enumeration_values() {
+    // This synthetic node uses the allocated vendor extension range to prove
+    // that the adapter retains generic TTLV values without assigning meaning.
+    let xml = SEQUENCE_PAIRING_XML.replacen(
+        "<Data type=\"ByteString\" value=\"01020304\"/>",
+        "<Data type=\"ByteString\" value=\"01020304\"/><VendorPrivateValue tag=\"0x54ABCD\" type=\"Enumeration\" value=\"0xDEADBEEF\"/>",
+        1,
+    );
+    let fixture = OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &xml)
+        .expect("generic extension values remain representable in selected messages");
+    let first_request = fixture
+        .operation_pairs()
+        .first()
+        .expect("the synthetic fixture has an in-scope operation pair")
+        .request_message();
+
+    assert!(contains_value(
+        first_request,
+        0x54ABCD,
+        &ValueSnapshot::Enumeration(0xDEADBEEF),
+    ));
+}
+
+#[test]
+fn fixture_adapter_rejects_malformed_xml_without_echoing_document_contents() {
+    const SECRET_SENTINEL: &str = "KMIPKIT_XML_SECRET_SENTINEL_73";
+    let malformed_xml = format!(
+        "<KMIP><RequestMessage><Data type=\"TextString\" value=\"{SECRET_SENTINEL}\"</RequestMessage>"
+    );
+
+    let error = OasisCryptoFixture::from_xml("TC-T015-MALFORMED", &malformed_xml)
+        .expect_err("an unclosed XML attribute is rejected");
+    let diagnostic = format!("{error:?} {error}");
+
+    assert!(
+        !diagnostic.contains(SECRET_SENTINEL),
+        "fixture diagnostics must not echo raw XML values"
+    );
+}
+
+#[test]
 fn fixture_derived_success_responses_preserve_all_24_encrypt_and_4_decrypt_items() {
     // OASIS KMIP Specification v2.1 §6.1.17 Table 215 and §6.1.11 Table 197
     // define the success payloads; §§7.4, 7.8, and 7.9 define the optional
