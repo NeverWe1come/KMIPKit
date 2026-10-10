@@ -13,6 +13,7 @@ use crate::{
     ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
 use kmipkit_ttlv::Value;
+use quickcheck::{Arbitrary, Gen, QuickCheck};
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
@@ -32,6 +33,7 @@ const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const RESULT_MESSAGE: u32 = 0x0042_007D;
 const RESULT_REASON: u32 = 0x0042_007E;
 const RESULT_STATUS: u32 = 0x0042_007F;
+const UNKNOWN_REASON_PROPERTY_SEED: u64 = 0x4b4d_4950_5245_4153;
 
 fn response_message(
     operation: u32,
@@ -171,4 +173,51 @@ fn common_result_model_preserves_failure_reason_invariant() {
         .expect_err("a Failure result requires a Result Reason");
 
     assert_eq!(error, ResultValidationError::FailureRequiresReason);
+}
+
+#[derive(Clone, Debug)]
+struct UnknownReasonCase(u32);
+
+impl Arbitrary for UnknownReasonCase {
+    fn arbitrary(generator: &mut Gen) -> Self {
+        Self(u32::arbitrary(generator) | 0x8000_0000)
+    }
+
+    fn shrink(&self) -> Box<dyn Iterator<Item = Self>> {
+        Box::new(std::iter::empty())
+    }
+}
+
+#[allow(clippy::needless_pass_by_value)]
+fn unknown_result_reason_values_remain_raw_and_unassigned(case: UnknownReasonCase) -> bool {
+    if ResultReason::from_raw(case.0).known_name().is_some() {
+        return false;
+    }
+
+    [ENCRYPT_OPERATION, DECRYPT_OPERATION]
+        .into_iter()
+        .all(|operation| {
+            let message =
+                response_message(operation, Some(OPERATION_FAILED), Some(case.0), None, None);
+            let Some(item) = message.batch_items().next() else {
+                return false;
+            };
+            let Ok(result) = crate::asynchronous::operation_result(item) else {
+                return false;
+            };
+            let Some(reason) = result.reason() else {
+                return false;
+            };
+            reason.raw() == case.0 && reason.known_name().is_none()
+        })
+}
+
+#[test]
+fn arbitrary_unknown_result_reasons_are_lossless_for_encrypt_and_decrypt() {
+    QuickCheck::new()
+        .rng(Gen::from_size_and_seed(32, UNKNOWN_REASON_PROPERTY_SEED))
+        .tests(256)
+        .quickcheck(
+            unknown_result_reason_values_remain_raw_and_unassigned as fn(UnknownReasonCase) -> bool,
+        );
 }

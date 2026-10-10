@@ -174,6 +174,10 @@ mod encrypt_decrypt_redaction_tests;
 mod malformed_crypto_payload_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/crypto_robustness_property_tests.rs"]
+mod crypto_robustness_property_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_tests.rs"]
 mod create_key_pair_tests;
 
