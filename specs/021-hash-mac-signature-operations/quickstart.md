@@ -6,7 +6,7 @@ This guide is for the implementation PR. The current design/specification PR doe
 
 - KMIPKIT-0019's shared `OperationData`, Cryptographic Parameters, and multipart field types are merged to the active release branch.
 - Rust 1.94 / Edition 2024 and the repository's pinned Cargo toolchain are available.
-- Work is on `feature/KMIPKIT-0021-hash-mac-signature-operations`, created from the current `release/1.0.0` branch.
+- Work is on `feature/KMIPKIT-0021-hash-mac-signature-implementation`, created from `release/1.0.0` at `db51b7a1c93edbe81f89a9faf7902aa543caec3f`.
 - Do not download OASIS material. Use the pinned local files under `specification/oasis/kmip-2.1/`.
 
 ## Focused protocol checks

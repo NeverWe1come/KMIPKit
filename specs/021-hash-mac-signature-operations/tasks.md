@@ -16,9 +16,9 @@
 
 **Purpose**: Start implementation from the right release state and reuse #0019 contracts.
 
-- [ ] T001 Confirm KMIPKIT-0019 implementation is merged and `release/1.0.0` exports the shared `OperationData`, Cryptographic Parameters, Correlation Value, Init Indicator, and Final Indicator contracts used by `specs/021-hash-mac-signature-operations/plan.md`.
-- [ ] T002 Create the implementation branch and worktree from current `release/1.0.0`; record the base SHA and clean-worktree result in the implementation PR.
-- [ ] T003 Confirm the pinned OASIS source hashes in `specification/oasis/kmip-2.1/CHECKSUMS.sha256` and confirm no diff exists under `specification/oasis/kmip-2.1/upstream/`.
+- [x] T001 Confirm KMIPKIT-0019 implementation is merged and `release/1.0.0` exports the shared `OperationData`, Cryptographic Parameters, Correlation Value, Init Indicator, and Final Indicator contracts used by `specs/021-hash-mac-signature-operations/plan.md`.
+- [x] T002 Create the implementation branch and worktree from current `release/1.0.0`; record the base SHA and clean-worktree result in the implementation PR. Base: `db51b7a1c93edbe81f89a9faf7902aa543caec3f`; branch: `feature/KMIPKIT-0021-hash-mac-signature-implementation`.
+- [x] T003 Confirm the pinned OASIS source hashes in `specification/oasis/kmip-2.1/CHECKSUMS.sha256` and confirm no diff exists under `specification/oasis/kmip-2.1/upstream/`.
 
 ## Phase 2: Shared operation execution foundation
 
@@ -89,7 +89,7 @@
 ### Red commit
 
 - [ ] T025 [US3] Add failing MAC Verify request tests in `crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs` for optional key/parameters/original Data, required single-part MAC Data, absent multipart MAC Data, and multipart fields.
-- [ ] T026 [US3] Add failing Signature Verify request tests in `crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs` for optional key/parameters/Data/Digested Data and required single-part Signature Data.
+- [ ] T026 [US3] Add failing Signature Verify request tests in `crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs` for optional key/parameters/Data/Digested Data, required single-part Signature Data, and absent Signature Data on multipart requests.
 - [ ] T027 [US3] Add failing verification response tests in `crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs` and `crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs` for Valid/Invalid/Unknown/extension values, required single-part response indicator, both final multipart forms, non-final indicator rejection, required response Unique Identifier missing/duplicate/type validation, recovered Data, and generic TTLV retention.
 - [ ] T028 [US3] Add failing fake-client tests in `crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs` and `crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs` for exactly one exchange, invalid/unknown results as operation results, delivery evidence, errors, and no retry.
 
