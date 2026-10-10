@@ -3,7 +3,7 @@
 **Purpose**: Review specification quality before human approval.
 **Created**: 2026-10-10
 **Feature**: [spec.md](../spec.md)
-**Review status**: Author quality review passed on 2026-10-10; maintainer acceptance remains pending.
+**Review status**: Author quality review passed on 2026-10-10; maintainer approval recorded on 2026-10-11.
 
 
 ## Scope and sources
@@ -17,4 +17,4 @@
 - [x] Independent positive, negative, Pending, malformed, and no-retry scenarios are testable.
 - [x] Secret handling, unknown-value preservation, and four-language parity are explicit.
 - [x] Official fixture and profile claims are evidence-limited.
-- [ ] Human reviewer accepts this draft before implementation.
+- [x] Maintainer approves this specification for future implementation; approval does not start implementation.

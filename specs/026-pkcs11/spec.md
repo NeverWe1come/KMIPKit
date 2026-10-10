@@ -2,7 +2,8 @@
 
 **Feature Branch**: feature/KMIPKIT-0040-pkcs11
 **Created**: 2026-10-10
-**Status**: Draft for human review
+**Status**: Approved for implementation — 2026-10-11
+**Approval evidence**: The maintainer approved specifications 022–028 for future implementation in a direct instruction on 2026-10-11. This approval does not start implementation.
 **Input**: Specify the remaining client-initiated KMIP 2.1 operations in this family for the 1.0.0 release.
 
 ## Normative scope
