@@ -137,6 +137,10 @@ mod cryptographic_parameters_tests;
 mod encrypt_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/decrypt_tests.rs"]
+mod decrypt_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_tests.rs"]
 mod create_key_pair_tests;
 
