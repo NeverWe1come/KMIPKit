@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-09
 
-**Status**: Draft for review
+**Status**: Authorized for autonomous implementation under the maintainer's standing direct instruction (2026-10-09); implementation PR [#73](https://github.com/NeverWe1come/KMIPKit/pull/73) was merged on 2026-10-09. This records scope authorization and merge, not a claim of separate line-by-line review of this revision.
 
 **Input**: KMIPKit roadmap Phase D: specify bounded client-initiated Query and Ping operations for KMIP 2.1 over TTLV.
 
@@ -46,6 +46,7 @@ As a KMIPKit caller, I can issue Ping and distinguish a successful KMIP response
 1. **Given** a configured client, **When** the caller invokes Ping, **Then** KMIPKit sends one client-initiated Ping with an empty request payload.
 2. **Given** a valid empty Ping response with Success, **When** the caller receives the result, **Then** Ping completes successfully and does not claim service health beyond the received response.
 3. **Given** a KMIP failure, malformed response, or transport error, **When** Ping completes, **Then** the common status/error and delivery evidence are preserved, with no automatic retry.
+4. **Given** the caller executes Ping in a typed batch with an Asynchronous Indicator that permits asynchronous responses, **When** the server returns Pending with its Asynchronous Correlation Value, **Then** the client preserves the Pending result, typed Ping response, and exact correlation bytes for caller-directed follow-up without issuing another exchange.
 
 ### User Story 2 — Inspect server capabilities (Priority: P1)
 
@@ -64,6 +65,7 @@ As a KMIPKit caller, I can request one or more kinds of server information and i
 5. **Given** a response contains future, vendor, or otherwise unknown enum values or extension Items, **When** it is decoded, **Then** the original values remain available to the caller.
 6. **Given** a Query failure or transport error, **When** the operation completes, **Then** the common status, reason, permitted message, and delivery state are retained and the request is not retried.
 7. **Given** Query Extension List and Query Extension Map are both requested, **When** the client constructs the request, **Then** it transmits the caller's requested functions unchanged and leaves the standard's response precedence to the server.
+8. **Given** the caller executes Query in a typed batch with an Asynchronous Indicator that permits asynchronous responses, **When** the server returns Pending with its Asynchronous Correlation Value, **Then** the client preserves the Pending result, typed Query response, and exact correlation bytes for caller-directed follow-up without issuing another exchange.
 
 ## Requirements
 
@@ -76,7 +78,7 @@ As a KMIPKit caller, I can request one or more kinds of server information and i
 - **FR-005**: The Query API MUST expose all standard Query Function values and allow valid extension values; future/unknown enumeration values MUST remain lossless under the shared public-value policy.
 - **FR-006**: The typed Query response MUST expose every member defined by §6.1.40, Table 283 with the standard's optionality and repeatability. Structurally valid nested and unknown Items MUST remain inspectable.
 - **FR-007**: The Query response decoder MUST accept both forms described by the conflicting text in §6.1.40 and Table 283: an empty response payload when there are no values to return, and a structured response containing the required Protection Storage Masks field, whose list may be empty. This tolerant client behavior does not resolve the server-conformance conflict recorded as `KMIPKIT-DISC-047`.
-- **FR-008**: Query and Ping MUST preserve the shared KMIP result status, result reason, permitted result message, batch correlation, and transport delivery state.
+- **FR-008**: Query and Ping MUST preserve the shared KMIP result status, result reason, permitted result message, batch correlation, and transport delivery state. When the typed batch Asynchronous Indicator permits Pending under KMIPKIT-0007 FR-008, the client MUST also preserve its typed response and exact Asynchronous Correlation Value; this does not make the Ping/Query convenience methods opt into asynchronous responses.
 - **FR-009**: Each explicit Query or Ping invocation MUST perform at most one exchange and MUST NOT retry, poll, or issue a follow-up operation automatically.
 - **FR-010**: Ping success MUST be documented as evidence that the server returned a successful Ping response, not as a guarantee of general service health.
 - **FR-011**: Query results MUST be presented as server-reported information. KMIPKit MUST NOT convert them into claims that a capability is enabled, authorized, or usable.
@@ -98,11 +100,12 @@ As a KMIPKit caller, I can request one or more kinds of server information and i
 - The two contradictory §6.1.40/Table 283 forms are both accepted by the client; this is not a server-conformance determination (`KMIPKIT-DISC-047`).
 - Unknown enum values and extension data do not become errors solely because the current typed API does not assign them a named variant.
 - A server failure never produces a fabricated typed-success payload.
+- A Pending response is accepted only when the typed batch's effective Asynchronous Indicator permits it; Ping and Query preserve the typed Pending response and correlation bytes for explicit caller action.
 - Transport failure does not trigger an implicit retry, even when delivery may have occurred.
 
 ## Success Criteria
 
-- **SC-001**: The Query and Ping operation elements, their operation-enum values, Query Function enumeration and its 14 standard values plus extension range, Object Groups structure/member and Object Group attribute, and both client requirement IDs are assigned to KMIPKIT-0020 in the normative catalog. `KMIPKIT-DISC-047` records the unresolved response-shape conflict. The generated coverage report passes its pinned consistency check and continues to show implementation and verification evidence as pending until the implementation PR.
+- **SC-001**: The Query and Ping operation elements, their operation-enum values, Query Function enumeration and its 14 standard values plus extension range, Object Groups structure/member and Object Group attribute, and both client requirement IDs are assigned to KMIPKIT-0020 in the normative catalog. `KMIPKIT-DISC-047` records the unresolved response-shape conflict. The generated coverage report passes its pinned consistency check and links implementation and repository verification evidence recorded in merged PR #73; unavailable pinned official fixtures remain an explicit limitation, so this is not a formal conformance claim.
 - **SC-002**: Focused protocol and fake-transport tests cover every Ping and Query acceptance scenario, including empty Query rejection, repeated functions, all 14 standard Query Function values, optional/repeated Object Group attributes, optional/repeated response fields, both source-described successful response forms, failures, unknown values, and no retry.
 - **SC-003**: No Query or Ping operation-specific value is lost across typed model conversion to and from TTLV.
 - **SC-004**: No conformance claim relies on an unavailable fixture; all referenced official test-case fixture availability and mapping caveats are documented.

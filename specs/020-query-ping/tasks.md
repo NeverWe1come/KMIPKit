@@ -67,6 +67,25 @@
 - [x] T022 Run catalog validation, generated-report check, immutable OASIS source check, formatting, Clippy, focused and workspace tests, coverage, documentation tests, and the full required CI matrix; meet the repository gates (95% protocol/model and changed code, 85% transport/FFI/bindings, 90% workspace) and record platform and coverage results in the implementation PR.
   - CI run 37984606997 passed on Ubuntu, Windows, and macOS, including Rust stable and 1.94, C consumer, Java/JNI, Python, sanitizers, fuzz smoke, normative inventory, documentation contracts, and coverage aggregation. Aggregate coverage: changed Rust 556/571 (97.37%), TTLV 724/730 (99.18%), protocol 6135/6353 (96.57%), transport 3713/3902 (95.16%), FFI 2035/2137 (95.23%), Java 618/670 (92.24%), Python 773/783 (98.72%), JNI 1193/1312 (90.93%), workspace 16807/17476 (96.17%).
 
+## Phase 5: QA corrections
+
+### Tests first (Red)
+
+- [x] T023 Add a decoder regression test proving `Server Information` rejects a non-Structure TTLV value, citing KMIP v2.1 §6.1.40, Table 283 and §7.37, Table 389.
+- [x] T024 Add fake-transport regressions proving Ping and Query retain typed Pending outcomes and exact correlation bytes when the typed batch's Asynchronous Indicator permits Pending, with one exchange and no automatic follow-up; cite KMIP v2.1 §§9.1–9.2, §11.3, Tables 400–401 and 431–432 and KMIPKIT-0007 FR-008.
+  - Red evidence: commit `2dec86c`; the Query decoder test failed because Text String was accepted for Server Information, and both Pending tests failed because dispatch returned completed Ping/Query variants.
+
+### Implementation (Green)
+
+- [x] T025 Validate Server Information's outer TTLV value as a Structure before preserving its generic Item.
+- [x] T026 Route typed Ping and Query response conversion through the common Pending outcome helper, preserving operation, typed response, and the exact correlation value in zeroizing storage.
+  - Green evidence: the focused protocol regression passed (1/1); the focused client Pending regressions passed (2/2) after the implementation change.
+
+### Refactor and traceability
+
+- [x] T027 Reconcile the Query/Ping design and acceptance criteria with the inherited KMIPKIT-0007 asynchronous batch contract; map the typed Pending paths and malformed Server Information test in traceability. Review the shared helper reuse and make no further production refactor because the minimal green change already follows the common path.
+  - Refactor evidence: documentation and traceability align with the implemented shared path; focused suites remain green. No generated catalog artifact changed.
+
 ## Dependencies and execution order
 
 - T001–T003 establish the source and verification baseline before either story.

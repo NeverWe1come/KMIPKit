@@ -398,6 +398,28 @@ fn query_known_text_and_structure_members_reject_wrong_ttlv_types() {
 }
 
 #[test]
+fn query_server_information_rejects_non_structure_ttlv_values() {
+    let message = response_message(
+        QUERY_OPERATION,
+        0,
+        None,
+        None,
+        Some(structure([
+            item(
+                QUERY_RESPONSE_TAGS[3],
+                Value::text_string("server information must be a Structure".to_owned()),
+            ),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ])),
+    );
+
+    assert!(matches!(
+        QueryResponse::try_from_response_item(response_item(&message)),
+        Err(QueryError::MalformedResponsePayload)
+    ));
+}
+
+#[test]
 fn query_errors_format_safely_and_expose_only_typed_sources() {
     let errors = [
         QueryError::UnexpectedOperation,
