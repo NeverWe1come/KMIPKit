@@ -2,12 +2,12 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, Value};
+use kmipkit_ttlv::{Structure, StructureView, Value};
 
 use crate::cryptographic_operation as common;
 use crate::{
-    CryptographicOperationError, KmipOperationResult, OperationData, ProtocolError,
-    ResponseBatchItemView, SecretBytes, UniqueIdentifier,
+    CryptographicOperationError, CryptographicOperationErrorKind, KmipOperationResult,
+    OperationData, ProtocolError, ResponseBatchItemView, SecretBytes, UniqueIdentifier,
 };
 
 const OPERATION: u32 = 0x0000_0021;
@@ -170,6 +170,9 @@ impl fmt::Debug for SignRequest {
 #[derive(Debug)]
 pub struct SignResponse {
     result: KmipOperationResult,
+    unique_identifier: Option<UniqueIdentifier>,
+    signature_data: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
 }
 
 impl SignResponse {
@@ -179,13 +182,37 @@ impl SignResponse {
     ) -> Result<Self, SignError> {
         Ok(Self {
             result: common::parse_result(item, OPERATION, "Sign", Some(true))?,
+            unique_identifier: None,
+            signature_data: None,
+            correlation_value: None,
         })
     }
 
     /// Converts a completed Sign response item.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, SignError> {
+        let result = common::parse_result(item, OPERATION, "Sign", Some(false))?;
+        if result.status().raw() != common::SUCCESS {
+            return Ok(Self {
+                result,
+                unique_identifier: None,
+                signature_data: None,
+                correlation_value: None,
+            });
+        }
+
+        let parsed = item
+            .with_response_payload(|payload| parse_success_payload(&payload))
+            .ok_or_else(|| {
+                CryptographicOperationError::new(
+                    "Sign",
+                    CryptographicOperationErrorKind::MissingSuccessPayload,
+                )
+            })??;
         Ok(Self {
-            result: common::parse_result(item, OPERATION, "Sign", Some(false))?,
+            result,
+            unique_identifier: Some(parsed.unique_identifier),
+            signature_data: parsed.signature_data,
+            correlation_value: parsed.correlation_value,
         })
     }
 
@@ -194,10 +221,61 @@ impl SignResponse {
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
     }
+
+    /// Returns the Unique Identifier reported by a successful response.
+    #[must_use]
+    pub const fn unique_identifier(&self) -> Option<&UniqueIdentifier> {
+        self.unique_identifier.as_ref()
+    }
+
+    /// Returns Signature Data returned for a completed single-part operation.
+    #[must_use]
+    pub const fn signature_data(&self) -> Option<&SecretBytes> {
+        self.signature_data.as_ref()
+    }
+
+    /// Returns the server-provided multipart Correlation Value, when present.
+    #[must_use]
+    pub const fn correlation_value(&self) -> Option<&SecretBytes> {
+        self.correlation_value.as_ref()
+    }
 }
 
 /// A sanitized error converting a Sign response item.
 pub type SignError = CryptographicOperationError;
+
+struct ParsedSignPayload {
+    unique_identifier: UniqueIdentifier,
+    signature_data: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
+}
+
+fn parse_success_payload(payload: &StructureView<'_>) -> Result<ParsedSignPayload, SignError> {
+    let mut unique_identifier = None;
+    let mut signature_data = None;
+    let mut correlation_value = None;
+
+    for field in payload.children() {
+        match field.tag().raw() {
+            common::UNIQUE_IDENTIFIER => {
+                common::parse_required_identifier(&mut unique_identifier, field, "Sign")?;
+            }
+            common::SIGNATURE_DATA => {
+                common::parse_optional_secret(&mut signature_data, field, "Sign")?;
+            }
+            common::CORRELATION_VALUE => {
+                common::parse_optional_secret(&mut correlation_value, field, "Sign")?;
+            }
+            _ => {}
+        }
+    }
+
+    Ok(ParsedSignPayload {
+        unique_identifier: unique_identifier.ok_or_else(|| common::response_shape_error("Sign"))?,
+        signature_data,
+        correlation_value,
+    })
+}
 
 fn append_framing(
     payload: &mut Structure,

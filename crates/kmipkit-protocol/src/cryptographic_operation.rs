@@ -296,3 +296,36 @@ pub(crate) fn parse_operation_data(field: &Item) -> Option<OperationData> {
         _ => None,
     })
 }
+
+/// Parses one required Unique Identifier field while rejecting duplicates and
+/// values outside the Unique Identifier alternatives in Table 187.
+pub(crate) fn parse_required_identifier(
+    slot: &mut Option<UniqueIdentifier>,
+    field: &Item,
+    operation: &'static str,
+) -> Result<(), CryptographicOperationError> {
+    if slot.is_some() {
+        return Err(response_shape_error(operation));
+    }
+    *slot = Some(parse_identifier(field).ok_or_else(|| response_shape_error(operation))?);
+    Ok(())
+}
+
+/// Parses one optional sensitive Byte String field without retaining raw
+/// malformed payload values in the returned error.
+pub(crate) fn parse_optional_secret(
+    slot: &mut Option<SecretBytes>,
+    field: &Item,
+    operation: &'static str,
+) -> Result<(), CryptographicOperationError> {
+    if slot.is_some() {
+        return Err(response_shape_error(operation));
+    }
+    *slot = Some(parse_secret(field).ok_or_else(|| response_shape_error(operation))?);
+    Ok(())
+}
+
+/// Returns the sanitized error used for malformed successful crypto payloads.
+pub(crate) fn response_shape_error(operation: &'static str) -> CryptographicOperationError {
+    CryptographicOperationError::new(operation, CryptographicOperationErrorKind::MalformedPayload)
+}

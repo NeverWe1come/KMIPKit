@@ -2,12 +2,12 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::Structure;
+use kmipkit_ttlv::{Structure, StructureView};
 
 use crate::cryptographic_operation as common;
 use crate::{
-    CryptographicOperationError, KmipOperationResult, OperationData, ProtocolError,
-    ResponseBatchItemView, SecretBytes, UniqueIdentifier,
+    CryptographicOperationError, CryptographicOperationErrorKind, KmipOperationResult,
+    OperationData, ProtocolError, ResponseBatchItemView, SecretBytes, UniqueIdentifier,
 };
 
 const OPERATION: u32 = 0x0000_0023;
@@ -134,6 +134,9 @@ impl fmt::Debug for MacRequest {
 #[derive(Debug)]
 pub struct MacResponse {
     result: KmipOperationResult,
+    unique_identifier: Option<UniqueIdentifier>,
+    mac_data: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
 }
 
 impl MacResponse {
@@ -143,13 +146,37 @@ impl MacResponse {
     ) -> Result<Self, MacError> {
         Ok(Self {
             result: common::parse_result(item, OPERATION, "MAC", Some(true))?,
+            unique_identifier: None,
+            mac_data: None,
+            correlation_value: None,
         })
     }
 
     /// Converts a completed MAC response item.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, MacError> {
+        let result = common::parse_result(item, OPERATION, "MAC", Some(false))?;
+        if result.status().raw() != common::SUCCESS {
+            return Ok(Self {
+                result,
+                unique_identifier: None,
+                mac_data: None,
+                correlation_value: None,
+            });
+        }
+
+        let parsed = item
+            .with_response_payload(|payload| parse_success_payload(&payload))
+            .ok_or_else(|| {
+                CryptographicOperationError::new(
+                    "MAC",
+                    CryptographicOperationErrorKind::MissingSuccessPayload,
+                )
+            })??;
         Ok(Self {
-            result: common::parse_result(item, OPERATION, "MAC", Some(false))?,
+            result,
+            unique_identifier: Some(parsed.unique_identifier),
+            mac_data: parsed.mac_data,
+            correlation_value: parsed.correlation_value,
         })
     }
 
@@ -158,7 +185,56 @@ impl MacResponse {
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
     }
+
+    /// Returns the Unique Identifier reported by a successful response.
+    #[must_use]
+    pub const fn unique_identifier(&self) -> Option<&UniqueIdentifier> {
+        self.unique_identifier.as_ref()
+    }
+
+    /// Returns MAC Data returned for a completed single-part operation.
+    #[must_use]
+    pub const fn mac_data(&self) -> Option<&SecretBytes> {
+        self.mac_data.as_ref()
+    }
+
+    /// Returns the server-provided multipart Correlation Value, when present.
+    #[must_use]
+    pub const fn correlation_value(&self) -> Option<&SecretBytes> {
+        self.correlation_value.as_ref()
+    }
 }
 
 /// A sanitized error converting a MAC response item.
 pub type MacError = CryptographicOperationError;
+
+struct ParsedMacPayload {
+    unique_identifier: UniqueIdentifier,
+    mac_data: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
+}
+
+fn parse_success_payload(payload: &StructureView<'_>) -> Result<ParsedMacPayload, MacError> {
+    let mut unique_identifier = None;
+    let mut mac_data = None;
+    let mut correlation_value = None;
+
+    for field in payload.children() {
+        match field.tag().raw() {
+            common::UNIQUE_IDENTIFIER => {
+                common::parse_required_identifier(&mut unique_identifier, field, "MAC")?;
+            }
+            common::MAC_DATA => common::parse_optional_secret(&mut mac_data, field, "MAC")?,
+            common::CORRELATION_VALUE => {
+                common::parse_optional_secret(&mut correlation_value, field, "MAC")?;
+            }
+            _ => {}
+        }
+    }
+
+    Ok(ParsedMacPayload {
+        unique_identifier: unique_identifier.ok_or_else(|| common::response_shape_error("MAC"))?,
+        mac_data,
+        correlation_value,
+    })
+}
