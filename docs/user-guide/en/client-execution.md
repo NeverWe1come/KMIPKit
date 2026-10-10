@@ -4,7 +4,9 @@ This guide describes the typed execution foundation introduced by KMIPKIT-0007
 and its operation APIs: Discover Versions, Create, Create Key Pair, Create
 Split Key, Add Attribute, Adjust Attribute, Delete Attribute, Get Attributes,
 Get Attribute List, Modify Attribute, Set Attribute, Activate, Archive,
-Destroy, Recover, Query, and Ping. For lifecycle-specific behavior, see the
+Destroy, Recover, Encrypt, Decrypt, Query, and Ping. For Encrypt and Decrypt
+single-part and caller-driven multipart examples, see the
+[Encrypt and Decrypt guide](encrypt-decrypt.md). For lifecycle-specific behavior, see the
 [managed-object lifecycle guide](lifecycle-operations.md); for Query and Ping,
 see the [Query and Ping guide](query-ping.md). For configuring a production
 connection, see the [TLS and HTTPS transport guide](production-transports.md).
@@ -16,7 +18,8 @@ The synchronous `kmipkit_client::Client::execute` API accepts a
 supports explicitly requested client-to-server Discover Versions, Create,
 Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
 Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
-Attribute, Activate, Archive, Destroy, Recover, Query, and Ping requests.
+Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query, and Ping
+requests.
 Discover Versions advertises exactly the KMIP 2.1 version pair (2, 1), as
 specified by OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.
 Get Attributes and Get Attribute List use their typed request and response
@@ -318,6 +321,7 @@ records their security policy and connection lifecycle.
 ## Related guides and decisions
 
 - [Inspecting KMIP messages](message-model.md)
+- [Encrypt and Decrypt with a typed client](encrypt-decrypt.md)
 - [Production TLS and HTTPS transports](production-transports.md)
 - [Public API architecture](../../architecture/public-api.md)
 - [KMIP 2.1 asynchronous operations review quickstart](../../../specs/009-asynchronous-operations/quickstart.md)
