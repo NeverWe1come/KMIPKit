@@ -8,7 +8,7 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 use crate::asynchronous::is_pending;
 use crate::{
     KmipOperationResult, OperationData, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes, UniqueIdentifier,
+    ResponseBatchItemView, ResultValidationError, SecretBytes, UniqueIdentifier,
 };
 
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
@@ -239,12 +239,15 @@ impl DecryptResponse {
             return Err(DecryptError::UnexpectedOperation);
         }
 
-        let status = item
-            .result_status()
-            .ok_or(DecryptError::MissingResultStatus)?;
-        let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
-        let result = KmipOperationResult::new(status, item.result_reason(), result_message)
-            .map_err(DecryptError::InvalidOperationResult)?;
+        let result = crate::result::parse_operation_result(item).map_err(|error| match error {
+            crate::result::OperationResultParseError::MissingResultStatus => {
+                DecryptError::MissingResultStatus
+            }
+            crate::result::OperationResultParseError::Invalid(cause) => {
+                DecryptError::InvalidOperationResult(cause)
+            }
+        })?;
+        let status = result.status();
 
         if is_pending(status) {
             return Err(DecryptError::PendingOutcomeRequired);

@@ -2,7 +2,7 @@
 //!
 //! Result Status and Result Reason values are defined by §§11.44 and 11.46.
 //! Unknown reasons and Result Message text remain lossless, while Pending stays
-//! represented as its own status for the caller's shared PendingOutcome path.
+//! represented as its own status for the caller's shared `PendingOutcome` path.
 //!
 //! Traceability: `KMIPKIT-0019-FR-007` and `KMIPKIT-REQ-SPEC-6.1-001-002`.
 
