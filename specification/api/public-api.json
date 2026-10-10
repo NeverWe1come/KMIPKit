@@ -9992,7 +9992,7 @@
       "declarationId": "ClientBatchItem:java",
       "packageId": "java-kmipkit",
       "kind": "type",
-      "exportName": "org.kmipkit.ClientBatchItem",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem",
       "capabilityId": "vendor_extension_registry",
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
@@ -10017,11 +10017,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ClientBatchItem"
+          "name": "org.kmipkit.extensions.ClientBatchItem"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.ClientBatchItem"
+          "name": "kmipkit.extensions.ClientBatchItem"
         }
       }
     },
@@ -15276,7 +15276,7 @@
       "declarationId": "client_batch_item_with_extension:java",
       "packageId": "java-kmipkit",
       "kind": "java-member",
-      "exportName": "org.kmipkit.ClientBatchItem.withExtension",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.withExtension",
       "capabilityId": "vendor_extension_registry",
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
@@ -15302,7 +15302,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ClientBatchItem.withExtension"
+          "name": "org.kmipkit.extensions.ClientBatchItem.withExtension"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -27238,6 +27238,2652 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
       "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+    },
+    {
+      "declarationId": "java-observed-e80ecfd9540859a8f75e",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.InvalidInputException",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-0ff20d278ed65ac05fbb",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.InvalidInputException.<init>",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d645cd79e0aaa7fea0bb",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.KmipException",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-98e651f58bd4a1934fb4",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.KmipException.<init>",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c5ab19c94b9cf49e4854",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.BATCH_ITEM",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-32b9363ba7f2b6e0017a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CHILD_RULE",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-6869f1b0fdf3d44d9ced",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.COMPATIBILITY",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-dc7475f69132b77ad317",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CONFIGURATION",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-81ee8344986ab812e565",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.DEFINITION",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-8cad153e4dc1de1e8380",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.DISCRIMINATOR",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e95bd3b4131764f31b5b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.IDENTITY",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-b215700ce9cab371bf54",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.INFORMATION",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-4031bdcfc2ea960d84f1",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ORDER_CONSTRAINT",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-9db2a5cad3ed3ad9272c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.PATH",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-1562d1eb5f236a02f2cb",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.RAW_TAG",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-be757267752109565fdc",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.RECOGNITION",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-6222c839e458d9d89e02",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REGISTERED_VALUE",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-7034a203a5896c4842bf",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REGISTRY",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-ea23f74f33899f4d033f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REQUEST_EXTENSION",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d1883e06bb47058702a9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.SCHEMA",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-41844298609287acb9ad",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TAG",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-057e90f75f51159b9c01",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_ITEM",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-aaefd7d60f42c95341e8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_ITEM_VIEW",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-8e7eb779b907b2c2acb1",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_PATH",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-227548014085e9b58ff9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_STRUCTURE",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-5d47c6906e78c9c87377",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_STRUCTURE_VIEW",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-b39ebcf2187306da8e7a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_VALUE",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-05323d005cff20f6ee78",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.TTLV_VALUE_VIEW",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-34db0c0cd18a326f7e03",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.VALIDATED_VALUE",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-1c3142c4558ad8638f4e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDiscoverVersions",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-4e6d155c11fead2a0c8f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemExtensionCount",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-cb89aa22689cd2b616c6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-9db80e8b938bb007791c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemExtensionIdentityAt",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c3c24b6771ffafd69fdf",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemWithExtension",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-5a677322865b599c1772",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientConfigurationCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-2bab29c8778abc1fad55",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientConfigurationExtensionRegistry",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-fc4411f7b9c07b0e6590",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-81ad752e651e2711b46b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryDefinitionAt",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-84a0b914cd02e099bb39",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryDefinitionCount",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-1948c8de3925aee1187b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryDefinitionForIdentity",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-48d921b60a2a64dbe80a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryInspect",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-3b256665ce9aa45238b9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExtensionRegistryValidate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e4445b62d252990ca17d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientRequestMessageExtensionCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-305cd308448ba328f586",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.codecLimitValues",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-4d58f00c1a6cdd98efb7",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.codecLimitsCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e52b16728da6cfce9b7d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.compatibilityCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d9764da036d2f6eb2da0",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.discriminatorCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-1c350ab98ad8af93c139",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ensureLoaded",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-be25de3b143aab458efe",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionChildRuleOptional",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-51f96ed987c7f5152307",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionChildRuleRepeated",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-7ce4b239ac13c14826bb",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionChildRuleRequired",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-67af2431a561834a09e0",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-85f17c4b764175829029",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionInformation",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-2ae65376331e0a805b51",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionValidate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-ec19731fdcd4cf8d6cf5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionDefinitionWithInformation",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-014fc53592ae7212cda6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-cd9882ee809eb2ba0ac5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityName",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-828f71c9e3da07f645d1",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityVendorIdentifier",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-3e70be875733cf8d80dc",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionIdentityVersion",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-5e51078caf9d8ae2fe09",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d21c5129ae759f34a47e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationToTtlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-41494b6e5efee011ad83",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithAttribute",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-f3e1dafc1e500e9e9cdd",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithDescription",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-3701e485108eb7d6c6eb",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithEnumeration",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-b6a0fd828c991255ffc5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithParentStructureTag",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-15210b921ee8c0b43c87",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithTag",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d1d6dcf01ab20445853a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionInformationWithType",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-eed635d2ede729d9fe72",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionOrderConstraintCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-3f1c2216830a3970ec75",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionRecognitionGenericValue",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c20c164e0af2b3d04203",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionRecognitionIsRecognized",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-b0f858a9dde3aab18e49",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionRecognitionValidatedValue",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-5ea3aff143259a825b25",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaAllowedBitMask",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-36f858b55080298362cd",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaAllowedEnumeration",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-37f3eee2244c69d047fc",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaMaximumLength",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d7637c8de2e261bf2cc6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaMinimumLength",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-35db5fc26b2a9b0f8279",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaRequiredBitMask",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c28d1d42f4476a5882a7",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaScalar",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-2ec8406b7efd84826382",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaSignedRange",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-f9c8a27bdc14b4dda063",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaStructure",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e7cdd1e8a7835edb0ff4",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.extensionSchemaUnsignedRange",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-da8ae7bdb49c67c31c75",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagChecked",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-cc2f3d239a6c4ca017bd",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-a13eb29950557737bba3",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.rawTagValue",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-790a062cacace07ad05d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-5c89a8ab5c316dce45bf",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.tagValue",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-513ae4f1f799b23169f3",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e1739fb46cc79e05acd4",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewTag",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-898e6902eb7c8ec10da6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewType",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-787424090336c190ede6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvItemViewValue",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-a7ee183cd2ae99fcbb02",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvPathCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-8d5c6a882a4e224da6e0",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvPathWithChildTag",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-87400e6114baa22eeee0",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureCreate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-0ef6026a9557a89e8f99",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureView",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-3220c4f66131a9806603",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureViewItemAt",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c62f58b07285157f4105",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureViewItemCount",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-fec9674448ec0c0d23ba",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvStructureWithItem",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-cbb8f02638114cc70477",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueBigInteger",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e1f4d1ffae4a202bfc33",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueBoolean",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-7768b6c95cc525abfc09",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueByteString",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-2f95514cf980d5c84c9a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueDateTime",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-5513989cf9b9fd9cc12a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueDateTimeExtended",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-338044d07fcacf1e1a88",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueEnumeration",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-02a8a22c89352218f5b9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueInteger",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-b571d35f19579e80460f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueInterval",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-936ba0eb20caf3472095",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueLongInteger",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-f3b4a34c4832f7e1c467",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueStructure",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-f6857d22a6219587279c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueTextString",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-36252de68d57e314fcb2",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueView",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-9c7cb69e947f6aa0e961",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewBoolean",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-3a6d8ec310479c8da754",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewByteAt",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e40a5aeed9329ea05764",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewByteLength",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-7e27c18d6969d168c845",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewDateTime",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-81b91ab30926fb779463",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewDateTimeExtended",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-ceeee52af4ef75248d90",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewEnumeration",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e480908162f77792c167",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewInteger",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-8e983e384d65493eac44",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewInterval",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-7b5a75dc684873b97d8b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewLongInteger",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d2669f94bec0edc86ac1",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewStructure",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-9b0923578931c78ec474",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.ttlvValueViewType",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-620167d859ceabd2d407",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.validatedExtensionValueGenericValue",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-76885f1935cc9f203050",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.validatedExtensionValueIdentity",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d50fbe1dec7a85680dd3",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.validatedExtensionValueValueAt",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c0354148e2bd1ba4c8ec",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.ResourceLimitException",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-9bf448034b1ac2d81933",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ResourceLimitException.<init>",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-412494d8a6b28a86f44a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientConfiguration.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-bd3237ce35234f3f46ba",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientExtensionRegistry.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-0861e2f9391345fb3f2c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientExtensionRegistry.limits",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-91b573cac83b121af1de",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.DuplicateExtensionKeyException",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-6f5350e5f9515c371ad7",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.DuplicateExtensionKeyException.<init>",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-af3ebee89c44b6509a5c",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ExtensionCompatibilityException",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e4bda48b63cfb6f47e50",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionCompatibilityException.<init>",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-65aad140ecc9356dc2aa",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionIdentity.equals",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-014b46bd5ebf39924cc5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionIdentity.hashCode",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-fda85faf654682b6750a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionIdentity.toString",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-4b786ee95a2ad2e670df",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRecognition.toString",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-ff345b808a6bde18d992",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxChildRulesPerStructure",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-9255e970e68835a211c7",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxConstraintMembersPerRule",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-9201481644aef09da860",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxDefinitions",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-367b04f760406ac82c90",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxDepth",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-2f7760702b8c3d85e0e8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxDiscriminatorScalarBytes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-01a5372c4cba925f7070",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxLookupComparisons",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-b28b69c4e74995a06bd0",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxPayloadIndexRecords",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-0f7aa46177039eda161a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxRegistryTextBytes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-150b95feb727500c13fb",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxSchemaNodes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-f8286e67ee6457915397",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxTextBytesPerField",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-765634110e626c587933",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxTotalConstraintMembers",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-22a30040339e29af285d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ExtensionRegistryLimits.maxTotalDiscriminatorScalarBytes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-17d7091f269e3e1feaa5",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.InvalidExtensionIdentityException",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d4cdffec71bfed34240d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.InvalidExtensionIdentityException.<init>",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c68c4b51e0df8de65534",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.InvalidExtensionSchemaException",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-7247823ab98f61f05154",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.InvalidExtensionSchemaException.<init>",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-6941f24b7d6b4ff028c5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.RegisteredExtensionValue.toString",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-eb6d7b8b71725de707ca",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TtlvPath.nativeHandleOwner",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c57d623d267107518cc8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ValidatedExtensionValue.toString",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-2d155ab9cb61a0c14a95",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.generated.ExtensionRegistryApi.FORMAT_VERSION",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-ca7fcca7bd4f08616dcd",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.generated.ExtensionRegistryApi.FUNCTION_METADATA_JSON",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-d69c76866c6896dbc6ee",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.internal.NativeHandle",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-7360edbffeb5d48e5f1a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.internal.NativeHandle.close",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c7dd65aa47a25df650b9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.internal.NativeHandle.get",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-8922bb0d695da21b6991",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.internal.NativeHandle.owned",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-80e4b358a41da3230d8a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.internal.NativeHandle.run",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-741c22b0344df96d377a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.internal.NativeHandle.transfer",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-bd24cf1fce1a95dd633e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.internal.NativeHandle.transferAll",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-575fea93faa4bfefa6c5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.internal.NativeHandle.withNativeHandles",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-81dd2cf53e2ef2bd1a9f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.internal.NativeHandle.withValue",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-e5c6c647945865a648db",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.internal.NativeHandle.withValues",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "The observed Java declaration has no reviewed owning capability or four-language mapping in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-5fcc80e2b335637eb72e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.Tag.handle",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-4b9b36a6e7629e7b442e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.BigInteger",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-800b2b4b13922a7dc20a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.Boolean",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c8fe9ea1cae99ed19424",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.ByteString",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-f1219a127fff22a3dbf0",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.DateTime",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-fb52ecc48f5079f50095",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.DateTimeExtended",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c00c6b63c71dd47a1244",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.Enumeration",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-5c367a0668fa45515964",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.Integer",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-5e42baa420a440f83605",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.Interval",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-05fd3fa1b0ad81e10912",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.LongInteger",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-1fef1a5fe35348954ef6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.Structure",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-619191a61d56fdbd6f11",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.TextString",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-41a4262dc8425ff8887f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.code",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-51e8798d369edee0c9d9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.fromCode",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-abd95e19cec8934eb0a3",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.valueOf",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-1f05388f9795ae853f06",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemType.values",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-c4d83318f9db02e22cd6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvItemView.fromNative",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-4736807da1002ea164ba",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvStructure.fromNative",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-bf5a38d6ca41cfbded9f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvStructure.handle",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-989d8be95182c370335f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvStructureView.fromNative",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-963101bacda1163ba2b5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvValue.handle",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-f977e1b2b8afbc0dcf33",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvValue.nativeHandleOwner",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
+    },
+    {
+      "declarationId": "java-observed-6e8eda78ff3246d22bbe",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TtlvValueView.fromNative",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The observed Java declaration owned by KMIPKIT-0012 has no reviewed four-language mapping for this exact path in the current API inventory."
     },
     {
       "declarationId": "validated_extension_value_value_at:python",
