@@ -43,6 +43,7 @@ type WorkerSpawnerForTest =
     Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
 
 const RESPONSE_HEADER_LEN: usize = 8;
+// OASIS KMIP v2.1 §8.4 Table 397 uses Response Message, whose assigned tag is §11.56.
 const RESPONSE_STRUCTURE_TAG: [u8; 3] = [0x42, 0x00, 0x7B];
 const TTLV_STRUCTURE_TYPE: u8 = 0x01;
 

@@ -1,0 +1,43 @@
+services:
+  test-pki:
+    image: alpine:3.22.2@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412
+    entrypoint: ["/bin/sh", "/scripts/generate-pki.sh"]
+    volumes:
+      - type: bind
+        source: ${KMIPKIT_COSMIAN_CERT_DIR:-../../../.local/cosmian-kms/certs}
+        target: /output
+      - type: bind
+        source: ./generate-pki.sh
+        target: /scripts/generate-pki.sh
+        read_only: true
+      - type: bind
+        source: ./server.ext
+        target: /scripts/server.ext
+        read_only: true
+      - type: bind
+        source: ./client.ext
+        target: /scripts/client.ext
+        read_only: true
+
+  cosmian-kms:
+    image: ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e
+    depends_on:
+      test-pki:
+        condition: service_completed_successfully
+    environment:
+      COSMIAN_KMS_CONF: /etc/cosmian/kms.toml
+    ports:
+      - target: 5696
+        published: "5696"
+        host_ip: 127.0.0.1
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: ./cosmian-kms.toml
+        target: /etc/cosmian/kms.toml
+        read_only: true
+      - type: bind
+        source: ${KMIPKIT_COSMIAN_CERT_DIR:-../../../.local/cosmian-kms/certs}/server
+        target: /certs
+        read_only: true
+    restart: unless-stopped
