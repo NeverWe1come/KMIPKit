@@ -350,6 +350,17 @@ impl ClientRequest {
         }
     }
 
+    fn response_context(&self) -> Option<CryptographicOperationResponseContext> {
+        match self {
+            Self::Hash(request) => Some(request.response_context()),
+            Self::Mac(request) => Some(request.response_context()),
+            Self::MacVerify(request) => Some(request.verification_response_context()),
+            Self::Sign(request) => Some(request.response_context()),
+            Self::SignatureVerify(request) => Some(request.verification_response_context()),
+            _ => None,
+        }
+    }
+
     fn validate_local_shape(&self) -> Result<(), ProtocolError> {
         match self {
             Self::Encrypt(request) => request.validate_multipart_shape(),
@@ -3781,20 +3792,10 @@ pub(super) struct BatchIdentity {
 
 impl BatchIdentity {
     fn from_request(item: &ClientBatchItem) -> Self {
-        let response_context = match &item.request {
-            ClientRequest::Hash(request) => Some(request.response_context()),
-            ClientRequest::Mac(request) => Some(request.response_context()),
-            ClientRequest::MacVerify(request) => Some(request.verification_response_context()),
-            ClientRequest::Sign(request) => Some(request.response_context()),
-            ClientRequest::SignatureVerify(request) => {
-                Some(request.verification_response_context())
-            }
-            _ => None,
-        };
         Self {
             operation: item.request.operation(),
             unique_batch_item_id: item.unique_batch_item_id.clone(),
-            response_context,
+            response_context: item.request.response_context(),
         }
     }
 
