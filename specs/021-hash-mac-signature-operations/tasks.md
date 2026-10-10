@@ -102,7 +102,7 @@
 
 ### Refactor commit
 
-- [ ] T033 [US3] Refactor shared Validity Indicator and response-shape handling in `crates/kmipkit-protocol/src/mac_verify.rs`, `crates/kmipkit-protocol/src/signature_verify.rs`, and verification unit tests without choosing a `KMIPKIT-DISC-048` server interpretation.
+- [x] T033 [US3] Refactor shared Validity Indicator and response-shape handling in `crates/kmipkit-protocol/src/mac_verify.rs`, `crates/kmipkit-protocol/src/signature_verify.rs`, and verification unit tests without choosing a `KMIPKIT-DISC-048` server interpretation.
 
 **Checkpoint**: Verification operations preserve their response semantics; only final multipart indicator presence remains intentionally tolerant under the open discrepancy.
 

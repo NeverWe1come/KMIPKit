@@ -111,17 +111,11 @@ impl SignatureVerifyRequest {
     /// shape validation.
     #[must_use]
     pub fn verification_response_context(&self) -> VerificationResponseContext {
-        if self.correlation.is_some() {
-            if self.final_part == Some(true) {
-                VerificationResponseContext::MultipartFinal
-            } else {
-                VerificationResponseContext::MultipartNonFinal
-            }
-        } else if self.init == Some(true) && self.final_part != Some(true) {
-            VerificationResponseContext::MultipartNonFinal
-        } else {
-            VerificationResponseContext::SinglePart
-        }
+        common::verification_response_context(
+            self.correlation.is_some(),
+            self.init,
+            self.final_part,
+        )
     }
 
     /// Builds a TTLV payload for Table 337.
@@ -315,8 +309,6 @@ fn parse_success_payload(
     payload: &kmipkit_ttlv::StructureView<'_>,
     context: VerificationResponseContext,
 ) -> Result<ParsedSignatureVerifyPayload, SignatureVerifyError> {
-    use kmipkit_ttlv::ValueView;
-
     let mut unique_identifier = None;
     let mut validity_indicator = None;
     let mut recovered_data = None;
@@ -331,17 +323,11 @@ fn parse_success_payload(
                 )?;
             }
             common::VALIDITY_INDICATOR => {
-                if validity_indicator.is_some() {
-                    return Err(common::response_shape_error("Signature Verify"));
-                }
-                validity_indicator = Some(
-                    field
-                        .with_value(|value| match value {
-                            ValueView::Enumeration(raw) => Some(ValidityIndicator::from_raw(*raw)),
-                            _ => None,
-                        })
-                        .ok_or_else(|| common::response_shape_error("Signature Verify"))?,
-                );
+                common::parse_validity_indicator(
+                    &mut validity_indicator,
+                    field,
+                    "Signature Verify",
+                )?;
             }
             common::DATA => {
                 common::parse_optional_secret(&mut recovered_data, field, "Signature Verify")?;
@@ -353,17 +339,7 @@ fn parse_success_payload(
         }
     }
 
-    match context {
-        VerificationResponseContext::SinglePart if validity_indicator.is_none() => {
-            return Err(common::response_shape_error("Signature Verify"));
-        }
-        VerificationResponseContext::MultipartNonFinal if validity_indicator.is_some() => {
-            return Err(common::response_shape_error("Signature Verify"));
-        }
-        VerificationResponseContext::SinglePart
-        | VerificationResponseContext::MultipartNonFinal
-        | VerificationResponseContext::MultipartFinal => {}
-    }
+    common::validate_validity_indicator_shape(validity_indicator, context, "Signature Verify")?;
 
     Ok(ParsedSignatureVerifyPayload {
         unique_identifier: unique_identifier

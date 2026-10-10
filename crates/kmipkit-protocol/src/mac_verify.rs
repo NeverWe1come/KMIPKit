@@ -102,17 +102,11 @@ impl MacVerifyRequest {
     /// shape validation.
     #[must_use]
     pub fn verification_response_context(&self) -> VerificationResponseContext {
-        if self.correlation.is_some() {
-            if self.final_part == Some(true) {
-                VerificationResponseContext::MultipartFinal
-            } else {
-                VerificationResponseContext::MultipartNonFinal
-            }
-        } else if self.init == Some(true) && self.final_part != Some(true) {
-            VerificationResponseContext::MultipartNonFinal
-        } else {
-            VerificationResponseContext::SinglePart
-        }
+        common::verification_response_context(
+            self.correlation.is_some(),
+            self.init,
+            self.final_part,
+        )
     }
 
     /// Builds a TTLV payload for Table 262.
@@ -285,8 +279,6 @@ fn parse_success_payload(
     payload: &kmipkit_ttlv::StructureView<'_>,
     context: VerificationResponseContext,
 ) -> Result<ParsedMacVerifyPayload, MacVerifyError> {
-    use kmipkit_ttlv::ValueView;
-
     let mut unique_identifier = None;
     let mut validity_indicator = None;
     let mut correlation_value = None;
@@ -296,17 +288,7 @@ fn parse_success_payload(
                 common::parse_required_identifier(&mut unique_identifier, field, "MAC Verify")?;
             }
             common::VALIDITY_INDICATOR => {
-                if validity_indicator.is_some() {
-                    return Err(common::response_shape_error("MAC Verify"));
-                }
-                validity_indicator = Some(
-                    field
-                        .with_value(|value| match value {
-                            ValueView::Enumeration(raw) => Some(ValidityIndicator::from_raw(*raw)),
-                            _ => None,
-                        })
-                        .ok_or_else(|| common::response_shape_error("MAC Verify"))?,
-                );
+                common::parse_validity_indicator(&mut validity_indicator, field, "MAC Verify")?;
             }
             common::CORRELATION_VALUE => {
                 common::parse_optional_secret(&mut correlation_value, field, "MAC Verify")?;
@@ -315,17 +297,7 @@ fn parse_success_payload(
         }
     }
 
-    match context {
-        VerificationResponseContext::SinglePart if validity_indicator.is_none() => {
-            return Err(common::response_shape_error("MAC Verify"));
-        }
-        VerificationResponseContext::MultipartNonFinal if validity_indicator.is_some() => {
-            return Err(common::response_shape_error("MAC Verify"));
-        }
-        VerificationResponseContext::SinglePart
-        | VerificationResponseContext::MultipartNonFinal
-        | VerificationResponseContext::MultipartFinal => {}
-    }
+    common::validate_validity_indicator_shape(validity_indicator, context, "MAC Verify")?;
 
     Ok(ParsedMacVerifyPayload {
         unique_identifier: unique_identifier

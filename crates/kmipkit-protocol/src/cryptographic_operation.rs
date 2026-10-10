@@ -76,6 +76,25 @@ pub enum VerificationResponseContext {
     MultipartFinal,
 }
 
+/// Classifies the request framing used to validate a verification response.
+pub(crate) fn verification_response_context(
+    has_correlation: bool,
+    init: Option<bool>,
+    final_part: Option<bool>,
+) -> VerificationResponseContext {
+    if has_correlation {
+        if final_part == Some(true) {
+            VerificationResponseContext::MultipartFinal
+        } else {
+            VerificationResponseContext::MultipartNonFinal
+        }
+    } else if init == Some(true) && final_part != Some(true) {
+        VerificationResponseContext::MultipartNonFinal
+    } else {
+        VerificationResponseContext::SinglePart
+    }
+}
+
 /// A sanitized error while converting a typed cryptographic operation model.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -299,17 +318,6 @@ pub(crate) fn parse_secret(field: &Item) -> Option<SecretBytes> {
     })
 }
 
-pub(crate) fn parse_operation_data(field: &Item) -> Option<OperationData> {
-    field.with_value(|value| match value {
-        ValueView::ByteString(bytes) => {
-            Some(OperationData::ByteString(SecretBytes::new(bytes.to_vec())))
-        }
-        ValueView::Enumeration(raw) => Some(OperationData::Enumeration(*raw)),
-        ValueView::Integer(raw) => Some(OperationData::Integer(*raw)),
-        _ => None,
-    })
-}
-
 /// Parses one required Unique Identifier field while rejecting duplicates and
 /// values outside the Unique Identifier alternatives in Table 187.
 pub(crate) fn parse_required_identifier(
@@ -336,6 +344,45 @@ pub(crate) fn parse_optional_secret(
     }
     *slot = Some(parse_secret(field).ok_or_else(|| response_shape_error(operation))?);
     Ok(())
+}
+
+/// Parses one open Validity Indicator Enumeration while rejecting duplicates.
+pub(crate) fn parse_validity_indicator(
+    slot: &mut Option<ValidityIndicator>,
+    field: &Item,
+    operation: &'static str,
+) -> Result<(), CryptographicOperationError> {
+    if slot.is_some() {
+        return Err(response_shape_error(operation));
+    }
+    *slot = Some(
+        field
+            .with_value(|value| match value {
+                ValueView::Enumeration(raw) => Some(ValidityIndicator::from_raw(*raw)),
+                _ => None,
+            })
+            .ok_or_else(|| response_shape_error(operation))?,
+    );
+    Ok(())
+}
+
+/// Validates the indicator presence rule for the request-derived multipart
+/// context while preserving KMIPKIT-DISC-048's final-part ambiguity.
+pub(crate) fn validate_validity_indicator_shape(
+    indicator: Option<ValidityIndicator>,
+    context: VerificationResponseContext,
+    operation: &'static str,
+) -> Result<(), CryptographicOperationError> {
+    let valid = match context {
+        VerificationResponseContext::SinglePart => indicator.is_some(),
+        VerificationResponseContext::MultipartNonFinal => indicator.is_none(),
+        VerificationResponseContext::MultipartFinal => true,
+    };
+    if valid {
+        Ok(())
+    } else {
+        Err(response_shape_error(operation))
+    }
 }
 
 /// Returns the sanitized error used for malformed successful crypto payloads.
