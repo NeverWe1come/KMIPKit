@@ -16,7 +16,7 @@ The revised KMIPKIT-0017 specification and catalog-disposition changes are merge
 
 **Purpose**: Start from the approved release and establish deterministic operation test fixtures.
 
-- [x] T001 Create the implementation worktree from active release/1.0.0 and record its commit; verify additive Get/Locate dispatch and typed-outcome integration, callback lifetime and owned-copy behavior for response TTLV, and the current validated direct-item `AttributeSet` contract against specs/017-managed-object-retrieval/traceability.md
+- [x] T001 Create the implementation worktree from active release/1.0.0 and record its commit; verify the client extension points for additive Get/Locate dispatch and typed-outcome integration, callback lifetime and owned-copy behavior for response TTLV, and the current validated direct-item `AttributeSet` contract against specs/017-managed-object-retrieval/traceability.md
 - [ ] T002 Add deterministic generic TTLV test builders for Get and Locate request/response payloads in crates/kmipkit-protocol/tests/support/
 - [ ] T003 Add fake-transport helpers that capture one request batch and return controlled response batches in crates/kmipkit-client/tests/support/
 
