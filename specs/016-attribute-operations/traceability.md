@@ -296,7 +296,7 @@ On 2026-10-10, the maintainer instructed that T048 and T054 be completed and clo
 
 ### Draft implementation PR and CI
 
-Implementation PR [#62](https://github.com/NeverWe1come/KMIPKit/pull/62) was merged on 2026-10-09. Its post-sync CI run `37932798811` completed successfully, including all core platforms, language bindings, sanitizers, fuzz smoke, inventory, adapter collectors, and the aggregate coverage gate. The present documentation-only follow-up records the maintainer-approved T048/T054 dispositions. The separate §6.1.20/Table 224 conflict remains unresolved and continues to block approval of the feature's normative response shape. Final implementation evidence remains linked above and recorded under T064.
+Implementation PR [#62](https://github.com/NeverWe1come/KMIPKit/pull/62) was merged on 2026-10-09. Its post-sync CI run `37932798811` completed successfully, including all core platforms, language bindings, sanitizers, fuzz smoke, inventory, adapter collectors, and the aggregate coverage gate. Documentation-only closeout PR [#80](https://github.com/NeverWe1come/KMIPKit/pull/80) records the maintainer-approved T048/T054 dispositions. The separate §6.1.20/Table 224 conflict remains unresolved and continues to block approval of the feature's normative response shape. Final implementation evidence remains linked above and recorded under T064.
 
 ### T062 release synchronization evidence
 
