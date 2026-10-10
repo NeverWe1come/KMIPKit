@@ -96,7 +96,7 @@
 
 ### Refactor
 
-- [ ] T041 Refactor shared execution/test support without widening the public API beyond the spec. Run fmt, clippy, focused tests, and rustdoc; record Refactor evidence separately.
+- [x] T041 Refactor shared execution/test support without widening the public API beyond the spec. Run fmt, clippy, focused tests, and rustdoc; record Refactor evidence separately. **Refactor evidence (2026-10-10):** commit `127d0c601d83419ca07dc854a08ebc54e26e8b12` extracted a private one-item response fixture builder shared by the outcome and redaction suites; transport-specific security/limit semantics remain separate. `cargo fmt --all --check`, client lib tests (309/309), client/protocol Clippy with all targets/features, and warning-free rustdoc passed. QA review was Clear. Full commands and limits are in `.superpowers/sdd/kmipkit-0019-cryptographic-operations/task-41-report.md`.
 
 ## Phase 6: Fuzzing, traceability, docs, and release checks
 
