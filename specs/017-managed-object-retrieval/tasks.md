@@ -53,6 +53,8 @@ Red fixture correction: commit `377b66e9` binds each `StructureView` before borr
 
 Unknown-status fixture correction: commit `675eb5f4` gives the unknown-status response a valid Table 221 payload required by shared `ResponseMessage` validation, while retaining assertions that the raw unknown status/reason are preserved and success-only accessors remain empty. With the production draft stashed, `cargo test -p kmipkit-protocol --lib get_tests` exits 101 with only E0432 for missing Get error/request/response/selector exports from `get_tests.rs`; no fixture or implementation diagnostic remains. Formatting and diff checks are recorded after this evidence update.
 
+Typed identifier assertion correction: commit `f392a60e` updates the two client assertions to compare the existing `UniqueIdentifier::TextString` representation specified by data-model.md and exercised across all three wire forms by `get_tests.rs`. With the production draft stashed, `cargo test -p kmipkit-client --lib object_read_execution_tests` exits 101 with only the expected 15 missing Get request/operation/outcome/response-view API diagnostics; the type-mismatch diagnostics are gone. Formatting and diff checks are recorded after this evidence update.
+
 ### Implementation for User Story 1
 
 - [ ] T014 [US1] Implement raw-preserving Get selectors, builder/accessors, and ordered Table 220 payload conversion in crates/kmipkit-protocol/src/get.rs
