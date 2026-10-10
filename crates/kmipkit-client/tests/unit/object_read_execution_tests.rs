@@ -5,7 +5,7 @@
 //! FR-003, FR-010, FR-011, and SC-002. These are client execution contracts,
 //! not claims of official OASIS case passes.
 
-use kmipkit_protocol::{AttributeSet, CreateRequest, GetRequest, ObjectType};
+use kmipkit_protocol::{AttributeSet, CreateRequest, GetRequest, ObjectType, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::ValueView;
@@ -159,7 +159,9 @@ fn get_success_preserves_completed_object_data_in_one_exchange() {
     assert_eq!(get_response.object_type(), Some(ObjectType::from_raw(2)));
     assert_eq!(
         get_response.unique_identifier(),
-        Some("server-assigned-get-id")
+        Some(&UniqueIdentifier::TextString(
+            "server-assigned-get-id".to_owned()
+        ))
     );
     assert_eq!(
         get_response.object().map(|object| object.tag().raw()),
@@ -347,6 +349,8 @@ fn get_without_identifier_follows_create_and_keeps_the_batch_order() {
             .outcome()
             .get_response()
             .and_then(|get| get.unique_identifier()),
-        Some("server-created-id")
+        Some(&UniqueIdentifier::TextString(
+            "server-created-id".to_owned()
+        ))
     );
 }
