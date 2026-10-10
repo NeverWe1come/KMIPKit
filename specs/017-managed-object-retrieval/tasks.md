@@ -51,6 +51,8 @@ Red contract correction: commit `6236b76d` changes the T012 success assertion to
 
 Red fixture correction: commit `377b66e9` binds each `StructureView` before borrowing its children and uses the concrete `GetError` in the Get test helper return types; all behavior assertions are retained. With the production draft stashed, `cargo test -p kmipkit-protocol --lib get_tests` fails only on missing Get error/request/response/selector exports, and `cargo test -p kmipkit-client --lib object_read_execution_tests` fails only on 15 missing Get request/operation/mapping APIs. `cargo fmt --all` formats the corrected tests; `cargo fmt --all --check` and `git diff --check` are recorded after this evidence update.
 
+Unknown-status fixture correction: commit `675eb5f4` gives the unknown-status response a valid Table 221 payload required by shared `ResponseMessage` validation, while retaining assertions that the raw unknown status/reason are preserved and success-only accessors remain empty. With the production draft stashed, `cargo test -p kmipkit-protocol --lib get_tests` exits 101 with only E0432 for missing Get error/request/response/selector exports from `get_tests.rs`; no fixture or implementation diagnostic remains. Formatting and diff checks are recorded after this evidence update.
+
 ### Implementation for User Story 1
 
 - [ ] T014 [US1] Implement raw-preserving Get selectors, builder/accessors, and ordered Table 220 payload conversion in crates/kmipkit-protocol/src/get.rs
