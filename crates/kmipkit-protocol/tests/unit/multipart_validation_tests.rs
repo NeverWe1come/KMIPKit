@@ -209,6 +209,18 @@ fn both_operations_reject_invalid_data_multipart_shapes_before_encoding() {
             "middle part without required Data",
             shape(false, None, None, true),
         ),
+        (
+            "middle part with explicit Init false but without Correlation Value",
+            shape(true, Some(false), None, false),
+        ),
+        (
+            "middle part with explicit Final false but without Correlation Value",
+            shape(true, None, Some(false), false),
+        ),
+        (
+            "middle part with both indicators explicitly false but without Correlation Value",
+            shape(true, Some(false), Some(false), false),
+        ),
     ];
 
     let mut accepted_invalid_cases = Vec::new();

@@ -21,6 +21,17 @@ wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmi
 
 The earlier T026 Red commit and review evidence remain in `.superpowers/sdd/kmipkit-0019-cryptographic-operations/task-26-report.md`.
 
+### QA fix round 1 — Red evidence
+
+Added invalid `to_ttlv_payload` cases for explicit `Init=false`, explicit `Final=false`, and both indicators explicitly false, each with Data but without Correlation Value. The existing valid case with both indicators absent and no Correlation Value remains valid. The focused valid case passed (1/1); the focused invalid case failed as expected and listed all six newly accepted invalid shapes (three per operation).
+
+```powershell
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-protocol --lib multipart_validation_tests::both_operations_accept_valid_single_initial_middle_and_final_shapes --offline'
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-protocol --lib multipart_validation_tests::both_operations_reject_invalid_data_multipart_shapes_before_encoding --offline'
+```
+
+The invalid-case failure is expected Red evidence: Encrypt and Decrypt each accepted explicit false-indicator middle shapes with Data and no Correlation Value. No production code changed in this Red phase.
+
 ## Green verification
 
 All targeted commands ran via WSL Ubuntu-26.04 with `--offline`:
