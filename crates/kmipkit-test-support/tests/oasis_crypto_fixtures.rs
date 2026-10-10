@@ -616,6 +616,20 @@ fn fixture_adapter_rejects_doctypes_before_parsing_xml() {
 }
 
 #[test]
+fn fixture_adapter_limits_xml_nodes_before_ttlv_item_conversion() {
+    const XML_NODES_ABOVE_LIMIT: usize = 250_001;
+    let comments = "<!--x-->".repeat(XML_NODES_ABOVE_LIMIT);
+    let xml = SEQUENCE_PAIRING_XML.replacen("<KMIP>", &format!("<KMIP>{comments}"), 1);
+
+    let error = OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &xml)
+        .expect_err("the XML DOM node limit is enforced while parsing");
+    assert_eq!(
+        error.to_string(),
+        "OASIS fixture XML exceeds the configured node limit"
+    );
+}
+
+#[test]
 fn fixture_adapter_enforces_ttlv_depth_before_resolving_deep_items() {
     let mut deep_items =
         "<VendorPrivateValue tag=\"0x54ABCD\" type=\"Enumeration\" value=\"0xDEADBEEF\"/>"
