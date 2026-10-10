@@ -7,7 +7,8 @@ use kmipkit_ttlv::{Structure, Value};
 use crate::cryptographic_operation as common;
 use crate::{
     CryptographicOperationError, KmipOperationResult, OperationData, ProtocolError,
-    ResponseBatchItemView, SecretBytes, UniqueIdentifier,
+    ResponseBatchItemView, SecretBytes, UniqueIdentifier, ValidityIndicator,
+    VerificationResponseContext,
 };
 
 const OPERATION: u32 = 0x0000_0024;
@@ -97,6 +98,23 @@ impl MacVerifyRequest {
         )
     }
 
+    /// Returns the request-derived response context for Validity Indicator
+    /// shape validation.
+    #[must_use]
+    pub fn verification_response_context(&self) -> VerificationResponseContext {
+        if self.correlation.is_some() {
+            if self.final_part == Some(true) {
+                VerificationResponseContext::MultipartFinal
+            } else {
+                VerificationResponseContext::MultipartNonFinal
+            }
+        } else if self.init == Some(true) && self.final_part != Some(true) {
+            VerificationResponseContext::MultipartNonFinal
+        } else {
+            VerificationResponseContext::SinglePart
+        }
+    }
+
     /// Builds a TTLV payload for Table 262.
     ///
     /// # Errors
@@ -170,6 +188,9 @@ impl fmt::Debug for MacVerifyRequest {
 #[derive(Debug)]
 pub struct MacVerifyResponse {
     result: KmipOperationResult,
+    unique_identifier: Option<UniqueIdentifier>,
+    validity_indicator: Option<ValidityIndicator>,
+    correlation_value: Option<SecretBytes>,
 }
 
 impl MacVerifyResponse {
@@ -179,13 +200,49 @@ impl MacVerifyResponse {
     ) -> Result<Self, MacVerifyError> {
         Ok(Self {
             result: common::parse_result(item, OPERATION, "MAC Verify", Some(true))?,
+            unique_identifier: None,
+            validity_indicator: None,
+            correlation_value: None,
         })
     }
 
-    /// Converts a completed MAC Verify response item.
+    /// Converts a completed, single-part MAC Verify response item.
+    ///
+    /// Use [`Self::try_from_response_item_with_context`] when the response
+    /// belongs to a multipart request.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, MacVerifyError> {
+        Self::try_from_response_item_with_context(item, VerificationResponseContext::SinglePart)
+    }
+
+    /// Converts a completed MAC Verify response using its original request's
+    /// single-part or multipart context.
+    pub fn try_from_response_item_with_context(
+        item: ResponseBatchItemView<'_>,
+        context: VerificationResponseContext,
+    ) -> Result<Self, MacVerifyError> {
+        let result = common::parse_result(item, OPERATION, "MAC Verify", Some(false))?;
+        if result.status().raw() != common::SUCCESS {
+            return Ok(Self {
+                result,
+                unique_identifier: None,
+                validity_indicator: None,
+                correlation_value: None,
+            });
+        }
+
+        let parsed = item
+            .with_response_payload(|payload| parse_success_payload(&payload, context))
+            .ok_or_else(|| {
+                CryptographicOperationError::new(
+                    "MAC Verify",
+                    crate::CryptographicOperationErrorKind::MissingSuccessPayload,
+                )
+            })??;
         Ok(Self {
-            result: common::parse_result(item, OPERATION, "MAC Verify", Some(false))?,
+            result,
+            unique_identifier: Some(parsed.unique_identifier),
+            validity_indicator: parsed.validity_indicator,
+            correlation_value: parsed.correlation_value,
         })
     }
 
@@ -194,10 +251,89 @@ impl MacVerifyResponse {
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
     }
+
+    /// Returns the required Unique Identifier from a successful response.
+    #[must_use]
+    pub const fn unique_identifier(&self) -> Option<&UniqueIdentifier> {
+        self.unique_identifier.as_ref()
+    }
+
+    /// Returns the open server-reported Validity Indicator when present.
+    #[must_use]
+    pub const fn validity_indicator(&self) -> Option<ValidityIndicator> {
+        self.validity_indicator
+    }
+
+    /// Returns the optional multipart Correlation Value returned by the
+    /// server.
+    #[must_use]
+    pub const fn correlation_value(&self) -> Option<&SecretBytes> {
+        self.correlation_value.as_ref()
+    }
 }
 
 /// A sanitized error converting a MAC Verify response item.
 pub type MacVerifyError = CryptographicOperationError;
+
+struct ParsedMacVerifyPayload {
+    unique_identifier: UniqueIdentifier,
+    validity_indicator: Option<ValidityIndicator>,
+    correlation_value: Option<SecretBytes>,
+}
+
+fn parse_success_payload(
+    payload: &kmipkit_ttlv::StructureView<'_>,
+    context: VerificationResponseContext,
+) -> Result<ParsedMacVerifyPayload, MacVerifyError> {
+    use kmipkit_ttlv::ValueView;
+
+    let mut unique_identifier = None;
+    let mut validity_indicator = None;
+    let mut correlation_value = None;
+    for field in payload.children() {
+        match field.tag().raw() {
+            common::UNIQUE_IDENTIFIER => {
+                common::parse_required_identifier(&mut unique_identifier, field, "MAC Verify")?;
+            }
+            common::VALIDITY_INDICATOR => {
+                if validity_indicator.is_some() {
+                    return Err(common::response_shape_error("MAC Verify"));
+                }
+                validity_indicator = Some(
+                    field
+                        .with_value(|value| match value {
+                            ValueView::Enumeration(raw) => Some(ValidityIndicator::from_raw(*raw)),
+                            _ => None,
+                        })
+                        .ok_or_else(|| common::response_shape_error("MAC Verify"))?,
+                );
+            }
+            common::CORRELATION_VALUE => {
+                common::parse_optional_secret(&mut correlation_value, field, "MAC Verify")?;
+            }
+            _ => {}
+        }
+    }
+
+    match context {
+        VerificationResponseContext::SinglePart if validity_indicator.is_none() => {
+            return Err(common::response_shape_error("MAC Verify"));
+        }
+        VerificationResponseContext::MultipartNonFinal if validity_indicator.is_some() => {
+            return Err(common::response_shape_error("MAC Verify"));
+        }
+        VerificationResponseContext::SinglePart
+        | VerificationResponseContext::MultipartNonFinal
+        | VerificationResponseContext::MultipartFinal => {}
+    }
+
+    Ok(ParsedMacVerifyPayload {
+        unique_identifier: unique_identifier
+            .ok_or_else(|| common::response_shape_error("MAC Verify"))?,
+        validity_indicator,
+        correlation_value,
+    })
+}
 
 fn append_framing(
     payload: &mut Structure,

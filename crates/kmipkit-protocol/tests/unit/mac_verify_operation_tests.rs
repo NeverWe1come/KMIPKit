@@ -17,6 +17,8 @@ use kmipkit_ttlv::Value;
 
 const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
 const SUCCESS: u32 = 0;
+const OPERATION_FAILED: u32 = 1;
+const GENERAL_FAILURE: u32 = 0x0000_0100;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
@@ -232,6 +234,27 @@ fn successful_response_rejects_duplicate_or_malformed_validity_indicators() {
             CryptographicOperationErrorKind::MalformedPayload
         );
     }
+}
+
+#[test]
+fn failure_response_preserves_the_server_result_without_success_fields() {
+    let message = response_message(
+        MAC_VERIFY_OPERATION,
+        OPERATION_FAILED,
+        Some(GENERAL_FAILURE),
+        None,
+        None,
+    );
+    let response = MacVerifyResponse::try_from_response_item(response_item(&message))
+        .expect("operation failure is a server result and has no success payload");
+
+    assert_eq!(response.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(
+        response.result().reason().map(|reason| reason.raw()),
+        Some(GENERAL_FAILURE)
+    );
+    assert!(response.unique_identifier().is_none());
+    assert!(response.validity_indicator().is_none());
 }
 
 #[test]

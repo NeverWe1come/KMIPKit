@@ -24,10 +24,10 @@
 
 **Purpose**: Establish shared red tests and request/response dispatch before completing independent operation slices.
 
-- [ ] T004 Add failing client tests in `crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs` proving five operation codes, one exchange per explicit call, batch item correlation, common result preservation, and no automatic retry.
-- [ ] T005 Add failing protocol tests in `crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs` for redacted byte wrappers, generic Cryptographic Parameters preservation, unknown enumeration values, and shared multipart field conversion.
-- [ ] T006 Implement only the minimal shared execution dispatch scaffolding in `crates/kmipkit-client/src/execute.rs` and public exports in `crates/kmipkit-client/src/lib.rs` needed for the operation-specific requests; preserve existing validation and response ownership.
-- [ ] T007 Refactor the shared operation test helpers in `crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs` and `crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs` without changing behavior; record a separate Refactor commit after the Green commit.
+- [x] T004 Add failing client tests in `crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs` proving five operation codes, one exchange per explicit call, batch item correlation, common result preservation, and no automatic retry.
+- [x] T005 Add failing protocol tests in `crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs` for redacted byte wrappers, generic Cryptographic Parameters preservation, unknown enumeration values, and shared multipart field conversion.
+- [x] T006 Implement only the minimal shared execution dispatch scaffolding in `crates/kmipkit-client/src/execute.rs` and public exports in `crates/kmipkit-client/src/lib.rs` needed for the operation-specific requests; preserve existing validation and response ownership.
+- [x] T007 Refactor the shared operation test helpers in `crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs` and `crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs` without changing behavior; record a separate Refactor commit after the Green commit.
 
 ## Phase 3: User Story 1 — Request a hash from a KMIP server (Priority: P1)
 
@@ -37,20 +37,20 @@
 
 ### Red commit
 
-- [ ] T008 [US1] Add failing Hash request tests in `crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs` for required Cryptographic Parameters, single-part Data, absent multipart Data, optional Correlation/Init/Final fields, field order, and invalid missing input.
-- [ ] T009 [US1] Add failing Hash response/error tests in `crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs` for Table 236 cardinality, Data bytes, Correlation Value, non-success results, malformed types, and generic unknown fields.
-- [ ] T010 [US1] Add failing Hash execution tests in `crates/kmipkit-client/tests/unit/hash_execution_tests.rs` for operation code, one exchange, batch association, Pending/failure results, delivery evidence, and no retry.
-- [ ] T011 [US1] Add failing Hashing Algorithm round-trip tests in `crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs` for every standard value, Extensions range, and unknown value.
+- [x] T008 [US1] Add failing Hash request tests in `crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs` for required Cryptographic Parameters, single-part Data, absent multipart Data, optional Correlation/Init/Final fields, field order, and invalid missing input.
+- [x] T009 [US1] Add failing Hash response/error tests in `crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs` for Table 236 cardinality, Data bytes, Correlation Value, non-success results, malformed types, and generic unknown fields.
+- [x] T010 [US1] Add failing Hash execution tests in `crates/kmipkit-client/tests/unit/hash_execution_tests.rs` for operation code, one exchange, batch association, Pending/failure results, delivery evidence, and no retry.
+- [x] T011 [US1] Add failing Hashing Algorithm round-trip tests in `crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs` for every standard value, Extensions range, and unknown value.
 
 ### Green commit
 
-- [ ] T012 [US1] Implement `HashRequest`, `HashResponse`, and `HashError` in `crates/kmipkit-protocol/src/hash.rs` with table-based local validation, redacted formatting, source response retention, and payload conversion.
-- [ ] T013 [US1] Export Hash protocol types from `crates/kmipkit-protocol/src/lib.rs` and integrate Hash request/response dispatch and convenience methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`.
-- [ ] T014 [US1] Implement Hash fake-transport tests in `crates/kmipkit-client/tests/unit/hash_execution_tests.rs` and verify all Red cases pass without invoking local hashing.
+- [x] T012 [US1] Implement `HashRequest`, `HashResponse`, and `HashError` in `crates/kmipkit-protocol/src/hash.rs` with table-based local validation, redacted formatting, source response retention, and payload conversion.
+- [x] T013 [US1] Export Hash protocol types from `crates/kmipkit-protocol/src/lib.rs` and integrate Hash request/response dispatch and convenience methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`.
+- [x] T014 [US1] Implement Hash fake-transport tests in `crates/kmipkit-client/tests/unit/hash_execution_tests.rs` and verify all Red cases pass without invoking local hashing.
 
 ### Refactor commit
 
-- [ ] T015 [US1] Refactor Hash payload/error helpers in `crates/kmipkit-protocol/src/hash.rs` and `crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs`; retain distinct Red/Green/Refactor commits and exact catalog traceability.
+- [x] T015 [US1] Refactor Hash payload/error helpers in `crates/kmipkit-protocol/src/hash.rs` and `crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs`; retain distinct Red/Green/Refactor commits and exact catalog traceability.
 
 **Checkpoint**: Hash passes all source-derived tests independently and uses the common execution path once per call.
 
@@ -62,21 +62,21 @@
 
 ### Red commit
 
-- [ ] T016 [US2] Add failing MAC payload tests in `crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs` for optional request Unique Identifier/parameters, single-part Data, absent multipart Data, optional Correlation/Init/Final, Table 260 output fields, and successful-response Unique Identifier missing/duplicate/type validation.
-- [ ] T017 [US2] Add failing Sign payload tests in `crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs` for optional request Unique Identifier/parameters, Data required unless single-part Digested Data is supplied, no multipart Data, optional Digested Data, Table 335 output fields, and successful-response Unique Identifier missing/duplicate/type validation.
-- [ ] T018 [US2] Add failing client tests in `crates/kmipkit-client/tests/unit/mac_execution_tests.rs` and `crates/kmipkit-client/tests/unit/sign_execution_tests.rs` for correct operation code, one exchange, server-result preservation, batch behavior, and no retries.
-- [ ] T019 [US2] Add failing enum/round-trip and redaction tests in `crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs` and `crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs` for all relevant Cryptographic Algorithm, Digital Signature Algorithm, MAC Data, and Signature Data values and sentinel-byte diagnostics.
+- [x] T016 [US2] Add failing MAC payload tests in `crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs` for optional request Unique Identifier/parameters, single-part Data, absent multipart Data, optional Correlation/Init/Final, Table 260 output fields, and successful-response Unique Identifier missing/duplicate/type validation.
+- [x] T017 [US2] Add failing Sign payload tests in `crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs` for optional request Unique Identifier/parameters, Data required unless single-part Digested Data is supplied, no multipart Data, optional Digested Data, Table 335 output fields, and successful-response Unique Identifier missing/duplicate/type validation.
+- [x] T018 [US2] Add failing client tests in `crates/kmipkit-client/tests/unit/mac_execution_tests.rs` and `crates/kmipkit-client/tests/unit/sign_execution_tests.rs` for correct operation code, one exchange, server-result preservation, batch behavior, and no retries.
+- [x] T019 [US2] Add failing enum/round-trip and redaction tests in `crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs` and `crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs` for all relevant Cryptographic Algorithm, Digital Signature Algorithm, MAC Data, and Signature Data values and sentinel-byte diagnostics.
 
 ### Green commit
 
-- [ ] T020 [US2] Implement `MacRequest`, `MacResponse`, and `MacError` in `crates/kmipkit-protocol/src/mac.rs` with Table 259–261 behavior and redacted byte handling.
-- [ ] T021 [US2] Implement `SignRequest`, `SignResponse`, and `SignError` in `crates/kmipkit-protocol/src/sign.rs` with Data/Digested Data, multipart, and Table 334–336 behavior.
-- [ ] T022 [US2] Export MAC and Sign types in `crates/kmipkit-protocol/src/lib.rs`; integrate MAC and Sign request, response, and client convenience dispatch in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`.
-- [ ] T023 [US2] Complete MAC and Sign fake-transport tests in `crates/kmipkit-client/tests/unit/mac_execution_tests.rs` and `crates/kmipkit-client/tests/unit/sign_execution_tests.rs` and make the Red cases pass.
+- [x] T020 [US2] Implement `MacRequest`, `MacResponse`, and `MacError` in `crates/kmipkit-protocol/src/mac.rs` with Table 259–261 behavior and redacted byte handling.
+- [x] T021 [US2] Implement `SignRequest`, `SignResponse`, and `SignError` in `crates/kmipkit-protocol/src/sign.rs` with Data/Digested Data, multipart, and Table 334–336 behavior.
+- [x] T022 [US2] Export MAC and Sign types in `crates/kmipkit-protocol/src/lib.rs`; integrate MAC and Sign request, response, and client convenience dispatch in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`.
+- [x] T023 [US2] Complete MAC and Sign fake-transport tests in `crates/kmipkit-client/tests/unit/mac_execution_tests.rs` and `crates/kmipkit-client/tests/unit/sign_execution_tests.rs` and make the Red cases pass.
 
 ### Refactor commit
 
-- [ ] T024 [US2] Refactor shared MAC/Sign parameter and byte handling in `crates/kmipkit-protocol/src/mac.rs`, `crates/kmipkit-protocol/src/sign.rs`, and their unit tests without changing specified wire behavior.
+- [x] T024 [US2] Refactor shared MAC/Sign parameter and byte handling in `crates/kmipkit-protocol/src/mac.rs`, `crates/kmipkit-protocol/src/sign.rs`, and their unit tests without changing specified wire behavior.
 
 **Checkpoint**: MAC and Sign are independently constructible and testable, with explicit caller parameters and no local cryptographic work.
 
@@ -88,17 +88,17 @@
 
 ### Red commit
 
-- [ ] T025 [US3] Add failing MAC Verify request tests in `crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs` for optional key/parameters/original Data, required single-part MAC Data, absent multipart MAC Data, and multipart fields.
-- [ ] T026 [US3] Add failing Signature Verify request tests in `crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs` for optional key/parameters/Data/Digested Data, required single-part Signature Data, and absent Signature Data on multipart requests.
-- [ ] T027 [US3] Add failing verification response tests in `crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs` and `crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs` for Valid/Invalid/Unknown/extension values, required single-part response indicator, both final multipart forms, non-final indicator rejection, required response Unique Identifier missing/duplicate/type validation, recovered Data, and generic TTLV retention.
-- [ ] T028 [US3] Add failing fake-client tests in `crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs` and `crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs` for exactly one exchange, invalid/unknown results as operation results, delivery evidence, errors, and no retry.
+- [x] T025 [US3] Add failing MAC Verify request tests in `crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs` for optional key/parameters/original Data, required single-part MAC Data, absent multipart MAC Data, and multipart fields.
+- [x] T026 [US3] Add failing Signature Verify request tests in `crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs` for optional key/parameters/Data/Digested Data, required single-part Signature Data, and absent Signature Data on multipart requests.
+- [x] T027 [US3] Add failing verification response tests in `crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs` and `crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs` for Valid/Invalid/Unknown/extension values, required single-part response indicator, both final multipart forms, non-final indicator rejection, required response Unique Identifier missing/duplicate/type validation, recovered Data, and generic TTLV retention.
+- [x] T028 [US3] Add failing fake-client tests in `crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs` and `crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs` for exactly one exchange, invalid/unknown results as operation results, delivery evidence, errors, and no retry.
 
 ### Green commit
 
-- [ ] T029 [US3] Implement `MacVerifyRequest`, `MacVerifyResponse`, and `MacVerifyError` in `crates/kmipkit-protocol/src/mac_verify.rs`, including `KMIPKIT-DISC-048` cardinality handling.
-- [ ] T030 [US3] Implement `SignatureVerifyRequest`, `SignatureVerifyResponse`, and `SignatureVerifyError` in `crates/kmipkit-protocol/src/signature_verify.rs`, including recovered Data and `KMIPKIT-DISC-048` handling.
-- [ ] T031 [US3] Export verification types in `crates/kmipkit-protocol/src/lib.rs`; integrate both verification operations into `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`.
-- [ ] T032 [US3] Complete fake-client tests in `crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs` and `crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs`; verify Invalid and Unknown remain operation results.
+- [x] T029 [US3] Implement `MacVerifyRequest`, `MacVerifyResponse`, and `MacVerifyError` in `crates/kmipkit-protocol/src/mac_verify.rs`, including `KMIPKIT-DISC-048` cardinality handling.
+- [x] T030 [US3] Implement `SignatureVerifyRequest`, `SignatureVerifyResponse`, and `SignatureVerifyError` in `crates/kmipkit-protocol/src/signature_verify.rs`, including recovered Data and `KMIPKIT-DISC-048` handling.
+- [x] T031 [US3] Export verification types in `crates/kmipkit-protocol/src/lib.rs`; integrate both verification operations into `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`.
+- [x] T032 [US3] Complete fake-client tests in `crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs` and `crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs`; verify Invalid and Unknown remain operation results.
 
 ### Refactor commit
 

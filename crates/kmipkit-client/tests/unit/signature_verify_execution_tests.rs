@@ -19,7 +19,7 @@ use kmipkit_ttlv::codec::CodecLimits;
 use zeroize::Zeroizing;
 
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
-use crate::{Client, ClientBatch, ClientBatchItem, ClientRequest};
+use crate::{Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequest};
 
 const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022;
 const SUCCESS: u32 = 0;
@@ -108,6 +108,10 @@ fn response(indicator: u32) -> Vec<u8> {
     )
 }
 
+fn operation_failure_response() -> Vec<u8> {
+    asynchronous_response_bytes(SIGNATURE_VERIFY_OPERATION, 1, Some(0x0000_0100), None, None)
+}
+
 fn response_for_id(id: &[u8], indicator: Option<u32>) -> kmipkit_ttlv::Item {
     let mut payload = vec![test_item(
         UNIQUE_IDENTIFIER,
@@ -183,6 +187,30 @@ fn invalid_and_unknown_indicators_remain_operation_results_with_one_exchange() {
         );
         assert_eq!(state.borrow().requests.len(), 1);
     }
+}
+
+#[test]
+fn server_operation_failure_remains_typed_and_is_not_retried() {
+    let (mut client, state) = client(operation_failure_response());
+    let response = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(request())),
+            &CodecLimits::defaults(),
+        )
+        .expect("server Operation Failed remains a typed operation result");
+    let outcome = response
+        .items
+        .first()
+        .expect("one failed result is associated")
+        .outcome();
+
+    assert!(matches!(outcome, ClientBatchOutcome::SignatureVerify(_)));
+    assert_eq!(outcome.result().status().raw(), 1);
+    assert_eq!(
+        outcome.result().reason().map(|reason| reason.raw()),
+        Some(0x0000_0100)
+    );
+    assert_eq!(state.borrow().calls, 1);
 }
 
 #[test]

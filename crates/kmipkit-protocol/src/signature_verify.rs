@@ -7,7 +7,8 @@ use kmipkit_ttlv::{Structure, Value};
 use crate::cryptographic_operation as common;
 use crate::{
     CryptographicOperationError, KmipOperationResult, OperationData, ProtocolError,
-    ResponseBatchItemView, SecretBytes, UniqueIdentifier,
+    ResponseBatchItemView, SecretBytes, UniqueIdentifier, ValidityIndicator,
+    VerificationResponseContext,
 };
 
 const OPERATION: u32 = 0x0000_0022;
@@ -106,6 +107,23 @@ impl SignatureVerifyRequest {
         )
     }
 
+    /// Returns the request-derived response context for Validity Indicator
+    /// shape validation.
+    #[must_use]
+    pub fn verification_response_context(&self) -> VerificationResponseContext {
+        if self.correlation.is_some() {
+            if self.final_part == Some(true) {
+                VerificationResponseContext::MultipartFinal
+            } else {
+                VerificationResponseContext::MultipartNonFinal
+            }
+        } else if self.init == Some(true) && self.final_part != Some(true) {
+            VerificationResponseContext::MultipartNonFinal
+        } else {
+            VerificationResponseContext::SinglePart
+        }
+    }
+
     /// Builds a TTLV payload for Table 337.
     ///
     /// # Errors
@@ -187,6 +205,10 @@ impl fmt::Debug for SignatureVerifyRequest {
 #[derive(Debug)]
 pub struct SignatureVerifyResponse {
     result: KmipOperationResult,
+    unique_identifier: Option<UniqueIdentifier>,
+    validity_indicator: Option<ValidityIndicator>,
+    recovered_data: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
 }
 
 impl SignatureVerifyResponse {
@@ -196,15 +218,54 @@ impl SignatureVerifyResponse {
     ) -> Result<Self, SignatureVerifyError> {
         Ok(Self {
             result: common::parse_result(item, OPERATION, "Signature Verify", Some(true))?,
+            unique_identifier: None,
+            validity_indicator: None,
+            recovered_data: None,
+            correlation_value: None,
         })
     }
 
-    /// Converts a completed Signature Verify response item.
+    /// Converts a completed, single-part Signature Verify response item.
+    ///
+    /// Use [`Self::try_from_response_item_with_context`] when the response
+    /// belongs to a multipart request.
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, SignatureVerifyError> {
+        Self::try_from_response_item_with_context(item, VerificationResponseContext::SinglePart)
+    }
+
+    /// Converts a completed Signature Verify response using its original
+    /// request's single-part or multipart context.
+    pub fn try_from_response_item_with_context(
+        item: ResponseBatchItemView<'_>,
+        context: VerificationResponseContext,
+    ) -> Result<Self, SignatureVerifyError> {
+        let result = common::parse_result(item, OPERATION, "Signature Verify", Some(false))?;
+        if result.status().raw() != common::SUCCESS {
+            return Ok(Self {
+                result,
+                unique_identifier: None,
+                validity_indicator: None,
+                recovered_data: None,
+                correlation_value: None,
+            });
+        }
+
+        let parsed = item
+            .with_response_payload(|payload| parse_success_payload(&payload, context))
+            .ok_or_else(|| {
+                CryptographicOperationError::new(
+                    "Signature Verify",
+                    crate::CryptographicOperationErrorKind::MissingSuccessPayload,
+                )
+            })??;
         Ok(Self {
-            result: common::parse_result(item, OPERATION, "Signature Verify", Some(false))?,
+            result,
+            unique_identifier: Some(parsed.unique_identifier),
+            validity_indicator: parsed.validity_indicator,
+            recovered_data: parsed.recovered_data,
+            correlation_value: parsed.correlation_value,
         })
     }
 
@@ -213,10 +274,105 @@ impl SignatureVerifyResponse {
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
     }
+
+    /// Returns the required Unique Identifier from a successful response.
+    #[must_use]
+    pub const fn unique_identifier(&self) -> Option<&UniqueIdentifier> {
+        self.unique_identifier.as_ref()
+    }
+
+    /// Returns the open server-reported Validity Indicator when present.
+    #[must_use]
+    pub const fn validity_indicator(&self) -> Option<ValidityIndicator> {
+        self.validity_indicator
+    }
+
+    /// Returns optional recovered Data as zeroizing bytes.
+    #[must_use]
+    pub const fn recovered_data(&self) -> Option<&SecretBytes> {
+        self.recovered_data.as_ref()
+    }
+
+    /// Returns the optional multipart Correlation Value returned by the
+    /// server.
+    #[must_use]
+    pub const fn correlation_value(&self) -> Option<&SecretBytes> {
+        self.correlation_value.as_ref()
+    }
 }
 
 /// A sanitized error converting a Signature Verify response item.
 pub type SignatureVerifyError = CryptographicOperationError;
+
+struct ParsedSignatureVerifyPayload {
+    unique_identifier: UniqueIdentifier,
+    validity_indicator: Option<ValidityIndicator>,
+    recovered_data: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
+}
+
+fn parse_success_payload(
+    payload: &kmipkit_ttlv::StructureView<'_>,
+    context: VerificationResponseContext,
+) -> Result<ParsedSignatureVerifyPayload, SignatureVerifyError> {
+    use kmipkit_ttlv::ValueView;
+
+    let mut unique_identifier = None;
+    let mut validity_indicator = None;
+    let mut recovered_data = None;
+    let mut correlation_value = None;
+    for field in payload.children() {
+        match field.tag().raw() {
+            common::UNIQUE_IDENTIFIER => {
+                common::parse_required_identifier(
+                    &mut unique_identifier,
+                    field,
+                    "Signature Verify",
+                )?;
+            }
+            common::VALIDITY_INDICATOR => {
+                if validity_indicator.is_some() {
+                    return Err(common::response_shape_error("Signature Verify"));
+                }
+                validity_indicator = Some(
+                    field
+                        .with_value(|value| match value {
+                            ValueView::Enumeration(raw) => Some(ValidityIndicator::from_raw(*raw)),
+                            _ => None,
+                        })
+                        .ok_or_else(|| common::response_shape_error("Signature Verify"))?,
+                );
+            }
+            common::DATA => {
+                common::parse_optional_secret(&mut recovered_data, field, "Signature Verify")?;
+            }
+            common::CORRELATION_VALUE => {
+                common::parse_optional_secret(&mut correlation_value, field, "Signature Verify")?;
+            }
+            _ => {}
+        }
+    }
+
+    match context {
+        VerificationResponseContext::SinglePart if validity_indicator.is_none() => {
+            return Err(common::response_shape_error("Signature Verify"));
+        }
+        VerificationResponseContext::MultipartNonFinal if validity_indicator.is_some() => {
+            return Err(common::response_shape_error("Signature Verify"));
+        }
+        VerificationResponseContext::SinglePart
+        | VerificationResponseContext::MultipartNonFinal
+        | VerificationResponseContext::MultipartFinal => {}
+    }
+
+    Ok(ParsedSignatureVerifyPayload {
+        unique_identifier: unique_identifier
+            .ok_or_else(|| common::response_shape_error("Signature Verify"))?,
+        validity_indicator,
+        recovered_data,
+        correlation_value,
+    })
+}
 
 fn append_framing(
     payload: &mut Structure,

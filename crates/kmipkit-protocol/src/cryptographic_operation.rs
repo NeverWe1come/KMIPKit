@@ -63,6 +63,19 @@ raw_enumeration!(
     "An open KMIP Validity Indicator value from §11.61."
 );
 
+/// The request-derived multipart context used to validate a verification
+/// response's Validity Indicator under KMIPKIT-DISC-048.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum VerificationResponseContext {
+    /// A single-part operation; the successful response requires the field.
+    SinglePart,
+    /// A multipart response before the caller marks the final request part.
+    MultipartNonFinal,
+    /// A response to a multipart request marked final; field presence remains
+    /// tolerant while KMIPKIT-DISC-048 is unresolved.
+    MultipartFinal,
+}
+
 /// A sanitized error while converting a typed cryptographic operation model.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

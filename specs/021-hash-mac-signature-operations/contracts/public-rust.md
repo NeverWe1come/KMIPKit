@@ -14,6 +14,14 @@ SignRequest / SignResponse / SignError
 SignatureVerifyRequest / SignatureVerifyResponse / SignatureVerifyError
 ```
 
+Verification requests expose `verification_response_context()` so callers
+performing direct protocol conversion can carry the original request's part
+shape to response validation. The context is `SinglePart` for unframed requests
+and an Init=true/Final=true request without Correlation Value, `MultipartFinal`
+for a multipart request with Correlation Value and Final Indicator=true, and
+`MultipartNonFinal` for an initial or continuing multipart request that is not
+marked final.
+
 Request constructors require only operation fields that the OASIS tables require in every request. Optional fields are set explicitly through consuming `with_*` methods. Fields whose requiredness depends on single-part versus multi-part use remain optional in the stored request and are checked together by the shared request-part validation before serialization.
 
 | Request type | Always required constructor input | Optional fields |
@@ -28,7 +36,7 @@ Request constructors require only operation fields that the OASIS tables require
 
 ## Protocol response types
 
-`try_from_response_item(ResponseBatchItemView)` validates the operation code and shared result. On a non-success KMIP result, the typed response exposes the result and does not fabricate success fields. On success it validates and exposes payload fields by the response table, including exactly one well-formed Unique Identifier for MAC, MAC Verify, Sign, and Signature Verify. Missing, duplicate, or malformed identifiers produce a sanitized typed model error; generic response access remains available. Each response retains access to the generic source item through the common response view so unknown valid fields remain inspectable.
+`try_from_response_item(ResponseBatchItemView)` validates the operation code and shared result and, for verification responses, assumes the single-part context. Verification responses also provide `try_from_response_item_with_context(item, context)` for explicit multipart response validation. The client derives this context from each original request and carries it through batch response association, including reordered replies. On a non-success KMIP result, the typed response exposes the result and does not fabricate success fields. On success it validates and exposes payload fields by the response table, including exactly one well-formed Unique Identifier for MAC, MAC Verify, Sign, and Signature Verify. Missing, duplicate, or malformed identifiers produce a sanitized typed model error; generic response access remains available. Each response retains access to the generic source item through the common response view so unknown valid fields remain inspectable.
 
 | Response type | Success fields |
 | --- | --- |

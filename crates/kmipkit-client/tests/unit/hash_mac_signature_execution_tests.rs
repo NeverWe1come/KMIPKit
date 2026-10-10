@@ -204,20 +204,24 @@ fn batch_item_ids_associate_out_of_order_responses_with_their_operations() {
         BatchIdentity {
             operation: HASH,
             unique_batch_item_id: Some(b"hash-id".to_vec()),
+            verification_response_context: None,
         },
         BatchIdentity {
             operation: SIGN,
             unique_batch_item_id: Some(b"sign-id".to_vec()),
+            verification_response_context: None,
         },
     ];
     let responses = [
         BatchIdentity {
             operation: SIGN,
             unique_batch_item_id: Some(b"sign-id".to_vec()),
+            verification_response_context: None,
         },
         BatchIdentity {
             operation: HASH,
             unique_batch_item_id: Some(b"hash-id".to_vec()),
+            verification_response_context: None,
         },
     ];
 

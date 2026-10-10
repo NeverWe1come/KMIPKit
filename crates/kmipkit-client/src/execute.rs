@@ -25,7 +25,7 @@ use kmipkit_protocol::{
     QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
     RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
     ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse,
-    SignatureVerifyRequest, SignatureVerifyResponse,
+    SignatureVerifyRequest, SignatureVerifyResponse, VerificationResponseContext,
 };
 
 #[cfg(test)]
@@ -3735,13 +3735,22 @@ pub(super) fn protocol_version_is_supported(version: ProtocolVersion) -> bool {
 pub(super) struct BatchIdentity {
     pub(super) operation: u32,
     pub(super) unique_batch_item_id: Option<Vec<u8>>,
+    pub(super) verification_response_context: Option<VerificationResponseContext>,
 }
 
 impl BatchIdentity {
     fn from_request(item: &ClientBatchItem) -> Self {
+        let verification_response_context = match &item.request {
+            ClientRequest::MacVerify(request) => Some(request.verification_response_context()),
+            ClientRequest::SignatureVerify(request) => {
+                Some(request.verification_response_context())
+            }
+            _ => None,
+        };
         Self {
             operation: item.request.operation(),
             unique_batch_item_id: item.unique_batch_item_id.clone(),
+            verification_response_context,
         }
     }
 
@@ -3749,6 +3758,7 @@ impl BatchIdentity {
         Self {
             operation: item.operation().unwrap_or_default(),
             unique_batch_item_id: item.with_unique_batch_item_id(<[u8]>::to_vec),
+            verification_response_context: None,
         }
     }
 }
@@ -3904,7 +3914,11 @@ fn validate_response(
     for (request_index, response_index) in association.into_iter().enumerate() {
         let item = response_items[response_index];
         let extensions = preserve_response_extensions(item, registry, limits)?;
-        let outcome = response_outcome(request_identities[request_index].operation, item)?;
+        let outcome = response_outcome(
+            request_identities[request_index].operation,
+            item,
+            request_identities[request_index].verification_response_context,
+        )?;
         #[cfg(test)]
         if let (Some(observer), ClientBatchOutcome::Pending(pending)) =
             (pending_owner_observer, &outcome)
@@ -3927,6 +3941,7 @@ fn validate_response(
 fn response_outcome(
     operation: u32,
     item: ResponseBatchItemView<'_>,
+    verification_response_context: Option<VerificationResponseContext>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
     match operation {
         ENCRYPT_OPERATION
@@ -3935,7 +3950,9 @@ fn response_outcome(
         | MAC_OPERATION
         | MAC_VERIFY_OPERATION
         | SIGN_OPERATION
-        | SIGNATURE_VERIFY_OPERATION => crypto_response_outcome(operation, item),
+        | SIGNATURE_VERIFY_OPERATION => {
+            crypto_response_outcome(operation, item, verification_response_context)
+        }
         ACTIVATE_OPERATION => read_operation_outcome(
             ClientOperation::Activate,
             item,
@@ -4027,6 +4044,7 @@ fn response_outcome(
 fn crypto_response_outcome(
     operation: u32,
     item: ResponseBatchItemView<'_>,
+    verification_response_context: Option<VerificationResponseContext>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
     match operation {
         ENCRYPT_OPERATION => read_crypto_operation_outcome(
@@ -4069,7 +4087,11 @@ fn crypto_response_outcome(
             ClientOperation::MacVerify,
             item,
             MacVerifyResponse::try_from_pending_response_item,
-            MacVerifyResponse::try_from_response_item,
+            {
+                let context = verification_response_context
+                    .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?;
+                move |item| MacVerifyResponse::try_from_response_item_with_context(item, context)
+            },
             MacVerifyResponse::result,
             PendingResponse::MacVerify,
             ClientBatchOutcome::MacVerify,
@@ -4087,7 +4109,13 @@ fn crypto_response_outcome(
             ClientOperation::SignatureVerify,
             item,
             SignatureVerifyResponse::try_from_pending_response_item,
-            SignatureVerifyResponse::try_from_response_item,
+            {
+                let context = verification_response_context
+                    .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?;
+                move |item| {
+                    SignatureVerifyResponse::try_from_response_item_with_context(item, context)
+                }
+            },
             SignatureVerifyResponse::result,
             PendingResponse::SignatureVerify,
             ClientBatchOutcome::SignatureVerify,
@@ -4285,6 +4313,7 @@ fn validate_async_response(
     let requests = [BatchIdentity {
         operation,
         unique_batch_item_id: None,
+        verification_response_context: None,
     }];
     let response_identities = response_items
         .iter()
