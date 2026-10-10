@@ -90,7 +90,7 @@
 
 ### Green
 
-- [ ] T038 Complete the Encrypt/Decrypt client execution and outcome path started in T031 by addressing any gaps exposed by T035's result and malformed-response tests; rerun the T034 28-pair fixture contract as Green confirmation, preserving exact request/response pairing and one exchange. Do not duplicate or change T031's KMIPKIT-0006 batch eligibility rules.
+- [x] T038 Complete the Encrypt/Decrypt client execution and outcome path started in T031 by addressing any gaps exposed by T035's result and malformed-response tests; rerun the T034 28-pair fixture contract as Green confirmation, preserving exact request/response pairing and one exchange. Do not duplicate or change T031's KMIPKIT-0006 batch eligibility rules. **Green evidence (2026-10-10):** no execution gap was found; the fixture suite passes 3/3, outcome suite 4/4, and multipart/Pending suite 6/6 after T035. No production Green change was needed because the implementation already satisfied these contracts. Exact commands and scope limits are in `.superpowers/sdd/kmipkit-0019-cryptographic-operations/task-38-report.md`.
 - [ ] T039 Preserve completed failure results, success-only payload rules, PendingOutcome, and delivery classification without replay or automatic Poll.
 - [ ] T040 Run protocol and client focused suites Green; confirm all 28 fixture-derived pairs execute through the typed client, then record command/output evidence.
 
