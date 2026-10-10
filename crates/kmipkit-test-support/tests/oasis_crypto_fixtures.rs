@@ -29,6 +29,81 @@ const TC_ENC_2_21_XML: &str =
     include_str!("../../../specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml");
 const TC_ENCDEC_1_21_XML: &str =
     include_str!("../../../specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml");
+const SEQUENCE_PAIRING_CASE_ID: &str = "TC-T015-PAIRING-SYNTHETIC";
+const SEQUENCE_PAIRING_XML: &str = r#"
+<KMIP>
+  <RequestMessage>
+    <RequestHeader>
+      <ProtocolVersion>
+        <ProtocolVersionMajor type="Integer" value="2"/>
+        <ProtocolVersionMinor type="Integer" value="1"/>
+      </ProtocolVersion>
+      <ClientCorrelationValue type="TextString" value="TC-T015-PAIRING-SYNTHETIC step=0"/>
+      <BatchCount type="Integer" value="1"/>
+    </RequestHeader>
+    <BatchItem>
+      <Operation type="Enumeration" value="Encrypt"/>
+      <RequestPayload>
+        <UniqueIdentifier type="TextString" value="paired-key-0"/>
+        <Data type="ByteString" value="01020304"/>
+      </RequestPayload>
+    </BatchItem>
+  </RequestMessage>
+  <ResponseMessage>
+    <ResponseHeader>
+      <ProtocolVersion>
+        <ProtocolVersionMajor type="Integer" value="2"/>
+        <ProtocolVersionMinor type="Integer" value="1"/>
+      </ProtocolVersion>
+      <TimeStamp type="DateTime" value="$NOW"/>
+      <BatchCount type="Integer" value="1"/>
+    </ResponseHeader>
+    <BatchItem>
+      <Operation type="Enumeration" value="Encrypt"/>
+      <ResultStatus type="Enumeration" value="Success"/>
+      <ResponsePayload>
+        <UniqueIdentifier type="TextString" value="paired-key-0"/>
+        <Data type="ByteString" value="a0a1a2a3"/>
+      </ResponsePayload>
+    </BatchItem>
+  </ResponseMessage>
+  <RequestMessage>
+    <RequestHeader>
+      <ProtocolVersion>
+        <ProtocolVersionMajor type="Integer" value="2"/>
+        <ProtocolVersionMinor type="Integer" value="1"/>
+      </ProtocolVersion>
+      <ClientCorrelationValue type="TextString" value="TC-T015-PAIRING-SYNTHETIC step=1"/>
+      <BatchCount type="Integer" value="1"/>
+    </RequestHeader>
+    <BatchItem>
+      <Operation type="Enumeration" value="Encrypt"/>
+      <RequestPayload>
+        <UniqueIdentifier type="TextString" value="paired-key-1"/>
+        <Data type="ByteString" value="11121314"/>
+      </RequestPayload>
+    </BatchItem>
+  </RequestMessage>
+  <ResponseMessage>
+    <ResponseHeader>
+      <ProtocolVersion>
+        <ProtocolVersionMajor type="Integer" value="2"/>
+        <ProtocolVersionMinor type="Integer" value="1"/>
+      </ProtocolVersion>
+      <TimeStamp type="DateTime" value="$NOW"/>
+      <BatchCount type="Integer" value="1"/>
+    </ResponseHeader>
+    <BatchItem>
+      <Operation type="Enumeration" value="Encrypt"/>
+      <ResultStatus type="Enumeration" value="Success"/>
+      <ResponsePayload>
+        <UniqueIdentifier type="TextString" value="paired-key-1"/>
+        <Data type="ByteString" value="b0b1b2b3"/>
+      </ResponsePayload>
+    </BatchItem>
+  </ResponseMessage>
+</KMIP>
+"#;
 
 #[derive(Debug, Eq, PartialEq)]
 enum ValueSnapshot {
@@ -236,6 +311,61 @@ fn fixture_adapter_accounts_for_each_in_scope_pair_by_source_sequence_and_step()
 }
 
 #[test]
+fn fixture_adapter_pairs_each_request_with_its_source_sequence_response() {
+    let fixture = OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, SEQUENCE_PAIRING_XML)
+        .expect("the synthetic fixture has two valid Encrypt exchanges");
+    let pairs = fixture.operation_pairs();
+
+    assert_eq!(pairs.len(), 2);
+    let expected = [
+        (
+            0,
+            "TC-T015-PAIRING-SYNTHETIC step=0",
+            "paired-key-0",
+            vec![0x01, 0x02, 0x03, 0x04],
+            vec![0xA0, 0xA1, 0xA2, 0xA3],
+        ),
+        (
+            1,
+            "TC-T015-PAIRING-SYNTHETIC step=1",
+            "paired-key-1",
+            vec![0x11, 0x12, 0x13, 0x14],
+            vec![0xB0, 0xB1, 0xB2, 0xB3],
+        ),
+    ];
+
+    for (pair, (sequence, step_identity, unique_identifier, request_data, response_data)) in
+        pairs.iter().zip(expected)
+    {
+        assert_eq!(pair.case_id(), SEQUENCE_PAIRING_CASE_ID);
+        assert_eq!(pair.source_sequence(), sequence);
+        assert_eq!(pair.step_identity(), step_identity);
+        assert_eq!(pair.operation(), OasisCryptoOperation::Encrypt);
+        let expected_identifier = ValueSnapshot::TextString(unique_identifier.to_owned());
+        assert!(contains_value(
+            pair.request_message(),
+            UNIQUE_IDENTIFIER_TAG,
+            &expected_identifier,
+        ));
+        assert!(contains_value(
+            pair.response_message(),
+            UNIQUE_IDENTIFIER_TAG,
+            &expected_identifier,
+        ));
+        assert!(contains_value(
+            pair.request_message(),
+            DATA_TAG,
+            &ValueSnapshot::ByteString(request_data),
+        ));
+        assert!(contains_value(
+            pair.response_message(),
+            DATA_TAG,
+            &ValueSnapshot::ByteString(response_data),
+        ));
+    }
+}
+
+#[test]
 fn fixture_adapter_resolves_selected_symbols_deterministically() {
     let first = OasisCryptoFixture::from_xml(TC_ENC_1_21_ID, TC_ENC_1_21_XML)
         .expect("the fixture's out-of-scope setup symbols are not inspected");
@@ -298,6 +428,39 @@ fn fixture_adapter_ignores_unrecognized_symbols_in_out_of_scope_setup_messages()
             .iter()
             .all(|pair| pair.operation() == OasisCryptoOperation::Encrypt)
     );
+}
+
+#[test]
+fn fixture_adapter_filters_unknown_setup_symbol_and_keeps_all_28_pairs() {
+    assert!(TC_ENC_1_21_XML.contains("$NOW-3600"));
+    let changed_setup_symbol =
+        TC_ENC_1_21_XML.replace("$NOW-3600", "$UNKNOWN_OUT_OF_SCOPE_SETUP_SYMBOL");
+    assert!(changed_setup_symbol.contains("$UNKNOWN_OUT_OF_SCOPE_SETUP_SYMBOL"));
+
+    let fixtures = [
+        OasisCryptoFixture::from_xml(TC_ENC_1_21_ID, &changed_setup_symbol)
+            .expect("the unknown setup token is ignored after operation filtering"),
+        OasisCryptoFixture::from_xml(TC_ENC_2_21_ID, TC_ENC_2_21_XML)
+            .expect("the second pinned fixture parses"),
+        OasisCryptoFixture::from_xml(TC_ENCDEC_1_21_ID, TC_ENCDEC_1_21_XML)
+            .expect("the Encrypt/Decrypt pinned fixture parses"),
+    ];
+    let mut total_pairs = 0;
+    let mut encrypt_pairs = 0;
+    let mut decrypt_pairs = 0;
+    for fixture in fixtures {
+        for pair in fixture.operation_pairs() {
+            total_pairs += 1;
+            match pair.operation() {
+                OasisCryptoOperation::Encrypt => encrypt_pairs += 1,
+                OasisCryptoOperation::Decrypt => decrypt_pairs += 1,
+            }
+        }
+    }
+
+    assert_eq!(total_pairs, 28);
+    assert_eq!(encrypt_pairs, 24);
+    assert_eq!(decrypt_pairs, 4);
 }
 
 #[test]
