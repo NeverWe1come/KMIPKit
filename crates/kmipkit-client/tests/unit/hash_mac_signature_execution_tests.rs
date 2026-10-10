@@ -112,6 +112,31 @@ impl OperationFixture {
         }
     }
 
+    fn final_multipart_request(self) -> ClientRequest {
+        let correlation = || SecretBytes::new(b"multipart-correlation".to_vec());
+        match self.code {
+            HASH => ClientRequest::hash(
+                HashRequest::new(test_structure([test_item(
+                    HASHING_ALGORITHM,
+                    Value::enumeration(6),
+                )]))
+                .with_correlation_value(correlation())
+                .with_final_indicator(true),
+            ),
+            MAC => ClientRequest::mac(
+                MacRequest::new()
+                    .with_correlation_value(correlation())
+                    .with_final_indicator(true),
+            ),
+            SIGN => ClientRequest::sign(
+                SignRequest::new()
+                    .with_correlation_value(correlation())
+                    .with_final_indicator(true),
+            ),
+            _ => unreachable!("only Hash, MAC, and Sign have output cardinality here"),
+        }
+    }
+
     fn success_payload(self) -> kmipkit_ttlv::Structure {
         self.success_payload_with_output(true)
     }
@@ -535,6 +560,44 @@ fn multipart_hash_mac_and_sign_responses_accept_absent_output_data() {
             _ => unreachable!("fixture loop contains only Hash, MAC, and Sign"),
         }
     }
+}
+
+#[test]
+fn final_multipart_hash_mac_and_sign_responses_omit_output_data() {
+    let conforms = output_operation_fixtures().map(|fixture| {
+        let without_output = asynchronous_response_bytes(
+            fixture.code,
+            SUCCESS,
+            None,
+            None,
+            Some(fixture.success_payload_with_output(false)),
+        );
+        let (mut first_client, _) = client([without_output]);
+        let absent_output_accepted = first_client
+            .execute(
+                ClientBatch::new(ClientBatchItem::new(fixture.final_multipart_request())),
+                &CodecLimits::defaults(),
+            )
+            .is_ok();
+
+        let with_output = asynchronous_response_bytes(
+            fixture.code,
+            SUCCESS,
+            None,
+            None,
+            Some(fixture.success_payload_with_output(true)),
+        );
+        let (mut second_client, _) = client([with_output]);
+        let present_output_rejected = second_client
+            .execute(
+                ClientBatch::new(ClientBatchItem::new(fixture.final_multipart_request())),
+                &CodecLimits::defaults(),
+            )
+            .is_err();
+
+        absent_output_accepted && present_output_rejected
+    });
+    assert_eq!(conforms, [true; 3]);
 }
 
 #[test]
