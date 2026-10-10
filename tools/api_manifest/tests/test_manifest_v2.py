@@ -200,6 +200,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         for export_name in (
             "kmipkit.errors",
+            "kmipkit.extensions",
+            "kmipkit.ttlv",
+            "kmipkit.extensions.ClientBatchItem",
             "kmipkit.extensions.with_extension",
             "org.kmipkit.NativeExtensionRegistry",
             "org.kmipkit.generated.ExtensionRegistryApi",
