@@ -100,6 +100,25 @@ Post-Refactor verification commands and outputs, offline through WSL Ubuntu-26.0
 - git diff --check — exit 0.
 
 The new client tests assert Pending outcome, operation, shared result, exact correlation bytes containing NUL and non-UTF-8 values, typed response access, and absent success-only payload fields. No retries, polling, correlation synthesis, or change to the shared Pending lifecycle was introduced.
+
+## T033 Refactor — request classification
+
+Refactor commit: `d9aa6dd9b1e99cade5c68160c748fc220044a8a5` (DCO signed).
+
+The three request classifications used by Encrypt/Decrypt client validation now live as private `ClientRequest` methods: local shape validation, omitted Unique Identifier detection, and ID Placeholder producer eligibility. The batch validation helpers delegate to these methods. This colocates operation-specific behavior with the typed request enum and removes free helpers that separately matched the same variants. No public API, test, contract, or wire shape changed. The refactor preserves local-shape error mapping to Validation / InvalidInput / NotSent; the ID Placeholder gate retains the effective Batch Order Option default, Create/Create Key Pair/Recover producer set, and consumer-before-current-item ordering. The response status-first Pending route and completed/Pending conversions were untouched.
+
+Focused test baseline before editing, at `110b51a3b77106f7b0660834e20e8d96eff87588`:
+
+- `wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_multipart_execution_tests --offline --message-format short'` — exit 0; 6 passed, 0 failed, 292 filtered out.
+- `wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_id_placeholder_execution_tests --offline --message-format short'` — exit 0; 7 passed, 0 failed, 291 filtered out.
+
+Post-refactor checks, run offline through WSL Ubuntu-26.04 before commit:
+
+- `wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_multipart_execution_tests --offline --message-format short'` — exit 0; 6 passed, 0 failed, 292 filtered out.
+- `wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_id_placeholder_execution_tests --offline --message-format short'` — exit 0; 7 passed, 0 failed, 291 filtered out.
+- `wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features --offline -- -D warnings'` — exit 0.
+- `wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo fmt --all --check'` — exit 0.
+- `git diff --check` — exit 0.
 ## Scope and known limitations
 
-No T032 or T033 work was started. This change does not execute the 28 fixture-derived request/response pairs; T038 owns that work. The full FR-008 one-exchange-per-invocation acceptance remains for T034/T038 as recorded in the approved task brief. No OASIS upstream source, generated artifact, dependency, transport, retry, Poll behavior, batch ordering policy, or hidden multipart state was changed. No automatic field movement or correlation synthesis was added.
+The T032 focused multipart and ID Placeholder contracts are verified above; this work does not execute the 28 fixture-derived request/response pairs, which T038 owns. The full FR-008 one-exchange-per-invocation acceptance remains for T034/T038 as recorded in the approved task brief. No OASIS upstream source, generated artifact, dependency, transport, retry, Poll behavior, batch ordering policy, or hidden multipart state was changed. No automatic field movement or correlation synthesis was added.
