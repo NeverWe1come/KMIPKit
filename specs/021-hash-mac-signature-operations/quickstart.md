@@ -33,7 +33,7 @@ The 98.27% TTLV, 95.45% protocol, 95.11% client, 92.16% workspace, and 97.41% ch
 
 ## Completed PR CI coverage
 
-Draft PR [#78](https://github.com/NeverWe1come/KMIPKit/pull/78) CI run [38081026494](https://github.com/NeverWe1come/KMIPKit/actions/runs/38081026494) completed successfully on Linux, Windows, and macOS (attempt 2). It resolved the earlier coverage gate failure caused by LLVM merging function-instantiation summaries separately from physical file-segment coverage; a regression test models the distinct-line union and verifies that summary-uncovered residuals remain conservative. Its first macOS attempt exposed a one-second total deadline in the unchanged positive-read-progress test; the rerun passed. This update widens only the total deadlines in the positive read/write/flush progress tests to three seconds, leaving the per-phase deadlines unchanged to reduce runner scheduling sensitivity.
+Draft PR [#78](https://github.com/NeverWe1come/KMIPKit/pull/78) CI run [38082396564](https://github.com/NeverWe1come/KMIPKit/actions/runs/38082396564) completed successfully on Linux, Windows, and macOS with the progress-test stabilization. It resolved the earlier coverage gate failure caused by LLVM merging function-instantiation summaries separately from physical file-segment coverage; a regression test models the distinct-line union and verifies that summary-uncovered residuals remain conservative. An earlier run's first macOS attempt exposed a one-second total deadline in the positive-read-progress test; its retry passed. The total deadlines in the positive read/write/flush progress tests are now three seconds, while their per-phase deadlines remain unchanged.
 
 | Scope | Covered | Threshold | Result |
 | --- | ---: | ---: | --- |
@@ -106,7 +106,7 @@ python tools/normative_catalog/report.py --check
 git diff --check
 ```
 
-T040 and T043 are complete based on successful PR CI run [38081026494](https://github.com/NeverWe1come/KMIPKit/actions/runs/38081026494). T041 is complete based on the sealed formal diff scan recorded above, with zero findings. The qualified human security audit remains a separate 1.0.0 release gate.
+T040 and T043 are complete based on successful PR CI run [38082396564](https://github.com/NeverWe1come/KMIPKit/actions/runs/38082396564). T041 is complete based on the sealed formal diff scan recorded above, with zero findings. The qualified human security audit remains a separate 1.0.0 release gate.
 
 ## Response discrepancy and official evidence
 
