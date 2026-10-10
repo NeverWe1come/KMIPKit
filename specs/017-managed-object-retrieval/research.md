@@ -1,8 +1,8 @@
 # Research: KMIP 2.1 Get and Locate Operations
 
-**Date**: 2026-10-09<br>
+**Date**: 2026-10-10<br>
 **Normative source**: Pinned OASIS KMIP Specification v2.1, especially §§6.1.19 and 6.1.28 and Tables 220–222 and 247–249.<br>
-**Catalog baseline**: `release/1.0.0` at `227e3f9104f14494810598d078c013c389c24f8f`.
+**Release-contract baseline**: `release/1.0.0` at `4e15a8f15c4c8529426b004737aaf16961d1c073`; current catalog includes the KMIPKIT-0017 dispositions merged by PR #79.
 
 ## Decision 1: Keep Get and Locate in one operation-family specification
 
@@ -40,9 +40,9 @@ The request/response and acceptance criteria preserve these source rules:
 
 Table 249 errors use the shared result contract.
 
-## Decision 4: Use existing release foundations without depending on KMIPKIT-0016
+## Decision 4: Use the current validated release foundations
 
-The release baseline contains the generic TTLV values, the Create feature's `UniqueIdentifier` and `AttributeSet`, batch/message models, common result and Pending handling, typed client dispatch, decoder limits, and TLS/HTTPS transports. Locate can encode its required Attributes Structure with the existing direct-item AttributeSet. Get does not use Attribute Reference. Therefore this feature can be designed from the release branch without importing the unmerged KMIPKIT-0016 implementation. Both branches may touch shared dispatch files; rebase/update and full CI after intervening release merges are required.
+The reviewed release baseline contains generic TTLV values, the Create feature's `UniqueIdentifier` and current validated `AttributeSet`, batch/message models, common result and Pending handling, typed client dispatch, decoder limits, and TLS/HTTPS transports. KMIPKIT-0021 has since extended the non-exhaustive `ClientRequest`, `ClientOperation`, and `ClientBatchOutcome` surfaces for Hash, MAC, and signature operations. It also added `ResponseBatchItemView::with_ttlv`, which lends the complete ordered response item within a callback. The callback does not permit retaining references. This feature adds a fallible `Item::try_clone` operation so Get can retain exactly the secret-bearing Any Object item rather than cloning the whole response tree. The `AttributeSet` source and contract are unchanged across the immediately reviewed release interval, though the current validation contract was added after its initial KMIPKIT-0014 introduction. Locate uses that current direct-item AttributeSet and its validation; Get does not use Attribute Reference. Both implementation branches touch shared dispatch files; start from the current release and rerun full CI after intervening merges.
 
 No additional crate or runtime dependency is justified.
 
@@ -57,4 +57,4 @@ The catalog now marks two Get PKCS#12 XML fixtures available and the other five 
 
 ## Clarification pass
 
-The pinned normative text, catalog, constitution, and approved roadmap resolve the feature's scope, field forms, matching behavior, archived-object boundary, language stage, and secret handling. KMIPKIT-DEC-003, -004, and -005 dispose of the three catalog questions for PKCS#12 wording, official case mapping, and Locate actor ownership. The feature specifies lossless client forwarding and response preservation without claiming server-side outcomes as client conformance. Human approval of the revised written specification remains an implementation gate.
+The pinned normative text, catalog, constitution, and approved roadmap resolve the feature's scope, field forms, matching behavior, archived-object boundary, language stage, and secret handling. KMIPKIT-DEC-003, -004, and -005 dispose of the three catalog questions for PKCS#12 wording, official case mapping, and Locate actor ownership. The original feature specification and inventory correction were human-merged in PRs #63 and #79. This refresh aligns the design to release `4e15a8f1`; its review and merge remain required before implementation tests because #78 changed shared dispatch and response access. The feature specifies lossless client forwarding and response preservation without claiming server-side outcomes as client conformance.

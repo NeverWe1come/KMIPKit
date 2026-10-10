@@ -56,6 +56,6 @@ Format and wrapping options are explicit request values. KMIPKit forwards them; 
         Ok(())
     }
 
-For Locate, build `ClientBatch::new(ClientBatchItem::new(ClientRequest::Locate(query)))`, call `client.execute(batch, limits)`, then read `response.get(0)?.outcome().locate_response()?.unique_identifiers()`. Preserve server order and repeated identifiers. Archived-object contents require the separate Recover then Get workflow; Recover is outside this feature.
+For a uniform response path, `response.get(0)?.outcome().response().get()` returns the same typed Get response. For Locate, build `ClientBatch::new(ClientBatchItem::new(ClientRequest::Locate(query)))`, call `client.execute(batch, limits)`, then read `response.get(0)?.outcome().response().locate()?.unique_identifiers()`. Preserve server order and repeated identifiers. A valid Pending result remains a Pending outcome; its shared response view is not a completed Get object or Locate result, and KMIPKit does not poll automatically. Archived-object contents require the separate Recover then Get workflow; Recover is outside this feature.
 
 The implementation PR must compile these snippets as documentation tests and add the Spanish user guide. This proposed quickstart does not claim server interoperability or profile conformance.

@@ -24,3 +24,6 @@
 - [ ] CHK009 Are malformed and over-limit response cases testable with sanitized diagnostics? [Coverage, Spec FR-012]
 - [ ] CHK010 Are the two available PKCS#12 fixtures and five unavailable linked fixtures distinguished, with no official pass claim before full-case execution? [Measurability, Spec FR-013]
 - [ ] CHK011 Does the feature avoid claiming profile support, cross-language parity, two-server interoperability, or certification? [Boundary, Spec Out of Scope]
+- [ ] CHK012 Does Get copy only the Any Object item out of the callback-scoped response TTLV, preserving nested order and unknown/repeated values in zeroizing owned storage? [Ownership, Data Model Get]
+- [ ] CHK013 Does Locate use the current validated direct-item `AttributeSet` API, including its catalogued TTLV type and Vendor Attribute shape/order checks? [Compatibility, Data Model Locate]
+- [ ] CHK014 Does a Pending response stay a shared Pending outcome, retain the required Table 399 correlation value, and avoid any claim that Get/Locate completed or should be polled automatically? [Async behavior, Spec FR-011]

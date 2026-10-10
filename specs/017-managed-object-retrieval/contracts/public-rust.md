@@ -1,7 +1,7 @@
 # Public Rust Contract: Get and Locate
 
 **Feature**: KMIPKIT-0017<br>
-**Status**: Proposed; implementation is gated on an approved specification.<br>
+**Status**: Proposed; release-contract refresh pending review before implementation.<br>
 **Compatibility**: Additive APIs in kmipkit-protocol and kmipkit-client. No new dependency or unsafe code.
 
 ## Request models
@@ -23,10 +23,10 @@
 
 - Add ClientRequest::Get(GetRequest) and ClientRequest::Locate(LocateRequest).
 - Add ClientOperation::Get and ClientOperation::Locate.
-- Add GetCompleted and LocateCompleted variants to ClientBatchOutcome plus get_response() and locate_response() accessors; a mismatched operation or Pending result returns None. Keep ClientOperationOutcome for the existing asynchronous-operation API.
+- Add GetCompleted and LocateCompleted variants to ClientBatchOutcome plus get_response() and locate_response() accessors; a mismatched operation or Pending result returns None. Add Get and Locate to the private response reference mapping and `ClientResponseView::get()` / `locate()` so the typed response representation is accessible through `ClientBatchOutcome::response()` and `PendingOutcome::response()` whenever the common response path provides one. Keep ClientOperationOutcome for the separate asynchronous-operation API.
 - Client::execute and execute_with_options continue to accept ClientBatch and CodecLimits and return ClientBatchResponse. Each request-order item exposes its typed ClientBatchOutcome. They preserve one exchange per submitted batch, request/result order, Pending results, and RequestDeliveryState; they never retry, poll automatically, split batches, search local state, or infer ID Placeholder state.
 
-Method signatures and response ownership must follow the existing ClientBatch, ClientBatchOutcome, ResponseMessage, and batch-view patterns in execute.rs. GetResponse owns its secret-bearing Any Object rather than returning a view that could outlive the source response tree. Any needed public-contract change must return to this specification before code continues.
+Method signatures and response ownership follow the current non-exhaustive `ClientRequest`, `ClientOperation`, and `ClientBatchOutcome` surfaces, plus the `ResponseBatchItemView` pattern in `execute.rs`. `ResponseBatchItemView::with_ttlv` lends the full ordered response tree only for the callback lifetime. `GetResponse` owns its secret-bearing Any Object rather than returning that borrowed view; add a fallible `Item::try_clone()` to deep-copy only the object item, preserving repeated/unknown descendants, redacted formatting, and zeroization. `ClientResponseView::get()` and `locate()` expose the typed response representation when available, including the shared Pending representation; direct `ClientBatchOutcome::get_response()` and `locate_response()` remain completed-only. Pending outcomes retain the common result and required correlation value and are never interpreted as operation completion. Locate criteria use the current validated `AttributeSet`: empty criteria are valid, while populated values pass through `try_new`/`try_push`, including catalogued TTLV-type and Vendor Attribute shape/order checks. Any needed public-contract change must return to this specification before code continues.
 
 ## Security and errors
 

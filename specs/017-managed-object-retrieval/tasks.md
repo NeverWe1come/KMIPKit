@@ -10,13 +10,13 @@ description: "Implementation tasks for KMIPKIT-0017 Get and Locate"
 
 ## Implementation gate
 
-Do not execute implementation tasks until the revised KMIPKIT-0017 specification and catalog-disposition PR is approved and merged into the active release/1.0.0 branch. Create the implementation worktree from that release branch. KMIPKIT-DEC-003 through -005 resolve the prior catalog actor and PKCS#12 questions; still require executable evidence before making conformance claims. If the release has changed client dispatch, response ownership, or AttributeSet contracts, refresh this design and obtain review before writing implementation tests.
+Do not execute implementation tasks until the revised KMIPKIT-0017 specification and catalog-disposition PRs are approved and merged into the active release/1.0.0 branch. PRs #63 and #79 are merged; this release-contract refresh must also be reviewed and merged before implementation tests. Create the implementation worktree from the then-current release branch. KMIPKIT-DEC-003 through -005 resolve the prior catalog actor and PKCS#12 questions; still require executable evidence before making conformance claims. The refreshed design records that PR #78 extended shared dispatch/typed outcomes and added callback-scoped full response TTLV access, while leaving the current validated direct-item `AttributeSet` contract unchanged.
 
 ## Phase 1: Setup
 
 **Purpose**: Start from the approved release and establish deterministic operation test fixtures.
 
-- [ ] T001 Create the implementation worktree from active release/1.0.0 and verify approved release APIs against specs/017-managed-object-retrieval/traceability.md
+- [ ] T001 Create the implementation worktree from active release/1.0.0 and record its commit; verify additive Get/Locate dispatch and typed-outcome integration, callback lifetime and owned-copy behavior for response TTLV, and the current validated direct-item `AttributeSet` contract against specs/017-managed-object-retrieval/traceability.md
 - [ ] T002 Add deterministic generic TTLV test builders for Get and Locate request/response payloads in crates/kmipkit-protocol/tests/support/
 - [ ] T003 Add fake-transport helpers that capture one request batch and return controlled response batches in crates/kmipkit-client/tests/support/
 
@@ -24,11 +24,11 @@ Do not execute implementation tasks until the revised KMIPKIT-0017 specification
 
 **Purpose**: Establish closed typed dispatch and typed-outcome boundaries used by both stories.
 
-- [ ] T004 Add failing public-surface tests for Get/Locate request exports and model accessors in crates/kmipkit-protocol/tests/public_operation_contract.rs
-- [ ] T005 Add failing client-boundary tests for request variants, operation identifiers, and typed response accessors in crates/kmipkit-client/tests/operation_boundary.rs
+- [ ] T004 Add failing public-surface tests for `Item::try_clone` deep-copy/roundtrip behavior plus Get/Locate request exports and model accessors in crates/kmipkit-ttlv/tests/public_item_contract.rs and crates/kmipkit-protocol/tests/public_operation_contract.rs
+- [ ] T005 Add failing client-boundary tests for request variants, operation identifiers, completed-only outcome accessors, unified `ClientResponseView` accessors, and valid Pending response mapping in crates/kmipkit-client/tests/operation_boundary.rs
 - [ ] T006 Record focused Red commands/results and commit the contract tests before production edits in the KMIPKIT-0017 implementation branch
-- [ ] T007 Implement only the shared Get/Locate request variants, operation IDs, outcome slots, and typed accessors in crates/kmipkit-client/src/execute.rs
-- [ ] T008 Run the focused boundary tests, record Green evidence, and commit the shared client surface separately in the KMIPKIT-0017 implementation branch
+- [ ] T007 Implement the fallible zeroizing `Item::try_clone` in crates/kmipkit-ttlv/src/item.rs, then add only the shared Get/Locate request variants, operation IDs, typed outcome slots, Pending mapping, and unified response-view accessors in crates/kmipkit-client/src/execute.rs
+- [ ] T008 Run focused TTLV and client-boundary tests, record Green evidence, and commit the `Item::try_clone` and shared dispatch Green implementation separately from the Red tests in the KMIPKIT-0017 implementation branch
 - [ ] T009 Review shared dispatch for a justified behavior-preserving Refactor; if warranted, test and commit it separately in crates/kmipkit-client/src/execute.rs
 
 ## Phase 3: User Story 1 — Retrieve one managed object (Priority: P1)
@@ -48,9 +48,9 @@ Do not execute implementation tasks until the revised KMIPKIT-0017 specification
 ### Implementation for User Story 1
 
 - [ ] T014 [US1] Implement raw-preserving Get selectors, builder/accessors, and ordered Table 220 payload conversion in crates/kmipkit-protocol/src/get.rs
-- [ ] T015 [US1] Implement typed Table 221 conversion with sanitized missing/duplicate/mistyped-field errors and opaque Any Object ownership in crates/kmipkit-protocol/src/get.rs
+- [ ] T015 [US1] Implement typed Table 221 conversion with sanitized missing/duplicate/mistyped-field errors and owned, redacted, zeroizing Any Object storage copied with `Item::try_clone` from the callback-scoped TTLV view in crates/kmipkit-protocol/src/get.rs
 - [ ] T016 [US1] Export Get request/response/error types and public rustdoc from crates/kmipkit-protocol/src/lib.rs
-- [ ] T017 [US1] Add Get request serialization, response decoding, typed outcome storage, and matching accessor in crates/kmipkit-client/src/execute.rs
+- [ ] T017 [US1] Add Get request serialization, completed and Pending response decoding, typed outcome storage, direct completed accessor, and unified response-view mapping in crates/kmipkit-client/src/execute.rs
 - [ ] T018 Run focused Get protocol/client tests, record Green evidence, and commit the Green implementation separately in the KMIPKIT-0017 implementation branch
 - [ ] T019 Perform a behavior-preserving Get Refactor only where test evidence justifies it; run tests and commit any change separately in crates/kmipkit-protocol/src/get.rs and crates/kmipkit-client/src/execute.rs
 
@@ -61,7 +61,7 @@ Do not execute implementation tasks until the revised KMIPKIT-0017 specification
 
 ### Tests for User Story 2
 
-- [ ] T020 [US2] Add failing Table 247 tests for empty/nonempty required Attributes, each optional field, explicit zero, Online/Archival/Destroyed mask bits 0x1/0x2/0x4, unknown mask bit 0x8000_0000 round-trip, and exact Maximum Items/Offset Items/Storage Status Mask/Object Group Member/Attributes order in crates/kmipkit-protocol/tests/unit/locate_tests.rs; also preserve partial structured criteria, repeated date values for ranges, Cryptographic Usage Mask, and Usage Limits without local matching
+- [ ] T020 [US2] Add failing Table 247 tests for empty/nonempty required Attributes, each optional field, explicit zero, Online/Archival/Destroyed mask bits 0x1/0x2/0x4, unknown mask bit 0x8000_0000 round-trip, and exact Maximum Items/Offset Items/Storage Status Mask/Object Group Member/Attributes order in crates/kmipkit-protocol/tests/unit/locate_tests.rs; build populated criteria with `AttributeSet::try_new`/`try_push`, assert catalogued TTLV-type and Vendor Attribute shape/order rejection, and preserve valid partial structured criteria, repeated date values for ranges, Cryptographic Usage Mask, and Usage Limits without local matching
 - [ ] T021 [US2] Add failing Table 248/249 tests for omitted Located Items, zero/one/repeated identifiers, duplicates, raw identifier forms, response order, and applicable Result Reasons in crates/kmipkit-protocol/tests/unit/locate_tests.rs
 - [ ] T022 [US2] Add failing fake-transport tests for batch order, unchanged criteria, and no local ID Placeholder assumptions in crates/kmipkit-client/tests/unit/object_read_execution_tests.rs
 - [ ] T023 Record Red commands/results and commit Locate tests before production changes in the KMIPKIT-0017 implementation branch
@@ -71,7 +71,7 @@ Do not execute implementation tasks until the revised KMIPKIT-0017 specification
 - [ ] T024 [US2] Implement Locate selectors, required Attributes Structure, builder/accessors, and ordered Table 247 payload conversion in crates/kmipkit-protocol/src/locate.rs
 - [ ] T025 [US2] Implement Table 248 conversion for optional Integer and zero-or-more ordered Unique Identifiers in crates/kmipkit-protocol/src/locate.rs
 - [ ] T026 [US2] Export Locate request/response/error types and public rustdoc from crates/kmipkit-protocol/src/lib.rs
-- [ ] T027 [US2] Add Locate request serialization, response decoding, typed outcome storage, and matching accessor in crates/kmipkit-client/src/execute.rs
+- [ ] T027 [US2] Add Locate request serialization, completed and Pending response decoding, typed outcome storage, direct completed accessor, and unified response-view mapping in crates/kmipkit-client/src/execute.rs
 - [ ] T028 Run focused Locate protocol/client tests, record Green evidence, and commit the Green implementation separately in the KMIPKIT-0017 implementation branch
 - [ ] T029 Perform a behavior-preserving Locate Refactor only where test evidence justifies it; run tests and commit any change separately in crates/kmipkit-protocol/src/locate.rs and crates/kmipkit-client/src/execute.rs
 
