@@ -17,11 +17,15 @@ LANGUAGES = ("rust", "c", "java", "python")
 
 
 def _contract_manifest() -> dict[str, object]:
-    manifest = _valid_v2_manifest()
-    for operation in manifest["operations"]:
-        operation["apiState"] = "blocked"
-        operation["blockedReason"] = "The approved operation contract or Rust API is not available."
-    return manifest
+    return _valid_v2_manifest()
+
+
+def _discover_versions_operation(manifest: dict[str, object]) -> dict[str, object]:
+    return next(
+        operation
+        for operation in manifest["operations"]
+        if operation["name"] == "Discover Versions"
+    )
 
 
 def _approved_feature_source() -> dict[str, str]:
@@ -64,7 +68,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
     def test_declared_operation_requires_approved_owner_and_all_language_mappings(self) -> None:
         manifest = _contract_manifest()
-        operation = manifest["operations"][0]
+        operation = _discover_versions_operation(manifest)
         operation.pop("blockedReason")
         operation["apiState"] = "declared"
         operation["featureSpecId"] = "KMIPKIT-0007"
@@ -77,7 +81,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
     def test_verified_operation_requires_resolvable_parity_evidence(self) -> None:
         manifest = _contract_manifest()
-        operation = manifest["operations"][0]
+        operation = _discover_versions_operation(manifest)
         operation.pop("blockedReason")
         operation["apiState"] = "verified"
         operation["featureSpecId"] = "KMIPKIT-0007"
