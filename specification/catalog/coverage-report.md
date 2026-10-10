@@ -929,12 +929,9 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.28-012 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.28 |
 | KMIPKIT-REQ-SPEC-6.1.28-013-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.28 |
 | KMIPKIT-REQ-SPEC-6.1.28-013-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.28 |
-| KMIPKIT-REQ-SPEC-6.1.32-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.32 |
 | KMIPKIT-REQ-SPEC-6.1.32-003 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.32 |
 | KMIPKIT-REQ-SPEC-6.1.32-004-001 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §6.1.32 |
 | KMIPKIT-REQ-SPEC-6.1.32-004-002 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.32 |
-| KMIPKIT-REQ-SPEC-6.1.33-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.33 |
-| KMIPKIT-REQ-SPEC-6.1.33-001-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.33 |
 | KMIPKIT-REQ-SPEC-6.1.33-004 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.33 |
 | KMIPKIT-REQ-SPEC-6.1.33-005-001 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §6.1.33 |
 | KMIPKIT-REQ-SPEC-6.1.33-005-002 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.33 |
@@ -976,13 +973,10 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-REQ-SPEC-6.1.48-006 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.48 |
 | KMIPKIT-REQ-SPEC-6.1.5-001 | mandatory | client\_1\_0 | KMIPKIT-SRC-spec §6.1.5 |
 | KMIPKIT-REQ-SPEC-6.1.50-001 | prohibited | client\_1\_0 | KMIPKIT-SRC-spec §6.1.50 |
-| KMIPKIT-REQ-SPEC-6.1.55-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.55 |
 | KMIPKIT-REQ-SPEC-6.1.55-004 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.55 |
 | KMIPKIT-REQ-SPEC-6.1.55-005-001 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §6.1.55 |
 | KMIPKIT-REQ-SPEC-6.1.55-005-002 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.55 |
-| KMIPKIT-REQ-SPEC-6.1.56-001-001 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.56 |
 | KMIPKIT-REQ-SPEC-6.1.56-001-002 | permission\_or\_optional | out\_of\_scope | KMIPKIT-SRC-spec §6.1.56 |
-| KMIPKIT-REQ-SPEC-6.1.56-002 | permission\_or\_optional | client\_1\_0 | KMIPKIT-SRC-spec §6.1.56 |
 | KMIPKIT-REQ-SPEC-6.1.56-006 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.56 |
 | KMIPKIT-REQ-SPEC-6.1.56-007-001 | mandatory | out\_of\_scope | KMIPKIT-SRC-spec §6.1.56 |
 | KMIPKIT-REQ-SPEC-6.1.56-007-002 | mandatory | server\_only | KMIPKIT-SRC-spec §6.1.56 |
@@ -1868,71 +1862,10 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-ONE-TIME-PASSWORD-00000004 | One Time Password | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.11 |
 | KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-TICKET-00000006 | Ticket | enumeration\_value | both | client\_1\_0 | 00000006 | assigned | KMIPKIT-SRC-spec §11.11 |
 | KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001 | Username and Password | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.11 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-3DES-00000002 | 3DES | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-AES-00000003 | AES | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ARIA-00000029 | ARIA | enumeration\_value | both | client\_1\_0 | 00000029 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-BLOWFISH-00000010 | Blowfish | enumeration\_value | both | client\_1\_0 | 00000010 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-CAMELLIA-00000011 | Camellia | enumeration\_value | both | client\_1\_0 | 00000011 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-CAST5-00000012 | CAST5 | enumeration\_value | both | client\_1\_0 | 00000012 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-CHACHA20-0000001C | ChaCha20 | enumeration\_value | both | client\_1\_0 | 0000001C | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-CHACHA20POLY1305-0000001E | ChaCha20Poly1305 | enumeration\_value | both | client\_1\_0 | 0000001E | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-DES-00000001 | DES | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-DH-0000000D | DH | enumeration\_value | both | client\_1\_0 | 0000000D | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-DSA-00000005 | DSA | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A | EC | enumeration\_value | both | client\_1\_0 | 0000001A | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDH-0000000E | ECDH | enumeration\_value | both | client\_1\_0 | 0000000E | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDSA-00000006 | ECDSA | enumeration\_value | both | client\_1\_0 | 00000006 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECMQV-0000000F | ECMQV | enumeration\_value | both | client\_1\_0 | 0000000F | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ED25519-00000037 | Ed25519 | enumeration\_value | both | client\_1\_0 | 00000037 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ED448-00000038 | Ed448 | enumeration\_value | both | client\_1\_0 | 00000038 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-GOST-28147-89-00000031 | GOST 28147-89 | enumeration\_value | both | client\_1\_0 | 00000031 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-GOST-R-34-10-2012-0000002E | GOST R 34.10-2012 | enumeration\_value | both | client\_1\_0 | 0000002E | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-GOST-R-34-11-2012-0000002F | GOST R 34.11-2012 | enumeration\_value | both | client\_1\_0 | 0000002F | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-GOST-R-34-13-2015-00000030 | GOST R 34.13-2015 | enumeration\_value | both | client\_1\_0 | 00000030 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-MD5-0000000C | HMAC-MD5 | enumeration\_value | both | client\_1\_0 | 0000000C | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA1-00000007 | HMAC-SHA1 | enumeration\_value | both | client\_1\_0 | 00000007 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA224-00000008 | HMAC-SHA224 | enumeration\_value | both | client\_1\_0 | 00000008 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA256-00000009 | HMAC-SHA256 | enumeration\_value | both | client\_1\_0 | 00000009 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA3-224-00000023 | HMAC-SHA3-224 | enumeration\_value | both | client\_1\_0 | 00000023 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA3-256-00000024 | HMAC-SHA3-256 | enumeration\_value | both | client\_1\_0 | 00000024 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA3-384-00000025 | HMAC-SHA3-384 | enumeration\_value | both | client\_1\_0 | 00000025 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA3-512-00000026 | HMAC-SHA3-512 | enumeration\_value | both | client\_1\_0 | 00000026 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA384-0000000A | HMAC-SHA384 | enumeration\_value | both | client\_1\_0 | 0000000A | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA512-0000000B | HMAC-SHA512 | enumeration\_value | both | client\_1\_0 | 0000000B | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-IDEA-00000013 | IDEA | enumeration\_value | both | client\_1\_0 | 00000013 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-MARS-00000014 | MARS | enumeration\_value | both | client\_1\_0 | 00000014 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-MCELIECE-00000034 | McEliece | enumeration\_value | both | client\_1\_0 | 00000034 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-MCELIECE-6960119-00000035 | McEliece-6960119 | enumeration\_value | both | client\_1\_0 | 00000035 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-MCELIECE-8192128-00000036 | McEliece-8192128 | enumeration\_value | both | client\_1\_0 | 00000036 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ONE-TIME-PAD-0000001B | One Time Pad | enumeration\_value | both | client\_1\_0 | 0000001B | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-POLY1305-0000001D | Poly1305 | enumeration\_value | both | client\_1\_0 | 0000001D | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-RC2-00000015 | RC2 | enumeration\_value | both | client\_1\_0 | 00000015 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-RC4-00000016 | RC4 | enumeration\_value | both | client\_1\_0 | 00000016 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-RC5-00000017 | RC5 | enumeration\_value | both | client\_1\_0 | 00000017 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-RSA-00000004 | RSA | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SEED-0000002A | SEED | enumeration\_value | both | client\_1\_0 | 0000002A | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SHA3-224-0000001F | SHA3-224 | enumeration\_value | both | client\_1\_0 | 0000001F | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SHA3-256-00000020 | SHA3-256 | enumeration\_value | both | client\_1\_0 | 00000020 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SHA3-384-00000021 | SHA3-384 | enumeration\_value | both | client\_1\_0 | 00000021 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SHA3-512-00000022 | SHA3-512 | enumeration\_value | both | client\_1\_0 | 00000022 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SHAKE-128-00000027 | SHAKE-128 | enumeration\_value | both | client\_1\_0 | 00000027 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SHAKE-256-00000028 | SHAKE-256 | enumeration\_value | both | client\_1\_0 | 00000028 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SKIPJACK-00000018 | SKIPJACK | enumeration\_value | both | client\_1\_0 | 00000018 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SM2-0000002B | SM2 | enumeration\_value | both | client\_1\_0 | 0000002B | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SM3-0000002C | SM3 | enumeration\_value | both | client\_1\_0 | 0000002C | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SM4-0000002D | SM4 | enumeration\_value | both | client\_1\_0 | 0000002D | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-SPHINCS-256-00000033 | SPHINCS-256 | enumeration\_value | both | client\_1\_0 | 00000033 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-TWOFISH-00000019 | Twofish | enumeration\_value | both | client\_1\_0 | 00000019 | assigned | KMIPKIT-SRC-spec §11.12 |
-| KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-XMSS-00000032 | XMSS | enumeration\_value | both | client\_1\_0 | 00000032 | assigned | KMIPKIT-SRC-spec §11.12 |
 | KMIPKIT-ELEM-ENUM-VALUE-DATA-DECRYPT-00000001 | Decrypt | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.13 |
 | KMIPKIT-ELEM-ENUM-VALUE-DATA-ENCRYPT-00000002 | Encrypt | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.13 |
 | KMIPKIT-ELEM-ENUM-VALUE-DATA-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.13 |
-| KMIPKIT-ELEM-ENUM-VALUE-DATA-HASH-00000003 | Hash | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.13 |
-| KMIPKIT-ELEM-ENUM-VALUE-DATA-MAC-MAC-DATA-00000004 | MAC MAC Data | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.13 |
 | KMIPKIT-ELEM-ENUM-VALUE-DATA-RNG-RETRIEVE-00000005 | RNG Retrieve | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.13 |
-| KMIPKIT-ELEM-ENUM-VALUE-DATA-SIGN-SIGNATURE-DATA-00000006 | Sign Signature Data | enumeration\_value | both | client\_1\_0 | 00000006 | assigned | KMIPKIT-SRC-spec §11.13 |
-| KMIPKIT-ELEM-ENUM-VALUE-DATA-SIGNATURE-VERIFY-00000007 | Signature Verify | enumeration\_value | both | client\_1\_0 | 00000007 | assigned | KMIPKIT-SRC-spec §11.13 |
 | KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-ASYMMETRIC-KEY-00000008 | Asymmetric Key | enumeration\_value | both | client\_1\_0 | 00000008 | assigned | KMIPKIT-SRC-spec §11.14 |
 | KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-AWS-SIGNATURE-VERSION-4-00000009 | AWS Signature Version 4 | enumeration\_value | both | client\_1\_0 | 00000009 | assigned | KMIPKIT-SRC-spec §11.14 |
 | KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-ENCRYPT-00000004 | ENCRYPT | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.14 |
@@ -1952,26 +1885,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-DESTROY-ACTION-META-DATA-SHREDDED-00000005 | Meta Data Shredded | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.15 |
 | KMIPKIT-ELEM-ENUM-VALUE-DESTROY-ACTION-SHREDDED-00000007 | Shredded | enumeration\_value | both | client\_1\_0 | 00000007 | assigned | KMIPKIT-SRC-spec §11.15 |
 | KMIPKIT-ELEM-ENUM-VALUE-DESTROY-ACTION-UNSPECIFIED-00000001 | Unspecified | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.15 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-DSA-WITH-SHA-1-00000009 | DSA with SHA-1 | enumeration\_value | both | client\_1\_0 | 00000009 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-DSA-WITH-SHA224-0000000A | DSA with SHA224 | enumeration\_value | both | client\_1\_0 | 0000000A | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-DSA-WITH-SHA256-0000000B | DSA with SHA256 | enumeration\_value | both | client\_1\_0 | 0000000B | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-ECDSA-WITH-SHA-1-0000000C | ECDSA with SHA-1 | enumeration\_value | both | client\_1\_0 | 0000000C | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-ECDSA-WITH-SHA224-0000000D | ECDSA with SHA224 | enumeration\_value | both | client\_1\_0 | 0000000D | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-ECDSA-WITH-SHA256-0000000E | ECDSA with SHA256 | enumeration\_value | both | client\_1\_0 | 0000000E | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-ECDSA-WITH-SHA384-0000000F | ECDSA with SHA384 | enumeration\_value | both | client\_1\_0 | 0000000F | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-ECDSA-WITH-SHA512-00000010 | ECDSA with SHA512 | enumeration\_value | both | client\_1\_0 | 00000010 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-MD2-WITH-RSA-ENCRYPTION-00000001 | MD2 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-MD5-WITH-RSA-ENCRYPTION-00000002 | MD5 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-RSASSA-PSS-00000008 | RSASSA-PSS | enumeration\_value | both | client\_1\_0 | 00000008 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-SHA-1-WITH-RSA-ENCRYPTION-00000003 | SHA-1 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-SHA-224-WITH-RSA-ENCRYPTION-00000004 | SHA-224 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-SHA-256-WITH-RSA-ENCRYPTION-00000005 | SHA-256 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-SHA-384-WITH-RSA-ENCRYPTION-00000006 | SHA-384 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000006 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-SHA-512-WITH-RSA-ENCRYPTION-00000007 | SHA-512 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000007 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-SHA3-256-WITH-RSA-ENCRYPTION-00000011 | SHA3-256 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000011 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-SHA3-384-WITH-RSA-ENCRYPTION-00000012 | SHA3-384 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000012 | assigned | KMIPKIT-SRC-spec §11.16 |
-| KMIPKIT-ELEM-ENUM-VALUE-DIGITAL-SIGNATURE-ALGORITHM-SHA3-512-WITH-RSA-ENCRYPTION-00000013 | SHA3-512 with RSA Encryption | enumeration\_value | both | client\_1\_0 | 00000013 | assigned | KMIPKIT-SRC-spec §11.16 |
 | KMIPKIT-ELEM-ENUM-VALUE-DRBG-ALGORITHM-CTR-00000005 | CTR | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.17 |
 | KMIPKIT-ELEM-ENUM-VALUE-DRBG-ALGORITHM-DUAL-EC-00000002 | Dual-EC | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.17 |
 | KMIPKIT-ELEM-ENUM-VALUE-DRBG-ALGORITHM-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.17 |
@@ -1992,24 +1905,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-FIPS186-VARIATION-UNSPECIFIED-00000001 | Unspecified | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.20 |
 | KMIPKIT-ELEM-ENUM-VALUE-FIPS186-VARIATION-X-CHANGE-NOTICE-00000005 | x-Change Notice | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.20 |
 | KMIPKIT-ELEM-ENUM-VALUE-FIPS186-VARIATION-X-ORIGINAL-00000004 | x-Original | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.20 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-MD2-00000001 | MD2 | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-MD4-00000002 | MD4 | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-MD5-00000003 | MD5 | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-RIPEMD-160-00000009 | RIPEMD-160 | enumeration\_value | both | client\_1\_0 | 00000009 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-1-00000004 | SHA-1 | enumeration\_value | both | client\_1\_0 | 00000004 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-224-00000005 | SHA-224 | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-256-00000006 | SHA-256 | enumeration\_value | both | client\_1\_0 | 00000006 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-384-00000007 | SHA-384 | enumeration\_value | both | client\_1\_0 | 00000007 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-512-00000008 | SHA-512 | enumeration\_value | both | client\_1\_0 | 00000008 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-512-224-0000000C | SHA-512/224 | enumeration\_value | both | client\_1\_0 | 0000000C | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-512-256-0000000D | SHA-512/256 | enumeration\_value | both | client\_1\_0 | 0000000D | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA3-224-0000000E | SHA3-224 | enumeration\_value | both | client\_1\_0 | 0000000E | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA3-256-0000000F | SHA3-256 | enumeration\_value | both | client\_1\_0 | 0000000F | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA3-384-00000010 | SHA3-384 | enumeration\_value | both | client\_1\_0 | 00000010 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA3-512-00000011 | SHA3-512 | enumeration\_value | both | client\_1\_0 | 00000011 | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-TIGER-0000000A | Tiger | enumeration\_value | both | client\_1\_0 | 0000000A | assigned | KMIPKIT-SRC-spec §11.21 |
-| KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-WHIRLPOOL-0000000B | Whirlpool | enumeration\_value | both | client\_1\_0 | 0000000B | assigned | KMIPKIT-SRC-spec §11.21 |
 | KMIPKIT-ELEM-ENUM-VALUE-INTEROP-FUNCTION-BEGIN-00000001 | Begin | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.22 |
 | KMIPKIT-ELEM-ENUM-VALUE-INTEROP-FUNCTION-END-00000002 | End | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.22 |
 | KMIPKIT-ELEM-ENUM-VALUE-INTEROP-FUNCTION-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.22 |
@@ -2164,7 +2059,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-GET-ATTRIBUTES-0000000B | Get Attributes | enumeration\_value | both | client\_1\_0 | 0000000B | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-GET-CONSTRAINTS-00000038 | Get Constraints | enumeration\_value | both | client\_1\_0 | 00000038 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-GET-USAGE-ALLOCATION-00000011 | Get Usage Allocation | enumeration\_value | both | client\_1\_0 | 00000011 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-HASH-00000027 | Hash | enumeration\_value | both | client\_1\_0 | 00000027 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-IMPORT-0000002A | Import | enumeration\_value | both | client\_1\_0 | 0000002A | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-INTEROP-00000034 | Interop | enumeration\_value | both | client\_1\_0 | 00000034 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-JOIN-SPLIT-KEY-00000029 | Join Split Key | enumeration\_value | both | client\_1\_0 | 00000029 | assigned | KMIPKIT-SRC-spec §11.36 |
@@ -2172,8 +2066,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-LOG-0000002C | Log | enumeration\_value | both | client\_1\_0 | 0000002C | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-LOGIN-0000002D | Login | enumeration\_value | both | client\_1\_0 | 0000002D | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-LOGOUT-0000002E | Logout | enumeration\_value | both | client\_1\_0 | 0000002E | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-MAC-00000023 | MAC | enumeration\_value | both | client\_1\_0 | 00000023 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-MAC-VERIFY-00000024 | MAC Verify | enumeration\_value | both | client\_1\_0 | 00000024 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-MODIFY-ATTRIBUTE-0000000E | Modify Attribute | enumeration\_value | both | client\_1\_0 | 0000000E | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-NOTIFY-0000001B | Notify | enumeration\_value | both | client\_1\_0 | 0000001B | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-OBTAIN-LEASE-00000010 | Obtain Lease | enumeration\_value | both | client\_1\_0 | 00000010 | assigned | KMIPKIT-SRC-spec §11.36 |
@@ -2195,8 +2087,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-CONSTRAINTS-00000037 | Set Constraints | enumeration\_value | both | client\_1\_0 | 00000037 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-DEFAULTS-00000036 | Set Defaults | enumeration\_value | both | client\_1\_0 | 00000036 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032 | Set Endpoint Role | enumeration\_value | both | client\_1\_0 | 00000032 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SIGN-00000021 | Sign | enumeration\_value | both | client\_1\_0 | 00000021 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SIGNATURE-VERIFY-00000022 | Signature Verify | enumeration\_value | both | client\_1\_0 | 00000022 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-VALIDATE-00000017 | Validate | enumeration\_value | both | client\_1\_0 | 00000017 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-PADDING-METHOD-ANSI-X9-23-00000006 | ANSI X9.23 | enumeration\_value | both | client\_1\_0 | 00000006 | assigned | KMIPKIT-SRC-spec §11.37 |
 | KMIPKIT-ELEM-ENUM-VALUE-PADDING-METHOD-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.37 |
@@ -2417,10 +2307,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-VALIDATION-TYPE-HYBRID-00000005 | Hybrid | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.64 |
 | KMIPKIT-ELEM-ENUM-VALUE-VALIDATION-TYPE-SOFTWARE-00000003 | Software | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.64 |
 | KMIPKIT-ELEM-ENUM-VALUE-VALIDATION-TYPE-UNSPECIFIED-00000001 | Unspecified | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.64 |
-| KMIPKIT-ELEM-ENUM-VALUE-VALIDITY-INDICATOR-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.61 |
-| KMIPKIT-ELEM-ENUM-VALUE-VALIDITY-INDICATOR-INVALID-00000002 | Invalid | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.61 |
-| KMIPKIT-ELEM-ENUM-VALUE-VALIDITY-INDICATOR-UNKNOWN-00000003 | Unknown | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.61 |
-| KMIPKIT-ELEM-ENUM-VALUE-VALIDITY-INDICATOR-VALID-00000001 | Valid | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.61 |
 | KMIPKIT-ELEM-ENUM-VALUE-WRAPPING-METHOD-ENCRYPT-00000001 | Encrypt | enumeration\_value | both | client\_1\_0 | 00000001 | assigned | KMIPKIT-SRC-spec §11.62 |
 | KMIPKIT-ELEM-ENUM-VALUE-WRAPPING-METHOD-ENCRYPT-THEN-MAC-SIGN-00000003 | Encrypt then MAC/sign | enumeration\_value | both | client\_1\_0 | 00000003 | assigned | KMIPKIT-SRC-spec §11.62 |
 | KMIPKIT-ELEM-ENUM-VALUE-WRAPPING-METHOD-EXTENSIONS-8XXXXXXX | Extensions | enumeration\_value | both | client\_1\_0 | 8XXXXXXX | extension | KMIPKIT-SRC-spec §11.62 |
@@ -2438,16 +2324,13 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUMERATION-CERTIFICATE-TYPE | Certificate Type | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.9 |
 | KMIPKIT-ELEM-ENUMERATION-CLIENT-REGISTRATION-METHOD | Client Registration Method | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.10 |
 | KMIPKIT-ELEM-ENUMERATION-CREDENTIAL-TYPE | Credential Type | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.11 |
-| KMIPKIT-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM | Cryptographic Algorithm | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.12 |
 | KMIPKIT-ELEM-ENUMERATION-DATA | Data | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.13 |
 | KMIPKIT-ELEM-ENUMERATION-DERIVATION-METHOD | Derivation Method | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.14 |
 | KMIPKIT-ELEM-ENUMERATION-DESTROY-ACTION | Destroy Action | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.15 |
-| KMIPKIT-ELEM-ENUMERATION-DIGITAL-SIGNATURE-ALGORITHM | Digital Signature Algorithm | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.16 |
 | KMIPKIT-ELEM-ENUMERATION-DRBG-ALGORITHM | DRBG Algorithm | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.17 |
 | KMIPKIT-ELEM-ENUMERATION-ENCODING-OPTION | Encoding Option | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.18 |
 | KMIPKIT-ELEM-ENUMERATION-ENDPOINT-ROLE | Endpoint Role | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.19 |
 | KMIPKIT-ELEM-ENUMERATION-FIPS186-VARIATION | FIPS186 Variation | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.20 |
-| KMIPKIT-ELEM-ENUMERATION-HASHING-ALGORITHM | Hashing Algorithm | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.21 |
 | KMIPKIT-ELEM-ENUMERATION-INTEROP-FUNCTION | Interop Function | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.22 |
 | KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE | Item Type | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.23 |
 | KMIPKIT-ELEM-ENUMERATION-KEY-COMPRESSION-TYPE | Key Compression Type | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.24 |
@@ -2486,7 +2369,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUMERATION-USAGE-LIMITS-UNIT | Usage Limits Unit | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.60 |
 | KMIPKIT-ELEM-ENUMERATION-VALIDATION-AUTHORITY-TYPE | Validation Authority Type | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.63 |
 | KMIPKIT-ELEM-ENUMERATION-VALIDATION-TYPE | Validation Type | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.64 |
-| KMIPKIT-ELEM-ENUMERATION-VALIDITY-INDICATOR | Validity Indicator | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.61 |
 | KMIPKIT-ELEM-ENUMERATION-WRAPPING-METHOD | Wrapping Method | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.62 |
 | KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED | Credential, MAY be repeated | message\_field | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL | Key Material | object\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §3.10 |
@@ -2539,7 +2421,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OP-C2S-GET | Get | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.19 |
 | KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS | Get Constraints | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.22 |
 | KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION | Get Usage Allocation | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.23 |
-| KMIPKIT-ELEM-OP-C2S-HASH | Hash | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.24 |
 | KMIPKIT-ELEM-OP-C2S-IMPORT | Import | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.25 |
 | KMIPKIT-ELEM-OP-C2S-INTEROP | Interop | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.26 |
 | KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY | Join Split Key | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.27 |
@@ -2547,8 +2428,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OP-C2S-LOG | Log | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.29 |
 | KMIPKIT-ELEM-OP-C2S-LOGIN | Login | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.30 |
 | KMIPKIT-ELEM-OP-C2S-LOGOUT | Logout | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.31 |
-| KMIPKIT-ELEM-OP-C2S-MAC | MAC | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.32 |
-| KMIPKIT-ELEM-OP-C2S-MAC-VERIFY | MAC Verify | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.33 |
 | KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE | Obtain Lease | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.35 |
 | KMIPKIT-ELEM-OP-C2S-PKCS-11 | PKCS#11 | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.37 |
 | KMIPKIT-ELEM-OP-C2S-POLL | Poll | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.38 |
@@ -2566,8 +2445,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS | Set Constraints | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.52 |
 | KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS | Set Defaults | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.53 |
 | KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE | Set Endpoint Role | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.54 |
-| KMIPKIT-ELEM-OP-C2S-SIGN | Sign | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.55 |
-| KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY | Signature Verify | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.56 |
 | KMIPKIT-ELEM-OP-C2S-VALIDATE | Validate | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.57 |
 | KMIPKIT-ELEM-OP-S2C-DISCOVER-VERSIONS | Discover Versions | operation | server\_to\_client | client\_1\_1 |  |  | KMIPKIT-SRC-spec §6.2.1 |
 | KMIPKIT-ELEM-OP-S2C-NOTIFY | Notify | operation | server\_to\_client | client\_1\_1 |  |  | KMIPKIT-SRC-spec §6.2.2 |
@@ -2586,7 +2463,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-18-KEY-WRAPPING-SPECIFICATION | Key Wrapping Specification | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.18 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-19-LOG-MESSAGE | Log Message | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.19 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST | Asynchronous Request | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.2 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA | MAC Data | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.20 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS | Objects | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.21 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-22-OBJECT-DEFAULTS | Object Defaults | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.22 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES | Object Types | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.24 |
@@ -2604,7 +2480,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-35-RIGHTS | Rights | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.35 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS | RNG Parameters | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.36 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION | Server Information | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.37 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-38-SIGNATURE-DATA | Signature Data | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.38 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-39-TICKET | Ticket | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.39 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG | Authenticated Encryption Tag | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.4 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS | Usage Limits | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.40 |
