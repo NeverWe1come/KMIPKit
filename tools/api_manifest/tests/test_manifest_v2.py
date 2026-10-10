@@ -268,6 +268,48 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("candidateSpecId", declaration)
                 self.assertNotIn("languageMappings", declaration)
 
+    def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
+        rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
+        declarations = [
+            declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration["packageId"] in rust_packages
+        ]
+        self.assertEqual(len(declarations), 1758)
+        by_package_and_name = {
+            (declaration["packageId"], declaration["exportName"]): declaration
+            for declaration in declarations
+        }
+        codec_limits = by_package_and_name[
+            ("rust-kmipkit-ttlv", "kmipkit_ttlv::codec::CodecLimits")
+        ]
+        self.assertEqual(codec_limits["kind"], "type")
+        self.assertEqual(codec_limits["declarationState"], "declared")
+        self.assertEqual(
+            codec_limits["languageMappings"]["rust"]["packageId"],
+            "rust-kmipkit-ttlv",
+        )
+        batch_method = by_package_and_name[
+            ("rust-kmipkit-client", "kmipkit_client::ClientBatchItem::discover_versions")
+        ]
+        self.assertEqual(batch_method["kind"], "associated-item")
+        facade_item = by_package_and_name[
+            ("rust-kmipkit", "kmipkit::ClientBatchItem")
+        ]
+        self.assertEqual(facade_item["declarationState"], "blocked")
+        unknown_owner = by_package_and_name[
+            (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::cryptographic_operation::CryptographicAlgorithm",
+            )
+        ]
+        self.assertEqual(unknown_owner["declarationState"], "blocked")
+        transport_exchange = by_package_and_name[
+            ("rust-kmipkit-transport", "kmipkit_transport::Transport::exchange")
+        ]
+        self.assertEqual(transport_exchange["declarationState"], "declared")
+        self.assertEqual(transport_exchange["parityScope"], "rust-only-adr")
+
     def test_schema_identifies_the_complete_v2_contract(self) -> None:
         self.assertEqual(
             self.schema["$id"], "urn:kmipkit:schemas:public-api-manifest:2"
