@@ -34,7 +34,7 @@
 
 ### Refactor
 
-- [ ] T014 Refactor shared test fixtures and error conversion without changing behavior; run fmt, focused tests, and protocol clippy. Record Refactor evidence in a distinct commit.
+- [x] T014 Refactor shared test-item construction into `crates/kmipkit-protocol/tests/support/operation_test_support.rs` without changing behavior. The validator's single failure path already uses direct sanitized `ProtocolError::categorized` construction, so no extra error-conversion layer was added. **Refactor evidence:** focused OperationData and parameter tests each pass (5/5); `cargo fmt --all --check`, protocol Clippy, and `git diff --check` pass.
 
 ## Phase 3: Typed Encrypt and Decrypt protocol models
 

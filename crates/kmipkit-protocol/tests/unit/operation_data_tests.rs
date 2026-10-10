@@ -7,8 +7,8 @@
 
 use std::fmt::{Debug, Display};
 
-use crate::{OperationData, SecretBytes};
-use kmipkit_ttlv::{Item, ItemType, RawTag, ValueView};
+use crate::{OperationData, SecretBytes, operation_test_support::item};
+use kmipkit_ttlv::{Item, ItemType, ValueView};
 
 const DATA_TAG: u32 = 0x0042_00C2;
 const BYTE_STRING_SENTINELS: &[&str] = &["167", "184", "201", "a7", "b8", "c9"];
@@ -16,12 +16,7 @@ const ENUMERATION_SENTINELS: &[&str] = &["3735928559", "deadbeef"];
 const INTEGER_SENTINELS: &[&str] = &["-2147483648"];
 
 fn operation_data_item(data: OperationData) -> Item {
-    let tag = RawTag::new(DATA_TAG)
-        .expect("the source-derived Data tag fits the TTLV tag width")
-        .try_checked()
-        .expect("the source-derived Data tag is allocated");
-    Item::new(tag, data.into_ttlv_value())
-        .expect("a source-derived Operation Data encoding forms a valid TTLV item")
+    item(DATA_TAG, data.into_ttlv_value())
 }
 
 fn assert_redacted<T: Debug + Display>(value: &T, sentinels: &[&str]) {

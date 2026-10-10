@@ -121,6 +121,10 @@ mod destroy_operation_tests;
 mod recover_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/support/operation_test_support.rs"]
+mod operation_test_support;
+
+#[cfg(test)]
 #[path = "../tests/unit/operation_data_tests.rs"]
 mod operation_data_tests;
 

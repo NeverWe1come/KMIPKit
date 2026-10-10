@@ -9,8 +9,10 @@
 //! `KMIPKIT-REQ-SPEC-4.16-003`.
 
 use crate::ProtocolError;
-use crate::cryptographic_parameters::validate_cryptographic_parameters;
-use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
+use crate::{
+    cryptographic_parameters::validate_cryptographic_parameters, operation_test_support::item,
+};
+use kmipkit_ttlv::{Structure, Value, ValueView};
 
 const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
 const IV_LENGTH_TAG: u32 = 0x0042_00CD;
@@ -27,14 +29,6 @@ enum CapturedParameterValue {
     Enumeration(u32),
     Integer(i32),
     Other,
-}
-
-fn item(raw_tag: u32, value: Value) -> Item {
-    let tag = RawTag::new(raw_tag)
-        .expect("the source-derived parameter tag fits the TTLV tag width")
-        .try_checked()
-        .expect("the source-derived parameter tag is allocated");
-    Item::new(tag, value).expect("checked tag and value form a generic TTLV item")
 }
 
 fn parameters(members: impl IntoIterator<Item = (u32, Value)>) -> Structure {
