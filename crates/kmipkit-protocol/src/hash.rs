@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{Item, Structure, StructureView, Value, ValueView};
 
 use crate::cryptographic_operation as common;
 use crate::{
@@ -152,10 +152,7 @@ impl HashResponse {
         let parsed = item
             .with_response_payload(|payload| parse_success_payload(&payload))
             .ok_or_else(|| {
-                CryptographicOperationError::new(
-                    "Hash",
-                    CryptographicOperationErrorKind::MissingSuccessPayload,
-                )
+                response_error(CryptographicOperationErrorKind::MissingSuccessPayload)
             })??;
         Ok(Self {
             result,
@@ -219,19 +216,8 @@ fn parse_success_payload(payload: &StructureView<'_>) -> Result<ParsedHashPayloa
 
     for field in payload.children() {
         match field.tag().raw() {
-            common::DATA => {
-                if data.is_some() {
-                    return Err(malformed_response());
-                }
-                data = Some(common::parse_secret(field).ok_or_else(malformed_response)?);
-            }
-            common::CORRELATION_VALUE => {
-                if correlation_value.is_some() {
-                    return Err(malformed_response());
-                }
-                correlation_value =
-                    Some(common::parse_secret(field).ok_or_else(malformed_response)?);
-            }
+            common::DATA => parse_optional_secret(&mut data, field)?,
+            common::CORRELATION_VALUE => parse_optional_secret(&mut correlation_value, field)?,
             _ => {}
         }
     }
@@ -243,7 +229,19 @@ fn parse_success_payload(payload: &StructureView<'_>) -> Result<ParsedHashPayloa
 }
 
 fn malformed_response() -> HashError {
-    CryptographicOperationError::new("Hash", CryptographicOperationErrorKind::MalformedPayload)
+    response_error(CryptographicOperationErrorKind::MalformedPayload)
+}
+
+fn response_error(kind: CryptographicOperationErrorKind) -> HashError {
+    CryptographicOperationError::new("Hash", kind)
+}
+
+fn parse_optional_secret(slot: &mut Option<SecretBytes>, field: &Item) -> Result<(), HashError> {
+    if slot.is_some() {
+        return Err(malformed_response());
+    }
+    *slot = Some(common::parse_secret(field).ok_or_else(malformed_response)?);
+    Ok(())
 }
 
 fn validate_hashing_parameters(parameters: &Structure) -> Result<(), ProtocolError> {

@@ -36,6 +36,15 @@ fn payload(items: impl IntoIterator<Item = (u32, Value)>) -> Structure {
     payload
 }
 
+fn field_tags(payload: &Structure) -> Vec<u32> {
+    payload
+        .view()
+        .children()
+        .iter()
+        .map(|field| field.tag().raw())
+        .collect()
+}
+
 fn parameters(raw_algorithm: u32) -> Structure {
     payload([(HASHING_ALGORITHM, Value::enumeration(raw_algorithm))])
 }
@@ -87,10 +96,7 @@ fn request_emits_table_235_fields_in_order_and_preserves_caller_values() {
     let view = actual.view();
     let fields = view.children();
     assert_eq!(
-        fields
-            .iter()
-            .map(|field| field.tag().raw())
-            .collect::<Vec<_>>(),
+        field_tags(&actual),
         [0x0042_002B, DATA, INIT_INDICATOR, FINAL_INDICATOR,],
         "present Table 235 fields retain their normative order"
     );
@@ -163,12 +169,7 @@ fn request_requires_single_part_data_and_omits_it_for_multipart() {
         .to_ttlv_payload()
         .expect("Table 235 omits Data on caller-controlled multipart requests");
     assert_eq!(
-        multipart
-            .view()
-            .children()
-            .iter()
-            .map(|field| field.tag().raw())
-            .collect::<Vec<_>>(),
+        field_tags(&multipart),
         [
             0x0042_002B,
             CORRELATION_VALUE,
