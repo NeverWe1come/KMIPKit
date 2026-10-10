@@ -35,6 +35,8 @@ const TIME_STAMP: u32 = 0x0042_0092;
 const BATCH_COUNT: u32 = 0x0042_000D;
 const RESULT_STATUS: u32 = 0x0042_007F;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+const RESPONSE_SHAPE_SENTINEL_TAG: u32 = 0x7F00_0001;
+const RESPONSE_SHAPE_SENTINEL: &[u8] = b"response-shape-ttlv-sentinel";
 
 #[derive(Default)]
 struct ExchangeState {
@@ -106,6 +108,124 @@ fn response(indicator: u32) -> Vec<u8> {
         None,
         Some(payload),
     )
+}
+
+fn response_with_payload(payload: kmipkit_ttlv::Structure) -> Vec<u8> {
+    asynchronous_response_bytes(
+        SIGNATURE_VERIFY_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(payload),
+    )
+}
+
+#[test]
+fn client_errors_retain_generic_ttlv_for_malformed_success_payloads() {
+    let invalid_payloads = [
+        test_structure([test_item(
+            RESPONSE_SHAPE_SENTINEL_TAG,
+            Value::byte_string(RESPONSE_SHAPE_SENTINEL.to_vec()),
+        )]),
+        test_structure([
+            test_item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("first-key".to_owned()),
+            ),
+            test_item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("second-key".to_owned()),
+            ),
+            test_item(
+                RESPONSE_SHAPE_SENTINEL_TAG,
+                Value::byte_string(RESPONSE_SHAPE_SENTINEL.to_vec()),
+            ),
+        ]),
+        test_structure([
+            test_item(UNIQUE_IDENTIFIER, Value::integer(7)),
+            test_item(
+                RESPONSE_SHAPE_SENTINEL_TAG,
+                Value::byte_string(RESPONSE_SHAPE_SENTINEL.to_vec()),
+            ),
+        ]),
+    ];
+
+    for payload in invalid_payloads {
+        let (mut client, _) = client(response_with_payload(payload));
+        let error = client
+            .execute(
+                ClientBatch::new(ClientBatchItem::new(request())),
+                &CodecLimits::defaults(),
+            )
+            .expect_err("invalid typed response shape is reported as a client error");
+
+        assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+        assert_eq!(
+            error.delivery_state(),
+            Some(RequestDeliveryState::ResponseStarted)
+        );
+        let sentinel_is_retained = error
+            .with_response_ttlv(|root| {
+                root.children().iter().any(|item| {
+                    item.tag().raw() == RESPONSE_SHAPE_SENTINEL_TAG
+                        && item.with_value(|value| match value {
+                            kmipkit_ttlv::ValueView::ByteString(bytes) => {
+                                bytes == RESPONSE_SHAPE_SENTINEL
+                            }
+                            _ => false,
+                        }) == Some(true)
+                })
+            })
+            .expect("typed response errors retain the generic response item");
+        assert!(sentinel_is_retained);
+
+        let diagnostics = format!("{error:?}{error}");
+        assert!(!diagnostics.contains("response-shape-ttlv-sentinel"));
+    }
+}
+
+#[test]
+fn client_errors_retain_nonfinal_validity_indicator_response_ttlv() {
+    let payload = test_structure([
+        test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("verification-key".to_owned()),
+        ),
+        test_item(VALIDITY_INDICATOR, Value::enumeration(1)),
+        test_item(
+            RESPONSE_SHAPE_SENTINEL_TAG,
+            Value::byte_string(RESPONSE_SHAPE_SENTINEL.to_vec()),
+        ),
+    ]);
+    let (mut client, _) = client(response_with_payload(payload));
+    let request = SignatureVerifyRequest::new()
+        .with_signature_data(SecretBytes::new(b"opaque-signature".to_vec()))
+        .with_init_indicator(true)
+        .with_final_indicator(false);
+    let error = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::signature_verify(
+                request,
+            ))),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("a non-final verification response cannot contain Validity Indicator");
+
+    assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
+    let sentinel_is_retained = error
+        .with_response_ttlv(|root| {
+            root.children().iter().any(|item| {
+                item.tag().raw() == RESPONSE_SHAPE_SENTINEL_TAG
+                    && item.with_value(|value| match value {
+                        kmipkit_ttlv::ValueView::ByteString(bytes) => {
+                            bytes == RESPONSE_SHAPE_SENTINEL
+                        }
+                        _ => false,
+                    }) == Some(true)
+            })
+        })
+        .expect("typed response errors retain the generic response item");
+    assert!(sentinel_is_retained);
 }
 
 fn operation_failure_response() -> Vec<u8> {
