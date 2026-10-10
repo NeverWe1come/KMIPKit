@@ -6,6 +6,18 @@ The reviewed generation input is `specification/api/public-api.json`; its strict
 
 Version 1 has the root fields `formatVersion`, `scope`, `requirementIds`, `types`, `functions`, `errorCategories`, `limits`, `security`, and `generatedOutputs`. All are required. `scope` is the literal `registry-slice`; the manifest covers KMIPKIT-0012 registry capabilities only and MUST NOT claim the complete 1.0 API inventory. Unknown fields are rejected at every object level. Breaking format or meaning changes require a new integer `formatVersion` and schema identifier. Later approved API specifications may add declarations that fit this format; new generated destinations require an approved contract/schema change.
 
+## Repository manifest v2 compatibility
+
+KMIPKIT-0043 extends the same canonical manifest to `formatVersion: 2` and
+`scope: full-1.0`; it does not replace or reinterpret the KMIPKIT-0012 registry
+contract. The v2 manifest retains the v1 `types`, `functions`,
+`errorCategories`, `limits`, and `security` records and maps the six registry
+destinations above into its eleven-entry `generatedOutputs` array. The
+KMIPKIT-0043 manifest-v2 contract owns the full package/export inventory,
+operation readiness, additional destinations, and complete 1.0 parity gate.
+This document remains authoritative for registry-specific behavior and
+requirements; it does not claim API completeness beyond KMIPKIT-0012.
+
 ## Version 1 fields
 
 - `requirementIds` is a non-empty array of unique, lexicographically sorted `KMIPKIT-0012-FR-NNN` identifiers. Every declaration carries its own non-empty sorted `requirementIds`; each referenced ID MUST appear at the root.
