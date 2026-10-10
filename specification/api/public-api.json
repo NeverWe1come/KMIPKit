@@ -27474,6 +27474,328 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
       "blockedReason": "The implementation exports ClientBatchItem from kmipkit.extensions; the preserved v1 mapping points to the package root where this type is not exported."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_definitions",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_definitions",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_schema_nodes",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_schema_nodes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_child_rules_per_structure",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_child_rules_per_structure",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_text_bytes_per_field",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_text_bytes_per_field",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_registry_text_bytes",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_registry_text_bytes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_discriminator_scalar_bytes",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_discriminator_scalar_bytes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_total_discriminator_scalar_bytes",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_total_discriminator_scalar_bytes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_constraint_members_per_rule",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_constraint_members_per_rule",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_total_constraint_members",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_total_constraint_members",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_payload_index_records",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_payload_index_records",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_lookup_comparisons",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_lookup_comparisons",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-field-extension-registry-limits-max_depth",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_extension_registry_limits_t.max_depth",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "This public C structure field is present in the header but has no reviewed declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-structure",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-integer",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_INTEGER",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-long-integer",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-big-integer",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-enumeration",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-boolean",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-text-string",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-byte-string",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-date-time",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-interval",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_INTERVAL",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
+    },
+    {
+      "declarationId": "c-macro-ttlv-item-type-date-time-extended",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "This public C TTLV item-type macro is present in the header but has no reviewed four-language declaration mapping in the v2 manifest."
     }
   ],
   "approvedExclusions": [],
