@@ -25621,11 +25621,9 @@
       "source_keywords": [
         "MAY"
       ],
-      "disposition": "requirement",
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-7.12-002"
-      ],
-      "exclusion_rationale": null,
+      "disposition": "informative_context",
+      "requirement_ids": [],
+      "exclusion_rationale": "Table 364 says “May be repeated” in sentence case. Under §1.2 and RFC 8174, only uppercase keyword usage has defined special meaning. Repeated Derivation Data remains represented as described by the table, without a separate normative client requirement.",
       "role": "client",
       "direction": "client_to_server",
       "scope_state": "client_1_0",
@@ -25689,9 +25687,9 @@
         "KMIPKIT-REQ-SPEC-7.12-005-002"
       ],
       "exclusion_rationale": null,
-      "role": "client",
-      "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "role": "both",
+      "direction": "both",
+      "scope_state": "mixed",
       "condition": null
     },
     {
@@ -25706,12 +25704,12 @@
         "OPTIONAL",
         "MAY"
       ],
-      "disposition": "source_discrepancy",
+      "disposition": "informative_context",
       "requirement_ids": [],
-      "exclusion_rationale": "HKDF default/override prose uses lowercase optional/may; uppercase MAY strength is unresolved.",
-      "role": "unclear",
-      "direction": "unclear",
-      "scope_state": "unclear",
+      "exclusion_rationale": "The HKDF paragraph uses lowercase optional and may, which §1.2 does not define as RFC 2119 keywords. The Hashing Algorithm override remains representable in the optional Cryptographic Parameters structure listed in Table 364.",
+      "role": "client",
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
       "condition": null
     },
     {
@@ -94560,11 +94558,11 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Derivation Data",
-      "summary": "A client may supply repeated Derivation Data instead of identifying a Secret Data object.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "Unless a Secret Data object Unique Identifier is supplied.",
-      "scope_state": "client_1_0",
+      "summary": "Retired extraction: Table 364 says “May be repeated” in sentence case; repeated Derivation Data remains represented in the schema without a separate normative client obligation.",
+      "role": "not_applicable",
+      "direction": "not_applicable",
+      "condition": null,
+      "scope_state": "out_of_scope",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -94572,9 +94570,9 @@
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-011",
+      "status": "retired",
+      "review_note": "Retired extraction under KMIPKIT-DEC-011: OASIS §1.2 refers to RFC 2119 and RFC 8174 clarifies that only uppercase keyword usage has defined special meaning. KMIPKit preserves repeated Derivation Data occurrences as the structure described by Table 364, but does not count sentence-case “May” as a separate normative client requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.12-003",
@@ -94649,12 +94647,12 @@
       ],
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
-      "subject": "derivation input",
-      "summary": "Do not provide both explicit Derivation Data and a Secret Data object Unique Identifier.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "When selecting derivation input.",
-      "scope_state": "client_1_0",
+      "subject": "Derivation input",
+      "summary": "Return an error if both explicit Derivation Data and a Secret Data object Unique Identifier are supplied.",
+      "role": "server",
+      "direction": "server_to_client",
+      "condition": "When both derivation data sources are provided.",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -94664,7 +94662,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "OASIS §7.12 assigns this SHALL to the server. The client specification surfaces the server result and does not impose local prevalidation. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-001-001",
@@ -104323,9 +104321,9 @@
         "KMIPKIT-ELEM-OP-C2S-LOGIN"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-LOGIN-1-21xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
-      "mapping_confidence": "weak"
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml",
+      "fixture_availability": "available",
+      "mapping_confidence": "explicit"
     },
     {
       "test_id": "KMIPKIT-TEST-CN01-2-49",
@@ -105958,8 +105956,8 @@
       "affected_profile_ids": [],
       "affected_policy_ids": [],
       "downstream_impact": "Operation-specific error mapping and response documentation.",
-      "state": "open",
-      "decision_id": null,
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-006",
       "erratum_source_refs": []
     },
     {
@@ -105988,8 +105986,8 @@
       "affected_profile_ids": [],
       "affected_policy_ids": [],
       "downstream_impact": "Log response error behavior and operation-specific tests.",
-      "state": "open",
-      "decision_id": null,
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-006",
       "erratum_source_refs": []
     },
     {
@@ -106014,8 +106012,8 @@
       "affected_profile_ids": [],
       "affected_policy_ids": [],
       "downstream_impact": "Whether the Correlation Value condition is a conformance requirement.",
-      "state": "open",
-      "decision_id": null,
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-007",
       "erratum_source_refs": []
     },
     {
@@ -106085,13 +106083,13 @@
       "affected_profile_ids": [],
       "affected_policy_ids": [],
       "downstream_impact": "Operation-specific error result mapping and documentation.",
-      "state": "open",
-      "decision_id": null,
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-006",
       "erratum_source_refs": []
     },
     {
       "discrepancy_id": "KMIPKIT-DISC-021",
-      "summary": "HKDF text uses lowercase optional and may",
+      "summary": "HKDF prose uses lowercase optional and may under the §1.2 keyword definition",
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-spec",
@@ -106101,15 +106099,10 @@
       "source_authority": "primary_normative",
       "normative_status": "conditional",
       "alternatives": [
-        "The words express canonical OPTIONAL or MAY capabilities.",
-        "The lowercase words are explanatory prose without uppercase normative strength."
+        "Treat lowercase optional and may in the HKDF paragraph as independent normative keywords.",
+        "Treat the lowercase words as descriptive; preserve the described Hashing Algorithm override without creating a separate normative client obligation."
       ],
-      "affected_requirement_ids": [
-        "KMIPKIT-REQ-SPEC-7.12-002",
-        "KMIPKIT-REQ-SPEC-7.12-003",
-        "KMIPKIT-REQ-SPEC-7.12-005-001",
-        "KMIPKIT-REQ-SPEC-7.12-005-002"
-      ],
+      "affected_requirement_ids": [],
       "affected_element_ids": [
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-12-DERIVATION-PARAMETERS",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-CRYPTOGRAPHIC-PARAMETERS",
@@ -106120,9 +106113,9 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Whether HKDF defaults or overrides are optional implementation capabilities.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "Whether KMIPKit claims a normative client obligation for a non-default HKDF hash or preserves the described Hashing Algorithm option.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-011",
       "erratum_source_refs": []
     },
     {
@@ -106190,8 +106183,8 @@
       "affected_profile_ids": [],
       "affected_policy_ids": [],
       "downstream_impact": "Link creation/update validation and response interpretation.",
-      "state": "open",
-      "decision_id": null,
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-010",
       "erratum_source_refs": []
     },
     {
@@ -106339,8 +106332,8 @@
       "affected_profile_ids": [],
       "affected_policy_ids": [],
       "downstream_impact": "Client handling of repeated requests and most-recent-operation state.",
-      "state": "open",
-      "decision_id": null,
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-009",
       "erratum_source_refs": []
     },
     {
@@ -106481,7 +106474,7 @@
     },
     {
       "discrepancy_id": "KMIPKIT-DISC-030",
-      "summary": "Login fixture href omits the dot before xml",
+      "summary": "Login fixture href omits the dot before xml while displayed filename includes it",
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-testcases",
@@ -106498,9 +106491,9 @@
       "affected_element_ids": [],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Fixture mapping; no local XML fixture is available to verify the target.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "Official fixture mapping and availability for KMIPKIT-TEST-CN01-2-48.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-012",
       "erratum_source_refs": []
     },
     {
@@ -107214,7 +107207,7 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Re-Provision error-table interpretation remains gated; preserve the Table 315 caption and do not treat it as an additional payload table or as an RNG Retrieve response table without authoritative resolution.",
+      "downstream_impact": "The Table 315 caption remains an OASIS source defect pending authoritative correction. KMIPKit follows DEC-008 as a project interpretation for 1.0: treat it as stray Re-Provision material and use Table 318 for RNG Retrieve, without claiming an OASIS erratum.",
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
@@ -107480,6 +107473,34 @@
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-049",
+      "summary": "Table 364 uses sentence-case “May be repeated” for Derivation Data",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.12"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "conditional",
+      "alternatives": [
+        "Treat sentence-case May as a normative MAY that creates an independent client capability obligation.",
+        "Treat only uppercase keyword usage as carrying defined special meaning; preserve repeated fields in the schema without a separate normative requirement."
+      ],
+      "affected_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.12-002"
+      ],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-DERIVATION-DATA"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Whether repeated Derivation Data is counted as a client conformance obligation.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-011",
+      "erratum_source_refs": []
     }
   ],
   "decisions": [
@@ -107607,6 +107628,200 @@
       "approval_evidence": "The maintainer requested resolution of the outstanding 017 issues on 2026-10-10. The disposition follows the pinned OASIS Specification §6.1.28 paragraphs on ID Placeholder, Object Group Member, Storage Status Mask, and Table 247.",
       "approved_at": "2026-10-10",
       "consequence": "Server-only rows do not count as KMIPKit 1.0 client conformance duties. The client preserves exact request fields and server response values, including the Group Member Default selector.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-006",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.22"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.22.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.29"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.29.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.52"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.52.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.53"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.53.1"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-016",
+        "KMIPKIT-DISC-017",
+        "KMIPKIT-DISC-020"
+      ],
+      "policy_ids": [],
+      "interpretation": "For KMIPKit 1.0 client conformance, error introductions are associated with the operation named by their containing normative section: Get Constraints (§6.1.22.1), Log (§6.1.29.1), Set Constraints (§6.1.52.1), and Set Defaults (§6.1.53.1). The apparent misspellings/truncations do not change the operation error tables. This is a project interpretation, not an OASIS erratum.",
+      "approver": "KMIPKit maintainer, direct clarification in current task",
+      "approval_evidence": "On 2026-10-10 the maintainer selected the recommended interpretation to associate each error introduction with its named operation section for KMIPKIT-DISC-016, -017, and -020.",
+      "approved_at": "2026-10-10",
+      "consequence": "The operation error tables remain attributable by section context; no upstream OASIS copy is changed.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-007",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.37"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-018"
+      ],
+      "policy_ids": [],
+      "interpretation": "In KMIP Specification v2.1 §6.1.37, mixed-case “Must” in the PKCS#11 Correlation Value description is not treated as an uppercase OASIS normative keyword. The optional request/response fields remain represented and can be preserved; no additional mandatory client correlation rule is inferred from that capitalization.",
+      "approver": "KMIPKit maintainer, direct clarification in current task",
+      "approval_evidence": "On 2026-10-10 the maintainer selected the recommended interpretation that mixed-case “Must” is non-normative because it is not the defined uppercase keyword.",
+      "approved_at": "2026-10-10",
+      "consequence": "The catalog does not create a new normative client requirement from the mixed-case word; the pinned source remains unchanged.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-008",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.48.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.49.1"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-040"
+      ],
+      "policy_ids": [],
+      "interpretation": "Table 315 is treated as a stray/misplaced caption in the Re-Provision error-handling material. Its position under §6.1.48.1 identifies the Re-Provision error content; RNG Retrieve errors are attributed to §6.1.49.1, Table 318. This is a project source interpretation, not an OASIS erratum.",
+      "approver": "KMIPKit maintainer, direct clarification in current task",
+      "approval_evidence": "On 2026-10-10 the maintainer selected the recommended interpretation that Table 315 is a stray caption and Table 318 is the RNG Retrieve error table.",
+      "approved_at": "2026-10-10",
+      "consequence": "Re-Provision and RNG Retrieve use their section-specific error data; no pinned source file is modified.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-009",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.58"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-025"
+      ],
+      "policy_ids": [],
+      "interpretation": "The lowercase “may” in the mixed Unique Identifier rule block in §11.58 is descriptive text and does not establish a new normative client keyword or independent client obligation. Explicit operation-specific identifier rules and applicable batch semantics remain authoritative.",
+      "approver": "KMIPKit maintainer, direct clarification in current task",
+      "approval_evidence": "On 2026-10-10 the maintainer selected the recommended interpretation that the lowercase “may” is descriptive and does not create a new normative obligation.",
+      "approved_at": "2026-10-10",
+      "consequence": "No additional client requirement is derived from the lowercase word. The enumeration and exact source text remain unchanged.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-010",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.28"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.45"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.46"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.47"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-023"
+      ],
+      "policy_ids": [],
+      "interpretation": "Table 464 in §11.28 states there SHALL be only one replacement object per Managed Object but does not name the actor. For the 1.0 client scope, interpret this as a server-side managed-object invariant: operation-specific §§6.1.45–6.1.47 explicitly require the server to create replacement links. KMIPKit adds no local preflight validation duty. The source uses “Replacement Key”/“Replaced Key” in §6.1.47 while §11.28/Table 465 names “Replacement Object Link”/“Replaced Object Link”; preserve and document this source terminology discrepancy without editing upstream.",
+      "approver": "KMIPKit maintainer, direct clarification in current task",
+      "approval_evidence": "On 2026-10-10 the maintainer explicitly approved the server-side reading, no client prevalidation, and documentation of the §6.1.47 naming difference for KMIPKIT-DISC-023.",
+      "approved_at": "2026-10-10",
+      "consequence": "Client conformance does not require local detection/rejection of a second replacement. The server must create links according to the operation sections. Public models retain wire Link values losslessly and the source naming difference remains visible.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-011",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.2"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.12"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.12-002",
+        "KMIPKIT-REQ-SPEC-7.12-005-002"
+      ],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-021",
+        "KMIPKIT-DISC-049"
+      ],
+      "policy_ids": [],
+      "interpretation": "Apply OASIS KMIP Specification v2.1 §1.2: the defined RFC 2119 keywords are uppercase, as clarified by RFC 8174. The lowercase optional and may in the HKDF paragraph of §7.12 and the sentence-case “May be repeated” in Table 364 are descriptive and create no independent normative client obligation. Preserve the described Hashing Algorithm override in Cryptographic Parameters, which Table 364 lists as a field, without requiring a non-default hash. Preserve repeated Derivation Data occurrences as represented by Table 364, without counting that sentence-case wording as a normative MAY. The distinct uppercase MAY and SHALL in §7.12 remain normative: the client can select explicit Derivation Data or a Secret Data object Unique Identifier; if both are supplied, the server SHALL return an error.",
+      "approver": "KMIPKit maintainer, direct clarification in current task",
+      "approval_evidence": "On 2026-10-10 the maintainer directed that the OASIS KMIP definition control and that the recommended interpretation be used where OASIS has no applicable rule.",
+      "approved_at": "2026-10-10",
+      "consequence": "The client represents the Hashing Algorithm override and repeated Derivation Data without claiming independent normative duties to use a non-default hash or repeated values. Both derivation input sources remain representable; KMIPKit does not pre-reject a request containing both and surfaces the server error required by §7.12.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-012",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-testcases",
+          "section": "2.48"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-030"
+      ],
+      "policy_ids": [],
+      "interpretation": "In Test Cases v2.1 CN01 §2.48, the raw hyperlink target omits the period before xml, while the displayed target is TC-LOGIN-1-21.xml. The canonical OASIS resource under the displayed filename exists and was fetched and pinned with its checksum. Map TC-LOGIN-1-21 to the displayed filename, retain the malformed raw_href in the catalog as source evidence, and do not modify the pinned HTML. This is a project source interpretation, not an OASIS erratum.",
+      "approver": "KMIPKit maintainer, direct clarification in current task",
+      "approval_evidence": "On 2026-10-10 the maintainer selected the displayed .xml filename and authorized incorporating the fixture and checksum for KMIPKIT-DISC-030.",
+      "approved_at": "2026-10-10",
+      "consequence": "TC-LOGIN-1-21 maps to specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml; the exact fixture checksum is recorded in SOURCES.md. Fixture availability does not itself claim a conformance test pass.",
       "status": "accepted"
     }
   ]
