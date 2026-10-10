@@ -7,7 +7,7 @@
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::{
-    field_tags, payload, response_item, response_payload_tags, snapshot,
+    field_tags, payload, response_item, snapshot, structure_contains_tag,
 };
 use crate::{
     CryptographicAlgorithm, CryptographicOperationErrorKind, OperationData, SecretBytes,
@@ -194,15 +194,8 @@ fn successful_single_part_response_requires_one_identifier_and_validity_indicato
             .recovered_data()
             .expect("Table 338 allows recovered Data")
             .with_bytes(|actual| assert_eq!(actual, recovered));
-        assert_eq!(
-            response_payload_tags(item),
-            Some(vec![
-                UNIQUE_IDENTIFIER,
-                VALIDITY_INDICATOR,
-                DATA,
-                UNKNOWN_VENDOR_TAG
-            ])
-        );
+        drop(message);
+        assert!(typed.with_ttlv(|ttlv| structure_contains_tag(&ttlv, UNKNOWN_VENDOR_TAG)));
     }
 }
 

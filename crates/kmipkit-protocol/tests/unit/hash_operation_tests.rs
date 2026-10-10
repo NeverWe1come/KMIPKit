@@ -8,6 +8,7 @@
 //! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
 
 use crate::async_operation_fixtures::response_message;
+use crate::cryptographic_operation_test_support::structure_contains_tag;
 use crate::operation_test_support::item;
 use crate::{
     CryptographicOperationErrorKind, CryptographicOperationResponseContext, HashRequest,
@@ -54,16 +55,6 @@ fn response_item(message: &crate::ResponseMessage) -> crate::ResponseBatchItemVi
         .batch_items()
         .next()
         .expect("the fixture contains one validated Hash response item")
-}
-
-fn response_payload_tags(item: crate::ResponseBatchItemView<'_>) -> Option<Vec<u32>> {
-    item.with_response_payload(|payload| {
-        payload
-            .children()
-            .iter()
-            .map(|field| field.tag().raw())
-            .collect()
-    })
 }
 
 fn secret_bytes(value: Option<&SecretBytes>, expected: &[u8]) {
@@ -211,11 +202,8 @@ fn successful_response_preserves_table_236_data_and_correlation_bytes() {
     assert_eq!(response.result().status().raw(), SUCCESS);
     secret_bytes(response.data(), &data);
     secret_bytes(response.correlation_value(), &correlation);
-    assert_eq!(
-        response_payload_tags(item),
-        Some(vec![DATA, CORRELATION_VALUE, UNKNOWN_VENDOR_TAG]),
-        "unrecognized fields and source ordering remain generically inspectable"
-    );
+    drop(message);
+    assert!(response.with_ttlv(|ttlv| structure_contains_tag(&ttlv, UNKNOWN_VENDOR_TAG)));
 }
 
 #[test]

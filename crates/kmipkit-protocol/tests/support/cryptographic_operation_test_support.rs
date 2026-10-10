@@ -1,7 +1,7 @@
 //! Shared fixtures for source-derived cryptographic operation tests.
 
 use crate::{ResponseBatchItemView, ResponseMessage, SecretBytes};
-use kmipkit_ttlv::{Item, Structure, Value, ValueView};
+use kmipkit_ttlv::{Item, Structure, StructureView, Value, ValueView};
 
 /// Builds a TTLV Structure from operation payload fields.
 pub(crate) fn payload(items: impl IntoIterator<Item = (u32, Value)>) -> Structure {
@@ -32,14 +32,14 @@ pub(crate) fn response_item(message: &ResponseMessage) -> ResponseBatchItemView<
         .expect("the fixture contains one validated operation response item")
 }
 
-/// Returns response payload tags without converting or discarding unknowns.
-pub(crate) fn response_payload_tags(item: ResponseBatchItemView<'_>) -> Option<Vec<u32>> {
-    item.with_response_payload(|payload| {
-        payload
-            .children()
-            .iter()
-            .map(|field| field.tag().raw())
-            .collect()
+/// Checks a response-owned generic TTLV tree for a tag at any nesting level.
+pub(crate) fn structure_contains_tag(structure: &StructureView<'_>, sought: u32) -> bool {
+    structure.children().iter().any(|item| {
+        item.tag().raw() == sought
+            || item.with_value(|value| match value {
+                ValueView::Structure(nested) => structure_contains_tag(&nested, sought),
+                _ => false,
+            })
     })
 }
 

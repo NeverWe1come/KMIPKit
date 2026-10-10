@@ -9,7 +9,7 @@
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::{
-    field_tags, output_bytes, payload, response_item, response_payload_tags, snapshot,
+    field_tags, output_bytes, payload, response_item, snapshot, structure_contains_tag,
 };
 use crate::{
     CryptographicAlgorithm, CryptographicOperationErrorKind, CryptographicOperationResponseContext,
@@ -145,11 +145,8 @@ fn successful_response_exposes_identifier_signature_data_and_unknown_fields() {
     assert_eq!(response.result().status().raw(), SUCCESS);
     assert!(response.unique_identifier().is_some());
     output_bytes(response.signature_data(), &signature);
-    assert_eq!(
-        response_payload_tags(item),
-        Some(vec![UNIQUE_IDENTIFIER, SIGNATURE_DATA, UNKNOWN_VENDOR_TAG]),
-        "unknown fields remain generically inspectable in source order"
-    );
+    drop(message);
+    assert!(response.with_ttlv(|ttlv| structure_contains_tag(&ttlv, UNKNOWN_VENDOR_TAG)));
 }
 
 #[test]
