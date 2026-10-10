@@ -145,6 +145,10 @@ mod decrypt_tests;
 mod operation_failure_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/common_operation_result_tests.rs"]
+mod common_operation_result_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/pending_encrypt_response_shape_tests.rs"]
 mod pending_encrypt_response_shape_tests;
 
