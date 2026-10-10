@@ -226,6 +226,48 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(transport["capabilityState"], "declared")
         self.assertEqual(transport["ownerAdrId"], "ADR-0014")
 
+    def test_checked_in_manifest_accounts_for_c_struct_fields_and_ttlv_macros(self) -> None:
+        declarations = {
+            declaration["exportName"]: declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+        }
+        exports = [
+            *(f"kmipkit_extension_registry_limits_t.{name}" for name in (
+                "max_definitions",
+                "max_schema_nodes",
+                "max_child_rules_per_structure",
+                "max_text_bytes_per_field",
+                "max_registry_text_bytes",
+                "max_discriminator_scalar_bytes",
+                "max_total_discriminator_scalar_bytes",
+                "max_constraint_members_per_rule",
+                "max_total_constraint_members",
+                "max_payload_index_records",
+                "max_lookup_comparisons",
+                "max_depth",
+            )),
+            *(f"KMIPKIT_TTLV_ITEM_TYPE_{name}" for name in (
+                "STRUCTURE",
+                "INTEGER",
+                "LONG_INTEGER",
+                "BIG_INTEGER",
+                "ENUMERATION",
+                "BOOLEAN",
+                "TEXT_STRING",
+                "BYTE_STRING",
+                "DATE_TIME",
+                "INTERVAL",
+                "DATE_TIME_EXTENDED",
+            )),
+        ]
+        self.assertEqual(len(exports), len(set(exports)))
+        for export_name in exports:
+            with self.subTest(export_name=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual(declaration["declarationState"], "blocked")
+                self.assertIn("candidateSpecId", declaration)
+                self.assertNotIn("languageMappings", declaration)
+
     def test_schema_identifies_the_complete_v2_contract(self) -> None:
         self.assertEqual(
             self.schema["$id"], "urn:kmipkit:schemas:public-api-manifest:2"
