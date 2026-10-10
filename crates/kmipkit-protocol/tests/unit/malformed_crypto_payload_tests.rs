@@ -70,19 +70,17 @@ const ENCRYPT_RESPONSE_FIELDS: &[u32] = &[
 const DECRYPT_RESPONSE_FIELDS: &[u32] = &[UNIQUE_IDENTIFIER, DATA, CORRELATION_VALUE];
 
 fn validate_encrypt_request(payload: &Structure) -> Result<(), crate::ProtocolError> {
-    crate::encrypt::validate_request_payload(payload).map(|_| ())
+    crate::encrypt::validate_request_payload(payload)
 }
 
 fn validate_decrypt_request(payload: &Structure) -> Result<(), crate::ProtocolError> {
-    crate::decrypt::validate_request_payload(payload).map(|_| ())
+    crate::decrypt::validate_request_payload(payload)
 }
 
 fn request_value(raw_tag: u32, parameters: &mut Option<Structure>) -> Value {
     match raw_tag {
         UNIQUE_IDENTIFIER => Value::text_string(IDENTIFIER_SENTINEL.to_owned()),
-        CRYPTOGRAPHIC_PARAMETERS => {
-            Value::structure(parameters.take().unwrap_or_else(Structure::new))
-        }
+        CRYPTOGRAPHIC_PARAMETERS => Value::structure(parameters.take().unwrap_or_default()),
         DATA
         | IV_COUNTER_NONCE
         | CORRELATION_VALUE

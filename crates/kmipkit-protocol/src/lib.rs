@@ -19,6 +19,7 @@ mod create_key_pair;
 mod create_split_key;
 mod credential;
 mod cryptographic_parameters;
+mod decrypt;
 mod delete_attribute;
 mod destroy;
 mod discover_versions;
@@ -61,6 +62,7 @@ pub use credential::{
     HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, SecretBytes,
     SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
+pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
 pub use destroy::{DestroyError, DestroyRequest, DestroyResponse};
 pub use discover_versions::{

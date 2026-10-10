@@ -1,8 +1,8 @@
-//! Encrypt Cryptographic Parameters Structure member validation from OASIS
-//! KMIP v2.1 §4.16, Table 59, with allocated tag values from Table 487. Each
-//! case supplies only the selected member, so §4.16 member-presence rules do
-//! not independently reject the payload. These are source-derived tests, not
-//! claims that an official OASIS Test Case passed.
+//! Encrypt and Decrypt Cryptographic Parameters Structure member validation
+//! from OASIS KMIP v2.1 §4.16, Table 59, with allocated tag values from Table
+//! 487. Each case supplies only the selected member, so §4.16 member-presence
+//! rules do not independently reject the payload. These are source-derived
+//! tests, not claims that an official OASIS Test Case passed.
 //!
 //! Traceability: `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE`,
 //! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-COUNTER-LENGTH`,
@@ -23,6 +23,7 @@
 //! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-TAG-LENGTH`, and
 //! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-TRAILER-FIELD`.
 
+use crate::decrypt::validate_request_payload as validate_decrypt_request_payload;
 use crate::encrypt::validate_request_payload;
 use crate::operation_test_support::item;
 use kmipkit_ttlv::{Structure, Value};
@@ -170,6 +171,21 @@ fn encrypt_payload(parameter_members: impl IntoIterator<Item = (u32, Value)>) ->
     payload
 }
 
+fn decrypt_payload(parameter_members: impl IntoIterator<Item = (u32, Value)>) -> Structure {
+    let mut parameters = Structure::new();
+    for (tag, value) in parameter_members {
+        parameters
+            .try_push(item(tag, value))
+            .expect("one Table 59 member fits the Cryptographic Parameters structure");
+    }
+
+    let mut payload = Structure::new();
+    payload
+        .try_push(item(CRYPTOGRAPHIC_PARAMETERS, Value::structure(parameters)))
+        .expect("Cryptographic Parameters fits the Decrypt payload");
+    payload
+}
+
 fn validate_member_cases(duplicate: bool) -> Vec<&'static str> {
     TABLE_59_MEMBERS
         .iter()
@@ -184,6 +200,26 @@ fn validate_member_cases(duplicate: bool) -> Vec<&'static str> {
                 vec![(member.tag, member.item_type.wrong_typed_value())]
             };
             validate_request_payload(&encrypt_payload(fields))
+                .is_ok()
+                .then_some(member.name)
+        })
+        .collect()
+}
+
+fn validate_decrypt_member_cases(duplicate: bool) -> Vec<&'static str> {
+    TABLE_59_MEMBERS
+        .iter()
+        .filter_map(|member| {
+            let value = member.item_type.well_typed_value();
+            let fields = if duplicate {
+                vec![
+                    (member.tag, value),
+                    (member.tag, member.item_type.well_typed_value()),
+                ]
+            } else {
+                vec![(member.tag, member.item_type.wrong_typed_value())]
+            };
+            validate_decrypt_request_payload(&decrypt_payload(fields))
                 .is_ok()
                 .then_some(member.name)
         })
@@ -205,5 +241,23 @@ fn encrypt_rejects_wrong_ttlv_item_type_for_every_table_59_parameter() {
     assert!(
         accepted.is_empty(),
         "Encrypt accepted wrong TTLV Item Type for Table 59 members: {accepted:?}"
+    );
+}
+
+#[test]
+fn decrypt_rejects_duplicate_members_for_every_table_59_parameter() {
+    let accepted = validate_decrypt_member_cases(true);
+    assert!(
+        accepted.is_empty(),
+        "Decrypt accepted duplicate Table 59 singleton members: {accepted:?}"
+    );
+}
+
+#[test]
+fn decrypt_rejects_wrong_ttlv_item_type_for_every_table_59_parameter() {
+    let accepted = validate_decrypt_member_cases(false);
+    assert!(
+        accepted.is_empty(),
+        "Decrypt accepted wrong TTLV Item Type for Table 59 members: {accepted:?}"
     );
 }

@@ -219,8 +219,8 @@ fn request_preserves_supplied_cryptographic_parameters_members_and_order() {
         .to_ttlv_payload()
         .expect("opaque Cryptographic Parameters members remain ordered");
 
-    let parameter_item = actual
-        .view()
+    let actual_view = actual.view();
+    let parameter_item = actual_view
         .children()
         .iter()
         .find(|child| child.tag().raw() == CRYPTOGRAPHIC_PARAMETERS_TAG)
@@ -253,6 +253,9 @@ fn request_preserves_supplied_cryptographic_parameters_members_and_order() {
 }
 
 #[test]
+// Keep the four pinned fixture inputs and their step-by-step expected TTLV
+// together so the source-derived mapping is easy to audit.
+#[allow(clippy::too_many_lines)]
 fn fixture_derived_decrypt_operation_items_preserve_steps_2_6_7_and_8() {
     let iv = vec![
         0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
