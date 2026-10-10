@@ -156,7 +156,7 @@ fn get_success_preserves_completed_object_data_in_one_exchange() {
         .get_response()
         .expect("a completed Get exposes its typed response");
     assert_eq!(get_response.result().status().raw(), 0);
-    assert_eq!(get_response.object_type().raw(), 2);
+    assert_eq!(get_response.object_type(), Some(ObjectType::from_raw(2)));
     assert_eq!(
         get_response.unique_identifier(),
         Some("server-assigned-get-id")
