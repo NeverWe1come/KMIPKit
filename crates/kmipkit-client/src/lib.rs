@@ -116,6 +116,10 @@ mod destroy_execution_tests;
 mod recover_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/encrypt_decrypt_multipart_execution_tests.rs"]
+mod encrypt_decrypt_multipart_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/lifecycle_redaction_tests.rs"]
 mod lifecycle_redaction_tests;
 
