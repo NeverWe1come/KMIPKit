@@ -66,6 +66,40 @@ Verification commands and results, run after the refactor in WSL Ubuntu-26.04, o
 - wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_id_placeholder_execution_tests --offline --message-format short' — exit 0; 7 passed, 0 failed, 289 filtered out.
 - wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo clippy -p kmipkit-client --all-targets --all-features --offline -- -D warnings' — exit 0.
 - git diff --check — exit 0.
+
+## T031 security fix round 1 — Pending Encrypt/Decrypt
+
+Security reviewer finding: response_outcome sent Encrypt and Decrypt through their completed-only converters before the shared read_operation_outcome helper could inspect the result status. Those converters correctly returned PendingOutcomeRequired, so a structurally valid Operation Pending response was surfaced as a ProtocolError even though the client had already validated the asynchronous indicator and correlation value.
+
+Ruling: retain the completed converters’ PendingOutcomeRequired behavior. Add explicit public pending-only response conversions that validate operation, shared operation-result metadata, and Operation Pending status, then construct the typed response with every success-only field absent. A pending-only conversion used with a non-Pending status returns the payload-free NotPendingOutcome error. The client checks item.result_status() before selecting either converter. It routes valid Pending responses through the existing pending_outcome path, which remains the only owner-copy point for the Asynchronous Correlation Value and stores it in Zeroizing<Vec<u8>>.
+
+Red test commits, both DCO signed:
+- 5de04e4a7f5e3eec8ff986833d86a4e71059a2c4 — added client Pending Encrypt/Decrypt contracts and protocol pending-only conversion contracts.
+- 9fe3616b3dba7997bd18098ce2e522609f98d191 — corrected the protocol negative assertions to match the non-PartialEq response result types.
+
+Red command and result:
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_multipart_execution_tests --offline --message-format short' — after correcting the fixture to include the structurally required empty Response Payload, 4 passed and the two new Pending cases failed with Protocol / InvalidValue / ResponseStarted because the completed-only converter rejected Pending.
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-protocol --lib pending_encrypt_response_shape_tests --offline --message-format short' — expected compile-Red before the new API, with six E0599 diagnostics for missing pending-only converters and NotPendingOutcome variants.
+- The first version of the client fixture omitted Response Payload and was correctly rejected by shared message-shape validation before dispatch. The committed fixture carries an empty Structure so Red reaches the Pending routing defect.
+
+Green commit, DCO signed: 746a9edb2db7aee33a13694720512311b7f406ff.
+
+Green implementation:
+- Added EncryptResponse::try_from_pending_response_item and DecryptResponse::try_from_pending_response_item. They validate operation and the shared result/status, reject completed statuses with NotPendingOutcome, ignore the operation response payload, and initialize every success-only field to None.
+- Preserved both completed converters’ PendingOutcomeRequired errors.
+- Routed Pending before the completed converter and used pending_outcome for the exact opaque correlation bytes; the existing zeroization owner and generic payload-free error path remain in use.
+
+Refactor commit, DCO signed: 59d0d9aa294926de7b977802138187247dc4a430. Extracted the shared Encrypt/Decrypt status dispatch into read_crypto_operation_outcome so both operations select the pending-only converter before the completed converter through one code path. This is behavior-preserving and keeps the two operation arms from diverging.
+
+Post-Refactor verification commands and outputs, offline through WSL Ubuntu-26.04:
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_multipart_execution_tests --offline --message-format short' — exit 0; 6 passed, 0 failed, 292 filtered out.
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-protocol --lib pending_encrypt_response_shape_tests --offline --message-format short' — exit 0; 7 passed, 0 failed, 312 filtered out. This includes checks that completed converters still reject Pending and pending-only converters reject completed statuses.
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib pending_correlation_owner_zeroizes_before_release --offline --message-format short' — exit 0; 1 passed, 0 failed, 297 filtered out.
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features --offline -- -D warnings' — exit 0.
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo fmt --all --check' — exit 0.
+- git diff --check — exit 0.
+
+The new client tests assert Pending outcome, operation, shared result, exact correlation bytes containing NUL and non-UTF-8 values, typed response access, and absent success-only payload fields. No retries, polling, correlation synthesis, or change to the shared Pending lifecycle was introduced.
 ## Scope and known limitations
 
 No T032 or T033 work was started. This change does not execute the 28 fixture-derived request/response pairs; T038 owns that work. The full FR-008 one-exchange-per-invocation acceptance remains for T034/T038 as recorded in the approved task brief. No OASIS upstream source, generated artifact, dependency, transport, retry, Poll behavior, batch ordering policy, or hidden multipart state was changed. No automatic field movement or correlation synthesis was added.
