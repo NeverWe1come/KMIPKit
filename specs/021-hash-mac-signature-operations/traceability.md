@@ -1,10 +1,10 @@
 # KMIPKIT-0021 Traceability: Hash, MAC, and Signature Operations
 
-This is the design-time assignment for the specification PR. Implementation and verification references remain pending until the separate implementation PR. Table field contracts are traced through the operation element's exact OASIS request/response table metadata and the FRs below; the catalog does not manufacture a `REQ` identifier for each table cell.
+This implementation traceability maps each applicable client normative requirement and operation-table contract to source files and executable tests. The implementation and verification columns identify concrete paths and test names; execution results and open gates are recorded in the status table below. Table field contracts are traced through the operation element's exact OASIS request/response table metadata and the FRs below; the catalog does not manufacture a `REQ` identifier for each table cell.
 
 ## Client normative requirements
 
-| Stable requirement ID | Exact source | Client permission | Spec | Planned implementation | Planned verification |
+| Stable requirement ID | Exact source | Client permission | Spec | Implementation reference | Verification reference |
 | --- | --- | --- | --- | --- | --- |
 | `KMIPKIT-REQ-SPEC-6.1.32-001` | OASIS KMIP Specification v2.1 §6.1.32, opening operation description; catalog clause `KMIPKIT-CLAUSE-SPEC-6.1.32-001` | The client MAY omit Cryptographic Parameters when the managed object's attributes provide them. KMIPKit preserves omission and does not inspect key attributes. | FR-006; US2.2 | `crates/kmipkit-protocol/src/mac.rs`; `crates/kmipkit-client/src/execute.rs` | `mac_request_tests::allows_omitted_parameters`; `mac_execution_tests::preserves_omitted_parameters` |
 | `KMIPKIT-REQ-SPEC-6.1.33-001-001` | §6.1.33, opening operation description; clause `KMIPKIT-CLAUSE-SPEC-6.1.33-001` | The client MAY include original Data when the selected verification algorithm needs it. | FR-006–FR-007; US3.1 | `crates/kmipkit-protocol/src/mac_verify.rs` | `mac_verify_request_tests::preserves_optional_original_data` |
@@ -59,4 +59,17 @@ Stable records `...32-004-001`, `...33-005-001`, `...55-005-001`, `...56-007-001
 | `KMIPKIT-TEST-CN01-2-37` | `TC-ECDSA-SIGN-1-21` | §2.37 | Sign; Signature Verify | Fixture unavailable; no official vector pass claim |
 | `KMIPKIT-TEST-CN01-2-38` | `TC-ECDSA-SIGN-DIGESTEDDATA` | §2.38 | Sign (Digested Data) | Fixture unavailable; no official vector pass claim |
 
-No requirement-specific official test case is linked to the six client MAY records. MAC Verify has no source-linked official Test Case on its operation element. The §2.38 case explicitly covers ECDSA Sign with Digested Data; the catalog links it to the Sign operation and the shared Digested Data tag, but its local fixture is unavailable. Fixtures for the listed cases are unavailable in the pinned source tree; that is an evidence gap, not a test pass or failure. The later implementation PR must add source-derived tests and report fixture status accurately. No profile support, interoperability, or formal conformance claim is made.
+No requirement-specific official test case is linked to the six client MAY records. MAC Verify has no source-linked official Test Case on its operation element. The §2.38 case explicitly covers ECDSA Sign with Digested Data; the catalog links it to the Sign operation and the shared Digested Data tag, but its local fixture is unavailable. Fixtures for the listed cases are unavailable in the pinned source tree; that is an evidence gap, not a test pass or failure. The implementation adds source-derived tests and preserves the unavailable fixture status. No profile support, interoperability, or formal conformance claim is made.
+
+## Execution evidence and open gates
+
+| Scope | Verification evidence | Result and status |
+| --- | --- | --- |
+| Focused protocol contract | `cargo test -p kmipkit-protocol cryptographic_operation_contract_tests` | 11/11 passed in WSL Ubuntu 26.04 with Rust 1.94; the same run passed `cargo fmt --all --check`. |
+| Protocol and client suites | Full protocol suite in the last coverage run; full client suite after convenience-dispatch tests | 411 protocol tests and 343 client tests passed in the recorded runs. |
+| Coverage | `cargo llvm-cov --no-clean --package kmipkit-protocol --all-features --summary-only`; `cargo llvm-cov --workspace --all-features --summary-only` | Historical snapshots: protocol 8,440/8,969 lines (94.10%) and changed/new executable production 1,049/1,088 (96.42%) in the last feature-branch measurement; workspace 91.02% in an earlier run before the later coverage-test additions. None was measured after the latest test batch; WSL subsequently failed with EIO and `Wsl/Service/CreateInstance/E_FAIL`. The protocol total is below its 95% gate; T040 remains open. |
+| Catalog and generators | Catalog validation/report check, normative-source audit, immutable-source check, and deterministic generator `--check` commands | Passed on Windows: `sources=4 clauses=1411 records=4029`; 1,411 normative candidates audited; no generated drift; pinned OASIS upstream sources match base SHA `db51b7a1c93edbe81f89a9faf7902aa543caec3f`. |
+| Python traceability and policy tests | Feature-traceability, source-audit, immutable-source, requirement-traceability, dependency-policy, and cargo-deny fixture unittest modules | 138 tests passed with 24 environment-related skips; then cargo-deny 0.20.2 offline negative fixtures passed 18/18. The full isolated dependency-policy runner and applicable parser/FFI checks remain outstanding; T041 remains open. |
+| Cross-platform, QA, and security | Linux/Windows/macOS CI, independent sequential QA and security reviews | Not complete; T043 remains open. |
+
+The Rust coverage and suite results above are historical implementation evidence, not a substitute for the remaining fresh coverage run and CI. WSL currently fails to start with `Wsl/Service/CreateInstance/E_FAIL`; no coverage output is present in the worktree. The final-part Validity Indicator discrepancy and unavailable official fixtures remain explicit evidence limitations.
