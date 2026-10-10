@@ -8,7 +8,7 @@ use std::rc::Rc;
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
-use zeroize::Zeroizing;
+use zeroize::{Zeroize, Zeroizing};
 
 /// A fake transport that captures its first request and transfers one response.
 ///
@@ -45,7 +45,7 @@ impl Transport for OneShotFakeTransport {
     fn exchange(
         &mut self,
         request: &[u8],
-        _max_response_bytes: usize,
+        max_response_bytes: usize,
     ) -> Result<TransportResponse, TransportError> {
         {
             let mut observation = self.observation.0.borrow_mut();
@@ -63,32 +63,45 @@ impl Transport for OneShotFakeTransport {
             ));
         };
 
+        if response.bytes.len() > max_response_bytes {
+            let received_bytes = response.bytes.len();
+            return Err(TransportError::new(
+                RequestDeliveryState::not_sent()
+                    .write_started()
+                    .response_bytes_received(received_bytes),
+                TransportCauseCategory::Other,
+                std::io::Error::other("the configured fake response exceeds the response limit"),
+            ));
+        }
+
         Ok(TransportResponse::new(response.into_bytes()))
     }
 }
 
 struct PendingResponse {
-    bytes: Vec<u8>,
+    bytes: Zeroizing<Vec<u8>>,
     drop_observer: Option<ResponseDropObserver>,
 }
 
 impl PendingResponse {
     fn new(bytes: Vec<u8>, drop_observer: Option<ResponseDropObserver>) -> Self {
         Self {
-            bytes,
+            bytes: Zeroizing::new(bytes),
             drop_observer,
         }
     }
 
     fn into_bytes(mut self) -> Vec<u8> {
-        std::mem::take(&mut self.bytes)
+        self.drop_observer.take();
+        std::mem::take(&mut *self.bytes)
     }
 }
 
 impl Drop for PendingResponse {
     fn drop(&mut self) {
+        self.bytes.as_mut_slice().zeroize();
         if let Some(observer) = &self.drop_observer {
-            observer.record(&self.bytes);
+            observer.record(self.bytes.as_slice());
         }
     }
 }
