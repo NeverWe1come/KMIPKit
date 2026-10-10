@@ -312,6 +312,25 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(transport_exchange["declarationState"], "declared")
         self.assertEqual(transport_exchange["parityScope"], "rust-only-adr")
 
+    def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
+        declarations = [
+            declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration["packageId"] == "java-kmipkit"
+        ]
+        self.assertEqual(len(declarations), 315)
+        by_name = {declaration["exportName"]: declaration for declaration in declarations}
+        batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
+        self.assertEqual(batch_item["kind"], "type")
+        self.assertEqual(batch_item["declarationState"], "declared")
+        batch_extension = by_name[
+            "org.kmipkit.extensions.ClientBatchItem.withExtension"
+        ]
+        self.assertEqual(batch_extension["kind"], "java-member")
+        self.assertEqual(batch_extension["declarationState"], "declared")
+        native_handle = by_name["org.kmipkit.internal.NativeHandle"]
+        self.assertEqual(native_handle["declarationState"], "blocked")
+
     def test_schema_identifies_the_complete_v2_contract(self) -> None:
         self.assertEqual(
             self.schema["$id"], "urn:kmipkit:schemas:public-api-manifest:2"
