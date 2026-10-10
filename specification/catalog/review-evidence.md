@@ -1,6 +1,6 @@
 # KMIP 2.1 inventory review evidence
 
-This record documents the source review for the KMIPKIT-0002 inventory. The
+This record documents the 2026-10-04 source-review snapshot for the KMIPKIT-0002 inventory. Counts and fixture-availability statements here are historical; use the current generated coverage report and `SOURCES.md` for present state. The
 four source work products are pinned in [`SOURCES.md`](../oasis/kmip-2.1/SOURCES.md)
 and `CHECKSUMS.sha256`. The normative Specification and Profiles were reviewed
 from their local pinned HTML; no page was fetched or edited.
@@ -22,10 +22,10 @@ complete emitted locator set to the checked-in clause ledger; it reported
 does not replace the full locator comparison.
 
 The typed source tables reconcile to the acceptance counts in
-`specs/002-normative-inventory/spec.md`. Test evidence contains 110 CN01 cases
-and 93 Profiles references; all 203 linked XML fixtures are unavailable in the
-pinned source tree. Their raw `href` values remain traceable and are not
-followed. The independently checked, bidirectional crosswalk contains 76
+`specs/002-normative-inventory/spec.md`. At the initial 2026-10-04 review,
+test evidence contained 110 CN01 cases and 93 Profiles references; all 203
+linked XML fixtures were unavailable in the pinned source tree. Their raw
+`href` values remained traceable and were not followed. The independently checked, bidirectional crosswalk contains 76
 operation associations across 65 test records and 123 protocol-element
 associations across 47 test records (60 CN01 and 63 Profiles associations).
 Together, 91 test records name at least one operation or protocol element.
@@ -89,8 +89,9 @@ this specification creates the inventory, not the KMIP protocol behavior.
 The 85 source-backed profile test-to-requirement links are now reciprocal and
 cover 15 requirements. The remaining 552 requirements each record why no
 requirement-specific official Test Cases ID is linked by the pinned sources;
-the generated report lists each gap. All 203 cited XML fixtures remain
-unavailable, as recorded by DISC-036 and each TestCase fixture state.
+the generated report lists each gap. At that review snapshot, all 203 cited
+XML fixtures were unavailable, as recorded by DISC-036 and each TestCase
+fixture state.
 
 The source audit and section review preserve unresolved source wording as
 discrepancies. Of 42 discrepancy records, 41 remain open; `KMIPKIT-DISC-037`
@@ -119,7 +120,7 @@ discrepancy that affects its scope gated until resolution evidence exists.
 
 ## Final QA and execution verification
 
-Independent QA rechecked the acceptance evidence and found no additional catalog blockers. Requirement evidence is reciprocal for 85 official case-to-requirement links across 15 requirements; the remaining 552 requirements carry explicit source-evidence gap notes and appear individually in the generated report. All 19 catalog-readiness criteria were checked against the source review, validation rules, generated report, and recorded reconciliation evidence. There are 41 open discrepancies and one resolved discrepancy (`KMIPKIT-DISC-037`) supported by accepted decision `KMIPKIT-DEC-001`; 35 profile claim states remain `not_claimed`, and all 203 cited XML fixtures are unavailable in the pinned source tree.
+Independent QA rechecked the acceptance evidence and found no additional catalog blockers. Requirement evidence is reciprocal for 85 official case-to-requirement links across 15 requirements; the remaining 552 requirements carry explicit source-evidence gap notes and appear individually in the generated report. All 19 catalog-readiness criteria were checked against the source review, validation rules, generated report, and recorded reconciliation evidence. There are 41 open discrepancies and one resolved discrepancy (`KMIPKIT-DISC-037`) supported by accepted decision `KMIPKIT-DEC-001`; 35 profile claim states remain `not_claimed`. At the 2026-10-04 review snapshot, all 203 cited XML fixtures were unavailable in the pinned source tree.
 
 Historical verification executed on 2026-10-04 (preserved from the original catalog review):
 

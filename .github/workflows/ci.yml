@@ -12,10 +12,117 @@ permissions:
   contents: read
 
 jobs:
-  core:
+  impact-plan:
     if: github.event_name == 'pull_request'
+    name: CI impact / pull request
+    runs-on: ubuntu-latest
+    outputs:
+      plan_json: ${{ steps.classify.outputs.plan_json }}
+      full: ${{ steps.classify.outputs.full }}
+      selected_jobs: ${{ steps.classify.outputs.selected_jobs }}
+      coverage_scopes: ${{ steps.classify.outputs.coverage_scopes }}
+    steps:
+      - name: Checkout pull request merge tree and base history
+        id: checkout-pull-request-merge-tree-and-base-history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Classify exact base-to-merge changes
+        id: classify
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_MERGE_SHA: ${{ github.sha }}
+        run: python3 -B scripts/ci_impact.py classify --repo . --base "$PR_BASE_SHA" --merge "$PR_MERGE_SHA" --output "$RUNNER_TEMP/ci-impact-plan.json" --github-output "$GITHUB_OUTPUT"
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  docs-contracts:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' ||
+       needs.impact-plan.outputs.full == 'true' ||
+       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',docs-contracts,'))
+    name: Documentation contracts / traceability
+    runs-on: ubuntu-latest
+    needs: impact-plan
+    steps:
+      - name: Checkout pull request merge tree
+        id: checkout-pull-request-merge-commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Validate compliance requirement traceability
+        id: validate-compliance-requirement-traceability
+        run: python3 -B -m unittest scripts.tests.test_requirement_traceability -v
+
+      - name: Validate feature traceability contracts
+        id: validate-feature-traceability-contracts
+        run: python3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  core:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')
     name: Core / ${{ matrix.os }} / Rust ${{ matrix.rust }}
     runs-on: ${{ matrix.os }}
+    needs: impact-plan
     strategy:
       fail-fast: false
       matrix:
@@ -54,6 +161,10 @@ jobs:
         id: build-documentation
         run: cargo doc --workspace --all-features --no-deps --locked
 
+      - name: Compile bilingual client-guide examples
+        id: compile-bilingual-client-guide-examples
+        run: python scripts/test_user_guide_examples.py
+
       - name: Diagnose job result
         id: ci-diagnostics
         if: always()
@@ -88,9 +199,12 @@ jobs:
           }
 
   script-contracts:
-    if: github.event_name == 'pull_request'
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')
     name: Script contracts / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    needs: impact-plan
     strategy:
       fail-fast: false
       matrix:
@@ -171,14 +285,116 @@ jobs:
             exit 1
           }
 
-  language-bindings:
-    if: github.event_name == 'pull_request'
-    name: Language bindings / ${{ matrix.os }}
+  language-c:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',language-c,'))
+    name: C consumer / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    needs: impact-plan
     strategy:
       fail-fast: false
       matrix:
         # Keep the C ABI consumer on the VS 2022 image expected by CMake 3.31.
+        os: [ubuntu-latest, windows-2022, macos-latest]
+    env:
+      CARGO_TERM_COLOR: always
+      RUSTUP_TOOLCHAIN: '1.94'
+    steps:
+      - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install Rust 1.94
+        id: install-rust-1-94
+        run: rustup toolchain install 1.94 --profile minimal
+
+      - name: Set up CMake 3.31.6
+        id: set-up-cmake-3-31-6
+        uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # lukka/get-cmake v4.4.2
+        with:
+          cmakeVersion: '3.31.6'
+          ninjaVersion: '1.13.2'
+
+      - name: Build the C consumer and example
+        id: build-the-c-consumer-and-example
+        run: |
+          cargo build --locked -p kmipkit-ffi
+
+      - name: Configure the C consumer with MSVC
+        id: configure-the-c-consumer-with-msvc
+        if: runner.os == 'Windows'
+        run: cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer
+
+      - name: Configure the C consumer with Ninja
+        id: configure-the-c-consumer-with-ninja
+        if: runner.os != 'Windows'
+        run: cmake -G Ninja -S bindings/c -B build/c-consumer
+
+      - name: Compile the C consumer and example
+        id: compile-the-c-consumer-and-example
+        run: |
+          cmake --build build/c-consumer --config Release
+
+      - name: Run the C consumer and example
+        id: run-the-c-consumer-and-example
+        shell: pwsh
+        run: |
+          if ($IsWindows) {
+            $nativeLibraryDirectory = Join-Path $env:GITHUB_WORKSPACE 'target/debug'
+            $env:PATH = "$nativeLibraryDirectory;$env:PATH"
+          }
+          ctest --test-dir build/c-consumer -C Release --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
+
+  language-java:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',language-java,'))
+    name: Java and JNI integration / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: impact-plan
+    strategy:
+      fail-fast: false
+      matrix:
         os: [ubuntu-latest, windows-2022, macos-latest]
     env:
       CARGO_TERM_COLOR: always
@@ -209,6 +425,64 @@ jobs:
         with:
           maven-version: '3.9.16'
 
+      - name: Run Java 17 JNI tests and example
+        id: run-java-tests
+        run: mvn --batch-mode --file bindings/java/pom.xml test
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  language-python:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',language-python,'))
+    name: Python bindings / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: impact-plan
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-2022, macos-latest]
+    env:
+      CARGO_TERM_COLOR: always
+      RUSTUP_TOOLCHAIN: '1.94'
+    steps:
+      - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install Rust 1.94
+        id: install-rust-1-94
+        run: rustup toolchain install 1.94 --profile minimal
+
       - name: Set up Python 3.12
         id: set-up-python-3-12
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
@@ -218,54 +492,8 @@ jobs:
           activate-environment: true
           no-project: true
 
-      - name: Set up CMake 3.31.6
-        id: set-up-cmake-3-31-6
-        uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # lukka/get-cmake v4.4.2
-        with:
-          cmakeVersion: '3.31.6'
-          ninjaVersion: '1.13.2'
-
-      - name: Build the C consumer and example
-        id: build-the-c-consumer-and-example
-        run: |
-          cargo build --locked -p kmipkit-ffi
-
-      - name: Compile bilingual Rust client guide examples
-        id: compile-bilingual-rust-client-guide-examples
-        run: python scripts/test_user_guide_examples.py
-
-      - name: Configure the C consumer with MSVC
-        id: configure-the-c-consumer-with-msvc
-        if: runner.os == 'Windows'
-        run: cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer
-
-      - name: Configure the C consumer with Ninja
-        id: configure-the-c-consumer-with-ninja
-        if: runner.os != 'Windows'
-        run: cmake -G Ninja -S bindings/c -B build/c-consumer
-
-      - name: Compile the C consumer and example
-        id: compile-the-c-consumer-and-example
-        run: |
-          cmake --build build/c-consumer --config Release
-
-      - name: Run the C consumer and example
-        id: run-the-c-consumer-and-example
-        shell: pwsh
-        run: |
-          if ($IsWindows) {
-            $nativeLibraryDirectory = Join-Path $env:GITHUB_WORKSPACE 'target/debug'
-            $env:PATH = "$nativeLibraryDirectory;$env:PATH"
-          }
-          ctest --test-dir build/c-consumer -C Release --output-on-failure
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Run Java 17 JNI tests and example
-        id: run-java-17-jni-tests-and-example
-        run: mvn --batch-mode --file bindings/java/pom.xml test
-
       - name: Build the Python Maturin CFFI package and run tests and example
-        id: build-the-python-maturin-cffi-package-and-run-tests-and-exam
+        id: run-python-tests
         shell: pwsh
         run: |
           uv pip install --requirement bindings/python/requirements-coverage.txt
@@ -302,18 +530,16 @@ jobs:
             exit 1
           }
           & $python.Source $diagnosticScript
-          $diagnosticExitCode = $LASTEXITCODE
-          if ($diagnosticExitCode -ne 0) {
-            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
-            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
-            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
-            exit 1
-          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-  ffi-sanitizer:
-    if: github.event_name == 'pull_request'
-    name: FFI sanitizer / Linux
+  ffi-sanitizer-c:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',ffi-sanitizer-c,'))
+    name: C FFI sanitizer / Linux
     runs-on: ubuntu-latest
+    needs: impact-plan
     env:
       CARGO_TERM_COLOR: always
       RUSTUP_TOOLCHAIN: nightly
@@ -343,13 +569,6 @@ jobs:
           mkdir -p target/sanitizers
           cc -std=c11 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer -Ibindings/c/include bindings/c/tests/extension_registry.c -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi -o target/sanitizers/extension_registry_consumer
           target/sanitizers/extension_registry_consumer
-
-      - name: Run the JNI zeroization owner test under native sanitizers
-        id: run-the-jni-zeroization-owner-test-under-native-sanitizers
-        run: |
-          mkdir -p target/sanitizers
-          c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer bindings/java/native/tests/zeroizing_bytes_test.cpp -o target/sanitizers/zeroizing_bytes_test
-          target/sanitizers/zeroizing_bytes_test
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -384,10 +603,68 @@ jobs:
             exit 1
           }
 
+  ffi-sanitizer-jni:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',ffi-sanitizer-jni,'))
+    name: JNI sanitizer / Linux
+    runs-on: ubuntu-latest
+    needs: impact-plan
+    env:
+      ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+    outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
+    steps:
+      - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Run the JNI zeroization owner test under native sanitizers
+        id: run-native-sanitizers
+        run: |
+          mkdir -p target/sanitizers
+          c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer bindings/java/native/tests/zeroizing_bytes_test.cpp -o target/sanitizers/zeroizing_bytes_test
+          target/sanitizers/zeroizing_bytes_test
+
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
   fuzz-smoke:
-    if: github.event_name == 'pull_request'
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')
     name: Fuzz smoke / extension schema
     runs-on: ubuntu-latest
+    needs: impact-plan
     outputs:
       diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
@@ -444,9 +721,12 @@ jobs:
           }
 
   normative-inventory:
-    if: github.event_name == 'pull_request'
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')
     name: Normative inventory / immutable sources and coverage
     runs-on: ubuntu-latest
+    needs: impact-plan
     outputs:
       diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
@@ -490,6 +770,28 @@ jobs:
         id: verify-generated-attribute-policy-lookup
         run: python3 -B tools/normative_catalog/generate_attribute_policy.py --repo-root . --check
 
+      - name: Set up Python 3.12 for normative generator coverage
+        id: set-up-python-3-12-for-normative-generator-coverage
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
+        with:
+          version: '0.12.23'
+          python-version: '3.12'
+          activate-environment: true
+          no-project: true
+
+      - name: Install pinned Python coverage dependencies
+        id: install-pinned-python-coverage-dependencies
+        shell: bash
+        run: uv pip install --requirement bindings/python/requirements-coverage.txt
+
+      - name: Verify normative generator line coverage
+        id: verify-normative-generator-line-coverage
+        shell: bash
+        run: |
+          mkdir -p coverage-normative
+          python -m coverage run --data-file=coverage-normative/.coverage --source=tools.normative_catalog.generate_attribute_types -m unittest tools.normative_catalog.tests.test_generate_attribute_types
+          python -m coverage report --data-file=coverage-normative/.coverage --include=tools/normative_catalog/generate_attribute_types.py --fail-under=95
+
       - name: Diagnose job result
         id: ci-diagnostics
         if: always()
@@ -524,9 +826,13 @@ jobs:
           }
 
   coverage:
-    if: github.event_name == 'pull_request'
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       contains(needs.impact-plan.outputs.coverage_scopes, '"rust"'))
     name: Coverage / ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
+    needs: impact-plan
     strategy:
       fail-fast: false
       matrix:
@@ -653,30 +959,57 @@ jobs:
           }
 
   coverage-gate:
-    if: always() && github.event_name == 'pull_request'
-    name: Coverage gate / platforms and adapters
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       needs.impact-plan.outputs.coverage_scopes != '[]')
+    name: Coverage gate / selected scopes
     runs-on: ubuntu-latest
     needs:
+      - impact-plan
       - coverage
-      - adapter-coverage
+      - coverage-java
+      - coverage-python
+      - coverage-jni
     outputs:
       diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
-      - name: Require successful platform and adapter coverage collection
+      - name: Require successful selected coverage producers
         id: require-successful-platform-and-adapter-coverage-collection
-        if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')
-        run: |
-          echo "Coverage matrix result: ${{ needs.coverage.result }}; adapter coverage result: ${{ needs.adapter-coverage.result }}" >&2
-          exit 1
-
-      - name: Summarize failed platform or adapter collection
-        id: summarize-failed-platform-or-adapter-collection
-        if: always() && (needs.coverage.result != 'success' || needs.adapter-coverage.result != 'success')
+        if: always()
         env:
-          COVERAGE_RESULT: ${{ needs.coverage.result }}
-          ADAPTER_COVERAGE_RESULT: ${{ needs.adapter-coverage.result }}
+          IMPACT_PLAN_JSON: ${{ needs.impact-plan.outputs.plan_json }}
+          CI_NEEDS_JSON: ${{ toJSON(needs) }}
         run: |
-          printf '### Coverage gate\n\n**Result:** ❌ FAIL — platform or adapter collection did not complete.\n\n- Coverage matrix result: `%s`.\n- Adapter coverage result: `%s`.\n\n' "$COVERAGE_RESULT" "$ADAPTER_COVERAGE_RESULT" >> "$GITHUB_STEP_SUMMARY"
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+
+          plan = json.loads(os.environ.get("IMPACT_PLAN_JSON", "{}"))
+          needs = json.loads(os.environ.get("CI_NEEDS_JSON", "{}"))
+          producer_by_scope = {
+              "rust": "coverage",
+              "ffi-c": "coverage",
+              "java": "coverage-java",
+              "python": "coverage-python",
+              "jni": "coverage-jni",
+          }
+          failures = []
+          for scope in plan.get("coverage_scopes", []):
+              job = producer_by_scope.get(scope)
+              result = needs.get(job, {}).get("result") if job else None
+              if result != "success":
+                  failures.append(f"{scope}: {job or 'unknown producer'} returned {result or 'missing'}")
+          if failures:
+              print("Selected coverage producers did not complete: " + "; ".join(failures), file=sys.stderr)
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+                  summary.write("### Coverage gate\n\n**Result:** ❌ FAIL — selected coverage collection failed.\n\n")
+                  for failure in failures:
+                      summary.write(f"- {failure}\n")
+              sys.exit(1)
+          print("All coverage producers required by the impact plan completed successfully.")
+          PY
 
       - name: Checkout pull request merge commit
         id: checkout
@@ -696,11 +1029,13 @@ jobs:
 
       - name: Enforce coverage thresholds
         id: enforce
-        run: python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base "${{ github.event.pull_request.base.sha }}" --merge "${{ github.sha }}" --summary-file "$GITHUB_STEP_SUMMARY"
+        env:
+          COVERAGE_SCOPES_JSON: ${{ needs.impact-plan.outputs.coverage_scopes }}
+        run: python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base "${{ github.event.pull_request.base.sha }}" --merge "${{ github.sha }}" --summary-file "$GITHUB_STEP_SUMMARY" --scopes-json "$COVERAGE_SCOPES_JSON"
 
       - name: Summarize skipped coverage aggregation
         id: summarize-skipped-coverage-aggregation
-        if: always() && needs.coverage.result == 'success' && needs.adapter-coverage.result == 'success' && steps.enforce.outcome == 'skipped'
+        if: always() && steps.enforce.outcome == 'skipped'
         env:
           CHECKOUT_RESULT: ${{ steps.checkout.outcome }}
           DOWNLOAD_RESULT: ${{ steps.download.outcome }}
@@ -740,12 +1075,14 @@ jobs:
             exit 1
           }
 
-  adapter-coverage:
-    if: github.event_name == 'pull_request'
-    name: Adapter coverage / Linux
+  coverage-java:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-java,'))
+    name: Java coverage / Linux
     runs-on: ubuntu-latest
-    needs:
-      - language-bindings
+    needs: impact-plan
     env:
       CARGO_TERM_COLOR: always
       RUSTUP_TOOLCHAIN: '1.94'
@@ -777,6 +1114,80 @@ jobs:
         with:
           maven-version: '3.9.16'
 
+      - name: Run Java tests and collect JaCoCo report
+        id: run-java-tests-and-collect-jacoco-report
+        shell: bash
+        run: |
+          mvn --batch-mode --file bindings/java/pom.xml clean verify
+          mkdir -p coverage-java
+          cp bindings/java/target/site/jacoco/jacoco.xml coverage-java/jacoco.xml
+
+      - name: Upload Java coverage report
+        id: upload-java-coverage-report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: coverage-java
+          path: coverage-java/jacoco.xml
+          if-no-files-found: error
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
+
+
+  coverage-python:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-python,'))
+    name: Python coverage / Linux
+    runs-on: ubuntu-latest
+    needs: impact-plan
+    env:
+      CARGO_TERM_COLOR: always
+      RUSTUP_TOOLCHAIN: '1.94'
+    outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
+    steps:
+      - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install Rust 1.94
+        id: install-rust-1-94
+        run: rustup toolchain install 1.94 --profile minimal
+
       - name: Set up Python 3.12
         id: set-up-python-3-12
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
@@ -785,6 +1196,102 @@ jobs:
           python-version: '3.12'
           activate-environment: true
           no-project: true
+
+      - name: Install pinned Python coverage dependencies
+        id: install-pinned-python-coverage-dependencies
+        shell: bash
+        run: uv pip install --requirement bindings/python/requirements-coverage.txt
+
+      - name: Run Python coverage suite
+        id: run-python-coverage-suite
+        shell: bash
+        run: |
+          uv pip install --no-build-isolation --editable bindings/python
+          mkdir -p coverage-python
+          python -m pytest -q bindings/python/tests \
+            --cov=kmipkit \
+            --cov-config=bindings/python/pyproject.toml \
+            --cov-report=xml:coverage-python/coverage.xml
+
+      - name: Upload Python coverage report
+        id: upload-python-coverage-report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: coverage-python
+          path: coverage-python/coverage.xml
+          if-no-files-found: error
+      - name: Diagnose job result
+        id: ci-diagnostics
+        if: always()
+        shell: pwsh
+        env:
+          CI_JOB_ID: ${{ github.job }}
+          CI_MATRIX_JSON: ${{ toJSON(matrix) }}
+          CI_STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic script is unavailable.'
+            exit 1
+          }
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) {
+            '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'Python 3 is unavailable on this runner, so the detailed job diagnosis could not be rendered.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'Python 3 is required to render CI job diagnostics.'
+            exit 1
+          }
+          & $python.Source $diagnosticScript
+          $diagnosticExitCode = $LASTEXITCODE
+          if ($diagnosticExitCode -ne 0) {
+            '### ❌ Job diagnosis could not be written' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            'The diagnostic renderer failed. Open the preceding job steps and this step log for details.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
+            exit 1
+          }
+
+
+  coverage-jni:
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-jni,'))
+    name: JNI coverage / Linux
+    runs-on: ubuntu-latest
+    needs: impact-plan
+    env:
+      CARGO_TERM_COLOR: always
+      RUSTUP_TOOLCHAIN: '1.94'
+    outputs:
+      diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
+    steps:
+      - name: Checkout pull request merge commit
+        id: checkout-pull-request-merge-commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install Rust 1.94
+        id: install-rust-1-94
+        run: rustup toolchain install 1.94 --profile minimal
+
+      - name: Set up Java 17
+        id: set-up-java-17
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # actions/setup-java v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Set up Maven 3.9.16
+        id: set-up-maven-3-9-16
+        uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # stCarolas/setup-maven v5.1
+        with:
+          maven-version: '3.9.16'
 
       - name: Install LLVM 20.1.8 for JNI coverage
         id: install-llvm-20-1-8-for-jni-coverage
@@ -803,39 +1310,6 @@ jobs:
           done
           echo "$RUNNER_TEMP/llvm-20-tools" >> "$GITHUB_PATH"
 
-      - name: Run Java tests and collect JaCoCo report
-        id: run-java-tests-and-collect-jacoco-report
-        shell: bash
-        run: |
-          mvn --batch-mode --file bindings/java/pom.xml clean verify
-          mkdir -p coverage-java
-          cp bindings/java/target/site/jacoco/jacoco.xml coverage-java/jacoco.xml
-
-      - name: Install pinned Python coverage dependencies
-        id: install-pinned-python-coverage-dependencies
-        shell: bash
-        run: |
-          uv pip install --requirement bindings/python/requirements-coverage.txt
-
-      - name: Verify normative generator line coverage
-        id: verify-normative-generator-line-coverage
-        shell: bash
-        run: |
-          mkdir -p coverage-normative
-          python -m coverage run --data-file=coverage-normative/.coverage --source=tools.normative_catalog.generate_attribute_types -m unittest tools.normative_catalog.tests.test_generate_attribute_types
-          python -m coverage report --data-file=coverage-normative/.coverage --include=tools/normative_catalog/generate_attribute_types.py --fail-under=95
-
-      - name: Run Python coverage suite
-        id: run-python-coverage-suite
-        shell: bash
-        run: |
-          uv pip install --no-build-isolation --editable bindings/python
-          mkdir -p coverage-python
-          python -m pytest -q bindings/python/tests \
-            --cov=kmipkit \
-            --cov-config=bindings/python/pyproject.toml \
-            --cov-report=xml:coverage-python/coverage.xml
-
       - name: Run JNI coverage suite
         id: run-jni-coverage-suite
         shell: bash
@@ -844,22 +1318,6 @@ jobs:
           mkdir -p coverage-jni
           cp target/coverage-jni/coverage.json coverage-jni/coverage.json
 
-      - name: Upload Java coverage report
-        id: upload-java-coverage-report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
-        with:
-          name: coverage-java
-          path: coverage-java/jacoco.xml
-          if-no-files-found: error
-
-      - name: Upload Python coverage report
-        id: upload-python-coverage-report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
-        with:
-          name: coverage-python
-          path: coverage-python/coverage.xml
-          if-no-files-found: error
-
       - name: Upload JNI coverage report
         id: upload-jni-coverage-report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
@@ -867,7 +1325,6 @@ jobs:
           name: coverage-jni
           path: coverage-jni/coverage.json
           if-no-files-found: error
-
       - name: Diagnose job result
         id: ci-diagnostics
         if: always()
@@ -903,7 +1360,10 @@ jobs:
 
   dependency-policy:
     name: Dependency policy / pull request
-    if: github.event_name == 'pull_request'
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')
+    needs: impact-plan
     runs-on: ubuntu-latest
     outputs:
       diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
@@ -1116,15 +1576,22 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     needs:
+      - impact-plan
+      - docs-contracts
       - core
       - script-contracts
-      - language-bindings
-      - ffi-sanitizer
+      - language-c
+      - language-java
+      - language-python
+      - ffi-sanitizer-c
+      - ffi-sanitizer-jni
       - fuzz-smoke
       - normative-inventory
       - coverage
       - coverage-gate
-      - adapter-coverage
+      - coverage-java
+      - coverage-python
+      - coverage-jni
       - dependency-policy
       - scheduled-dependency-policy
       - branch-coverage
@@ -1140,6 +1607,7 @@ jobs:
         id: write-summary
         env:
           CI_NEEDS_JSON: ${{ toJSON(needs) }}
+          CI_PULL_REQUEST_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: python3 scripts/ci_summary.py
 
       - name: Fallback summary when checkout or rendering fails

@@ -8,7 +8,7 @@
 
 ## Decision: Keep server state authoritative
 
-**Evidence**: The pinned OASIS KMIP 2.1 Specification defines request, response, and error payloads in §6.1.1 Tables 164–166 (Activate), §6.1.4 Tables 173–175 (Archive), §6.1.15 Tables 208–210 (Destroy), and §6.1.42 Tables 288–290 (Recover). The checked-in catalog classifies the Activate and Destroy prose clauses as `server_only`; Archive and Recover have the three client MAY requirements recorded in this specification.
+**Evidence**: The pinned OASIS KMIP 2.1 Specification defines request, response, and error payloads in §6.1.1 Tables 164–166 (Activate), §6.1.4 Tables 173–175 (Archive), §6.1.15 Tables 208–210 (Destroy), and §6.1.42 Tables 288–290 (Recover). §4.58 Tables 145–146 define permitted Unique Identifier encodings; §11.56 Table 487 assigns tag 0x420094 to Unique Identifier. The checked-in catalog classifies the Activate and Destroy prose clauses as `server_only`; Archive and Recover have the three client MAY requirements recorded in this specification.
 
 **Decision**: Implement the client wire models and result handling. Do not implement remote object state, local state mutation, server policy, or stronger claims than the KMIP result establishes. Archive communicates a preference. Activate and Destroy do not transfer server responsibilities to the client.
 

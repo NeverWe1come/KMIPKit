@@ -12,7 +12,7 @@ use crate::{
 
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const OBJECT_TYPE: u32 = 0x0042_0057;
-const ATTRIBUTES: u32 = 0x0042_0008;
+const ATTRIBUTES: u32 = 0x0042_0125; // §5.1 Attributes Structure, not the Attribute tag.
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const SUCCESS: u32 = 0;
@@ -36,8 +36,11 @@ impl ObjectType {
 }
 
 /// A Table 187 Unique Identifier value in its original TTLV wire form.
+///
+/// Its [`Debug`] representation redacts the wire value because identifiers can
+/// appear in lifecycle operation requests and responses.
 #[non_exhaustive]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub enum UniqueIdentifier {
     /// A KMIP Text String identifier.
     TextString(String),
@@ -45,6 +48,12 @@ pub enum UniqueIdentifier {
     Enumeration(u32),
     /// A signed KMIP Integer identifier.
     Integer(i32),
+}
+
+impl fmt::Debug for UniqueIdentifier {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("UniqueIdentifier([REDACTED])")
+    }
 }
 
 /// A typed KMIP 2.1 Create request payload.

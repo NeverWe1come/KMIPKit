@@ -1147,9 +1147,16 @@ def _load_ffi_c_consumer_artifact(
 def _load_adapter_reports(
     report_root: Path,
     workspace: Path,
+    required_scopes: set[str] | None = None,
 ) -> dict[str, Mapping[str, Mapping[int, int]]] | None:
     sources = scan_adapter_sources(workspace)
-    if not any(sources.values()):
+    scope_names = {
+        "java": "Java adapters",
+        "python": "Python adapters",
+        "jni": "JNI bridge",
+    }
+    selected_scopes = set(scope_names) if required_scopes is None else required_scopes.intersection(scope_names)
+    if not any(sources[scope_names[scope]] for scope in selected_scopes):
         return None
     inputs = {
         "Java adapters": (report_root / "coverage-java" / "jacoco.xml", parse_jacoco_report),
@@ -1157,7 +1164,10 @@ def _load_adapter_reports(
         "JNI bridge": (report_root / "coverage-jni" / "coverage.json", parse_llvm_export),
     }
     parsed: dict[str, Mapping[str, Mapping[int, int]]] = {}
-    for scope, (report_path, parser) in inputs.items():
+    for short_scope, scope in scope_names.items():
+        if short_scope not in selected_scopes:
+            continue
+        report_path, parser = inputs[scope]
         expected_sources = sources[scope]
         if not expected_sources:
             continue
@@ -1188,7 +1198,23 @@ def _evaluate_coverage(
     diff: str,
     adapter_reports: Mapping[str, Mapping[str, Mapping[int, int]]] | None = None,
     ffi_c_consumer_report: Mapping[str, Mapping[int, int]] | None = None,
+    required_scopes: set[str] | None = None,
 ) -> list[str]:
+    if required_scopes is not None:
+        allowed_scopes = {"rust", "ffi-c", "java", "python", "jni"}
+        unknown_scopes = required_scopes.difference(allowed_scopes)
+        if unknown_scopes:
+            raise CoverageDataError(f"Unknown coverage scope: {', '.join(sorted(unknown_scopes))}.")
+        if required_scopes != allowed_scopes:
+            return _evaluate_scoped_coverage(
+                workspace,
+                reports,
+                diff,
+                adapter_reports,
+                ffi_c_consumer_report,
+                required_scopes,
+            )
+
     merged = merge_platform_reports(reports)
     source_scan = scan_production_sources(workspace)
     if not source_scan.eligible:
@@ -1363,6 +1389,206 @@ def _evaluate_coverage(
     return results
 
 
+def _evaluate_scoped_coverage(
+    workspace: Path,
+    reports: Mapping[str, Mapping[str, Mapping[int, int]]],
+    diff: str,
+    adapter_reports: Mapping[str, Mapping[str, Mapping[int, int]]] | None,
+    ffi_c_consumer_report: Mapping[str, Mapping[int, int]] | None,
+    required_scopes: set[str],
+) -> list[str]:
+    """Gate only explicitly selected scopes while keeping their normal thresholds."""
+    if not required_scopes:
+        return ["Selected coverage scopes: not applicable."]
+
+    results: list[str] = []
+    scoped_reports: dict[str, Mapping[str, Mapping[int, int]]] = {}
+    summary_excess: dict[str, int] = {}
+    rust_source_scan: SourceScanResult | None = None
+
+    if "rust" in required_scopes or "ffi-c" in required_scopes:
+        rust_source_scan = scan_production_sources(workspace)
+        if not rust_source_scan.complete:
+            raise CoverageDataError(f"Production source scan is incomplete: {rust_source_scan.reason}")
+
+    if "rust" in required_scopes:
+        if reports.get("status") == "unavailable":
+            results.append("Rust coverage: unavailable because all three platforms confirmed no production function bodies.")
+        elif rust_source_scan is None or not rust_source_scan.eligible:
+            results.append("Rust coverage: unavailable because no executable production Rust function bodies exist.")
+        else:
+            rust_lines = merge_platform_reports(reports)
+            missing = rust_source_scan.eligible_files.difference(rust_lines)
+            if missing:
+                raise CoverageDataError(
+                    "Eligible production source is missing from LLVM coverage reports: "
+                    + ", ".join(sorted(missing))
+                )
+            scoped_reports["rust"] = rust_lines
+            for report in reports.values():
+                if isinstance(report, CoverageReport):
+                    for source, count in report.summary_uncovered_excess.items():
+                        summary_excess[source] = summary_excess.get(source, 0) + count
+
+            crate_thresholds = {
+                "kmipkit-ttlv": 95,
+                "kmipkit-protocol": 95,
+                "kmipkit-transport": 85,
+                "kmipkit-ffi": 85,
+            }
+            for crate_name, threshold in crate_thresholds.items():
+                crate_lines = {
+                    (source, line): count
+                    for source, line_counts in rust_lines.items()
+                    if len(PurePosixPath(source).parts) > 1
+                    and PurePosixPath(source).parts[0] == "crates"
+                    and PurePosixPath(source).parts[1] == crate_name
+                    for line, count in line_counts.items()
+                }
+                if not crate_lines:
+                    continue
+                extra = sum(
+                    count
+                    for source, count in summary_excess.items()
+                    if len(PurePosixPath(source).parts) > 1 and PurePosixPath(source).parts[1] == crate_name
+                )
+                covered = sum(count > 0 for count in crate_lines.values())
+                total = len(crate_lines) + extra
+                if not meets_threshold(covered, total, threshold):
+                    raise CoverageDataError(f"{crate_name} coverage {covered}/{total} is below {threshold}%.")
+                results.append(
+                    f"{crate_name} coverage: {covered}/{total} ({covered * 100 / total:.2f}%) including {extra} summary-only line(s) as uncovered ({threshold}% minimum)."
+                )
+
+            covered = sum(count > 0 for counts in rust_lines.values() for count in counts.values())
+            extra = sum(summary_excess.values())
+            total = sum(len(counts) for counts in rust_lines.values()) + extra
+            if not meets_threshold(covered, total, 90):
+                raise CoverageDataError(f"Workspace coverage {covered}/{total} is below 90%.")
+            results.append(
+                f"Workspace coverage: {covered}/{total} ({covered * 100 / total:.2f}%) including {extra} summary-only line(s) as uncovered (90% minimum)."
+            )
+
+    if "ffi-c" in required_scopes:
+        if rust_source_scan is None:
+            raise CoverageDataError("Rust source preflight is required for FFI/C coverage.")
+        ffi_sources = {
+            source for source in rust_source_scan.eligible_files if source.startswith("crates/kmipkit-ffi/src/")
+        }
+        if ffi_sources:
+            if ffi_c_consumer_report is None:
+                raise CoverageDataError("Rust FFI C-consumer coverage report is required for the selected ffi-c scope.")
+            missing = ffi_sources.difference(ffi_c_consumer_report)
+            extra_sources = set(ffi_c_consumer_report).difference(ffi_sources)
+            if missing:
+                raise CoverageDataError(
+                    "Eligible Rust FFI source is missing from C ABI coverage report: " + ", ".join(sorted(missing))
+                )
+            if extra_sources:
+                raise CoverageDataError(
+                    "Rust C ABI coverage report contains a source outside its package: "
+                    + ", ".join(sorted(extra_sources))
+                )
+            scoped_reports["ffi-c"] = ffi_c_consumer_report
+            if isinstance(ffi_c_consumer_report, CoverageReport):
+                for source, count in ffi_c_consumer_report.summary_uncovered_excess.items():
+                    summary_excess[source] = summary_excess.get(source, 0) + count
+            ffi_lines = {
+                (source, line): count
+                for source, counts in ffi_c_consumer_report.items()
+                for line, count in counts.items()
+            }
+            extra = sum(count for source, count in summary_excess.items() if source in ffi_sources)
+            covered = sum(count > 0 for count in ffi_lines.values())
+            total = len(ffi_lines) + extra
+            if not meets_threshold(covered, total, 85):
+                raise CoverageDataError(f"kmipkit-ffi coverage {covered}/{total} is below 85%.")
+            results.append(
+                f"kmipkit-ffi coverage: {covered}/{total} ({covered * 100 / total:.2f}%) including {extra} summary-only line(s) as uncovered (85% minimum)."
+            )
+        else:
+            results.append("FFI/C coverage: unavailable because no executable Rust FFI source exists.")
+
+    adapter_source_map = scan_adapter_sources(workspace)
+    adapter_labels = {"java": "Java adapters", "python": "Python adapters", "jni": "JNI bridge"}
+    for short_scope, label in adapter_labels.items():
+        if short_scope not in required_scopes:
+            continue
+        sources = adapter_source_map[label]
+        if not sources:
+            results.append(f"{label} coverage: unavailable because no production source exists.")
+            continue
+        if adapter_reports is None or label not in adapter_reports:
+            raise CoverageDataError(f"Required {label} coverage report is missing.")
+        report = adapter_reports[label]
+        missing = sources.difference(report)
+        extra_sources = set(report).difference(sources)
+        if missing:
+            raise CoverageDataError(f"Eligible {label} source is missing from its coverage report: {', '.join(sorted(missing))}")
+        if extra_sources:
+            raise CoverageDataError(f"{label} coverage report contains a source outside its package: {', '.join(sorted(extra_sources))}")
+        scoped_reports[short_scope] = report
+        if isinstance(report, CoverageReport):
+            for source, count in report.summary_uncovered_excess.items():
+                summary_excess[source] = summary_excess.get(source, 0) + count
+        line_map = {
+            (source, line): count
+            for source, counts in report.items()
+            for line, count in counts.items()
+        }
+        extra = sum(count for source, count in summary_excess.items() if source in sources)
+        covered = sum(count > 0 for count in line_map.values())
+        total = len(line_map) + extra
+        if not meets_threshold(covered, total, 85):
+            raise CoverageDataError(f"{label} coverage {covered}/{total} is below 85%.")
+        results.append(
+            f"{label} coverage: {covered}/{total} ({covered * 100 / total:.2f}%) including {extra} summary-only line(s) as uncovered (85% minimum)."
+        )
+
+    changed = parse_added_production_lines(diff)
+    source_scopes = {
+        source: _coverage_scope_for_source(source, scoped_reports)
+        for source in changed
+    }
+    changed_executable = {
+        (source, line)
+        for source, line_numbers in changed.items()
+        if source_scopes[source] is not None
+        for line in line_numbers
+        if line in scoped_reports[source_scopes[source]].get(source, {})
+    }
+    if changed_executable:
+        covered = sum(
+            scoped_reports[source_scopes[source]][source][line] > 0
+            for source, line in changed_executable
+        )
+        extra = sum(count for source, count in summary_excess.items() if source in changed)
+        total = len(changed_executable) + extra
+        if not meets_threshold(covered, total, 95):
+            raise CoverageDataError(f"Changed production code coverage {covered}/{total} is below 95%.")
+        results.append(f"Changed production coverage: {covered}/{total} ({covered * 100 / total:.2f}%) (95% minimum).")
+    else:
+        results.append("Changed executable production lines: not applicable.")
+    return results
+
+
+def _coverage_scope_for_source(
+    source: str, scoped_reports: Mapping[str, Mapping[str, Mapping[int, int]]]
+) -> str | None:
+    """Resolve a changed source to its selected report, preferring ABI coverage for FFI."""
+    if source.startswith("crates/kmipkit-ffi/src/") and "ffi-c" in scoped_reports:
+        return "ffi-c"
+    if source.endswith(".rs") and "rust" in scoped_reports:
+        return "rust"
+    if source.startswith("bindings/java/src/") and "java" in scoped_reports:
+        return "java"
+    if source.startswith("bindings/python/src/") and "python" in scoped_reports:
+        return "python"
+    if source.startswith("bindings/java/native/") and "jni" in scoped_reports:
+        return "jni"
+    return None
+
+
 def _command_preflight(args: argparse.Namespace) -> int:
     result = scan_production_sources(args.workspace)
     print(f"source_scan={result.reason}; files={result.files_scanned}")
@@ -1391,18 +1617,49 @@ def _command_normalize(args: argparse.Namespace) -> int:
 
 def _command_aggregate(args: argparse.Namespace) -> int:
     workspace = Path(args.workspace).resolve()
-    reports = _load_platform_artifacts(Path(args.report_dir), workspace)
-    if reports.get("status") == "unavailable":
+    required_scopes: set[str] | None = None
+    if args.scopes_json is not None:
+        try:
+            parsed_scopes = json.loads(args.scopes_json)
+        except json.JSONDecodeError as error:
+            raise CoverageDataError(f"Coverage scope JSON is malformed: {error}") from error
+        if not isinstance(parsed_scopes, list) or any(not isinstance(scope, str) for scope in parsed_scopes):
+            raise CoverageDataError("Coverage scopes must be a JSON array of strings.")
+        required_scopes = set(parsed_scopes)
+        allowed_scopes = {"rust", "ffi-c", "java", "python", "jni"}
+        if required_scopes.difference(allowed_scopes) or len(required_scopes) != len(parsed_scopes):
+            raise CoverageDataError("Coverage scopes contain unknown or duplicate values.")
+        if not required_scopes:
+            _append_coverage_summary(args.summary_file, "unavailable", ["No production coverage scope was selected."])
+            print("Selected coverage scopes: not applicable.")
+            return 0
+
+    report_root = Path(args.report_dir)
+    reports: Mapping[str, Any] = {}
+    if required_scopes is None or "rust" in required_scopes:
+        reports = _load_platform_artifacts(report_root, workspace)
+    if required_scopes is None and reports.get("status") == "unavailable":
         _append_coverage_summary(
             args.summary_file,
             "unavailable",
             ["All three platforms verified that no production function bodies exist; no threshold is claimed."],
         )
         return 0
-    ffi_c_consumer_report = _load_ffi_c_consumer_artifact(Path(args.report_dir), workspace)
-    adapter_reports = _load_adapter_reports(Path(args.report_dir), workspace)
+    ffi_c_consumer_report = (
+        _load_ffi_c_consumer_artifact(report_root, workspace)
+        if required_scopes is None or "ffi-c" in required_scopes
+        else None
+    )
+    adapter_reports = _load_adapter_reports(report_root, workspace, required_scopes)
     diff = _run_git_diff(workspace, args.base, args.merge)
-    results = _evaluate_coverage(workspace, reports, diff, adapter_reports, ffi_c_consumer_report)
+    results = _evaluate_coverage(
+        workspace,
+        reports,
+        diff,
+        adapter_reports,
+        ffi_c_consumer_report,
+        required_scopes,
+    )
     for result in results:
         print(result)
     _append_coverage_summary(args.summary_file, "passed", results)
@@ -1444,12 +1701,13 @@ def build_parser() -> argparse.ArgumentParser:
     normalize.add_argument("--output", required=True)
     normalize.set_defaults(handler=_command_normalize)
 
-    aggregate = subparsers.add_parser("aggregate", help="enforce three-platform line coverage gates")
+    aggregate = subparsers.add_parser("aggregate", help="enforce selected line coverage gates")
     aggregate.add_argument("--workspace", default=".")
     aggregate.add_argument("--report-dir", required=True)
     aggregate.add_argument("--base", required=True)
     aggregate.add_argument("--merge", required=True)
     aggregate.add_argument("--summary-file")
+    aggregate.add_argument("--scopes-json", help="JSON array of required scopes; omission means full legacy scope")
     aggregate.set_defaults(handler=_command_aggregate)
     return parser
 
