@@ -399,13 +399,13 @@ fn recover_pending_preserves_exact_correlation_without_poll_or_follow_up() {
     assert_eq!(item.unique_batch_item_id(), Some(REQUEST_BATCH_ID));
     assert_eq!(pending.operation(), ClientOperation::Recover);
     assert_eq!(pending.result().status().raw(), OPERATION_PENDING);
-    assert_eq!(
-        pending.asynchronous_correlation_value(),
-        PENDING_CORRELATION
+    assert!(
+        pending.asynchronous_correlation_value() == PENDING_CORRELATION,
+        "Pending preserves the expected asynchronous correlation value"
     );
-    assert_eq!(
-        item.outcome().asynchronous_correlation_value(),
-        Some(PENDING_CORRELATION)
+    assert!(
+        item.outcome().asynchronous_correlation_value() == Some(PENDING_CORRELATION),
+        "the Recover outcome exposes its expected asynchronous correlation value"
     );
     assert!(request_contains(&request, REQUEST_BATCH_ID));
     assert!(!format!("{pending:?}").contains("RECOVER_PENDING"));
@@ -728,9 +728,9 @@ fn caller_does_not_execute_encrypt_after_recover_pending() {
         recover_item.outcome(),
         ClientBatchOutcome::Pending(_)
     ));
-    assert_eq!(
-        recover_item.outcome().asynchronous_correlation_value(),
-        Some(PENDING_CORRELATION)
+    assert!(
+        recover_item.outcome().asynchronous_correlation_value() == Some(PENDING_CORRELATION),
+        "the Pending Recover outcome preserves the expected correlation value"
     );
     let pending_response = recover_item.outcome().response();
     let typed_recover = pending_response
