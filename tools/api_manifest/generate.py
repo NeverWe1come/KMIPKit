@@ -23,8 +23,10 @@ from typing import Any
 
 MANIFEST_PATH = "specification/api/public-api.json"
 SCHEMA_PATH = "specification/api/public-api.schema.json"
+CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 MAX_MANIFEST_BYTES = 16 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
+MAX_CATALOG_BYTES = 16 * 1024 * 1024
 OUTPUTS = {
     "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs",
     "cHeader": "bindings/c/include/kmipkit.h",
@@ -576,8 +578,8 @@ def _validate_capability_readiness(
 
 def _validate_public_declarations(
     declarations: list[dict[str, Any]],
-    capability_ids: set[Any],
-    operation_ids: set[Any],
+    capabilities_by_id: dict[Any, dict[str, Any]],
+    operations_by_id: dict[Any, dict[str, Any]],
     package_languages: dict[Any, Any],
     requirements: set[Any],
     root: Path,
@@ -585,16 +587,56 @@ def _validate_public_declarations(
     for declaration in declarations:
         if not isinstance(declaration, dict):
             raise ManifestError("manifest public declaration is malformed")
-        if declaration.get("capabilityId") not in capability_ids | operation_ids:
+        capability_id = declaration.get("capabilityId")
+        capability = capabilities_by_id.get(capability_id)
+        operation = operations_by_id.get(capability_id)
+        if capability is None and operation is None:
             raise ManifestError("public declaration references an unknown capability")
-        if declaration.get("packageId") not in package_languages:
+        package_id = declaration.get("packageId")
+        if package_id not in package_languages:
             raise ManifestError("public declaration references an unknown package")
         if not set(declaration.get("requirementIds", [])) <= requirements:
             raise ManifestError("public declaration references an unknown requirement")
+
+        parity_scope = declaration.get("parityScope")
+        if capability is not None and parity_scope != capability.get("parityScope"):
+            raise ManifestError("public declaration parity scope differs from its capability")
+        if parity_scope == "rust-only-adr":
+            if (
+                package_id != "rust-kmipkit-transport"
+                or package_languages.get(package_id) != "rust"
+                or capability_id != "rust_transport_exchange"
+                or capability is None
+                or capability.get("ownerAdrId") != "ADR-0014"
+                or capability.get("capabilityState") not in {"declared", "verified"}
+                or declaration.get("approvalSource") != capability.get("acceptedEvidence")
+            ):
+                raise ManifestError("Rust-only parity is reserved for accepted ADR-0014 transport declarations")
+        elif parity_scope != "four-language":
+            raise ManifestError("public declaration has an unsupported parity scope")
+
         if declaration.get("declarationState") in {"declared", "verified"}:
-            _validate_approval_source(declaration.get("approvalSource"), root)
+            if capability is not None:
+                owner_spec_id = capability.get("ownerSpecId") or capability.get("candidateSpecId")
+                owner_adr_id = capability.get("ownerAdrId")
+            else:
+                if operation is None or operation.get("apiState") not in {"declared", "verified"}:
+                    raise ManifestError("ready public declaration references a blocked operation")
+                owner_spec_id = operation.get("featureSpecId")
+                owner_adr_id = None
+            if owner_adr_id is not None:
+                if parity_scope != "rust-only-adr":
+                    raise ManifestError("ADR-owned public declaration is not scoped to its accepted Rust-only capability")
+                _validate_approval_source(
+                    declaration.get("approvalSource"), root, adr_id=owner_adr_id
+                )
+            else:
+                if parity_scope != "four-language":
+                    raise ManifestError("feature-owned public declaration has an invalid parity scope")
+                _validate_approval_source(
+                    declaration.get("approvalSource"), root, feature_id=owner_spec_id
+                )
             mappings = declaration.get("languageMappings", {})
-            parity_scope = declaration.get("parityScope")
             required_languages = ("rust",) if parity_scope == "rust-only-adr" else (
                 "rust", "c", "java", "python"
             )
@@ -656,11 +698,15 @@ def _validate_v2_readiness(
         for package in packages
         if isinstance(package, dict)
     }
-    capability_ids = {
-        record.get("capabilityId") for record in capabilities if isinstance(record, dict)
+    capabilities_by_id = {
+        record.get("capabilityId"): record
+        for record in capabilities
+        if isinstance(record, dict)
     }
-    operation_ids = {
-        record.get("operationId") for record in operations if isinstance(record, dict)
+    operations_by_id = {
+        record.get("operationId"): record
+        for record in operations
+        if isinstance(record, dict)
     }
     declaration_by_id = {
         record.get("declarationId"): record
@@ -676,8 +722,8 @@ def _validate_v2_readiness(
     _validate_capability_readiness(capabilities, root)
     _validate_public_declarations(
         declarations,
-        capability_ids,
-        operation_ids,
+        capabilities_by_id,
+        operations_by_id,
         package_languages,
         requirements,
         root,
@@ -685,6 +731,21 @@ def _validate_v2_readiness(
     _validate_approved_exclusions(exclusions, package_languages, root)
     if require_complete and not package_languages:
         raise ManifestError("release manifest contains no public packages")
+
+
+def _validate_v2_manifest(
+    manifest: dict[str, Any],
+    schema: dict[str, Any],
+    catalog: dict[str, Any],
+    root: Path,
+    *,
+    require_complete: bool = False,
+) -> None:
+    """Validate v2 schema, normative catalog, references, and readiness together."""
+    _validate_schema(manifest, schema)
+    _validate_operation_inventory(manifest, catalog)
+    _validate_references(manifest)
+    _validate_v2_readiness(manifest, root, require_complete=require_complete)
 
 
 def _require_unique(records: list[dict[str, Any]], field: str, label: str) -> set[Any]:
@@ -794,7 +855,17 @@ def _validate_references(manifest: dict[str, Any]) -> None:
 
     if tuple(limit["id"] for limit in manifest["limits"]) != _FIXED_LIMIT_IDS:
         raise ManifestError("manifest limits do not use the approved FR-012 order")
-    if manifest["generatedOutputs"] != OUTPUTS:
+    generated_outputs = manifest["generatedOutputs"]
+    if isinstance(generated_outputs, dict):
+        legacy_outputs_match = generated_outputs == OUTPUTS
+    else:
+        output_paths = {
+            record.get("path")
+            for record in generated_outputs
+            if isinstance(record, dict)
+        }
+        legacy_outputs_match = set(OUTPUTS.values()) <= output_paths
+    if not legacy_outputs_match:
         raise PathSecurityError("manifest output paths differ from the approved six destinations")
 
 
@@ -1084,10 +1155,10 @@ def _run(root_path: Path, write: bool) -> int:
         root = root_path.resolve(strict=True)
         manifest = _load_json(root, MANIFEST_PATH, MAX_MANIFEST_BYTES)
         schema = _load_json(root, SCHEMA_PATH, MAX_SCHEMA_BYTES)
-        if not isinstance(manifest, dict) or not isinstance(schema, dict):
-            raise ManifestError("manifest and schema roots must be JSON objects")
-        _validate_schema(manifest, schema)
-        _validate_references(manifest)
+        catalog = _load_json(root, CATALOG_PATH, MAX_CATALOG_BYTES)
+        if not isinstance(manifest, dict) or not isinstance(schema, dict) or not isinstance(catalog, dict):
+            raise ManifestError("manifest, schema, and catalog roots must be JSON objects")
+        _validate_v2_manifest(manifest, schema, catalog, root)
         outputs = render_outputs(manifest)
         destinations = _preflight_outputs(root, outputs)
         if write:
