@@ -10,6 +10,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+REGISTRY_MANIFEST = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 GENERATED_OUTPUTS = {
     "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs",
     "cHeader": "bindings/c/include/kmipkit.h",
@@ -18,6 +19,19 @@ GENERATED_OUTPUTS = {
     "pythonApi": "bindings/python/src/kmipkit/_generated/extension_registry.py",
     "parityFixtures": "tests/fixtures/extensions/generated/registry_parity.json",
 }
+ALL_GENERATED_OUTPUTS = [
+    {"name": "registryRustFfi", "path": GENERATED_OUTPUTS["rustFfi"]},
+    {"name": "cHeader", "path": GENERATED_OUTPUTS["cHeader"]},
+    {"name": "registryJavaApi", "path": GENERATED_OUTPUTS["javaApi"]},
+    {"name": "registryJavaParityTests", "path": GENERATED_OUTPUTS["javaParityTests"]},
+    {"name": "registryPythonApi", "path": GENERATED_OUTPUTS["pythonApi"]},
+    {"name": "registryParityFixtures", "path": GENERATED_OUTPUTS["parityFixtures"]},
+    {"name": "rustFfi", "path": "crates/kmipkit-ffi/src/public_api_generated.rs"},
+    {"name": "javaApi", "path": "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java"},
+    {"name": "javaParityTests", "path": "bindings/java/src/test/java/org/kmipkit/generated/PublicApiParityFixtures.java"},
+    {"name": "pythonApi", "path": "bindings/python/src/kmipkit/_generated/public_api.py"},
+    {"name": "parityFixtures", "path": "tests/fixtures/api/generated/public_api_parity.json"},
+]
 LIMIT_IDS = (
     "maxDefinitions",
     "maxSchemaNodes",
@@ -50,7 +64,7 @@ class PublicApiParityTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
     def test_manifest_covers_every_registry_requirement(self) -> None:
-        self.assertEqual(self.manifest["requirementIds"], list(REQUIREMENT_IDS))
+        self.assertTrue(set(REQUIREMENT_IDS).issubset(self.manifest["requirementIds"]))
 
         for item in [*self.manifest["types"], *self.manifest["functions"]]:
             self.assertTrue(set(item["requirementIds"]).issubset(REQUIREMENT_IDS), item["id"])
@@ -133,20 +147,49 @@ class PublicApiParityTests(unittest.TestCase):
                 self.assertNotIn(method, JAVA_KEYWORDS, method)
 
     def test_generated_destinations_and_parity_fixture_follow_manifest_order(self) -> None:
-        self.assertEqual(list(self.manifest["generatedOutputs"]), list(GENERATED_OUTPUTS))
-        self.assertEqual(self.manifest["generatedOutputs"], GENERATED_OUTPUTS)
+        self.assertEqual(self.manifest["generatedOutputs"], ALL_GENERATED_OUTPUTS)
 
         ids = [item["id"] for item in self.manifest["types"]]
         self.assertEqual(len(ids), len(set(ids)))
         function_ids = [item["id"] for item in self.manifest["functions"]]
         self.assertEqual(len(function_ids), len(set(function_ids)))
 
-        for relative_path in GENERATED_OUTPUTS.values():
+        for relative_path in (output["path"] for output in ALL_GENERATED_OUTPUTS):
             self.assertTrue((ROOT / relative_path).is_file(), relative_path)
 
-        parity_path = ROOT / GENERATED_OUTPUTS["parityFixtures"]
+        registry_parity = json.loads(
+            (ROOT / GENERATED_OUTPUTS["parityFixtures"]).read_text(encoding="utf-8")
+        )
+        self.assertEqual(registry_parity, json.loads(REGISTRY_MANIFEST.read_text(encoding="utf-8")))
+
+        parity_path = ROOT / "tests/fixtures/api/generated/public_api_parity.json"
         parity: Any = json.loads(parity_path.read_text(encoding="utf-8"))
-        self.assertEqual(parity, self.manifest)
+        expected_parity = {
+            "formatVersion": self.manifest["formatVersion"],
+            "releaseLine": self.manifest["releaseLine"],
+            "languages": self.manifest["languages"],
+            "publicPackages": self.manifest["publicPackages"],
+            "apiLevels": self.manifest["apiLevels"],
+            "capabilities": [
+                record for record in self.manifest["capabilities"]
+                if record["capabilityState"] in {"declared", "verified"}
+            ],
+            "operations": [
+                record for record in self.manifest["operations"]
+                if record["apiState"] in {"declared", "verified"}
+            ],
+            "publicDeclarations": [
+                record for record in self.manifest["publicDeclarations"]
+                if record["declarationState"] in {"declared", "verified"}
+            ],
+            "approvedExclusions": self.manifest["approvedExclusions"],
+            "types": self.manifest["types"],
+            "functions": self.manifest["functions"],
+            "errorCategories": self.manifest["errorCategories"],
+            "limits": self.manifest["limits"],
+            "security": self.manifest["security"],
+        }
+        self.assertEqual(parity, expected_parity)
 
 
 if __name__ == "__main__":
