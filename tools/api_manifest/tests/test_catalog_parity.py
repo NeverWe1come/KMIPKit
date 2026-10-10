@@ -90,6 +90,18 @@ class OperationCatalogParityTests(unittest.TestCase):
         with self.assertRaises(ManifestError):
             validator(invalid_capability_copy, schema, self.catalog, ROOT)
 
+        invalid_owner_copy = copy.deepcopy(manifest)
+        owned_declaration = next(
+            record
+            for record in invalid_owner_copy["publicDeclarations"]
+            if record["declarationState"] == "declared"
+        )
+        owned_declaration["approvalSource"]["path"] = (
+            "specs/007-client-execution/approval-record.md"
+        )
+        with self.assertRaises(ManifestError):
+            validator(invalid_owner_copy, schema, self.catalog, ROOT)
+
         invalid_scope_copy = copy.deepcopy(manifest)
         java_declaration = next(
             record
