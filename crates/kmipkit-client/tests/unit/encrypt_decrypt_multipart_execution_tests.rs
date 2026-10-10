@@ -117,7 +117,7 @@ fn execute_one(client: &mut Client, request: ClientRequest) -> ClientBatchRespon
         .expect("one valid multipart request receives one typed response")
 }
 
-fn response_correlation(response: &ClientBatchResponse, operation: u32) -> Vec<u8> {
+fn response_correlation(response: &ClientBatchResponse, operation: u32) -> Zeroizing<Vec<u8>> {
     let item = response
         .get(0)
         .expect("the one-item request has one corresponding result");
@@ -138,7 +138,7 @@ fn response_correlation(response: &ClientBatchResponse, operation: u32) -> Vec<u
             .expect("the initial Decrypt response supplies Correlation Value"),
         _ => unreachable!("only Encrypt and Decrypt use this test helper"),
     };
-    value.with_bytes(<[u8]>::to_vec)
+    Zeroizing::new(value.with_bytes(<[u8]>::to_vec))
 }
 
 fn payload_fields(state: &SharedTransportState, request_index: usize) -> Vec<CapturedField> {
