@@ -8,7 +8,7 @@ use zeroize::Zeroizing;
 
 use crate::{
     KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultStatus, ResultValidationError,
+    ResponseBatchItemView, ResultStatus, ResultValidationError,
 };
 
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
@@ -105,13 +105,14 @@ impl Error for AsynchronousOperationError {
 pub(crate) fn operation_result(
     item: ResponseBatchItemView<'_>,
 ) -> Result<KmipOperationResult, AsynchronousOperationError> {
-    let status = item
-        .result_status()
-        .ok_or(AsynchronousOperationError::MissingResultStatus)?;
-    let reason = item.result_reason();
-    let message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
-    KmipOperationResult::new(status, reason, message)
-        .map_err(AsynchronousOperationError::InvalidOperationResult)
+    crate::result::parse_operation_result(item).map_err(|error| match error {
+        crate::result::OperationResultParseError::MissingResultStatus => {
+            AsynchronousOperationError::MissingResultStatus
+        }
+        crate::result::OperationResultParseError::Invalid(cause) => {
+            AsynchronousOperationError::InvalidOperationResult(cause)
+        }
+    })
 }
 
 pub(crate) fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {

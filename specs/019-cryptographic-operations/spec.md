@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0019-cryptographic-operations`
 **Created**: 2026-10-09
-**Status**: Draft for human review
+**Status**: Authorized for autonomous implementation under the maintainer's standing direct instruction (2026-10-09). This records implementation authorization, not a claim of separate line-by-line review. KMIPKIT-DISC-045 and KMIPKIT-DISC-046 remain open and bounded as specified below.
 **Input**: KMIPKit roadmap Phase D: implement the Encrypt and Decrypt operation family for a KMIP 2.1 client.
 
 ## Normative scope

@@ -4,7 +4,10 @@ Esta guía describe la base de ejecución tipada introducida por KMIPKIT-0007 y
 sus operaciones: Discover Versions, Create, Create Key Pair, Create Split Key,
 Add Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
 Attribute List, Modify Attribute, Set Attribute, Activate, Archive, Destroy,
-Recover, Query y Ping. Para el comportamiento de ciclo de vida, consulta la
+Recover, Encrypt, Decrypt, Query y Ping. Para ejemplos de Encrypt y Decrypt de
+una parte y multipart controlado por el llamador, consulta la
+[guía de Encrypt y Decrypt](cifrado-descifrado.md). Para el comportamiento de
+ciclo de vida, consulta la
 [guía de operaciones de ciclo de vida](operaciones-ciclo-vida.md); para Query
 y Ping, consulta la [guía de Query y Ping](operaciones-query-ping.md). Para
 configurar una conexión de producción, consulta la [guía de transportes TLS y
@@ -17,8 +20,8 @@ contiene únicamente variantes del conjunto cerrado `ClientRequest`. El cliente
 admite peticiones explícitas del cliente al servidor para Discover Versions,
 Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
 Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
-Attribute, Activate, Archive, Destroy, Recover, Query y Ping. Discover Versions
-anuncia el par de versión KMIP 2.1 (2, 1), conforme a
+Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query y Ping.
+Discover Versions anuncia el par de versión KMIP 2.1 (2, 1), conforme a
 OASIS KMIP Specification v2.1 §6.1.16, Tablas 211–213. Get Attributes y Get
 Attribute List usan sus modelos tipados de petición y respuesta de
 §§6.1.20–6.1.21. La API no admite valores TTLV genéricos `Item` o `Structure`,
@@ -335,6 +338,7 @@ registra su política de seguridad y el ciclo de vida de las conexiones.
 ## Guías y decisiones relacionadas
 
 - [Inspeccionar mensajes KMIP](modelo-mensaje.md)
+- [Cifrar y descifrar con un cliente tipado](cifrado-descifrado.md)
 - [Transportes de producción TLS y HTTPS](transportes-produccion.md)
 - [Arquitectura de la API pública](../../architecture/public-api.md)
 - [Guía rápida de revisión para operaciones asíncronas KMIP 2.1](../../../specs/009-asynchronous-operations/quickstart.md)

@@ -18,9 +18,12 @@ mod create;
 mod create_key_pair;
 mod create_split_key;
 mod credential;
+mod cryptographic_parameters;
+mod decrypt;
 mod delete_attribute;
 mod destroy;
 mod discover_versions;
+mod encrypt;
 mod error;
 pub mod extension;
 mod get_attribute_list;
@@ -28,6 +31,8 @@ mod get_attributes;
 mod lifecycle;
 mod message;
 mod modify_attribute;
+mod multipart;
+mod operation_data;
 mod ping;
 mod poll;
 mod process;
@@ -58,11 +63,13 @@ pub use credential::{
     HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, SecretBytes,
     SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
+pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
 pub use destroy::{DestroyError, DestroyRequest, DestroyResponse};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
+pub use encrypt::{EncryptError, EncryptRequest, EncryptResponse};
 pub use error::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 pub use get_attribute_list::{
     GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
@@ -74,6 +81,7 @@ pub use message::{
     ResponseHeaderView, ResponseMessage,
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
+pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
@@ -108,6 +116,66 @@ mod destroy_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/recover_operation_tests.rs"]
 mod recover_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/support/operation_test_support.rs"]
+mod operation_test_support;
+
+#[cfg(test)]
+#[path = "../tests/unit/operation_data_tests.rs"]
+mod operation_data_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/cryptographic_parameters_tests.rs"]
+mod cryptographic_parameters_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/encrypt_tests.rs"]
+mod encrypt_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/encrypt_parameter_structure_tests.rs"]
+mod encrypt_parameter_structure_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/decrypt_tests.rs"]
+mod decrypt_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/multipart_validation_tests.rs"]
+mod multipart_validation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/operation_failure_tests.rs"]
+mod operation_failure_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/common_operation_result_tests.rs"]
+mod common_operation_result_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/pending_encrypt_response_shape_tests.rs"]
+mod pending_encrypt_response_shape_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/encrypt_response_tests.rs"]
+mod encrypt_response_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/decrypt_response_tests.rs"]
+mod decrypt_response_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/encrypt_decrypt_redaction_tests.rs"]
+mod encrypt_decrypt_redaction_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/malformed_crypto_payload_tests.rs"]
+mod malformed_crypto_payload_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/crypto_robustness_property_tests.rs"]
+mod crypto_robustness_property_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/create_key_pair_tests.rs"]

@@ -52,12 +52,13 @@ pub(crate) fn asynchronous_response_bytes(
     correlation_value: Option<&[u8]>,
     payload: Option<Structure>,
 ) -> Vec<u8> {
-    asynchronous_response_with_batch_id_bytes(
+    one_item_response_bytes(
         operation,
         status,
         reason,
-        correlation_value,
         None,
+        None,
+        correlation_value,
         payload,
     )
 }
@@ -68,6 +69,26 @@ pub(crate) fn asynchronous_response_with_batch_id_bytes(
     reason: Option<u32>,
     correlation_value: Option<&[u8]>,
     unique_batch_item_id: Option<&[u8]>,
+    payload: Option<Structure>,
+) -> Vec<u8> {
+    one_item_response_bytes(
+        operation,
+        status,
+        reason,
+        None,
+        unique_batch_item_id,
+        correlation_value,
+        payload,
+    )
+}
+
+pub(crate) fn one_item_response_bytes(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    result_message: Option<&str>,
+    unique_batch_item_id: Option<&[u8]>,
+    asynchronous_correlation_value: Option<&[u8]>,
     payload: Option<Structure>,
 ) -> Vec<u8> {
     let response_version = structure([
@@ -87,7 +108,10 @@ pub(crate) fn asynchronous_response_with_batch_id_bytes(
     if let Some(reason) = reason {
         fields.push(item(RESULT_REASON, Value::enumeration(reason)));
     }
-    if let Some(correlation) = correlation_value {
+    if let Some(message) = result_message {
+        fields.push(item(RESULT_MESSAGE, Value::text_string(message.to_owned())));
+    }
+    if let Some(correlation) = asynchronous_correlation_value {
         fields.push(item(
             ASYNCHRONOUS_CORRELATION_VALUE,
             Value::byte_string(correlation.to_vec()),
@@ -101,7 +125,7 @@ pub(crate) fn asynchronous_response_with_batch_id_bytes(
         item(BATCH_ITEM, Value::structure(structure(fields))),
     ]);
     encode_message_for_test(tree, &CodecLimits::defaults())
-        .expect("asynchronous test response is encodable")
+        .expect("one-item test response is encodable")
 }
 
 pub(crate) fn test_item(raw_tag: u32, value: Value) -> Item {
