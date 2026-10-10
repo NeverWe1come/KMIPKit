@@ -183,6 +183,39 @@ fn client_accepts_uid_only_success_payload_for_encrypt_and_decrypt() {
 }
 
 #[test]
+fn client_exposes_matching_typed_encrypt_and_decrypt_outcome_views() {
+    for operation in OPERATIONS {
+        let response = response_bytes(operation, SUCCESS, None, None, Some(uid_only_payload()));
+        let (result, exchange_count) = execute(operation, response, &CodecLimits::defaults());
+        let response = result.expect("UID-only success is valid for either operation");
+        let item = response.get(0).expect("one response item is associated");
+        let outcome = item.outcome();
+
+        assert_eq!(outcome.result().status().raw(), SUCCESS);
+        let view = outcome.response();
+        assert_eq!(view.result().status().raw(), SUCCESS);
+
+        match operation {
+            CryptoOperation::Encrypt => {
+                assert!(view.encrypt().is_some());
+                assert!(view.decrypt().is_none());
+                assert!(outcome.encrypt_response().is_some());
+                assert!(outcome.decrypt_response().is_none());
+                assert!(outcome.to_string().starts_with("Encrypt("));
+            }
+            CryptoOperation::Decrypt => {
+                assert!(view.decrypt().is_some());
+                assert!(view.encrypt().is_none());
+                assert!(outcome.decrypt_response().is_some());
+                assert!(outcome.encrypt_response().is_none());
+                assert!(outcome.to_string().starts_with("Decrypt("));
+            }
+        }
+        assert_eq!(exchange_count.get(), 1);
+    }
+}
+
+#[test]
 fn client_preserves_unknown_failure_reason_and_message_for_encrypt_and_decrypt() {
     for operation in OPERATIONS {
         let response = response_bytes(
