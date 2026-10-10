@@ -2,9 +2,14 @@
 //! v2.1 Committee Note 01, §§2.99–2.101 and their pinned XML work products.
 //! Operation semantics follow OASIS KMIP Specification v2.1 §§6.1.11 and
 //! 6.1.17, Tables 196–198 and 214–216; opaque Data uses §7.9, Tables 360–361.
+//! Operation Enumeration values are defined by §11.36.
 //! The adapter selects Encrypt/Decrypt item pairs from larger workflows; these
 //! tests do not claim that any complete official Test Case passed.
 
+use kmipkit_protocol::{
+    DecryptResponse, EncryptResponse, ResponseBatchItemView, ResponseMessage, ResultStatus,
+    SecretBytes, UniqueIdentifier,
+};
 use kmipkit_test_support::oasis_crypto_fixtures::{OasisCryptoFixture, OasisCryptoOperation};
 use kmipkit_ttlv::{Item, Structure, ValueView};
 
@@ -15,6 +20,11 @@ const TIME_STAMP_TAG: u32 = 0x0042_0092;
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 const CORRELATION_VALUE_TAG: u32 = 0x0042_00D6;
 const DATA_TAG: u32 = 0x0042_00C2;
+const IV_COUNTER_NONCE_TAG: u32 = 0x0042_003D;
+const AUTHENTICATED_ENCRYPTION_TAG: u32 = 0x0042_00FF;
+const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+const DECRYPT_OPERATION: u32 = 0x0000_0020;
+const SUCCESS: u32 = 0;
 const TEST_NOW: i64 = 1_700_000_000;
 const TEST_UNIQUE_IDENTIFIER_0: &str = "kmipkit-test-unique-id-0";
 const TEST_CORRELATION_VALUE: &[u8] = b"kmipkit-test-correlation-value-0";
@@ -237,6 +247,78 @@ fn contains_value_in_items(items: &[Item], tag: u32, expected: &ValueSnapshot) -
         });
         matches_value || nested_match
     })
+}
+
+fn response_payload_snapshot(item: ResponseBatchItemView<'_>) -> Vec<ItemSnapshot> {
+    item.with_response_payload(|payload| payload.children().iter().map(snapshot_item).collect())
+        .expect("each selected fixture response has a response payload")
+}
+
+fn snapshot_field(items: &[ItemSnapshot], tag: u32) -> Option<&ItemSnapshot> {
+    items.iter().find(|item| item.tag == tag)
+}
+
+fn assert_response_secret_matches_fixture(
+    actual: Option<&SecretBytes>,
+    payload: &[ItemSnapshot],
+    tag: u32,
+) {
+    match (actual, snapshot_field(payload, tag)) {
+        (None, None) => {}
+        (
+            Some(actual),
+            Some(ItemSnapshot {
+                value: ValueSnapshot::ByteString(expected),
+                ..
+            }),
+        ) => actual.with_bytes(|actual| assert_eq!(actual, expected)),
+        _ => panic!("typed response must retain the fixture's optional Byte String field"),
+    }
+}
+
+fn assert_fixture_response_table_order(operation: OasisCryptoOperation, payload: &[ItemSnapshot]) {
+    let allowed_order: &[u32] = match operation {
+        OasisCryptoOperation::Encrypt => &[
+            UNIQUE_IDENTIFIER_TAG,
+            DATA_TAG,
+            IV_COUNTER_NONCE_TAG,
+            CORRELATION_VALUE_TAG,
+            AUTHENTICATED_ENCRYPTION_TAG,
+        ],
+        OasisCryptoOperation::Decrypt => &[UNIQUE_IDENTIFIER_TAG, DATA_TAG, CORRELATION_VALUE_TAG],
+    };
+    let tags: Vec<_> = payload.iter().map(|item| item.tag).collect();
+    assert_eq!(tags.first(), Some(&UNIQUE_IDENTIFIER_TAG));
+    assert_eq!(
+        tags.iter()
+            .filter(|tag| **tag == UNIQUE_IDENTIFIER_TAG)
+            .count(),
+        1,
+        "a successful fixture response has exactly one Unique Identifier"
+    );
+    let ranks: Vec<_> = tags
+        .iter()
+        .map(|tag| {
+            allowed_order
+                .iter()
+                .position(|allowed| allowed == tag)
+                .expect("the fixture response contains only fields defined by its success table")
+        })
+        .collect();
+    assert!(
+        ranks.windows(2).all(|pair| pair[0] < pair[1]),
+        "fixture response fields retain their Table 215 or Table 197 order"
+    );
+}
+
+fn assert_fixture_success_identifier(payload: &[ItemSnapshot]) {
+    assert!(matches!(
+        snapshot_field(payload, UNIQUE_IDENTIFIER_TAG),
+        Some(ItemSnapshot {
+            value: ValueSnapshot::TextString(value),
+            ..
+        }) if value == TEST_UNIQUE_IDENTIFIER_0
+    ));
 }
 
 #[test]
@@ -476,4 +558,157 @@ fn fixture_adapter_rejects_unknown_symbols_in_selected_operation_messages() {
     // form valid inside an in-scope response header.
     let selected_relative_time = TC_ENC_1_21_XML.replace("$NOW", "$NOW-3600");
     assert!(OasisCryptoFixture::from_xml(TC_ENC_1_21_ID, &selected_relative_time).is_err());
+}
+
+#[test]
+fn fixture_derived_success_responses_preserve_all_24_encrypt_and_4_decrypt_items() {
+    // OASIS KMIP Specification v2.1 §6.1.17 Table 215 and §6.1.11 Table 197
+    // define the success payloads; §§7.4, 7.8, and 7.9 define the optional
+    // Encrypt tag, multipart Correlation Value, and Byte String Data. These
+    // are fixture-derived operation-item assertions from Test Cases v2.1 CN01
+    // §§2.99–2.101, never complete official Test Case pass claims.
+    //
+    // Traceability: `KMIPKIT-REQ-SPEC-6.1-001-002`,
+    // `KMIPKIT-ELEM-OP-C2S-ENCRYPT`,
+    // `KMIPKIT-ELEM-OP-C2S-DECRYPT`,
+    // `KMIPKIT-TEST-CN01-2-99`, `KMIPKIT-TEST-CN01-2-100`,
+    // `KMIPKIT-TEST-CN01-2-101`,
+    // `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG`,
+    // `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE`, and
+    // `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+    let cases = [
+        (
+            TC_ENC_1_21_ID,
+            TC_ENC_1_21_XML,
+            &[1_usize, 2, 3, 4, 5, 6, 7, 8, 9, 10][..],
+            &[OasisCryptoOperation::Encrypt; 10][..],
+        ),
+        (
+            TC_ENC_2_21_ID,
+            TC_ENC_2_21_XML,
+            &[1_usize, 2, 3, 4, 5, 6, 7, 8, 9, 10][..],
+            &[OasisCryptoOperation::Encrypt; 10][..],
+        ),
+        (
+            TC_ENCDEC_1_21_ID,
+            TC_ENCDEC_1_21_XML,
+            &[1_usize, 2, 3, 4, 5, 6, 7, 8][..],
+            &[
+                OasisCryptoOperation::Encrypt,
+                OasisCryptoOperation::Decrypt,
+                OasisCryptoOperation::Encrypt,
+                OasisCryptoOperation::Encrypt,
+                OasisCryptoOperation::Encrypt,
+                OasisCryptoOperation::Decrypt,
+                OasisCryptoOperation::Decrypt,
+                OasisCryptoOperation::Decrypt,
+            ][..],
+        ),
+    ];
+
+    let mut encrypt_responses = 0;
+    let mut decrypt_responses = 0;
+    for (case_id, xml, sequences, operations) in cases {
+        let fixture = OasisCryptoFixture::from_xml(case_id, xml)
+            .expect("the pinned fixture resolves selected response symbols deterministically");
+        let pairs = fixture.operation_pairs();
+        assert_eq!(pairs.len(), sequences.len());
+        for ((pair, expected_sequence), expected_operation) in
+            pairs.iter().zip(sequences).zip(operations)
+        {
+            assert_eq!(pair.case_id(), case_id);
+            assert_eq!(pair.source_sequence(), *expected_sequence);
+            assert_eq!(
+                pair.step_identity(),
+                format!("{case_id} step={expected_sequence}"),
+                "the source RequestHeader step identity remains paired with this response"
+            );
+            assert_eq!(pair.operation(), *expected_operation);
+            let fixture_identifier = ValueSnapshot::TextString(TEST_UNIQUE_IDENTIFIER_0.to_owned());
+            assert!(contains_value(
+                pair.request_message(),
+                UNIQUE_IDENTIFIER_TAG,
+                &fixture_identifier,
+            ));
+            assert!(contains_value(
+                pair.response_message(),
+                UNIQUE_IDENTIFIER_TAG,
+                &fixture_identifier,
+            ));
+            assert!(
+                !has_unresolved_symbol(pair.response_message()),
+                "selected fixture response symbols have deterministic substitutions"
+            );
+
+            let message = ResponseMessage::try_from_ttlv(pair.response_message().clone())
+                .expect("the selected fixture response is a structurally valid KMIP message");
+            let response_item = message
+                .batch_items()
+                .next()
+                .expect("each fixture pair retains its response batch item");
+            let expected_operation_value = match expected_operation {
+                OasisCryptoOperation::Encrypt => ENCRYPT_OPERATION,
+                OasisCryptoOperation::Decrypt => DECRYPT_OPERATION,
+            };
+            assert_eq!(response_item.operation(), Some(expected_operation_value));
+            assert_eq!(
+                response_item.result_status(),
+                Some(ResultStatus::from_raw(SUCCESS))
+            );
+
+            let payload = response_payload_snapshot(response_item);
+            assert_fixture_response_table_order(*expected_operation, &payload);
+            assert_fixture_success_identifier(&payload);
+            let expected_identifier =
+                UniqueIdentifier::TextString(TEST_UNIQUE_IDENTIFIER_0.to_owned());
+
+            match expected_operation {
+                OasisCryptoOperation::Encrypt => {
+                    let response = EncryptResponse::try_from_response_item(response_item)
+                        .expect("a fixture Encrypt success matches Table 215");
+                    assert_eq!(response.result().status(), ResultStatus::from_raw(SUCCESS));
+                    assert_eq!(response.unique_identifier(), Some(&expected_identifier));
+                    assert_response_secret_matches_fixture(response.data(), &payload, DATA_TAG);
+                    assert_response_secret_matches_fixture(
+                        response.iv_counter_nonce(),
+                        &payload,
+                        IV_COUNTER_NONCE_TAG,
+                    );
+                    assert_response_secret_matches_fixture(
+                        response.correlation_value(),
+                        &payload,
+                        CORRELATION_VALUE_TAG,
+                    );
+                    assert_response_secret_matches_fixture(
+                        response.authenticated_encryption_tag(),
+                        &payload,
+                        AUTHENTICATED_ENCRYPTION_TAG,
+                    );
+                    encrypt_responses += 1;
+                }
+                OasisCryptoOperation::Decrypt => {
+                    let response = DecryptResponse::try_from_response_item(response_item)
+                        .expect("a fixture Decrypt success matches Table 197");
+                    assert_eq!(response.result().status(), ResultStatus::from_raw(SUCCESS));
+                    assert_eq!(response.unique_identifier(), Some(&expected_identifier));
+                    assert_response_secret_matches_fixture(response.data(), &payload, DATA_TAG);
+                    assert_response_secret_matches_fixture(
+                        response.correlation_value(),
+                        &payload,
+                        CORRELATION_VALUE_TAG,
+                    );
+                    decrypt_responses += 1;
+                }
+            }
+        }
+    }
+
+    assert_eq!(
+        encrypt_responses, 24,
+        "no in-scope Encrypt response is skipped"
+    );
+    assert_eq!(
+        decrypt_responses, 4,
+        "no in-scope Decrypt response is skipped"
+    );
 }

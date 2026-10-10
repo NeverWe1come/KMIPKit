@@ -141,6 +141,14 @@ mod encrypt_tests;
 mod decrypt_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/encrypt_response_tests.rs"]
+mod encrypt_response_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/decrypt_response_tests.rs"]
+mod decrypt_response_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_tests.rs"]
 mod create_key_pair_tests;
 
