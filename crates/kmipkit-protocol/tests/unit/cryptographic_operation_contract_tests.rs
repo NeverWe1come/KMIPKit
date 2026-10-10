@@ -390,3 +390,38 @@ fn malformed_successful_unique_identifier_is_rejected_without_echoing_bytes() {
     );
     assert!(!error.to_string().contains("MALFORMED-IDENTIFIER-SECRET"));
 }
+
+#[test]
+fn single_part_hash_mac_and_sign_successes_require_their_output_fields() {
+    // OASIS KMIP v2.1 §6.1.24 Table 236, §6.1.32 Table 260, and
+    // §6.1.55 Table 335 require Hash Data, MAC Data, and Signature Data for
+    // single-part responses.
+    let hash = response_message(HASH, SUCCESS, None, None, Some(Structure::new()));
+    let mac = response_message(
+        MAC,
+        SUCCESS,
+        None,
+        None,
+        Some(payload([(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("mac-object".to_owned()),
+        )])),
+    );
+    let sign = response_message(
+        SIGN,
+        SUCCESS,
+        None,
+        None,
+        Some(payload([(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("sign-object".to_owned()),
+        )])),
+    );
+
+    let rejected = [
+        HashResponse::try_from_response_item(response_item(&hash)).is_err(),
+        MacResponse::try_from_response_item(response_item(&mac)).is_err(),
+        SignResponse::try_from_response_item(response_item(&sign)).is_err(),
+    ];
+    assert_eq!(rejected, [true; 3]);
+}

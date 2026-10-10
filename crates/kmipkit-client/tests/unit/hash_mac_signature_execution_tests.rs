@@ -3,7 +3,8 @@
 //! official Test Case pass. Traceability: `KMIPKIT-ELEM-OP-C2S-HASH`,
 //! `KMIPKIT-ELEM-OP-C2S-MAC`, `KMIPKIT-ELEM-OP-C2S-MAC-VERIFY`,
 //! `KMIPKIT-ELEM-OP-C2S-SIGN`, and
-//! `KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY`.
+//! `KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY`. Response output cardinality is
+//! derived from §6.1.24 Table 236, §6.1.32 Table 260, and §6.1.55 Table 335.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;
@@ -19,7 +20,9 @@ use kmipkit_ttlv::{Value, ValueView};
 use zeroize::Zeroizing;
 
 use crate::execute::{BatchIdentity, Client, associate_batch_items};
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, operation_batch_response_bytes, test_item, test_structure,
+};
 use crate::{
     ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientOperation, ClientRequest,
 };
@@ -37,6 +40,9 @@ const OPERATION: u32 = 0x0042_005C;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
+const HASH_DATA: u32 = 0x0042_00C2;
+const MAC_DATA: u32 = 0x0042_00C4;
+const SIGNATURE_DATA: u32 = 0x0042_00C7;
 
 #[derive(Clone, Copy)]
 struct OperationFixture {
@@ -91,19 +97,32 @@ impl OperationFixture {
         }
     }
 
+    fn multipart_request(self) -> ClientRequest {
+        match self.code {
+            HASH => ClientRequest::hash(
+                HashRequest::new(test_structure([test_item(
+                    HASHING_ALGORITHM,
+                    Value::enumeration(6),
+                )]))
+                .with_init_indicator(true),
+            ),
+            MAC => ClientRequest::mac(MacRequest::new().with_init_indicator(true)),
+            SIGN => ClientRequest::sign(SignRequest::new().with_init_indicator(true)),
+            _ => unreachable!("only Hash, MAC, and Sign have output cardinality here"),
+        }
+    }
+
     fn success_payload(self) -> kmipkit_ttlv::Structure {
-        let fields = match self.code {
-            HASH => vec![test_item(
-                0x0042_00C2,
-                Value::byte_string(b"digest".to_vec()),
+        self.success_payload_with_output(true)
+    }
+
+    fn success_payload_with_output(self, include_output: bool) -> kmipkit_ttlv::Structure {
+        let mut fields = match self.code {
+            HASH => Vec::new(),
+            MAC => vec![test_item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("mac-object".to_owned()),
             )],
-            MAC => vec![
-                test_item(
-                    UNIQUE_IDENTIFIER,
-                    Value::text_string("mac-object".to_owned()),
-                ),
-                test_item(0x0042_00C4, Value::byte_string(b"mac".to_vec())),
-            ],
             MAC_VERIFY => vec![
                 test_item(
                     UNIQUE_IDENTIFIER,
@@ -111,13 +130,10 @@ impl OperationFixture {
                 ),
                 test_item(0x0042_0128, Value::enumeration(1)),
             ],
-            SIGN => vec![
-                test_item(
-                    UNIQUE_IDENTIFIER,
-                    Value::text_string("sign-object".to_owned()),
-                ),
-                test_item(0x0042_00C7, Value::byte_string(b"signature".to_vec())),
-            ],
+            SIGN => vec![test_item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("sign-object".to_owned()),
+            )],
             SIGNATURE_VERIFY => vec![
                 test_item(
                     UNIQUE_IDENTIFIER,
@@ -127,6 +143,17 @@ impl OperationFixture {
             ],
             _ => unreachable!("fixture only uses the five assigned operations"),
         };
+        if include_output {
+            match self.code {
+                HASH => fields.push(test_item(HASH_DATA, Value::byte_string(b"digest".to_vec()))),
+                MAC => fields.push(test_item(MAC_DATA, Value::byte_string(b"mac".to_vec()))),
+                SIGN => fields.push(test_item(
+                    SIGNATURE_DATA,
+                    Value::byte_string(b"signature".to_vec()),
+                )),
+                _ => {}
+            }
+        }
         test_structure(fields)
     }
 
@@ -143,6 +170,14 @@ impl OperationFixture {
             Some(test_structure([])),
         )
     }
+}
+
+fn output_operation_fixtures() -> [OperationFixture; 3] {
+    [
+        OperationFixture::ALL[0],
+        OperationFixture::ALL[1],
+        OperationFixture::ALL[3],
+    ]
 }
 
 #[derive(Default)]
@@ -422,4 +457,160 @@ fn request_operation_codes_are_written_to_the_wire_and_server_failure_is_preserv
     });
     assert_eq!(encoded_operation, Some(fixture.code));
     assert!(!state.borrow().requests[0].is_empty());
+}
+
+#[test]
+fn successful_single_part_hash_mac_and_sign_responses_require_output_data() {
+    let rejected = output_operation_fixtures().map(|fixture| {
+        let response = asynchronous_response_bytes(
+            fixture.code,
+            SUCCESS,
+            None,
+            None,
+            Some(fixture.success_payload_with_output(false)),
+        );
+        let (mut client, _) = client([response]);
+        client
+            .execute(
+                ClientBatch::new(ClientBatchItem::new(fixture.request())),
+                &CodecLimits::defaults(),
+            )
+            .is_err()
+    });
+    assert_eq!(rejected, [true; 3]);
+}
+
+#[test]
+fn multipart_hash_mac_and_sign_responses_reject_output_data() {
+    let rejected = output_operation_fixtures().map(|fixture| {
+        let response = asynchronous_response_bytes(
+            fixture.code,
+            SUCCESS,
+            None,
+            None,
+            Some(fixture.success_payload_with_output(true)),
+        );
+        let (mut client, _) = client([response]);
+        client
+            .execute(
+                ClientBatch::new(ClientBatchItem::new(fixture.multipart_request())),
+                &CodecLimits::defaults(),
+            )
+            .is_err()
+    });
+    assert_eq!(rejected, [true; 3]);
+}
+
+#[test]
+fn multipart_hash_mac_and_sign_responses_accept_absent_output_data() {
+    for fixture in output_operation_fixtures() {
+        let response = asynchronous_response_bytes(
+            fixture.code,
+            SUCCESS,
+            None,
+            None,
+            Some(fixture.success_payload_with_output(false)),
+        );
+        let (mut client, _) = client([response]);
+        let result = client
+            .execute(
+                ClientBatch::new(ClientBatchItem::new(fixture.multipart_request())),
+                &CodecLimits::defaults(),
+            )
+            .expect("multipart response without output conforms to the operation table");
+        let view = result.items[0].outcome().response();
+        match fixture.code {
+            HASH => assert!(
+                view.hash()
+                    .is_some_and(|response| response.data().is_none())
+            ),
+            MAC => assert!(
+                view.mac()
+                    .is_some_and(|response| response.mac_data().is_none())
+            ),
+            SIGN => assert!(
+                view.sign()
+                    .is_some_and(|response| response.signature_data().is_none())
+            ),
+            _ => unreachable!("fixture loop contains only Hash, MAC, and Sign"),
+        }
+    }
+}
+
+#[test]
+fn reordered_hash_batch_responses_keep_the_original_request_context() {
+    let response = operation_batch_response_bytes([
+        (
+            HASH,
+            b"multipart-id".to_vec(),
+            OperationFixture::ALL[0].success_payload_with_output(false),
+        ),
+        (
+            HASH,
+            b"single-id".to_vec(),
+            OperationFixture::ALL[0].success_payload_with_output(true),
+        ),
+    ]);
+    let (mut client, _) = client([response]);
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(OperationFixture::ALL[0].request())
+            .with_unique_batch_item_id(b"single-id".to_vec()),
+        ClientBatchItem::new(OperationFixture::ALL[0].multipart_request())
+            .with_unique_batch_item_id(b"multipart-id".to_vec()),
+    ]);
+
+    let result = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("responses reordered by ID retain their matching request framing");
+
+    assert_eq!(
+        result.items[0].unique_batch_item_id(),
+        Some(&b"single-id"[..])
+    );
+    assert_eq!(
+        result.items[1].unique_batch_item_id(),
+        Some(&b"multipart-id"[..])
+    );
+    assert!(
+        result.items[0]
+            .outcome()
+            .response()
+            .hash()
+            .is_some_and(|response| response.data().is_some())
+    );
+    assert!(
+        result.items[1]
+            .outcome()
+            .response()
+            .hash()
+            .is_some_and(|response| response.data().is_none())
+    );
+}
+
+#[test]
+fn reordered_hash_batch_rejects_outputs_mismatched_to_request_context() {
+    let response = operation_batch_response_bytes([
+        (
+            HASH,
+            b"multipart-id".to_vec(),
+            OperationFixture::ALL[0].success_payload_with_output(true),
+        ),
+        (
+            HASH,
+            b"single-id".to_vec(),
+            OperationFixture::ALL[0].success_payload_with_output(false),
+        ),
+    ]);
+    let (mut client, _) = client([response]);
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(OperationFixture::ALL[0].request())
+            .with_unique_batch_item_id(b"single-id".to_vec()),
+        ClientBatchItem::new(OperationFixture::ALL[0].multipart_request())
+            .with_unique_batch_item_id(b"multipart-id".to_vec()),
+    ]);
+
+    assert!(
+        client.execute(batch, &CodecLimits::defaults()).is_err(),
+        "the response parser must use request context after batch-ID association"
+    );
 }

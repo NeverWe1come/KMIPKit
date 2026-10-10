@@ -128,6 +128,38 @@ pub(crate) fn one_item_response_bytes(
         .expect("one-item test response is encodable")
 }
 
+pub(crate) fn operation_batch_response_bytes(
+    items: impl IntoIterator<Item = (u32, Vec<u8>, Structure)>,
+) -> Vec<u8> {
+    let items = items.into_iter().collect::<Vec<_>>();
+    let response_version = structure([
+        item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+    ]);
+    let header = structure([
+        item(PROTOCOL_VERSION, Value::structure(response_version)),
+        item(TIME_STAMP, Value::date_time(1)),
+        item(
+            BATCH_COUNT,
+            Value::integer(i32::try_from(items.len()).expect("fixture item count fits i32")),
+        ),
+    ]);
+    let mut message = vec![item(RESPONSE_HEADER, Value::structure(header))];
+    message.extend(items.into_iter().map(|(operation, id, payload)| {
+        item(
+            BATCH_ITEM,
+            Value::structure(structure([
+                item(OPERATION, Value::enumeration(operation)),
+                item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(id)),
+                item(RESULT_STATUS, Value::enumeration(0)),
+                item(RESPONSE_PAYLOAD, Value::structure(payload)),
+            ])),
+        )
+    }));
+    encode_message_for_test(structure(message), &CodecLimits::defaults())
+        .expect("operation batch test response is encodable")
+}
+
 pub(crate) fn test_item(raw_tag: u32, value: Value) -> Item {
     item(raw_tag, value)
 }
