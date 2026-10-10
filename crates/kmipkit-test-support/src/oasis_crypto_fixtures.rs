@@ -8,11 +8,14 @@ use std::collections::{HashMap, HashSet, hash_map::Entry};
 use std::fmt;
 
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
-use roxmltree::{Document, Node, NodeType};
+use roxmltree::{Document, Error as XmlError, Node, NodeType, ParsingOptions};
 use serde_json::Value as JsonValue;
 
 const NORMATIVE_CATALOG: &str = include_str!("../../../specification/catalog/kmip-2.1.json");
 const MAX_XML_BYTES: usize = 16 * 1024 * 1024;
+// Leaves room above the 100,000 TTLV-item limit for message envelopes,
+// formatting whitespace, and other XML nodes before TTLV conversion.
+const MAX_XML_NODES: u32 = 250_000;
 const MAX_TTLV_DEPTH: usize = 64;
 const MAX_TTLV_ITEMS: usize = 100_000;
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
@@ -54,7 +57,17 @@ impl OasisCryptoFixture {
             return Err(OasisCryptoFixtureError::XmlLimitOrDtd);
         }
 
-        let document = Document::parse(xml).map_err(|_| OasisCryptoFixtureError::MalformedXml)?;
+        let document = Document::parse_with_options(
+            xml,
+            ParsingOptions {
+                nodes_limit: MAX_XML_NODES,
+                ..ParsingOptions::default()
+            },
+        )
+        .map_err(|error| match error {
+            XmlError::NodesLimitReached => OasisCryptoFixtureError::XmlNodeLimit,
+            _ => OasisCryptoFixtureError::MalformedXml,
+        })?;
         let root = document.root_element();
         if root.tag_name().name() != "KMIP" || case_id.is_empty() {
             return Err(OasisCryptoFixtureError::InvalidFixtureShape);
@@ -185,6 +198,8 @@ pub enum OasisCryptoFixtureError {
     MalformedXml,
     /// The document exceeds local parsing limits or contains a DTD.
     XmlLimitOrDtd,
+    /// The XML document exceeds the parser node limit.
+    XmlNodeLimit,
     /// The document does not have the expected fixture/message shape.
     InvalidFixtureShape,
     /// Request and response message counts do not match.
@@ -212,6 +227,7 @@ impl fmt::Display for OasisCryptoFixtureError {
         let message = match self {
             Self::MalformedXml => "OASIS fixture XML is malformed",
             Self::XmlLimitOrDtd => "OASIS fixture XML exceeds limits or contains a DTD",
+            Self::XmlNodeLimit => "OASIS fixture XML exceeds the configured node limit",
             Self::InvalidFixtureShape => "OASIS fixture message shape is invalid",
             Self::UnpairedMessages => "OASIS fixture request and response messages are unpaired",
             Self::MismatchedOperations => "OASIS fixture request and response operations differ",

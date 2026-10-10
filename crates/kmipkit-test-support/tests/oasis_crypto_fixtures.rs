@@ -595,6 +595,7 @@ fn fixture_adapter_rejects_malformed_xml_without_echoing_document_contents() {
 
     let error = OasisCryptoFixture::from_xml("TC-T015-MALFORMED", &malformed_xml)
         .expect_err("an unclosed XML attribute is rejected");
+    assert_eq!(error, OasisCryptoFixtureError::MalformedXml);
     let diagnostic = format!("{error:?} {error}");
 
     assert!(
@@ -623,6 +624,7 @@ fn fixture_adapter_limits_xml_nodes_before_ttlv_item_conversion() {
 
     let error = OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &xml)
         .expect_err("the XML DOM node limit is enforced while parsing");
+    assert_eq!(error, OasisCryptoFixtureError::XmlNodeLimit);
     assert_eq!(
         error.to_string(),
         "OASIS fixture XML exceeds the configured node limit"
