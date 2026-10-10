@@ -20,7 +20,10 @@ use zeroize::Zeroizing;
 
 use crate::execute::{BatchIdentity, Client, associate_batch_items};
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
-use crate::{ClientBatch, ClientBatchItem, ClientOperation, ClientRequest};
+use crate::{
+    ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientOperation, ClientRequest,
+};
+use crate::{ClientResponseView, RequestOptions};
 
 const HASH: u32 = 0x0000_0027;
 const MAC: u32 = 0x0000_0023;
@@ -130,6 +133,16 @@ impl OperationFixture {
     fn success_response(self) -> Vec<u8> {
         asynchronous_response_bytes(self.code, SUCCESS, None, None, Some(self.success_payload()))
     }
+
+    fn pending_response(self) -> Vec<u8> {
+        asynchronous_response_bytes(
+            self.code,
+            2,
+            None,
+            Some(b"pending-correlation"),
+            Some(test_structure([])),
+        )
+    }
 }
 
 #[derive(Default)]
@@ -193,6 +206,137 @@ fn each_explicit_operation_call_performs_one_exchange_without_retry() {
         assert_eq!(response.items.len(), 1);
         assert_eq!(response.items[0].outcome().operation(), fixture.operation);
         assert_eq!(response.items[0].outcome().result().status().raw(), SUCCESS);
+    }
+
+    assert_eq!(state.borrow().requests.len(), OperationFixture::ALL.len());
+}
+
+fn invoke_typed_convenience(
+    client: &mut Client,
+    fixture: OperationFixture,
+    with_options: bool,
+    limits: &CodecLimits,
+) -> ClientBatchItemResponse {
+    let options = RequestOptions::default();
+    let result = match fixture.request() {
+        ClientRequest::Hash(request) if with_options => {
+            client.hash_with_options(request, limits, &options)
+        }
+        ClientRequest::Hash(request) => client.hash(request, limits),
+        ClientRequest::Mac(request) if with_options => {
+            client.mac_with_options(request, limits, &options)
+        }
+        ClientRequest::Mac(request) => client.mac(request, limits),
+        ClientRequest::MacVerify(request) if with_options => {
+            client.mac_verify_with_options(request, limits, &options)
+        }
+        ClientRequest::MacVerify(request) => client.mac_verify(request, limits),
+        ClientRequest::Sign(request) if with_options => {
+            client.sign_with_options(request, limits, &options)
+        }
+        ClientRequest::Sign(request) => client.sign(request, limits),
+        ClientRequest::SignatureVerify(request) if with_options => {
+            client.signature_verify_with_options(request, limits, &options)
+        }
+        ClientRequest::SignatureVerify(request) => client.signature_verify(request, limits),
+        _ => unreachable!("the fixture only constructs the five assigned operations"),
+    };
+    result.expect("the queued response completes the typed convenience call")
+}
+
+fn response_accessor_presence(view: &ClientResponseView<'_>) -> [bool; 5] {
+    [
+        view.hash().is_some(),
+        view.mac().is_some(),
+        view.mac_verify().is_some(),
+        view.sign().is_some(),
+        view.signature_verify().is_some(),
+    ]
+}
+
+fn outcome_accessor_presence(outcome: &crate::ClientBatchOutcome) -> [bool; 5] {
+    [
+        outcome.hash_response().is_some(),
+        outcome.mac_response().is_some(),
+        outcome.mac_verify_response().is_some(),
+        outcome.sign_response().is_some(),
+        outcome.signature_verify_response().is_some(),
+    ]
+}
+
+fn expected_accessor_presence(operation: ClientOperation) -> [bool; 5] {
+    [
+        operation == ClientOperation::Hash,
+        operation == ClientOperation::Mac,
+        operation == ClientOperation::MacVerify,
+        operation == ClientOperation::Sign,
+        operation == ClientOperation::SignatureVerify,
+    ]
+}
+
+#[test]
+fn public_convenience_methods_views_accessors_and_formatters_cover_all_operations() {
+    let queued_responses = OperationFixture::ALL
+        .into_iter()
+        .flat_map(|fixture| [fixture.success_response(), fixture.success_response()]);
+    let (mut client, state) = client(queued_responses);
+    let limits = CodecLimits::defaults();
+
+    for fixture in OperationFixture::ALL {
+        let request = fixture.request();
+        let request_debug = format!("{request:?}");
+        assert!(!request_debug.contains("message"));
+
+        for with_options in [false, true] {
+            let item = invoke_typed_convenience(&mut client, fixture, with_options, &limits);
+            let outcome = item.outcome();
+            assert_eq!(outcome.operation(), fixture.operation);
+            assert_eq!(outcome.result().status().raw(), SUCCESS);
+
+            let expected = expected_accessor_presence(fixture.operation);
+            let view = outcome.response();
+            assert_eq!(response_accessor_presence(&view), expected);
+            assert_eq!(outcome_accessor_presence(outcome), expected);
+
+            let rendered = format!("{item:?} {outcome:?} {view:?} {outcome}");
+            assert!(!rendered.is_empty());
+        }
+    }
+
+    assert_eq!(state.borrow().requests.len(), 10);
+}
+
+#[test]
+fn pending_views_preserve_each_operation_response_type() {
+    let responses = OperationFixture::ALL
+        .into_iter()
+        .map(OperationFixture::pending_response);
+    let (mut client, state) = client(responses);
+    let limits = CodecLimits::defaults();
+
+    for fixture in OperationFixture::ALL {
+        let outcome = client
+            .execute(
+                ClientBatch::new(ClientBatchItem::new(fixture.request()))
+                    .with_asynchronous_indicator(1),
+                &limits,
+            )
+            .expect("the explicitly asynchronous Pending response is accepted");
+        let item = outcome.items.first().expect("one item is associated");
+        let crate::ClientBatchOutcome::Pending(pending) = item.outcome() else {
+            panic!("a Pending response remains an explicit resumable outcome");
+        };
+        assert_eq!(pending.operation(), fixture.operation);
+        assert_eq!(
+            pending.asynchronous_correlation_value(),
+            b"pending-correlation"
+        );
+        assert_eq!(pending.response().result().status().raw(), 2);
+        assert_eq!(
+            response_accessor_presence(&pending.response()),
+            expected_accessor_presence(fixture.operation)
+        );
+        assert!(!format!("{pending:?}").contains("pending-correlation"));
     }
 
     assert_eq!(state.borrow().requests.len(), OperationFixture::ALL.len());
