@@ -112,7 +112,7 @@
 
 - [ ] T034 Add executable English Rust guide examples in `docs/user-guide/en/cryptographic-operations.md` covering five operations, explicit parameters, multipart use, results, and no local cryptography.
 - [ ] T035 Add equivalent executable Spanish Rust guide examples in `docs/user-guide/es/operaciones-criptograficas.md` covering five operations, explicit parameters, multipart use, results, and `KMIPKIT-DISC-048`.
-- [ ] T036 Add integration tests in `crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs` to compile both guide examples and prove their sample payload values remain redacted.
+- [ ] T036 Add integration tests in `crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs` to compile both guide examples and prove their sample payload values remain redacted. **RED evidence:** `cargo test -p kmipkit-protocol --test cryptographic_operations_guide_examples --all-features` exited 1 while compiling the new target because both planned guide paths are missing; no unrelated syntax or registration errors occurred.
 - [ ] T037 Update `specification/catalog/kmip-2.1.json` implementation and verification references for all six applicable client requirement IDs, five operation elements, enum/data elements, and test paths; keep server-only and retired IDs unassigned.
 - [ ] T038 Regenerate and verify `specification/catalog/coverage-report.md` using `python tools/normative_catalog/report.py --write` and `--check`; validate with `python tools/normative_catalog/validate.py`.
 - [ ] T039 Run `cargo fmt --all --check` and `cargo clippy --workspace --all-targets --all-features -- -D warnings`; resolve warnings without broad lint suppressions.
