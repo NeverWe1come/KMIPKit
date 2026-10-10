@@ -166,6 +166,10 @@ mod encrypt_response_tests;
 mod decrypt_response_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/encrypt_decrypt_redaction_tests.rs"]
+mod encrypt_decrypt_redaction_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/malformed_crypto_payload_tests.rs"]
 mod malformed_crypto_payload_tests;
 

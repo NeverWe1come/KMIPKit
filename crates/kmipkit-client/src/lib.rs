@@ -132,6 +132,10 @@ mod encrypt_decrypt_fixture_execution_tests;
 mod encrypt_decrypt_outcome_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/encrypt_decrypt_redaction_execution_tests.rs"]
+mod encrypt_decrypt_redaction_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/lifecycle_redaction_tests.rs"]
 mod lifecycle_redaction_tests;
 
