@@ -10026,43 +10026,6 @@
       }
     },
     {
-      "declarationId": "ClientBatchItem:python",
-      "packageId": "python-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit.ClientBatchItem",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientBatchItem"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ClientBatchItem"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.ClientBatchItem"
-        }
-      }
-    },
-    {
       "declarationId": "ClientBatchItem:rust",
       "packageId": "rust-kmipkit-client",
       "kind": "type",
@@ -23230,6 +23193,165 @@
       }
     },
     {
+      "declarationId": "java-generated-registry-api",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.generated.ExtensionRegistryApi",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This generated public class is observed but its exported metadata members are not mapped to a reviewed public capability."
+    },
+    {
+      "declarationId": "java-native-extension-registry",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.NativeExtensionRegistry",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public JNI bridge has no approved behavior owner in the current API inventory."
+    },
+    {
+      "declarationId": "python-errors-module",
+      "packageId": "python-kmipkit",
+      "kind": "module",
+      "exportName": "kmipkit.errors",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The module-level export is observed but is not yet covered by an exact four-language declaration mapping."
+    },
+    {
+      "declarationId": "python-kmipkit-error",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.errors.KmipKitError",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public base exception has no explicit approved owner mapping in the current API inventory."
+    },
+    {
+      "declarationId": "python-raise-for-status",
+      "packageId": "python-kmipkit",
+      "kind": "function",
+      "exportName": "kmipkit.errors.raise_for_status",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "This public helper has no explicit approved owner mapping in the current API inventory."
+    },
+    {
+      "declarationId": "python-with-extension-qualified",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.with_extension",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The module-qualified alias is observed but the v1 record covers only the package-root alias."
+    },
+    {
+      "declarationId": "transport-exchange-method",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "associated-item",
+      "exportName": "kmipkit_transport::Transport::exchange",
+      "capabilityId": "rust_transport_exchange",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::Transport::exchange"
+        }
+      }
+    },
+    {
+      "declarationId": "transport-exchange-trait",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "trait",
+      "exportName": "kmipkit_transport::Transport",
+      "capabilityId": "rust_transport_exchange",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::Transport"
+        }
+      }
+    },
+    {
+      "declarationId": "transport-response-type",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "type",
+      "exportName": "kmipkit_transport::TransportResponse",
+      "capabilityId": "rust_transport_exchange",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportResponse"
+        }
+      }
+    },
+    {
       "declarationId": "ttlv_item_create:c",
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
@@ -27310,6 +27432,48 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
       "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+    },
+    {
+      "declarationId": "python-extensions-module",
+      "packageId": "python-kmipkit",
+      "kind": "module",
+      "exportName": "kmipkit.extensions",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The public submodule is exported at the package root but its declaration inventory is not represented by a reviewed cross-language capability mapping."
+    },
+    {
+      "declarationId": "python-ttlv-module",
+      "packageId": "python-kmipkit",
+      "kind": "module",
+      "exportName": "kmipkit.ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0004",
+      "blockedReason": "The public submodule is exported at the package root but its declaration inventory is not represented by a reviewed cross-language capability mapping."
+    },
+    {
+      "declarationId": "python-client-batch-item-qualified",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.extensions.ClientBatchItem",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The implementation exports ClientBatchItem from kmipkit.extensions; the preserved v1 mapping points to the package root where this type is not exported."
     }
   ],
   "approvedExclusions": [],
@@ -27817,6 +27981,38 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0012",
       "blockedReason": "The full release inventory is still reconciling the published Rust paths and language-level exports before claiming complete API parity."
+    },
+    {
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "capabilityState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0043",
+      "blockedReason": "Several existing exports still lack an approved logical owner or reviewed cross-language declaration mapping."
+    },
+    {
+      "capabilityId": "rust_transport_exchange",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "rust-only-adr",
+      "ownerAdrId": "ADR-0014",
+      "acceptedEvidence": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_transport::Transport::exchange",
+          "kmipkit_transport::TransportResponse"
+        ]
+      }
     }
   ]
 }
