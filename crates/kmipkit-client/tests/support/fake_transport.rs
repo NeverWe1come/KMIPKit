@@ -1,5 +1,6 @@
 //! One-shot fake transport support for deterministic client execution tests.
 
+use std::cell::Cell;
 use std::cell::RefCell;
 use std::fmt;
 use std::rc::Rc;
@@ -16,7 +17,7 @@ use zeroize::Zeroizing;
 /// transport crate's zeroizing ownership behavior.
 pub(crate) struct OneShotFakeTransport {
     observation: FakeTransportObservation,
-    response: Option<Vec<u8>>,
+    response: Option<PendingResponse>,
 }
 
 impl OneShotFakeTransport {
@@ -26,10 +27,17 @@ impl OneShotFakeTransport {
         (
             Self {
                 observation: observation.clone(),
-                response: Some(response),
+                response: Some(PendingResponse::new(response, None)),
             },
             observation,
         )
+    }
+
+    fn with_response_drop_observer(response: Vec<u8>, drop_observer: ResponseDropObserver) -> Self {
+        Self {
+            observation: FakeTransportObservation::default(),
+            response: Some(PendingResponse::new(response, Some(drop_observer))),
+        }
     }
 }
 
@@ -55,7 +63,57 @@ impl Transport for OneShotFakeTransport {
             ));
         };
 
-        Ok(TransportResponse::new(response))
+        Ok(TransportResponse::new(response.into_bytes()))
+    }
+}
+
+struct PendingResponse {
+    bytes: Vec<u8>,
+    drop_observer: Option<ResponseDropObserver>,
+}
+
+impl PendingResponse {
+    fn new(bytes: Vec<u8>, drop_observer: Option<ResponseDropObserver>) -> Self {
+        Self {
+            bytes,
+            drop_observer,
+        }
+    }
+
+    fn into_bytes(mut self) -> Vec<u8> {
+        std::mem::take(&mut self.bytes)
+    }
+}
+
+impl Drop for PendingResponse {
+    fn drop(&mut self) {
+        if let Some(observer) = &self.drop_observer {
+            observer.record(&self.bytes);
+        }
+    }
+}
+
+#[derive(Clone)]
+struct ResponseDropObserver {
+    observed_zeroized: Rc<Cell<Option<bool>>>,
+    expected_len: usize,
+}
+
+impl ResponseDropObserver {
+    fn new(expected_len: usize) -> Self {
+        Self {
+            observed_zeroized: Rc::new(Cell::new(None)),
+            expected_len,
+        }
+    }
+
+    fn result(&self) -> Option<bool> {
+        self.observed_zeroized.get()
+    }
+
+    fn record(&self, bytes: &[u8]) {
+        let zeroized = bytes.len() == self.expected_len && bytes.iter().all(|byte| *byte == 0);
+        self.observed_zeroized.set(Some(zeroized));
     }
 }
 
@@ -94,7 +152,7 @@ impl fmt::Debug for FakeTransportObservation {
 
 #[cfg(test)]
 mod tests {
-    use super::{FakeTransportObservation, OneShotFakeTransport};
+    use super::{FakeTransportObservation, OneShotFakeTransport, ResponseDropObserver};
     use kmipkit_transport::{RequestDeliveryState, Transport};
 
     #[test]
@@ -136,6 +194,33 @@ mod tests {
         observation.with_captured_request(|captured| {
             assert_eq!(captured, Some(first_request.as_slice()));
         });
+    }
+
+    #[test]
+    fn dropping_transport_zeroizes_an_unconsumed_configured_response() {
+        let response = vec![0xA5; 8];
+        let observer = ResponseDropObserver::new(response.len());
+        let transport =
+            OneShotFakeTransport::with_response_drop_observer(response, observer.clone());
+
+        drop(transport);
+
+        assert_eq!(observer.result(), Some(true));
+    }
+
+    #[test]
+    fn oversized_configured_response_is_rejected_after_response_bytes_arrive() {
+        let (mut transport, observation) = OneShotFakeTransport::new(vec![1, 2, 3, 4]);
+
+        let error = transport
+            .exchange(&[0x42], 3)
+            .expect_err("the fake must enforce the configured response cap");
+
+        assert_eq!(
+            error.delivery_state(),
+            RequestDeliveryState::ResponseStarted
+        );
+        assert_eq!(observation.exchange_count(), 1);
     }
 
     #[test]
