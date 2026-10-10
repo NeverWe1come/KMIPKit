@@ -397,7 +397,9 @@ fn client_errors_and_source_chains_redact_malformed_payload_values() {
         )]);
         let response = response_bytes(operation, Some(malformed));
         let (result, exchanges) = execute_with_response(operation, response);
-        let error = result.expect_err("wrong-type success Data is rejected");
+        let Err(error) = result else {
+            panic!("wrong-type cryptographic success Data is rejected");
+        };
         let debug = format!("{error:?}");
         let display = error.to_string();
         let chain = format_error_chain(&error);
@@ -421,12 +423,12 @@ fn client_errors_and_source_chains_redact_raw_request_and_response_bodies() {
             sentinels_seen: Rc::clone(&sentinels_seen),
             expected_sentinels: operation.request_sentinels(),
         });
-        let error = client
-            .execute(
-                ClientBatch::new(ClientBatchItem::new(request)),
-                &CodecLimits::defaults(),
-            )
-            .expect_err("the fake reports an I/O failure after observing the request");
+        let Err(error) = client.execute(
+            ClientBatch::new(ClientBatchItem::new(request)),
+            &CodecLimits::defaults(),
+        ) else {
+            panic!("the fake transport reports the request I/O failure");
+        };
         assert!(
             sentinels_seen.get(),
             "the fake request body contains every operation sentinel"
@@ -444,7 +446,9 @@ fn client_errors_and_source_chains_redact_raw_request_and_response_bodies() {
 
         let (result, exchanges) =
             execute_with_response(operation, RAW_RESPONSE_SENTINEL.as_bytes().to_vec());
-        let error = result.expect_err("raw bytes are not a valid KMIP response");
+        let Err(error) = result else {
+            panic!("raw response bytes are rejected as malformed TTLV");
+        };
         let debug = format!("{error:?}");
         let display = error.to_string();
         let chain = format_error_chain(&error);

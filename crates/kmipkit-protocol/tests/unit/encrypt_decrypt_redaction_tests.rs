@@ -245,15 +245,17 @@ fn malformed_encrypt_and_decrypt_response_errors_do_not_echo_payload_values() {
             structure([item(DATA, Value::text_string(sentinel.to_owned()))]),
         );
         let error: Box<dyn Error> = if operation == ENCRYPT_OPERATION {
-            Box::new(
-                EncryptResponse::try_from_response_item(only_batch_item(&message))
-                    .expect_err("wrong-type success Data is rejected"),
-            )
+            let Err(error) = EncryptResponse::try_from_response_item(only_batch_item(&message))
+            else {
+                panic!("wrong-type Encrypt success Data is rejected");
+            };
+            Box::new(error)
         } else {
-            Box::new(
-                DecryptResponse::try_from_response_item(only_batch_item(&message))
-                    .expect_err("wrong-type success Data is rejected"),
-            )
+            let Err(error) = DecryptResponse::try_from_response_item(only_batch_item(&message))
+            else {
+                panic!("wrong-type Decrypt success Data is rejected");
+            };
+            Box::new(error)
         };
         let debug = format!("{error:?}");
         let display = error.to_string();
