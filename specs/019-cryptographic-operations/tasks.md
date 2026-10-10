@@ -72,7 +72,7 @@
 ### Green
 
 - [x] T030 Validate the Encrypt/Decrypt protocol pre-encoding Data, multipart indicator, and Correlation Value matrix through `to_ttlv_payload`; accept the single request with Init=true/Final=true when Data is present, and reject its Data-omission form while KMIPKIT-DISC-045 remains open. T030 does not verify client exchange count; the one-exchange-per-invocation acceptance test is tracked by FR-008 and belongs to T034/T038 fake-client verification. **Green evidence (2026-10-10):** the shared protocol shape validator rejects explicit false middle indicators without Correlation Value for both operations while preserving the valid all-indicators-absent unframed shape. Red added three explicit-false cases per operation; the expected Red listed all six accepted invalid shapes, and the valid matrix case remained passing. The focused matrix passes 2/2; Encrypt request tests pass 4/4; Decrypt request tests pass 4/4; malformed crypto payload tests pass 14/14; Table 59 request validation tests pass 5/5. Protocol Clippy, formatting, and whitespace checks pass. Two prior all-fields request fixtures now use the valid middle shape (Correlation Value, Init=false, Final=false) and still assert field order. Exact commands and evidence are in `.superpowers/sdd/kmipkit-0019-cryptographic-operations/task-30-report.md`.
-- [ ] T031 Integrate Encrypt/Decrypt with KMIPKIT-0006 ID Placeholder/batch contracts; do not redefine batch ordering or Batch Order Option behavior.
+- [ ] T031 Add Encrypt/Decrypt to the existing typed client request, operation, and successful-response view plumbing needed by the already-written T027–T029 contracts; apply KMIPKIT-0006 ID Placeholder eligibility in the existing batch validation path. Do not redefine batch ordering or Batch Order Option behavior. Full fixture-derived client execution remains T038.
 - [ ] T032 Run multipart and batch tests Green, including a server-returned Correlation Value round trip.
 
 ### Refactor
@@ -90,7 +90,7 @@
 
 ### Green
 
-- [ ] T038 Add Encrypt/Decrypt variants to the existing client request/operation/outcome pipeline and dispatch through current transport and response validation; make all 28 fixture-derived request/response pairs execute through the typed client fake transport.
+- [ ] T038 Complete the Encrypt/Decrypt client execution and outcome path started in T031; make all 28 fixture-derived request/response pairs execute through the typed client fake transport with exact request/response pairing. Do not duplicate or change T031's KMIPKIT-0006 batch eligibility rules.
 - [ ] T039 Preserve completed failure results, success-only payload rules, PendingOutcome, and delivery classification without replay or automatic Poll.
 - [ ] T040 Run protocol and client focused suites Green; confirm all 28 fixture-derived pairs execute through the typed client, then record command/output evidence.
 
