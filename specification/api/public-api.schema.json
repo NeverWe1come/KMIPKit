@@ -1773,7 +1773,100 @@
           }
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "const": "blocked"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "blockedReason"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "approvalSource"
+                  ]
+                },
+                {
+                  "required": [
+                    "languageMappings"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "approvalSource",
+              "languageMappings"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "four-language"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "languageMappings": {
+                "required": [
+                  "rust",
+                  "c",
+                  "java",
+                  "python"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "rust-only-adr"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "languageMappings": {
+                "required": [
+                  "rust"
+                ],
+                "propertyNames": {
+                  "const": "rust"
+                }
+              }
+            },
+            "required": [
+              "approvalSource"
+            ]
+          }
+        }
+      ]
     },
     "approvedExclusion": {
       "type": "object",
