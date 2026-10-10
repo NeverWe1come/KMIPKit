@@ -236,7 +236,7 @@ fn malformed_success(payload: Structure) -> Result<GetResponse, impl std::fmt::D
     decode_get(&message)
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Eq, PartialEq)]
 enum OpaqueValueSnapshot {
     Structure(Vec<(u32, Self)>),
     Enumeration(u32),
@@ -400,9 +400,9 @@ fn successful_table_221_response_exposes_its_required_fields() {
         response.unique_identifier(),
         Some(&UniqueIdentifier::TextString(OBJECT_IDENTIFIER.to_owned()))
     );
-    assert_eq!(
-        response.object().map(item_snapshot),
-        Some(item_snapshot(&opaque_symmetric_key()))
+    assert!(
+        response.object().map(item_snapshot) == Some(item_snapshot(&opaque_symmetric_key())),
+        "opaque object differs"
     );
 }
 
@@ -441,10 +441,9 @@ fn successful_table_221_response_preserves_the_nested_any_object_ttlv_tree() {
     let message = response_message(SUCCESS, None, None, Some(valid_successful_payload()));
     let response = decode_get(&message).expect("Table 221 success preserves Any Object");
 
-    assert_eq!(
-        response.object().map(item_snapshot),
-        Some(item_snapshot(&expected_object)),
-        "the nested Key Block retains order, repeated extension tags, unknown values, and scalar bits"
+    assert!(
+        response.object().map(item_snapshot) == Some(item_snapshot(&expected_object)),
+        "opaque object differs; nested fields must retain order, repeated tags, unknown values, and scalar bits"
     );
 }
 
@@ -463,9 +462,9 @@ fn successful_table_221_response_preserves_unknown_object_type_and_allocated_ven
         response.object_type(),
         Some(ObjectType::from_raw(UNKNOWN_OBJECT_TYPE))
     );
-    assert_eq!(
-        response.object().map(item_snapshot),
-        Some(item_snapshot(&vendor_object()))
+    assert!(
+        response.object().map(item_snapshot) == Some(item_snapshot(&vendor_object())),
+        "opaque vendor object differs"
     );
 }
 
