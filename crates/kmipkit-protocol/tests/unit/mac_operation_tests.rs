@@ -7,12 +7,14 @@
 //! Correlation Value, Init Indicator, and Final Indicator elements.
 
 use crate::async_operation_fixtures::response_message;
-use crate::operation_test_support::item;
+use crate::cryptographic_operation_test_support::{
+    field_tags, output_bytes, payload, response_item, response_payload_tags, snapshot,
+};
 use crate::{
     CryptographicAlgorithm, CryptographicOperationErrorKind, MacRequest, MacResponse,
     OperationData, SecretBytes, UniqueIdentifier,
 };
-use kmipkit_ttlv::{Item, Structure, Value, ValueView};
+use kmipkit_ttlv::Value;
 
 const MAC_OPERATION: u32 = 0x0000_0023;
 const SUCCESS: u32 = 0;
@@ -27,59 +29,6 @@ const CORRELATION_VALUE: u32 = 0x0042_00D6;
 const INIT_INDICATOR: u32 = 0x0042_00D7;
 const FINAL_INDICATOR: u32 = 0x0042_00D8;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
-
-fn payload(items: impl IntoIterator<Item = (u32, Value)>) -> Structure {
-    let mut payload = Structure::new();
-    for (raw_tag, value) in items {
-        payload
-            .try_push(item(raw_tag, value))
-            .expect("Table 259–260 fixture fits TTLV Structure limits");
-    }
-    payload
-}
-
-fn field_tags(payload: &Structure) -> Vec<u32> {
-    payload
-        .view()
-        .children()
-        .iter()
-        .map(|field| field.tag().raw())
-        .collect()
-}
-
-fn response_item(message: &crate::ResponseMessage) -> crate::ResponseBatchItemView<'_> {
-    message
-        .batch_items()
-        .next()
-        .expect("the fixture contains one validated MAC response item")
-}
-
-fn response_payload_tags(item: crate::ResponseBatchItemView<'_>) -> Option<Vec<u32>> {
-    item.with_response_payload(|payload| {
-        payload
-            .children()
-            .iter()
-            .map(|field| field.tag().raw())
-            .collect()
-    })
-}
-
-fn output_bytes(value: Option<&SecretBytes>, expected: &[u8]) {
-    value
-        .expect("Table 260 MAC Data is present for a single-part response")
-        .with_bytes(|actual| assert_eq!(actual, expected));
-}
-
-fn snapshot(item: &Item) -> (u32, Vec<u8>) {
-    (
-        item.tag().raw(),
-        item.with_value(|value| match value {
-            ValueView::ByteString(value) => Some(value.to_vec()),
-            _ => None,
-        })
-        .expect("the selected field is a Byte String"),
-    )
-}
 
 #[test]
 fn request_emits_optional_identifier_and_parameters_before_input_and_framing() {

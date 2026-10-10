@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, Tag, Value, ValueView};
+use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 use crate::{
     KmipOperationResult, OperationData, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
@@ -328,4 +328,43 @@ pub(crate) fn parse_optional_secret(
 /// Returns the sanitized error used for malformed successful crypto payloads.
 pub(crate) fn response_shape_error(operation: &'static str) -> CryptographicOperationError {
     CryptographicOperationError::new(operation, CryptographicOperationErrorKind::MalformedPayload)
+}
+
+/// Parsed fields shared by successful MAC and Sign operation responses.
+pub(crate) struct ParsedOperationOutputPayload {
+    pub(crate) unique_identifier: UniqueIdentifier,
+    pub(crate) output_data: Option<SecretBytes>,
+    pub(crate) correlation_value: Option<SecretBytes>,
+}
+
+/// Parses the common successful-response fields for MAC and Sign.
+pub(crate) fn parse_operation_output_payload(
+    payload: &StructureView<'_>,
+    output_tag: u32,
+    operation: &'static str,
+) -> Result<ParsedOperationOutputPayload, CryptographicOperationError> {
+    let mut unique_identifier = None;
+    let mut output_data = None;
+    let mut correlation_value = None;
+
+    for field in payload.children() {
+        match field.tag().raw() {
+            UNIQUE_IDENTIFIER => {
+                parse_required_identifier(&mut unique_identifier, field, operation)?;
+            }
+            tag if tag == output_tag => {
+                parse_optional_secret(&mut output_data, field, operation)?;
+            }
+            CORRELATION_VALUE => {
+                parse_optional_secret(&mut correlation_value, field, operation)?;
+            }
+            _ => {}
+        }
+    }
+
+    Ok(ParsedOperationOutputPayload {
+        unique_identifier: unique_identifier.ok_or_else(|| response_shape_error(operation))?,
+        output_data,
+        correlation_value,
+    })
 }

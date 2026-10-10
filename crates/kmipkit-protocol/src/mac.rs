@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, StructureView};
+use kmipkit_ttlv::Structure;
 
 use crate::cryptographic_operation as common;
 use crate::{
@@ -165,7 +165,9 @@ impl MacResponse {
         }
 
         let parsed = item
-            .with_response_payload(|payload| parse_success_payload(&payload))
+            .with_response_payload(|payload| {
+                common::parse_operation_output_payload(&payload, common::MAC_DATA, "MAC")
+            })
             .ok_or_else(|| {
                 CryptographicOperationError::new(
                     "MAC",
@@ -175,7 +177,7 @@ impl MacResponse {
         Ok(Self {
             result,
             unique_identifier: Some(parsed.unique_identifier),
-            mac_data: parsed.mac_data,
+            mac_data: parsed.output_data,
             correlation_value: parsed.correlation_value,
         })
     }
@@ -207,34 +209,3 @@ impl MacResponse {
 
 /// A sanitized error converting a MAC response item.
 pub type MacError = CryptographicOperationError;
-
-struct ParsedMacPayload {
-    unique_identifier: UniqueIdentifier,
-    mac_data: Option<SecretBytes>,
-    correlation_value: Option<SecretBytes>,
-}
-
-fn parse_success_payload(payload: &StructureView<'_>) -> Result<ParsedMacPayload, MacError> {
-    let mut unique_identifier = None;
-    let mut mac_data = None;
-    let mut correlation_value = None;
-
-    for field in payload.children() {
-        match field.tag().raw() {
-            common::UNIQUE_IDENTIFIER => {
-                common::parse_required_identifier(&mut unique_identifier, field, "MAC")?;
-            }
-            common::MAC_DATA => common::parse_optional_secret(&mut mac_data, field, "MAC")?,
-            common::CORRELATION_VALUE => {
-                common::parse_optional_secret(&mut correlation_value, field, "MAC")?;
-            }
-            _ => {}
-        }
-    }
-
-    Ok(ParsedMacPayload {
-        unique_identifier: unique_identifier.ok_or_else(|| common::response_shape_error("MAC"))?,
-        mac_data,
-        correlation_value,
-    })
-}
