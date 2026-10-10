@@ -166,10 +166,10 @@ fn pending_encrypt_conversion_rejects_a_completed_status() {
         Some(Structure::new()),
     );
 
-    assert_eq!(
+    assert!(matches!(
         EncryptResponse::try_from_pending_response_item(response_item(&message)),
         Err(crate::EncryptError::NotPendingOutcome)
-    );
+    ));
 }
 
 #[test]
@@ -200,8 +200,8 @@ fn pending_decrypt_conversion_rejects_a_completed_status() {
         Some(Structure::new()),
     );
 
-    assert_eq!(
+    assert!(matches!(
         DecryptResponse::try_from_pending_response_item(response_item(&message)),
         Err(crate::DecryptError::NotPendingOutcome)
-    );
+    ));
 }
