@@ -59,6 +59,14 @@ mod hash_mac_signature_execution_tests;
 #[path = "../tests/unit/hash_execution_tests.rs"]
 mod hash_execution_tests;
 
+#[cfg(test)]
+#[path = "../tests/unit/mac_execution_tests.rs"]
+mod mac_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/sign_execution_tests.rs"]
+mod sign_execution_tests;
+
 #[path = "wire_encoder.rs"]
 mod private_wire_writer;
 

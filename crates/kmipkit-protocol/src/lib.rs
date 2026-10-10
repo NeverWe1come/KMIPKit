@@ -153,6 +153,14 @@ mod cryptographic_operation_contract_tests;
 mod hash_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/mac_operation_tests.rs"]
+mod mac_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/sign_operation_tests.rs"]
+mod sign_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/encrypt_tests.rs"]
 mod encrypt_tests;
 
