@@ -162,7 +162,7 @@ mod tests {
         let (mut transport, observation) = OneShotFakeTransport::new(response.to_vec());
 
         let actual_response = transport
-            .exchange(&request, 1)
+            .exchange(&request, response.len())
             .expect("the configured response is returned");
 
         assert_eq!(actual_response.as_bytes(), response);
@@ -210,10 +210,11 @@ mod tests {
 
     #[test]
     fn oversized_configured_response_is_rejected_after_response_bytes_arrive() {
-        let (mut transport, observation) = OneShotFakeTransport::new(vec![1, 2, 3, 4]);
+        let response = b"OVER_CAP_RESPONSE_SENTINEL";
+        let (mut transport, observation) = OneShotFakeTransport::new(response.to_vec());
 
         let error = transport
-            .exchange(&[0x42], 3)
+            .exchange(&[0x42], response.len() - 1)
             .expect_err("the fake must enforce the configured response cap");
 
         assert_eq!(
@@ -221,6 +222,8 @@ mod tests {
             RequestDeliveryState::ResponseStarted
         );
         assert_eq!(observation.exchange_count(), 1);
+        assert!(!error.to_string().contains("OVER_CAP_RESPONSE_SENTINEL"));
+        assert!(!format!("{error:?}").contains("OVER_CAP_RESPONSE_SENTINEL"));
     }
 
     #[test]
