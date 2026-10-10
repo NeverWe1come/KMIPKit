@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import unittest
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from tools.api_manifest import generate
+from tools.api_manifest.generate import ManifestError
 from tools.api_manifest.tests.test_manifest_v2 import _valid_v2_manifest
 
 
@@ -33,7 +36,7 @@ def _approved_feature_source() -> dict[str, str]:
         "kind": "feature-specification",
         "path": "specs/0007-client-execution/approval-record.md",
         "status": "Approved",
-        "evidence": "Active release-line approval record",
+        "evidence": "Maintainer acceptance for release 1.0.0",
     }
 
 
@@ -44,6 +47,69 @@ def _four_language_mappings() -> dict[str, list[str]]:
         "java": ["org.kmipkit.Client.execute"],
         "python": ["kmipkit.Client.execute"],
     }
+
+
+def _ready_operation(manifest: dict[str, object]) -> dict[str, object]:
+    operation = _discover_versions_operation(manifest)
+    operation.pop("blockedReason")
+    operation.update(
+        {
+            "apiState": "declared",
+            "featureSpecId": "KMIPKIT-0007",
+            "approvalEvidence": _approved_feature_source(),
+            "declarations": _four_language_mappings(),
+        }
+    )
+    return operation
+
+
+def _ready_declaration() -> dict[str, object]:
+    package_ids = {
+        "rust": "rust-kmipkit-protocol",
+        "c": "c-kmipkit",
+        "java": "java-kmipkit",
+        "python": "python-kmipkit",
+    }
+    return {
+        "declarationId": "shared_client_execute",
+        "packageId": "rust-kmipkit-protocol",
+        "kind": "function",
+        "exportName": "kmipkit_protocol::ClientRequest",
+        "capabilityId": "shared_client",
+        "requirementIds": ["KMIPKIT-0043-FR-001"],
+        "declarationState": "declared",
+        "parityScope": "four-language",
+        "approvalSource": _approved_feature_source(),
+        "languageMappings": {
+            language: {"packageId": package_id, "name": f"{language}.client_execute"}
+            for language, package_id in package_ids.items()
+        },
+    }
+
+
+def _write_approved_feature(root: Path) -> None:
+    owner = root / "specs" / "007-client-execution"
+    owner.mkdir(parents=True)
+    (owner / "spec.md").write_text(
+        "# Feature\n\n**Status**: Approved for implementation.\n",
+        encoding="utf-8",
+    )
+    (owner / "approval-record.md").write_text(
+        "Maintainer acceptance for release 1.0.0\n",
+        encoding="utf-8",
+    )
+
+
+def _validate_v2_readiness(
+    test: unittest.TestCase,
+    manifest: dict[str, object],
+    root: Path,
+    *,
+    require_complete: bool = False,
+) -> None:
+    validator = getattr(generate, "_validate_v2_readiness", None)
+    test.assertTrue(callable(validator), "v2 readiness validation is not implemented")
+    validator(manifest, root, require_complete=require_complete)
 
 
 class OperationReadinessSchemaTests(unittest.TestCase):
@@ -130,6 +196,109 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
         del manifest["capabilities"][0]["mappings"]["python"]
         self.assertTrue(self.errors(manifest))
+
+    def test_ready_owner_must_resolve_to_approved_feature_and_recorded_acceptance(self) -> None:
+        manifest = _contract_manifest()
+        _ready_operation(manifest)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            _write_approved_feature(root)
+            _validate_v2_readiness(self, manifest, root)
+
+            (root / "specs" / "007-client-execution" / "spec.md").write_text(
+                "# Feature\n\n**Status**: Draft.\n", encoding="utf-8"
+            )
+            with self.assertRaises(ManifestError):
+                _validate_v2_readiness(self, manifest, root)
+
+    def test_adr_owned_capability_must_resolve_to_accepted_adr(self) -> None:
+        manifest = _contract_manifest()
+        adr_path = "docs/adr/0014-public-transport-exchange-contract.md"
+        manifest["capabilities"] = [
+            {
+                "capabilityId": "transport_exchange",
+                "requirementIds": ["KMIPKIT-0043-FR-001"],
+                "capabilityState": "declared",
+                "parityScope": "rust-only-adr",
+                "ownerAdrId": "ADR-0014",
+                "acceptedEvidence": {
+                    "kind": "accepted-adr",
+                    "path": adr_path,
+                    "status": "Accepted",
+                    "evidence": "Maintainer acceptance for release 1.0.0",
+                },
+                "mappings": {"rust": ["kmipkit_transport::Transport::exchange"]},
+            }
+        ]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            adr = root / adr_path
+            adr.parent.mkdir(parents=True)
+            adr.write_text(
+                "# ADR-0014\n\n**Status**: Accepted.\n\n"
+                "Maintainer acceptance for release 1.0.0\n",
+                encoding="utf-8",
+            )
+            _validate_v2_readiness(self, manifest, root)
+
+            adr.write_text(
+                "# ADR-0014\n\n**Status**: Proposed.\n\n"
+                "Maintainer acceptance for release 1.0.0\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(ManifestError):
+                _validate_v2_readiness(self, manifest, root)
+
+    def test_language_declaration_mapping_must_name_a_package_in_that_language(self) -> None:
+        manifest = _contract_manifest()
+        declaration = _ready_declaration()
+        declaration["languageMappings"]["python"]["packageId"] = "java-kmipkit"
+        manifest["publicDeclarations"] = [declaration]
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            _write_approved_feature(root)
+            with self.assertRaises(ManifestError):
+                _validate_v2_readiness(self, manifest, root)
+
+    def test_release_validation_rejects_each_kind_of_blocked_readiness_record(self) -> None:
+        mutations = (
+            lambda manifest: manifest["operations"][0].update(
+                {"apiState": "blocked", "blockedReason": "Owner is not approved."}
+            ),
+            lambda manifest: manifest["capabilities"].append(
+                {
+                    "capabilityId": "blocked_capability",
+                    "requirementIds": ["KMIPKIT-0043-FR-001"],
+                    "capabilityState": "blocked",
+                    "parityScope": "four-language",
+                    "blockedReason": "Owner is not approved.",
+                }
+            ),
+            lambda manifest: manifest["publicDeclarations"].append(
+                {
+                    "declarationId": "blocked_declaration",
+                    "packageId": "rust-kmipkit-protocol",
+                    "kind": "function",
+                    "exportName": "kmipkit_protocol::candidate",
+                    "capabilityId": "blocked_capability",
+                    "requirementIds": ["KMIPKIT-0043-FR-001"],
+                    "declarationState": "blocked",
+                    "parityScope": "four-language",
+                    "candidateSpecId": "KMIPKIT-0017",
+                    "blockedReason": "Owner is not approved.",
+                }
+            ),
+        )
+        for mutate in mutations:
+            with self.subTest(record=mutate.__code__.co_firstlineno):
+                manifest = _contract_manifest()
+                mutate(manifest)
+                with tempfile.TemporaryDirectory() as temporary:
+                    with self.assertRaises(ManifestError):
+                        _validate_v2_readiness(
+                            self, manifest, Path(temporary), require_complete=True
+                        )
 
 if __name__ == "__main__":
     unittest.main()
