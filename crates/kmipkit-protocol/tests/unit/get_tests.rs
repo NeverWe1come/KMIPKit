@@ -12,7 +12,8 @@
 
 use crate::{
     GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType, ObjectType,
-    ResponseBatchItemView, ResponseMessage, ResultReason, ResultStatus, UniqueIdentifier,
+    ResponseBatchItemView, ResponseMessage, ResultMessage, ResultReason, ResultStatus,
+    UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
@@ -488,7 +489,7 @@ fn failed_table_222_response_preserves_result_message_and_omits_success_fields()
     );
     assert_eq!(response.result().reason(), Some(reason));
     assert_eq!(
-        response.result().message().map(|message| message.as_str()),
+        response.result().message().map(ResultMessage::as_str),
         Some("requested key value is unavailable")
     );
     assert!(response.object_type().is_none());
@@ -623,7 +624,7 @@ fn successful_response_rejects_duplicate_table_221_required_fields() {
 #[test]
 fn successful_response_rejects_each_mistyped_table_221_required_field() {
     let wrong_object_type = successful_payload([
-        object_type_item(Value::integer(SYMMETRIC_KEY_OBJECT_TYPE as i32)),
+        object_type_item(Value::integer(SYMMETRIC_KEY_OBJECT_TYPE.cast_signed())),
         unique_identifier_item(Value::text_string(OBJECT_IDENTIFIER.to_owned())),
         opaque_symmetric_key(),
     ]);
