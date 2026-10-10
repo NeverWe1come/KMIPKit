@@ -18,12 +18,14 @@ use kmipkit_protocol::{
     DeleteAttributeRequest, DeleteAttributeResponse, DestroyRequest, DestroyResponse,
     DiscoverVersionsRequest, DiscoverVersionsResponse, EncryptRequest, EncryptResponse,
     GetAttributeListRequest, GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse,
-    KmipOperationResult, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
+    HashRequest, HashResponse, KmipOperationResult, MacRequest, MacResponse, MacVerifyRequest,
+    MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
     NewAttribute, PingRequest, PingResponse, PollRequest, PollResponse, ProcessRequest,
     ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
     QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
     RecoverRequest, RecoverResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus, SetAttributeRequest, SetAttributeResponse,
+    ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse,
+    SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -85,6 +87,11 @@ const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 §6.1.17, Table 214.
 const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 §6.1.11, Table 196.
+const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 §6.1.24, Table 235.
+const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 §6.1.32, Table 259.
+const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 §6.1.33, Table 262.
+const SIGN_OPERATION: u32 = 0x0000_0021; // KMIP v2.1 §6.1.55, Table 334.
+const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022; // KMIP v2.1 §6.1.56, Table 337.
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
@@ -155,6 +162,16 @@ pub enum ClientRequest {
     Encrypt(EncryptRequest),
     /// An explicit client-to-server Decrypt request.
     Decrypt(DecryptRequest),
+    /// An explicit client-to-server Hash request.
+    Hash(HashRequest),
+    /// An explicit client-to-server MAC request.
+    Mac(MacRequest),
+    /// An explicit client-to-server MAC Verify request.
+    MacVerify(MacVerifyRequest),
+    /// An explicit client-to-server Sign request.
+    Sign(SignRequest),
+    /// An explicit client-to-server Signature Verify request.
+    SignatureVerify(SignatureVerifyRequest),
 }
 
 impl ClientRequest {
@@ -186,6 +203,36 @@ impl ClientRequest {
     #[must_use]
     pub fn decrypt(request: DecryptRequest) -> Self {
         Self::Decrypt(request)
+    }
+
+    /// Creates a typed client-to-server Hash request variant.
+    #[must_use]
+    pub fn hash(request: HashRequest) -> Self {
+        Self::Hash(request)
+    }
+
+    /// Creates a typed client-to-server MAC request variant.
+    #[must_use]
+    pub fn mac(request: MacRequest) -> Self {
+        Self::Mac(request)
+    }
+
+    /// Creates a typed client-to-server MAC Verify request variant.
+    #[must_use]
+    pub fn mac_verify(request: MacVerifyRequest) -> Self {
+        Self::MacVerify(request)
+    }
+
+    /// Creates a typed client-to-server Sign request variant.
+    #[must_use]
+    pub fn sign(request: SignRequest) -> Self {
+        Self::Sign(request)
+    }
+
+    /// Creates a typed client-to-server Signature Verify request variant.
+    #[must_use]
+    pub fn signature_verify(request: SignatureVerifyRequest) -> Self {
+        Self::SignatureVerify(request)
     }
 
     /// Creates a typed Activate request variant.
@@ -274,6 +321,11 @@ impl ClientRequest {
             Self::Query(_) => QUERY_OPERATION,
             Self::Encrypt(_) => ENCRYPT_OPERATION,
             Self::Decrypt(_) => DECRYPT_OPERATION,
+            Self::Hash(_) => HASH_OPERATION,
+            Self::Mac(_) => MAC_OPERATION,
+            Self::MacVerify(_) => MAC_VERIFY_OPERATION,
+            Self::Sign(_) => SIGN_OPERATION,
+            Self::SignatureVerify(_) => SIGNATURE_VERIFY_OPERATION,
         }
     }
 
@@ -281,6 +333,11 @@ impl ClientRequest {
         match self {
             Self::Encrypt(request) => request.validate_multipart_shape(),
             Self::Decrypt(request) => request.validate_multipart_shape(),
+            Self::Hash(request) => request.validate_multipart_shape(),
+            Self::Mac(request) => request.validate_multipart_shape(),
+            Self::MacVerify(request) => request.validate_multipart_shape(),
+            Self::Sign(request) => request.validate_multipart_shape(),
+            Self::SignatureVerify(request) => request.validate_multipart_shape(),
             _ => Ok(()),
         }
     }
@@ -321,6 +378,11 @@ impl ClientRequest {
             Self::Query(request) => request.to_ttlv_payload(),
             Self::Encrypt(request) => request.to_ttlv_payload(),
             Self::Decrypt(request) => request.to_ttlv_payload(),
+            Self::Hash(request) => request.to_ttlv_payload(),
+            Self::Mac(request) => request.to_ttlv_payload(),
+            Self::MacVerify(request) => request.to_ttlv_payload(),
+            Self::Sign(request) => request.to_ttlv_payload(),
+            Self::SignatureVerify(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -353,6 +415,14 @@ impl fmt::Debug for ClientRequest {
             Self::Query(_) => formatter.write_str("Query([REDACTED])"),
             Self::Encrypt(_) => formatter.write_str("Encrypt([REDACTED])"),
             Self::Decrypt(_) => formatter.write_str("Decrypt([REDACTED])"),
+            Self::Hash(request) => formatter.debug_tuple("Hash").field(request).finish(),
+            Self::Mac(request) => formatter.debug_tuple("MAC").field(request).finish(),
+            Self::MacVerify(request) => formatter.debug_tuple("MAC Verify").field(request).finish(),
+            Self::Sign(request) => formatter.debug_tuple("Sign").field(request).finish(),
+            Self::SignatureVerify(request) => formatter
+                .debug_tuple("Signature Verify")
+                .field(request)
+                .finish(),
         }
     }
 }
@@ -606,6 +676,11 @@ enum PendingResponse {
     DiscoverVersions(DiscoverVersionsResponse),
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
+    Hash(HashResponse),
+    Mac(MacResponse),
+    MacVerify(MacVerifyResponse),
+    Sign(SignResponse),
+    SignatureVerify(SignatureVerifyResponse),
     Activate(ActivateResponse),
     Archive(ArchiveResponse),
     Destroy(DestroyResponse),
@@ -630,6 +705,11 @@ impl PendingResponse {
             Self::DiscoverVersions(response) => ClientResponseRef::DiscoverVersions(response),
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
+            Self::Hash(response) => ClientResponseRef::Hash(response),
+            Self::Mac(response) => ClientResponseRef::Mac(response),
+            Self::MacVerify(response) => ClientResponseRef::MacVerify(response),
+            Self::Sign(response) => ClientResponseRef::Sign(response),
+            Self::SignatureVerify(response) => ClientResponseRef::SignatureVerify(response),
             Self::Activate(response) => ClientResponseRef::Activate(response),
             Self::Archive(response) => ClientResponseRef::Archive(response),
             Self::Destroy(response) => ClientResponseRef::Destroy(response),
@@ -839,6 +919,16 @@ pub enum ClientOperation {
     Encrypt,
     /// Decrypt data with the explicitly selected server-side object.
     Decrypt,
+    /// Hash data through the selected server-side operation.
+    Hash,
+    /// Calculate a MAC through the selected server-side object.
+    Mac,
+    /// Verify a MAC through the selected server-side object.
+    MacVerify,
+    /// Sign data through the selected server-side object.
+    Sign,
+    /// Verify a signature through the selected server-side object.
+    SignatureVerify,
     /// Poll one previously Pending operation.
     Poll,
     /// Cancel one previously Pending operation.
@@ -965,6 +1055,11 @@ enum ClientResponseRef<'a> {
     DiscoverVersions(&'a DiscoverVersionsResponse),
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
+    Hash(&'a HashResponse),
+    Mac(&'a MacResponse),
+    MacVerify(&'a MacVerifyResponse),
+    Sign(&'a SignResponse),
+    SignatureVerify(&'a SignatureVerifyResponse),
     Activate(&'a ActivateResponse),
     Archive(&'a ArchiveResponse),
     Destroy(&'a DestroyResponse),
@@ -1000,6 +1095,11 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::DiscoverVersions(response) => response.result(),
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
+            ClientResponseRef::Hash(response) => response.result(),
+            ClientResponseRef::Mac(response) => response.result(),
+            ClientResponseRef::MacVerify(response) => response.result(),
+            ClientResponseRef::Sign(response) => response.result(),
+            ClientResponseRef::SignatureVerify(response) => response.result(),
             ClientResponseRef::Activate(response) => response.result(),
             ClientResponseRef::Archive(response) => response.result(),
             ClientResponseRef::Destroy(response) => response.result(),
@@ -1026,24 +1126,7 @@ impl<'a> ClientResponseView<'a> {
     pub fn supported_versions(&self) -> Option<&[ProtocolVersion]> {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => response.supported_versions(),
-            ClientResponseRef::Create(_)
-            | ClientResponseRef::Activate(_)
-            | ClientResponseRef::Archive(_)
-            | ClientResponseRef::Destroy(_)
-            | ClientResponseRef::Recover(_)
-            | ClientResponseRef::Encrypt(_)
-            | ClientResponseRef::Decrypt(_)
-            | ClientResponseRef::CreateKeyPair(_)
-            | ClientResponseRef::CreateSplitKey(_)
-            | ClientResponseRef::AddAttribute(_)
-            | ClientResponseRef::AdjustAttribute(_)
-            | ClientResponseRef::DeleteAttribute(_)
-            | ClientResponseRef::ModifyAttribute(_)
-            | ClientResponseRef::SetAttribute(_)
-            | ClientResponseRef::GetAttributes(_)
-            | ClientResponseRef::GetAttributeList(_)
-            | ClientResponseRef::Ping(_)
-            | ClientResponseRef::Query(_) => None,
+            _ => None,
         }
     }
 
@@ -1052,24 +1135,7 @@ impl<'a> ClientResponseView<'a> {
     pub const fn discover_versions(&self) -> Option<&DiscoverVersionsResponse> {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => Some(response),
-            ClientResponseRef::Create(_)
-            | ClientResponseRef::Encrypt(_)
-            | ClientResponseRef::Decrypt(_)
-            | ClientResponseRef::Activate(_)
-            | ClientResponseRef::Archive(_)
-            | ClientResponseRef::Destroy(_)
-            | ClientResponseRef::Recover(_)
-            | ClientResponseRef::CreateKeyPair(_)
-            | ClientResponseRef::CreateSplitKey(_)
-            | ClientResponseRef::AddAttribute(_)
-            | ClientResponseRef::AdjustAttribute(_)
-            | ClientResponseRef::DeleteAttribute(_)
-            | ClientResponseRef::ModifyAttribute(_)
-            | ClientResponseRef::SetAttribute(_)
-            | ClientResponseRef::GetAttributes(_)
-            | ClientResponseRef::GetAttributeList(_)
-            | ClientResponseRef::Ping(_)
-            | ClientResponseRef::Query(_) => None,
+            _ => None,
         }
     }
 
@@ -1096,6 +1162,51 @@ impl<'a> ClientResponseView<'a> {
     pub const fn decrypt(&self) -> Option<&'a DecryptResponse> {
         match self.response {
             ClientResponseRef::Decrypt(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Hash response when this view represents one.
+    #[must_use]
+    pub const fn hash(&self) -> Option<&'a HashResponse> {
+        match self.response {
+            ClientResponseRef::Hash(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the MAC response when this view represents one.
+    #[must_use]
+    pub const fn mac(&self) -> Option<&'a MacResponse> {
+        match self.response {
+            ClientResponseRef::Mac(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the MAC Verify response when this view represents one.
+    #[must_use]
+    pub const fn mac_verify(&self) -> Option<&'a MacVerifyResponse> {
+        match self.response {
+            ClientResponseRef::MacVerify(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Sign response when this view represents one.
+    #[must_use]
+    pub const fn sign(&self) -> Option<&'a SignResponse> {
+        match self.response {
+            ClientResponseRef::Sign(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Signature Verify response when this view represents one.
+    #[must_use]
+    pub const fn signature_verify(&self) -> Option<&'a SignatureVerifyResponse> {
+        match self.response {
+            ClientResponseRef::SignatureVerify(response) => Some(response),
             _ => None,
         }
     }
@@ -1249,6 +1360,22 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Decrypt(response) => {
                 formatter.debug_tuple("Decrypt").field(response).finish()
             }
+            ClientResponseRef::Hash(response) => {
+                formatter.debug_tuple("Hash").field(response).finish()
+            }
+            ClientResponseRef::Mac(response) => {
+                formatter.debug_tuple("MAC").field(response).finish()
+            }
+            ClientResponseRef::MacVerify(response) => {
+                formatter.debug_tuple("MAC Verify").field(response).finish()
+            }
+            ClientResponseRef::Sign(response) => {
+                formatter.debug_tuple("Sign").field(response).finish()
+            }
+            ClientResponseRef::SignatureVerify(response) => formatter
+                .debug_tuple("Signature Verify")
+                .field(response)
+                .finish(),
             ClientResponseRef::Create(response) => {
                 formatter.debug_tuple("Create").field(response).finish()
             }
@@ -1311,6 +1438,16 @@ pub enum ClientBatchOutcome {
     Encrypt(EncryptResponse),
     /// The server returned a Decrypt result.
     Decrypt(DecryptResponse),
+    /// The server returned a Hash result.
+    Hash(HashResponse),
+    /// The server returned a MAC result.
+    Mac(MacResponse),
+    /// The server returned a MAC Verify result.
+    MacVerify(MacVerifyResponse),
+    /// The server returned a Sign result.
+    Sign(SignResponse),
+    /// The server returned a Signature Verify result.
+    SignatureVerify(SignatureVerifyResponse),
     /// The server returned an Activate result.
     Activate(ActivateResponse),
     /// The server returned an Archive result.
@@ -1355,6 +1492,11 @@ impl ClientBatchOutcome {
             Self::Completed(_)
             | Self::Encrypt(_)
             | Self::Decrypt(_)
+            | Self::Hash(_)
+            | Self::Mac(_)
+            | Self::MacVerify(_)
+            | Self::Sign(_)
+            | Self::SignatureVerify(_)
             | Self::Activate(_)
             | Self::Archive(_)
             | Self::Destroy(_)
@@ -1382,6 +1524,11 @@ impl ClientBatchOutcome {
             Self::Completed(response) => response.result(),
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
+            Self::Hash(response) => response.result(),
+            Self::Mac(response) => response.result(),
+            Self::MacVerify(response) => response.result(),
+            Self::Sign(response) => response.result(),
+            Self::SignatureVerify(response) => response.result(),
             Self::Activate(response) => response.result(),
             Self::Archive(response) => response.result(),
             Self::Destroy(response) => response.result(),
@@ -1409,6 +1556,11 @@ impl ClientBatchOutcome {
             Self::Completed(_) => ClientOperation::DiscoverVersions,
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
+            Self::Hash(_) => ClientOperation::Hash,
+            Self::Mac(_) => ClientOperation::Mac,
+            Self::MacVerify(_) => ClientOperation::MacVerify,
+            Self::Sign(_) => ClientOperation::Sign,
+            Self::SignatureVerify(_) => ClientOperation::SignatureVerify,
             Self::Activate(_) => ClientOperation::Activate,
             Self::Archive(_) => ClientOperation::Archive,
             Self::Destroy(_) => ClientOperation::Destroy,
@@ -1519,6 +1671,51 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Hash response, when this is one.
+    #[must_use]
+    pub const fn hash_response(&self) -> Option<&HashResponse> {
+        match self {
+            Self::Hash(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed MAC response, when this is one.
+    #[must_use]
+    pub const fn mac_response(&self) -> Option<&MacResponse> {
+        match self {
+            Self::Mac(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed MAC Verify response, when this is one.
+    #[must_use]
+    pub const fn mac_verify_response(&self) -> Option<&MacVerifyResponse> {
+        match self {
+            Self::MacVerify(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Sign response, when this is one.
+    #[must_use]
+    pub const fn sign_response(&self) -> Option<&SignResponse> {
+        match self {
+            Self::Sign(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Signature Verify response, when this is one.
+    #[must_use]
+    pub const fn signature_verify_response(&self) -> Option<&SignatureVerifyResponse> {
+        match self {
+            Self::SignatureVerify(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
@@ -1534,6 +1731,21 @@ impl ClientBatchOutcome {
             },
             Self::Decrypt(response) => ClientResponseView {
                 response: ClientResponseRef::Decrypt(response),
+            },
+            Self::Hash(response) => ClientResponseView {
+                response: ClientResponseRef::Hash(response),
+            },
+            Self::Mac(response) => ClientResponseView {
+                response: ClientResponseRef::Mac(response),
+            },
+            Self::MacVerify(response) => ClientResponseView {
+                response: ClientResponseRef::MacVerify(response),
+            },
+            Self::Sign(response) => ClientResponseView {
+                response: ClientResponseRef::Sign(response),
+            },
+            Self::SignatureVerify(response) => ClientResponseView {
+                response: ClientResponseRef::SignatureVerify(response),
             },
             Self::Activate(response) => ClientResponseView {
                 response: ClientResponseRef::Activate(response),
@@ -1596,6 +1808,16 @@ impl fmt::Debug for ClientBatchOutcome {
             }
             Self::Encrypt(response) => formatter.debug_tuple("Encrypt").field(response).finish(),
             Self::Decrypt(response) => formatter.debug_tuple("Decrypt").field(response).finish(),
+            Self::Hash(response) => formatter.debug_tuple("Hash").field(response).finish(),
+            Self::Mac(response) => formatter.debug_tuple("MAC").field(response).finish(),
+            Self::MacVerify(response) => {
+                formatter.debug_tuple("MAC Verify").field(response).finish()
+            }
+            Self::Sign(response) => formatter.debug_tuple("Sign").field(response).finish(),
+            Self::SignatureVerify(response) => formatter
+                .debug_tuple("Signature Verify")
+                .field(response)
+                .finish(),
             Self::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             Self::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
@@ -1653,6 +1875,13 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Completed(response) => write!(formatter, "Completed({})", response.result()),
             Self::Encrypt(response) => write!(formatter, "Encrypt({})", response.result()),
             Self::Decrypt(response) => write!(formatter, "Decrypt({})", response.result()),
+            Self::Hash(response) => write!(formatter, "Hash({})", response.result()),
+            Self::Mac(response) => write!(formatter, "MAC({})", response.result()),
+            Self::MacVerify(response) => write!(formatter, "MAC Verify({})", response.result()),
+            Self::Sign(response) => write!(formatter, "Sign({})", response.result()),
+            Self::SignatureVerify(response) => {
+                write!(formatter, "Signature Verify({})", response.result())
+            }
             Self::Activate(response) => write!(formatter, "Activate({})", response.result()),
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
@@ -2254,6 +2483,121 @@ impl Client {
         )?;
         take_single_response(response)
     }
+
+    /// Executes one Hash request through the shared writer and performs one
+    /// exchange without calculating a hash locally or retrying.
+    pub fn hash(
+        &mut self,
+        request: HashRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.hash_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Hash request with transport timeout overrides.
+    pub fn hash_with_options(
+        &mut self,
+        request: HashRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Hash(request), limits, options)
+    }
+
+    /// Executes one MAC request through the shared writer without local MAC
+    /// calculation or automatic retry.
+    pub fn mac(
+        &mut self,
+        request: MacRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.mac_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one MAC request with transport timeout overrides.
+    pub fn mac_with_options(
+        &mut self,
+        request: MacRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Mac(request), limits, options)
+    }
+
+    /// Executes one MAC Verify request through the shared writer without
+    /// local verification or automatic retry.
+    pub fn mac_verify(
+        &mut self,
+        request: MacVerifyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.mac_verify_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one MAC Verify request with transport timeout overrides.
+    pub fn mac_verify_with_options(
+        &mut self,
+        request: MacVerifyRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::MacVerify(request), limits, options)
+    }
+
+    /// Executes one Sign request through the shared writer without local
+    /// signing or automatic retry.
+    pub fn sign(
+        &mut self,
+        request: SignRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.sign_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Sign request with transport timeout overrides.
+    pub fn sign_with_options(
+        &mut self,
+        request: SignRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Sign(request), limits, options)
+    }
+
+    /// Executes one Signature Verify request through the shared writer without
+    /// local verification or automatic retry.
+    pub fn signature_verify(
+        &mut self,
+        request: SignatureVerifyRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.signature_verify_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Signature Verify request with transport timeout overrides.
+    pub fn signature_verify_with_options(
+        &mut self,
+        request: SignatureVerifyRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::SignatureVerify(request), limits, options)
+    }
+
+    fn execute_one_typed_request(
+        &mut self,
+        request: ClientRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(request)),
+            limits,
+            options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
     /// Executes one typed Create request through the shared batch writer.
     ///
     /// Use [`Self::execute`] with a one-item batch and an explicit
@@ -3012,7 +3356,12 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Ping(_)
         | ClientRequest::Query(_)
         | ClientRequest::Encrypt(_)
-        | ClientRequest::Decrypt(_) => false,
+        | ClientRequest::Decrypt(_)
+        | ClientRequest::Hash(_)
+        | ClientRequest::Mac(_)
+        | ClientRequest::MacVerify(_)
+        | ClientRequest::Sign(_)
+        | ClientRequest::SignatureVerify(_) => false,
     }
 }
 
@@ -3560,7 +3909,13 @@ fn response_outcome(
     item: ResponseBatchItemView<'_>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
     match operation {
-        ENCRYPT_OPERATION | DECRYPT_OPERATION => crypto_response_outcome(operation, item),
+        ENCRYPT_OPERATION
+        | DECRYPT_OPERATION
+        | HASH_OPERATION
+        | MAC_OPERATION
+        | MAC_VERIFY_OPERATION
+        | SIGN_OPERATION
+        | SIGNATURE_VERIFY_OPERATION => crypto_response_outcome(operation, item),
         ACTIVATE_OPERATION => read_operation_outcome(
             ClientOperation::Activate,
             item,
@@ -3671,6 +4026,51 @@ fn crypto_response_outcome(
             DecryptResponse::result,
             PendingResponse::Decrypt,
             ClientBatchOutcome::Decrypt,
+        ),
+        HASH_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::Hash,
+            item,
+            HashResponse::try_from_pending_response_item,
+            HashResponse::try_from_response_item,
+            HashResponse::result,
+            PendingResponse::Hash,
+            ClientBatchOutcome::Hash,
+        ),
+        MAC_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::Mac,
+            item,
+            MacResponse::try_from_pending_response_item,
+            MacResponse::try_from_response_item,
+            MacResponse::result,
+            PendingResponse::Mac,
+            ClientBatchOutcome::Mac,
+        ),
+        MAC_VERIFY_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::MacVerify,
+            item,
+            MacVerifyResponse::try_from_pending_response_item,
+            MacVerifyResponse::try_from_response_item,
+            MacVerifyResponse::result,
+            PendingResponse::MacVerify,
+            ClientBatchOutcome::MacVerify,
+        ),
+        SIGN_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::Sign,
+            item,
+            SignResponse::try_from_pending_response_item,
+            SignResponse::try_from_response_item,
+            SignResponse::result,
+            PendingResponse::Sign,
+            ClientBatchOutcome::Sign,
+        ),
+        SIGNATURE_VERIFY_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::SignatureVerify,
+            item,
+            SignatureVerifyResponse::try_from_pending_response_item,
+            SignatureVerifyResponse::try_from_response_item,
+            SignatureVerifyResponse::result,
+            PendingResponse::SignatureVerify,
+            ClientBatchOutcome::SignatureVerify,
         ),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
@@ -3901,7 +4301,12 @@ fn validate_async_response(
         | ClientOperation::Ping
         | ClientOperation::Query
         | ClientOperation::Encrypt
-        | ClientOperation::Decrypt => {
+        | ClientOperation::Decrypt
+        | ClientOperation::Hash
+        | ClientOperation::Mac
+        | ClientOperation::MacVerify
+        | ClientOperation::Sign
+        | ClientOperation::SignatureVerify => {
             return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
         }
         ClientOperation::Poll => {

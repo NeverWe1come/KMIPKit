@@ -18,6 +18,7 @@ mod create;
 mod create_key_pair;
 mod create_split_key;
 mod credential;
+mod cryptographic_operation;
 mod cryptographic_parameters;
 mod decrypt;
 mod delete_attribute;
@@ -28,7 +29,10 @@ mod error;
 pub mod extension;
 mod get_attribute_list;
 mod get_attributes;
+mod hash;
 mod lifecycle;
+mod mac;
+mod mac_verify;
 mod message;
 mod modify_attribute;
 mod multipart;
@@ -41,6 +45,8 @@ mod query_async_requests;
 mod recover;
 mod result;
 mod set_attribute;
+mod sign;
+mod signature_verify;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
@@ -63,6 +69,10 @@ pub use credential::{
     HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, SecretBytes,
     SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
+pub use cryptographic_operation::{
+    CryptographicAlgorithm, CryptographicOperationError, CryptographicOperationErrorKind,
+    DigitalSignatureAlgorithm, HashingAlgorithm, ValidityIndicator,
+};
 pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
 pub use destroy::{DestroyError, DestroyRequest, DestroyResponse};
@@ -75,6 +85,9 @@ pub use get_attribute_list::{
     GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
 };
 pub use get_attributes::{GetAttributesError, GetAttributesRequest, GetAttributesResponse};
+pub use hash::{HashError, HashRequest, HashResponse};
+pub use mac::{MacError, MacRequest, MacResponse};
+pub use mac_verify::{MacVerifyError, MacVerifyRequest, MacVerifyResponse};
 pub use message::{
     MessageExtensionView, MessageValidationError, MessageValidationErrorKind, ProtocolVersion,
     RequestBatchItemView, RequestHeaderView, RequestMessage, ResponseBatchItemView,
@@ -92,6 +105,8 @@ pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
+pub use sign::{SignError, SignRequest, SignResponse};
+pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]

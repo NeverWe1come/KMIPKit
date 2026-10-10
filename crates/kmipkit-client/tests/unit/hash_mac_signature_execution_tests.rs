@@ -18,9 +18,9 @@ use kmipkit_ttlv::codec::{CodecLimits, decode};
 use kmipkit_ttlv::{Value, ValueView};
 use zeroize::Zeroizing;
 
-use crate::execute::Client;
+use crate::execute::{BatchIdentity, Client, associate_batch_items};
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
-use crate::{ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest};
+use crate::{ClientBatch, ClientBatchItem, ClientOperation, ClientRequest};
 
 const HASH: u32 = 0x0000_0027;
 const MAC: u32 = 0x0000_0023;
@@ -155,15 +155,12 @@ fn each_explicit_operation_call_performs_one_exchange_without_retry() {
                 &CodecLimits::defaults(),
             )
             .expect("the queued server response completes the explicit operation");
-        assert_eq!(response.items().len(), 1);
+        assert_eq!(response.items.len(), 1);
         assert_eq!(
-            response.items()[0].outcome().operation(),
+            response.items[0].outcome().operation(),
             operation_for(operation)
         );
-        assert_eq!(
-            response.items()[0].outcome().result().status().raw(),
-            SUCCESS
-        );
+        assert_eq!(response.items[0].outcome().result().status().raw(), SUCCESS);
     }
 
     assert_eq!(state.borrow().requests.len(), operations.len());
@@ -198,8 +195,7 @@ fn batch_item_ids_associate_out_of_order_responses_with_their_operations() {
 #[test]
 fn request_operation_codes_are_written_to_the_wire_and_server_failure_is_preserved() {
     let operation = HASH;
-    let failure =
-        asynchronous_response_bytes(operation, FAILURE, Some(1), None, Some(test_structure([])));
+    let failure = asynchronous_response_bytes(operation, FAILURE, Some(1), None, None);
     let (mut client, state) = client([failure]);
     let response = client
         .execute(
@@ -207,7 +203,7 @@ fn request_operation_codes_are_written_to_the_wire_and_server_failure_is_preserv
             &CodecLimits::defaults(),
         )
         .expect("a valid KMIP failure remains an operation result");
-    let item = response.items().first().expect("one result is associated");
+    let item = response.items.first().expect("one result is associated");
     assert_eq!(item.outcome().result().status().raw(), FAILURE);
     assert_eq!(
         item.outcome().result().reason().map(|reason| reason.raw()),
