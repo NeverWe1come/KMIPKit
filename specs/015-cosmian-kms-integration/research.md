@@ -16,7 +16,7 @@
 
 ### Pin the local server and isolate it
 
-**Decision**: Use `ghcr.io/cosmian/kms:5.28.0`; run it only on the developer's machine, publish KMIP port `5696` to `127.0.0.1`, use SQLite in the disposable container filesystem with database clearing enabled, and do not mount persistent KMS data.
+**Decision**: Use `ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e` and `alpine:3.22.2@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412`; run them only for local tests, publish KMIP port `5696` to `127.0.0.1`, use SQLite in the disposable container filesystem with database clearing enabled, and do not mount persistent KMS data.
 
 **Rationale**: This makes the requested KMS version reproducible and prevents this smoke test from writing to a shared or public service. Stopping and removing the container discards all database state. The operation itself is read-only.
 

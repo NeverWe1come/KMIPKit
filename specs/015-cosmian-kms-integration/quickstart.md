@@ -62,16 +62,19 @@ removed.
 On 2026-10-08 the first live attempt reached Cosmian over verified mTLS but
 failed because KMIPKit expected the Request Message root tag on the response
 path. After correcting raw-TLS response validation to use the OASIS Response
-Message tag, the Discover Versions test passed (1 passed, 0 failed). The pinned
-image resolved to
-`ghcr.io/cosmian/kms@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`.
+Message tag, the Discover Versions test passed (1 passed, 0 failed). Compose
+pins the exact image references
+`ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`
+and
+`alpine:3.22.2@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412`.
 The initial expanded run on the unpatched KMIPKIT-0015 branch reported 8
 passed and 2 failed: Create used the wrong Attributes tag, and Create Split
 Key stopped during setup. On 2026-10-10, PR #56 was synchronized with current
 `release/1.0.0`, which includes the separately reviewed KMIPKIT-0014 corrections
 from PR #69. The serial test command passed 10/10 on merge head `a1945f4e`,
-including Create and Create Split Key. The corrections are inherited from
-release and are not duplicated in PR #56. Adjust Attribute was probed
+including Create and Create Split Key. After pinning both Compose images by
+digest, it passed 10/10 again on commit `9a6a6341`. The corrections are inherited
+from release and are not duplicated in PR #56. Adjust Attribute was probed
 separately and Cosmian 5.28.0 rejects it as unsupported, so it is not included in the
 supported-operation test target. See
 `specs/015-cosmian-kms-integration/traceability.md` for operation-level

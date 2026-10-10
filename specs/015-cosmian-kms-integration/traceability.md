@@ -47,10 +47,11 @@ KMIPKIT-0014 corrections from PR #69. On merge head `a1945f4e`,
 (`.\scripts\integration\cosmian-kms.ps1 -Action test`) reported 10 passed,
 0 failed. The results cover Discover Versions, Create, Create Key Pair, Create
 Split Key, and the six attribute operations. The fixes are inherited from
-release and are not duplicated in this integration PR. The suite is not a full
-KMIP 2.1 conformance result. The local Compose image is pinned to
-`ghcr.io/cosmian/kms:5.28.0` and resolved in the original deployment to
-`sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`.
+release and are not duplicated in this integration PR. After pinning both
+Compose images by digest, the serial test command passed 10/10 again on commit
+`9a6a6341`. The suite is not a full KMIP 2.1 conformance result. The local
+images are pinned to `ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`
+and `alpine:3.22.2@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412`.
 The hosted GitHub CI workflow, including the multi-platform coverage gate,
 passed on 2026-10-09.
 
