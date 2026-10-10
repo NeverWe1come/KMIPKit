@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-09
 
-**Status**: Draft for review
+**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)
 
 **Input**: KMIPKit roadmap Phase D: specify the client-initiated Hash, MAC, MAC Verify, Sign, and Signature Verify operations for KMIP 2.1 over TTLV.
 
@@ -35,7 +35,7 @@ Official test-case links are recorded in the catalog and repeated with their ava
 ## Product boundaries and exclusions
 
 - The feature is limited to KMIP 2.1, TTLV, client-initiated calls, the accepted request/batch model, and existing raw TTLV/TLS and TTLV/HTTPS transports.
-- The deliverable is an additive Rust protocol model and client API. C ABI, JNI, CFFI, JSON, XML, new transports, and server-initiated operations are out of scope.
+- The deliverable is an additive Rust protocol model and client API. C ABI, JNI, CFFI, JSON, XML, new transports, and server-initiated operations are out of scope. This feature-level Rust scope does not satisfy or waive release-wide Rust/C/Java/Python capability parity for 1.0; the corresponding bindings remain tracked by their own 1.0 specifications.
 - KMIPKit transports cryptographic material and requests cryptographic operations from a KMIP server. It does not implement local hashing, MAC generation, signature generation, or verification algorithms, and does not implicitly choose algorithms, key sizes, parameters, key usage, or protection policy.
 - Caller input is represented losslessly. The API does not claim that the chosen key or algorithm is enabled or authorized by a server.
 - Server-side obligations, including key lookup through ID Placeholder, key usage accounting, operation execution, generated output, and response-field production, remain server behavior. The client decodes and exposes received responses without claiming that their sender conformed.

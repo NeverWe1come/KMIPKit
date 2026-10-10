@@ -282,6 +282,19 @@ servidor y no incluye estado local de entrega. El estado de entrega no indica
 que sea seguro reintentar. El cliente realiza un solo intercambio por llamada
 y nunca reintenta, cambia automáticamente de servidor, hace Poll ni espera.
 
+Si la validación específica de una operación falla después de decodificar una
+respuesta completa, `ClientError::response_ttlv()` devuelve la respuesta
+genérica retenida. Se inspecciona mediante
+`ClientErrorResponseTtlv::with_ttlv`; la vista solo vive durante el callback.
+Usa `StructureView::try_clone` dentro de él únicamente si necesitas una copia
+propia. La respuesta retenida se redacta en `Debug`, `Display` y las cadenas de
+origen, y KMIPKit pone a cero sus payloads cuando se destruye el último
+propietario del error. `response_ttlv()` no está disponible para errores
+de framing o decodificación anteriores a una respuesta completa, ni para
+fallos ajenos al procesamiento de respuestas. También se conserva la respuesta
+genérica cuando falla la asociación del lote después de decodificar el mensaje
+completo. Trata la respuesta que inspecciones explícitamente como dato sensible.
+
 Los cuerpos de petición y respuesta, credenciales, material de claves
 secretas y valores opacos de correlación asíncrona no se registran en logs,
 no se formatean dentro de errores y no se conservan en las cadenas de origen

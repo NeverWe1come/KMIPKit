@@ -266,6 +266,18 @@ delivery-state metadata. Delivery state does not establish that a retry is
 safe. The client performs one exchange per call and never retries, fails over,
 polls, or waits automatically.
 
+When operation-specific validation fails after a complete response has been
+decoded, `ClientError::response_ttlv()` returns the retained generic response.
+Inspect it through `ClientErrorResponseTtlv::with_ttlv`, whose view is scoped to
+the callback; call `StructureView::try_clone` inside the callback only when an
+owned copy is needed. The retained response is redacted from `Debug`,
+`Display`, and error sources, and its KMIPKit-owned payloads are zeroized when
+the last error owner is dropped. `response_ttlv()` is absent for earlier
+framing or decoding failures before a complete response exists, and for
+failures unrelated to response processing. Batch association failures after a
+complete response is decoded also retain the generic response. Treat an
+explicitly inspected response as sensitive data.
+
 Request and response bodies, credentials, secret key material, and opaque
 asynchronous correlation values are not logged, formatted into client errors,
 or retained in their exposed error-source chains. The private encoded request

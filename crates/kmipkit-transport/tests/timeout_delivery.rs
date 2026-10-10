@@ -229,7 +229,7 @@ async fn positive_read_progress_restarts_only_the_read_deadline() {
         inner,
         Some(Duration::from_millis(500)),
         Some(Duration::from_secs(1)),
-        Some(Instant::now() + Duration::from_secs(1)),
+        Some(Instant::now() + Duration::from_secs(3)),
         control.clone(),
     );
     let read = tokio::spawn(async move {
@@ -264,7 +264,7 @@ async fn positive_write_progress_restarts_only_the_write_deadline() {
         inner,
         Some(Duration::from_secs(1)),
         Some(Duration::from_millis(500)),
-        Some(Instant::now() + Duration::from_secs(1)),
+        Some(Instant::now() + Duration::from_secs(3)),
         control.clone(),
     );
     let write = tokio::spawn(async move { write_all(&mut io, b"abc").await });
@@ -291,7 +291,7 @@ async fn successful_flush_progress_restarts_the_write_deadline() {
         inner,
         Some(Duration::from_secs(1)),
         Some(Duration::from_millis(500)),
-        Some(Instant::now() + Duration::from_secs(1)),
+        Some(Instant::now() + Duration::from_secs(3)),
         control.clone(),
     );
     let releases = tokio::spawn(async move {

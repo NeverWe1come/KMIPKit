@@ -1,6 +1,6 @@
 # Implementation Plan: KMIP 2.1 Hash, MAC, and Signature Operations
 
-**Branch**: `feature/KMIPKIT-0021-hash-mac-signature-operations` | **Date**: 2026-10-09 | **Spec**: [spec.md](spec.md)
+**Branch**: `feature/KMIPKIT-0021-hash-mac-signature-implementation` | **Date**: 2026-10-09 | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `specs/021-hash-mac-signature-operations/spec.md`
 

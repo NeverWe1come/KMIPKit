@@ -259,6 +259,16 @@ const FIXTURES: &[Fixture] = &[
         expected: ExpectedDecision::Accept,
     },
     Fixture {
+        id: "approved_error_response_ttlv_callback",
+        path: "tests/fixtures/execute_boundary/approved_error_response_ttlv_callback.rs",
+        source: include_str!(
+            "../../tests/fixtures/execute_boundary/approved_error_response_ttlv_callback.rs"
+        ),
+        probe: "fn with_ttlv",
+        coverage: SourceCoverage::CandidateInspected,
+        expected: ExpectedDecision::Accept,
+    },
+    Fixture {
         id: "approved_async_outcome_callbacks",
         path: "tests/fixtures/execute_boundary/approved_async_outcome_callbacks.rs",
         source: include_str!(
@@ -776,6 +786,7 @@ const EXPECTED_FIXTURE_IDS: &[&str] = &[
     "public_value_view_input",
     "structure_view_wrong_callback",
     "approved_extension_view_callback",
+    "approved_error_response_ttlv_callback",
     "approved_async_outcome_callbacks",
     "async_outcome_callback_escape",
     "owned_vec_bytes_input",
@@ -940,6 +951,8 @@ impl BoundaryAudit {
             is_exact_unique_batch_id_setter(execute_root_scope, impl_type, signature);
         let extension_view_callback =
             is_exact_extension_view_callback(execute_root_scope, impl_type, signature);
+        let error_response_ttlv_callback =
+            is_exact_error_response_ttlv_callback(error_root_scope, impl_type, signature);
         let async_outcome_callback =
             is_exact_async_outcome_callback(execute_root_scope, impl_type, signature);
         let batch_from_items = is_exact_batch_from_items(execute_root_scope, impl_type, signature);
@@ -962,8 +975,10 @@ impl BoundaryAudit {
             impl_type,
             signature,
         );
-        let approved_generic_signature =
-            extension_view_callback || async_outcome_callback || error_validation_source;
+        let approved_generic_signature = extension_view_callback
+            || error_response_ttlv_callback
+            || async_outcome_callback
+            || error_validation_source;
         if has_public_type_or_const_generics(signature) && !approved_generic_signature {
             finder
                 .violations
@@ -974,7 +989,10 @@ impl BoundaryAudit {
         }
         for (index, argument) in signature.inputs.iter().enumerate() {
             if let syn::FnArg::Typed(argument) = argument {
-                if (unique_id_setter || extension_view_callback || async_outcome_callback)
+                if (unique_id_setter
+                    || extension_view_callback
+                    || error_response_ttlv_callback
+                    || async_outcome_callback)
                     && index == 1
                     || batch_from_items && index == 0
                     || registry_value_validation && index == 2
@@ -1586,8 +1604,35 @@ fn is_exact_extension_view_callback(
     impl_type: Option<&str>,
     signature: &syn::Signature,
 ) -> bool {
-    if !execute_root_scope
-        || impl_type != Some("ClientMessageExtension")
+    is_exact_ttlv_view_callback(
+        execute_root_scope,
+        impl_type,
+        signature,
+        "ClientMessageExtension",
+    )
+}
+
+fn is_exact_error_response_ttlv_callback(
+    error_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    is_exact_ttlv_view_callback(
+        error_root_scope,
+        impl_type,
+        signature,
+        "ClientErrorResponseTtlv",
+    )
+}
+
+fn is_exact_ttlv_view_callback(
+    correct_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+    owner_type: &str,
+) -> bool {
+    if !correct_root_scope
+        || impl_type != Some(owner_type)
         || signature.ident != "with_ttlv"
         || signature.generics.params.len() != 1
         || signature.generics.where_clause.is_some()
@@ -2833,7 +2878,10 @@ fn candidate_check_fixture(fixture: &Fixture) -> Result<(), CandidateRejection> 
             | "counterfeit_exception_types"
     ) {
         Path::new("execute.rs")
-    } else if fixture.id == "approved_error_validation_source" {
+    } else if matches!(
+        fixture.id,
+        "approved_error_validation_source" | "approved_error_response_ttlv_callback"
+    ) {
         Path::new("error.rs")
     } else if matches!(
         fixture.id,
@@ -3586,6 +3634,7 @@ fn canonical_macros_and_unique_batch_identifier_setter_remain_allowed() {
         "canonical_vec_macro",
         "exact_unique_batch_id_setter",
         "approved_extension_view_callback",
+        "approved_error_response_ttlv_callback",
         "approved_async_outcome_callbacks",
     ] {
         assert_eq!(
@@ -3756,6 +3805,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "canonical_vec_macro"
                     | "exact_unique_batch_id_setter"
                     | "approved_extension_view_callback"
+                    | "approved_error_response_ttlv_callback"
                     | "approved_async_outcome_callbacks"
                     | "approved_batch_from_items_iterator"
                     | "approved_error_validation_source"
@@ -3771,6 +3821,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
                     | "canonical_vec_macro"
                     | "exact_unique_batch_id_setter"
                     | "approved_extension_view_callback"
+                    | "approved_error_response_ttlv_callback"
                     | "approved_async_outcome_callbacks"
                     | "approved_error_validation_source"
                     | "approved_batch_response_iter_output"

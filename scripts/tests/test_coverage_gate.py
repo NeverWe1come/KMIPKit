@@ -154,6 +154,42 @@ class CoverageGateTests(unittest.TestCase):
 
         self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
 
+    def test_segment_union_can_exceed_grouped_llvm_covered_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn first() {}\npub fn second() {}\n", encoding="utf-8")
+            filename = "crates/kmipkit-ttlv/src/lib.rs"
+            document = json.loads(
+                llvm_document(
+                    [[1, 1, 1, 17, 1, 0, 0, 0]],
+                    filename,
+                    segments=[
+                        [1, 1, 1, True, True, False],
+                        [1, 17, 0, False, False, False],
+                        [2, 1, 1, True, True, False],
+                        [2, 18, 0, False, False, False],
+                        [3, 1, 0, False, False, False],
+                    ],
+                    summary_lines=2,
+                )
+            )
+            data = document["data"][0]
+            second_function = json.loads(json.dumps(data["functions"][0]))
+            second_function["name"] = "_ZN7kmipkit6second"
+            second_function["regions"] = [[2, 1, 2, 18, 1, 0, 0, 0]]
+            data["functions"].append(second_function)
+            # LLVM's grouped summary can report the largest instantiation's
+            # covered-line count even when file segments union distinct lines.
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 1}
+
+            report = GATE.parse_llvm_export(json.dumps(document), root)
+
+        self.assertEqual({1: 1, 2: 1}, report[filename])
+        self.assertEqual(1, report.summary_uncovered_excess[filename])
+
     def test_repeated_source_across_export_mappings_fails_closed(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
