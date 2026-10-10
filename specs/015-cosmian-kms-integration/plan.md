@@ -12,7 +12,7 @@ Provide opt-in interoperability tests for the ten KMIP 2.1 operations in `spec.m
 
 **Language/Version**: Rust 2024, MSRV 1.94; PowerShell 7-compatible runner; POSIX shell in the cert-generation container.
 
-**Primary Dependencies**: Existing `kmipkit-client`, `kmipkit-protocol`, `kmipkit-transport`; Docker Compose; `alpine:3.22` with OpenSSL for test PKI; `ghcr.io/cosmian/kms:5.28.0`.
+**Primary Dependencies**: Existing `kmipkit-client`, `kmipkit-protocol`, `kmipkit-transport`; Docker Compose; `alpine:3.22.2@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412` with OpenSSL for test PKI; `ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`.
 
 **Storage**: Cosmian SQLite database under the container filesystem, cleared at server startup and removed with the container; generated PKI in ignored `.local/cosmian-kms/certs`.
 
