@@ -8,7 +8,10 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from tools.api_manifest.generate import _validate_operation_inventory
+from tools.api_manifest.generate import (
+    _validate_operation_inventory,
+    _validate_v2_readiness,
+)
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -186,6 +189,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_operation_inventory_matches_the_normative_catalog(self) -> None:
         _validate_operation_inventory(self.checked_in_manifest, self.catalog)
+
+    def test_checked_in_manifest_resolves_all_public_declaration_mappings(self) -> None:
+        _validate_v2_readiness(self.checked_in_manifest, ROOT)
 
     def test_schema_identifies_the_complete_v2_contract(self) -> None:
         self.assertEqual(
