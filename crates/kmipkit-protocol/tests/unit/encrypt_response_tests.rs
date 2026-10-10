@@ -19,12 +19,18 @@ use crate::{
 use kmipkit_ttlv::{Structure, Value};
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+const DECRYPT_OPERATION: u32 = 0x0000_0020;
 const SUCCESS: u32 = 0;
+const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
+const GENERAL_FAILURE: u32 = 0x0000_0100;
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 const DATA_TAG: u32 = 0x0042_00C2;
 const IV_COUNTER_NONCE_TAG: u32 = 0x0042_003D;
 const CORRELATION_VALUE_TAG: u32 = 0x0042_00D6;
+const AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG: u32 = 0x0042_00FE;
 const AUTHENTICATED_ENCRYPTION_TAG: u32 = 0x0042_00FF;
+const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
 
 fn payload(items: impl IntoIterator<Item = (u32, Value)>) -> Structure {
     let mut payload = Structure::new();
@@ -133,4 +139,114 @@ fn successful_response_accepts_uid_only_table_215_payload() {
     assert!(response.iv_counter_nonce().is_none());
     assert!(response.correlation_value().is_none());
     assert!(response.authenticated_encryption_tag().is_none());
+}
+
+#[test]
+fn successful_response_preserves_non_text_uid_encodings_and_unknown_fields() {
+    let cases = [
+        (
+            UniqueIdentifier::Enumeration(u32::MAX),
+            Value::enumeration(u32::MAX),
+        ),
+        (
+            UniqueIdentifier::Integer(i32::MIN),
+            Value::integer(i32::MIN),
+        ),
+    ];
+
+    for (identifier, wire_value) in cases {
+        let payload = payload([
+            (UNIQUE_IDENTIFIER_TAG, wire_value),
+            (UNKNOWN_VENDOR_TAG, Value::integer(-17)),
+        ]);
+        let message = response_message(ENCRYPT_OPERATION, SUCCESS, None, None, Some(payload));
+        let item = response_item(&message);
+        let response = EncryptResponse::try_from_response_item(item)
+            .expect("Encrypt preserves supported UID encodings and tolerates future fields");
+
+        assert_eq!(response.unique_identifier(), Some(&identifier));
+        assert_eq!(
+            response_payload_tags(item),
+            Some(vec![UNIQUE_IDENTIFIER_TAG, UNKNOWN_VENDOR_TAG])
+        );
+    }
+}
+
+#[test]
+fn successful_response_rejects_malformed_required_and_known_fields() {
+    let cases = [
+        payload([]),
+        payload([(UNIQUE_IDENTIFIER_TAG, Value::boolean(true))]),
+        payload([
+            (
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("first-key".to_owned()),
+            ),
+            (
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("second-key".to_owned()),
+            ),
+        ]),
+        payload([
+            (
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("encrypt-key".to_owned()),
+            ),
+            (DATA_TAG, Value::integer(7)),
+        ]),
+        payload([
+            (
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("encrypt-key".to_owned()),
+            ),
+            (
+                AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG,
+                Value::byte_string(vec![0xA5]),
+            ),
+        ]),
+    ];
+
+    for payload in cases {
+        let message = response_message(ENCRYPT_OPERATION, SUCCESS, None, None, Some(payload));
+        let Err(error) = EncryptResponse::try_from_response_item(response_item(&message)) else {
+            panic!("malformed successful Encrypt payload is rejected");
+        };
+
+        assert_eq!(error, crate::EncryptError::MalformedSuccessPayload);
+        assert_eq!(
+            error.to_string(),
+            "successful Encrypt response payload is malformed"
+        );
+    }
+}
+
+#[test]
+fn response_converters_reject_items_for_a_different_operation() {
+    let completed = response_message(
+        DECRYPT_OPERATION,
+        OPERATION_FAILED,
+        Some(GENERAL_FAILURE),
+        None,
+        None,
+    );
+    let Err(completed_error) = EncryptResponse::try_from_response_item(response_item(&completed))
+    else {
+        panic!("the Encrypt converter rejects a Decrypt response item");
+    };
+    assert_eq!(completed_error, crate::EncryptError::UnexpectedOperation);
+    assert_eq!(completed_error.to_string(), "response item is not Encrypt");
+
+    let pending = response_message(
+        DECRYPT_OPERATION,
+        PENDING,
+        None,
+        Some(&[0xA1, 0xB2]),
+        Some(Structure::new()),
+    );
+    let Err(pending_error) =
+        EncryptResponse::try_from_pending_response_item(response_item(&pending))
+    else {
+        panic!("the Encrypt pending converter rejects a Decrypt response item");
+    };
+    assert_eq!(pending_error, crate::EncryptError::UnexpectedOperation);
 }

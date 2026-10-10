@@ -178,6 +178,53 @@ fn request_omits_cryptographic_parameters_when_the_caller_omits_them() {
 }
 
 #[test]
+fn request_data_accessor_reports_absence_and_preserves_secret_bytes() {
+    let absent = EncryptRequest::new(None, None);
+    assert!(absent.data().is_none());
+
+    let expected = [0x13, 0x37, 0x80, 0xFF];
+    let request = EncryptRequest::new(
+        None,
+        Some(OperationData::ByteString(SecretBytes::new(
+            expected.to_vec(),
+        ))),
+    );
+    let preserves_bytes = matches!(
+        request.data(),
+        Some(OperationData::ByteString(value))
+            if value.with_bytes(|actual| actual == expected.as_slice())
+    );
+
+    assert!(
+        preserves_bytes,
+        "the Encrypt request Data accessor retains the caller's bytes"
+    );
+}
+
+#[test]
+fn request_preserves_enumeration_and_integer_unique_identifier_encodings() {
+    let cases = [
+        (
+            UniqueIdentifier::Enumeration(u32::MAX),
+            ValueSnapshot::Enumeration(u32::MAX),
+        ),
+        (
+            UniqueIdentifier::Integer(i32::MIN),
+            ValueSnapshot::Integer(i32::MIN),
+        ),
+    ];
+
+    for (identifier, expected) in cases {
+        let actual = EncryptRequest::new(Some(identifier), Some(OperationData::Enumeration(7)))
+            .to_ttlv_payload()
+            .expect("the request preserves its supported Unique Identifier encoding");
+        let actual_identifier = actual.view().children()[0].with_value(snapshot_value);
+
+        assert_eq!(actual_identifier, expected);
+    }
+}
+
+#[test]
 fn request_preserves_supplied_cryptographic_parameters_members_and_order() {
     let supplied = vendor_parameters();
     let actual = base_request(OperationData::Integer(i32::MIN))

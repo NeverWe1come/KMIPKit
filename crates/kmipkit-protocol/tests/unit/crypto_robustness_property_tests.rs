@@ -26,6 +26,10 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const DATA: u32 = 0x0042_00C2;
+const IV_COUNTER_NONCE: u32 = 0x0042_003D;
+const CORRELATION_VALUE: u32 = 0x0042_00D6;
+const INIT_INDICATOR: u32 = 0x0042_00D7;
+const FINAL_INDICATOR: u32 = 0x0042_00D8;
 const AUTHENTICATED_ENCRYPTION_TAG: u32 = 0x0042_00FF;
 
 const KEY_IDENTIFIER_SENTINEL: &str = "T042_KEY_IDENTIFIER_SENTINEL";
@@ -274,6 +278,130 @@ fn arbitrary_malformed_encrypt_and_decrypt_payloads_are_rejected_safely() {
             arbitrary_malformed_crypto_payloads_are_rejected_safely
                 as fn(MalformedPayloadCase) -> bool,
         );
+}
+
+fn operation_payload(items: impl IntoIterator<Item = Item>) -> Structure {
+    let mut payload = Structure::new();
+    for item in items {
+        payload
+            .try_push(item)
+            .expect("the deterministic malformed payload remains within model limits");
+    }
+    payload
+}
+
+fn valid_request_prefix() -> [Item; 2] {
+    [
+        item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string(KEY_IDENTIFIER_SENTINEL.to_owned()),
+        ),
+        item(DATA, Value::byte_string(SECRET_BYTES_SENTINEL.to_vec())),
+    ]
+}
+
+#[test]
+fn deterministic_malformed_top_level_payloads_are_rejected_by_both_validators() {
+    let invalid_payloads = [
+        operation_payload([
+            item(UNIQUE_IDENTIFIER, Value::boolean(true)),
+            item(DATA, Value::byte_string(SECRET_BYTES_SENTINEL.to_vec())),
+        ]),
+        operation_payload([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(KEY_IDENTIFIER_SENTINEL.to_owned()),
+            ),
+            item(CRYPTOGRAPHIC_PARAMETERS, Value::integer(7)),
+            item(DATA, Value::byte_string(SECRET_BYTES_SENTINEL.to_vec())),
+        ]),
+        operation_payload([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(KEY_IDENTIFIER_SENTINEL.to_owned()),
+            ),
+            item(DATA, Value::text_string(SECRET_TEXT_SENTINEL.to_owned())),
+        ]),
+        operation_payload([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(KEY_IDENTIFIER_SENTINEL.to_owned()),
+            ),
+            item(DATA, Value::byte_string(SECRET_BYTES_SENTINEL.to_vec())),
+            item(IV_COUNTER_NONCE, Value::integer(7)),
+        ]),
+        operation_payload([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(KEY_IDENTIFIER_SENTINEL.to_owned()),
+            ),
+            item(DATA, Value::byte_string(SECRET_BYTES_SENTINEL.to_vec())),
+            item(
+                CORRELATION_VALUE,
+                Value::text_string(SECRET_TEXT_SENTINEL.to_owned()),
+            ),
+        ]),
+        operation_payload([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(KEY_IDENTIFIER_SENTINEL.to_owned()),
+            ),
+            item(DATA, Value::byte_string(SECRET_BYTES_SENTINEL.to_vec())),
+            item(INIT_INDICATOR, Value::enumeration(1)),
+        ]),
+        operation_payload([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(KEY_IDENTIFIER_SENTINEL.to_owned()),
+            ),
+            item(DATA, Value::byte_string(SECRET_BYTES_SENTINEL.to_vec())),
+            item(FINAL_INDICATOR, Value::integer(1)),
+        ]),
+        operation_payload([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(KEY_IDENTIFIER_SENTINEL.to_owned()),
+            ),
+            item(DATA, Value::byte_string(SECRET_BYTES_SENTINEL.to_vec())),
+            item(DATA, Value::byte_string(SECRET_BYTES_SENTINEL.to_vec())),
+        ]),
+    ];
+
+    for payload in invalid_payloads {
+        let encrypt = crate::encrypt::validate_request_payload(&payload)
+            .expect_err("malformed Encrypt top-level fields are rejected");
+        let decrypt = crate::decrypt::validate_request_payload(&payload)
+            .expect_err("malformed Decrypt top-level fields are rejected");
+
+        assert_eq!(encrypt.kind(), crate::ProtocolErrorKind::InvalidValue);
+        assert_eq!(decrypt.kind(), crate::ProtocolErrorKind::InvalidValue);
+        for error in [&encrypt, &decrypt] {
+            let display = error.to_string();
+            let debug = format!("{error:?}");
+            assert!(
+                !display.contains(SECRET_TEXT_SENTINEL)
+                    && !display.contains("T042_SECRET_BYTES_SENTINEL_8A27")
+                    && !debug.contains(SECRET_TEXT_SENTINEL)
+                    && !debug.contains("T042_SECRET_BYTES_SENTINEL_8A27"),
+                "malformed request validation must not reveal field values"
+            );
+        }
+    }
+
+    let mut encrypt_tag_fields = valid_request_prefix().into_iter().collect::<Vec<_>>();
+    encrypt_tag_fields.push(item(
+        AUTHENTICATED_ENCRYPTION_TAG,
+        Value::byte_string(vec![0xA5]),
+    ));
+    let encrypt_tag_payload = operation_payload(encrypt_tag_fields);
+    assert!(
+        crate::encrypt::validate_request_payload(&encrypt_tag_payload).is_err(),
+        "Encrypt rejects its response-only Authenticated Encryption Tag"
+    );
+    assert!(
+        crate::decrypt::validate_request_payload(&encrypt_tag_payload).is_ok(),
+        "Decrypt accepts the request Authenticated Encryption Tag"
+    );
 }
 
 #[derive(Clone)]
