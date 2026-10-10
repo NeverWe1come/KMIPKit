@@ -17,23 +17,13 @@ use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Structure, Value};
 use zeroize::Zeroizing;
 
-use crate::execute::{Client, encode_message_for_test};
-use crate::execute_test_support::{test_item, test_structure};
+use crate::execute::Client;
+use crate::execute_test_support::{one_item_response_bytes, test_item};
 use crate::{ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientError, ClientRequest};
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
 const SUCCESS: u32 = 0;
-const RESPONSE_HEADER: u32 = 0x0042_007A;
-const PROTOCOL_VERSION: u32 = 0x0042_0069;
-const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
-const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
-const TIME_STAMP: u32 = 0x0042_0092;
-const BATCH_COUNT: u32 = 0x0042_000D;
-const BATCH_ITEM: u32 = 0x0042_000F;
-const OPERATION: u32 = 0x0042_005C;
-const RESULT_STATUS: u32 = 0x0042_007F;
-const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const DATA: u32 = 0x0042_00C2;
 const IV_COUNTER_NONCE: u32 = 0x0042_003D;
@@ -191,31 +181,15 @@ fn payload(items: impl IntoIterator<Item = kmipkit_ttlv::Item>) -> Structure {
 }
 
 fn response_bytes(operation: CryptoOperation, response_payload: Option<Structure>) -> Vec<u8> {
-    let version = test_structure([
-        test_item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
-        test_item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
-    ]);
-    let header = test_structure([
-        test_item(PROTOCOL_VERSION, Value::structure(version)),
-        test_item(TIME_STAMP, Value::date_time(1)),
-        test_item(BATCH_COUNT, Value::integer(1)),
-    ]);
-    let mut batch = vec![
-        test_item(OPERATION, Value::enumeration(operation.raw())),
-        test_item(RESULT_STATUS, Value::enumeration(SUCCESS)),
-    ];
-    if let Some(response_payload) = response_payload {
-        batch.push(test_item(
-            RESPONSE_PAYLOAD,
-            Value::structure(response_payload),
-        ));
-    }
-    let message = test_structure([
-        test_item(RESPONSE_HEADER, Value::structure(header)),
-        test_item(BATCH_ITEM, Value::structure(test_structure(batch))),
-    ]);
-    encode_message_for_test(message, &CodecLimits::defaults())
-        .expect("the test response fits default TTLV limits")
+    one_item_response_bytes(
+        operation.raw(),
+        SUCCESS,
+        None,
+        None,
+        None,
+        None,
+        response_payload,
+    )
 }
 
 fn successful_payload(operation: CryptoOperation) -> Structure {

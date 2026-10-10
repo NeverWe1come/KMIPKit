@@ -19,8 +19,8 @@ use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Structure, Value};
 use zeroize::Zeroizing;
 
-use crate::execute::{Client, encode_message_for_test};
-use crate::execute_test_support::{test_item, test_structure};
+use crate::execute::Client;
+use crate::execute_test_support::{one_item_response_bytes, test_item, test_structure};
 use crate::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientBatchResponse, ClientError,
     ClientErrorCategory, ClientOperation, ClientRequest,
@@ -32,18 +32,6 @@ const OPERATION_FAILED: u32 = 1;
 const SUCCESS: u32 = 0;
 const UNKNOWN_RESULT_REASON: u32 = 0xDEAD_BEEF;
 
-const RESPONSE_HEADER: u32 = 0x0042_007A;
-const PROTOCOL_VERSION: u32 = 0x0042_0069;
-const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
-const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
-const TIME_STAMP: u32 = 0x0042_0092;
-const BATCH_COUNT: u32 = 0x0042_000D;
-const BATCH_ITEM: u32 = 0x0042_000F;
-const OPERATION: u32 = 0x0042_005C;
-const RESULT_MESSAGE: u32 = 0x0042_007D;
-const RESULT_REASON: u32 = 0x0042_007E;
-const RESULT_STATUS: u32 = 0x0042_007F;
-const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const DATA: u32 = 0x0042_00C2;
 
@@ -140,37 +128,15 @@ fn response_bytes(
     result_message: Option<&str>,
     response_payload: Option<Structure>,
 ) -> Vec<u8> {
-    let version = test_structure([
-        test_item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
-        test_item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
-    ]);
-    let header = test_structure([
-        test_item(PROTOCOL_VERSION, Value::structure(version)),
-        test_item(TIME_STAMP, Value::date_time(1)),
-        test_item(BATCH_COUNT, Value::integer(1)),
-    ]);
-    let mut batch_item = vec![
-        test_item(OPERATION, Value::enumeration(operation.raw())),
-        test_item(RESULT_STATUS, Value::enumeration(result_status)),
-    ];
-    if let Some(reason) = result_reason {
-        batch_item.push(test_item(RESULT_REASON, Value::enumeration(reason)));
-    }
-    if let Some(message) = result_message {
-        batch_item.push(test_item(
-            RESULT_MESSAGE,
-            Value::text_string(message.to_owned()),
-        ));
-    }
-    if let Some(payload) = response_payload {
-        batch_item.push(test_item(RESPONSE_PAYLOAD, Value::structure(payload)));
-    }
-    let message = test_structure([
-        test_item(RESPONSE_HEADER, Value::structure(header)),
-        test_item(BATCH_ITEM, Value::structure(test_structure(batch_item))),
-    ]);
-    encode_message_for_test(message, &CodecLimits::defaults())
-        .expect("the test response fits default TTLV limits")
+    one_item_response_bytes(
+        operation.raw(),
+        result_status,
+        result_reason,
+        result_message,
+        None,
+        None,
+        response_payload,
+    )
 }
 
 fn uid_only_payload() -> Structure {
