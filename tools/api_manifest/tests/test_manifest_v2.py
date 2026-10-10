@@ -193,6 +193,36 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
     def test_checked_in_manifest_resolves_all_public_declaration_mappings(self) -> None:
         _validate_v2_readiness(self.checked_in_manifest, ROOT)
 
+    def test_checked_in_manifest_records_unmapped_binding_exports_as_blocked(self) -> None:
+        declarations = {
+            declaration["exportName"]: declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+        }
+        for export_name in (
+            "kmipkit.errors",
+            "kmipkit.extensions.with_extension",
+            "org.kmipkit.NativeExtensionRegistry",
+            "org.kmipkit.generated.ExtensionRegistryApi",
+            "kmipkit.errors.KmipKitError",
+            "kmipkit.errors.raise_for_status",
+        ):
+            with self.subTest(export_name=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual(declaration["declarationState"], "blocked")
+                self.assertIn("candidateSpecId", declaration)
+                self.assertIn("blockedReason", declaration)
+                self.assertNotIn("languageMappings", declaration)
+
+    def test_checked_in_manifest_records_transport_as_the_only_rust_only_capability(self) -> None:
+        transport = next(
+            capability
+            for capability in self.checked_in_manifest["capabilities"]
+            if capability["capabilityId"] == "rust_transport_exchange"
+        )
+        self.assertEqual(transport["parityScope"], "rust-only-adr")
+        self.assertEqual(transport["capabilityState"], "declared")
+        self.assertEqual(transport["ownerAdrId"], "ADR-0014")
+
     def test_schema_identifies_the_complete_v2_contract(self) -> None:
         self.assertEqual(
             self.schema["$id"], "urn:kmipkit:schemas:public-api-manifest:2"
