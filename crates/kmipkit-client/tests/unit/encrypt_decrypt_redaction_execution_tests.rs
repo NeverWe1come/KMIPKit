@@ -171,7 +171,7 @@ impl Transport for EchoRequestFailureTransport {
                     .windows(sentinel.len())
                     .any(|window| window == sentinel.as_bytes())
             }));
-        let source = io::Error::other(String::from_utf8_lossy(request).into_owned());
+        let source = io::Error::other("synthetic transport failure after request observation");
         Err(TransportError::new(
             RequestDeliveryState::PossiblySent,
             TransportCauseCategory::Io,
