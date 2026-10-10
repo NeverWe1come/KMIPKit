@@ -53,6 +53,19 @@ All Rust commands ran in WSL Ubuntu-26.04 against the assigned worktree, offline
 
 The T029 accepted form performed one exchange and preserved caller-supplied Data. The rejected Data-omission form asserted the exact generic error, Validation / InvalidInput / NotSent, and zero exchanges. The exact display contains no Data, AAD, or Tag names or request bytes. The T028 contracts preserved request item IDs and per-item server results when responses were reversed and when the Create producer failed; the default-option case preserved the omitted header field.
 
+
+## Refactor evidence
+
+Round 1 QA approved the behavior and required distinct Refactor evidence. Refactor commit: 3ea2cfabdaea6c63f67279e93b2eb36436a7d4d4 (DCO signed).
+
+Changed ID Placeholder eligibility from rescanning every preceding batch prefix for each omitted-ID consumer to one ordered pass with an eligible-producer-seen flag. The pass checks each consumer before recording the current item, so only a preceding item establishes eligibility. It retains the same effective Batch Order Option default, producer matcher, consumer matcher, and IneligibleIdPlaceholder error. The worst-case scan is now linear in batch size instead of quadratic for batches with many omitted-ID consumers. No test, contract, or API changed.
+
+Verification commands and results, run after the refactor in WSL Ubuntu-26.04, offline:
+
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo fmt --all --check' — exit 0.
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_id_placeholder_execution_tests --offline --message-format short' — exit 0; 7 passed, 0 failed, 289 filtered out.
+- wsl.exe -d Ubuntu-26.04 -- bash -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo clippy -p kmipkit-client --all-targets --all-features --offline -- -D warnings' — exit 0.
+- git diff --check — exit 0.
 ## Scope and known limitations
 
 No T032 or T033 work was started. This change does not execute the 28 fixture-derived request/response pairs; T038 owns that work. The full FR-008 one-exchange-per-invocation acceptance remains for T034/T038 as recorded in the approved task brief. No OASIS upstream source, generated artifact, dependency, transport, retry, Poll behavior, batch ordering policy, or hidden multipart state was changed. No automatic field movement or correlation synthesis was added.
