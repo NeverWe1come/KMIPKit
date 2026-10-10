@@ -505,7 +505,11 @@ class ManifestSchemaTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
-        cls.validator = Draft202012Validator(cls.schema)
+        legacy_schema = {
+            **cls.schema["$defs"]["registrySliceV1"],
+            "$defs": cls.schema["$defs"],
+        }
+        cls.validator = Draft202012Validator(legacy_schema)
 
     def _load_fixture(self) -> dict[str, object]:
         return json.loads(MINIMAL_FIXTURE.read_text(encoding="utf-8"))

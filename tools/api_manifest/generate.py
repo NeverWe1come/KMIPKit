@@ -240,6 +240,15 @@ def _schema_matches(
             _schema_matches(value, schema[branch], root_schema, path, errors)
 
     if isinstance(value, dict):
+        if "propertyNames" in schema:
+            for name in value:
+                _schema_matches(
+                    name,
+                    schema["propertyNames"],
+                    root_schema,
+                    f"{path}/{name}" if path else name,
+                    errors,
+                )
         missing = [name for name in schema.get("required", []) if name not in value]
         for name in missing:
             errors.append(f"{path}/{name}" if path else name)
@@ -303,7 +312,7 @@ def _check_schema_subset(schema: dict[str, Any]) -> None:
     supported = {
         "$defs", "$id", "$schema", "additionalProperties", "allOf", "anyOf", "const",
         "description", "else", "enum", "format", "if", "items", "maximum", "minItems",
-        "minLength", "minimum", "not", "oneOf", "pattern", "prefixItems", "properties",
+        "minLength", "minimum", "not", "oneOf", "pattern", "prefixItems", "properties", "propertyNames",
         "required", "then", "title", "type", "uniqueItems", "$ref", "maxItems",
     }
     def visit(schema_node: Any) -> None:
@@ -316,7 +325,7 @@ def _check_schema_subset(schema: dict[str, Any]) -> None:
             for name in ("$defs", "properties"):
                 for child in schema_node.get(name, {}).values():
                     visit(child)
-            for name in ("items", "additionalProperties", "not", "if", "then", "else"):
+            for name in ("items", "additionalProperties", "propertyNames", "not", "if", "then", "else"):
                 child = schema_node.get(name)
                 if isinstance(child, (dict, bool)):
                     visit(child)
