@@ -7,12 +7,15 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest import generate
 from tools.api_manifest.generate import ManifestError, _validate_operation_inventory
 from tools.api_manifest.tests.test_manifest_v2 import _valid_v2_manifest
 
 
 ROOT = Path(__file__).resolve().parents[3]
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
 
 
 class OperationCatalogParityTests(unittest.TestCase):
@@ -64,6 +67,38 @@ class OperationCatalogParityTests(unittest.TestCase):
             mutate(manifest["operations"])
             with self.subTest(case=label), self.assertRaises(ManifestError):
                 _validate_operation_inventory(manifest, self.catalog)
+
+    def test_v2_validator_checks_catalog_cross_references_and_parity_scope(self) -> None:
+        validator = getattr(generate, "_validate_v2_manifest", None)
+        self.assertTrue(callable(validator), "v2 manifest validation is not wired")
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+        validator(manifest, schema, self.catalog, ROOT)
+
+        invalid_catalog_copy = copy.deepcopy(manifest)
+        invalid_catalog_copy["operations"][0]["name"] = "Wrong Name"
+        with self.assertRaises(ManifestError):
+            validator(invalid_catalog_copy, schema, self.catalog, ROOT)
+
+        invalid_capability_copy = copy.deepcopy(manifest)
+        declared = next(
+            record
+            for record in invalid_capability_copy["publicDeclarations"]
+            if record["declarationState"] == "declared"
+        )
+        declared["capabilityId"] = "unknown_capability"
+        with self.assertRaises(ManifestError):
+            validator(invalid_capability_copy, schema, self.catalog, ROOT)
+
+        invalid_scope_copy = copy.deepcopy(manifest)
+        java_declaration = next(
+            record
+            for record in invalid_scope_copy["publicDeclarations"]
+            if record["packageId"] == "java-kmipkit"
+        )
+        java_declaration["parityScope"] = "rust-only-adr"
+        with self.assertRaises(ManifestError):
+            validator(invalid_scope_copy, schema, self.catalog, ROOT)
 
 
 if __name__ == "__main__":
