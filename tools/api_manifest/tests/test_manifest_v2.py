@@ -8,10 +8,13 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from tools.api_manifest.generate import _validate_operation_inventory
+
 
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
-REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "registry-manifest.json"
+CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 
 EXPECTED_PACKAGES = {
@@ -59,6 +62,14 @@ GENERATED_OUTPUTS = (
     ("pythonApi", "bindings/python/src/kmipkit/_generated/public_api.py"),
     ("parityFixtures", "tests/fixtures/api/generated/public_api_parity.json"),
 )
+LEGACY_GENERATED_OUTPUTS = {
+    "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs",
+    "cHeader": "bindings/c/include/kmipkit.h",
+    "javaApi": "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
+    "javaParityTests": "bindings/java/src/test/java/org/kmipkit/generated/ExtensionRegistryParityFixtures.java",
+    "pythonApi": "bindings/python/src/kmipkit/_generated/extension_registry.py",
+    "parityFixtures": "tests/fixtures/extensions/generated/registry_parity.json",
+}
 
 
 def _valid_v2_manifest() -> dict[str, object]:
@@ -139,6 +150,42 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         cls.schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
         cls.contract = cls.schema["$defs"]["publicApiV2"]
         cls.validator = Draft202012Validator(cls.schema)
+        cls.checked_in_manifest = json.loads(
+            CHECKED_IN_MANIFEST_PATH.read_text(encoding="utf-8")
+        )
+        cls.catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+
+    def test_checked_in_manifest_is_the_complete_v2_contract(self) -> None:
+        manifest = self.checked_in_manifest
+        self.assertEqual(manifest["formatVersion"], 2)
+        self.assertEqual(manifest["scope"], "full-1.0")
+        self.assertEqual(manifest["releaseLine"], "1.0.0")
+        self.assertEqual(
+            {package["id"] for package in manifest["publicPackages"]},
+            EXPECTED_PACKAGES,
+        )
+        self.assertEqual(len(manifest["operations"]), 57)
+        self.assertTrue(manifest["publicDeclarations"])
+        self.assertTrue(manifest["capabilities"])
+        self.assertIn("approvedExclusions", manifest)
+        self.assertEqual(list(self.validator.iter_errors(manifest)), [])
+
+    def test_checked_in_manifest_retains_every_registry_slice_record(self) -> None:
+        manifest = self.checked_in_manifest
+        registry = json.loads(REGISTRY_FIXTURE_PATH.read_text(encoding="utf-8"))
+        for field in ("types", "functions", "errorCategories", "limits", "security"):
+            with self.subTest(field=field):
+                self.assertEqual(manifest[field], registry[field])
+        self.assertTrue(set(registry["requirementIds"]) <= set(manifest["requirementIds"]))
+        outputs = manifest["generatedOutputs"]
+        if isinstance(outputs, list):
+            paths = {entry["path"] for entry in outputs}
+            self.assertTrue(set(LEGACY_GENERATED_OUTPUTS.values()) <= paths)
+        else:
+            self.assertEqual(outputs, LEGACY_GENERATED_OUTPUTS)
+
+    def test_checked_in_operation_inventory_matches_the_normative_catalog(self) -> None:
+        _validate_operation_inventory(self.checked_in_manifest, self.catalog)
 
     def test_schema_identifies_the_complete_v2_contract(self) -> None:
         self.assertEqual(
