@@ -450,6 +450,24 @@ fn fixture_adapter_pairs_each_request_with_its_source_sequence_response() {
 }
 
 #[test]
+fn fixture_adapter_rejects_mismatched_selected_request_and_response_operations() {
+    let (request_messages, response_messages) = SEQUENCE_PAIRING_XML
+        .split_once("<ResponseMessage>")
+        .expect("the synthetic fixture contains a response message");
+    let mismatched_response = response_messages.replacen(
+        "<Operation type=\"Enumeration\" value=\"Encrypt\"/>",
+        "<Operation type=\"Enumeration\" value=\"Decrypt\"/>",
+        1,
+    );
+    let mismatched_xml = format!("{request_messages}<ResponseMessage>{mismatched_response}");
+
+    assert_eq!(
+        OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &mismatched_xml).unwrap_err(),
+        OasisCryptoFixtureError::MismatchedOperations
+    );
+}
+
+#[test]
 fn fixture_adapter_resolves_selected_symbols_deterministically() {
     let first = OasisCryptoFixture::from_xml(TC_ENC_1_21_ID, TC_ENC_1_21_XML)
         .expect("the fixture's out-of-scope setup symbols are not inspected");
