@@ -83,10 +83,10 @@
 
 ### Red
 
-- [ ] T034 Add failing fake-transport tests that execute all 28 OASIS fixture-derived Encrypt/Decrypt request-response pairs through the typed client, asserting each exact encoded request, its paired response, case/step association, one exchange, no retry, and delivery-state propagation. Also retain focused delivery-state cases for both operation types.
+- [ ] T034 Add fake-transport characterization tests that execute all 28 OASIS fixture-derived Encrypt/Decrypt request-response pairs through the typed client, asserting each exact encoded request, its paired response, case/step association, one exchange, no retry, and delivery-state propagation. Also retain focused delivery-state cases for both operation types. Record whether the baseline exposes a behavioral failure; do not alter tests or implementation to manufacture a Red result.
 - [ ] T035 Add failing tests for success payloads, non-success server Result Reason/Message passthrough, PendingOutcome, malformed response handling, and local decoder limits.
 - [ ] T036 Add sentinel tests ensuring plaintext, ciphertext, Data, AAD, AEAD Tag, IV, Correlation Value, and raw request/response bodies do not appear in Debug, Display, errors, or test diagnostics.
-- [ ] T037 Run focused client tests and capture Red evidence.
+- [ ] T037 Run focused client tests and record behavioral Red evidence when present; if the baseline passes the characterization contracts, record that result and state that no behavioral Red was observed.
 
 ### Green
 
