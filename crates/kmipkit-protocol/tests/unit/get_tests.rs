@@ -548,7 +548,7 @@ fn unknown_get_result_status_and_reason_values_are_preserved() {
         UNKNOWN_RESULT_STATUS,
         Some(UNKNOWN_RESULT_REASON),
         None,
-        None,
+        Some(valid_successful_payload()),
     );
     let response = decode_get(&message).expect("unknown result values remain representable");
 
