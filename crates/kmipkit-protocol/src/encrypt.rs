@@ -24,8 +24,23 @@ const AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA: u32 = 0x0042_00FE;
 const AUTHENTICATED_ENCRYPTION_TAG: u32 = 0x0042_00FF;
 
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
+const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+const HASHING_ALGORITHM: u32 = 0x0042_0038;
+const PADDING_METHOD: u32 = 0x0042_005F;
+const KEY_ROLE_TYPE: u32 = 0x0042_0083;
+const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
+const RANDOM_IV: u32 = 0x0042_00C5;
 const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
+const FIXED_FIELD_LENGTH: u32 = 0x0042_00CF;
+const COUNTER_LENGTH: u32 = 0x0042_00D0;
+const INITIAL_COUNTER_VALUE: u32 = 0x0042_00D1;
+const INVOCATION_FIELD_LENGTH: u32 = 0x0042_00D2;
+const SALT_LENGTH: u32 = 0x0042_0100;
+const MASK_GENERATOR: u32 = 0x0042_0101;
+const MASK_GENERATOR_HASHING_ALGORITHM: u32 = 0x0042_0102;
+const P_SOURCE: u32 = 0x0042_0103;
+const TRAILER_FIELD: u32 = 0x0042_0104;
 
 /// A typed KMIP 2.1 Encrypt request payload from §6.1.17, Table 214.
 ///
@@ -453,19 +468,79 @@ fn validate_cryptographic_parameters_view(
 fn validate_known_cryptographic_parameters_view(
     parameters: &StructureView<'_>,
 ) -> Result<(), ProtocolError> {
-    let mut seen = [false; 3];
+    let mut seen = [false; 18];
     for field in parameters.children() {
         let (index, valid_type) = match field.tag().raw() {
             BLOCK_CIPHER_MODE => (
                 Some(0),
                 field.with_value(|value| matches!(value, ValueView::Enumeration(_))),
             ),
-            IV_LENGTH => (
+            CRYPTOGRAPHIC_ALGORITHM => (
                 Some(1),
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_))),
+            ),
+            HASHING_ALGORITHM => (
+                Some(2),
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_))),
+            ),
+            PADDING_METHOD => (
+                Some(3),
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_))),
+            ),
+            KEY_ROLE_TYPE => (
+                Some(4),
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_))),
+            ),
+            DIGITAL_SIGNATURE_ALGORITHM => (
+                Some(5),
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_))),
+            ),
+            RANDOM_IV => (
+                Some(6),
+                field.with_value(|value| matches!(value, ValueView::Boolean(_))),
+            ),
+            IV_LENGTH => (
+                Some(7),
                 field.with_value(|value| matches!(value, ValueView::Integer(_))),
             ),
             TAG_LENGTH => (
-                Some(2),
+                Some(8),
+                field.with_value(|value| matches!(value, ValueView::Integer(_))),
+            ),
+            FIXED_FIELD_LENGTH => (
+                Some(9),
+                field.with_value(|value| matches!(value, ValueView::Integer(_))),
+            ),
+            COUNTER_LENGTH => (
+                Some(10),
+                field.with_value(|value| matches!(value, ValueView::Integer(_))),
+            ),
+            INITIAL_COUNTER_VALUE => (
+                Some(11),
+                field.with_value(|value| matches!(value, ValueView::Integer(_))),
+            ),
+            INVOCATION_FIELD_LENGTH => (
+                Some(12),
+                field.with_value(|value| matches!(value, ValueView::Integer(_))),
+            ),
+            SALT_LENGTH => (
+                Some(13),
+                field.with_value(|value| matches!(value, ValueView::Integer(_))),
+            ),
+            MASK_GENERATOR => (
+                Some(14),
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_))),
+            ),
+            MASK_GENERATOR_HASHING_ALGORITHM => (
+                Some(15),
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_))),
+            ),
+            P_SOURCE => (
+                Some(16),
+                field.with_value(|value| matches!(value, ValueView::ByteString(_))),
+            ),
+            TRAILER_FIELD => (
+                Some(17),
                 field.with_value(|value| matches!(value, ValueView::Integer(_))),
             ),
             _ => (None, true),

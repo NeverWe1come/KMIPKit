@@ -7,7 +7,7 @@ Start commit: `d635f8dc802a451fb12728afd3f7a51f072d20ee`
 
 ## Scope implemented
 
-Added the Table 214 `EncryptRequest` serializer and Table 215 `EncryptResponse` conversion in `crates/kmipkit-protocol/src/encrypt.rs`, and exported the public types from the protocol crate. Request members retain Table 214 order, caller-selected TTLV encodings, optional omission, and supplied Cryptographic Parameters order. `OperationData` and byte-string secrets move into zeroizing TTLV values. The crate-private request validator rejects repeated known singleton fields, invalid known Item Types, malformed Cryptographic Parameters children, and the Decrypt-only Authenticated Encryption Tag. Known Cryptographic Parameters children are checked for their defined Enumeration/Integer types and uniqueness before the existing §4.16 presence validator runs. Unknown members remain in the generic payload.
+Added the Table 214 `EncryptRequest` serializer and Table 215 `EncryptResponse` conversion in `crates/kmipkit-protocol/src/encrypt.rs`, and exported the public types from the protocol crate. Request members retain Table 214 order, caller-selected TTLV encodings, optional omission, and supplied Cryptographic Parameters order. `OperationData` and byte-string secrets move into zeroizing TTLV values. The crate-private request validator rejects repeated known singleton fields, invalid known Item Types, malformed Cryptographic Parameters children, and the Decrypt-only Authenticated Encryption Tag. Encrypt checks the defined Item Types and accepted singleton cardinality for all 18 Table 59 members before the existing §4.16 presence validator runs. Unknown members remain in the generic payload.
 
 Successful responses parse the required permitted Unique Identifier and optional Table 215 Byte Strings, while rejecting duplicates, wrong Data types, and known request-only members. Non-success responses preserve the shared operation result without requiring a success payload or identifier. The generic `ResponseMessage` remains the source of unknown fields.
 
@@ -43,3 +43,41 @@ Updated Encrypt-owned references in `specs/019-cryptographic-operations/traceabi
 - Known error variants are static and do not contain request or response payload values. Byte-string response copies are owned by `SecretBytes`; request bytes move through `OperationData`/`SecretBytes` into zeroizing TTLV values.
 - The borrowed Cryptographic Parameters presence helper shares the existing §4.16 validation logic; it preserves input ordering and values.
 - Decrypt-dependent modules and their tests were not run as complete modules because T021 remains unimplemented. Client execution, XML fixture adapter, multipart client rules, Refactor, and full feature gates remain future tasks.
+
+## P2 review correction — full Table 59 Encrypt validation
+
+Date: 2026-10-10
+Base: `057bcad5950d4e6a44d29a07f5ffaca3d88082f0` (T019 RED matrix and its traceability correction are retained).
+
+The review finding was that `validate_known_cryptographic_parameters_view` only checked TTLV Item Type and repeated occurrences for Block Cipher Mode, IV Length, and Tag Length. The registered RED matrix covers all 18 Cryptographic Parameters members listed in pinned OASIS KMIP v2.1 §4.16, Table 59, using their allocated tags from Table 487. The implementation now checks the Table 59 Item Type and accepted singleton cardinality for all 18 members in the Encrypt boundary. Unrecognized child tags continue through the default path and are not rebuilt or reordered; unknown-field preservation remains covered by `encrypt_tests::request_preserves_supplied_cryptographic_parameters_members_and_order` and `cryptographic_parameters_tests::unknown_parameter_members_survive_in_original_order_and_encoding`.
+
+§4.16 calls Cryptographic Parameters a “set of OPTIONAL fields” and Table 59 provides the member encodings, but the pinned text does not state a separate maximum-occurrence sentence per member. Singleton enforcement is the accepted T020 feature criterion for known-child cardinality validation; this correction does not claim that the OASIS specification states an explicit per-member `MUST` against repetition. The work changes only Encrypt validation. Decrypt parity remains T021.
+
+### RED reproduction
+
+```text
+cargo test -p kmipkit-protocol --lib encrypt_parameter_structure_tests --offline
+```
+
+With only the T021-dependent registrations `decrypt_tests`, `operation_failure_tests`, `decrypt_response_tests`, and `malformed_crypto_payload_tests` temporarily isolated, the matrix compiled and ran, then exited 101 with both tests failing as expected. Each assertion reported the same 15 accepted malformed members: Cryptographic Algorithm, Hashing Algorithm, Padding Method, Key Role Type, Digital Signature Algorithm, Random IV, Fixed Field Length, Counter Length, Initial Counter Value, Invocation Field Length, Salt Length, Mask Generator, Mask Generator Hashing Algorithm, P Source, and Trailer Field. The three pre-existing members already failed their malformed cases. A PowerShell `finally` block restored `src/lib.rs` byte-for-byte.
+
+### GREEN verification
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-protocol --lib encrypt_parameter_structure_tests --offline` | 2 passed; duplicate and wrong Item Type coverage for all 18 members |
+| `cargo test -p kmipkit-protocol --lib encrypt_tests --offline` | 4 passed; includes supplied unknown-member order/value preservation |
+| `cargo test -p kmipkit-protocol --lib encrypt_response_tests --offline` | 2 passed |
+| `cargo test -p kmipkit-protocol --lib encrypt_malformed_focused_tests --offline` | 7 passed; temporary Encrypt-only view of the combined malformed module |
+| `cargo test -p kmipkit-protocol --lib operation_data_tests --offline` | 5 passed |
+| `cargo test -p kmipkit-protocol --lib cryptographic_parameters_tests --offline` | 5 passed; includes unknown-member order and encoding preservation |
+| `cargo fmt --all --check` | passed |
+| `cargo clippy -p kmipkit-protocol --all-targets --all-features --offline -- -D warnings` | passed; the four T021-dependent test registrations were temporarily isolated and restored byte-for-byte |
+| `cargo doc -p kmipkit-protocol --no-deps --all-features --offline` | passed; rustdoc generated |
+| `git diff --check` | passed after the final source, task, traceability, and report edits |
+
+For focused testing, the combined malformed test registration was replaced temporarily by `encrypt_malformed_focused_tests.rs`, produced from the existing mixed Encrypt/Decrypt module with only Encrypt cases enabled. The temporary test file and registration were removed in `finally`; `src/lib.rs` was verified byte-for-byte restored. The T019 18-member matrix stayed enabled in all applicable focused test and lint runs. No committed tests or generated files were changed for this correction.
+
+### Limits and traceability
+
+Traceability now records Encrypt's Green implementation against all 18 `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-*` entries, both matrix tests, and the existing unknown-member preservation tests. The RED history remains documented in `task-19-parameter-structure-report.md`. No full workspace or complete feature test run is claimed: registered Decrypt coverage still depends on T021, and all Decrypt behavior remains out of scope for this correction.
