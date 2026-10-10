@@ -158,6 +158,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         cls.catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
 
+    def declarations_for_package(self, package_id: str) -> list[dict[str, object]]:
+        return [
+            declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration["packageId"] == package_id
+        ]
+
     def test_checked_in_manifest_is_the_complete_v2_contract(self) -> None:
         manifest = self.checked_in_manifest
         self.assertEqual(manifest["formatVersion"], 2)
@@ -313,11 +320,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(transport_exchange["parityScope"], "rust-only-adr")
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
-        declarations = [
-            declaration
-            for declaration in self.checked_in_manifest["publicDeclarations"]
-            if declaration["packageId"] == "java-kmipkit"
-        ]
+        declarations = self.declarations_for_package("java-kmipkit")
         self.assertEqual(len(declarations), 315)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
@@ -332,11 +335,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(native_handle["declarationState"], "blocked")
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
-        declarations = [
-            declaration
-            for declaration in self.checked_in_manifest["publicDeclarations"]
-            if declaration["packageId"] == "python-kmipkit"
-        ]
+        declarations = self.declarations_for_package("python-kmipkit")
         self.assertEqual(len(declarations), 259)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
