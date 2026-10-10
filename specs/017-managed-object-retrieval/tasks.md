@@ -17,19 +17,19 @@ The revised KMIPKIT-0017 specification and catalog-disposition changes are merge
 **Purpose**: Start from the approved release and establish deterministic operation test fixtures.
 
 - [x] T001 Create the implementation worktree from active release/1.0.0 and record its commit; verify the client extension points for additive Get/Locate dispatch and typed-outcome integration, callback lifetime and owned-copy behavior for response TTLV, and the current validated direct-item `AttributeSet` contract against specs/017-managed-object-retrieval/traceability.md
-- [ ] T002 Add deterministic generic TTLV test builders for Get and Locate request/response payloads in crates/kmipkit-protocol/tests/support/
-- [ ] T003 Add fake-transport helpers that capture one request batch and return controlled response batches in crates/kmipkit-client/tests/support/
+- [x] T002 Add deterministic generic TTLV test builders for Get and Locate request/response payloads in crates/kmipkit-protocol/tests/support/
+- [x] T003 Add fake-transport helpers that capture one request batch and return controlled response batches in crates/kmipkit-client/tests/support/
 
 ## Phase 2: Foundational ownership contract
 
 **Purpose**: Establish the fallible, zeroizing TTLV item-copy primitive required to retain Get's callback-scoped Any Object. Get/Locate client dispatch and typed outcomes are added with their operation models and decoders in T017 and T027.
 
-- [ ] T004 Add failing public-surface tests for `Item::try_clone` deep-copy/roundtrip behavior plus Get/Locate request exports and model accessors in crates/kmipkit-ttlv/tests/public_item_contract.rs and crates/kmipkit-protocol/tests/public_operation_contract.rs
-- [ ] T005 Add a failing client-boundary integration contract for request variants, operation identifiers, completed-only outcome accessors, unified `ClientResponseView` accessors, and valid Pending response mapping in crates/kmipkit-client/tests/operation_boundary.rs. Its compile-time Red remains until the Get/Locate models and client mappings are implemented in T014–T017 and T024–T027; execute its runtime scenario in T028.
-- [ ] T006 Record focused Red commands/results and commit the contract tests before production edits in the KMIPKIT-0017 implementation branch
-- [ ] T007 Implement the fallible zeroizing `Item::try_clone` in crates/kmipkit-ttlv/src/item.rs
-- [ ] T008 Run `public_item_contract` and focused TTLV tests, record Green evidence, and commit the `Item::try_clone` Green implementation separately from the Red tests in the KMIPKIT-0017 implementation branch. The combined client-boundary test remains deferred to T028 because its typed response models are introduced in the operation stories.
-- [ ] T009 Review `Item::try_clone` for a justified behavior-preserving Refactor; if warranted, test and commit it separately in crates/kmipkit-ttlv/src/item.rs
+- [x] T004 Add failing public-surface tests for `Item::try_clone` deep-copy/roundtrip behavior plus Get/Locate request exports and model accessors in crates/kmipkit-ttlv/tests/public_item_contract.rs and crates/kmipkit-protocol/tests/public_operation_contract.rs
+- [x] T005 Add a failing client-boundary integration contract for request variants, operation identifiers, completed-only outcome accessors, unified `ClientResponseView` accessors, and valid Pending response mapping in crates/kmipkit-client/tests/operation_boundary.rs. Its compile-time Red remains until the Get/Locate models and client mappings are implemented in T014–T017 and T024–T027; execute its runtime scenario in T028.
+- [x] T006 Record focused Red commands/results and commit the contract tests before production edits in the KMIPKIT-0017 implementation branch
+- [x] T007 Implement the fallible zeroizing `Item::try_clone` in crates/kmipkit-ttlv/src/item.rs
+- [x] T008 Run `public_item_contract` and focused TTLV tests, record Green evidence, and commit the `Item::try_clone` Green implementation separately from the Red tests in the KMIPKIT-0017 implementation branch. The combined client-boundary test remains deferred to T028 because its typed response models are introduced in the operation stories.
+- [x] T009 Review `Item::try_clone` for a justified behavior-preserving Refactor; if warranted, test and commit it separately in crates/kmipkit-ttlv/src/item.rs
 
 ## Phase 3: User Story 1 — Retrieve one managed object (Priority: P1)
 
@@ -38,12 +38,14 @@ The revised KMIPKIT-0017 specification and catalog-disposition changes are merge
 
 ### Tests for User Story 1
 
-- [ ] T010 [US1] Add failing Table 220 tests for each optional field, omission, explicit Enumeration values, and request field order in crates/kmipkit-protocol/tests/unit/get_tests.rs
-- [ ] T011 [US1] Add failing Table 221/222 tests for success/error outcomes, required-field cardinality and types, applicable Result Reasons, unknown values, and nested Any Object preservation including repeated fields in crates/kmipkit-protocol/tests/unit/get_tests.rs
-- [ ] T012 [US1] Add failing fake-transport tests for one exchange, Pending/result preservation, delivery state, and no automatic retry; include a Get with omitted Unique Identifier after a preceding batch operation
+- [x] T010 [US1] Add failing Table 220 tests for each optional field, omission, explicit Enumeration values, and request field order in crates/kmipkit-protocol/tests/unit/get_tests.rs
+- [x] T011 [US1] Add failing Table 221/222 tests for success/error outcomes, required-field cardinality and types, applicable Result Reasons, unknown values, and nested Any Object preservation including repeated fields in crates/kmipkit-protocol/tests/unit/get_tests.rs
+- [x] T012 [US1] Add failing fake-transport tests for one exchange, Pending/result preservation, delivery state, and no automatic retry; include a Get with omitted Unique Identifier after a preceding batch operation
   establishes server-side ID Placeholder, and assert batch order and no client-side identifier synthesis in
   crates/kmipkit-client/tests/unit/object_read_execution_tests.rs
-- [ ] T013 Record Red commands/results and commit Get tests before production changes in the KMIPKIT-0017 implementation branch
+- [x] T013 Record Red commands/results and commit Get tests before production changes in the KMIPKIT-0017 implementation branch
+
+T013 Red evidence: T010 commit `1badf7dd` adds the Table 220 request cases; `cargo test -p kmipkit-protocol --lib get_tests` failed only on absent Get request/selector APIs. T011 commits `6c689908` and `a3c148ee` add Table 221/222 response cases and remove payload formatting from assertion diagnostics; the same focused command failed only on absent Get response/request APIs. T012 commit `099d3882` adds client fake-transport cases; `cargo test -p kmipkit-client --lib object_read_execution_tests` failed with 15 missing Get request/mapping API diagnostics. In each Red, `cargo fmt --all --check` and `git diff --check` passed. All three Red changes were reviewed independently; T011's P2 diagnostic finding was fixed and re-reviewed before the branch was pushed. No production changes were made in T010–T013.
 
 ### Implementation for User Story 1
 
