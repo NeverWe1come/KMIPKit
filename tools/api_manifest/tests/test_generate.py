@@ -159,6 +159,15 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         path = root / "specification" / "api" / "public-api.json"
         path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
+    def test_v1_registry_slice_generation_does_not_require_the_v2_catalog(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_fixture_repo(Path(directory))
+
+            result = self._run_generator(root, "--write")
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(all((root / path).is_file() for path in GENERATED_OUTPUTS))
+
     def _assert_symlink_creation_or_skip(self, link: Path, target: Path, *, directory: bool) -> None:
         try:
             link.symlink_to(target, target_is_directory=directory)
