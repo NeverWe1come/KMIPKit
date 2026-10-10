@@ -2,9 +2,10 @@
 //! v2.1 §§6.1.19 and 6.1.28, Tables 220–222 and 247–249; §§8.6 and 9.1,
 //! Tables 399–400; §§9.2 and 11.3, Tables 431–432; §§11.46–11.47,
 //! Tables 479–480; and ID Placeholder behavior in §§6.1, 6.1.8/Table 187,
-//! and 9.8. Traceability: KMIPKIT-0017-FR-001, FR-003, FR-006–FR-008,
-//! FR-010, FR-011, and SC-002. These are client execution contracts, not
-//! claims of official OASIS case passes.
+//! and 9.8. Traceability: KMIPKIT-0017-FR-001, FR-003, FR-006–FR-010,
+//! FR-011, and SC-002. FR-009 is verified here by preserving the Locate
+//! identifiers returned by the server without client-side filtering. These
+//! are client execution contracts, not claims of official OASIS case passes.
 
 use kmipkit_protocol::{
     AttributeSet, CreateRequest, GetRequest, LocateRequest, ObjectGroupMember, ObjectType,
