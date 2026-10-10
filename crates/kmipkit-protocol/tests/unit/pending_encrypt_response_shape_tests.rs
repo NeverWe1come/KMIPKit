@@ -97,7 +97,10 @@ fn pending_encrypt_item_is_not_accepted_as_a_completed_response() {
         Some(asynchronous_correlation.to_vec())
     );
     assert!(
-        EncryptResponse::try_from_response_item(item).is_err(),
+        matches!(
+            EncryptResponse::try_from_response_item(item),
+            Err(crate::EncryptError::PendingOutcomeRequired)
+        ),
         "Pending must be routed through the shared PendingOutcome path"
     );
 }
@@ -124,7 +127,10 @@ fn pending_decrypt_item_is_not_accepted_as_a_completed_response() {
         Some(asynchronous_correlation.to_vec())
     );
     assert!(
-        DecryptResponse::try_from_response_item(item).is_err(),
+        matches!(
+            DecryptResponse::try_from_response_item(item),
+            Err(crate::DecryptError::PendingOutcomeRequired)
+        ),
         "Pending must be routed through the shared PendingOutcome path"
     );
 }

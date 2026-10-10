@@ -5,6 +5,7 @@ use std::fmt;
 
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
+use crate::asynchronous::is_pending;
 use crate::{
     KmipOperationResult, OperationData, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
     ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes, UniqueIdentifier,
@@ -221,16 +222,18 @@ pub struct DecryptResponse {
 }
 
 impl DecryptResponse {
-    /// Converts one already validated Decrypt response batch item.
+    /// Converts one already validated, completed Decrypt response batch item.
     ///
     /// Success payload fields follow Table 197. Unknown fields remain
-    /// available through the source response message.
+    /// available through the source response message. The client must route
+    /// `Operation Pending` through the shared `PendingOutcome` path before
+    /// calling this completed-response converter.
     ///
     /// # Errors
     ///
-    /// Returns [`DecryptError`] for a different operation, invalid result
-    /// metadata, or a malformed successful payload. Errors contain no server
-    /// payload values.
+    /// Returns [`DecryptError`] for a different operation, an `Operation
+    /// Pending` result, invalid result metadata, or a malformed successful
+    /// payload. Errors contain no server payload values.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, DecryptError> {
         if item.operation() != Some(DECRYPT_OPERATION) {
             return Err(DecryptError::UnexpectedOperation);
@@ -242,6 +245,10 @@ impl DecryptResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(DecryptError::InvalidOperationResult)?;
+
+        if is_pending(status) {
+            return Err(DecryptError::PendingOutcomeRequired);
+        }
 
         if status.raw() != SUCCESS {
             return Ok(Self {
@@ -296,6 +303,9 @@ pub enum DecryptError {
     UnexpectedOperation,
     /// The validated response item did not expose a Result Status.
     MissingResultStatus,
+    /// The response is pending and must be routed through the shared
+    /// `PendingOutcome` path instead of completed-response conversion.
+    PendingOutcomeRequired,
     /// The represented KMIP result violates the shared status/reason contract.
     InvalidOperationResult(ResultValidationError),
     /// A successful Decrypt result omitted its Response Payload.
@@ -309,6 +319,9 @@ impl fmt::Display for DecryptError {
         match self {
             Self::UnexpectedOperation => formatter.write_str("response item is not Decrypt"),
             Self::MissingResultStatus => formatter.write_str("Decrypt result status is missing"),
+            Self::PendingOutcomeRequired => formatter.write_str(
+                "Decrypt result is Pending; route it through the shared PendingOutcome path",
+            ),
             Self::InvalidOperationResult(cause) => {
                 write!(formatter, "Decrypt operation result is invalid: {cause}")
             }

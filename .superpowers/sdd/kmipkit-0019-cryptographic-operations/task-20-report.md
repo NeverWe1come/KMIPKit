@@ -80,4 +80,23 @@ For focused testing, the combined malformed test registration was replaced tempo
 
 ### Limits and traceability
 
-Traceability now records Encrypt's Green implementation against all 18 `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-*` entries, both matrix tests, and the existing unknown-member preservation tests. The RED history remains documented in `task-19-parameter-structure-report.md`. No full workspace or complete feature test run is claimed: registered Decrypt coverage still depends on T021, and all Decrypt behavior remains out of scope for this correction.
+Traceability now records Encrypt's Green implementation against all 18 `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-*` entries, both matrix tests, and the existing unknown-member preservation tests. The RED history remains documented in `task-19-parameter-structure-report.md`. For this original Cryptographic Parameters correction, registered Decrypt coverage still depended on T021 and Decrypt behavior was out of scope; the separate Pending response review correction below applies to both operation converters. No full workspace or complete feature test run is claimed.
+
+## P2 review correction — Pending is not a completed Encrypt result
+
+The response conversion review found that the non-Success branch also accepted a valid `Operation Pending` item as a completed Encrypt response. The RED-only tests were committed separately as `065083767d2628453c46120b445468ac900927d3` (`test(KMIPKIT-0019): reject pending completed results`). Before production edits, `cargo test -p kmipkit-protocol --lib pending_encrypt_response_shape_tests --offline` exited 101 as expected: the pre-existing correlation-shape test passed, while the new Encrypt and Decrypt assertions failed because both converters returned `Ok` for valid Pending items carrying Asynchronous Correlation Value and multipart Correlation Value.
+
+The Green correction makes both completed response converters reject Pending with payload-free `EncryptError::PendingOutcomeRequired` / `DecryptError::PendingOutcomeRequired` variants. Their rustdoc requires callers to route Pending through the shared `PendingOutcome` path before conversion. Assertions match the exact variants. No `PendingOutcome` is constructed here and no client dispatch is added; that remains client integration scope. Existing Success payload conversion and completed Failure preservation are retained.
+
+| Command | Result |
+| --- | --- |
+| `cargo test -p kmipkit-protocol --lib pending_encrypt_response_shape_tests --offline` | passed, 3 tests including exact typed Pending rejection for Encrypt and Decrypt |
+| `cargo test -p kmipkit-protocol --lib encrypt_response_tests --offline` | passed, 2 tests |
+| `cargo test -p kmipkit-protocol --lib decrypt_response_tests --offline` | passed, 2 tests |
+| `cargo test -p kmipkit-protocol --lib operation_failure_tests --offline` | passed, 2 tests; completed Failure common-result behavior preserved |
+| `cargo fmt --all --check` | passed after `cargo fmt --all` |
+| `cargo clippy -p kmipkit-protocol --all-targets --all-features --offline -- -D warnings` | passed |
+| `cargo doc -p kmipkit-protocol --no-deps --all-features --offline` | passed; rustdoc generated |
+| `git diff --check` | passed; Git reports only the existing tasks.md CRLF-to-LF advisory |
+
+Updated the T020/T021 task evidence and the `KMIPKIT-REQ-SPEC-6.1-001-002` and FR-007 traceability rows. FR-007 now distinguishes completed failures and unknown reasons from Pending, which stays on the shared PendingOutcome path. This correction makes no full-workspace, coverage, fixture adapter, interoperability, or client-dispatch claim.
