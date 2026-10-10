@@ -113,6 +113,16 @@ fn encrypt_and_decrypt_without_a_preceding_batch_item_are_rejected_before_send()
 }
 
 #[test]
+fn omitted_identifier_validation_diagnostic_is_static() {
+    let error = crate::execute::BatchValidationError::IneligibleIdPlaceholder;
+
+    assert_eq!(
+        error.to_string(),
+        "omitted Unique Identifier has no eligible preceding ID Placeholder producer"
+    );
+}
+
+#[test]
 fn omitted_identifier_after_ping_is_rejected_before_send() {
     let batch = ClientBatch::from_items([
         batch_item(ClientRequest::ping(), b"ping-before-encrypt"),

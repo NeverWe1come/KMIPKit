@@ -10,7 +10,11 @@
 
 use crate::ProtocolError;
 use crate::{
-    cryptographic_parameters::validate_cryptographic_parameters, operation_test_support::item,
+    cryptographic_parameters::{
+        validate_cryptographic_parameters, validate_cryptographic_parameters_view,
+        validate_known_cryptographic_parameters_view,
+    },
+    operation_test_support::item,
 };
 use kmipkit_ttlv::{Structure, Value, ValueView};
 
@@ -185,5 +189,20 @@ fn omitted_cryptographic_parameters_remain_absent_without_validation() {
         validate_cryptographic_parameters(None)
             .expect("omitted parameters need no local inspection")
             .is_none()
+    );
+}
+
+#[test]
+fn required_presence_check_does_not_infer_a_mode_from_the_wrong_item_type() {
+    let supplied = parameters([(BLOCK_CIPHER_MODE_TAG, Value::integer(6))]);
+    let view = supplied.view();
+
+    assert!(
+        validate_cryptographic_parameters_view(&view).is_ok(),
+        "the presence-only helper does not reinterpret a non-Enumeration mode"
+    );
+    assert!(
+        validate_known_cryptographic_parameters_view(&view).is_err(),
+        "the typed boundary separately rejects an invalid Table 59 member type"
     );
 }

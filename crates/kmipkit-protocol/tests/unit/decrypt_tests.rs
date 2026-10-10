@@ -12,7 +12,10 @@
 //! `KMIPKIT-REQ-SPEC-6.1.11-006`, and `KMIPKIT-ELEM-OP-C2S-DECRYPT`.
 
 use crate::operation_test_support::item;
-use crate::{DecryptRequest, OperationData, SecretBytes, UniqueIdentifier};
+use crate::{
+    DecryptRequest, OperationData, ProtocolCauseCategory, ProtocolErrorKind, SecretBytes,
+    UniqueIdentifier,
+};
 use kmipkit_ttlv::{Item, Structure, Value, ValueView};
 
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
@@ -417,4 +420,71 @@ fn fixture_derived_decrypt_operation_items_preserve_steps_2_6_7_and_8() {
             "{step_identity} fixture-derived operation-item evidence must retain exact values and order"
         );
     }
+}
+
+#[test]
+fn request_serializes_optional_parameters_additional_data_and_tag() {
+    let request = base_request(OperationData::Integer(i32::MIN))
+        .with_cryptographic_parameters(fixture_cbc_pkcs5_parameters())
+        .with_authenticated_encryption_additional_data(SecretBytes::new(vec![0xA5]))
+        .with_authenticated_encryption_tag(SecretBytes::new(vec![0x5A]));
+
+    let actual = request
+        .to_ttlv_payload()
+        .expect("optional Table 196 members serialize in normative order");
+
+    assert_eq!(
+        member_tags(&actual),
+        [
+            UNIQUE_IDENTIFIER_TAG,
+            CRYPTOGRAPHIC_PARAMETERS_TAG,
+            DATA_TAG,
+            AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG,
+            AUTHENTICATED_ENCRYPTION_TAG,
+        ],
+        "the emitted optional members retain Table 196 order"
+    );
+}
+
+#[test]
+fn request_rejects_parameter_structure_that_exceeds_payload_depth() {
+    let mut parameters = Structure::new();
+    for _ in 1..64 {
+        let mut parent = Structure::new();
+        parent
+            .try_push(item(
+                FIRST_VENDOR_PARAMETER_TAG,
+                Value::structure(parameters),
+            ))
+            .expect("the standalone Cryptographic Parameters tree remains at depth 64");
+        parameters = parent;
+    }
+
+    let error = base_request(OperationData::Integer(7))
+        .with_cryptographic_parameters(parameters)
+        .to_ttlv_payload()
+        .expect_err("the Request Payload wrapper must count toward the TTLV depth limit");
+
+    assert_eq!(error.kind(), ProtocolErrorKind::InvalidValue);
+    assert_eq!(error.cause_category(), ProtocolCauseCategory::InvalidValue);
+    assert!(
+        !error.to_string().contains("StructureDepthExceeded"),
+        "the model detail remains redacted"
+    );
+}
+
+#[test]
+fn request_validator_preserves_unknown_future_members() {
+    let payload = payload([
+        (DATA_TAG, Value::byte_string(vec![0x01])),
+        (
+            FIRST_VENDOR_PARAMETER_TAG,
+            Value::structure(Structure::new()),
+        ),
+    ]);
+
+    assert!(
+        crate::decrypt::validate_request_payload(&payload).is_ok(),
+        "unknown request members remain forward-compatible"
+    );
 }
