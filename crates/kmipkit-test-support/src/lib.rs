@@ -3,6 +3,7 @@
 
 mod dns;
 mod local_transport;
+pub mod oasis_crypto_fixtures;
 #[cfg(feature = "fixtures")]
 mod pki;
 #[cfg(feature = "scripted-transport")]

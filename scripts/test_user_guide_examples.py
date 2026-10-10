@@ -1,4 +1,4 @@
-"""Compile explicitly marked Rust examples from both client user guides."""
+"""Compile explicitly marked Rust examples from the bilingual client guides."""
 
 from __future__ import annotations
 
@@ -148,7 +148,9 @@ def main() -> int:
     root = Path(__file__).resolve().parents[1]
     sources = arguments.guide or [
         root / "docs" / "user-guide" / "en" / "client-execution.md",
+        root / "docs" / "user-guide" / "en" / "encrypt-decrypt.md",
         root / "docs" / "user-guide" / "es" / "ejecucion-cliente.md",
+        root / "docs" / "user-guide" / "es" / "cifrado-descifrado.md",
     ]
 
     try:

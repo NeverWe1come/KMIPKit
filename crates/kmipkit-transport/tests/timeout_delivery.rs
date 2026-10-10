@@ -596,7 +596,10 @@ async fn hyper_header_write_can_timeout_before_any_ttlv_body_byte() {
         .map(|position| position + 4)
         .expect("Hyper emitted the request headers");
     assert!(bytes[..body_start].starts_with(b"POST /kmip HTTP/1.1\r\n"));
-    assert_eq!(bytes[body_start..], []);
+    assert!(
+        bytes[body_start..].is_empty(),
+        "no TTLV body bytes were written before the timeout"
+    );
     assert_eq!(control.cancel(), RequestDeliveryState::PossiblySent);
     connection.abort();
 }
