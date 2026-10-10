@@ -165,6 +165,14 @@ mod mac_operation_tests;
 mod sign_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/mac_verify_operation_tests.rs"]
+mod mac_verify_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/signature_verify_operation_tests.rs"]
+mod signature_verify_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/encrypt_tests.rs"]
 mod encrypt_tests;
 
