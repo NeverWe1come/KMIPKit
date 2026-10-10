@@ -31,6 +31,7 @@ ITEM_TYPES = {
     "Enumeration": "Enumeration",
     "LongInteger": "LongInteger",
 }
+SUPPORTED_MANIFEST_VERSIONS = frozenset({(1, "registry-slice"), (2, "full-1.0")})
 OUTCOMES = {
     "recognized": "Recognized",
     "unrecognized.schema_invalid": "SchemaInvalid",
@@ -316,7 +317,7 @@ def _validate_manifest(value: Any) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise FixtureError("public API manifest has unsupported format or scope")
     version_scope = (value.get("formatVersion"), value.get("scope"))
-    if version_scope not in {(1, "registry-slice"), (2, "full-1.0")}:
+    if version_scope not in SUPPORTED_MANIFEST_VERSIONS:
         raise FixtureError("public API manifest has unsupported format or scope")
     types = {entry.get("id"): entry for entry in value.get("types", []) if isinstance(entry, dict)}
     functions = {entry.get("id"): entry for entry in value.get("functions", []) if isinstance(entry, dict)}
