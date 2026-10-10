@@ -273,6 +273,29 @@ impl ClientRequest {
         }
     }
 
+    fn validate_local_shape(&self) -> Result<(), ProtocolError> {
+        match self {
+            Self::Encrypt(request) => request.validate_multipart_shape(),
+            Self::Decrypt(request) => request.validate_multipart_shape(),
+            _ => Ok(()),
+        }
+    }
+
+    fn omits_identifier_for_id_placeholder(&self) -> bool {
+        match self {
+            Self::Encrypt(request) => request.unique_identifier().is_none(),
+            Self::Decrypt(request) => request.unique_identifier().is_none(),
+            _ => false,
+        }
+    }
+
+    const fn is_id_placeholder_producer(&self) -> bool {
+        matches!(
+            self,
+            Self::Create(_) | Self::CreateKeyPair(_) | Self::Recover(_)
+        )
+    }
+
     fn payload(self) -> Result<Structure, ProtocolError> {
         match self {
             Self::DiscoverVersions(request) => request.to_ttlv_payload(),
@@ -2878,12 +2901,7 @@ pub(super) fn validate_batch(
 
 fn validate_cryptographic_request_shapes(batch: &ClientBatch) -> Result<(), ClientError> {
     for item in &batch.items {
-        let validation = match &item.request {
-            ClientRequest::Encrypt(request) => request.validate_multipart_shape(),
-            ClientRequest::Decrypt(request) => request.validate_multipart_shape(),
-            _ => continue,
-        };
-        validation.map_err(|error| {
+        item.request.validate_local_shape().map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
                 RequestDeliveryState::NotSent,
@@ -2899,29 +2917,14 @@ fn validate_id_placeholder_eligibility(batch: &ClientBatch) -> Result<(), BatchV
     let mut eligible_producer_seen = false;
     for item in &batch.items {
         // Evaluate consumers against the prefix before recording the current item.
-        if request_omits_identifier_for_id_placeholder(&item.request)
+        if item.request.omits_identifier_for_id_placeholder()
             && !(batch_ordered && eligible_producer_seen)
         {
             return Err(BatchValidationError::IneligibleIdPlaceholder);
         }
-        eligible_producer_seen |= request_is_id_placeholder_producer(&item.request);
+        eligible_producer_seen |= item.request.is_id_placeholder_producer();
     }
     Ok(())
-}
-
-fn request_omits_identifier_for_id_placeholder(request: &ClientRequest) -> bool {
-    match request {
-        ClientRequest::Encrypt(request) => request.unique_identifier().is_none(),
-        ClientRequest::Decrypt(request) => request.unique_identifier().is_none(),
-        _ => false,
-    }
-}
-
-fn request_is_id_placeholder_producer(request: &ClientRequest) -> bool {
-    matches!(
-        request,
-        ClientRequest::Create(_) | ClientRequest::CreateKeyPair(_) | ClientRequest::Recover(_)
-    )
 }
 
 fn validate_request_extension_ownership(
