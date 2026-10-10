@@ -36,6 +36,6 @@
 ## Acceptance and evidence
 
 - [ ] CHK021 Can every feature requirement be exercised with deterministic protocol or fake-transport tests?
-- [ ] CHK022 Are all in-scope Encrypt/Decrypt items from the three pinned XML fixtures tested and labeled as fixture-derived evidence, without claiming complete-case passes?
+- [x] CHK022 Are all in-scope Encrypt/Decrypt items from the three pinned XML fixtures tested and labeled as fixture-derived evidence, without claiming complete-case passes? T034 fake-client characterization executes all 28 pairs (24 Encrypt, 4 Decrypt) and explicitly disclaims complete-case results.
 - [ ] CHK023 Are English and Spanish examples consistent with caller-driven multipart behavior?
 - [ ] CHK024 Does the spec, plan, model, payload contract, traceability, tasks, and catalog agree after speckit-analyze?
