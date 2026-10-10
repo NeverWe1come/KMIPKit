@@ -58,7 +58,7 @@
 
 ### Refactor
 
-- [ ] T025 Refactor common field parsing only where behavior remains identical; retain separate operation types and error messages with no payload data. Run fmt, protocol clippy, and focused tests; record Refactor evidence in its own commit.
+- [x] T025 Refactor the identical 18-member Table 59 type/cardinality parser into a shared private helper while preserving separate Encrypt/Decrypt field acceptance, request/response models, and error types/messages. **Red evidence (2026-10-10):** `encrypt_parameter_structure_tests::encrypt_and_decrypt_table_59_errors_are_payload_free_and_identical` passed 1/1 against the pre-extraction parsers, checking wrong types and duplicates for every Table 59 member, cross-operation error parity, and payload-free diagnostics; test commit `0e048e6`. **Green evidence:** Table 59 (5), Cryptographic Parameters (5), malformed payload (14), Encrypt request (4), and Decrypt request (4) focused tests pass; `cargo fmt --all --check`, protocol Clippy with `-D warnings`, and rustdoc with `-D warnings` pass. **Refactor evidence:** traceability now points to the shared helper; exact commands and results are in `.superpowers/sdd/kmipkit-0019-cryptographic-operations/task-25-report.md`. Green commit: `25e2544`.
 
 ## Phase 4: Multipart and batch integration
 
