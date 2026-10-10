@@ -27,6 +27,7 @@ mod discover_versions;
 mod encrypt;
 mod error;
 pub mod extension;
+mod get;
 mod get_attribute_list;
 mod get_attributes;
 mod hash;
@@ -82,6 +83,7 @@ pub use discover_versions::{
 };
 pub use encrypt::{EncryptError, EncryptRequest, EncryptResponse};
 pub use error::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
+pub use get::{GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType};
 pub use get_attribute_list::{
     GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
 };
