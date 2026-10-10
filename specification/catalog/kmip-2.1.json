@@ -94572,7 +94572,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-011",
       "status": "retired",
-      "review_note": "Retired extraction under KMIPKIT-DEC-011: OASIS §1.2 refers to RFC 2119 and RFC 8174 clarifies that only uppercase keyword usage has defined special meaning. KMIPKit preserves repeated Derivation Data occurrences as the structure described by Table 364, but does not count sentence-case “May” as a separate normative client requirement."
+      "review_note": "Retired extraction under KMIPKIT-DEC-011: OASIS §1.2 refers to RFC 2119 and RFC 8174 clarifies that only uppercase keyword usage has defined special meaning. KMIPKit preserves repeated Derivation Data occurrences as the structure described by Table 364, but does not count sentence-case “May” as a separate normative client requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.12-003",
@@ -94662,7 +94662,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "OASIS §7.12 assigns this SHALL to the server. The client specification surfaces the server result and does not impose local prevalidation."
+      "review_note": "OASIS §7.12 assigns this SHALL to the server. The client specification surfaces the server result and does not impose local prevalidation. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-001-001",
@@ -107207,9 +107207,9 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Re-Provision error-table interpretation remains gated; preserve the Table 315 caption and do not treat it as an additional payload table or as an RNG Retrieve response table without authoritative resolution.",
-      "state": "resolved_by_approved_decision",
-      "decision_id": "KMIPKIT-DEC-008",
+      "downstream_impact": "The Table 315 caption remains an OASIS source defect pending authoritative correction. KMIPKit follows DEC-008 as a project interpretation for 1.0: treat it as stray Re-Provision material and use Table 318 for RNG Retrieve, without claiming an OASIS erratum.",
+      "state": "open",
+      "decision_id": null,
       "erratum_source_refs": []
     },
     {
