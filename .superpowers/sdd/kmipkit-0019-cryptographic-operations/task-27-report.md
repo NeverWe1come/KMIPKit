@@ -19,6 +19,18 @@ response.get(0).outcome().response().{encrypt,decrypt}().correlation_value()
 
 The protocol request/response models already exist, but the client integration is intentionally scheduled for T038. Accordingly, T027's Red target is compile-time until those planned client variants and outcome accessors are added; no production or test-only client API was introduced. The focused target failed with exactly eight E0599 errors: six `ClientRequest::{Encrypt,Decrypt}` uses and the two absent `ClientResponseView::{encrypt,decrypt}` accessors. No unrelated helper, type, or assertion errors were reported.
 
+## Security review correction — Red
+
+Independent security review identified that the test helper copied response Correlation Value bytes into ordinary `Vec<u8>`, whose contents were not zeroized when the test owner dropped. Added explicit `Zeroizing<Vec<u8>>` type expectations for both Encrypt and Decrypt captured owners and converted only at the `SecretBytes::new` boundary in request construction. Before Green, the focused target failed with the expected two E0308 mismatches (`response_correlation` returned `Vec<u8>` instead of `Zeroizing<Vec<u8>>`) plus the eight planned E0599 missing client API errors. No other diagnostics were reported.
+
+Focused correction Red command (WSL Ubuntu-26.04):
+
+```powershell
+wsl.exe -d Ubuntu-26.04 -- sh -lc 'cd /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0019-encrypt-decrypt/KMIPKit && cargo test -p kmipkit-client --lib encrypt_decrypt_multipart_execution_tests --offline'
+```
+
+Result: expected compile failure, exit code 1, exactly two E0308 secret-owner type mismatches and eight E0599 planned missing client API diagnostics.
+
 Focused Red command (run through WSL Ubuntu-26.04):
 
 ```powershell

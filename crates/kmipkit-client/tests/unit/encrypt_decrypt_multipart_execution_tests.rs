@@ -264,7 +264,8 @@ fn encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts()
     .with_init_indicator(true)
     .with_authenticated_encryption_additional_data(SecretBytes::new(ENCRYPT_AAD.to_vec()));
     let initial_response = execute_one(&mut client, ClientRequest::Encrypt(initial));
-    let initial_correlation = response_correlation(&initial_response, ENCRYPT_OPERATION);
+    let initial_correlation: Zeroizing<Vec<u8>> =
+        response_correlation(&initial_response, ENCRYPT_OPERATION);
     assert!(
         initial_correlation.as_slice() == SERVER_CORRELATION,
         "the typed first response exposes the exact server Correlation Value"
@@ -286,7 +287,7 @@ fn encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts()
             b"encrypt-middle-data".to_vec(),
         ))),
     )
-    .with_correlation_value(SecretBytes::new(initial_correlation.clone()));
+    .with_correlation_value(SecretBytes::new(initial_correlation.to_vec()));
     let _middle_response = execute_one(&mut client, ClientRequest::Encrypt(middle));
     assert_request_count(&state, 2);
     assert_payload_byte_string(&state, 1, CORRELATION_VALUE, SERVER_CORRELATION);
@@ -297,7 +298,7 @@ fn encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts()
         Some(UniqueIdentifier::TextString("multipart-object".to_owned())),
         None,
     )
-    .with_correlation_value(SecretBytes::new(initial_correlation));
+    .with_correlation_value(SecretBytes::new(initial_correlation.to_vec()));
     let final_part = final_part.with_final_indicator(true);
     let _final_response = execute_one(&mut client, ClientRequest::Encrypt(final_part));
     assert_request_count(&state, 3);
@@ -325,7 +326,8 @@ fn decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initia
     .with_authenticated_encryption_additional_data(SecretBytes::new(DECRYPT_AAD.to_vec()))
     .with_authenticated_encryption_tag(SecretBytes::new(DECRYPT_TAG.to_vec()));
     let initial_response = execute_one(&mut client, ClientRequest::Decrypt(initial));
-    let initial_correlation = response_correlation(&initial_response, DECRYPT_OPERATION);
+    let initial_correlation: Zeroizing<Vec<u8>> =
+        response_correlation(&initial_response, DECRYPT_OPERATION);
     assert!(
         initial_correlation.as_slice() == SERVER_CORRELATION,
         "the typed first response exposes the exact server Correlation Value"
@@ -347,7 +349,7 @@ fn decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initia
             b"decrypt-middle-data".to_vec(),
         ))),
     )
-    .with_correlation_value(SecretBytes::new(initial_correlation.clone()));
+    .with_correlation_value(SecretBytes::new(initial_correlation.to_vec()));
     let _middle_response = execute_one(&mut client, ClientRequest::Decrypt(middle));
     assert_request_count(&state, 2);
     assert_payload_byte_string(&state, 1, CORRELATION_VALUE, SERVER_CORRELATION);
@@ -358,7 +360,7 @@ fn decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initia
         Some(UniqueIdentifier::TextString("multipart-object".to_owned())),
         None,
     )
-    .with_correlation_value(SecretBytes::new(initial_correlation));
+    .with_correlation_value(SecretBytes::new(initial_correlation.to_vec()));
     let final_part = final_part.with_final_indicator(true);
     let _final_response = execute_one(&mut client, ClientRequest::Decrypt(final_part));
     assert_request_count(&state, 3);
