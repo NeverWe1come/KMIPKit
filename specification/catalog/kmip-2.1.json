@@ -34461,8 +34461,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000002",
       "allocation": "assigned"
     },
@@ -34487,8 +34497,18 @@
         "KMIPKIT-TEST-PROF-5-12-6-2"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000003",
       "allocation": "assigned"
     },
@@ -34511,8 +34531,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000029",
       "allocation": "assigned"
     },
@@ -34535,8 +34565,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000010",
       "allocation": "assigned"
     },
@@ -34559,8 +34599,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000011",
       "allocation": "assigned"
     },
@@ -34583,8 +34633,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000012",
       "allocation": "assigned"
     },
@@ -34607,8 +34667,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000001C",
       "allocation": "assigned"
     },
@@ -34631,8 +34701,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000001E",
       "allocation": "assigned"
     },
@@ -34655,8 +34735,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000001",
       "allocation": "assigned"
     },
@@ -34679,8 +34769,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000D",
       "allocation": "assigned"
     },
@@ -34703,8 +34803,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000005",
       "allocation": "assigned"
     },
@@ -34731,8 +34841,18 @@
         "KMIPKIT-TEST-CN01-2-36"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000001A",
       "allocation": "assigned"
     },
@@ -34757,8 +34877,18 @@
         "KMIPKIT-TEST-CN01-2-19"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000E",
       "allocation": "assigned"
     },
@@ -34784,8 +34914,18 @@
         "KMIPKIT-TEST-CN01-2-38"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000006",
       "allocation": "assigned"
     },
@@ -34808,8 +34948,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000F",
       "allocation": "assigned"
     },
@@ -34832,8 +34982,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000037",
       "allocation": "assigned"
     },
@@ -34856,8 +35016,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000038",
       "allocation": "assigned"
     },
@@ -34880,8 +35050,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "8XXXXXXX",
       "allocation": "extension"
     },
@@ -34904,8 +35084,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000031",
       "allocation": "assigned"
     },
@@ -34928,8 +35118,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000002E",
       "allocation": "assigned"
     },
@@ -34952,8 +35152,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000002F",
       "allocation": "assigned"
     },
@@ -34976,8 +35186,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000030",
       "allocation": "assigned"
     },
@@ -35000,8 +35220,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000C",
       "allocation": "assigned"
     },
@@ -35024,8 +35254,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000007",
       "allocation": "assigned"
     },
@@ -35048,8 +35288,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000008",
       "allocation": "assigned"
     },
@@ -35074,8 +35324,18 @@
         "KMIPKIT-TEST-CN01-2-15"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000009",
       "allocation": "assigned"
     },
@@ -35098,8 +35358,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000023",
       "allocation": "assigned"
     },
@@ -35122,8 +35392,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000024",
       "allocation": "assigned"
     },
@@ -35146,8 +35426,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000025",
       "allocation": "assigned"
     },
@@ -35170,8 +35460,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000026",
       "allocation": "assigned"
     },
@@ -35194,8 +35494,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000A",
       "allocation": "assigned"
     },
@@ -35218,8 +35528,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000B",
       "allocation": "assigned"
     },
@@ -35242,8 +35562,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000013",
       "allocation": "assigned"
     },
@@ -35266,8 +35596,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000014",
       "allocation": "assigned"
     },
@@ -35290,8 +35630,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000034",
       "allocation": "assigned"
     },
@@ -35314,8 +35664,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000035",
       "allocation": "assigned"
     },
@@ -35338,8 +35698,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000036",
       "allocation": "assigned"
     },
@@ -35362,8 +35732,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000001B",
       "allocation": "assigned"
     },
@@ -35386,8 +35766,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000001D",
       "allocation": "assigned"
     },
@@ -35410,8 +35800,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000015",
       "allocation": "assigned"
     },
@@ -35434,8 +35834,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000016",
       "allocation": "assigned"
     },
@@ -35458,8 +35868,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000017",
       "allocation": "assigned"
     },
@@ -35482,8 +35902,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000004",
       "allocation": "assigned"
     },
@@ -35506,8 +35936,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000002A",
       "allocation": "assigned"
     },
@@ -35530,8 +35970,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000001F",
       "allocation": "assigned"
     },
@@ -35554,8 +36004,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000020",
       "allocation": "assigned"
     },
@@ -35578,8 +36038,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000021",
       "allocation": "assigned"
     },
@@ -35602,8 +36072,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000022",
       "allocation": "assigned"
     },
@@ -35626,8 +36106,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000027",
       "allocation": "assigned"
     },
@@ -35650,8 +36140,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000028",
       "allocation": "assigned"
     },
@@ -35674,8 +36174,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000018",
       "allocation": "assigned"
     },
@@ -35698,8 +36208,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000002B",
       "allocation": "assigned"
     },
@@ -35722,8 +36242,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000002C",
       "allocation": "assigned"
     },
@@ -35746,8 +36276,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000002D",
       "allocation": "assigned"
     },
@@ -35770,8 +36310,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000033",
       "allocation": "assigned"
     },
@@ -35794,8 +36344,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000019",
       "allocation": "assigned"
     },
@@ -35818,8 +36378,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000032",
       "allocation": "assigned"
     },
@@ -35914,8 +36484,25 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::explicit_hash_executes_once_and_exposes_the_server_data",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::operation_failure_preserves_server_status_and_reason",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::pending_hash_result_preserves_the_correlation_value",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::possibly_sent_transport_failure_exposes_delivery_state_without_retry",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::malformed_success_response_fields_are_rejected_without_echoing_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::non_success_response_preserves_common_result_without_success_fields",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_emits_table_235_fields_in_order_and_preserves_caller_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_a_hashing_algorithm_in_cryptographic_parameters",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_single_part_data_and_omits_it_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::successful_response_preserves_table_236_data_and_correlation_bytes"
+      ],
       "wire_value": "00000003",
       "allocation": "assigned"
     },
@@ -35938,8 +36525,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/mac.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::explicit_mac_executes_once_and_exposes_server_output",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::mac_batch_results_preserve_each_unique_batch_item_id",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::possibly_sent_mac_transport_failure_reports_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::server_operation_failure_remains_an_operation_result",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::failure_response_preserves_server_result_without_success_payload",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_and_response_debug_redact_mac_material",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_emits_optional_identifier_and_parameters_before_input_and_framing",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_requires_single_part_data_and_omits_data_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::successful_response_exposes_identifier_mac_data_and_unknown_generic_fields",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::successful_response_requires_one_well_typed_unique_identifier",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs::operation_data_preserves_byte_string_type_and_exact_value"
+      ],
       "wire_value": "00000004",
       "allocation": "assigned"
     },
@@ -35986,8 +36592,28 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/sign.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::explicit_sign_executes_once_and_exposes_server_output",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::possibly_sent_sign_transport_failure_reports_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::server_operation_failure_remains_an_operation_result",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::sign_batch_results_preserve_each_unique_batch_item_id",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs::operation_data_preserves_byte_string_type_and_exact_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::failure_response_preserves_server_result_without_success_payload",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_and_response_debug_redact_data_and_signature_bytes",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_emits_optional_identifier_parameters_inputs_and_framing_in_order",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_omits_data_for_explicit_multipart_calls",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::successful_response_exposes_identifier_signature_data_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::successful_response_requires_one_well_typed_unique_identifier"
+      ],
       "wire_value": "00000006",
       "allocation": "assigned"
     },
@@ -36010,8 +36636,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::invalid_and_unknown_indicators_remain_operation_results_with_one_exchange",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::possibly_sent_verify_transport_failure_preserves_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::reordered_batch_responses_keep_each_requests_multipart_indicator_context",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::server_operation_failure_remains_typed_and_is_not_retried",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::failure_response_preserves_the_server_result_without_success_fields",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::final_multipart_response_accepts_both_discrepant_validity_indicator_forms",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::non_final_multipart_response_rejects_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_classifies_single_part_initial_non_final_and_final_multipart_contexts",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_requires_signature_data_for_single_part_and_omits_it_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_and_recovered_data",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ],
       "wire_value": "00000007",
       "allocation": "assigned"
     },
@@ -36496,8 +37141,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000009",
       "allocation": "assigned"
     },
@@ -36520,8 +37172,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000A",
       "allocation": "assigned"
     },
@@ -36544,8 +37203,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000B",
       "allocation": "assigned"
     },
@@ -36568,8 +37234,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000C",
       "allocation": "assigned"
     },
@@ -36592,8 +37265,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000D",
       "allocation": "assigned"
     },
@@ -36616,8 +37296,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000E",
       "allocation": "assigned"
     },
@@ -36640,8 +37327,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "0000000F",
       "allocation": "assigned"
     },
@@ -36664,8 +37358,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000010",
       "allocation": "assigned"
     },
@@ -36688,8 +37389,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "8XXXXXXX",
       "allocation": "extension"
     },
@@ -36712,8 +37420,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000001",
       "allocation": "assigned"
     },
@@ -36736,8 +37451,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000002",
       "allocation": "assigned"
     },
@@ -36760,8 +37482,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000008",
       "allocation": "assigned"
     },
@@ -36784,8 +37513,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000003",
       "allocation": "assigned"
     },
@@ -36808,8 +37544,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000004",
       "allocation": "assigned"
     },
@@ -36832,8 +37575,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000005",
       "allocation": "assigned"
     },
@@ -36856,8 +37606,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000006",
       "allocation": "assigned"
     },
@@ -36880,8 +37637,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000007",
       "allocation": "assigned"
     },
@@ -36904,8 +37668,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000011",
       "allocation": "assigned"
     },
@@ -36928,8 +37699,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000012",
       "allocation": "assigned"
     },
@@ -36952,8 +37730,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ],
       "wire_value": "00000013",
       "allocation": "assigned"
     },
@@ -37456,8 +38241,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "8XXXXXXX",
       "allocation": "extension"
     },
@@ -37480,8 +38271,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000001",
       "allocation": "assigned"
     },
@@ -37504,8 +38301,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000002",
       "allocation": "assigned"
     },
@@ -37528,8 +38331,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000003",
       "allocation": "assigned"
     },
@@ -37552,8 +38361,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000009",
       "allocation": "assigned"
     },
@@ -37576,8 +38391,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000004",
       "allocation": "assigned"
     },
@@ -37600,8 +38421,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000005",
       "allocation": "assigned"
     },
@@ -37627,8 +38454,14 @@
         "KMIPKIT-TEST-CN01-2-18"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000006",
       "allocation": "assigned"
     },
@@ -37651,8 +38484,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000007",
       "allocation": "assigned"
     },
@@ -37675,8 +38514,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000008",
       "allocation": "assigned"
     },
@@ -37699,8 +38544,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "0000000C",
       "allocation": "assigned"
     },
@@ -37723,8 +38574,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "0000000D",
       "allocation": "assigned"
     },
@@ -37747,8 +38604,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "0000000E",
       "allocation": "assigned"
     },
@@ -37771,8 +38634,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "0000000F",
       "allocation": "assigned"
     },
@@ -37795,8 +38664,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000010",
       "allocation": "assigned"
     },
@@ -37819,8 +38694,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "00000011",
       "allocation": "assigned"
     },
@@ -37843,8 +38724,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "0000000A",
       "allocation": "assigned"
     },
@@ -37867,8 +38754,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ],
       "wire_value": "0000000B",
       "allocation": "assigned"
     },
@@ -41618,8 +42511,25 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::explicit_hash_executes_once_and_exposes_the_server_data",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::operation_failure_preserves_server_status_and_reason",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::pending_hash_result_preserves_the_correlation_value",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::possibly_sent_transport_failure_exposes_delivery_state_without_retry",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::malformed_success_response_fields_are_rejected_without_echoing_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::non_success_response_preserves_common_result_without_success_fields",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_emits_table_235_fields_in_order_and_preserves_caller_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_a_hashing_algorithm_in_cryptographic_parameters",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_single_part_data_and_omits_it_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::successful_response_preserves_table_236_data_and_correlation_bytes"
+      ],
       "wire_value": "00000027",
       "allocation": "assigned"
     },
@@ -41810,8 +42720,26 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/mac.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::explicit_mac_executes_once_and_exposes_server_output",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::mac_batch_results_preserve_each_unique_batch_item_id",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::possibly_sent_mac_transport_failure_reports_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::server_operation_failure_remains_an_operation_result",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::failure_response_preserves_server_result_without_success_payload",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_and_response_debug_redact_mac_material",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_emits_optional_identifier_and_parameters_before_input_and_framing",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_requires_single_part_data_and_omits_data_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::successful_response_exposes_identifier_mac_data_and_unknown_generic_fields",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::successful_response_requires_one_well_typed_unique_identifier"
+      ],
       "wire_value": "00000023",
       "allocation": "assigned"
     },
@@ -41834,8 +42762,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::invalid_and_unknown_indicators_remain_operation_results_with_one_exchange",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::possibly_sent_verify_transport_failure_preserves_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::reordered_batch_responses_keep_each_requests_multipart_indicator_context",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::server_operation_failure_remains_typed_and_is_not_retried",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::failure_response_preserves_the_server_result_without_success_fields",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::final_multipart_response_accepts_both_discrepant_validity_indicator_forms",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::non_final_multipart_response_rejects_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_classifies_single_part_initial_non_final_and_final_multipart_contexts",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_requires_mac_data_for_single_part_and_omits_it_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_indicators",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ],
       "wire_value": "00000024",
       "allocation": "assigned"
     },
@@ -42431,8 +43378,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/sign.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::explicit_sign_executes_once_and_exposes_server_output",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::possibly_sent_sign_transport_failure_reports_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::server_operation_failure_remains_an_operation_result",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::sign_batch_results_preserve_each_unique_batch_item_id",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::failure_response_preserves_server_result_without_success_payload",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_and_response_debug_redact_data_and_signature_bytes",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_emits_optional_identifier_parameters_inputs_and_framing_in_order",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_omits_data_for_explicit_multipart_calls",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::successful_response_exposes_identifier_signature_data_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::successful_response_requires_one_well_typed_unique_identifier"
+      ],
       "wire_value": "00000021",
       "allocation": "assigned"
     },
@@ -42455,8 +43421,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::invalid_and_unknown_indicators_remain_operation_results_with_one_exchange",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::possibly_sent_verify_transport_failure_preserves_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::reordered_batch_responses_keep_each_requests_multipart_indicator_context",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::server_operation_failure_remains_typed_and_is_not_retried",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::failure_response_preserves_the_server_result_without_success_fields",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::final_multipart_response_accepts_both_discrepant_validity_indicator_forms",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::non_final_multipart_response_rejects_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_classifies_single_part_initial_non_final_and_final_multipart_contexts",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_requires_signature_data_for_single_part_and_omits_it_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_and_recovered_data",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ],
       "wire_value": "00000022",
       "allocation": "assigned"
     },
@@ -50663,8 +51648,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_indicators",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ],
       "wire_value": "8XXXXXXX",
       "allocation": "extension"
     },
@@ -50687,8 +51681,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_indicators",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ],
       "wire_value": "00000002",
       "allocation": "assigned"
     },
@@ -50711,8 +51714,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_indicators",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ],
       "wire_value": "00000003",
       "allocation": "assigned"
     },
@@ -50735,8 +51747,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_indicators",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ],
       "wire_value": "00000001",
       "allocation": "assigned"
     },
@@ -51121,8 +52142,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": []
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUMERATION-DATA",
@@ -51201,8 +52232,15 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": []
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values"
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUMERATION-DRBG-ALGORITHM",
@@ -51301,8 +52339,14 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": []
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values"
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUMERATION-INTEROP-FUNCTION",
@@ -52162,8 +53206,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": []
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::cryptographic_enum_wrappers_retain_standard_extension_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_indicators",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUMERATION-WRAPPING-METHOD",
@@ -56716,8 +57769,25 @@
         "KMIPKIT-TEST-CN01-2-104"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/hash.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::explicit_hash_executes_once_and_exposes_the_server_data",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::operation_failure_preserves_server_status_and_reason",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::pending_hash_result_preserves_the_correlation_value",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::possibly_sent_transport_failure_exposes_delivery_state_without_retry",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::hashing_algorithm_values_round_trip_standard_extensions_and_unknown_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::malformed_success_response_fields_are_rejected_without_echoing_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::non_success_response_preserves_common_result_without_success_fields",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_emits_table_235_fields_in_order_and_preserves_caller_values",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_a_hashing_algorithm_in_cryptographic_parameters",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_single_part_data_and_omits_it_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::successful_response_preserves_table_236_data_and_correlation_bytes"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -57106,8 +58176,26 @@
         "KMIPKIT-TEST-CN01-2-105"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/mac.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::explicit_mac_executes_once_and_exposes_server_output",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::mac_batch_results_preserve_each_unique_batch_item_id",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::possibly_sent_mac_transport_failure_reports_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::server_operation_failure_remains_an_operation_result",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::cryptographic_algorithm_preserves_every_standard_extension_and_future_value",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::failure_response_preserves_server_result_without_success_payload",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_and_response_debug_redact_mac_material",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_emits_optional_identifier_and_parameters_before_input_and_framing",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_requires_single_part_data_and_omits_data_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::successful_response_exposes_identifier_mac_data_and_unknown_generic_fields",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::successful_response_requires_one_well_typed_unique_identifier"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -57145,8 +58233,27 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::invalid_and_unknown_indicators_remain_operation_results_with_one_exchange",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::possibly_sent_verify_transport_failure_preserves_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::reordered_batch_responses_keep_each_requests_multipart_indicator_context",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::server_operation_failure_remains_typed_and_is_not_retried",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::failure_response_preserves_the_server_result_without_success_fields",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::final_multipart_response_accepts_both_discrepant_validity_indicator_forms",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::non_final_multipart_response_rejects_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_classifies_single_part_initial_non_final_and_final_multipart_contexts",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_requires_mac_data_for_single_part_and_omits_it_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_indicators",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58131,8 +59238,27 @@
         "KMIPKIT-TEST-CN01-2-38"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/sign.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::explicit_sign_executes_once_and_exposes_server_output",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::possibly_sent_sign_transport_failure_reports_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::server_operation_failure_remains_an_operation_result",
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::sign_batch_results_preserve_each_unique_batch_item_id",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::cryptographic_and_signature_algorithm_values_preserve_standard_and_future_values",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::failure_response_preserves_server_result_without_success_payload",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_and_response_debug_redact_data_and_signature_bytes",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_emits_optional_identifier_parameters_inputs_and_framing_in_order",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_omits_data_for_explicit_multipart_calls",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::successful_response_exposes_identifier_signature_data_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::successful_response_requires_one_well_typed_unique_identifier"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58174,8 +59300,27 @@
         "KMIPKIT-TEST-CN01-2-37"
       ],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::invalid_and_unknown_indicators_remain_operation_results_with_one_exchange",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::possibly_sent_verify_transport_failure_preserves_delivery_and_is_not_retried",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::reordered_batch_responses_keep_each_requests_multipart_indicator_context",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::server_operation_failure_remains_typed_and_is_not_retried",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::both_guides_contain_executable_cryptographic_operation_examples",
+        "crates/kmipkit-protocol/tests/cryptographic_operations_guide_examples.rs::documented_operation_inputs_are_redacted_by_each_public_request_model",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::failure_response_preserves_the_server_result_without_success_fields",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::final_multipart_response_accepts_both_discrepant_validity_indicator_forms",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::non_final_multipart_response_rejects_validity_indicator",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_classifies_single_part_initial_non_final_and_final_multipart_contexts",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_requires_signature_data_for_single_part_and_omits_it_for_multipart",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_response_rejects_duplicate_or_malformed_validity_and_recovered_data",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::successful_single_part_response_requires_one_identifier_and_validity_indicator"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58726,8 +59871,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/operation_data.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::successful_response_exposes_identifier_mac_data_and_unknown_generic_fields",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs::operation_data_preserves_byte_string_type_and_exact_value"
+      ],
       "source_encoding": "Byte String"
     },
     {
@@ -59171,8 +60325,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_operation.rs",
+        "crates/kmipkit-protocol/src/operation_data.rs",
+        "crates/kmipkit-protocol/src/sign.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/operation_data_tests.rs::operation_data_preserves_byte_string_type_and_exact_value",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::successful_response_exposes_identifier_signature_data_and_unknown_fields",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order"
+      ],
       "source_encoding": "Byte String"
     },
     {
@@ -90655,11 +91818,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/mac.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::explicit_mac_executes_once_and_exposes_server_output",
+        "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
+      "status": "verified",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
@@ -90777,11 +91946,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
+      "status": "verified",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
@@ -90809,11 +91984,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
+      "status": "verified",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
@@ -92371,11 +93551,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/sign.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::explicit_sign_executes_once_and_exposes_server_output",
+        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
+      "status": "verified",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
@@ -92493,11 +93679,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted",
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
+      "status": "verified",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {
@@ -92555,11 +93747,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0021",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
+      "status": "verified",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
     {

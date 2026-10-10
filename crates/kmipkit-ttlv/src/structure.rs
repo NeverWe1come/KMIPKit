@@ -103,6 +103,24 @@ impl StructureView<'_> {
     pub const fn children(&self) -> &[Item] {
         self.children
     }
+
+    /// Creates a zeroizing owned copy of this ordered generic Structure.
+    ///
+    /// The copy preserves repeated tags, unknown values, and source order.
+    /// Its payloads are zeroized when the owned Structure is dropped.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ModelError::StructureDepthExceeded`] if the source exceeds
+    /// the local Structure nesting-depth limit.
+    pub fn try_clone(&self) -> Result<Structure, ModelError> {
+        let mut clone = Structure::new();
+        for item in self.children {
+            let value = item.with_value(crate::clone_value_view)?;
+            clone.try_push(Item::new(item.tag(), value)?)?;
+        }
+        Ok(clone)
+    }
 }
 
 fn item_structure_depth(item: &Item) -> usize {

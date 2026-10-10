@@ -180,6 +180,15 @@ impl<'a> ResponseBatchItemView<'a> {
             .flatten()
     }
 
+    /// Lends the complete generic TTLV batch item for callback-scoped access.
+    ///
+    /// The ordered tree includes known fields, unknown fields, and repeated
+    /// tags. Copy it with [`StructureView::try_clone`] if it must outlive this
+    /// callback.
+    pub fn with_ttlv<R>(self, callback: impl for<'b> FnOnce(StructureView<'b>) -> R) -> Option<R> {
+        self.with_batch(callback)
+    }
+
     /// Returns the number of Message Extension Structures in source order.
     #[must_use]
     pub fn message_extension_count(self) -> usize {

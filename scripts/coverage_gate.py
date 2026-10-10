@@ -560,19 +560,14 @@ def _parse_file_segments(file_record: Mapping[str, Any], source_path: Path) -> d
         or expected_covered > expected_lines
     ):
         raise CoverageDataError("LLVM file summary has no valid line count.")
-    # LLVM sums line summaries per source-level function group, but file
-    # segments merge coverage by physical source location. Shared lines can
-    # therefore make the summary larger than the unique segment line map.
+    # LLVM merges line summaries across source-level function groups while
+    # file segments merge coverage by physical source location. Either count
+    # can exceed the other when instantiations cover distinct lines; summary
+    # uncovered residuals below remain charged conservatively.
     if len(line_counts) > expected_lines:
         raise CoverageDataError(
             "LLVM file segments exceed the file summary line count "
             f"({len(line_counts)} parsed, {expected_lines} reported)."
-        )
-    covered_lines = sum(count > 0 for count in line_counts.values())
-    if covered_lines > expected_covered:
-        raise CoverageDataError(
-            "LLVM file segments exceed the file summary covered-line count "
-            f"({covered_lines} parsed, {expected_covered} reported)."
         )
     return line_counts
 

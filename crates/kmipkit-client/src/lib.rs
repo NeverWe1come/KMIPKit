@@ -191,7 +191,7 @@ mod attribute_execution_contract_tests;
 #[path = "../tests/unit/transport_contract_tests.rs"]
 mod transport_contract_tests;
 
-pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory};
+pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory, ClientErrorResponseTtlv};
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,

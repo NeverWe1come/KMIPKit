@@ -56,4 +56,5 @@ pub use error::ModelError;
 pub use item::Item;
 pub use structure::{Structure, StructureView};
 pub use tag::{RawTag, Tag};
+pub(crate) use value::clone_value_view;
 pub use value::{ItemType, Value, ValueView, try_clone_value};
