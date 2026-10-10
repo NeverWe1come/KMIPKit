@@ -28,9 +28,9 @@
 
 ### Green
 
-- [ ] T011 Implement the redacted OperationData union using existing TTLV values and secret-byte ownership; preserve all three §7.9 encodings without exposing values.
-- [ ] T012 Implement narrowly scoped Cryptographic Parameters inspection/validation for recognized required conditions while retaining ordered unknown values and the optional operation-level field.
-- [ ] T013 Run focused OperationData and parameter tests to Green; capture command/result evidence.
+- [x] T011 Implement the redacted OperationData union using existing TTLV values and secret-byte ownership; preserve all three §7.9 encodings without exposing values.
+- [x] T012 Implement narrowly scoped Cryptographic Parameters inspection/validation for recognized required-field presence while retaining the original ordered Structure and optional operation-level None value. Known-member TTLV type and multiplicity checks remain owned by typed request conversion and its later malformed-input tasks; this shared validator does not claim to enforce them. T020/T021 must remove the temporary dead-code expectation when they add these call sites.
+- [x] T013 Run focused OperationData and parameter tests to Green; capture command/result evidence. **Green evidence:** `cargo test -p kmipkit-protocol --lib operation_data_tests` exits 0 (5 passed, 0 failed); `cargo test -p kmipkit-protocol --lib cryptographic_parameters_tests` exits 0 (5 passed, 0 failed, including the independent GCM missing-IV and missing-Tag Length assertions); `cargo fmt --all --check`, `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`, and `git diff --check` each exit 0.
 
 ### Refactor
 
@@ -44,12 +44,12 @@
 - [ ] T016 Add failing Table 196 Decrypt request tests for exact order, Cryptographic Parameters omission/preservation, Decrypt-only Authenticated Encryption Tag, and all four fixture-derived Decrypt items from §2.101 in `crates/kmipkit-protocol/tests/unit/decrypt_tests.rs`.
 - [ ] T017 Add failing success-payload tests for Tables 215 and 197; require Unique Identifier, preserve optional fields, allow UID-only success, preserve Byte String response Data, and cover all 24 Encrypt and 4 Decrypt fixture-derived response items.
 - [ ] T018 Add failing failure-response tests proving no success Unique Identifier is required and shared Result Reasons outside Tables 198/216 remain valid; add a Pending-shape test distinguishing async and multipart correlation values.
-- [ ] T019 Add malformed request/response tests for duplicate singleton fields, missing required success UID, wrong TTLV types, Data response Enumeration/Integer, and operation-inappropriate fields. Run focused tests and capture Red evidence.
+- [ ] T019 Add malformed request/response tests for duplicate singleton fields, including duplicate Cryptographic Parameters Block Cipher Mode, IV Length, and Tag Length members; wrong nested TTLV types for Block Cipher Mode (not Enumeration), IV Length (not Integer), and Tag Length (not Integer); missing required success UID; Data response Enumeration/Integer; and operation-inappropriate fields. Run focused tests and capture Red evidence.
 
 ### Green
 
-- [ ] T020 Implement EncryptRequest/EncryptResponse wire conversion from Table 214/215.
-- [ ] T021 Implement DecryptRequest/DecryptResponse wire conversion from Table 196/197.
+- [ ] T020 Implement EncryptRequest/EncryptResponse wire conversion from Table 214/215, including known Cryptographic Parameters child type/cardinality validation before request transmission.
+- [ ] T021 Implement DecryptRequest/DecryptResponse wire conversion from Table 196/197, including known Cryptographic Parameters child type/cardinality validation before request transmission.
 - [ ] T022 Reuse the common operation result parser for Result Status, shared/unknown Result Reason, and Result Message; keep Pending in PendingOutcome.
 - [ ] T023 Expose the typed models from kmipkit-protocol while retaining the full generic request/response tree and preserving all unknown values. Implement the OASIS XML adapter only in test support; add no production XML dependency.
 - [ ] T024 Run focused protocol tests and confirm Green, including exact accounting for all 28 fixture-derived request/response pairs and the three documented symbolic substitutions.

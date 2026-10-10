@@ -18,6 +18,15 @@ mod create;
 mod create_key_pair;
 mod create_split_key;
 mod credential;
+// The typed request call sites arrive in the later Encrypt/Decrypt model tasks.
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "KMIPKIT-0019 T020/T021 add the typed request conversion call sites."
+    )
+)]
+mod cryptographic_parameters;
 mod delete_attribute;
 mod destroy;
 mod discover_versions;
@@ -28,6 +37,7 @@ mod get_attributes;
 mod lifecycle;
 mod message;
 mod modify_attribute;
+mod operation_data;
 mod ping;
 mod poll;
 mod process;
@@ -74,6 +84,7 @@ pub use message::{
     ResponseHeaderView, ResponseMessage,
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
+pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
