@@ -2,7 +2,7 @@
 //!
 //! KMIP payload context: OASIS KMIP Specification v2.1 §6.1.19, Table 221
 //! defines the successful Get response's Any Object. TTLV framing and tag
-//! allocation follow §§10.1.1–10.1.3 and §11.56. This synthetic generic TTLV
+//! allocation follow §§10.1.1–10.1.5 and §11.56. This synthetic generic TTLV
 //! fixture exercises the owned-copy contract only; it is not an official
 //! OASIS conformance vector or a schema-valid Symmetric Key object.
 

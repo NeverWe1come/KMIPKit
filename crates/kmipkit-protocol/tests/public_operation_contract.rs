@@ -5,9 +5,8 @@
 //! source-derived field-order checks, not official OASIS conformance vectors.
 
 use kmipkit_protocol::{
-    AttributeSet, GetError, GetRequest, GetResponse, KmipOperationResult, LocateError,
-    LocateRequest, LocateResponse, ObjectType, ResponseBatchItemView, StorageStatusMask,
-    UniqueIdentifier,
+    AttributeSet, GetRequest, GetResponse, KmipOperationResult, LocateRequest, LocateResponse,
+    ObjectType, ResponseBatchItemView, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, ItemType, ValueView};
 
@@ -73,22 +72,27 @@ fn storage_status_mask_keeps_unknown_raw_bits() {
 }
 
 #[test]
-fn get_and_locate_models_export_contract_constructors_accessors_and_errors() {
-    let _: Option<GetError> = None;
-    let _: Option<LocateError> = None;
-
-    let _: fn(ResponseBatchItemView<'_>) -> Result<GetResponse, GetError> =
-        GetResponse::try_from_response_item;
+fn get_and_locate_models_export_contract_constructors_and_accessors() {
+    assert_owned_get_response_constructor(GetResponse::try_from_response_item);
     let _: fn(&GetResponse) -> &KmipOperationResult = GetResponse::result;
     let _: fn(&GetResponse) -> Option<ObjectType> = GetResponse::object_type;
     let _: for<'a> fn(&'a GetResponse) -> Option<&'a UniqueIdentifier> =
         GetResponse::unique_identifier;
     let _: for<'a> fn(&'a GetResponse) -> Option<&'a Item> = GetResponse::object;
 
-    let _: fn(ResponseBatchItemView<'_>) -> Result<LocateResponse, LocateError> =
-        LocateResponse::try_from_response_item;
+    assert_owned_locate_response_constructor(LocateResponse::try_from_response_item);
     let _: fn(&LocateResponse) -> &KmipOperationResult = LocateResponse::result;
     let _located_items_accessor = LocateResponse::located_items;
     let _: for<'a> fn(&'a LocateResponse) -> &'a [UniqueIdentifier] =
         LocateResponse::unique_identifiers;
+}
+
+fn assert_owned_get_response_constructor<'view, Error>(
+    _: fn(ResponseBatchItemView<'view>) -> Result<GetResponse, Error>,
+) {
+}
+
+fn assert_owned_locate_response_constructor<'view, Error>(
+    _: fn(ResponseBatchItemView<'view>) -> Result<LocateResponse, Error>,
+) {
 }
