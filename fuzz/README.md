@@ -14,6 +14,12 @@ rejection paths. Request payload schema rejection is covered by bounded
 property tests at the protocol validation boundary. The target does not format
 or log decoded payloads.
 
+The checked-in `fuzz/corpus/ttlv_decode/` seeds are synthetic bounded TTLV
+messages, not OASIS conformance fixtures. They cover Encrypt and Decrypt
+requests, successful responses, Pending responses, and unknown Result Reason
+responses so the smoke campaign reaches both shared message validation and
+typed operation conversion paths.
+
 Run a bounded smoke campaign with the installed nightly toolchain and
 `cargo-fuzz`:
 
