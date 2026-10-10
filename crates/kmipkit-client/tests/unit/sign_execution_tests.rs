@@ -190,7 +190,7 @@ fn server_operation_failure_remains_an_operation_result() {
         outcome.result().reason().map(|reason| reason.raw()),
         Some(GENERAL_FAILURE)
     );
-    assert!(matches!(outcome, ClientBatchOutcome::Completed(_)));
+    assert!(matches!(outcome, ClientBatchOutcome::Sign(_)));
     assert_eq!(state.borrow().calls, 1);
 }
 

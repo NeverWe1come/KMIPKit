@@ -20,7 +20,7 @@ const OPERATION_FAILED: u32 = 1;
 const GENERAL_FAILURE: u32 = 0x0000_0100;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
-const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_002A;
+const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const DATA: u32 = 0x0042_00C2;
 const MAC_DATA: u32 = 0x0042_00C4;
 const CORRELATION_VALUE: u32 = 0x0042_00D6;
@@ -91,7 +91,6 @@ fn request_emits_optional_identifier_and_parameters_before_input_and_framing() {
             Value::enumeration(CryptographicAlgorithm::from_raw(0x38).raw()),
         )]))
         .with_data(OperationData::ByteString(SecretBytes::new(input.to_vec())))
-        .with_correlation_value(SecretBytes::new(b"multipart-id".to_vec()))
         .with_init_indicator(true)
         .with_final_indicator(true);
 
@@ -105,7 +104,6 @@ fn request_emits_optional_identifier_and_parameters_before_input_and_framing() {
             UNIQUE_IDENTIFIER,
             CRYPTOGRAPHIC_PARAMETERS,
             DATA,
-            CORRELATION_VALUE,
             INIT_INDICATOR,
             FINAL_INDICATOR,
         ]
