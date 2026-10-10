@@ -66,11 +66,12 @@ passed, 0 failed. The pinned image resolved to
 The initial expanded run on the unpatched KMIPKIT-0015 branch reported 8
 passed and 2 failed: Create used the wrong tag (`0x420008`, `Attribute`, rather
 than `0x420125`, `Attributes`), and Create Split Key stopped while creating its
-source key. After applying the candidate KMIPKIT-0014 fixes in the test
-checkout, the serial command reported 10 passed and 0 failed. The fixes are
-being reviewed in their own feature branch; PR #56 remains draft until the
-fixes are integrated and the suite passes on the updated branch. Adjust
-Attribute was probed separately and Cosmian 5.28.0 rejects it as unsupported.
+source key. On 2026-10-10, PR #56 was synchronized with `release/1.0.0`, which
+includes the separately reviewed KMIPKIT-0014 correction from PR #69. The same
+serial command then passed 10/10 on merge head `a1945f4e`, including Create and
+Create Split Key. The correction is inherited from release and is not duplicated
+in PR #56. Adjust Attribute was probed separately and Cosmian 5.28.0 rejects
+it as unsupported.
 See `specs/015-cosmian-kms-integration/traceability.md` for operation-by-
 operation evidence. These results validate only the tested requests and do
 not establish full KMIP 2.1 conformance or certification.
