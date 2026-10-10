@@ -18,14 +18,17 @@ use std::rc::Rc;
 use kmipkit_protocol::{
     DecryptRequest, EncryptRequest, OperationData, SecretBytes, UniqueIdentifier,
 };
-use kmipkit_transport::{Transport, TransportError, TransportResponse};
+use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode};
 use kmipkit_ttlv::{ItemType, Value, ValueView};
 use zeroize::Zeroizing;
 
 use crate::execute::Client;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
-use crate::{ClientBatch, ClientBatchItem, ClientBatchResponse, ClientRequest};
+use crate::{
+    ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientErrorCategory,
+    ClientRequest,
+};
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
@@ -39,8 +42,10 @@ const INIT_INDICATOR: u32 = 0x0042_00D7;
 const FINAL_INDICATOR: u32 = 0x0042_00D8;
 const AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA: u32 = 0x0042_00FE;
 const AUTHENTICATED_ENCRYPTION_TAG: u32 = 0x0042_00FF;
+const DATA: u32 = 0x0042_00C2;
 
 const SERVER_CORRELATION: &[u8] = b"server-correlation\x00\xff";
+const FRAMED_SINGLE_DATA: &[u8] = b"framed-single-part-data";
 const ENCRYPT_AAD: &[u8] = b"encrypt-aad-initial-only";
 const DECRYPT_AAD: &[u8] = b"decrypt-aad-initial-only";
 const DECRYPT_TAG: &[u8] = b"decrypt-tag-initial-only";
@@ -246,6 +251,109 @@ fn assert_request_count(state: &SharedTransportState, expected: usize) {
         expected,
         "each explicit caller invocation performs exactly one exchange"
     );
+}
+
+#[test]
+fn client_accepts_framed_single_part_with_data_for_encrypt_and_decrypt() {
+    let requests = [
+        (
+            ENCRYPT_OPERATION,
+            ClientRequest::Encrypt(
+                EncryptRequest::new(
+                    Some(UniqueIdentifier::TextString("multipart-object".to_owned())),
+                    Some(OperationData::ByteString(SecretBytes::new(
+                        FRAMED_SINGLE_DATA.to_vec(),
+                    ))),
+                )
+                .with_init_indicator(true)
+                .with_final_indicator(true),
+            ),
+        ),
+        (
+            DECRYPT_OPERATION,
+            ClientRequest::Decrypt(
+                DecryptRequest::new(
+                    Some(UniqueIdentifier::TextString("multipart-object".to_owned())),
+                    Some(OperationData::ByteString(SecretBytes::new(
+                        FRAMED_SINGLE_DATA.to_vec(),
+                    ))),
+                )
+                .with_init_indicator(true)
+                .with_final_indicator(true),
+            ),
+        ),
+    ];
+
+    for (operation, request) in requests {
+        let (mut client, state) = client_with_responses([
+            success_response(operation, None),
+            success_response(operation, None),
+            success_response(operation, None),
+        ]);
+
+        let response = execute_one(&mut client, request);
+
+        assert_eq!(response.len(), 1);
+        assert_request_count(&state, 1);
+        assert_payload_boolean(&state, 0, INIT_INDICATOR, true);
+        assert_payload_boolean(&state, 0, FINAL_INDICATOR, true);
+        assert_payload_byte_string(&state, 0, DATA, FRAMED_SINGLE_DATA);
+    }
+}
+
+#[test]
+fn client_rejects_framed_single_part_without_data_before_exchange() {
+    let requests = [
+        (
+            ENCRYPT_OPERATION,
+            ClientRequest::Encrypt(
+                EncryptRequest::new(
+                    Some(UniqueIdentifier::TextString("multipart-object".to_owned())),
+                    None,
+                )
+                .with_init_indicator(true)
+                .with_final_indicator(true),
+            ),
+        ),
+        (
+            DECRYPT_OPERATION,
+            ClientRequest::Decrypt(
+                DecryptRequest::new(
+                    Some(UniqueIdentifier::TextString("multipart-object".to_owned())),
+                    None,
+                )
+                .with_init_indicator(true)
+                .with_final_indicator(true),
+            ),
+        ),
+    ];
+
+    for (operation, request) in requests {
+        let (mut client, state) = client_with_responses([
+            success_response(operation, None),
+            success_response(operation, None),
+            success_response(operation, None),
+        ]);
+
+        let error = client
+            .execute(
+                ClientBatch::new(ClientBatchItem::new(request)),
+                &CodecLimits::defaults(),
+            )
+            .expect_err("the ambiguous Data-omission form is rejected locally");
+
+        assert_eq!(error.category(), ClientErrorCategory::Validation);
+        assert_eq!(
+            error.cause_category(),
+            Some(ClientCauseCategory::InvalidInput)
+        );
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(
+            error.to_string(),
+            "client validation failure (invalid input, NotSent)"
+        );
+        assert_request_count(&state, 0);
+    }
 }
 
 #[test]
