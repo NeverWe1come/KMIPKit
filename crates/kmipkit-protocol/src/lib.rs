@@ -71,7 +71,8 @@ pub use credential::{
 };
 pub use cryptographic_operation::{
     CryptographicAlgorithm, CryptographicOperationError, CryptographicOperationErrorKind,
-    DigitalSignatureAlgorithm, HashingAlgorithm, ValidityIndicator, VerificationResponseContext,
+    CryptographicOperationResponseContext, DigitalSignatureAlgorithm, HashingAlgorithm,
+    ValidityIndicator, VerificationResponseContext,
 };
 pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};

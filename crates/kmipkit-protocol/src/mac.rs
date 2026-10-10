@@ -6,8 +6,9 @@ use kmipkit_ttlv::Structure;
 
 use crate::cryptographic_operation as common;
 use crate::{
-    CryptographicOperationError, CryptographicOperationErrorKind, KmipOperationResult,
-    OperationData, ProtocolError, ResponseBatchItemView, SecretBytes, UniqueIdentifier,
+    CryptographicOperationError, CryptographicOperationErrorKind,
+    CryptographicOperationResponseContext, KmipOperationResult, OperationData, ProtocolError,
+    ResponseBatchItemView, SecretBytes, UniqueIdentifier,
 };
 
 const OPERATION: u32 = 0x0000_0023;
@@ -93,6 +94,16 @@ impl MacRequest {
         )
     }
 
+    /// Returns the request-derived response framing context.
+    #[must_use]
+    pub fn response_context(&self) -> CryptographicOperationResponseContext {
+        common::response_context_from_framing(
+            self.correlation.is_some(),
+            self.init,
+            self.final_part,
+        )
+    }
+
     /// Builds a TTLV payload for Table 259.
     ///
     /// # Errors
@@ -160,12 +171,33 @@ impl MacResponse {
         })
     }
 
-    /// Converts a completed MAC response item.
+    /// Converts a completed single-part MAC response item.
     ///
     /// # Errors
     /// Returns an error if the item is not a completed MAC result or its
-    /// successful response payload is malformed.
+    /// successful response omits MAC Data or has a malformed payload.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, MacError> {
+        Self::try_from_response_item_with_context(
+            item,
+            CryptographicOperationResponseContext::SinglePart,
+        )
+    }
+
+    /// Converts a completed MAC response using the original request framing.
+    ///
+    /// The response-only [`Self::try_from_response_item`] convenience uses the
+    /// single-part interpretation. Multipart callers should pass the context
+    /// returned by [`MacRequest::response_context`]. Per KMIP v2.1 §6.1.32,
+    /// Table 260, MAC Data is required for single-part responses and absent
+    /// for multipart responses.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a completed MAC result or its
+    /// successful response payload disagrees with the request context.
+    pub fn try_from_response_item_with_context(
+        item: ResponseBatchItemView<'_>,
+        context: CryptographicOperationResponseContext,
+    ) -> Result<Self, MacError> {
         let result = common::parse_result(item, OPERATION, "MAC", Some(false))?;
         if result.status().raw() != common::SUCCESS {
             return Ok(Self {
@@ -186,6 +218,7 @@ impl MacResponse {
                     CryptographicOperationErrorKind::MissingSuccessPayload,
                 )
             })??;
+        common::validate_operation_output_shape(parsed.output_data.is_some(), context, "MAC")?;
         Ok(Self {
             result,
             unique_identifier: Some(parsed.unique_identifier),

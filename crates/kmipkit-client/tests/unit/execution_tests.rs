@@ -163,7 +163,7 @@ fn candidate_associate_response(
         .map(|item| BatchIdentity {
             operation: item.operation,
             unique_batch_item_id: item.unique_batch_item_id.clone(),
-            verification_response_context: None,
+            response_context: None,
         })
         .collect::<Vec<_>>();
     let response_items = response
@@ -172,7 +172,7 @@ fn candidate_associate_response(
         .map(|item| BatchIdentity {
             operation: item.operation,
             unique_batch_item_id: item.unique_batch_item_id.clone(),
-            verification_response_context: None,
+            response_context: None,
         })
         .collect::<Vec<_>>();
     associate_batch_items(&request_items, &response_items)

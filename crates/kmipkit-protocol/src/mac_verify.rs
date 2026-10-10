@@ -106,7 +106,7 @@ impl MacVerifyRequest {
     /// shape validation.
     #[must_use]
     pub fn verification_response_context(&self) -> VerificationResponseContext {
-        common::verification_response_context(
+        common::response_context_from_framing(
             self.correlation.is_some(),
             self.init,
             self.final_part,

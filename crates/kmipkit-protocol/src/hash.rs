@@ -6,8 +6,9 @@ use kmipkit_ttlv::{Item, Structure, StructureView, Value, ValueView};
 
 use crate::cryptographic_operation as common;
 use crate::{
-    CryptographicOperationError, CryptographicOperationErrorKind, KmipOperationResult,
-    OperationData, ProtocolError, ResponseBatchItemView, SecretBytes,
+    CryptographicOperationError, CryptographicOperationErrorKind,
+    CryptographicOperationResponseContext, KmipOperationResult, OperationData, ProtocolError,
+    ResponseBatchItemView, SecretBytes,
 };
 
 const OPERATION: u32 = 0x0000_0027;
@@ -70,6 +71,16 @@ impl HashRequest {
     pub fn validate_multipart_shape(&self) -> Result<(), ProtocolError> {
         common::validate_framing(
             self.data.is_some(),
+            self.correlation.is_some(),
+            self.init,
+            self.final_part,
+        )
+    }
+
+    /// Returns the request-derived response framing context.
+    #[must_use]
+    pub fn response_context(&self) -> CryptographicOperationResponseContext {
+        common::response_context_from_framing(
             self.correlation.is_some(),
             self.init,
             self.final_part,
@@ -150,8 +161,29 @@ impl HashResponse {
     ///
     /// # Errors
     /// Returns an error if the item is not a completed Hash result or its
-    /// successful response payload is malformed.
+    /// successful single-part response omits Data or its payload is malformed.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, HashError> {
+        Self::try_from_response_item_with_context(
+            item,
+            CryptographicOperationResponseContext::SinglePart,
+        )
+    }
+
+    /// Converts a completed Hash response using the original request framing.
+    ///
+    /// The response-only [`Self::try_from_response_item`] convenience uses the
+    /// single-part interpretation. Multipart callers should pass the context
+    /// returned by [`HashRequest::response_context`]. Per KMIP v2.1 §6.1.24,
+    /// Table 236, Data is required for single-part responses and absent for
+    /// multipart responses.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a completed Hash result or its
+    /// successful response payload disagrees with the request context.
+    pub fn try_from_response_item_with_context(
+        item: ResponseBatchItemView<'_>,
+        context: CryptographicOperationResponseContext,
+    ) -> Result<Self, HashError> {
         let result = common::parse_result(item, OPERATION, "Hash", Some(false))?;
         if result.status().raw() != common::SUCCESS {
             return Ok(Self {
@@ -166,6 +198,7 @@ impl HashResponse {
             .ok_or_else(|| {
                 response_error(CryptographicOperationErrorKind::MissingSuccessPayload)
             })??;
+        common::validate_operation_output_shape(parsed.data.is_some(), context, "Hash")?;
         Ok(Self {
             result,
             data: parsed.data,

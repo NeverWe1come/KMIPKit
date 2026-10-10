@@ -63,35 +63,39 @@ raw_enumeration!(
     "An open KMIP Validity Indicator value from §11.61."
 );
 
-/// The request-derived multipart context used to validate a verification
-/// response's Validity Indicator under KMIPKIT-DISC-048.
+/// The request-derived framing context used to validate cryptographic
+/// operation response fields.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum VerificationResponseContext {
-    /// A single-part operation; the successful response requires the field.
+pub enum CryptographicOperationResponseContext {
+    /// A single-part operation whose response fields are required by its table.
     SinglePart,
-    /// A multipart response before the caller marks the final request part.
+    /// A multipart response before the request marks the final part.
     MultipartNonFinal,
-    /// A response to a multipart request marked final; field presence remains
+    /// A response to a multipart request marked final. Hash, MAC, and Sign
+    /// outputs remain absent; Verify Validity Indicator presence remains
     /// tolerant while KMIPKIT-DISC-048 is unresolved.
     MultipartFinal,
 }
 
-/// Classifies the request framing used to validate a verification response.
-pub(crate) fn verification_response_context(
+/// Backwards-compatible name for the request-derived operation response context.
+pub type VerificationResponseContext = CryptographicOperationResponseContext;
+
+/// Classifies request framing for operation response validation.
+pub(crate) fn response_context_from_framing(
     has_correlation: bool,
     init: Option<bool>,
     final_part: Option<bool>,
-) -> VerificationResponseContext {
+) -> CryptographicOperationResponseContext {
     if has_correlation {
         if final_part == Some(true) {
-            VerificationResponseContext::MultipartFinal
+            CryptographicOperationResponseContext::MultipartFinal
         } else {
-            VerificationResponseContext::MultipartNonFinal
+            CryptographicOperationResponseContext::MultipartNonFinal
         }
     } else if init == Some(true) && final_part != Some(true) {
-        VerificationResponseContext::MultipartNonFinal
+        CryptographicOperationResponseContext::MultipartNonFinal
     } else {
-        VerificationResponseContext::SinglePart
+        CryptographicOperationResponseContext::SinglePart
     }
 }
 
@@ -367,15 +371,29 @@ pub(crate) fn parse_validity_indicator(
 /// context while preserving KMIPKIT-DISC-048's final-part ambiguity.
 pub(crate) fn validate_validity_indicator_shape(
     indicator: Option<ValidityIndicator>,
-    context: VerificationResponseContext,
+    context: CryptographicOperationResponseContext,
     operation: &'static str,
 ) -> Result<(), CryptographicOperationError> {
     let valid = match context {
-        VerificationResponseContext::SinglePart => indicator.is_some(),
-        VerificationResponseContext::MultipartNonFinal => indicator.is_none(),
-        VerificationResponseContext::MultipartFinal => true,
+        CryptographicOperationResponseContext::SinglePart => indicator.is_some(),
+        CryptographicOperationResponseContext::MultipartNonFinal => indicator.is_none(),
+        CryptographicOperationResponseContext::MultipartFinal => true,
     };
     if valid {
+        Ok(())
+    } else {
+        Err(response_shape_error(operation))
+    }
+}
+
+/// Validates whether an operation output is present for the request framing.
+pub(crate) fn validate_operation_output_shape(
+    has_output: bool,
+    context: CryptographicOperationResponseContext,
+    operation: &'static str,
+) -> Result<(), CryptographicOperationError> {
+    let is_single_part = matches!(context, CryptographicOperationResponseContext::SinglePart);
+    if has_output == is_single_part {
         Ok(())
     } else {
         Err(response_shape_error(operation))
