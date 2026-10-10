@@ -9934,7 +9934,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::ClientBatchItem"
         },
         "c": {
@@ -9971,7 +9971,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::ClientBatchItem (Drop)"
         },
         "c": {
@@ -10008,7 +10008,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::ClientBatchItem"
         },
         "c": {
@@ -10045,7 +10045,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::ClientBatchItem"
         },
         "c": {
@@ -10082,7 +10082,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::ClientBatchItem"
         },
         "c": {
@@ -10121,7 +10121,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration"
         },
         "c": {
@@ -10160,7 +10160,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration (Drop)"
         },
         "c": {
@@ -10199,7 +10199,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration"
         },
         "c": {
@@ -10238,7 +10238,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration"
         },
         "c": {
@@ -10277,7 +10277,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration"
         },
         "c": {
@@ -10320,7 +10320,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientExtensionRegistry"
         },
         "c": {
@@ -10363,7 +10363,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientExtensionRegistry (Drop)"
         },
         "c": {
@@ -10406,7 +10406,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientExtensionRegistry"
         },
         "c": {
@@ -10449,7 +10449,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientExtensionRegistry"
         },
         "c": {
@@ -10492,7 +10492,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientExtensionRegistry"
         },
         "c": {
@@ -10530,7 +10530,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientRequestMessageExtension"
         },
         "c": {
@@ -10568,7 +10568,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientRequestMessageExtension (Drop)"
         },
         "c": {
@@ -10606,7 +10606,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientRequestMessageExtension"
         },
         "c": {
@@ -10644,7 +10644,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientRequestMessageExtension"
         },
         "c": {
@@ -10682,7 +10682,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientRequestMessageExtension"
         },
         "c": {
@@ -12270,7 +12270,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ExtensionRecognition"
         },
         "c": {
@@ -12308,7 +12308,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ExtensionRecognition (Drop)"
         },
         "c": {
@@ -12346,7 +12346,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ExtensionRecognition"
         },
         "c": {
@@ -12384,7 +12384,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ExtensionRecognition"
         },
         "c": {
@@ -12422,7 +12422,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ExtensionRecognition"
         },
         "c": {
@@ -12999,7 +12999,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::RegisteredExtensionValue"
         },
         "c": {
@@ -13038,7 +13038,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::RegisteredExtensionValue (Drop)"
         },
         "c": {
@@ -13077,7 +13077,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::RegisteredExtensionValue"
         },
         "c": {
@@ -13116,7 +13116,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::RegisteredExtensionValue"
         },
         "c": {
@@ -13155,7 +13155,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::RegisteredExtensionValue"
         },
         "c": {
@@ -13735,32 +13735,10 @@
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010"
       ],
-      "declarationState": "declared",
+      "declarationState": "blocked",
       "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_ffi::ttlv::TtlvItemViewHandle (Drop)"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_ttlv_item_view_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.TtlvItemView.close"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.ttlv.TtlvItemView.close"
-        }
-      }
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
     },
     {
       "declarationId": "TtlvItemView:java",
@@ -14211,32 +14189,10 @@
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010"
       ],
-      "declarationState": "declared",
+      "declarationState": "blocked",
       "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_ffi::ttlv::TtlvStructureViewHandle (Drop)"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_ttlv_structure_view_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.TtlvStructureView.close"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.ttlv.TtlvStructureView.close"
-        }
-      }
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
     },
     {
       "declarationId": "TtlvStructureView:java",
@@ -14492,32 +14448,10 @@
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010"
       ],
-      "declarationState": "declared",
+      "declarationState": "blocked",
       "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_ffi::ttlv::TtlvValueViewHandle (Drop)"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_ttlv_value_view_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.TtlvValueView.close"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.ttlv.TtlvValueView.close"
-        }
-      }
+      "candidateSpecId": "KMIPKIT-0012",
+      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
     },
     {
       "declarationId": "TtlvValueView:java",
@@ -14772,7 +14706,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::discover_versions"
         },
         "c": {
@@ -14810,7 +14744,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::discover_versions"
         },
         "c": {
@@ -14848,7 +14782,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::discover_versions"
         },
         "c": {
@@ -14886,7 +14820,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::discover_versions"
         },
         "c": {
@@ -14924,7 +14858,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_count"
         },
         "c": {
@@ -14962,7 +14896,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_count"
         },
         "c": {
@@ -15000,7 +14934,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_count"
         },
         "c": {
@@ -15038,7 +14972,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_count"
         },
         "c": {
@@ -15076,7 +15010,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_criticality_indicator_at"
         },
         "c": {
@@ -15114,7 +15048,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_criticality_indicator_at"
         },
         "c": {
@@ -15152,7 +15086,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_criticality_indicator_at"
         },
         "c": {
@@ -15190,7 +15124,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_criticality_indicator_at"
         },
         "c": {
@@ -15228,7 +15162,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_identity_at"
         },
         "c": {
@@ -15266,7 +15200,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_identity_at"
         },
         "c": {
@@ -15304,7 +15238,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_identity_at"
         },
         "c": {
@@ -15342,7 +15276,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::execute::ClientBatchItem::extension_identity_at"
         },
         "c": {
@@ -15380,7 +15314,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::with_extension"
         },
         "c": {
@@ -15418,7 +15352,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::with_extension"
         },
         "c": {
@@ -15456,7 +15390,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::with_extension"
         },
         "c": {
@@ -15494,7 +15428,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::with_extension"
         },
         "c": {
@@ -15532,7 +15466,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration::extension_registry"
         },
         "c": {
@@ -15570,7 +15504,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration::extension_registry"
         },
         "c": {
@@ -15608,7 +15542,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration::extension_registry"
         },
         "c": {
@@ -15646,7 +15580,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration::extension_registry"
         },
         "c": {
@@ -15685,7 +15619,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration::new"
         },
         "c": {
@@ -15724,7 +15658,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration::new"
         },
         "c": {
@@ -15763,7 +15697,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration::new"
         },
         "c": {
@@ -15802,7 +15736,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::ClientConfiguration::new"
         },
         "c": {
@@ -15841,7 +15775,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::client_extension_registry"
         },
         "c": {
@@ -15880,7 +15814,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::client_extension_registry"
         },
         "c": {
@@ -15919,7 +15853,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::client_extension_registry"
         },
         "c": {
@@ -15958,7 +15892,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::client_extension_registry"
         },
         "c": {
@@ -15995,7 +15929,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_at"
         },
         "c": {
@@ -16032,7 +15966,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_at"
         },
         "c": {
@@ -16069,7 +16003,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_at"
         },
         "c": {
@@ -16106,7 +16040,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_at"
         },
         "c": {
@@ -16143,7 +16077,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_count"
         },
         "c": {
@@ -16180,7 +16114,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_count"
         },
         "c": {
@@ -16217,7 +16151,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_count"
         },
         "c": {
@@ -16254,7 +16188,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_count"
         },
         "c": {
@@ -16291,7 +16225,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_for_identity"
         },
         "c": {
@@ -16328,7 +16262,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_for_identity"
         },
         "c": {
@@ -16365,7 +16299,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_for_identity"
         },
         "c": {
@@ -16402,7 +16336,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::definition_for_identity"
         },
         "c": {
@@ -16443,7 +16377,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::inspect"
         },
         "c": {
@@ -16484,7 +16418,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::inspect"
         },
         "c": {
@@ -16525,7 +16459,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::inspect"
         },
         "c": {
@@ -16566,7 +16500,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::inspect"
         },
         "c": {
@@ -16606,7 +16540,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::validate_extension_value"
         },
         "c": {
@@ -16646,7 +16580,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::validate_extension_value"
         },
         "c": {
@@ -16686,7 +16620,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::validate_extension_value"
         },
         "c": {
@@ -16726,7 +16660,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::validate_extension_value"
         },
         "c": {
@@ -16764,7 +16698,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::client_request_message_extension"
         },
         "c": {
@@ -16802,7 +16736,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::client_request_message_extension"
         },
         "c": {
@@ -16840,7 +16774,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::client_request_message_extension"
         },
         "c": {
@@ -16878,7 +16812,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::client_request_message_extension"
         },
         "c": {
@@ -21192,7 +21126,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::generic_value"
         },
         "c": {
@@ -21230,7 +21164,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::generic_value"
         },
         "c": {
@@ -21268,7 +21202,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::generic_value"
         },
         "c": {
@@ -21306,7 +21240,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::generic_value"
         },
         "c": {
@@ -21344,7 +21278,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::is_recognized"
         },
         "c": {
@@ -21382,7 +21316,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::is_recognized"
         },
         "c": {
@@ -21420,7 +21354,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::is_recognized"
         },
         "c": {
@@ -21458,7 +21392,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::is_recognized"
         },
         "c": {
@@ -21496,7 +21430,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::validated_value"
         },
         "c": {
@@ -21534,7 +21468,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::validated_value"
         },
         "c": {
@@ -21572,7 +21506,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::validated_value"
         },
         "c": {
@@ -21610,7 +21544,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-protocol",
+          "packageId": "rust-kmipkit-client",
           "name": "kmipkit_client::extension_registry::validated_value"
         },
         "c": {
