@@ -669,6 +669,38 @@ where
         .map(ClientBatchOutcome::Pending)
 }
 
+fn read_crypto_operation_outcome<T, E>(
+    operation: ClientOperation,
+    item: ResponseBatchItemView<'_>,
+    convert_pending: impl FnOnce(ResponseBatchItemView<'_>) -> Result<T, E>,
+    convert_completed: impl FnOnce(ResponseBatchItemView<'_>) -> Result<T, E>,
+    result_of: impl FnOnce(&T) -> &KmipOperationResult,
+    into_pending_response: impl FnOnce(T) -> PendingResponse,
+    into_completed_outcome: impl FnOnce(T) -> ClientBatchOutcome,
+) -> Result<ClientBatchOutcome, ProtocolError>
+where
+    E: Error + 'static,
+{
+    if item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_PENDING)) {
+        read_pending_operation_outcome(
+            operation,
+            item,
+            convert_pending,
+            result_of,
+            into_pending_response,
+        )
+    } else {
+        read_operation_outcome(
+            operation,
+            item,
+            convert_completed,
+            result_of,
+            into_pending_response,
+            into_completed_outcome,
+        )
+    }
+}
+
 impl fmt::Debug for PendingResponse {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
@@ -3521,46 +3553,24 @@ fn response_outcome(
     item: ResponseBatchItemView<'_>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
     match operation {
-        ENCRYPT_OPERATION => {
-            if item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_PENDING)) {
-                read_pending_operation_outcome(
-                    ClientOperation::Encrypt,
-                    item,
-                    EncryptResponse::try_from_pending_response_item,
-                    EncryptResponse::result,
-                    PendingResponse::Encrypt,
-                )
-            } else {
-                read_operation_outcome(
-                    ClientOperation::Encrypt,
-                    item,
-                    EncryptResponse::try_from_response_item,
-                    EncryptResponse::result,
-                    PendingResponse::Encrypt,
-                    ClientBatchOutcome::Encrypt,
-                )
-            }
-        }
-        DECRYPT_OPERATION => {
-            if item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_PENDING)) {
-                read_pending_operation_outcome(
-                    ClientOperation::Decrypt,
-                    item,
-                    DecryptResponse::try_from_pending_response_item,
-                    DecryptResponse::result,
-                    PendingResponse::Decrypt,
-                )
-            } else {
-                read_operation_outcome(
-                    ClientOperation::Decrypt,
-                    item,
-                    DecryptResponse::try_from_response_item,
-                    DecryptResponse::result,
-                    PendingResponse::Decrypt,
-                    ClientBatchOutcome::Decrypt,
-                )
-            }
-        }
+        ENCRYPT_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::Encrypt,
+            item,
+            EncryptResponse::try_from_pending_response_item,
+            EncryptResponse::try_from_response_item,
+            EncryptResponse::result,
+            PendingResponse::Encrypt,
+            ClientBatchOutcome::Encrypt,
+        ),
+        DECRYPT_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::Decrypt,
+            item,
+            DecryptResponse::try_from_pending_response_item,
+            DecryptResponse::try_from_response_item,
+            DecryptResponse::result,
+            PendingResponse::Decrypt,
+            ClientBatchOutcome::Decrypt,
+        ),
         ACTIVATE_OPERATION => read_operation_outcome(
             ClientOperation::Activate,
             item,
