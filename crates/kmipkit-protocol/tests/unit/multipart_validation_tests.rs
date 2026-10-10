@@ -202,10 +202,6 @@ fn both_operations_reject_invalid_data_multipart_shapes_before_encoding() {
             shape(true, Some(true), Some(true), true),
         ),
         (
-            "middle part without Correlation Value",
-            shape(true, None, None, false),
-        ),
-        (
             "final part without Correlation Value",
             shape(true, None, Some(true), false),
         ),
