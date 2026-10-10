@@ -87,6 +87,17 @@ The three fixtures contain 13, 13, and 11 request-response exchanges. The adapte
 | KMIPKIT-TEST-CN01-2-100 | TC-STREAM-ENC-2-21, §2.100 | HTML describes Encrypt and Decrypt; linked XML contains 10 Encrypt pairs only; workflow also contains Register, Revoke, and Destroy | Pinned at `specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml`; test only the Encrypt items present as fixture-derived evidence, not a complete case pass |
 | KMIPKIT-TEST-CN01-2-101 | TC-STREAM-ENCDEC-1-21, §2.101 | HTML describes Encrypt; linked XML contains 4 Encrypt and 4 Decrypt pairs, plus Register, Revoke, and Destroy | Pinned at `specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml`; test the in-scope items present as fixture-derived evidence, not a complete case pass |
 
+## T023 fixture adapter evidence
+
+The XML fixture adapter is exposed only by `kmipkit-test-support::oasis_crypto_fixtures`; XML parsing dependencies are absent from production crates. `OasisCryptoFixture::from_xml` rejects DTDs and documents above 16 MiB before XML parsing, selects only Encrypt/Decrypt batch items before validating selected-message symbols, and builds complete ordered generic TTLV structures with depth 64 and 100,000-item bounds. Standard tags and named enumeration values resolve through the checked-in KMIP 2.1 catalog. Numeric unknown enumeration values and explicit raw extension tags remain intact. Fixture symbols `$NOW`, `$UNIQUE_IDENTIFIER_0`, and `$CORRELATION_VALUE` are substituted deterministically only in selected messages; formatted errors never include XML values.
+
+| Requirement / evidence | OASIS reference | Implementation and tests |
+| --- | --- | --- |
+| KMIPKIT-0019-FR-012; KMIPKIT-TEST-CN01-2-99 | Test Cases v2.1 CN01 §2.99 | `OasisCryptoFixture::from_xml`; `fixture_adapter_accounts_for_each_in_scope_pair_by_source_sequence_and_step`; `fixture_adapter_resolves_selected_symbols_deterministically`; `fixture_adapter_ignores_unrecognized_symbols_in_out_of_scope_setup_messages` |
+| KMIPKIT-0019-FR-012; KMIPKIT-TEST-CN01-2-100 | Test Cases v2.1 CN01 §2.100 | `fixture_adapter_filters_unknown_setup_symbol_and_keeps_all_28_pairs`; only Encrypt items present in the pinned linked XML are counted |
+| KMIPKIT-0019-FR-012; KMIPKIT-TEST-CN01-2-101 | Test Cases v2.1 CN01 §2.101 | `fixture_derived_success_responses_preserve_all_24_encrypt_and_4_decrypt_items`; only the in-scope request/response items present in the pinned linked XML are counted |
+| KMIPKIT-0019-FR-012 generic-tree, filtering, and parser-safety criteria | Synthetic adapter cases; not OASIS conformance vectors | `fixture_adapter_pairs_each_request_with_its_source_sequence_response`; `fixture_adapter_preserves_unknown_extension_tags_and_enumeration_values`; `fixture_adapter_rejects_unknown_symbols_in_selected_operation_messages`; `fixture_adapter_rejects_doctypes_before_parsing_xml`; `fixture_adapter_enforces_ttlv_depth_before_resolving_deep_items`; `fixture_adapter_rejects_malformed_xml_without_echoing_document_contents` |
+
 ## Feature requirement and success-criteria coverage
 
 | Feature requirement / criterion | Planned tasks |

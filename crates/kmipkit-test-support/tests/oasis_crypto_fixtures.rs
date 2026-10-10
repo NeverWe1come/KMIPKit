@@ -10,7 +10,9 @@ use kmipkit_protocol::{
     DecryptResponse, EncryptResponse, ResponseBatchItemView, ResponseMessage, ResultStatus,
     SecretBytes, UniqueIdentifier,
 };
-use kmipkit_test_support::oasis_crypto_fixtures::{OasisCryptoFixture, OasisCryptoOperation};
+use kmipkit_test_support::oasis_crypto_fixtures::{
+    OasisCryptoFixture, OasisCryptoFixtureError, OasisCryptoOperation, OasisCryptoOperationPair,
+};
 use kmipkit_ttlv::{Item, Structure, ValueView};
 
 const TC_ENC_1_21_ID: &str = "TC-STREAM-ENC-1-21";
@@ -579,8 +581,8 @@ fn fixture_adapter_preserves_unknown_extension_tags_and_enumeration_values() {
 
     assert!(contains_value(
         first_request,
-        0x54ABCD,
-        &ValueSnapshot::Enumeration(0xDEADBEEF),
+        0x0054_ABCD,
+        &ValueSnapshot::Enumeration(0xDEAD_BEEF),
     ));
 }
 
@@ -598,6 +600,39 @@ fn fixture_adapter_rejects_malformed_xml_without_echoing_document_contents() {
     assert!(
         !diagnostic.contains(SECRET_SENTINEL),
         "fixture diagnostics must not echo raw XML values"
+    );
+}
+
+#[test]
+fn fixture_adapter_rejects_doctypes_before_parsing_xml() {
+    let xml = format!(
+        "<!DOCTYPE KMIP [<!ENTITY external SYSTEM \"file:///sensitive/path\">]>{SEQUENCE_PAIRING_XML}"
+    );
+
+    assert_eq!(
+        OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &xml).unwrap_err(),
+        OasisCryptoFixtureError::XmlLimitOrDtd
+    );
+}
+
+#[test]
+fn fixture_adapter_enforces_ttlv_depth_before_resolving_deep_items() {
+    let mut deep_items =
+        "<VendorPrivateValue tag=\"0x54ABCD\" type=\"Enumeration\" value=\"0xDEADBEEF\"/>"
+            .to_owned();
+    for _ in 0..62 {
+        deep_items = format!("<VendorNested tag=\"0x54ABCD\">{deep_items}</VendorNested>");
+    }
+    let request_with_deep_items = SEQUENCE_PAIRING_XML.replacen(
+        "</RequestPayload>",
+        &format!("{deep_items}</RequestPayload>"),
+        1,
+    );
+
+    assert_eq!(
+        OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &request_with_deep_items)
+            .unwrap_err(),
+        OasisCryptoFixtureError::TtlvLimit
     );
 }
 
@@ -652,94 +687,19 @@ fn fixture_derived_success_responses_preserve_all_24_encrypt_and_4_decrypt_items
     for (case_id, xml, sequences, operations) in cases {
         let fixture = OasisCryptoFixture::from_xml(case_id, xml)
             .expect("the pinned fixture resolves selected response symbols deterministically");
-        let pairs = fixture.operation_pairs();
+        let pairs = fixture.into_operation_pairs();
         assert_eq!(pairs.len(), sequences.len());
         for ((pair, expected_sequence), expected_operation) in
-            pairs.iter().zip(sequences).zip(operations)
+            pairs.into_iter().zip(sequences).zip(operations)
         {
-            assert_eq!(pair.case_id(), case_id);
-            assert_eq!(pair.source_sequence(), *expected_sequence);
-            assert_eq!(
-                pair.step_identity(),
-                format!("{case_id} step={expected_sequence}"),
-                "the source RequestHeader step identity remains paired with this response"
-            );
-            assert_eq!(pair.operation(), *expected_operation);
-            let fixture_identifier = ValueSnapshot::TextString(TEST_UNIQUE_IDENTIFIER_0.to_owned());
-            assert!(contains_value(
-                pair.request_message(),
-                UNIQUE_IDENTIFIER_TAG,
-                &fixture_identifier,
-            ));
-            assert!(contains_value(
-                pair.response_message(),
-                UNIQUE_IDENTIFIER_TAG,
-                &fixture_identifier,
-            ));
-            assert!(
-                !has_unresolved_symbol(pair.response_message()),
-                "selected fixture response symbols have deterministic substitutions"
-            );
-
-            let message = ResponseMessage::try_from_ttlv(pair.response_message().clone())
-                .expect("the selected fixture response is a structurally valid KMIP message");
-            let response_item = message
-                .batch_items()
-                .next()
-                .expect("each fixture pair retains its response batch item");
-            let expected_operation_value = match expected_operation {
-                OasisCryptoOperation::Encrypt => ENCRYPT_OPERATION,
-                OasisCryptoOperation::Decrypt => DECRYPT_OPERATION,
-            };
-            assert_eq!(response_item.operation(), Some(expected_operation_value));
-            assert_eq!(
-                response_item.result_status(),
-                Some(ResultStatus::from_raw(SUCCESS))
-            );
-
-            let payload = response_payload_snapshot(response_item);
-            assert_fixture_response_table_order(*expected_operation, &payload);
-            assert_fixture_success_identifier(&payload);
-            let expected_identifier =
-                UniqueIdentifier::TextString(TEST_UNIQUE_IDENTIFIER_0.to_owned());
-
-            match expected_operation {
-                OasisCryptoOperation::Encrypt => {
-                    let response = EncryptResponse::try_from_response_item(response_item)
-                        .expect("a fixture Encrypt success matches Table 215");
-                    assert_eq!(response.result().status(), ResultStatus::from_raw(SUCCESS));
-                    assert_eq!(response.unique_identifier(), Some(&expected_identifier));
-                    assert_response_secret_matches_fixture(response.data(), &payload, DATA_TAG);
-                    assert_response_secret_matches_fixture(
-                        response.iv_counter_nonce(),
-                        &payload,
-                        IV_COUNTER_NONCE_TAG,
-                    );
-                    assert_response_secret_matches_fixture(
-                        response.correlation_value(),
-                        &payload,
-                        CORRELATION_VALUE_TAG,
-                    );
-                    assert_response_secret_matches_fixture(
-                        response.authenticated_encryption_tag(),
-                        &payload,
-                        AUTHENTICATED_ENCRYPTION_TAG,
-                    );
-                    encrypt_responses += 1;
-                }
-                OasisCryptoOperation::Decrypt => {
-                    let response = DecryptResponse::try_from_response_item(response_item)
-                        .expect("a fixture Decrypt success matches Table 197");
-                    assert_eq!(response.result().status(), ResultStatus::from_raw(SUCCESS));
-                    assert_eq!(response.unique_identifier(), Some(&expected_identifier));
-                    assert_response_secret_matches_fixture(response.data(), &payload, DATA_TAG);
-                    assert_response_secret_matches_fixture(
-                        response.correlation_value(),
-                        &payload,
-                        CORRELATION_VALUE_TAG,
-                    );
-                    decrypt_responses += 1;
-                }
+            match assert_fixture_success_response(
+                pair,
+                case_id,
+                *expected_sequence,
+                *expected_operation,
+            ) {
+                OasisCryptoOperation::Encrypt => encrypt_responses += 1,
+                OasisCryptoOperation::Decrypt => decrypt_responses += 1,
             }
         }
     }
@@ -752,4 +712,94 @@ fn fixture_derived_success_responses_preserve_all_24_encrypt_and_4_decrypt_items
         decrypt_responses, 4,
         "no in-scope Decrypt response is skipped"
     );
+}
+
+fn assert_fixture_success_response(
+    pair: OasisCryptoOperationPair,
+    case_id: &str,
+    expected_sequence: usize,
+    expected_operation: OasisCryptoOperation,
+) -> OasisCryptoOperation {
+    assert_eq!(pair.case_id(), case_id);
+    assert_eq!(pair.source_sequence(), expected_sequence);
+    assert_eq!(
+        pair.step_identity(),
+        format!("{case_id} step={expected_sequence}"),
+        "the source RequestHeader step identity remains paired with this response"
+    );
+    assert_eq!(pair.operation(), expected_operation);
+    let fixture_identifier = ValueSnapshot::TextString(TEST_UNIQUE_IDENTIFIER_0.to_owned());
+    assert!(contains_value(
+        pair.request_message(),
+        UNIQUE_IDENTIFIER_TAG,
+        &fixture_identifier,
+    ));
+    assert!(contains_value(
+        pair.response_message(),
+        UNIQUE_IDENTIFIER_TAG,
+        &fixture_identifier,
+    ));
+    assert!(
+        !has_unresolved_symbol(pair.response_message()),
+        "selected fixture response symbols have deterministic substitutions"
+    );
+
+    let message = ResponseMessage::try_from_ttlv(pair.into_response_message())
+        .expect("the selected fixture response is a structurally valid KMIP message");
+    let response_item = message
+        .batch_items()
+        .next()
+        .expect("each fixture pair retains its response batch item");
+    let expected_operation_value = match expected_operation {
+        OasisCryptoOperation::Encrypt => ENCRYPT_OPERATION,
+        OasisCryptoOperation::Decrypt => DECRYPT_OPERATION,
+    };
+    assert_eq!(response_item.operation(), Some(expected_operation_value));
+    assert_eq!(
+        response_item.result_status(),
+        Some(ResultStatus::from_raw(SUCCESS))
+    );
+
+    let payload = response_payload_snapshot(response_item);
+    assert_fixture_response_table_order(expected_operation, &payload);
+    assert_fixture_success_identifier(&payload);
+    let expected_identifier = UniqueIdentifier::TextString(TEST_UNIQUE_IDENTIFIER_0.to_owned());
+
+    match expected_operation {
+        OasisCryptoOperation::Encrypt => {
+            let response = EncryptResponse::try_from_response_item(response_item)
+                .expect("a fixture Encrypt success matches Table 215");
+            assert_eq!(response.result().status(), ResultStatus::from_raw(SUCCESS));
+            assert_eq!(response.unique_identifier(), Some(&expected_identifier));
+            assert_response_secret_matches_fixture(response.data(), &payload, DATA_TAG);
+            assert_response_secret_matches_fixture(
+                response.iv_counter_nonce(),
+                &payload,
+                IV_COUNTER_NONCE_TAG,
+            );
+            assert_response_secret_matches_fixture(
+                response.correlation_value(),
+                &payload,
+                CORRELATION_VALUE_TAG,
+            );
+            assert_response_secret_matches_fixture(
+                response.authenticated_encryption_tag(),
+                &payload,
+                AUTHENTICATED_ENCRYPTION_TAG,
+            );
+        }
+        OasisCryptoOperation::Decrypt => {
+            let response = DecryptResponse::try_from_response_item(response_item)
+                .expect("a fixture Decrypt success matches Table 197");
+            assert_eq!(response.result().status(), ResultStatus::from_raw(SUCCESS));
+            assert_eq!(response.unique_identifier(), Some(&expected_identifier));
+            assert_response_secret_matches_fixture(response.data(), &payload, DATA_TAG);
+            assert_response_secret_matches_fixture(
+                response.correlation_value(),
+                &payload,
+                CORRELATION_VALUE_TAG,
+            );
+        }
+    }
+    expected_operation
 }

@@ -19,6 +19,8 @@ kmipkit-protocol.workspace = true
 kmipkit-transport = { workspace = true, optional = true }
 kmipkit-ttlv.workspace = true
 rcgen = { workspace = true, optional = true }
+roxmltree.workspace = true
+serde_json.workspace = true
 zeroize.workspace = true
 
 [[test]]
