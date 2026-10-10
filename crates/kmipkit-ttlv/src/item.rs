@@ -35,6 +35,22 @@ impl Item {
         Ok(Self { tag, value })
     }
 
+    /// Creates an independently owned, zeroizing copy of this item.
+    ///
+    /// The copy preserves this item's tag and recursively retains the source
+    /// value's order, repeated tags, and unknown allocated values. Secret
+    /// payloads are redacted from formatting and zeroized when the copied
+    /// value is dropped.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ModelError::StructureDepthExceeded`] if copying the nested
+    /// value would exceed the local Structure nesting-depth limit.
+    pub fn try_clone(&self) -> Result<Self, ModelError> {
+        let value = crate::try_clone_value(&self.value)?;
+        Self::new(self.tag, value)
+    }
+
     /// Returns the Item Type derived from this item's value representation.
     #[must_use]
     pub fn item_type(&self) -> ItemType {
