@@ -124,7 +124,7 @@ fn request_emits_present_table_214_members_in_exact_order_and_preserves_values()
         .with_cryptographic_parameters(vendor_parameters())
         .with_iv_counter_nonce(SecretBytes::new(iv.clone()))
         .with_correlation_value(SecretBytes::new(correlation.clone()))
-        .with_init_indicator(true)
+        .with_init_indicator(false)
         .with_final_indicator(false)
         .with_authenticated_encryption_additional_data(SecretBytes::new(additional_data.clone()));
 
@@ -143,7 +143,7 @@ fn request_emits_present_table_214_members_in_exact_order_and_preserves_values()
         (DATA_TAG, Value::byte_string(data)),
         (IV_COUNTER_NONCE_TAG, Value::byte_string(iv)),
         (CORRELATION_VALUE_TAG, Value::byte_string(correlation)),
-        (INIT_INDICATOR_TAG, Value::boolean(true)),
+        (INIT_INDICATOR_TAG, Value::boolean(false)),
         (FINAL_INDICATOR_TAG, Value::boolean(false)),
         (
             AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG,

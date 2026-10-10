@@ -120,8 +120,9 @@ impl EncryptRequest {
     ///
     /// # Errors
     ///
-    /// Returns a sanitized protocol error if a member is malformed or
-    /// Cryptographic Parameters fail their local §4.16 validation.
+    /// Returns a sanitized protocol error if a member is malformed, the
+    /// Data/multipart request shape is invalid under §6.1, or Cryptographic
+    /// Parameters fail their local §4.16 validation.
     pub fn to_ttlv_payload(self) -> Result<Structure, ProtocolError> {
         let mut payload = Structure::new();
         if let Some(identifier) = self.unique_identifier {
@@ -415,6 +416,10 @@ fn assign_byte_string(field: &mut Option<SecretBytes>, item: &Item) -> Result<()
 /// boundary without exposing a raw request parser publicly.
 pub(crate) fn validate_request_payload(payload: &Structure) -> Result<(), ProtocolError> {
     let mut seen = [false; 8];
+    let mut has_data = false;
+    let mut has_correlation_value = false;
+    let mut init_indicator = None;
+    let mut final_indicator = None;
 
     for field in payload.view().children() {
         let raw_tag = field.tag().raw();
@@ -452,9 +457,32 @@ pub(crate) fn validate_request_payload(payload: &Structure) -> Result<(), Protoc
         if !valid {
             return Err(invalid_request_payload());
         }
+
+        match raw_tag {
+            DATA => has_data = true,
+            CORRELATION_VALUE => has_correlation_value = true,
+            INIT_INDICATOR => {
+                init_indicator = field.with_value(|value| match value {
+                    ValueView::Boolean(value) => Some(*value),
+                    _ => None,
+                });
+            }
+            FINAL_INDICATOR => {
+                final_indicator = field.with_value(|value| match value {
+                    ValueView::Boolean(value) => Some(*value),
+                    _ => None,
+                });
+            }
+            _ => {}
+        }
     }
 
-    Ok(())
+    crate::multipart::validate_data_multipart_shape(
+        has_data,
+        has_correlation_value,
+        init_indicator,
+        final_indicator,
+    )
 }
 
 fn validate_cryptographic_parameters_view(

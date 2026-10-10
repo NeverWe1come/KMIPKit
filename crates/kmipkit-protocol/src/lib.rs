@@ -31,6 +31,7 @@ mod get_attributes;
 mod lifecycle;
 mod message;
 mod modify_attribute;
+mod multipart;
 mod operation_data;
 mod ping;
 mod poll;
