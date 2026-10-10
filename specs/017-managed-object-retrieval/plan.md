@@ -1,6 +1,6 @@
 # Implementation Plan: KMIP 2.1 Get and Locate Operations
 
-**Branch**: `feature/KMIPKIT-0017-managed-object-retrieval` | **Date**: 2026-10-09 | **Spec**: [spec.md](spec.md)
+**Branch**: `feature/KMIPKIT-0017-managed-object-retrieval` | **Date**: 2026-10-10 | **Spec**: [spec.md](spec.md)
 
 ## Summary
 
@@ -29,7 +29,7 @@ Implement typed TTLV request/response models and single-exchange client executio
 - Unknown tags, enumeration values, bitmask bits, and extensions remain subject to the existing generic TTLV allocation and lossless-preservation contracts.
 - Tests and traces cite exact OASIS sections/tables and stable catalog identifiers. Tests and implementation are gated on approved specification review.
 
-**Post-design gate**: CONDITIONAL; the model and scope are bounded and KMIPKIT-DEC-003 through -005 resolve the catalog issues. Human approval of the revised specification and merge of the disposition PR remain required before implementation. The design introduces two operation modules and adds variants to shared client dispatch. The release branch already contains the foundations needed for the feature. The API/dispatch changes may conflict with other in-flight operation branches; integration must update from `release/1.0.0` after such changes merge, then rerun the required checks.
+**Post-design gate**: CONDITIONAL; the model and scope are bounded and KMIPKIT-DEC-003 through -005 resolve the catalog issues. The initial specification and inventory-disposition revisions were human-merged in PRs #63 and #79. This release-contract refresh must be reviewed and merged before implementation tests because PR #78 changed shared client dispatch and response access. The design introduces two operation modules and adds variants to shared client dispatch. The API/dispatch changes may conflict with other in-flight operation branches; implementation must start from the then-current `release/1.0.0` and rerun the required checks.
 
 ## Phase 0: Research Decisions
 
@@ -44,8 +44,9 @@ See [data-model.md](data-model.md), [contracts/public-rust.md](contracts/public-
 1. Add operation-specific Get and Locate models to `kmipkit-protocol`, each retaining Table-defined field presence and order.
 2. Model Get's Any Object as the existing generic ordered TTLV tree. Parse only the required response envelope fields; do not reconstruct object values, normalize nested structures, or format object contents.
 3. Model Locate's Attributes with the existing direct-item AttributeSet. Model request selectors and results as their source-defined Integer, Enumeration, Structure, and repeated Unique Identifier values. Do not evaluate matching criteria, reorder identifiers, or infer ID Placeholder state.
-4. Add the two request variants and one-exchange response handling to the existing client execution path. Reuse common Result Status/Reason/Message, Pending, redacted errors, codec limits, and delivery-state behavior.
-5. Extend operation-specific tests, user guides, and traceability in the same implementation PR. Generated catalog reports are regenerated from the catalog tool; generated files are not edited manually.
+4. Add the two request variants and one-exchange response handling to the existing non-exhaustive `ClientRequest`, `ClientOperation`, and `ClientBatchOutcome` surfaces. Reuse common Result Status/Reason/Message, Pending, redacted errors, codec limits, and delivery-state behavior; do not change shared batching or delivery semantics.
+5. Parse responses through `ResponseBatchItemView`. Its `with_ttlv` callback lends the full ordered response tree only for the callback lifetime; use the planned fallible `Item::try_clone` to copy only the Get Any Object item into KMIPKit-owned TTLV when the typed response must outlive that view. Preserve repeated and unknown descendants and keep the copied object redacted and zeroizing. Reuse the current validated `AttributeSet` contract: the direct-item model originated in KMIPKIT-0014 and subsequent catalog validation is present in the release baseline.
+6. Extend operation-specific tests, user guides, and traceability in the same implementation PR. Generated catalog reports are regenerated from the catalog tool; generated files are not edited manually.
 
 ### Alternatives Considered
 
@@ -56,9 +57,9 @@ See [data-model.md](data-model.md), [contracts/public-rust.md](contracts/public-
 
 ## Implementation Gate
 
-The latest release used for specification preparation is `release/1.0.0` at `3448c197b964a4b3b9374d364b3e0d8bcc414864`. That release includes KMIPKIT-0004 generic TTLV, KMIPKIT-0006 messages/batches, KMIPKIT-0007 typed client execution, KMIPKIT-0009 asynchronous outcome models, KMIPKIT-0013 transport, and KMIPKIT-0014 Create/AttributeSet implementation. Get and Locate are not implemented on this base. The pending KMIPKIT-0016 branch is not a dependency: Locate uses KMIPKIT-0014's direct-item `AttributeSet`, not the newer Attribute Reference type.
+The release-contract snapshot reviewed for this refresh is `release/1.0.0` at `4e15a8f15c4c8529426b004737aaf16961d1c073`. It includes the existing bounded generic TTLV, message/batch, typed client dispatch, asynchronous outcomes, transport, and current validated `AttributeSet` contract, plus KMIPKIT-0021's Hash, MAC, and signature request/response variants. PR #78 adds `ResponseBatchItemView::with_ttlv`, which lends the complete ordered response batch tree for callback-scoped access; `StructureView::try_clone` clones a whole Structure, so this feature adds `Item::try_clone` to retain only the Any Object item. The `AttributeSet` source did not change between the immediately prior release baseline and this one; its current contract includes validation added after its initial KMIPKIT-0014 introduction. Get and Locate remain unimplemented. Locate uses the current direct-item `AttributeSet`, not the newer Attribute Reference type.
 
-The revised specification and catalog disposition PR must be approved and merged before implementation. Before coding, the implementation branch must be created from the active release branch and recheck these dependencies. If an intervening merge changes any shared client contract, update this design and rerun the specification review before implementation.
+The original specification PR #63 and catalog-disposition PR #79 are human-merged. This release-contract refresh must also be reviewed and merged before implementation tests. The implementation branch must then be created from the active release branch and recheck these dependencies. If another intervening merge changes any shared client contract, update this design and rerun the specification review before implementation.
 
 ## Project Structure
 
@@ -86,6 +87,8 @@ crates/kmipkit-protocol/src/locate.rs
 crates/kmipkit-protocol/src/lib.rs
 crates/kmipkit-protocol/tests/unit/get_tests.rs
 crates/kmipkit-protocol/tests/unit/locate_tests.rs
+crates/kmipkit-ttlv/src/item.rs
+crates/kmipkit-ttlv/tests/public_item_contract.rs
 crates/kmipkit-client/src/lib.rs
 crates/kmipkit-client/src/execute.rs
 crates/kmipkit-client/tests/unit/object_read_execution_tests.rs

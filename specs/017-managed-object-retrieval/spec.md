@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0017-managed-object-retrieval`<br>
 **Created**: 2026-10-09<br>
-**Status**: Draft; inventory dispositions recorded, implementation approval pending<br>
+**Status**: Draft; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh is pending review<br>
 **Input**: KMIPKit roadmap Phase D; the normative inventory identifies Get (§6.1.19) and Locate (§6.1.28) as unimplemented client-initiated operation families.
 
 ## Normative scope
@@ -116,7 +116,7 @@ As a KMIPKit caller, I can inspect operation results and retain future or vendor
 - **KMIPKIT-0017-FR-008**: Locate MUST expose optional Located Items and zero or more repeated Unique Identifier response fields as received, preserving wire order, including an empty response payload.
 - **KMIPKIT-0017-FR-009**: Locate MUST represent the online, archived, and destroyed search indicators without inventing a default mask. If the mask is omitted, omission is retained and documented as the online-object default. The client MUST NOT filter or normalize returned identifiers.
 - **KMIPKIT-0017-FR-010**: Batch execution MUST leave ID Placeholder state to the server, preserve Locate results, and avoid splitting, auto-follow-up, retry, or local uniqueness assumptions. Archived object retrieval remains Recover followed by Get and is outside this feature's implementation scope.
-- **KMIPKIT-0017-FR-011**: Get and Locate responses MUST preserve their operation-specific Result Status, Result Reason, and Result Message and reuse the shared Pending and delivery-state contracts without automatic polling or retry.
+- **KMIPKIT-0017-FR-011**: Get and Locate responses MUST preserve their operation-specific Result Status, Result Reason, and Result Message and reuse the shared Pending and delivery-state contracts, including the Table 399 Asynchronous Correlation Value when Result Status is Pending, without automatic polling or retry.
 - **KMIPKIT-0017-FR-012**: Malformed or over-limit object payloads MUST be rejected under the configured generic TTLV limits before unbounded allocation, and sanitized diagnostics MUST omit raw payload and secret contents.
 - **KMIPKIT-0017-FR-013**: Every normative requirement confirmed as applicable to the client MUST link from the catalog to this specification, implementation, and executable verification. Server-only and retired rows must be distinguished from client behavior. Official fixtures and any remaining availability gaps MUST be recorded without claiming a pass before full-case execution.
 

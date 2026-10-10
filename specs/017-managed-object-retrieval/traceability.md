@@ -4,12 +4,16 @@
 **Normative source**: Pinned OASIS KMIP Specification v2.1.<br>
 **Scope count**: 15 direct catalog inventory links: 2 Get and 13 Locate. KMIPKIT-DEC-005 classifies 5 Locate rows as server-only and retires 1 false extraction; the 7 remaining Locate rows are client-applicable.
 
+## Release-contract baseline
+
+The reviewed baseline is `release/1.0.0` at `4e15a8f15c4c8529426b004737aaf16961d1c073`, after KMIPKIT-0021 and the KMIPKIT-0017 inventory dispositions merged. The current client has non-exhaustive `ClientRequest`, `ClientOperation`, and `ClientBatchOutcome` surfaces with typed, one-exchange response handling; Get and Locate are additive variants. `ClientResponseView` is the unified typed-response access path, including for Pending outcomes. `ResponseBatchItemView::with_ttlv` provides callback-scoped access to the complete ordered response item. Any Get Any Object data retained in `GetResponse` must be copied into owned, redacted, zeroizing TTLV before that callback ends; KMIPKIT-0017 adds `Item::try_clone` to copy just that item. `AttributeSet` remains the direct-item Locate criterion representation; its current contract includes fallible validation of catalogued TTLV types and Vendor Attribute shape/order, added after its initial KMIPKIT-0014 introduction. The current refresh must be reviewed and merged before implementation tests.
+
 ## Operation elements
 
 | Catalog element | OASIS source | Specification | Planned code | Planned executable verification |
 | --- | --- | --- | --- | --- |
-| KMIPKIT-ELEM-OP-C2S-GET | §6.1.19, Tables 220–222 | spec.md US1, US3; FR-001–005, FR-011–013 | crates/kmipkit-protocol/src/get.rs; crates/kmipkit-client/src/execute.rs | crates/kmipkit-protocol/tests/unit/get_tests.rs; crates/kmipkit-client/tests/unit/object_read_execution_tests.rs |
-| KMIPKIT-ELEM-OP-C2S-LOCATE | §6.1.28, Tables 247–249 | spec.md US2, US3; FR-001–002, FR-006–013 | crates/kmipkit-protocol/src/locate.rs; crates/kmipkit-client/src/execute.rs | crates/kmipkit-protocol/tests/unit/locate_tests.rs; crates/kmipkit-client/tests/unit/object_read_execution_tests.rs |
+| KMIPKIT-ELEM-OP-C2S-GET | §6.1.19, Tables 220–222; §9.19 and Table 399 for Pending metadata | spec.md US1, US3; FR-001–005, FR-011–013 | crates/kmipkit-ttlv/src/item.rs (`Item::try_clone`); crates/kmipkit-protocol/src/get.rs; crates/kmipkit-client/src/execute.rs (`PendingResponse`, `ClientResponseRef`, `ClientResponseView`) | crates/kmipkit-ttlv/tests/public_item_contract.rs; crates/kmipkit-protocol/tests/unit/get_tests.rs; crates/kmipkit-client/tests/unit/object_read_execution_tests.rs (completed and valid Pending outcomes) |
+| KMIPKIT-ELEM-OP-C2S-LOCATE | §6.1.28, Tables 247–249; §9.19 and Table 399 for Pending metadata | spec.md US2, US3; FR-001–002, FR-006–013 | crates/kmipkit-protocol/src/locate.rs; crates/kmipkit-client/src/execute.rs (`PendingResponse`, `ClientResponseRef`, `ClientResponseView`) | crates/kmipkit-protocol/tests/unit/locate_tests.rs; crates/kmipkit-client/tests/unit/object_read_execution_tests.rs (completed and valid Pending outcomes) |
 
 ## Normative rows and verification intent<br>
 
