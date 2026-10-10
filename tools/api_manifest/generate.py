@@ -312,7 +312,8 @@ def _check_schema_subset(schema: dict[str, Any]) -> None:
     supported = {
         "$defs", "$id", "$schema", "additionalProperties", "allOf", "anyOf", "const",
         "description", "else", "enum", "format", "if", "items", "maximum", "minItems",
-        "minLength", "minimum", "not", "oneOf", "pattern", "prefixItems", "properties", "propertyNames",
+        "minLength", "minimum", "not", "oneOf", "pattern", "prefixItems", "properties",
+        "propertyNames",
         "required", "then", "title", "type", "uniqueItems", "$ref", "maxItems",
     }
     def visit(schema_node: Any) -> None:

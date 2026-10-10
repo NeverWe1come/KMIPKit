@@ -48,33 +48,31 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+        cls.contract = cls.schema["$defs"]["publicApiV2"]
 
     def test_schema_identifies_the_complete_v2_contract(self) -> None:
-        contract = self.schema["$defs"]["publicApiV2"]
         self.assertEqual(
             self.schema["$id"], "urn:kmipkit:schemas:public-api-manifest:2"
         )
-        self.assertEqual(contract["properties"]["formatVersion"]["const"], 2)
-        self.assertEqual(contract["properties"]["scope"]["const"], "full-1.0")
-        self.assertEqual(contract["properties"]["releaseLine"]["const"], "1.0.0")
-        self.assertTrue(EXPECTED_ROOT_FIELDS.issubset(contract["required"]))
-        self.assertFalse(contract["additionalProperties"])
+        self.assertEqual(self.contract["properties"]["formatVersion"]["const"], 2)
+        self.assertEqual(self.contract["properties"]["scope"]["const"], "full-1.0")
+        self.assertEqual(self.contract["properties"]["releaseLine"]["const"], "1.0.0")
+        self.assertTrue(EXPECTED_ROOT_FIELDS.issubset(self.contract["required"]))
+        self.assertFalse(self.contract["additionalProperties"])
 
     def test_schema_requires_exactly_the_eight_public_package_ids(self) -> None:
-        contract = self.schema["$defs"]["publicApiV2"]
         package_id = self.schema["$defs"]["publicPackage"]["properties"]["id"]
         self.assertEqual(set(package_id["enum"]), EXPECTED_PACKAGES)
         self.assertEqual(
-            contract["properties"]["publicPackages"]["minItems"], 8
+            self.contract["properties"]["publicPackages"]["minItems"], 8
         )
         self.assertEqual(
-            contract["properties"]["publicPackages"]["maxItems"], 8
+            self.contract["properties"]["publicPackages"]["maxItems"], 8
         )
 
     def test_schema_fixes_language_and_api_level_sets(self) -> None:
-        contract = self.schema["$defs"]["publicApiV2"]
-        languages = contract["properties"]["languages"]
-        api_levels = contract["properties"]["apiLevels"]
+        languages = self.contract["properties"]["languages"]
+        api_levels = self.contract["properties"]["apiLevels"]
         self.assertEqual(languages["const"], EXPECTED_LANGUAGES)
         self.assertEqual(
             [entry["properties"]["id"]["const"] for entry in api_levels["prefixItems"]],
