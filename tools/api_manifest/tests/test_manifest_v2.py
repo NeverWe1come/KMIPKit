@@ -114,7 +114,8 @@ def _valid_v2_manifest() -> dict[str, object]:
                     "name": item["name"],
                     "section": item["source_refs"][0]["section"],
                     "scope": "client_1_0",
-                    "apiReadiness": "blocked",
+                    "apiState": "blocked",
+                    "blockedReason": "The owner specification or canonical Rust API is not ready.",
                 }
                 for item in catalog["elements"]
                 if item.get("kind") == "operation" and item.get("scope_state") == "client_1_0"
@@ -216,6 +217,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "requirementIds": ["KMIPKIT-0043-FR-001"],
             "declarationState": "blocked",
             "parityScope": "four-language",
+            "candidateSpecId": "KMIPKIT-0017",
         }
         manifest["publicDeclarations"] = [declaration]
         self.assertTrue(list(self.validator.iter_errors(manifest)))

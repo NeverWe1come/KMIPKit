@@ -1589,6 +1589,16 @@
         "$ref": "#/$defs/v2RequirementId"
       }
     },
+    "parityEvidenceIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9_./:-]+$"
+      }
+    },
     "publicPackage": {
       "type": "object",
       "required": [
@@ -1652,7 +1662,8 @@
       "required": [
         "kind",
         "path",
-        "status"
+        "status",
+        "evidence"
       ],
       "properties": {
         "kind": {
@@ -1747,6 +1758,9 @@
             "rust-only-adr"
           ]
         },
+        "parityEvidenceIds": {
+          "$ref": "#/$defs/parityEvidenceIds"
+        },
         "candidateSpecId": {
           "type": "string",
           "pattern": "^KMIPKIT-[0-9]{4}$"
@@ -1785,6 +1799,7 @@
           },
           "then": {
             "required": [
+              "candidateSpecId",
               "blockedReason"
             ],
             "not": {
@@ -1797,6 +1812,11 @@
                 {
                   "required": [
                     "languageMappings"
+                  ]
+                },
+                {
+                  "required": [
+                    "approvalSource"
                   ]
                 }
               ]
@@ -1818,7 +1838,12 @@
             "required": [
               "approvalSource",
               "languageMappings"
-            ]
+            ],
+            "not": {
+              "required": [
+                "candidateSpecId"
+              ]
+            }
           }
         },
         {
@@ -1847,6 +1872,9 @@
             "properties": {
               "parityScope": {
                 "const": "rust-only-adr"
+              },
+              "declarationState": {
+                "enum": ["declared", "verified"]
               }
             }
           },
@@ -1864,6 +1892,18 @@
             "required": [
               "approvalSource"
             ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "const": "verified"
+              }
+            }
+          },
+          "then": {
+            "required": ["parityEvidenceIds"]
           }
         }
       ]
@@ -1953,7 +1993,7 @@
         "name",
         "section",
         "scope",
-        "apiReadiness"
+        "apiState"
       ],
       "properties": {
         "operationId": {
@@ -1982,12 +2022,19 @@
         "approvalEvidence": {
           "$ref": "#/$defs/approvalSource"
         },
-        "apiReadiness": {
+        "apiState": {
           "enum": [
             "blocked",
             "declared",
             "verified"
           ]
+        },
+        "blockedReason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parityEvidenceIds": {
+          "$ref": "#/$defs/parityEvidenceIds"
         },
         "declarations": {
           "type": "object",
@@ -2008,14 +2055,74 @@
           }
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "apiState": {
+                "const": "blocked"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "blockedReason"
+            ],
+            "not": {
+              "anyOf": [
+                {"required": ["featureSpecId"]},
+                {"required": ["approvalEvidence"]},
+                {"required": ["declarations"]},
+                {"required": ["parityEvidenceIds"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "apiState": {
+                "enum": ["declared", "verified"]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "featureSpecId",
+              "approvalEvidence",
+              "declarations"
+            ],
+            "properties": {
+              "declarations": {
+                "required": ["rust", "c", "java", "python"]
+              }
+            },
+            "not": {
+              "required": ["candidateSpecId"]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "apiState": {
+                "const": "verified"
+              }
+            }
+          },
+          "then": {
+            "required": ["parityEvidenceIds"]
+          }
+        }
+      ]
     },
     "capability": {
       "type": "object",
       "required": [
         "capabilityId",
         "requirementIds",
-        "readiness",
+        "capabilityState",
         "parityScope"
       ],
       "properties": {
@@ -2026,7 +2133,7 @@
         "requirementIds": {
           "$ref": "#/$defs/v2RequirementIds"
         },
-        "readiness": {
+        "capabilityState": {
           "enum": [
             "blocked",
             "declared",
@@ -2039,7 +2146,18 @@
             "rust-only-adr"
           ]
         },
-        "approvalSource": {
+        "ownerSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$"
+        },
+        "ownerAdrId": {
+          "type": "string",
+          "pattern": "^ADR-[0-9]{4}$"
+        },
+        "approvalEvidence": {
+          "$ref": "#/$defs/approvalSource"
+        },
+        "acceptedEvidence": {
           "$ref": "#/$defs/approvalSource"
         },
         "mappings": {
@@ -2054,6 +2172,7 @@
           },
           "additionalProperties": {
             "type": "array",
+            "minItems": 1,
             "items": {
               "type": "string",
               "minLength": 1
@@ -2067,9 +2186,115 @@
         "blockedReason": {
           "type": "string",
           "minLength": 1
+        },
+        "parityEvidenceIds": {
+          "$ref": "#/$defs/parityEvidenceIds"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "capabilityState": {
+                "const": "blocked"
+              }
+            }
+          },
+          "then": {
+            "required": ["blockedReason"],
+            "not": {
+              "anyOf": [
+                {"required": ["ownerSpecId"]},
+                {"required": ["ownerAdrId"]},
+                {"required": ["approvalEvidence"]},
+                {"required": ["acceptedEvidence"]},
+                {"required": ["mappings"]},
+                {"required": ["parityEvidenceIds"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "capabilityState": {
+                "enum": ["declared", "verified"]
+              }
+            }
+          },
+          "then": {
+            "required": ["mappings"],
+            "oneOf": [
+              {
+                "required": ["ownerSpecId", "approvalEvidence"],
+                "properties": {
+                  "approvalEvidence": {
+                    "properties": {
+                      "kind": {"const": "feature-specification"},
+                      "status": {"enum": ["Approved", "Accepted"]}
+                    }
+                  }
+                },
+                "not": {"anyOf": [{"required": ["ownerAdrId"]}, {"required": ["acceptedEvidence"]}]}
+              },
+              {
+                "required": ["ownerAdrId", "acceptedEvidence"],
+                "properties": {
+                  "acceptedEvidence": {
+                    "properties": {
+                      "kind": {"const": "accepted-adr"},
+                      "status": {"const": "Accepted"}
+                    }
+                  }
+                },
+                "not": {"anyOf": [{"required": ["ownerSpecId"]}, {"required": ["approvalEvidence"]}]}
+              }
+            ],
+            "not": {"required": ["candidateSpecId"]}
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "capabilityState": {"const": "verified"}
+            }
+          },
+          "then": {
+            "required": ["parityEvidenceIds"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {"const": "four-language"},
+              "capabilityState": {"enum": ["declared", "verified"]}
+            }
+          },
+          "then": {
+            "properties": {
+              "mappings": {"required": ["rust", "c", "java", "python"]}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {"const": "rust-only-adr"},
+              "capabilityState": {"enum": ["declared", "verified"]}
+            }
+          },
+          "then": {
+            "properties": {
+              "mappings": {
+                "required": ["rust"],
+                "propertyNames": {"const": "rust"}
+              }
+            },
+            "required": ["ownerAdrId", "acceptedEvidence"]
+          }
+        }
+      ]
     },
     "v2GeneratedOutputs": {
       "type": "array",
