@@ -1,9 +1,10 @@
 # Tasks: Local Cosmian KMS Integration Tests
 
 **Status**: In progress. The maintainer approved expanded operation coverage on
-2026-10-09. Hosted CI and aggregated coverage pass. The full local integration
-suite passed with candidate KMIPKIT-0014 fixes; PR #56 awaits integration of
-those separately scoped protocol fixes and a rerun on the updated branch.
+2026-10-09. The full local integration suite now passes 10/10 after syncing PR
+#56 with current `release/1.0.0`, which includes the separately reviewed
+KMIPKIT-0014 corrections. Hosted CI and aggregate coverage must pass again on
+the synchronized PR head before review.
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md)
 
@@ -43,8 +44,8 @@ those separately scoped protocol fixes and a rerun on the updated branch.
 - [x] T020 Add diagnostic test-first cases for Create, Create Key Pair, and Create Split Key in `crates/kmipkit-client/tests/cosmian_kms.rs`; run each through KMIPKit's typed client over the existing raw-TLS mTLS transport.
 - [x] T021 Add Get Attributes and Get Attribute List cases using a fresh server-generated object per test; assert result success and the requested/listed attributes in the typed result.
 - [x] T022 Add Add Attribute, Delete Attribute, Modify Attribute, and Set Attribute cases using independent server-generated objects; assert operation success and returned identifiers. Adjust Attribute is excluded after Cosmian rejects it as unsupported.
-- [x] T023 Run the complete ignored Cosmian suite against the pinned local image, record the initial result and the rerun using candidate KMIPKIT-0014 fixes. Keep production protocol fixes out of this integration PR.
+- [x] T023 Run the complete ignored Cosmian suite against the pinned local image, record the initial result and the rerun after syncing the separately reviewed KMIPKIT-0014 fixes from `release/1.0.0`. Keep production protocol fixes out of this integration PR.
 - [x] T024 Update `specs/015-cosmian-kms-integration/traceability.md`, `quickstart.md`, `tests/integration/cosmian/README.md`, and bilingual client integration documentation with exact commands, operation clauses, and live outcomes.
 - [x] T025 Run focused client/transport suites, `cargo fmt --all --check`, workspace Clippy, workspace tests, catalog checks, and the required coverage/hosted-platform CI gates; record commands and outcomes. Local client/transport tests, format, Clippy, workspace tests, Compose/syntax checks, immutable-source/audit/catalog/generated-output checks pass. The local single-platform `cargo llvm-cov --workspace --all-features --summary-only` report is 83.80% line coverage; the hosted multi-platform platform/adapter aggregate passed its configured coverage gate on 2026-10-09.
-- [x] T026 Review every FR and SC against the expanded tests. Hosted coverage and CI gates pass; keep PR #56 open as draft until KMIPKIT-0014 is integrated and the full suite passes on the updated branch.
-- [x] T027 Record the 10/10 Cosmian live result with the candidate KMIPKIT-0014 fixes and update operation-level traceability and run instructions.
+- [x] T026 Review every FR and SC against the expanded tests. Hosted coverage and CI gates passed on the earlier PR head; after syncing current release, the full live suite passes 10/10. Keep PR #56 in draft until hosted CI and aggregate coverage pass on this synchronized head.
+- [x] T027 Record the 10/10 Cosmian live result after syncing KMIPKIT-0014 corrections from release and update operation-level traceability and run instructions. Verified on merge head `a1945f4e` with `scripts/integration/cosmian-kms.ps1 -Action test`: 10 passed, 0 failed.
