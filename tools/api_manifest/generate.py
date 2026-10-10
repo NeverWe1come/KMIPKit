@@ -345,6 +345,21 @@ def _validate_schema(manifest: Any, schema: dict[str, Any]) -> None:
         raise ManifestError(f"manifest does not match the declared schema near {location}")
 
 
+def _operation_section(source_refs: list[Any]) -> tuple[str, tuple[int, ...]]:
+    sections = [
+        reference.get("section")
+        for reference in source_refs
+        if isinstance(reference, dict) and reference.get("source_id") == "KMIPKIT-SRC-spec"
+    ]
+    if len(sections) != 1 or not isinstance(sections[0], str):
+        raise ManifestError("client operation does not resolve to one KMIP 2.1 section")
+    section = sections[0]
+    match = re.fullmatch(r"6\.1\.([0-9]+)", section)
+    if match is None:
+        raise ManifestError("client operation has an invalid KMIP 2.1 section")
+    return section, (6, 1, int(match.group(1)))
+
+
 def _validate_operation_inventory(manifest: dict[str, Any], catalog: dict[str, Any]) -> None:
     """Require an exact, numerically ordered copy of the client 1.0 catalog operations."""
     catalog_elements = catalog.get("elements")
@@ -368,20 +383,10 @@ def _validate_operation_inventory(manifest: dict[str, Any], catalog: dict[str, A
             raise ManifestError("normative catalog contains duplicate client operation IDs")
         seen_catalog_ids.add(operation_id)
 
-        sections = [
-            reference.get("section")
-            for reference in source_refs
-            if isinstance(reference, dict) and reference.get("source_id") == "KMIPKIT-SRC-spec"
-        ]
-        if len(sections) != 1 or not isinstance(sections[0], str):
-            raise ManifestError("client operation does not resolve to one KMIP 2.1 section")
-        section = sections[0]
-        match = re.fullmatch(r"6\.1\.([0-9]+)", section)
-        if match is None:
-            raise ManifestError("client operation has an invalid KMIP 2.1 section")
+        section, section_order = _operation_section(source_refs)
         expected.append(
             (
-                (6, 1, int(match.group(1))),
+                section_order,
                 {
                     "operationId": operation_id,
                     "name": name,
