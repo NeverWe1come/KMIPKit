@@ -294,6 +294,10 @@ mod vendor_attribute_tests;
 mod get_attributes_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/get_tests.rs"]
+mod get_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/get_attribute_list_tests.rs"]
 mod get_attribute_list_tests;
 
