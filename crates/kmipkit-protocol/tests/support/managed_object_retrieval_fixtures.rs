@@ -39,11 +39,11 @@ mod tests {
 
     fn ordered_repeated_fields() -> [(u32, Value); 3] {
         [
-            (OBJECT_TYPE, Value::enumeration(7)),
             (
                 UNIQUE_IDENTIFIER,
                 Value::text_string("first-identifier".to_owned()),
             ),
+            (OBJECT_TYPE, Value::enumeration(7)),
             (
                 UNIQUE_IDENTIFIER,
                 Value::text_string("second-identifier".to_owned()),
@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn payload_builders_preserve_field_order_and_repetitions() {
-        let expected = [OBJECT_TYPE, UNIQUE_IDENTIFIER, UNIQUE_IDENTIFIER];
+        let expected = [UNIQUE_IDENTIFIER, OBJECT_TYPE, UNIQUE_IDENTIFIER];
         let payloads = [
             get_request_payload(ordered_repeated_fields()),
             get_response_payload(ordered_repeated_fields()),
