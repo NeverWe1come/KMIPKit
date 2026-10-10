@@ -38,6 +38,10 @@ pub mod extension_registry;
 pub(crate) mod extension_fixtures;
 
 #[cfg(test)]
+#[path = "../tests/support/fake_transport.rs"]
+pub(crate) mod fake_transport_test_support;
+
+#[cfg(test)]
 #[path = "../tests/unit/extension_registry_test_support.rs"]
 mod extension_registry_test_support;
 
