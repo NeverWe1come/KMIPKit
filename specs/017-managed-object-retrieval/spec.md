@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0017-managed-object-retrieval`<br>
 **Created**: 2026-10-09<br>
-**Status**: Draft; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh is pending review<br>
+**Status**: Draft; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`<br>
 **Input**: KMIPKit roadmap Phase D; the normative inventory identifies Get (§6.1.19) and Locate (§6.1.28) as unimplemented client-initiated operation families.
 
 ## Normative scope

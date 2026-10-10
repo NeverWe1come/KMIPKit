@@ -10,13 +10,13 @@ description: "Implementation tasks for KMIPKIT-0017 Get and Locate"
 
 ## Implementation gate
 
-Do not execute implementation tasks until the revised KMIPKIT-0017 specification and catalog-disposition PRs are approved and merged into the active release/1.0.0 branch. PRs #63 and #79 are merged; this release-contract refresh must also be reviewed and merged before implementation tests. Create the implementation worktree from the then-current release branch. KMIPKIT-DEC-003 through -005 resolve the prior catalog actor and PKCS#12 questions; still require executable evidence before making conformance claims. The refreshed design records that PR #78 extended shared dispatch/typed outcomes and added callback-scoped full response TTLV access, while leaving the current validated direct-item `AttributeSet` contract unchanged.
+The revised KMIPKIT-0017 specification and catalog-disposition changes are merged into the active release/1.0.0 branch through PRs #63 and #79; the release-contract refresh merged in PR #81 at `fd6b7782`. T001 records the implementation worktree baseline and verifies the shared client contracts before T002 and later implementation tasks. KMIPKIT-DEC-003 through -005 resolve the prior catalog actor and PKCS#12 questions; executable evidence is still required before making conformance claims. The refreshed design records that PR #78 extended shared dispatch/typed outcomes and added callback-scoped full response TTLV access, while leaving the current validated direct-item `AttributeSet` contract unchanged.
 
 ## Phase 1: Setup
 
 **Purpose**: Start from the approved release and establish deterministic operation test fixtures.
 
-- [ ] T001 Create the implementation worktree from active release/1.0.0 and record its commit; verify additive Get/Locate dispatch and typed-outcome integration, callback lifetime and owned-copy behavior for response TTLV, and the current validated direct-item `AttributeSet` contract against specs/017-managed-object-retrieval/traceability.md
+- [x] T001 Create the implementation worktree from active release/1.0.0 and record its commit; verify additive Get/Locate dispatch and typed-outcome integration, callback lifetime and owned-copy behavior for response TTLV, and the current validated direct-item `AttributeSet` contract against specs/017-managed-object-retrieval/traceability.md
 - [ ] T002 Add deterministic generic TTLV test builders for Get and Locate request/response payloads in crates/kmipkit-protocol/tests/support/
 - [ ] T003 Add fake-transport helpers that capture one request batch and return controlled response batches in crates/kmipkit-client/tests/support/
 
