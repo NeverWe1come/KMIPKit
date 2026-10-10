@@ -10,7 +10,7 @@ description: "Implementation tasks for KMIPKIT-0017 Get and Locate"
 
 ## Implementation gate
 
-Do not execute implementation tasks until the KMIPKIT-0017 specification PR is approved and merged into the active release/1.0.0 branch. Create the implementation worktree from that release branch. Resolve the catalog actor and PKCS#12 questions listed in spec.md before making claims about affected normative behavior. If the release has changed client dispatch, response ownership, or AttributeSet contracts, refresh this design and obtain review before writing implementation tests.
+Do not execute implementation tasks until the revised KMIPKIT-0017 specification and catalog-disposition PR is approved and merged into the active release/1.0.0 branch. Create the implementation worktree from that release branch. KMIPKIT-DEC-003 through -005 resolve the prior catalog actor and PKCS#12 questions; still require executable evidence before making conformance claims. If the release has changed client dispatch, response ownership, or AttributeSet contracts, refresh this design and obtain review before writing implementation tests.
 
 ## Phase 1: Setup
 
@@ -90,7 +90,7 @@ Do not execute implementation tasks until the KMIPKIT-0017 specification PR is a
 
 ## Phase 6: Polish and cross-cutting traceability
 
-- [ ] T037 Add derived local vectors for unavailable Get/Locate cases and keep them distinct from official OASIS fixtures in crates/kmipkit-protocol/tests/fixtures/
+- [ ] T037 Use the pinned TC-PKCS12-1-21 and TC-PKCS12-2-21 XML for in-scope Get vectors, and add derived local vectors for the five remaining unavailable cases in crates/kmipkit-protocol/tests/fixtures/; distinguish partial item coverage from full official-case passes
 - [ ] T038 Compile and run the Rust examples in specs/017-managed-object-retrieval/quickstart.md from an integration test in crates/kmipkit-client/tests/
 - [ ] T039 Write the English user guide with tested Get/Locate examples in docs/user-guide/en/object-retrieval.md
 - [ ] T040 Write the Spanish user guide with equivalent examples and security notes in docs/user-guide/es/object-retrieval.md

@@ -2,7 +2,7 @@
 
 **Feature**: KMIPKIT-0017<br>
 **Normative sources**: OASIS KMIP Specification v2.1 §§6.1.19 and 6.1.28, Tables 220–222 and 247–249.<br>
-**Catalog links**: 2 Get requirement rows and 13 Locate rows are linked to this operation family. Actor classification for six Locate behavior rows remains open; see Open Inventory Questions.
+**Catalog links**: 2 Get requirement rows and 13 Locate inventory rows are linked to this operation family. Of the Locate rows, 7 are client-applicable, 5 are server-only, and 1 false extraction is retired; see Inventory Dispositions.
 
 ## Shared values
 
@@ -45,11 +45,11 @@ An omitted Storage Status Mask remains omitted. OASIS describes the server-side 
 
 Operation errors use the shared result model and Tables 222 and 249. Preserve unknown result reason Enumeration values. Reuse the existing decoder message-size, depth, and element limits. Sanitized errors and debug output never include raw KMIP response bytes or object contents.
 
-## Open inventory questions
+## Inventory dispositions
 
-- KMIPKIT-DISC-015 leaves the lowercase “shall” in §6.1.19 PKCS#12 output guidance unresolved. Do not assert the affected output-format rule as conformed until the catalog decision is approved.
-- KMIPKIT-DISC-032 leaves the official PKCS#12 case label-to-fixture mapping unresolved. Both fixtures are unavailable; no official-case pass may be claimed.
-- The Locate rows KMIPKIT-REQ-SPEC-6.1.28-004-002, -008-001, -008-002, -009-001, -009-002, and -012 are cataloged as client requirements although their summaries describe server actions or server response obligations. The implementation specification preserves request/result values, but does not claim that a client can enforce server behavior. Correct the catalog actor/direction allocation before using these rows as client conformance gates.
+- KMIPKIT-DEC-003 treats §6.1.19's lowercase “shall” PKCS#12 paragraph as descriptive server guidance; the client preserves opaque output without container validation.
+- KMIPKIT-DEC-004 selects the Test Cases §§2.68–2.69 heading/link-target identifiers and pins both official PKCS#12 XML fixtures. Availability is not a pass claim.
+- KMIPKIT-DEC-005 assigns five Locate rows to the server and retires the Group Member Default false normative extraction. The client preserves the selector, mask, batch, and returned identifiers without enforcing server behavior.
 
 ## Normative identifiers
 

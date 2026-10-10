@@ -19107,9 +19107,9 @@
         "KMIPKIT-REQ-SPEC-6.1.28-004-002"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "both",
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "mixed",
       "condition": null
     },
     {
@@ -19185,13 +19185,12 @@
       ],
       "disposition": "requirement",
       "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-6.1.28-008-001",
-        "KMIPKIT-REQ-SPEC-6.1.28-008-002"
+        "KMIPKIT-REQ-SPEC-6.1.28-008-001"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "server",
       "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "condition": null
     },
     {
@@ -19212,9 +19211,9 @@
         "KMIPKIT-REQ-SPEC-6.1.28-009-002"
       ],
       "exclusion_rationale": null,
-      "role": "client",
-      "direction": "client_to_server",
-      "scope_state": "client_1_0",
+      "role": "server",
+      "direction": "server_to_client",
+      "scope_state": "server_only",
       "condition": null
     },
     {
@@ -19273,9 +19272,9 @@
         "KMIPKIT-REQ-SPEC-6.1.28-012"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "server",
       "direction": "server_to_client",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "condition": "When the request omits the mask."
     },
     {
@@ -91464,11 +91463,11 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "ID Placeholder after Locate",
-      "summary": "Use ID Placeholder only when Locate returns one identifier; multiple matches under the stated Maximum Items conditions clear it.",
-      "role": "client",
+      "summary": "The server copies a sole Locate identifier into its ID Placeholder, or clears the placeholder for multiple matches under the stated Maximum Items conditions.",
+      "role": "server",
       "direction": "client_to_server",
       "condition": "When later batched operations omit explicit identifiers.",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -91476,9 +91475,9 @@
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-007",
@@ -91524,11 +91523,11 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "Object Group Member",
-      "summary": "When requesting Group Member Fresh, treat matches as fresh group objects.",
-      "role": "client",
+      "summary": "When Group Member Fresh is requested, matching candidate objects on the server SHALL be fresh objects from the object group.",
+      "role": "server",
       "direction": "client_to_server",
       "condition": "When Object Group Member is Group Member Fresh.",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -91536,9 +91535,9 @@
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-008-002",
@@ -91554,21 +91553,21 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "Object Group Member",
-      "summary": "When requesting Group Member Default, use the group default-object selection semantics.",
-      "role": "client",
-      "direction": "client_to_server",
+      "summary": "Retired extraction: Group Member Default selection is described as server policy without a separate normative SHALL. The SHALL in this paragraph applies to Group Member Fresh and is retained in KMIPKIT-REQ-SPEC-6.1.28-008-001.",
+      "role": "not_applicable",
+      "direction": "not_applicable",
       "condition": "When Object Group Member is Group Member Default.",
-      "scope_state": "client_1_0",
+      "scope_state": "out_of_scope",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0017",
+      "feature_spec": null,
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
+      "decision_id": "KMIPKIT-DEC-005",
+      "status": "retired",
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 describes Group Member Default selection without an RFC 2119 keyword. KMIPKIT-DEC-005 retires this false normative extraction while preserving its stable identifier. KMIPKIT-0017 still forwards the caller's Group Member Default value without local selection. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-009-001",
@@ -91584,11 +91583,11 @@
       "source_keyword": "SHALL NOT",
       "normative_strength": "prohibited",
       "subject": "Storage Status Mask",
-      "summary": "Include Destroyed Storage in the mask when searching for destroyed objects.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "When destroyed objects should be returned.",
-      "scope_state": "client_1_0",
+      "summary": "The server SHALL NOT return identifiers for destroyed objects unless the Storage Status Mask includes the Destroyed Storage indicator.",
+      "role": "server",
+      "direction": "server_to_client",
+      "condition": "When the Storage Status Mask does not include the corresponding storage indicator.",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -91596,9 +91595,9 @@
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": true,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-009-002",
@@ -91614,11 +91613,11 @@
       "source_keyword": "SHALL NOT",
       "normative_strength": "prohibited",
       "subject": "Storage Status Mask",
-      "summary": "Include Archived Storage in the mask when searching for archived objects.",
-      "role": "client",
-      "direction": "client_to_server",
-      "condition": "When archived objects should be returned.",
-      "scope_state": "client_1_0",
+      "summary": "The server SHALL NOT return identifiers for archived objects unless the Storage Status Mask includes the Archived Storage indicator.",
+      "role": "server",
+      "direction": "server_to_client",
+      "condition": "When the Storage Status Mask does not include the corresponding storage indicator.",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -91626,9 +91625,9 @@
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": true,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-011",
@@ -91674,11 +91673,11 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "Storage Status Mask",
-      "summary": "If Storage Status Mask is omitted, expect only online objects in the response.",
-      "role": "client",
+      "summary": "When Storage Status Mask is omitted, the server SHALL return only online objects.",
+      "role": "server",
       "direction": "server_to_client",
       "condition": "When the request omits the mask.",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -91686,9 +91685,9 @@
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Actor allocation is open under KMIPKIT-DISC-044: the source summary describes a server action/response obligation while catalog role metadata identifies the client. Do not treat this as client-enforceable until disposition."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-013-001",
@@ -104650,9 +104649,9 @@
         "KMIPKIT-ELEM-OP-C2S-GET"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-PKCS12-1-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
-      "mapping_confidence": "weak"
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/TC-PKCS12-1-21.xml",
+      "fixture_availability": "available",
+      "mapping_confidence": "explicit"
     },
     {
       "test_id": "KMIPKIT-TEST-CN01-2-69",
@@ -104668,9 +104667,9 @@
         "KMIPKIT-ELEM-OP-C2S-GET"
       ],
       "raw_href": "test-cases/kmip-v2.1/TC-PKCS12-2-21.xml",
-      "fixture_path": null,
-      "fixture_availability": "unavailable",
-      "mapping_confidence": "weak"
+      "fixture_path": "specification/oasis/kmip-2.1/fixtures/TC-PKCS12-2-21.xml",
+      "fixture_availability": "available",
+      "mapping_confidence": "explicit"
     },
     {
       "test_id": "KMIPKIT-TEST-CN01-2-70",
@@ -105928,9 +105927,9 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Get response content and conformance test assertions for PKCS#12 output.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "For KMIPKit 1.0, the lowercase PKCS#12 output paragraph is descriptive server guidance, not an added RFC 2119 client obligation. The client preserves explicit request options and opaque server output without container validation.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-003",
       "erratum_source_refs": []
     },
     {
@@ -106551,9 +106550,9 @@
       "affected_element_ids": [],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Official case IDs and fixture mapping for both PKCS#12 test cases.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "Canonical case IDs follow the OASIS section headings and hyperlink targets; both linked XML fixtures are pinned by URL and SHA-256. Fixture availability does not assert that an official case has passed.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-004",
       "erratum_source_refs": []
     },
     {
@@ -107352,9 +107351,9 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Locate conformance scope, requirement ownership, client test expectations, and the 1.0 coverage claim.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "Five Locate rows are server-only; the Group Member Default extraction is retired because it has no independent normative keyword. Client forwarding and result preservation remain required by the 017 feature specification.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-005",
       "erratum_source_refs": []
     },
     {
@@ -107530,6 +107529,84 @@
       "approval_evidence": "The maintainer directly authorized autonomous execution of the complete KMIPKit plan without further approval requests or manual intervention. This specific disposition and its limits are recorded in docs/adr/0013-client-extension-registry-ownership.md and specs/007-client-execution/approval-record.md.",
       "approved_at": "2026-10-06",
       "consequence": "The initial client sends assigned values only; vendor extension-range values remain preservable as raw data but are not emitted by KMIPKIT-0007. A later registered extension feature or an authoritative OASIS clarification may propose a reviewed policy change. No Continue/Undo execution or rollback behavior is inferred.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-003",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "1.2"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-015"
+      ],
+      "policy_ids": [],
+      "interpretation": "For KMIPKit 1.0, the lowercase shall paragraph in §6.1.19 is treated as descriptive guidance about server PKCS#12 output, not as an RFC 2119 SHALL or a new client conformance requirement. The uppercase key-format requirements elsewhere in the section remain in force. The client preserves the requested format and returned KMIP object without constructing, decrypting, or validating a PKCS#12 container.",
+      "approver": "KMIPKit maintainer, direct clarification in the current task",
+      "approval_evidence": "On 2026-10-10 the maintainer selected the option to treat the lowercase shall as descriptive server guidance and preserve the response without container validation when asked how to close KMIPKIT-DISC-015.",
+      "approved_at": "2026-10-10",
+      "consequence": "No PKCS#12 container-content assertion is added to 017 client conformance. The separate uppercase §6.1.19 duties are not weakened.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-004",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-testcases",
+          "section": "2.68"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-testcases",
+          "section": "2.69"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-032"
+      ],
+      "policy_ids": [],
+      "interpretation": "The official case identifiers are TC-PKCS12-1-21 and TC-PKCS12-2-21, as shown by both OASIS section headings and hyperlink targets. The displayed hyperlink text with PKCS-12 is an editorial spelling mismatch. The target XML documents were retrieved, parsed, and pinned unchanged with their canonical URLs and SHA-256 values in SOURCES.md.",
+      "approver": "KMIPKit maintainer, direct request to resolve 017 discrepancies",
+      "approval_evidence": "The maintainer requested resolution of the outstanding 017 issues on 2026-10-10. This mapping follows the pinned OASIS Test Cases §§2.68–2.69 headings and link targets and the two retrieved official XML documents.",
+      "approved_at": "2026-10-10",
+      "consequence": "Both catalog case records have explicit mappings and available pinned fixtures. An official-case pass is claimed only after the full case is run.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-005",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.28"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.28-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-008-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-008-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-012"
+      ],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-044"
+      ],
+      "policy_ids": [],
+      "interpretation": "§6.1.28 assigns ID Placeholder state, Group Member Fresh matching, archived/destroyed response exclusion, and omitted-mask online-only results to the server. Five extracted rows are server-only. The Group Member Default sentence describes server policy without an independent normative SHALL, so its false requirement extraction is retired while its stable ID is retained.",
+      "approver": "KMIPKit maintainer, direct request to resolve 017 discrepancies",
+      "approval_evidence": "The maintainer requested resolution of the outstanding 017 issues on 2026-10-10. The disposition follows the pinned OASIS Specification §6.1.28 paragraphs on ID Placeholder, Object Group Member, Storage Status Mask, and Table 247.",
+      "approved_at": "2026-10-10",
+      "consequence": "Server-only rows do not count as KMIPKit 1.0 client conformance duties. The client preserves exact request fields and server response values, including the Group Member Default selector.",
       "status": "accepted"
     }
   ]
