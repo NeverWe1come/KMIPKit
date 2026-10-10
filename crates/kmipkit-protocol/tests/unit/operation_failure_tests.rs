@@ -1,9 +1,10 @@
 //! Completed Encrypt and Decrypt failure response tests.
 //!
-//! The common Result Reason semantics are in OASIS KMIP v2.1 §9.18, Result
-//! Message is in §9.17, and the Result Reason Enumeration is in §11.46.
-//! Encrypt and Decrypt list operation-specific reasons in Tables 198 and 216;
-//! General Failure (0x00000100) is a shared value outside those table rows.
+//! OASIS KMIP v2.1 §6.1 makes each Operation's Result Reason list non-exhaustive:
+//! any Result Reason in the Message Data Structures may be used. §9.18 defines
+//! the shared field and §11.46 its values, so General Failure (0x00000100) is
+//! valid for Encrypt and Decrypt even though Tables 198 and 216 do not list it.
+//! Result Message is defined by §9.17.
 //!
 //! Traceability: `KMIPKIT-REQ-SPEC-6.1-001-002`,
 //! `KMIPKIT-ELEM-OP-C2S-ENCRYPT`, `KMIPKIT-ELEM-OP-C2S-DECRYPT`, and
