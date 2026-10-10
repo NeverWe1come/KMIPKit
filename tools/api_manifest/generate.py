@@ -519,6 +519,125 @@ def _validate_parity_evidence(record: dict[str, Any], root: Path) -> None:
         _manifest_file(root, evidence_id)
 
 
+def _validate_operation_readiness(
+    operations: list[dict[str, Any]],
+    declarations_by_id: dict[str, dict[str, Any]],
+    root: Path,
+) -> None:
+    for operation in operations:
+        if not isinstance(operation, dict):
+            raise ManifestError("manifest operation readiness record is malformed")
+        state = operation.get("apiState")
+        if state in {"declared", "verified"}:
+            if operation.get("candidateSpecId") is not None:
+                raise ManifestError("ready operation still records a candidate owner")
+            _validate_approval_source(
+                operation.get("approvalEvidence"),
+                root,
+                feature_id=operation.get("featureSpecId"),
+            )
+            declarations_by_language = operation.get("declarations", {})
+            for language in ("rust", "c", "java", "python"):
+                for declaration_id in declarations_by_language.get(language, []):
+                    declaration = declarations_by_id.get(declaration_id)
+                    if declaration is None:
+                        raise ManifestError("operation mapping references an unknown declaration")
+                    if language not in declaration.get("languageMappings", {}):
+                        raise ManifestError("operation declaration lacks its language mapping")
+                    if declaration.get("declarationState") == "blocked":
+                        raise ManifestError("ready operation maps to a blocked public declaration")
+        if state == "verified":
+            _validate_parity_evidence(operation, root)
+
+
+def _validate_capability_readiness(
+    capabilities: list[dict[str, Any]], root: Path
+) -> None:
+    for capability in capabilities:
+        if not isinstance(capability, dict):
+            raise ManifestError("manifest capability readiness record is malformed")
+        state = capability.get("capabilityState")
+        if state in {"declared", "verified"}:
+            if capability.get("ownerSpecId") is not None:
+                _validate_approval_source(
+                    capability.get("approvalEvidence"),
+                    root,
+                    feature_id=capability.get("ownerSpecId"),
+                )
+            else:
+                _validate_approval_source(
+                    capability.get("acceptedEvidence"),
+                    root,
+                    adr_id=capability.get("ownerAdrId"),
+                )
+        if state == "verified":
+            _validate_parity_evidence(capability, root)
+
+
+def _validate_public_declarations(
+    declarations: list[dict[str, Any]],
+    capability_ids: set[Any],
+    operation_ids: set[Any],
+    package_languages: dict[Any, Any],
+    requirements: set[Any],
+    root: Path,
+) -> None:
+    for declaration in declarations:
+        if not isinstance(declaration, dict):
+            raise ManifestError("manifest public declaration is malformed")
+        if declaration.get("capabilityId") not in capability_ids | operation_ids:
+            raise ManifestError("public declaration references an unknown capability")
+        if declaration.get("packageId") not in package_languages:
+            raise ManifestError("public declaration references an unknown package")
+        if not set(declaration.get("requirementIds", [])) <= requirements:
+            raise ManifestError("public declaration references an unknown requirement")
+        if declaration.get("declarationState") in {"declared", "verified"}:
+            _validate_approval_source(declaration.get("approvalSource"), root)
+            mappings = declaration.get("languageMappings", {})
+            parity_scope = declaration.get("parityScope")
+            required_languages = ("rust",) if parity_scope == "rust-only-adr" else (
+                "rust", "c", "java", "python"
+            )
+            for language in required_languages:
+                mapping = mappings.get(language)
+                if not isinstance(mapping, dict):
+                    raise ManifestError("public declaration is missing a language mapping")
+                package_id = mapping.get("packageId")
+                if package_languages.get(package_id) != language:
+                    raise ManifestError("public declaration maps to a package in another language")
+                if not isinstance(mapping.get("name"), str) or not mapping["name"]:
+                    raise ManifestError("public declaration mapping has no exported name")
+            owning_language = package_languages[declaration["packageId"]]
+            if mappings.get(owning_language, {}).get("packageId") != declaration["packageId"]:
+                raise ManifestError("declaration package differs from its owning language mapping")
+        if declaration.get("declarationState") == "verified":
+            _validate_parity_evidence(declaration, root)
+
+
+def _validate_approved_exclusions(
+    exclusions: list[dict[str, Any]], package_languages: dict[Any, Any], root: Path
+) -> None:
+    for exclusion in exclusions:
+        if not isinstance(exclusion, dict):
+            raise ManifestError("manifest approved exclusion is malformed")
+        _validate_approval_source(exclusion.get("approvalSource"), root)
+
+
+def _require_complete_readiness(
+    operations: list[dict[str, Any]],
+    capabilities: list[dict[str, Any]],
+    declarations: list[dict[str, Any]],
+) -> None:
+    if len(operations) != 57 or any(
+        record.get("apiState") != "verified" for record in operations
+    ):
+        raise ManifestError("release manifest contains an incomplete operation API")
+    if any(record.get("capabilityState") != "verified" for record in capabilities):
+        raise ManifestError("release manifest contains an incomplete capability API")
+    if any(record.get("declarationState") != "verified" for record in declarations):
+        raise ManifestError("release manifest contains an incomplete public declaration")
+
+
 def _validate_v2_readiness(
     manifest: dict[str, Any],
     root: Path,
@@ -552,96 +671,18 @@ def _validate_v2_readiness(
         raise ManifestError("manifest public declaration IDs are malformed or duplicated")
 
     if require_complete:
-        if len(operations) != 57 or any(
-            record.get("apiState") != "verified" for record in operations
-        ):
-            raise ManifestError("release manifest contains an incomplete operation API")
-        if any(record.get("capabilityState") != "verified" for record in capabilities):
-            raise ManifestError("release manifest contains an incomplete capability API")
-        if any(record.get("declarationState") != "verified" for record in declarations):
-            raise ManifestError("release manifest contains an incomplete public declaration")
-
-    for operation in operations:
-        if not isinstance(operation, dict):
-            raise ManifestError("manifest operation readiness record is malformed")
-        state = operation.get("apiState")
-        if state in {"declared", "verified"}:
-            if operation.get("candidateSpecId") is not None:
-                raise ManifestError("ready operation still records a candidate owner")
-            _validate_approval_source(
-                operation.get("approvalEvidence"),
-                root,
-                feature_id=operation.get("featureSpecId"),
-            )
-            by_language = operation.get("declarations", {})
-            for language in ("rust", "c", "java", "python"):
-                for declaration_id in by_language.get(language, []):
-                    declaration = declaration_by_id.get(declaration_id)
-                    if declaration is None:
-                        raise ManifestError("operation mapping references an unknown declaration")
-                    if language not in declaration.get("languageMappings", {}):
-                        raise ManifestError("operation declaration lacks its language mapping")
-                    if declaration.get("declarationState") == "blocked":
-                        raise ManifestError("ready operation maps to a blocked public declaration")
-        if state == "verified":
-            _validate_parity_evidence(operation, root)
-
-    for capability in capabilities:
-        if not isinstance(capability, dict):
-            raise ManifestError("manifest capability readiness record is malformed")
-        state = capability.get("capabilityState")
-        if state in {"declared", "verified"}:
-            if capability.get("ownerSpecId") is not None:
-                _validate_approval_source(
-                    capability.get("approvalEvidence"),
-                    root,
-                    feature_id=capability.get("ownerSpecId"),
-                )
-            else:
-                _validate_approval_source(
-                    capability.get("acceptedEvidence"),
-                    root,
-                    adr_id=capability.get("ownerAdrId"),
-                )
-        if state == "verified":
-            _validate_parity_evidence(capability, root)
-
-    for declaration in declarations:
-        if not isinstance(declaration, dict):
-            raise ManifestError("manifest public declaration is malformed")
-        if declaration.get("capabilityId") not in capability_ids | operation_ids:
-            raise ManifestError("public declaration references an unknown capability")
-        if declaration.get("packageId") not in package_languages:
-            raise ManifestError("public declaration references an unknown package")
-        if not set(declaration.get("requirementIds", [])) <= requirements:
-            raise ManifestError("public declaration references an unknown requirement")
-        if declaration.get("declarationState") in {"declared", "verified"}:
-            _validate_approval_source(declaration.get("approvalSource"), root)
-            mappings = declaration.get("languageMappings", {})
-            parity_scope = declaration.get("parityScope")
-            required_languages = ("rust",) if parity_scope == "rust-only-adr" else (
-                "rust", "c", "java", "python"
-            )
-            for language in required_languages:
-                mapping = mappings.get(language)
-                if not isinstance(mapping, dict):
-                    raise ManifestError("public declaration is missing a language mapping")
-                package_id = mapping.get("packageId")
-                if package_languages.get(package_id) != language:
-                    raise ManifestError("public declaration maps to a package in another language")
-                if not isinstance(mapping.get("name"), str) or not mapping["name"]:
-                    raise ManifestError("public declaration mapping has no exported name")
-            owning_language = package_languages[declaration["packageId"]]
-            if mappings.get(owning_language, {}).get("packageId") != declaration["packageId"]:
-                raise ManifestError("declaration package differs from its owning language mapping")
-        if declaration.get("declarationState") == "verified":
-            _validate_parity_evidence(declaration, root)
-
-    for exclusion in exclusions:
-        if not isinstance(exclusion, dict):
-            raise ManifestError("manifest approved exclusion is malformed")
-        _validate_approval_source(exclusion.get("approvalSource"), root)
-
+        _require_complete_readiness(operations, capabilities, declarations)
+    _validate_operation_readiness(operations, declaration_by_id, root)
+    _validate_capability_readiness(capabilities, root)
+    _validate_public_declarations(
+        declarations,
+        capability_ids,
+        operation_ids,
+        package_languages,
+        requirements,
+        root,
+    )
+    _validate_approved_exclusions(exclusions, package_languages, root)
     if require_complete and not package_languages:
         raise ManifestError("release manifest contains no public packages")
 
