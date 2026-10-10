@@ -107,7 +107,8 @@ def _valid_v2_manifest() -> dict[str, object]:
                 {"id": level, "requirementIds": ["KMIPKIT-0043-FR-001"]}
                 for level in EXPECTED_API_LEVELS
             ],
-            "operations": [
+            "operations": sorted(
+                [
                 {
                     "operationId": item["element_id"],
                     "name": item["name"],
@@ -117,7 +118,11 @@ def _valid_v2_manifest() -> dict[str, object]:
                 }
                 for item in catalog["elements"]
                 if item.get("kind") == "operation" and item.get("scope_state") == "client_1_0"
-            ],
+                ],
+                key=lambda operation: tuple(
+                    int(part) for part in operation["section"].split(".")
+                ),
+            ),
             "capabilities": [],
             "generatedOutputs": [
                 {"name": name, "path": path} for name, path in GENERATED_OUTPUTS

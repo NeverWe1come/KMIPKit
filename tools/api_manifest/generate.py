@@ -345,6 +345,74 @@ def _validate_schema(manifest: Any, schema: dict[str, Any]) -> None:
         raise ManifestError(f"manifest does not match the declared schema near {location}")
 
 
+def _validate_operation_inventory(manifest: dict[str, Any], catalog: dict[str, Any]) -> None:
+    """Require an exact, numerically ordered copy of the client 1.0 catalog operations."""
+    catalog_elements = catalog.get("elements")
+    if not isinstance(catalog_elements, list):
+        raise ManifestError("normative catalog does not contain an element inventory")
+
+    expected: list[tuple[tuple[int, ...], dict[str, str]]] = []
+    seen_catalog_ids: set[str] = set()
+    for element in catalog_elements:
+        if not isinstance(element, dict):
+            raise ManifestError("normative catalog contains a malformed element")
+        if element.get("kind") != "operation" or element.get("scope_state") != "client_1_0":
+            continue
+
+        operation_id = element.get("element_id")
+        name = element.get("name")
+        source_refs = element.get("source_refs")
+        if not isinstance(operation_id, str) or not isinstance(name, str) or not isinstance(source_refs, list):
+            raise ManifestError("normative catalog contains a malformed client operation")
+        if operation_id in seen_catalog_ids:
+            raise ManifestError("normative catalog contains duplicate client operation IDs")
+        seen_catalog_ids.add(operation_id)
+
+        sections = [
+            reference.get("section")
+            for reference in source_refs
+            if isinstance(reference, dict) and reference.get("source_id") == "KMIPKIT-SRC-spec"
+        ]
+        if len(sections) != 1 or not isinstance(sections[0], str):
+            raise ManifestError("client operation does not resolve to one KMIP 2.1 section")
+        section = sections[0]
+        match = re.fullmatch(r"6\.1\.([0-9]+)", section)
+        if match is None:
+            raise ManifestError("client operation has an invalid KMIP 2.1 section")
+        expected.append(
+            (
+                (6, 1, int(match.group(1))),
+                {
+                    "operationId": operation_id,
+                    "name": name,
+                    "section": section,
+                    "scope": "client_1_0",
+                },
+            )
+        )
+
+    if len(expected) != 57:
+        raise ManifestError("normative catalog must contain exactly 57 client 1.0 operations")
+    expected.sort(key=lambda item: item[0])
+
+    rows = manifest.get("operations")
+    if not isinstance(rows, list) or len(rows) != len(expected):
+        raise ManifestError("manifest operation inventory must contain exactly 57 rows")
+    operation_ids = [row.get("operationId") for row in rows if isinstance(row, dict)]
+    if len(operation_ids) != len(rows) or len(set(operation_ids)) != len(rows):
+        raise ManifestError("manifest operation inventory contains malformed or duplicate IDs")
+
+    expected_rows = [row for _, row in expected]
+    expected_ids = [row["operationId"] for row in expected_rows]
+    if set(operation_ids) != set(expected_ids):
+        raise ManifestError("manifest operation inventory differs from the normative catalog")
+    if operation_ids != expected_ids:
+        raise ManifestError("manifest operations are not ordered by numeric KMIP section")
+    for actual, wanted in zip(rows, expected_rows):
+        if any(actual.get(field) != value for field, value in wanted.items()):
+            raise ManifestError("manifest operation name, section, or scope differs from the catalog")
+
+
 def _require_unique(records: list[dict[str, Any]], field: str, label: str) -> set[Any]:
     values = [record[field] for record in records]
     if len(set(values)) != len(values):
