@@ -1,11 +1,15 @@
-//! Fake-transport Get execution contracts derived from OASIS KMIP v2.1
-//! §6.1.19, Tables 220–222; §§8.6 and 9.1, Tables 399–400; §§9.2 and 11.3,
-//! Tables 431–432; §§11.46–11.47, Tables 479–480; and ID Placeholder behavior
-//! in §§6.1, 6.1.8/Table 187, and 9.8. Traceability: KMIPKIT-0017-FR-001,
-//! FR-003, FR-010, FR-011, and SC-002. These are client execution contracts,
-//! not claims of official OASIS case passes.
+//! Fake-transport Get and Locate execution contracts derived from OASIS KMIP
+//! v2.1 §§6.1.19 and 6.1.28, Tables 220–222 and 247–249; §§8.6 and 9.1,
+//! Tables 399–400; §§9.2 and 11.3, Tables 431–432; §§11.46–11.47,
+//! Tables 479–480; and ID Placeholder behavior in §§6.1, 6.1.8/Table 187,
+//! and 9.8. Traceability: KMIPKIT-0017-FR-001, FR-003, FR-006–FR-008,
+//! FR-010, FR-011, and SC-002. These are client execution contracts, not
+//! claims of official OASIS case passes.
 
-use kmipkit_protocol::{AttributeSet, CreateRequest, GetRequest, ObjectType, UniqueIdentifier};
+use kmipkit_protocol::{
+    AttributeSet, CreateRequest, GetRequest, LocateRequest, ObjectGroupMember, ObjectType,
+    StorageStatusMask, UniqueIdentifier,
+};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::ValueView;
@@ -23,6 +27,7 @@ use crate::execute_test_support::{
 
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const GET_OPERATION: u32 = 0x0000_000A;
+const LOCATE_OPERATION: u32 = 0x0000_0008;
 const RESPONSE_MESSAGE: &str = "GET_RESULT_MESSAGE_SENTINEL";
 const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
 const PENDING_CORRELATION: &[u8] = b"GET_PENDING_CORRELATION_EXACT";
@@ -30,8 +35,15 @@ const PENDING_CORRELATION: &[u8] = b"GET_PENDING_CORRELATION_EXACT";
 const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const ACTIVATION_DATE: u32 = 0x0042_0001;
+const MAXIMUM_ITEMS: u32 = 0x0042_004F;
+const OFFSET_ITEMS: u32 = 0x0042_00D4;
+const STORAGE_STATUS_MASK: u32 = 0x0042_008E;
+const OBJECT_GROUP_MEMBER: u32 = 0x0042_00AC;
+const ATTRIBUTES: u32 = 0x0042_0125;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
@@ -40,6 +52,98 @@ const KEY_MATERIAL: u32 = 0x0042_0043;
 
 const CREATE_BATCH_ID: &[u8] = b"get-placeholder-create";
 const GET_BATCH_ID: &[u8] = b"get-placeholder-read";
+// Unique Batch Item IDs identify message frames; they are not KMIP Unique Identifiers.
+const LOCATE_BATCH_ID: &[u8] = b"locate-search-frame";
+const LOCATE_GET_BATCH_ID: &[u8] = b"locate-get-frame";
+
+#[derive(Debug, Eq, PartialEq)]
+enum WireValue {
+    Structure(Vec<(u32, WireValue)>),
+    Integer(i32),
+    Enumeration(u32),
+    TextString(String),
+    ByteString(Vec<u8>),
+    DateTime(i64),
+}
+
+#[derive(Debug, Eq, PartialEq)]
+struct RequestItemSnapshot {
+    operation: u32,
+    unique_batch_item_id: Vec<u8>,
+    payload: WireValue,
+}
+
+fn request_item_snapshot(request: &[u8], index: usize) -> Option<RequestItemSnapshot> {
+    let document = decode_with_limits(request, &CodecLimits::defaults()).ok()?;
+    document.with_value(|message| {
+        let ValueView::Structure(message) = message else {
+            return None;
+        };
+        let batch_item = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .nth(index)?;
+        batch_item.with_value(|batch_item| {
+            let ValueView::Structure(batch_item) = batch_item else {
+                return None;
+            };
+            let operation = batch_item
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == OPERATION)?
+                .with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                })?;
+            let unique_batch_item_id = batch_item
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == UNIQUE_BATCH_ITEM_ID)?
+                .with_value(|value| match value {
+                    ValueView::ByteString(value) => Some(value.to_vec()),
+                    _ => None,
+                })?;
+            let payload = batch_item
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == REQUEST_PAYLOAD)?
+                .with_value(wire_value_snapshot);
+            Some(RequestItemSnapshot {
+                operation,
+                unique_batch_item_id,
+                payload,
+            })
+        })
+    })
+}
+
+fn wire_value_snapshot(value: ValueView<'_>) -> WireValue {
+    match value {
+        ValueView::Structure(structure) => WireValue::Structure(
+            structure
+                .children()
+                .iter()
+                .map(|item| (item.tag().raw(), item.with_value(wire_value_snapshot)))
+                .collect(),
+        ),
+        ValueView::Integer(value) => WireValue::Integer(*value),
+        ValueView::Enumeration(value) => WireValue::Enumeration(*value),
+        ValueView::TextString(value) => WireValue::TextString(value.to_owned()),
+        ValueView::ByteString(value) => WireValue::ByteString(value.to_vec()),
+        ValueView::DateTime(value) => WireValue::DateTime(*value),
+        _ => panic!("the captured object-read request uses only asserted TTLV values"),
+    }
+}
+
+fn wire_field(payload: &WireValue, tag: u32) -> Option<&WireValue> {
+    let WireValue::Structure(fields) = payload else {
+        return None;
+    };
+    fields
+        .iter()
+        .find_map(|(field_tag, value)| (*field_tag == tag).then_some(value))
+}
 
 fn empty_create_request() -> CreateRequest {
     CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new())
@@ -73,6 +177,15 @@ fn successful_create_payload(identifier: &str) -> Structure {
         test_item(OBJECT_TYPE, Value::enumeration(7)),
         test_item(UNIQUE_IDENTIFIER, Value::text_string(identifier.to_owned())),
     ])
+}
+
+fn successful_locate_payload(identifiers: &[&str]) -> Structure {
+    test_structure(identifiers.iter().map(|identifier| {
+        test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string((*identifier).to_owned()),
+        )
+    }))
 }
 
 fn request_item_shape(request: &[u8], index: usize) -> Option<(u32, bool)> {
@@ -352,5 +465,117 @@ fn get_without_identifier_follows_create_and_keeps_the_batch_order() {
         Some(&UniqueIdentifier::TextString(
             "server-created-id".to_owned()
         ))
+    );
+}
+
+#[test]
+fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
+    let attributes = AttributeSet::try_new([
+        test_item(ACTIVATION_DATE, Value::date_time(100)),
+        test_item(ACTIVATION_DATE, Value::date_time(200)),
+    ])
+    .expect("the two Activation Date values form an ordered date-range criterion");
+    let locate = LocateRequest::new(attributes)
+        .with_maximum_items(9)
+        .with_offset_items(0)
+        .with_storage_status_mask(StorageStatusMask::from_raw(3))
+        .with_object_group_member(ObjectGroupMember::from_raw(1));
+    let response = operation_batch_response_bytes([
+        (
+            LOCATE_OPERATION,
+            LOCATE_BATCH_ID.to_vec(),
+            successful_locate_payload(&["server-id-z", "server-id-a", "server-id-z"]),
+        ),
+        (
+            GET_OPERATION,
+            LOCATE_GET_BATCH_ID.to_vec(),
+            successful_get_payload("server-resolved-placeholder-id"),
+        ),
+    ]);
+    let (mut client, fake, captured_request) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![7, 13],
+    });
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::Locate(locate))
+            .with_unique_batch_item_id(LOCATE_BATCH_ID.to_vec()),
+        ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))
+            .with_unique_batch_item_id(LOCATE_GET_BATCH_ID.to_vec()),
+    ]);
+
+    let response = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("the Locate/Get batch is sent as submitted for server-side placeholder handling");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    let captured_request = captured_request.borrow();
+    let request = captured_request
+        .as_deref()
+        .expect("the submitted batch reaches the fake transport");
+    let locate_request =
+        request_item_snapshot(request, 0).expect("the first request frame is captured");
+    assert_eq!(locate_request.operation, LOCATE_OPERATION);
+    assert_eq!(locate_request.unique_batch_item_id, LOCATE_BATCH_ID);
+    assert_eq!(
+        wire_field(&locate_request.payload, MAXIMUM_ITEMS),
+        Some(&WireValue::Integer(9)),
+        "Maximum Items reaches the server unchanged"
+    );
+    assert_eq!(
+        wire_field(&locate_request.payload, OFFSET_ITEMS),
+        Some(&WireValue::Integer(0)),
+        "an explicit zero Offset Items remains present"
+    );
+    assert_eq!(
+        wire_field(&locate_request.payload, STORAGE_STATUS_MASK),
+        Some(&WireValue::Integer(3)),
+        "the caller's Storage Status Mask reaches the server unchanged"
+    );
+    assert_eq!(
+        wire_field(&locate_request.payload, OBJECT_GROUP_MEMBER),
+        Some(&WireValue::Enumeration(1)),
+        "the caller's Object Group Member reaches the server unchanged"
+    );
+    assert_eq!(
+        wire_field(&locate_request.payload, ATTRIBUTES),
+        Some(&WireValue::Structure(vec![
+            (ACTIVATION_DATE, WireValue::DateTime(100)),
+            (ACTIVATION_DATE, WireValue::DateTime(200)),
+        ])),
+        "repeated Locate criteria retain their input values and order"
+    );
+
+    let get_request =
+        request_item_snapshot(request, 1).expect("the second request frame is captured");
+    assert_eq!(get_request.operation, GET_OPERATION);
+    assert_eq!(get_request.unique_batch_item_id, LOCATE_GET_BATCH_ID);
+    assert_eq!(
+        get_request.payload,
+        WireValue::Structure(Vec::new()),
+        "the placeholder-dependent Get keeps Unique Identifier omitted"
+    );
+
+    let locate_result = response.get(0).expect("Locate remains result item zero");
+    let get_result = response.get(1).expect("Get remains result item one");
+    assert_eq!(locate_result.unique_batch_item_id(), Some(LOCATE_BATCH_ID));
+    assert_eq!(get_result.unique_batch_item_id(), Some(LOCATE_GET_BATCH_ID));
+    assert_eq!(locate_result.outcome().operation(), ClientOperation::Locate);
+    assert_eq!(get_result.outcome().operation(), ClientOperation::Get);
+    assert_eq!(
+        locate_result
+            .outcome()
+            .locate_response()
+            .expect("the Locate result remains typed")
+            .unique_identifiers(),
+        &[
+            UniqueIdentifier::TextString("server-id-z".to_owned()),
+            UniqueIdentifier::TextString("server-id-a".to_owned()),
+            UniqueIdentifier::TextString("server-id-z".to_owned()),
+        ],
+        "Locate identifiers preserve server order and repetitions"
+    );
+    assert!(
+        get_result.outcome().get_response().is_some(),
+        "the subsequent Get response is exposed without a client-selected identifier"
     );
 }
