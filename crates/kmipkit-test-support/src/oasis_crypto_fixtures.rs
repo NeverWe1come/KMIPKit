@@ -367,6 +367,12 @@ fn parse_item(
                 .then_some("Structure")
         })
         .ok_or(OasisCryptoFixtureError::InvalidValue)?;
+    let has_element_children = node
+        .children()
+        .any(|child| child.node_type() == NodeType::Element);
+    if item_type != "Structure" && has_element_children {
+        return Err(OasisCryptoFixtureError::InvalidValue);
+    }
     let value = match item_type {
         "Structure" => {
             if node.attribute("value").is_some() {
@@ -405,12 +411,6 @@ where
 {
     let value = value_attribute(node)?;
     reject_symbol(value)?;
-    if node
-        .children()
-        .any(|child| child.node_type() == NodeType::Element)
-    {
-        return Err(OasisCryptoFixtureError::InvalidValue);
-    }
     value
         .parse()
         .map_err(|_| OasisCryptoFixtureError::InvalidValue)
