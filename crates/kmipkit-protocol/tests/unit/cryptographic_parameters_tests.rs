@@ -119,6 +119,12 @@ fn ccm_requires_iv_length_without_requiring_gcm_tag_length() {
 
 #[test]
 fn gcm_requires_tag_length_and_preserves_supplied_parameters() {
+    let without_iv_length = parameters([
+        (BLOCK_CIPHER_MODE_TAG, Value::enumeration(GCM_MODE)),
+        (TAG_LENGTH_TAG, Value::integer(16)),
+    ]);
+    assert!(validated_parameters(without_iv_length).is_err());
+
     let without_tag_length = parameters([
         (BLOCK_CIPHER_MODE_TAG, Value::enumeration(GCM_MODE)),
         (IV_LENGTH_TAG, Value::integer(96)),
