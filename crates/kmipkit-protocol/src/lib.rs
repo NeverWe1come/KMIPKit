@@ -149,6 +149,10 @@ mod cryptographic_parameters_tests;
 mod cryptographic_operation_contract_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/hash_operation_tests.rs"]
+mod hash_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/encrypt_tests.rs"]
 mod encrypt_tests;
 

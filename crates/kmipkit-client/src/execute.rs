@@ -55,6 +55,10 @@ mod single_item_response_tests;
 #[path = "../tests/unit/hash_mac_signature_execution_tests.rs"]
 mod hash_mac_signature_execution_tests;
 
+#[cfg(test)]
+#[path = "../tests/unit/hash_execution_tests.rs"]
+mod hash_execution_tests;
+
 #[path = "wire_encoder.rs"]
 mod private_wire_writer;
 
