@@ -77,7 +77,7 @@
 
 ### Refactor
 
-- [ ] T033 Refactor request validation and client dispatch with no stream state, correlation synthesis, retry, or polling. Run focused tests and record Refactor evidence in a distinct commit.
+- [x] T033 Refactor request validation and client dispatch with no stream state, correlation synthesis, retry, or polling. Run focused tests and record Refactor evidence in a distinct commit. **Evidence (2026-10-10):** Refactor `d9aa6dd` centralizes the private `ClientRequest` classifications without changing behavior. Multipart tests pass 6/6 and ID Placeholder tests 7/7 both before and after; client/protocol Clippy, formatting, and diff checks pass. Independent QA Approved and security Clear. Full commands are in `.superpowers/sdd/kmipkit-0019-cryptographic-operations/task-31-report.md`.
 
 ## Phase 5: Client execution and outcome tests
 
