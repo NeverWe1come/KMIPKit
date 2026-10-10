@@ -196,8 +196,8 @@ fn storage_status_mask_preserves_assigned_and_unknown_bits() {
 }
 
 #[test]
-fn object_group_member_preserves_fresh_and_default_enumerations() {
-    for raw_value in [1, 2] {
+fn object_group_member_preserves_assigned_and_unknown_enumerations() {
+    for raw_value in [1, 2, u32::MAX] {
         let payload = payload(
             LocateRequest::new(AttributeSet::new())
                 .with_object_group_member(ObjectGroupMember::from_raw(raw_value)),
