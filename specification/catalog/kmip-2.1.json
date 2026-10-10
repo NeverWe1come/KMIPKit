@@ -90314,7 +90314,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-007",
@@ -90374,7 +90374,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-008-002",
@@ -90404,7 +90404,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-005",
       "status": "retired",
-      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 describes Group Member Default selection without an RFC 2119 keyword. KMIPKIT-DEC-005 retires this false normative extraction while preserving its stable identifier. KMIPKIT-0017 still forwards the caller's Group Member Default value without local selection."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 describes Group Member Default selection without an RFC 2119 keyword. KMIPKIT-DEC-005 retires this false normative extraction while preserving its stable identifier. KMIPKIT-0017 still forwards the caller's Group Member Default value without local selection. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-009-001",
@@ -90434,7 +90434,7 @@
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-009-002",
@@ -90464,7 +90464,7 @@
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-011",
@@ -90524,7 +90524,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-005",
       "status": "unassigned",
-      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory."
+      "review_note": "OASIS KMIP Specification v2.1 §6.1.28 assigns this behavior to the server. KMIPKIT-DEC-005 corrects the actor classification. It is not a client conformance obligation; KMIPKIT-0017 preserves the corresponding request and response values. No requirement-specific official case is linked in the pinned Test Cases inventory. No requirement-specific official Test Cases ID is linked in the pinned inventory; no case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-013-001",
