@@ -3556,24 +3556,7 @@ fn response_outcome(
     item: ResponseBatchItemView<'_>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
     match operation {
-        ENCRYPT_OPERATION => read_crypto_operation_outcome(
-            ClientOperation::Encrypt,
-            item,
-            EncryptResponse::try_from_pending_response_item,
-            EncryptResponse::try_from_response_item,
-            EncryptResponse::result,
-            PendingResponse::Encrypt,
-            ClientBatchOutcome::Encrypt,
-        ),
-        DECRYPT_OPERATION => read_crypto_operation_outcome(
-            ClientOperation::Decrypt,
-            item,
-            DecryptResponse::try_from_pending_response_item,
-            DecryptResponse::try_from_response_item,
-            DecryptResponse::result,
-            PendingResponse::Decrypt,
-            ClientBatchOutcome::Decrypt,
-        ),
+        ENCRYPT_OPERATION | DECRYPT_OPERATION => crypto_response_outcome(operation, item),
         ACTIVATE_OPERATION => read_operation_outcome(
             ClientOperation::Activate,
             item,
@@ -3657,6 +3640,33 @@ fn response_outcome(
             GetAttributeListResponse::result,
             PendingResponse::GetAttributeList,
             ClientBatchOutcome::GetAttributeList,
+        ),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn crypto_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        ENCRYPT_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::Encrypt,
+            item,
+            EncryptResponse::try_from_pending_response_item,
+            EncryptResponse::try_from_response_item,
+            EncryptResponse::result,
+            PendingResponse::Encrypt,
+            ClientBatchOutcome::Encrypt,
+        ),
+        DECRYPT_OPERATION => read_crypto_operation_outcome(
+            ClientOperation::Decrypt,
+            item,
+            DecryptResponse::try_from_pending_response_item,
+            DecryptResponse::try_from_response_item,
+            DecryptResponse::result,
+            PendingResponse::Decrypt,
+            ClientBatchOutcome::Decrypt,
         ),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
