@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
 
+use crate::ClientErrorResponseTtlv;
 use kmipkit_protocol::attribute::{
     ClientAttributeMutation, client_attribute_mutation_is_prohibited,
     client_vendor_attribute_mutation_is_prohibited,
@@ -769,6 +770,34 @@ fn read_response_error<E: Error + 'static>(error: E) -> ProtocolError {
         ProtocolCauseCategory::InvalidValue,
         error,
     )
+}
+
+struct ResponseValidationError {
+    error: ProtocolError,
+    response_ttlv: Option<ClientErrorResponseTtlv>,
+}
+
+impl From<ProtocolError> for ResponseValidationError {
+    fn from(error: ProtocolError) -> Self {
+        Self {
+            error,
+            response_ttlv: None,
+        }
+    }
+}
+
+fn retain_response_shape_error(
+    error: ProtocolError,
+    item: ResponseBatchItemView<'_>,
+) -> ResponseValidationError {
+    let response_ttlv = item
+        .with_ttlv(|tree| tree.try_clone())
+        .and_then(Result::ok)
+        .map(ClientErrorResponseTtlv::new);
+    ResponseValidationError {
+        error,
+        response_ttlv,
+    }
 }
 
 fn read_operation_outcome<T, E>(
@@ -2266,7 +2295,14 @@ impl Client {
             #[cfg(test)]
             self.pending_owner_observer.as_ref(),
         )
-        .map_err(|error| protocol_failure_at(error, response_delivery_state))
+        .map_err(|failure| match failure.response_ttlv {
+            Some(response_ttlv) => ClientError::protocol_response(
+                failure.error,
+                response_delivery_state,
+                response_ttlv,
+            ),
+            None => protocol_failure_at(failure.error, response_delivery_state),
+        })
     }
 
     /// Executes one typed Activate request through the shared batch writer.
@@ -3934,9 +3970,9 @@ fn validate_response(
     registry: &ClientExtensionRegistry,
     limits: &CodecLimits,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
-) -> Result<ClientBatchResponse, ProtocolError> {
+) -> Result<ClientBatchResponse, ResponseValidationError> {
     if !protocol_version_is_supported(response.header().protocol_version()) {
-        return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
+        return Err(protocol_error(ProtocolErrorKind::UnsupportedValue).into());
     }
 
     let response_items = response.batch_items().collect::<Vec<_>>();
@@ -3944,7 +3980,8 @@ fn validate_response(
         .iter()
         .map(BatchIdentity::from_response)
         .collect::<Vec<_>>();
-    let association = associate_batch_items(request_identities, &response_identities)?;
+    let association = associate_batch_items(request_identities, &response_identities)
+        .map_err(ProtocolError::from)?;
 
     let outcome_states = response_items
         .iter()
@@ -3953,7 +3990,8 @@ fn validate_response(
             has_correlation_value: item.with_asynchronous_correlation_value(|_| ()).is_some(),
         })
         .collect::<Vec<_>>();
-    validate_pending_states(options.asynchronous_indicator, &outcome_states)?;
+    validate_pending_states(options.asynchronous_indicator, &outcome_states)
+        .map_err(ProtocolError::from)?;
 
     let mut ordered = Vec::with_capacity(request_identities.len());
     for (request_index, response_index) in association.into_iter().enumerate() {
@@ -3963,7 +4001,8 @@ fn validate_response(
             request_identities[request_index].operation,
             item,
             request_identities[request_index].response_context,
-        )?;
+        )
+        .map_err(|error| retain_response_shape_error(error, item))?;
         #[cfg(test)]
         if let (Some(observer), ClientBatchOutcome::Pending(pending)) =
             (pending_owner_observer, &outcome)
