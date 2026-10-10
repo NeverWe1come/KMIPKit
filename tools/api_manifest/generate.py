@@ -1033,6 +1033,11 @@ def _json_literal(value: Any) -> str:
     return _dump_json(value)
 
 
+def _encode_generated_text(value: str) -> bytes:
+    """Encode renderer text with repository-independent UTF-8/LF bytes."""
+    return value.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+
+
 def render_java_api(manifest: dict[str, Any]) -> str:
     functions = [
         {
@@ -1119,7 +1124,10 @@ def render_outputs(manifest: dict[str, Any]) -> dict[str, bytes]:
         "pythonApi": render_python_api,
         "parityFixtures": render_parity_fixtures,
     }
-    return {OUTPUTS[key]: renderers[key](manifest).encode("utf-8") for key in OUTPUTS}
+    return {
+        OUTPUTS[key]: _encode_generated_text(renderers[key](manifest))
+        for key in OUTPUTS
+    }
 
 
 def _is_reparse_point(path: Path) -> bool:
