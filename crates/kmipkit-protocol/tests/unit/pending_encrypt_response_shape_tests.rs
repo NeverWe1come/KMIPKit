@@ -13,11 +13,12 @@ use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{
     DecryptResponse, EncryptResponse, ResponseBatchItemView, ResponseMessage, ResultStatus,
 };
-use kmipkit_ttlv::{Value, ValueView};
+use kmipkit_ttlv::{Structure, Value, ValueView};
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
 const PENDING: u32 = 2;
+const SUCCESS: u32 = 0;
 const CORRELATION_VALUE: u32 = 0x0042_00D6;
 
 fn response_item(message: &ResponseMessage) -> ResponseBatchItemView<'_> {
@@ -132,5 +133,75 @@ fn pending_decrypt_item_is_not_accepted_as_a_completed_response() {
             Err(crate::DecryptError::PendingOutcomeRequired)
         ),
         "Pending must be routed through the shared PendingOutcome path"
+    );
+}
+
+#[test]
+fn pending_encrypt_conversion_preserves_result_without_fabricating_payload_fields() {
+    let message = response_message(
+        ENCRYPT_OPERATION,
+        PENDING,
+        None,
+        Some(&[0xA1, 0xB2]),
+        Some(Structure::new()),
+    );
+    let response = EncryptResponse::try_from_pending_response_item(response_item(&message))
+        .expect("the pending-only conversion accepts an Operation Pending result");
+
+    assert_eq!(response.result().status(), ResultStatus::from_raw(PENDING));
+    assert!(response.unique_identifier().is_none());
+    assert!(response.data().is_none());
+    assert!(response.iv_counter_nonce().is_none());
+    assert!(response.correlation_value().is_none());
+    assert!(response.authenticated_encryption_tag().is_none());
+}
+
+#[test]
+fn pending_encrypt_conversion_rejects_a_completed_status() {
+    let message = response_message(
+        ENCRYPT_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(Structure::new()),
+    );
+
+    assert_eq!(
+        EncryptResponse::try_from_pending_response_item(response_item(&message)),
+        Err(crate::EncryptError::NotPendingOutcome)
+    );
+}
+
+#[test]
+fn pending_decrypt_conversion_preserves_result_without_fabricating_payload_fields() {
+    let message = response_message(
+        DECRYPT_OPERATION,
+        PENDING,
+        None,
+        Some(&[0xD4, 0xC3]),
+        Some(Structure::new()),
+    );
+    let response = DecryptResponse::try_from_pending_response_item(response_item(&message))
+        .expect("the pending-only conversion accepts an Operation Pending result");
+
+    assert_eq!(response.result().status(), ResultStatus::from_raw(PENDING));
+    assert!(response.unique_identifier().is_none());
+    assert!(response.data().is_none());
+    assert!(response.correlation_value().is_none());
+}
+
+#[test]
+fn pending_decrypt_conversion_rejects_a_completed_status() {
+    let message = response_message(
+        DECRYPT_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(Structure::new()),
+    );
+
+    assert_eq!(
+        DecryptResponse::try_from_pending_response_item(response_item(&message)),
+        Err(crate::DecryptError::NotPendingOutcome)
     );
 }

@@ -26,13 +26,15 @@ use zeroize::Zeroizing;
 use crate::execute::Client;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::{
-    ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientErrorCategory,
-    ClientRequest,
+    ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientBatchResponse, ClientCauseCategory,
+    ClientErrorCategory, ClientOperation, ClientRequest,
 };
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
 const SUCCESS: u32 = 0;
+const OPERATION_PENDING: u32 = 2;
+const PENDING_ASYNC_CORRELATION: &[u8] = &[0x00, 0xFF, 0x81, 0x10, 0x7F];
 
 const BATCH_ITEM: u32 = 0x0042_000F;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -113,6 +115,16 @@ fn success_response(operation: u32, correlation_value: Option<&[u8]>) -> Vec<u8>
     asynchronous_response_bytes(operation, SUCCESS, None, None, Some(test_structure(fields)))
 }
 
+fn pending_response(operation: u32) -> Vec<u8> {
+    asynchronous_response_bytes(
+        operation,
+        OPERATION_PENDING,
+        None,
+        Some(PENDING_ASYNC_CORRELATION),
+        Some(test_structure([])),
+    )
+}
+
 fn execute_one(client: &mut Client, request: ClientRequest) -> ClientBatchResponse {
     client
         .execute(
@@ -120,6 +132,15 @@ fn execute_one(client: &mut Client, request: ClientRequest) -> ClientBatchRespon
             &CodecLimits::defaults(),
         )
         .expect("one valid multipart request receives one typed response")
+}
+
+fn execute_pending_one(client: &mut Client, request: ClientRequest) -> ClientBatchResponse {
+    client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(request)).with_asynchronous_indicator(1),
+            &CodecLimits::defaults(),
+        )
+        .expect("valid Pending responses require an enabled asynchronous indicator")
 }
 
 fn response_correlation(response: &ClientBatchResponse, operation: u32) -> Zeroizing<Vec<u8>> {
@@ -478,4 +499,80 @@ fn decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initia
     assert_payload_boolean(&state, 2, FINAL_INDICATOR, true);
     assert_payload_field_absent(&state, 2, AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA);
     assert_payload_field_absent(&state, 2, AUTHENTICATED_ENCRYPTION_TAG);
+}
+
+#[test]
+fn encrypt_pending_preserves_typed_result_and_exact_async_correlation_without_payload_fields() {
+    let response = pending_response(ENCRYPT_OPERATION);
+    let (mut client, state) = client_with_responses([response.clone(), response.clone(), response]);
+    let request = ClientRequest::Encrypt(EncryptRequest::new(
+        Some(UniqueIdentifier::TextString(
+            "pending-encrypt-object".to_owned(),
+        )),
+        Some(OperationData::ByteString(SecretBytes::new(
+            b"data".to_vec(),
+        ))),
+    ));
+
+    let response = execute_pending_one(&mut client, request);
+    let item = response.get(0).expect("the response has one batch item");
+    let ClientBatchOutcome::Pending(pending) = item.outcome() else {
+        panic!("the server Pending result stays on the shared Pending path");
+    };
+
+    assert_eq!(pending.operation(), ClientOperation::Encrypt);
+    assert_eq!(item.outcome().operation(), ClientOperation::Encrypt);
+    assert_eq!(pending.result().status().raw(), OPERATION_PENDING);
+    assert_eq!(item.outcome().result(), pending.result());
+    assert_eq!(
+        pending.asynchronous_correlation_value(),
+        PENDING_ASYNC_CORRELATION
+    );
+    let typed_response = pending
+        .response()
+        .encrypt()
+        .expect("Pending retains the matching typed Encrypt response view");
+    assert!(typed_response.unique_identifier().is_none());
+    assert!(typed_response.data().is_none());
+    assert!(typed_response.iv_counter_nonce().is_none());
+    assert!(typed_response.correlation_value().is_none());
+    assert!(typed_response.authenticated_encryption_tag().is_none());
+    assert_eq!(state.borrow().requests.len(), 1);
+}
+
+#[test]
+fn decrypt_pending_preserves_typed_result_and_exact_async_correlation_without_payload_fields() {
+    let response = pending_response(DECRYPT_OPERATION);
+    let (mut client, state) = client_with_responses([response.clone(), response.clone(), response]);
+    let request = ClientRequest::Decrypt(DecryptRequest::new(
+        Some(UniqueIdentifier::TextString(
+            "pending-decrypt-object".to_owned(),
+        )),
+        Some(OperationData::ByteString(SecretBytes::new(
+            b"data".to_vec(),
+        ))),
+    ));
+
+    let response = execute_pending_one(&mut client, request);
+    let item = response.get(0).expect("the response has one batch item");
+    let ClientBatchOutcome::Pending(pending) = item.outcome() else {
+        panic!("the server Pending result stays on the shared Pending path");
+    };
+
+    assert_eq!(pending.operation(), ClientOperation::Decrypt);
+    assert_eq!(item.outcome().operation(), ClientOperation::Decrypt);
+    assert_eq!(pending.result().status().raw(), OPERATION_PENDING);
+    assert_eq!(item.outcome().result(), pending.result());
+    assert_eq!(
+        pending.asynchronous_correlation_value(),
+        PENDING_ASYNC_CORRELATION
+    );
+    let typed_response = pending
+        .response()
+        .decrypt()
+        .expect("Pending retains the matching typed Decrypt response view");
+    assert!(typed_response.unique_identifier().is_none());
+    assert!(typed_response.data().is_none());
+    assert!(typed_response.correlation_value().is_none());
+    assert_eq!(state.borrow().requests.len(), 1);
 }
