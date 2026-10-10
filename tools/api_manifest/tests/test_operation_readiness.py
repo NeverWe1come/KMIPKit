@@ -34,7 +34,7 @@ def _discover_versions_operation(manifest: dict[str, object]) -> dict[str, objec
 def _approved_feature_source() -> dict[str, str]:
     return {
         "kind": "feature-specification",
-        "path": "specs/0007-client-execution/approval-record.md",
+        "path": "specs/007-client-execution/approval-record.md",
         "status": "Approved",
         "evidence": "Maintainer acceptance for release 1.0.0",
     }
@@ -57,13 +57,17 @@ def _ready_operation(manifest: dict[str, object]) -> dict[str, object]:
             "apiState": "declared",
             "featureSpecId": "KMIPKIT-0007",
             "approvalEvidence": _approved_feature_source(),
-            "declarations": _four_language_mappings(),
+            "declarations": {
+                language: ["discover_versions_execute"] for language in LANGUAGES
+            },
         }
     )
     return operation
 
 
-def _ready_declaration() -> dict[str, object]:
+def _ready_declaration(
+    *, declaration_id: str = "shared_client_execute", capability_id: str = "shared_client"
+) -> dict[str, object]:
     package_ids = {
         "rust": "rust-kmipkit-protocol",
         "c": "c-kmipkit",
@@ -71,11 +75,11 @@ def _ready_declaration() -> dict[str, object]:
         "python": "python-kmipkit",
     }
     return {
-        "declarationId": "shared_client_execute",
+        "declarationId": declaration_id,
         "packageId": "rust-kmipkit-protocol",
         "kind": "function",
         "exportName": "kmipkit_protocol::ClientRequest",
-        "capabilityId": "shared_client",
+        "capabilityId": capability_id,
         "requirementIds": ["KMIPKIT-0043-FR-001"],
         "declarationState": "declared",
         "parityScope": "four-language",
@@ -84,6 +88,18 @@ def _ready_declaration() -> dict[str, object]:
             language: {"packageId": package_id, "name": f"{language}.client_execute"}
             for language, package_id in package_ids.items()
         },
+    }
+
+
+def _ready_capability() -> dict[str, object]:
+    return {
+        "capabilityId": "shared_client",
+        "requirementIds": ["KMIPKIT-0043-FR-001"],
+        "capabilityState": "declared",
+        "parityScope": "four-language",
+        "ownerSpecId": "KMIPKIT-0007",
+        "approvalEvidence": _approved_feature_source(),
+        "mappings": {language: [f"{language}.shared_client"] for language in LANGUAGES},
     }
 
 
@@ -98,6 +114,71 @@ def _write_approved_feature(root: Path) -> None:
         "Maintainer acceptance for release 1.0.0\n",
         encoding="utf-8",
     )
+
+
+def _complete_readiness_manifest(root: Path) -> dict[str, object]:
+    _write_approved_feature(root)
+    evidence = root / "tests" / "fixtures" / "api" / "parity.json"
+    evidence.parent.mkdir(parents=True)
+    evidence.write_text("{}\n", encoding="utf-8")
+    manifest = _contract_manifest()
+    language_packages = {
+        "rust": "rust-kmipkit-protocol",
+        "c": "c-kmipkit",
+        "java": "java-kmipkit",
+        "python": "python-kmipkit",
+    }
+    declaration_ids: dict[str, str] = {}
+    for index, operation in enumerate(manifest["operations"]):
+        declaration_id = f"operation_{index:02d}"
+        declaration_ids[operation["operationId"]] = declaration_id
+        operation.pop("blockedReason")
+        operation.update(
+            {
+                "apiState": "verified",
+                "featureSpecId": "KMIPKIT-0007",
+                "approvalEvidence": _approved_feature_source(),
+                "declarations": {
+                    language: [declaration_id] for language in LANGUAGES
+                },
+                "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
+            }
+        )
+    manifest["publicDeclarations"] = [
+        {
+            "declarationId": declaration_ids[operation["operationId"]],
+            "packageId": "rust-kmipkit-protocol",
+            "kind": "function",
+            "exportName": f"kmipkit_protocol::{operation['name'].replace(' ', '_').lower()}",
+            "capabilityId": operation["operationId"],
+            "requirementIds": ["KMIPKIT-0043-FR-001"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "approvalSource": _approved_feature_source(),
+            "languageMappings": {
+                language: {
+                    "packageId": package_id,
+                    "name": f"{language}.operation_{index:02d}",
+                }
+                for language, package_id in language_packages.items()
+            },
+            "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
+        }
+        for index, operation in enumerate(manifest["operations"])
+    ]
+    manifest["capabilities"] = [
+        {
+            "capabilityId": "shared_client",
+            "requirementIds": ["KMIPKIT-0043-FR-001"],
+            "capabilityState": "verified",
+            "parityScope": "four-language",
+            "ownerSpecId": "KMIPKIT-0007",
+            "approvalEvidence": _approved_feature_source(),
+            "mappings": {language: [f"{language}.shared_client"] for language in LANGUAGES},
+            "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
+        }
+    ]
+    return manifest
 
 
 def _validate_v2_readiness(
@@ -200,6 +281,12 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def test_ready_owner_must_resolve_to_approved_feature_and_recorded_acceptance(self) -> None:
         manifest = _contract_manifest()
         _ready_operation(manifest)
+        manifest["publicDeclarations"] = [
+            _ready_declaration(
+                declaration_id="discover_versions_execute",
+                capability_id="KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+            )
+        ]
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             _write_approved_feature(root)
@@ -252,6 +339,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def test_language_declaration_mapping_must_name_a_package_in_that_language(self) -> None:
         manifest = _contract_manifest()
         declaration = _ready_declaration()
+        manifest["capabilities"] = [_ready_capability()]
         declaration["languageMappings"]["python"]["packageId"] = "java-kmipkit"
         manifest["publicDeclarations"] = [declaration]
 
@@ -263,42 +351,30 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
     def test_release_validation_rejects_each_kind_of_blocked_readiness_record(self) -> None:
         mutations = (
-            lambda manifest: manifest["operations"][0].update(
-                {"apiState": "blocked", "blockedReason": "Owner is not approved."}
+            lambda manifest: manifest["operations"][0].update({"apiState": "blocked"}),
+            lambda manifest: manifest["capabilities"][0].update(
+                {"capabilityState": "blocked"}
             ),
-            lambda manifest: manifest["capabilities"].append(
-                {
-                    "capabilityId": "blocked_capability",
-                    "requirementIds": ["KMIPKIT-0043-FR-001"],
-                    "capabilityState": "blocked",
-                    "parityScope": "four-language",
-                    "blockedReason": "Owner is not approved.",
-                }
-            ),
-            lambda manifest: manifest["publicDeclarations"].append(
-                {
-                    "declarationId": "blocked_declaration",
-                    "packageId": "rust-kmipkit-protocol",
-                    "kind": "function",
-                    "exportName": "kmipkit_protocol::candidate",
-                    "capabilityId": "blocked_capability",
-                    "requirementIds": ["KMIPKIT-0043-FR-001"],
-                    "declarationState": "blocked",
-                    "parityScope": "four-language",
-                    "candidateSpecId": "KMIPKIT-0017",
-                    "blockedReason": "Owner is not approved.",
-                }
+            lambda manifest: manifest["publicDeclarations"][0].update(
+                {"declarationState": "blocked"}
             ),
         )
         for mutate in mutations:
             with self.subTest(record=mutate.__code__.co_firstlineno):
-                manifest = _contract_manifest()
-                mutate(manifest)
                 with tempfile.TemporaryDirectory() as temporary:
+                    root = Path(temporary)
+                    manifest = _complete_readiness_manifest(root)
+                    mutate(manifest)
                     with self.assertRaises(ManifestError):
                         _validate_v2_readiness(
-                            self, manifest, Path(temporary), require_complete=True
+                            self, manifest, root, require_complete=True
                         )
+
+    def test_complete_readiness_records_pass_release_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest = _complete_readiness_manifest(root)
+            _validate_v2_readiness(self, manifest, root, require_complete=True)
 
 if __name__ == "__main__":
     unittest.main()
