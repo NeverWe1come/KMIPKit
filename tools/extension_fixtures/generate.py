@@ -313,7 +313,10 @@ def _at_path(items: tuple[Item, ...], path: tuple[int, ...]) -> Item | None:
 
 
 def _validate_manifest(value: Any) -> dict[str, Any]:
-    if not isinstance(value, dict) or value.get("formatVersion") != 1 or value.get("scope") != "registry-slice":
+    if not isinstance(value, dict):
+        raise FixtureError("public API manifest has unsupported format or scope")
+    version_scope = (value.get("formatVersion"), value.get("scope"))
+    if version_scope not in {(1, "registry-slice"), (2, "full-1.0")}:
         raise FixtureError("public API manifest has unsupported format or scope")
     types = {entry.get("id"): entry for entry in value.get("types", []) if isinstance(entry, dict)}
     functions = {entry.get("id"): entry for entry in value.get("functions", []) if isinstance(entry, dict)}
