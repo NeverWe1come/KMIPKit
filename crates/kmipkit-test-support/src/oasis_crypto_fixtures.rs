@@ -50,7 +50,7 @@ impl OasisCryptoFixture {
     /// operation structure, symbol substitution, limits, or TTLV model is
     /// invalid. Error formatting does not include XML text or attribute values.
     pub fn from_xml(case_id: &str, xml: &str) -> Result<Self, OasisCryptoFixtureError> {
-        if xml.len() > MAX_XML_BYTES || xml.to_ascii_uppercase().contains("<!DOCTYPE") {
+        if xml.len() > MAX_XML_BYTES || contains_doctype_declaration(xml) {
             return Err(OasisCryptoFixtureError::XmlLimitOrDtd);
         }
 
@@ -230,6 +230,13 @@ impl fmt::Display for OasisCryptoFixtureError {
 }
 
 impl std::error::Error for OasisCryptoFixtureError {}
+
+fn contains_doctype_declaration(xml: &str) -> bool {
+    const DOCTYPE: &[u8] = b"<!DOCTYPE";
+    xml.as_bytes()
+        .windows(DOCTYPE.len())
+        .any(|window| window.eq_ignore_ascii_case(DOCTYPE))
+}
 
 #[derive(Clone)]
 struct RequestMetadata<'a, 'input> {
