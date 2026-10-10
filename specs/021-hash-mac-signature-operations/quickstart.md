@@ -4,12 +4,17 @@ Implementation of Hash, MAC, MAC Verify, Sign, and Signature Verify is present o
 
 ## Executed Rust evidence
 
-The Rust checks below were run in WSL Ubuntu 26.04 with Rust 1.94. Focused tests, formatting, and Clippy ran after the framing-context GREEN/REFACTOR. The latest fresh workspace coverage attempt stopped during instrumented compilation because WSL's ext4 root filesystem remounted read-only; the coverage gates therefore remain unverified after these changes.
+The Rust checks below were run in WSL Ubuntu 26.04 with Rust 1.94. Focused and full-workspace tests, formatting, and Clippy passed after the framing-context GREEN/REFACTOR and multipart fixture correction. The latest full instrumented test run had no test failures, but LLVM could not export a full-workspace coverage report because a generated `trybuild` scratch file was treated as an object; the coverage threshold gate remains open.
 
 | Command or check | Observed result |
 | --- | --- |
 | `cargo fmt --all --check` | Passed. |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | Passed after the T039 refactor. |
+| `cargo test -p kmipkit-protocol --all-features` | Full protocol suite passed, including all corrected multipart response fixtures. |
+| `cargo test -p kmipkit-client --all-features` | Full client suite passed, including Hash/MAC/Sign framing and reordered batch association. |
+| `cargo test --workspace --all-features` | Full workspace tests and doctests passed; the C ABI consumer integration test passed. |
+| `cargo llvm-cov --workspace --all-features --json` | Fresh instrumented workspace tests completed without test failures, but LLVM report generation failed because a generated `trybuild` `invoked.timestamp` file was treated as an object. No current full-workspace coverage report was produced; T040 remains open. |
+| `pwsh -NoProfile -File .\scripts\tests\Test-Wsl.ps1` | All 8 PowerShell WSL runner contract tests passed. |
 | `cargo test -p kmipkit-protocol cryptographic_operation_contract_tests` | 12/12 focused contract tests passed after the framing-context fix. |
 | `cargo test -p kmipkit-client hash_mac_signature_execution_tests` | 12/12 client framing/dispatch tests passed after Refactor. |
 | `cargo test -p kmipkit-client mac_verify_execution_tests`; `cargo test -p kmipkit-client signature_verify_execution_tests` | 4/4 tests passed in each suite after Refactor. |
@@ -19,13 +24,12 @@ The Rust checks below were run in WSL Ubuntu 26.04 with Rust 1.94. Focused tests
 | Response output-cardinality GREEN, commit `cf899bbb` | `cargo test -p kmipkit-protocol cryptographic_operation_contract_tests` passed 12/12; `cargo test -p kmipkit-client hash_mac_signature_execution_tests` passed 12/12, covering successful single-part output presence, output absence across multipart parts, and out-of-order response association by batch item ID. |
 | Verify regression suites after GREEN | Protocol `mac_verify_operation_tests` passed 10/10 and `signature_verify_operation_tests` passed 11/11; client `mac_verify_execution_tests` and `signature_verify_execution_tests` passed 4/4 each. The shared framing enum preserves the existing Verify behavior and DISC-048 handling. |
 | Context extraction Refactor, commit `9ac2c0f2` | Client Hash/MAC/Sign tests passed 12/12, MAC Verify 4/4, and Signature Verify 4/4; the protocol/client Clippy and formatting checks above passed after the refactor. |
-| Multipart protocol fixture context correction, test-only commit `99d50a81` | Static review found three protocol tests calling the response-only converter, whose documented convenience interpretation is `SinglePart`, even though each fixture represents a multipart response with no operation output. They now call the explicit converter with `MultipartNonFinal`. The existing fake-client test covers final multipart output cardinality, so no duplicate final case was added. `cargo fmt --all -- --check` passed on Windows. No test execution or RED result is claimed for this follow-up: WSL failed to start with `Wsl/Service/CreateInstance/E_FAIL` before `/tmp` writability/free space could be checked. The three protocol suites and workspace tests need rerunning. |
-| Full protocol test suite | 411 tests passed in the last coverage run before `0461a924`. |
-| Full client test suite | 343 tests passed after convenience-dispatch coverage was added. |
-| `cargo llvm-cov --no-clean --package kmipkit-protocol --all-features --summary-only` | Last measured protocol line coverage: 8,440/8,969 (94.10%), below the 95% gate. Changed/new executable production lines: 1,049/1,088 (96.42%), above the 95% gate. |
-| `cargo llvm-cov --no-clean --workspace --all-features --json --output-path /home/ramp1953/kmipkit-0021-coverage-target/kmipkit-0021-workspace.json` | Latest fresh attempt failed during instrumented compilation with `Read-only file system (os error 30)` writing under the persistent target; WSL `/` is ext4 mounted read-only. No report was produced. |
+| Multipart protocol fixture context correction, test-only commit `99d50a81` | Static review found three protocol tests calling the response-only converter, whose documented convenience interpretation is `SinglePart`, even though each fixture represents a multipart response with no operation output. They now call the explicit converter with `MultipartNonFinal`. The existing fake-client test covers final multipart output cardinality, so no duplicate final case was added. The initial test rerun was blocked by `Wsl/Service/CreateInstance/E_FAIL`; the subsequent full protocol/client/workspace runs above passed with the corrected fixtures. |
+| Earlier protocol/client test totals | 411 protocol and 343 client tests passed before the final fixture correction; superseded by the fresh full-suite results above. |
+| Earlier protocol coverage snapshot | 8,440/8,969 (94.10%) and changed/new production 1,049/1,088 (96.42%); historical only and below the protocol threshold. |
+| Earlier fresh coverage retry | An instrumented link failed because a cached `libtrybuild` archive was truncated at 16 MiB. A new target directory rebuilt dependencies and an earlier complete run passed; this historical run does not close the current coverage gate. |
 
-The protocol (94.10%) and changed/new production-line (96.42%) values are from the last available feature-branch coverage snapshot before the latest framing tests. The workspace 91.02% value is older and predates later coverage-test additions. A fresh post-change attempt was made, but WSL's `/` filesystem remounted read-only during compilation and no report was produced. A subsequent WSL launch for the focused-test follow-up failed with `Wsl/Service/CreateInstance/E_FAIL`; `/tmp` capacity and writability could not be checked. T040 remains open until the focused and workspace suites run, and fresh measurements verify at least 95% protocol and changed/new production lines and the workspace threshold.
+The 98.27% TTLV, 95.45% protocol, 95.11% client, 92.16% workspace, and 97.41% changed-production measurements came from an earlier run and are retained as historical evidence. The latest full instrumented test run passed its tests but failed while exporting coverage because of a generated `trybuild` scratch file. T040 remains open until a valid full-workspace report verifies every local threshold; PR CI is expected to provide another reproducible report.
 
 ## Windows catalog and dependency-policy evidence
 
@@ -49,9 +53,9 @@ python -m unittest -v scripts.tests.test_cargo_deny_fixtures
 python -m unittest -v scripts.tests.test_diagnostic_redaction scripts.tests.test_ci_diagnostics scripts.tests.test_ci_impact scripts.tests.test_ci_summary
 ```
 
-The first command ran 138 tests successfully with 24 skips: Windows symlink privilege limitations, the unset `CARGO_DENY` executable in that invocation, and a test whose contract requires the full policy runner to refresh the advisory database. The second command used cargo-deny 0.20.2 and passed all 18 offline negative-fixture tests. The redaction/CI diagnostic command passed all 36 tests. These Python tests do not replace the full dependency-policy run, parser/FFI checks, Linux/macOS CI, or the human security review; T041 and T043 remain open.
+The first command ran 138 tests successfully with 24 skips: Windows symlink privilege limitations, the unset `CARGO_DENY` executable in that invocation, and a test whose contract requires the full policy runner to refresh the advisory database. The second command used cargo-deny 0.20.2 and passed all 18 offline negative-fixture tests. The redaction/CI diagnostic command passed all 36 tests. A later full Python script run passed 254 tests with 26 environment-dependent skips; the full dependency-policy runner below separately covered the cargo-deny fixtures and refreshed RustSec evidence.
 
-The most recent dedicated feature-traceability attempt ran 15 tests successfully, skipped one, and errored once when writing a temporary fixture failed with `OSError: [Errno 28] No space left on device`. An earlier rerun after storage was restored completed with 17 tests and one Windows symlink-permission skip. The latest error is environmental and remains recorded as execution history. The redaction/CI diagnostic suite passed 36/36.
+The most recent dedicated feature-traceability attempt ran 15 tests successfully, skipped one, and errored once when writing a temporary fixture failed with `OSError: [Errno 28] No space left on device`. An earlier rerun after storage was restored completed with 17 tests and one Windows symlink-permission skip. The latest error is environmental and remains recorded as execution history. The redaction/CI diagnostic suite passed 36/36. After those earlier runs, `pwsh -NoProfile -File .\scripts\Test-DependencyPolicy.ps1` passed with pinned cargo-deny 0.20.2, verified both root and fuzz workspaces against RustSec commit `7eebec69c352c7191b1f13eb95dd510eeca5d1de` (2026-10-09), ran the policy fixtures, and confirmed both lockfiles remained unchanged. The general Python script suite passed 254 tests with 26 environment-dependent skips; the dependency-policy runner separately ran the cargo-deny fixtures with the pinned binary. The implementation diff changes no FFI or binding files and does not alter the pinned OASIS upstream tree.
 
 ## Focused Rust commands
 
@@ -84,7 +88,7 @@ python tools/normative_catalog/report.py --check
 git diff --check
 ```
 
-T040 is not complete while protocol coverage is below 95% or the fresh coverage report is unavailable. T041 is not complete without the full dependency/license/supply-chain runner and applicable parser/FFI security checks. T043 additionally requires independent sequential QA and security review and successful Linux, Windows, and macOS CI before a draft PR.
+T040 remains open because no current full-workspace coverage report is available. Independent security review found no branch-introduced finding, but T041 remains open because the formal security scan could not start after its selected working-tree snapshot became stale. Native sanitizer and fuzz checks, when run in the full workflow, and multi-platform PR CI remain under T043. T043 requires PR CI after a terminal-created draft PR.
 
 ## Response discrepancy and official evidence
 
