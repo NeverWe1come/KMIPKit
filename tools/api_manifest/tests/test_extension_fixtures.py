@@ -214,6 +214,19 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
         with self.assertRaises(_GENERATOR.FixtureError):
             _GENERATOR.render(api, invalid_criticality)
 
+    def test_fixture_generator_accepts_v2_registry_slice(self) -> None:
+        api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
+        corpus, _ = self.corpus_and_schema()
+
+        outputs = _GENERATOR.render(api, corpus)
+
+        self.assertEqual(set(outputs), {
+            GENERATED_C_FIXTURES,
+            GENERATED_JAVA_FIXTURES,
+            GENERATED_RUST_FIXTURES,
+        })
+        self.assertIn("API contract sha256:", outputs[GENERATED_C_FIXTURES])
+
     def test_fixture_generator_fails_closed_and_tracks_manifest_metadata(self) -> None:
         api = self.read_json(PUBLIC_API_MANIFEST, "public API manifest")
         corpus, _ = self.corpus_and_schema()
