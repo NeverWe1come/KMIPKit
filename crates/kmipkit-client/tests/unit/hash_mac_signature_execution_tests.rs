@@ -34,6 +34,97 @@ const OPERATION: u32 = 0x0042_005C;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 
+#[derive(Clone, Copy)]
+struct OperationFixture {
+    code: u32,
+    operation: ClientOperation,
+}
+
+impl OperationFixture {
+    const ALL: [Self; 5] = [
+        Self {
+            code: HASH,
+            operation: ClientOperation::Hash,
+        },
+        Self {
+            code: MAC,
+            operation: ClientOperation::Mac,
+        },
+        Self {
+            code: MAC_VERIFY,
+            operation: ClientOperation::MacVerify,
+        },
+        Self {
+            code: SIGN,
+            operation: ClientOperation::Sign,
+        },
+        Self {
+            code: SIGNATURE_VERIFY,
+            operation: ClientOperation::SignatureVerify,
+        },
+    ];
+
+    fn request(self) -> ClientRequest {
+        let bytes = || OperationData::ByteString(SecretBytes::new(b"message".to_vec()));
+        match self.code {
+            HASH => ClientRequest::hash(HashRequest::new(test_structure([])).with_data(bytes())),
+            MAC => ClientRequest::mac(MacRequest::new().with_data(bytes())),
+            MAC_VERIFY => ClientRequest::mac_verify(
+                MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"mac".to_vec())),
+            ),
+            SIGN => ClientRequest::sign(SignRequest::new().with_data(bytes())),
+            SIGNATURE_VERIFY => ClientRequest::signature_verify(
+                SignatureVerifyRequest::new()
+                    .with_signature_data(SecretBytes::new(b"signature".to_vec())),
+            ),
+            _ => unreachable!("fixture only uses the five assigned operations"),
+        }
+    }
+
+    fn success_payload(self) -> kmipkit_ttlv::Structure {
+        let fields = match self.code {
+            HASH => vec![test_item(
+                0x0042_00C2,
+                Value::byte_string(b"digest".to_vec()),
+            )],
+            MAC => vec![
+                test_item(
+                    UNIQUE_IDENTIFIER,
+                    Value::text_string("mac-object".to_owned()),
+                ),
+                test_item(0x0042_00C4, Value::byte_string(b"mac".to_vec())),
+            ],
+            MAC_VERIFY => vec![
+                test_item(
+                    UNIQUE_IDENTIFIER,
+                    Value::text_string("mac-object".to_owned()),
+                ),
+                test_item(0x0042_0128, Value::enumeration(1)),
+            ],
+            SIGN => vec![
+                test_item(
+                    UNIQUE_IDENTIFIER,
+                    Value::text_string("sign-object".to_owned()),
+                ),
+                test_item(0x0042_00C7, Value::byte_string(b"signature".to_vec())),
+            ],
+            SIGNATURE_VERIFY => vec![
+                test_item(
+                    UNIQUE_IDENTIFIER,
+                    Value::text_string("sign-object".to_owned()),
+                ),
+                test_item(0x0042_0128, Value::enumeration(1)),
+            ],
+            _ => unreachable!("fixture only uses the five assigned operations"),
+        };
+        test_structure(fields)
+    }
+
+    fn success_response(self) -> Vec<u8> {
+        asynchronous_response_bytes(self.code, SUCCESS, None, None, Some(self.success_payload()))
+    }
+}
+
 #[derive(Default)]
 struct ExchangeState {
     requests: Vec<Zeroizing<Vec<u8>>>,
@@ -69,101 +160,35 @@ fn client(responses: impl IntoIterator<Item = Vec<u8>>) -> (Client, Rc<RefCell<E
     )
 }
 
-fn success_payload(operation: u32) -> kmipkit_ttlv::Structure {
-    let fields = match operation {
-        HASH => vec![test_item(
-            0x0042_00C2,
-            Value::byte_string(b"digest".to_vec()),
-        )],
-        MAC => vec![
-            test_item(
-                UNIQUE_IDENTIFIER,
-                Value::text_string("mac-object".to_owned()),
-            ),
-            test_item(0x0042_00C4, Value::byte_string(b"mac".to_vec())),
-        ],
-        MAC_VERIFY => vec![
-            test_item(
-                UNIQUE_IDENTIFIER,
-                Value::text_string("mac-object".to_owned()),
-            ),
-            test_item(0x0042_0128, Value::enumeration(1)),
-        ],
-        SIGN => vec![
-            test_item(
-                UNIQUE_IDENTIFIER,
-                Value::text_string("sign-object".to_owned()),
-            ),
-            test_item(0x0042_00C7, Value::byte_string(b"signature".to_vec())),
-        ],
-        SIGNATURE_VERIFY => vec![
-            test_item(
-                UNIQUE_IDENTIFIER,
-                Value::text_string("sign-object".to_owned()),
-            ),
-            test_item(0x0042_0128, Value::enumeration(1)),
-        ],
-        _ => unreachable!("fixture only uses the five assigned operations"),
-    };
-    test_structure(fields)
-}
-
-fn success_response(operation: u32) -> Vec<u8> {
-    asynchronous_response_bytes(
-        operation,
-        SUCCESS,
-        None,
-        None,
-        Some(success_payload(operation)),
-    )
-}
-
-fn request(operation: u32) -> ClientRequest {
-    let bytes = || OperationData::ByteString(SecretBytes::new(b"message".to_vec()));
-    match operation {
-        HASH => ClientRequest::hash(HashRequest::new(test_structure([])).with_data(bytes())),
-        MAC => ClientRequest::mac(MacRequest::new().with_data(bytes())),
-        MAC_VERIFY => ClientRequest::mac_verify(
-            MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"mac".to_vec())),
-        ),
-        SIGN => ClientRequest::sign(SignRequest::new().with_data(bytes())),
-        SIGNATURE_VERIFY => ClientRequest::signature_verify(
-            SignatureVerifyRequest::new()
-                .with_signature_data(SecretBytes::new(b"signature".to_vec())),
-        ),
-        _ => unreachable!("fixture only uses the five assigned operations"),
-    }
-}
-
 #[test]
 fn client_requests_map_to_the_five_kmip_operation_codes() {
-    for code in [HASH, MAC, MAC_VERIFY, SIGN, SIGNATURE_VERIFY] {
-        let request = request(code);
-        assert_eq!(request.operation(), code);
+    for fixture in OperationFixture::ALL {
+        let request = fixture.request();
+        assert_eq!(request.operation(), fixture.code);
     }
 }
 
 #[test]
 fn each_explicit_operation_call_performs_one_exchange_without_retry() {
-    let operations = [HASH, MAC, MAC_VERIFY, SIGN, SIGNATURE_VERIFY];
-    let (mut client, state) = client(operations.into_iter().map(success_response));
+    let (mut client, state) = client(
+        OperationFixture::ALL
+            .into_iter()
+            .map(|item| item.success_response()),
+    );
 
-    for operation in operations {
+    for fixture in OperationFixture::ALL {
         let response = client
             .execute(
-                ClientBatch::new(ClientBatchItem::new(request(operation))),
+                ClientBatch::new(ClientBatchItem::new(fixture.request())),
                 &CodecLimits::defaults(),
             )
             .expect("the queued server response completes the explicit operation");
         assert_eq!(response.items.len(), 1);
-        assert_eq!(
-            response.items[0].outcome().operation(),
-            operation_for(operation)
-        );
+        assert_eq!(response.items[0].outcome().operation(), fixture.operation);
         assert_eq!(response.items[0].outcome().result().status().raw(), SUCCESS);
     }
 
-    assert_eq!(state.borrow().requests.len(), operations.len());
+    assert_eq!(state.borrow().requests.len(), OperationFixture::ALL.len());
 }
 
 #[test]
@@ -194,12 +219,12 @@ fn batch_item_ids_associate_out_of_order_responses_with_their_operations() {
 
 #[test]
 fn request_operation_codes_are_written_to_the_wire_and_server_failure_is_preserved() {
-    let operation = HASH;
-    let failure = asynchronous_response_bytes(operation, FAILURE, Some(1), None, None);
+    let fixture = OperationFixture::ALL[0];
+    let failure = asynchronous_response_bytes(fixture.code, FAILURE, Some(1), None, None);
     let (mut client, state) = client([failure]);
     let response = client
         .execute(
-            ClientBatch::new(ClientBatchItem::new(request(operation))),
+            ClientBatch::new(ClientBatchItem::new(fixture.request())),
             &CodecLimits::defaults(),
         )
         .expect("a valid KMIP failure remains an operation result");
@@ -237,17 +262,6 @@ fn request_operation_codes_are_written_to_the_wire_and_server_failure_is_preserv
                 })
             })
     });
-    assert_eq!(encoded_operation, Some(operation));
+    assert_eq!(encoded_operation, Some(fixture.code));
     assert!(state.borrow().requests[0].len() > 0);
-}
-
-fn operation_for(operation: u32) -> ClientOperation {
-    match operation {
-        HASH => ClientOperation::Hash,
-        MAC => ClientOperation::Mac,
-        MAC_VERIFY => ClientOperation::MacVerify,
-        SIGN => ClientOperation::Sign,
-        SIGNATURE_VERIFY => ClientOperation::SignatureVerify,
-        _ => unreachable!("fixture only uses the five assigned operations"),
-    }
 }

@@ -7,10 +7,15 @@ use crate::{
     CryptographicAlgorithm, DigitalSignatureAlgorithm, HashingAlgorithm, OperationData,
     SecretBytes, ValidityIndicator,
 };
+use kmipkit_ttlv::Item;
 use kmipkit_ttlv::{Structure, Value, ValueView};
 
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const VENDOR_PARAMETER: u32 = 0x0054_1234;
+
+fn parameter_item(raw_tag: u32, value: Value) -> Item {
+    crate::operation_test_support::item(raw_tag, value)
+}
 
 #[test]
 fn operation_byte_wrappers_redact_debug_and_display() {
@@ -26,13 +31,13 @@ fn operation_byte_wrappers_redact_debug_and_display() {
 fn generic_cryptographic_parameters_keep_order_unknown_members_and_raw_values() {
     let mut parameters = Structure::new();
     parameters
-        .try_push(crate::operation_test_support::item(
+        .try_push(parameter_item(
             HASHING_ALGORITHM,
             Value::enumeration(0xF123_4567),
         ))
         .expect("one generic parameter fits the TTLV Structure");
     parameters
-        .try_push(crate::operation_test_support::item(
+        .try_push(parameter_item(
             VENDOR_PARAMETER,
             Value::byte_string(b"vendor opaque value".to_vec()),
         ))
