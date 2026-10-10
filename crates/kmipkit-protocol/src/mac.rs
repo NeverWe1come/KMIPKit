@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::Structure;
+use kmipkit_ttlv::{Structure, StructureView};
 
 use crate::cryptographic_operation as common;
 use crate::{
@@ -149,6 +149,7 @@ impl fmt::Debug for MacRequest {
 #[derive(Debug)]
 pub struct MacResponse {
     result: KmipOperationResult,
+    response_ttlv: Structure,
     unique_identifier: Option<UniqueIdentifier>,
     mac_data: Option<SecretBytes>,
     correlation_value: Option<SecretBytes>,
@@ -163,8 +164,11 @@ impl MacResponse {
     pub fn try_from_pending_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, MacError> {
+        let result = common::parse_result(item, OPERATION, "MAC", Some(true))?;
+        let response_ttlv = common::clone_response_item(item, "MAC")?;
         Ok(Self {
-            result: common::parse_result(item, OPERATION, "MAC", Some(true))?,
+            result,
+            response_ttlv,
             unique_identifier: None,
             mac_data: None,
             correlation_value: None,
@@ -199,9 +203,11 @@ impl MacResponse {
         context: CryptographicOperationResponseContext,
     ) -> Result<Self, MacError> {
         let result = common::parse_result(item, OPERATION, "MAC", Some(false))?;
+        let response_ttlv = common::clone_response_item(item, "MAC")?;
         if result.status().raw() != common::SUCCESS {
             return Ok(Self {
                 result,
+                response_ttlv,
                 unique_identifier: None,
                 mac_data: None,
                 correlation_value: None,
@@ -221,6 +227,7 @@ impl MacResponse {
         common::validate_operation_output_shape(parsed.output_data.is_some(), context, "MAC")?;
         Ok(Self {
             result,
+            response_ttlv,
             unique_identifier: Some(parsed.unique_identifier),
             mac_data: parsed.output_data,
             correlation_value: parsed.correlation_value,
@@ -231,6 +238,12 @@ impl MacResponse {
     #[must_use]
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
+    }
+
+    /// Lends the complete ordered generic TTLV batch item, including unknown
+    /// fields and values that the typed accessors do not interpret.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
+        callback(self.response_ttlv.view())
     }
 
     /// Returns the Unique Identifier reported by a successful response.

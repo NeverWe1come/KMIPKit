@@ -136,6 +136,7 @@ impl fmt::Debug for HashRequest {
 #[derive(Debug)]
 pub struct HashResponse {
     result: KmipOperationResult,
+    response_ttlv: Structure,
     data: Option<SecretBytes>,
     correlation_value: Option<SecretBytes>,
 }
@@ -150,8 +151,10 @@ impl HashResponse {
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, HashError> {
         let result = common::parse_result(item, OPERATION, "Hash", Some(true))?;
+        let response_ttlv = common::clone_response_item(item, "Hash")?;
         Ok(Self {
             result,
+            response_ttlv,
             data: None,
             correlation_value: None,
         })
@@ -185,9 +188,11 @@ impl HashResponse {
         context: CryptographicOperationResponseContext,
     ) -> Result<Self, HashError> {
         let result = common::parse_result(item, OPERATION, "Hash", Some(false))?;
+        let response_ttlv = common::clone_response_item(item, "Hash")?;
         if result.status().raw() != common::SUCCESS {
             return Ok(Self {
                 result,
+                response_ttlv,
                 data: None,
                 correlation_value: None,
             });
@@ -201,6 +206,7 @@ impl HashResponse {
         common::validate_operation_output_shape(parsed.data.is_some(), context, "Hash")?;
         Ok(Self {
             result,
+            response_ttlv,
             data: parsed.data,
             correlation_value: parsed.correlation_value,
         })
@@ -210,6 +216,12 @@ impl HashResponse {
     #[must_use]
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
+    }
+
+    /// Lends the complete ordered generic TTLV batch item, including unknown
+    /// fields and values that the typed accessors do not interpret.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
+        callback(self.response_ttlv.view())
     }
 
     /// Returns the optional digest Data returned by the server.

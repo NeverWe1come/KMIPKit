@@ -303,6 +303,18 @@ pub(crate) fn parse_result(
     }
 }
 
+/// Copies the complete source batch item so typed responses retain generic
+/// fields after the owning response message is dropped.
+pub(crate) fn clone_response_item(
+    item: ResponseBatchItemView<'_>,
+    operation: &'static str,
+) -> Result<Structure, CryptographicOperationError> {
+    match item.with_ttlv(|ttlv| ttlv.try_clone()) {
+        Some(Ok(ttlv)) => Ok(ttlv),
+        Some(Err(_)) | None => Err(response_shape_error(operation)),
+    }
+}
+
 pub(crate) fn parse_identifier(field: &Item) -> Option<UniqueIdentifier> {
     field.with_value(|value| match value {
         ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),

@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, Value};
+use kmipkit_ttlv::{Structure, StructureView, Value};
 
 use crate::cryptographic_operation as common;
 use crate::{
@@ -203,6 +203,7 @@ impl fmt::Debug for SignatureVerifyRequest {
 #[derive(Debug)]
 pub struct SignatureVerifyResponse {
     result: KmipOperationResult,
+    response_ttlv: Structure,
     unique_identifier: Option<UniqueIdentifier>,
     validity_indicator: Option<ValidityIndicator>,
     recovered_data: Option<SecretBytes>,
@@ -218,8 +219,11 @@ impl SignatureVerifyResponse {
     pub fn try_from_pending_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, SignatureVerifyError> {
+        let result = common::parse_result(item, OPERATION, "Signature Verify", Some(true))?;
+        let response_ttlv = common::clone_response_item(item, "Signature Verify")?;
         Ok(Self {
-            result: common::parse_result(item, OPERATION, "Signature Verify", Some(true))?,
+            result,
+            response_ttlv,
             unique_identifier: None,
             validity_indicator: None,
             recovered_data: None,
@@ -252,9 +256,11 @@ impl SignatureVerifyResponse {
         context: VerificationResponseContext,
     ) -> Result<Self, SignatureVerifyError> {
         let result = common::parse_result(item, OPERATION, "Signature Verify", Some(false))?;
+        let response_ttlv = common::clone_response_item(item, "Signature Verify")?;
         if result.status().raw() != common::SUCCESS {
             return Ok(Self {
                 result,
+                response_ttlv,
                 unique_identifier: None,
                 validity_indicator: None,
                 recovered_data: None,
@@ -272,6 +278,7 @@ impl SignatureVerifyResponse {
             })??;
         Ok(Self {
             result,
+            response_ttlv,
             unique_identifier: Some(parsed.unique_identifier),
             validity_indicator: parsed.validity_indicator,
             recovered_data: parsed.recovered_data,
@@ -283,6 +290,12 @@ impl SignatureVerifyResponse {
     #[must_use]
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
+    }
+
+    /// Lends the complete ordered generic TTLV batch item, including unknown
+    /// fields and values that the typed accessors do not interpret.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
+        callback(self.response_ttlv.view())
     }
 
     /// Returns the required Unique Identifier from a successful response.

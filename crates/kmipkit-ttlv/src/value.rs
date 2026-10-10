@@ -304,7 +304,7 @@ pub fn try_clone_value(value: &Value) -> Result<Value, crate::ModelError> {
     clone_value_view(value.as_view())
 }
 
-fn clone_value_view(value: ValueView<'_>) -> Result<Value, crate::ModelError> {
+pub(crate) fn clone_value_view(value: ValueView<'_>) -> Result<Value, crate::ModelError> {
     match value {
         ValueView::Structure(structure) => {
             let mut clone = Structure::new();
