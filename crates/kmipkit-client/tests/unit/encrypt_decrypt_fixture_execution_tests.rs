@@ -57,7 +57,6 @@ const ATTESTATION_CAPABLE_INDICATOR: u32 = 0x0042_00D3;
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
-const SUCCESS: u32 = 0;
 
 const STEPS_1_TO_10: [usize; 10] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const STEPS_1_TO_8: [usize; 8] = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -215,9 +214,11 @@ fn fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired
             }
 
             let expected_request = expected_client_request_bytes(pair);
-            let response_bytes =
-                encode_message_for_test(pair.response_message().clone(), &CodecLimits::defaults())
-                    .expect("the paired fixture response is encodable");
+            let response_bytes = encode_message_for_test(
+                clone_fixture_structure(&pair.response_message().view()),
+                &CodecLimits::defaults(),
+            )
+            .expect("the paired fixture response is encodable");
             let (mut client, state) =
                 client_with_reply(FixtureReply::Response(Zeroizing::new(response_bytes)));
             let request = client_request_from_fixture(pair);
@@ -317,8 +318,9 @@ fn assert_transport_failure_preserves_delivery_state(request: ClientRequest) {
 }
 
 fn client_request_from_fixture(pair: &OasisCryptoOperationPair) -> ClientRequest {
-    let message = RequestMessage::try_from_ttlv(pair.request_message().clone())
-        .expect("the fixture request is a valid one-item KMIP message");
+    let message =
+        RequestMessage::try_from_ttlv(clone_fixture_structure(&pair.request_message().view()))
+            .expect("the fixture request is a valid one-item KMIP message");
     let mut batch_items = message.batch_items();
     let batch_item = batch_items
         .next()
@@ -329,7 +331,7 @@ fn client_request_from_fixture(pair: &OasisCryptoOperationPair) -> ClientRequest
         Some(operation_value(pair.operation()))
     );
     let fields = batch_item
-        .with_request_payload(parse_request_fields)
+        .with_request_payload(|payload| parse_request_fields(&payload))
         .expect("the fixture operation has a Request Payload");
 
     match pair.operation() {
@@ -383,12 +385,13 @@ fn client_request_from_fixture(pair: &OasisCryptoOperationPair) -> ClientRequest
     }
 }
 
-fn parse_request_fields(payload: StructureView<'_>) -> FixtureRequestFields {
+fn parse_request_fields(payload: &StructureView<'_>) -> FixtureRequestFields {
     let mut fields = FixtureRequestFields::default();
     for item in payload.children() {
         match item.tag().raw() {
             UNIQUE_IDENTIFIER => {
-                fields.unique_identifier = Some(item.with_value(parse_unique_identifier));
+                fields.unique_identifier =
+                    Some(item.with_value(|value| parse_unique_identifier(&value)));
             }
             CRYPTOGRAPHIC_PARAMETERS => {
                 fields.cryptographic_parameters = Some(item.with_value(|value| match value {
@@ -396,21 +399,27 @@ fn parse_request_fields(payload: StructureView<'_>) -> FixtureRequestFields {
                     _ => panic!("fixture Cryptographic Parameters are a Structure"),
                 }));
             }
-            DATA => fields.data = Some(item.with_value(parse_operation_data)),
+            DATA => fields.data = Some(item.with_value(|value| parse_operation_data(&value))),
             IV_COUNTER_NONCE => {
-                fields.iv_counter_nonce = Some(item.with_value(parse_secret_bytes));
+                fields.iv_counter_nonce = Some(item.with_value(|value| parse_secret_bytes(&value)));
             }
             CORRELATION_VALUE => {
-                fields.correlation_value = Some(item.with_value(parse_secret_bytes));
+                fields.correlation_value =
+                    Some(item.with_value(|value| parse_secret_bytes(&value)));
             }
-            INIT_INDICATOR => fields.init_indicator = Some(item.with_value(parse_boolean)),
-            FINAL_INDICATOR => fields.final_indicator = Some(item.with_value(parse_boolean)),
+            INIT_INDICATOR => {
+                fields.init_indicator = Some(item.with_value(|value| parse_boolean(&value)));
+            }
+            FINAL_INDICATOR => {
+                fields.final_indicator = Some(item.with_value(|value| parse_boolean(&value)));
+            }
             AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA => {
                 fields.authenticated_encryption_additional_data =
-                    Some(item.with_value(parse_secret_bytes));
+                    Some(item.with_value(|value| parse_secret_bytes(&value)));
             }
             AUTHENTICATED_ENCRYPTION_TAG => {
-                fields.authenticated_encryption_tag = Some(item.with_value(parse_secret_bytes));
+                fields.authenticated_encryption_tag =
+                    Some(item.with_value(|value| parse_secret_bytes(&value)));
             }
             _ => panic!("fixture request contains only the operation table fields"),
         }
@@ -418,34 +427,34 @@ fn parse_request_fields(payload: StructureView<'_>) -> FixtureRequestFields {
     fields
 }
 
-fn parse_unique_identifier(value: ValueView<'_>) -> UniqueIdentifier {
+fn parse_unique_identifier(value: &ValueView<'_>) -> UniqueIdentifier {
     match value {
-        ValueView::TextString(value) => UniqueIdentifier::TextString(value.to_owned()),
-        ValueView::Enumeration(value) => UniqueIdentifier::Enumeration(*value),
-        ValueView::Integer(value) => UniqueIdentifier::Integer(*value),
+        ValueView::TextString(value) => UniqueIdentifier::TextString((*value).to_owned()),
+        ValueView::Enumeration(value) => UniqueIdentifier::Enumeration(**value),
+        ValueView::Integer(value) => UniqueIdentifier::Integer(**value),
         _ => panic!("fixture Unique Identifier has a supported wire type"),
     }
 }
 
-fn parse_operation_data(value: ValueView<'_>) -> OperationData {
+fn parse_operation_data(value: &ValueView<'_>) -> OperationData {
     match value {
         ValueView::ByteString(value) => OperationData::ByteString(SecretBytes::new(value.to_vec())),
-        ValueView::Enumeration(value) => OperationData::Enumeration(*value),
-        ValueView::Integer(value) => OperationData::Integer(*value),
+        ValueView::Enumeration(value) => OperationData::Enumeration(**value),
+        ValueView::Integer(value) => OperationData::Integer(**value),
         _ => panic!("fixture Data uses one of the §7.9 wire types"),
     }
 }
 
-fn parse_secret_bytes(value: ValueView<'_>) -> SecretBytes {
+fn parse_secret_bytes(value: &ValueView<'_>) -> SecretBytes {
     match value {
         ValueView::ByteString(value) => SecretBytes::new(value.to_vec()),
         _ => panic!("fixture operation byte field is a Byte String"),
     }
 }
 
-fn parse_boolean(value: ValueView<'_>) -> bool {
+fn parse_boolean(value: &ValueView<'_>) -> bool {
     match value {
-        ValueView::Boolean(value) => *value,
+        ValueView::Boolean(value) => **value,
         _ => panic!("fixture multipart indicator is a Boolean"),
     }
 }
@@ -512,6 +521,7 @@ fn clone_fixture_value(value: ValueView<'_>) -> Value {
         ValueView::DateTime(value) => Value::date_time(*value),
         ValueView::Interval(value) => Value::interval(*value),
         ValueView::DateTimeExtended(value) => Value::date_time_extended(*value),
+        _ => panic!("the fixture contains a supported KMIP TTLV value"),
     }
 }
 
@@ -558,8 +568,9 @@ fn typed_response_matches_fixture(
 }
 
 fn expected_response_fields(pair: &OasisCryptoOperationPair) -> FixtureResponseFields {
-    let message = ResponseMessage::try_from_ttlv(pair.response_message().clone())
-        .expect("the fixture response is a valid one-item KMIP message");
+    let message =
+        ResponseMessage::try_from_ttlv(clone_fixture_structure(&pair.response_message().view()))
+            .expect("the fixture response is a valid one-item KMIP message");
     let mut batch_items = message.batch_items();
     let item = batch_items
         .next()
@@ -567,10 +578,12 @@ fn expected_response_fields(pair: &OasisCryptoOperationPair) -> FixtureResponseF
     assert!(batch_items.next().is_none());
     assert_eq!(item.operation(), Some(operation_value(pair.operation())));
     let mut fields = FixtureResponseFields {
-        result_status: item.result_status().map(|status| status.raw()),
+        result_status: item
+            .result_status()
+            .map(kmipkit_protocol::ResultStatus::raw),
         ..FixtureResponseFields::default()
     };
-    if let Some(payload) = item.with_response_payload(parse_response_fields) {
+    if let Some(payload) = item.with_response_payload(|payload| parse_response_fields(&payload)) {
         fields.unique_identifier = payload.unique_identifier;
         fields.data = payload.data;
         fields.iv_counter_nonce = payload.iv_counter_nonce;
@@ -580,23 +593,28 @@ fn expected_response_fields(pair: &OasisCryptoOperationPair) -> FixtureResponseF
     fields
 }
 
-fn parse_response_fields(payload: StructureView<'_>) -> FixtureResponseFields {
+fn parse_response_fields(payload: &StructureView<'_>) -> FixtureResponseFields {
     let mut fields = FixtureResponseFields::default();
     for item in payload.children() {
         match item.tag().raw() {
             UNIQUE_IDENTIFIER => {
-                fields.unique_identifier = Some(item.with_value(parse_unique_identifier));
+                fields.unique_identifier =
+                    Some(item.with_value(|value| parse_unique_identifier(&value)));
             }
-            DATA => fields.data = Some(item.with_value(parse_response_secret_bytes)),
+            DATA => {
+                fields.data = Some(item.with_value(|value| parse_response_secret_bytes(&value)));
+            }
             IV_COUNTER_NONCE => {
-                fields.iv_counter_nonce = Some(item.with_value(parse_response_secret_bytes));
+                fields.iv_counter_nonce =
+                    Some(item.with_value(|value| parse_response_secret_bytes(&value)));
             }
             CORRELATION_VALUE => {
-                fields.correlation_value = Some(item.with_value(parse_response_secret_bytes));
+                fields.correlation_value =
+                    Some(item.with_value(|value| parse_response_secret_bytes(&value)));
             }
             AUTHENTICATED_ENCRYPTION_TAG => {
                 fields.authenticated_encryption_tag =
-                    Some(item.with_value(parse_response_secret_bytes));
+                    Some(item.with_value(|value| parse_response_secret_bytes(&value)));
             }
             _ => panic!("fixture response contains only Table 197/215 fields"),
         }
@@ -604,7 +622,7 @@ fn parse_response_fields(payload: StructureView<'_>) -> FixtureResponseFields {
     fields
 }
 
-fn parse_response_secret_bytes(value: ValueView<'_>) -> Zeroizing<Vec<u8>> {
+fn parse_response_secret_bytes(value: &ValueView<'_>) -> Zeroizing<Vec<u8>> {
     match value {
         ValueView::ByteString(value) => Zeroizing::new(value.to_vec()),
         _ => panic!("fixture response byte field is a Byte String"),
