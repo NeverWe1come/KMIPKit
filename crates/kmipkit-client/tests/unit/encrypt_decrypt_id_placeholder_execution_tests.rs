@@ -7,8 +7,8 @@
 //! Encrypt/Decrypt dispatch remains planned for T038.
 
 use kmipkit_protocol::{
-    AttributeSet, CreateRequest, DecryptRequest, EncryptRequest, ObjectType, OperationData,
-    ResultReason,
+    AttributeSet, CreateRequest, CreateSplitKeyRequest, DecryptRequest, EncryptRequest, ObjectType,
+    OperationData, ResultReason, SplitKeyMethod,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
@@ -180,6 +180,78 @@ fn later_encrypt_omits_identifier_with_batch_order_enabled() {
         response.get(1).and_then(|item| item.unique_batch_item_id()),
         Some(ENCRYPT_BATCH_ID)
     );
+}
+
+#[test]
+fn later_encrypt_uses_id_placeholder_when_batch_order_option_is_unspecified() {
+    let response = response_bytes([
+        ResponseItem::failure(ENCRYPT_OPERATION, ENCRYPT_BATCH_ID, OBJECT_NOT_FOUND),
+        ResponseItem::create_success(CREATE_BATCH_ID, "created-object"),
+    ]);
+    let (mut client, fake, captured_request) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![5, 9],
+    });
+    let batch = ClientBatch::from_items([
+        batch_item(ClientRequest::Create(create_request()), CREATE_BATCH_ID),
+        batch_item(encrypt_without_identifier(), ENCRYPT_BATCH_ID),
+    ]);
+
+    let response = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("an omitted Batch Order Option has the KMIP effective value True");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    let captured_request = captured_request.borrow();
+    let request = captured_request
+        .as_ref()
+        .expect("the eligible ordered batch reached the fake transport");
+    assert_eq!(request_batch_order_option(request), None);
+    assert_eq!(request_item_operation(request, 0), Some(CREATE_OPERATION));
+    assert_eq!(request_item_operation(request, 1), Some(ENCRYPT_OPERATION));
+    assert!(!request_payload_has_identifier(request, 1));
+    assert_eq!(response.len(), 2);
+    assert_eq!(
+        response.get(0).and_then(|item| item.unique_batch_item_id()),
+        Some(CREATE_BATCH_ID)
+    );
+    assert_eq!(
+        response.get(1).and_then(|item| item.unique_batch_item_id()),
+        Some(ENCRYPT_BATCH_ID)
+    );
+    assert_eq!(
+        response
+            .get(0)
+            .map(|item| item.outcome().result().status().raw()),
+        Some(SUCCESS)
+    );
+    assert_eq!(
+        response
+            .get(1)
+            .map(|item| item.outcome().result().status().raw()),
+        Some(OPERATION_FAILED)
+    );
+}
+
+#[test]
+fn create_split_key_does_not_make_a_later_identifier_eligible() {
+    let create_split_key = CreateSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        3,
+        2,
+        SplitKeyMethod::XOR,
+        AttributeSet::new(),
+    );
+    let batch = ClientBatch::from_items([
+        batch_item(
+            ClientRequest::CreateSplitKey(create_split_key),
+            CREATE_BATCH_ID,
+        ),
+        batch_item(encrypt_without_identifier(), ENCRYPT_BATCH_ID),
+    ])
+    .with_batch_order_option(true);
+
+    assert_rejected_before_send(batch);
 }
 
 #[test]
