@@ -587,6 +587,94 @@ fn fixture_adapter_preserves_unknown_extension_tags_and_enumeration_values() {
 }
 
 #[test]
+fn fixture_adapter_rejects_child_elements_for_every_scalar_item_type() {
+    let scalar_items = [
+        (
+            "Integer",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"Integer\" value=\"42\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+        (
+            "LongInteger",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"LongInteger\" value=\"42\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+        (
+            "BigInteger",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"BigInteger\" value=\"0102\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+        (
+            "Enumeration",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"Enumeration\" value=\"0xDEADBEEF\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+        (
+            "Boolean",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"Boolean\" value=\"true\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+        (
+            "TextString",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"TextString\" value=\"opaque\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+        (
+            "ByteString",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"ByteString\" value=\"0102\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+        (
+            "DateTime",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"DateTime\" value=\"1700000000\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+        (
+            "Interval",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"Interval\" value=\"42\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+        (
+            "DateTimeExtended",
+            "<VendorScalar tag=\"0x54ABCD\" type=\"DateTimeExtended\" value=\"1700000000\"><VendorChild tag=\"0x54ABCE\" type=\"Enumeration\" value=\"0xDEADBEEF\"/></VendorScalar>",
+        ),
+    ];
+
+    let outcomes: Vec<_> = scalar_items
+        .iter()
+        .map(|(item_type, malformed_item)| {
+            let xml = SEQUENCE_PAIRING_XML.replacen(
+                "</RequestPayload>",
+                &format!("{malformed_item}</RequestPayload>"),
+                1,
+            );
+            (
+                *item_type,
+                OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &xml).err(),
+            )
+        })
+        .collect();
+    let accepted_types: Vec<_> = outcomes
+        .iter()
+        .filter_map(|(item_type, error)| error.is_none().then_some(*item_type))
+        .collect();
+    assert!(
+        accepted_types.is_empty(),
+        "scalar types accepted nested child Items: {accepted_types:?}"
+    );
+    let invalid_type_results: Vec<_> = outcomes
+        .iter()
+        .filter(|(_, error)| *error != Some(OasisCryptoFixtureError::InvalidValue))
+        .collect();
+    assert!(
+        invalid_type_results.is_empty(),
+        "scalar types must return exact InvalidValue errors: {invalid_type_results:?}"
+    );
+}
+
+#[test]
+fn fixture_adapter_rejects_oversized_xml_before_parsing() {
+    const OVERSIZED_XML_BYTES: usize = 16 * 1024 * 1024 + 1;
+    let xml = "<".repeat(OVERSIZED_XML_BYTES);
+
+    assert_eq!(
+        OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &xml).unwrap_err(),
+        OasisCryptoFixtureError::XmlLimitOrDtd
+    );
+}
+
+#[test]
 fn fixture_adapter_rejects_malformed_xml_without_echoing_document_contents() {
     const SECRET_SENTINEL: &str = "KMIPKIT_XML_SECRET_SENTINEL_73";
     let malformed_xml = format!(
