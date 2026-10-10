@@ -219,10 +219,7 @@ pub(crate) fn validate_framing(
     let valid = match (init, final_part, has_correlation) {
         (None, None, false) => has_input,
         (Some(true), _, false) => final_part == Some(true) || !has_input,
-        (Some(false), _, true) => !has_input,
-        (_, Some(true), true) => !has_input,
-        (_, Some(false), true) => !has_input,
-        (None, None, true) => !has_input,
+        (Some(false), _, true) | (_, Some(true | false), true) | (None, None, true) => !has_input,
         _ => false,
     };
     if valid { Ok(()) } else { Err(request_error()) }

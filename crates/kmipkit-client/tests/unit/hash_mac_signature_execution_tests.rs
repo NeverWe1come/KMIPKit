@@ -180,7 +180,7 @@ fn each_explicit_operation_call_performs_one_exchange_without_retry() {
     let (mut client, state) = client(
         OperationFixture::ALL
             .into_iter()
-            .map(|item| item.success_response()),
+            .map(OperationFixture::success_response),
     );
 
     for fixture in OperationFixture::ALL {
@@ -242,7 +242,10 @@ fn request_operation_codes_are_written_to_the_wire_and_server_failure_is_preserv
     let item = response.items.first().expect("one result is associated");
     assert_eq!(item.outcome().result().status().raw(), FAILURE);
     assert_eq!(
-        item.outcome().result().reason().map(|reason| reason.raw()),
+        item.outcome()
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(1)
     );
 
@@ -274,5 +277,5 @@ fn request_operation_codes_are_written_to_the_wire_and_server_failure_is_preserv
             })
     });
     assert_eq!(encoded_operation, Some(fixture.code));
-    assert!(state.borrow().requests[0].len() > 0);
+    assert!(!state.borrow().requests[0].is_empty());
 }

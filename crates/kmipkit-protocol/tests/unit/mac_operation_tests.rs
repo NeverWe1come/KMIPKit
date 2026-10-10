@@ -177,7 +177,10 @@ fn failure_response_preserves_server_result_without_success_payload() {
 
     assert_eq!(response.result().status().raw(), OPERATION_FAILED);
     assert_eq!(
-        response.result().reason().map(|reason| reason.raw()),
+        response
+            .result()
+            .reason()
+            .map(super::result::ResultReason::raw),
         Some(GENERAL_FAILURE)
     );
     assert!(response.unique_identifier().is_none());

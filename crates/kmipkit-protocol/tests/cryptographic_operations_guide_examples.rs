@@ -42,40 +42,40 @@ fn documented_operation_inputs_are_redacted_by_each_public_request_model() {
     let hash = HashRequest::new(hash_parameters()).with_data(OperationData::ByteString(
         SecretBytes::new(HASH.as_bytes().to_vec()),
     ));
-    assert_redacted(format!("{hash:?}"), HASH);
+    assert_redacted(&format!("{hash:?}"), HASH);
 
     let mac = MacRequest::new()
         .with_unique_identifier(UniqueIdentifier::TextString("key-id".to_owned()))
         .with_data(OperationData::ByteString(SecretBytes::new(
             MAC.as_bytes().to_vec(),
         )));
-    assert_redacted(format!("{mac:?}"), MAC);
+    assert_redacted(&format!("{mac:?}"), MAC);
 
     let mac_verify = MacVerifyRequest::new()
         .with_data(OperationData::ByteString(SecretBytes::new(
             ORIGINAL.as_bytes().to_vec(),
         )))
         .with_mac_data(SecretBytes::new(MAC_DATA.as_bytes().to_vec()));
-    assert_redacted(format!("{mac_verify:?}"), ORIGINAL);
-    assert_redacted(format!("{mac_verify:?}"), MAC_DATA);
+    assert_redacted(&format!("{mac_verify:?}"), ORIGINAL);
+    assert_redacted(&format!("{mac_verify:?}"), MAC_DATA);
 
     let sign = SignRequest::new().with_data(OperationData::ByteString(SecretBytes::new(
         SIGN.as_bytes().to_vec(),
     )));
-    assert_redacted(format!("{sign:?}"), SIGN);
+    assert_redacted(&format!("{sign:?}"), SIGN);
 
     let signature_verify = SignatureVerifyRequest::new()
         .with_data(OperationData::ByteString(SecretBytes::new(
             ORIGINAL.as_bytes().to_vec(),
         )))
         .with_signature_data(SecretBytes::new(SIGNATURE.as_bytes().to_vec()));
-    assert_redacted(format!("{signature_verify:?}"), ORIGINAL);
-    assert_redacted(format!("{signature_verify:?}"), SIGNATURE);
+    assert_redacted(&format!("{signature_verify:?}"), ORIGINAL);
+    assert_redacted(&format!("{signature_verify:?}"), SIGNATURE);
 
     let final_hash_part = HashRequest::new(hash_parameters())
         .with_correlation_value(SecretBytes::new(CORRELATION.as_bytes().to_vec()))
         .with_final_indicator(true);
-    assert_redacted(format!("{final_hash_part:?}"), CORRELATION);
+    assert_redacted(&format!("{final_hash_part:?}"), CORRELATION);
 }
 
 fn hash_parameters() -> Structure {
@@ -92,6 +92,6 @@ fn hash_parameters() -> Structure {
     parameters
 }
 
-fn assert_redacted(debug: String, sentinel: &str) {
+fn assert_redacted(debug: &str, sentinel: &str) {
     assert!(!debug.contains(sentinel));
 }

@@ -124,14 +124,8 @@ fn request_emits_table_235_fields_in_order_and_preserves_caller_values() {
         "the supplied SHA-256 value is forwarded unchanged"
     );
     assert_eq!(snapshot(&fields[1]), (DATA, input.to_vec()));
-    assert_eq!(
-        fields[2].with_value(|value| matches!(value, ValueView::Boolean(true))),
-        true
-    );
-    assert_eq!(
-        fields[3].with_value(|value| matches!(value, ValueView::Boolean(true))),
-        true
-    );
+    assert!(fields[2].with_value(|value| matches!(value, ValueView::Boolean(true))),);
+    assert!(fields[3].with_value(|value| matches!(value, ValueView::Boolean(true))),);
 }
 
 #[test]
@@ -258,7 +252,10 @@ fn non_success_response_preserves_common_result_without_success_fields() {
 
     assert_eq!(response.result().status().raw(), OPERATION_FAILED);
     assert_eq!(
-        response.result().reason().map(|value| value.raw()),
+        response
+            .result()
+            .reason()
+            .map(super::result::ResultReason::raw),
         Some(GENERAL_FAILURE)
     );
     assert!(response.data().is_none());

@@ -88,6 +88,10 @@ impl SignRequest {
     }
 
     /// Validates the locally knowable single-part or multipart shape.
+    ///
+    /// # Errors
+    /// Returns an error if single-part Data and Digested Data are both absent,
+    /// or multipart framing conflicts with supplied input.
     pub fn validate_multipart_shape(&self) -> Result<(), ProtocolError> {
         common::validate_framing(
             self.data.is_some() || self.digested_data.is_some(),
@@ -177,6 +181,10 @@ pub struct SignResponse {
 
 impl SignResponse {
     /// Converts a Pending Sign response result.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a Pending Sign result or its common
+    /// result fields are malformed.
     pub fn try_from_pending_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, SignError> {
@@ -189,6 +197,10 @@ impl SignResponse {
     }
 
     /// Converts a completed Sign response item.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a completed Sign result or its
+    /// successful response payload is malformed.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, SignError> {
         let result = common::parse_result(item, OPERATION, "Sign", Some(false))?;
         if result.status().raw() != common::SUCCESS {

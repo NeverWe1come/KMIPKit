@@ -80,6 +80,10 @@ impl MacRequest {
     }
 
     /// Validates the locally knowable single-part or multipart shape.
+    ///
+    /// # Errors
+    /// Returns an error if required single-part Data is absent or multipart
+    /// framing conflicts with the supplied Data.
     pub fn validate_multipart_shape(&self) -> Result<(), ProtocolError> {
         common::validate_framing(
             self.data.is_some(),
@@ -141,6 +145,10 @@ pub struct MacResponse {
 
 impl MacResponse {
     /// Converts a Pending MAC response result.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a Pending MAC result or its common
+    /// result fields are malformed.
     pub fn try_from_pending_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, MacError> {
@@ -153,6 +161,10 @@ impl MacResponse {
     }
 
     /// Converts a completed MAC response item.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a completed MAC result or its
+    /// successful response payload is malformed.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, MacError> {
         let result = common::parse_result(item, OPERATION, "MAC", Some(false))?;
         if result.status().raw() != common::SUCCESS {

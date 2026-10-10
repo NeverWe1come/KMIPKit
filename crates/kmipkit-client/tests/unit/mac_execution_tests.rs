@@ -184,7 +184,10 @@ fn server_operation_failure_remains_an_operation_result() {
 
     assert_eq!(outcome.result().status().raw(), OPERATION_FAILED);
     assert_eq!(
-        outcome.result().reason().map(|reason| reason.raw()),
+        outcome
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(GENERAL_FAILURE)
     );
     assert!(matches!(outcome, ClientBatchOutcome::Mac(_)));

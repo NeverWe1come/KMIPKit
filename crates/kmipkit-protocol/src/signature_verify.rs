@@ -98,6 +98,10 @@ impl SignatureVerifyRequest {
     }
 
     /// Validates the locally knowable single-part or multipart shape.
+    ///
+    /// # Errors
+    /// Returns an error if required single-part Signature Data is absent or
+    /// multipart framing conflicts with supplied Signature Data.
     pub fn validate_multipart_shape(&self) -> Result<(), ProtocolError> {
         common::validate_framing(
             self.signature_data.is_some(),
@@ -207,6 +211,10 @@ pub struct SignatureVerifyResponse {
 
 impl SignatureVerifyResponse {
     /// Converts a Pending Signature Verify response result.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a Pending Signature Verify result
+    /// or its common result fields are malformed.
     pub fn try_from_pending_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, SignatureVerifyError> {
@@ -223,6 +231,10 @@ impl SignatureVerifyResponse {
     ///
     /// Use [`Self::try_from_response_item_with_context`] when the response
     /// belongs to a multipart request.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a completed Signature Verify result
+    /// or its single-part response payload is malformed.
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, SignatureVerifyError> {
@@ -231,6 +243,10 @@ impl SignatureVerifyResponse {
 
     /// Converts a completed Signature Verify response using its original
     /// request's single-part or multipart context.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a completed Signature Verify result
+    /// or its response payload violates the supplied request context.
     pub fn try_from_response_item_with_context(
         item: ResponseBatchItemView<'_>,
         context: VerificationResponseContext,

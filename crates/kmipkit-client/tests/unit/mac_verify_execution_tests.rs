@@ -170,7 +170,9 @@ fn invalid_and_unknown_indicators_remain_operation_results_with_one_exchange() {
 
         assert_eq!(outcome.operation(), crate::ClientOperation::MacVerify);
         assert_eq!(
-            typed.validity_indicator().map(|value| value.raw()),
+            typed
+                .validity_indicator()
+                .map(kmipkit_protocol::ValidityIndicator::raw),
             Some(indicator)
         );
         assert_eq!(
@@ -200,7 +202,10 @@ fn server_operation_failure_remains_typed_and_is_not_retried() {
     assert!(matches!(outcome, ClientBatchOutcome::MacVerify(_)));
     assert_eq!(outcome.result().status().raw(), 1);
     assert_eq!(
-        outcome.result().reason().map(|reason| reason.raw()),
+        outcome
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(0x0000_0100)
     );
     assert_eq!(state.borrow().calls, 1);
@@ -254,7 +259,9 @@ fn reordered_batch_responses_keep_each_requests_multipart_indicator_context() {
         .mac_verify_response()
         .expect("the second request is the non-final multipart operation");
     assert_eq!(
-        single.validity_indicator().map(|value| value.raw()),
+        single
+            .validity_indicator()
+            .map(kmipkit_protocol::ValidityIndicator::raw),
         Some(1)
     );
     assert_eq!(multipart.validity_indicator(), None);

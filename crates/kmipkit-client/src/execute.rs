@@ -2506,6 +2506,10 @@ impl Client {
 
     /// Executes one Hash request through the shared writer and performs one
     /// exchange without calculating a hash locally or retrying.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn hash(
         &mut self,
         request: HashRequest,
@@ -2515,6 +2519,10 @@ impl Client {
     }
 
     /// Executes one Hash request with transport timeout overrides.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn hash_with_options(
         &mut self,
         request: HashRequest,
@@ -2526,6 +2534,10 @@ impl Client {
 
     /// Executes one MAC request through the shared writer without local MAC
     /// calculation or automatic retry.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn mac(
         &mut self,
         request: MacRequest,
@@ -2535,6 +2547,10 @@ impl Client {
     }
 
     /// Executes one MAC request with transport timeout overrides.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn mac_with_options(
         &mut self,
         request: MacRequest,
@@ -2546,6 +2562,10 @@ impl Client {
 
     /// Executes one MAC Verify request through the shared writer without
     /// local verification or automatic retry.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn mac_verify(
         &mut self,
         request: MacVerifyRequest,
@@ -2555,6 +2575,10 @@ impl Client {
     }
 
     /// Executes one MAC Verify request with transport timeout overrides.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn mac_verify_with_options(
         &mut self,
         request: MacVerifyRequest,
@@ -2566,6 +2590,10 @@ impl Client {
 
     /// Executes one Sign request through the shared writer without local
     /// signing or automatic retry.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn sign(
         &mut self,
         request: SignRequest,
@@ -2575,6 +2603,10 @@ impl Client {
     }
 
     /// Executes one Sign request with transport timeout overrides.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn sign_with_options(
         &mut self,
         request: SignRequest,
@@ -2586,6 +2618,10 @@ impl Client {
 
     /// Executes one Signature Verify request through the shared writer without
     /// local verification or automatic retry.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn signature_verify(
         &mut self,
         request: SignatureVerifyRequest,
@@ -2595,6 +2631,10 @@ impl Client {
     }
 
     /// Executes one Signature Verify request with transport timeout overrides.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
     pub fn signature_verify_with_options(
         &mut self,
         request: SignatureVerifyRequest,
@@ -4331,64 +4371,8 @@ fn validate_async_response(
 
     let extensions = preserve_response_extensions(item, registry, limits)?;
 
-    let (result, cancellation_result) = match kind {
-        ClientOperation::DiscoverVersions
-        | ClientOperation::Activate
-        | ClientOperation::Archive
-        | ClientOperation::Destroy
-        | ClientOperation::Recover
-        | ClientOperation::Create
-        | ClientOperation::CreateKeyPair
-        | ClientOperation::CreateSplitKey
-        | ClientOperation::AddAttribute
-        | ClientOperation::AdjustAttribute
-        | ClientOperation::DeleteAttribute
-        | ClientOperation::ModifyAttribute
-        | ClientOperation::SetAttribute
-        | ClientOperation::GetAttributes
-        | ClientOperation::GetAttributeList
-        | ClientOperation::Ping
-        | ClientOperation::Query
-        | ClientOperation::Encrypt
-        | ClientOperation::Decrypt
-        | ClientOperation::Hash
-        | ClientOperation::Mac
-        | ClientOperation::MacVerify
-        | ClientOperation::Sign
-        | ClientOperation::SignatureVerify => {
-            return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
-        }
-        ClientOperation::Poll => {
-            let typed =
-                PollResponse::try_from_response_item(item).map_err(asynchronous_operation_error)?;
-            (typed.result().clone(), None)
-        }
-        ClientOperation::Cancel => {
-            let typed = CancelResponse::try_from_response_item(item)
-                .map_err(asynchronous_operation_error)?;
-            if typed.result().status().raw() == 0 {
-                let expected = expected_cancel_correlation
-                    .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?;
-                let echoes_request = typed
-                    .with_asynchronous_correlation_value(|echo| echo == expected)
-                    .unwrap_or(false);
-                if !echoes_request {
-                    return Err(protocol_error(ProtocolErrorKind::InvalidValue));
-                }
-            }
-            (typed.result().clone(), typed.cancellation_result())
-        }
-        ClientOperation::Process => {
-            let typed = ProcessResponse::try_from_response_item(item)
-                .map_err(asynchronous_operation_error)?;
-            (typed.result().clone(), None)
-        }
-        ClientOperation::QueryAsyncRequests => {
-            let typed = QueryAsyncRequestsResponse::try_from_response_item(item)
-                .map_err(asynchronous_operation_error)?;
-            (typed.result().clone(), None)
-        }
-    };
+    let (result, cancellation_result) =
+        parse_async_operation_result(item, kind, expected_cancel_correlation)?;
 
     // Poll Pending reports the original operation's state and is explicitly
     // permitted by §6.1.38 without making Poll itself asynchronous. Cancel's
@@ -4414,6 +4398,46 @@ fn validate_async_response(
         cancellation_result,
         extensions,
     })
+}
+
+fn parse_async_operation_result(
+    item: ResponseBatchItemView<'_>,
+    kind: ClientOperation,
+    expected_cancel_correlation: Option<&[u8]>,
+) -> Result<(KmipOperationResult, Option<CancellationResult>), ProtocolError> {
+    match kind {
+        ClientOperation::Poll => {
+            let typed =
+                PollResponse::try_from_response_item(item).map_err(asynchronous_operation_error)?;
+            Ok((typed.result().clone(), None))
+        }
+        ClientOperation::Cancel => {
+            let typed = CancelResponse::try_from_response_item(item)
+                .map_err(asynchronous_operation_error)?;
+            if typed.result().status().raw() == 0 {
+                let expected = expected_cancel_correlation
+                    .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?;
+                let echoes_request = typed
+                    .with_asynchronous_correlation_value(|echo| echo == expected)
+                    .unwrap_or(false);
+                if !echoes_request {
+                    return Err(protocol_error(ProtocolErrorKind::InvalidValue));
+                }
+            }
+            Ok((typed.result().clone(), typed.cancellation_result()))
+        }
+        ClientOperation::Process => {
+            let typed = ProcessResponse::try_from_response_item(item)
+                .map_err(asynchronous_operation_error)?;
+            Ok((typed.result().clone(), None))
+        }
+        ClientOperation::QueryAsyncRequests => {
+            let typed = QueryAsyncRequestsResponse::try_from_response_item(item)
+                .map_err(asynchronous_operation_error)?;
+            Ok((typed.result().clone(), None))
+        }
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
 }
 
 fn preserve_response_extensions(

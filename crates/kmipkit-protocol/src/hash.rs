@@ -63,6 +63,10 @@ impl HashRequest {
     }
 
     /// Validates the locally knowable single-part or multipart shape.
+    ///
+    /// # Errors
+    /// Returns an error if required single-part Data is absent or multipart
+    /// framing conflicts with the supplied Data.
     pub fn validate_multipart_shape(&self) -> Result<(), ProtocolError> {
         common::validate_framing(
             self.data.is_some(),
@@ -113,7 +117,7 @@ impl fmt::Debug for HashRequest {
             .field("has_correlation_value", &self.correlation.is_some())
             .field("init_indicator", &self.init)
             .field("final_indicator", &self.final_part)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -127,6 +131,10 @@ pub struct HashResponse {
 
 impl HashResponse {
     /// Converts a Pending Hash response result.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a Pending Hash result or its common
+    /// result fields are malformed.
     pub fn try_from_pending_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, HashError> {
@@ -139,6 +147,10 @@ impl HashResponse {
     }
 
     /// Converts a completed Hash response item.
+    ///
+    /// # Errors
+    /// Returns an error if the item is not a completed Hash result or its
+    /// successful response payload is malformed.
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, HashError> {
         let result = common::parse_result(item, OPERATION, "Hash", Some(false))?;
         if result.status().raw() != common::SUCCESS {
