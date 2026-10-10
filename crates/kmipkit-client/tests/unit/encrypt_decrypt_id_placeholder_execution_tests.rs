@@ -3,8 +3,8 @@
 //! Client-level ID Placeholder contracts derived from KMIP v2.1 §6.1,
 //! §6.1.8/Table 187, §6.1.11/Table 196, §6.1.17/Table 214, and §9.8.
 //! Traceability: `KMIPKIT-REQ-SPEC-6.1-003-002`, `KMIPKIT-0019-FR-002`, and
-//! `KMIPKIT-REQ-SPEC-6.1-001-003`. These are T028 Red contracts; client
-//! Encrypt/Decrypt dispatch remains planned for T038.
+//! `KMIPKIT-REQ-SPEC-6.1-001-003`. These tests exercise ID Placeholder
+//! eligibility and result association through the typed client path.
 
 use kmipkit_protocol::{
     AttributeSet, CreateRequest, CreateSplitKeyRequest, DecryptRequest, EncryptRequest, ObjectType,
@@ -41,8 +41,8 @@ const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 
-const REQUEST_HEADER: u32 = 0x0042_0078;
-const BATCH_ORDER_OPTION: u32 = 0x0042_000B;
+const REQUEST_HEADER: u32 = 0x0042_0077;
+const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 
 const SUCCESS: u32 = 0;

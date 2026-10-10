@@ -14,8 +14,9 @@ use kmipkit_protocol::{
     AdjustAttributeRequest, AdjustAttributeResponse, ArchiveRequest, ArchiveResponse,
     AsynchronousOperationError, AttributeReference, CancelRequest, CancelResponse,
     CancellationResult, CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
-    CreateSplitKeyRequest, CreateSplitKeyResponse, DeleteAttributeRequest, DeleteAttributeResponse,
-    DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
+    CreateSplitKeyRequest, CreateSplitKeyResponse, DecryptRequest, DecryptResponse,
+    DeleteAttributeRequest, DeleteAttributeResponse, DestroyRequest, DestroyResponse,
+    DiscoverVersionsRequest, DiscoverVersionsResponse, EncryptRequest, EncryptResponse,
     GetAttributeListRequest, GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse,
     KmipOperationResult, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
     NewAttribute, PingRequest, PingResponse, PollRequest, PollResponse, ProcessRequest,
@@ -78,6 +79,8 @@ const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
 const TIME_STAMP: u32 = 0x0042_0092;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
+const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 §6.1.17, Table 214.
+const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 §6.1.11, Table 196.
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
@@ -144,6 +147,10 @@ pub enum ClientRequest {
     Ping(PingRequest),
     /// An explicit client-to-server Query request.
     Query(QueryRequest),
+    /// An explicit client-to-server Encrypt request.
+    Encrypt(EncryptRequest),
+    /// An explicit client-to-server Decrypt request.
+    Decrypt(DecryptRequest),
 }
 
 impl ClientRequest {
@@ -163,6 +170,18 @@ impl ClientRequest {
     #[must_use]
     pub fn query(request: QueryRequest) -> Self {
         Self::Query(request)
+    }
+
+    /// Creates a typed client-to-server Encrypt request variant.
+    #[must_use]
+    pub fn encrypt(request: EncryptRequest) -> Self {
+        Self::Encrypt(request)
+    }
+
+    /// Creates a typed client-to-server Decrypt request variant.
+    #[must_use]
+    pub fn decrypt(request: DecryptRequest) -> Self {
+        Self::Decrypt(request)
     }
 
     /// Creates a typed Activate request variant.
@@ -249,6 +268,8 @@ impl ClientRequest {
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
             Self::Query(_) => QUERY_OPERATION,
+            Self::Encrypt(_) => ENCRYPT_OPERATION,
+            Self::Decrypt(_) => DECRYPT_OPERATION,
         }
     }
 
@@ -271,6 +292,8 @@ impl ClientRequest {
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
             Self::Query(request) => request.to_ttlv_payload(),
+            Self::Encrypt(request) => request.to_ttlv_payload(),
+            Self::Decrypt(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -301,6 +324,8 @@ impl fmt::Debug for ClientRequest {
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
             Self::Query(_) => formatter.write_str("Query([REDACTED])"),
+            Self::Encrypt(_) => formatter.write_str("Encrypt([REDACTED])"),
+            Self::Decrypt(_) => formatter.write_str("Decrypt([REDACTED])"),
         }
     }
 }
@@ -552,6 +577,8 @@ impl fmt::Debug for ClientMessageExtension {
 
 enum PendingResponse {
     DiscoverVersions(DiscoverVersionsResponse),
+    Encrypt(EncryptResponse),
+    Decrypt(DecryptResponse),
     Activate(ActivateResponse),
     Archive(ArchiveResponse),
     Destroy(DestroyResponse),
@@ -574,6 +601,8 @@ impl PendingResponse {
     const fn view(&self) -> ClientResponseView<'_> {
         let response = match self {
             Self::DiscoverVersions(response) => ClientResponseRef::DiscoverVersions(response),
+            Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
+            Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::Activate(response) => ClientResponseRef::Activate(response),
             Self::Archive(response) => ClientResponseRef::Archive(response),
             Self::Destroy(response) => ClientResponseRef::Destroy(response),
@@ -731,6 +760,10 @@ pub enum ClientOperation {
     Ping,
     /// Query one server for explicitly requested protocol information.
     Query,
+    /// Encrypt data with the explicitly selected server-side object.
+    Encrypt,
+    /// Decrypt data with the explicitly selected server-side object.
+    Decrypt,
     /// Poll one previously Pending operation.
     Poll,
     /// Cancel one previously Pending operation.
@@ -855,6 +888,8 @@ impl fmt::Debug for ClientOperationOutcome {
 #[derive(Clone, Copy)]
 enum ClientResponseRef<'a> {
     DiscoverVersions(&'a DiscoverVersionsResponse),
+    Encrypt(&'a EncryptResponse),
+    Decrypt(&'a DecryptResponse),
     Activate(&'a ActivateResponse),
     Archive(&'a ArchiveResponse),
     Destroy(&'a DestroyResponse),
@@ -888,6 +923,8 @@ impl<'a> ClientResponseView<'a> {
     pub const fn result(&self) -> &KmipOperationResult {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => response.result(),
+            ClientResponseRef::Encrypt(response) => response.result(),
+            ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::Activate(response) => response.result(),
             ClientResponseRef::Archive(response) => response.result(),
             ClientResponseRef::Destroy(response) => response.result(),
@@ -919,6 +956,8 @@ impl<'a> ClientResponseView<'a> {
             | ClientResponseRef::Archive(_)
             | ClientResponseRef::Destroy(_)
             | ClientResponseRef::Recover(_)
+            | ClientResponseRef::Encrypt(_)
+            | ClientResponseRef::Decrypt(_)
             | ClientResponseRef::CreateKeyPair(_)
             | ClientResponseRef::CreateSplitKey(_)
             | ClientResponseRef::AddAttribute(_)
@@ -939,6 +978,8 @@ impl<'a> ClientResponseView<'a> {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => Some(response),
             ClientResponseRef::Create(_)
+            | ClientResponseRef::Encrypt(_)
+            | ClientResponseRef::Decrypt(_)
             | ClientResponseRef::Activate(_)
             | ClientResponseRef::Archive(_)
             | ClientResponseRef::Destroy(_)
@@ -962,6 +1003,24 @@ impl<'a> ClientResponseView<'a> {
     pub const fn create(&self) -> Option<&CreateResponse> {
         match self.response {
             ClientResponseRef::Create(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Encrypt response when this view represents it.
+    #[must_use]
+    pub const fn encrypt(&self) -> Option<&'a EncryptResponse> {
+        match self.response {
+            ClientResponseRef::Encrypt(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Decrypt response when this view represents it.
+    #[must_use]
+    pub const fn decrypt(&self) -> Option<&'a DecryptResponse> {
+        match self.response {
+            ClientResponseRef::Decrypt(response) => Some(response),
             _ => None,
         }
     }
@@ -1109,6 +1168,12 @@ impl fmt::Debug for ClientResponseView<'_> {
                 .debug_tuple("DiscoverVersions")
                 .field(response)
                 .finish(),
+            ClientResponseRef::Encrypt(response) => {
+                formatter.debug_tuple("Encrypt").field(response).finish()
+            }
+            ClientResponseRef::Decrypt(response) => {
+                formatter.debug_tuple("Decrypt").field(response).finish()
+            }
             ClientResponseRef::Create(response) => {
                 formatter.debug_tuple("Create").field(response).finish()
             }
@@ -1167,6 +1232,10 @@ impl fmt::Debug for ClientResponseView<'_> {
 pub enum ClientBatchOutcome {
     /// The server returned a non-Pending KMIP result.
     Completed(DiscoverVersionsResponse),
+    /// The server returned an Encrypt result.
+    Encrypt(EncryptResponse),
+    /// The server returned a Decrypt result.
+    Decrypt(DecryptResponse),
     /// The server returned an Activate result.
     Activate(ActivateResponse),
     /// The server returned an Archive result.
@@ -1209,6 +1278,8 @@ impl ClientBatchOutcome {
     pub fn asynchronous_correlation_value(&self) -> Option<&[u8]> {
         match self {
             Self::Completed(_)
+            | Self::Encrypt(_)
+            | Self::Decrypt(_)
             | Self::Activate(_)
             | Self::Archive(_)
             | Self::Destroy(_)
@@ -1234,6 +1305,8 @@ impl ClientBatchOutcome {
     pub const fn result(&self) -> &KmipOperationResult {
         match self {
             Self::Completed(response) => response.result(),
+            Self::Encrypt(response) => response.result(),
+            Self::Decrypt(response) => response.result(),
             Self::Activate(response) => response.result(),
             Self::Archive(response) => response.result(),
             Self::Destroy(response) => response.result(),
@@ -1259,6 +1332,8 @@ impl ClientBatchOutcome {
     pub const fn operation(&self) -> ClientOperation {
         match self {
             Self::Completed(_) => ClientOperation::DiscoverVersions,
+            Self::Encrypt(_) => ClientOperation::Encrypt,
+            Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::Activate(_) => ClientOperation::Activate,
             Self::Archive(_) => ClientOperation::Archive,
             Self::Destroy(_) => ClientOperation::Destroy,
@@ -1351,6 +1426,24 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Encrypt response, when this is one.
+    #[must_use]
+    pub const fn encrypt_response(&self) -> Option<&EncryptResponse> {
+        match self {
+            Self::Encrypt(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Decrypt response, when this is one.
+    #[must_use]
+    pub const fn decrypt_response(&self) -> Option<&DecryptResponse> {
+        match self {
+            Self::Decrypt(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
@@ -1360,6 +1453,12 @@ impl ClientBatchOutcome {
         match self {
             Self::Completed(response) => ClientResponseView {
                 response: ClientResponseRef::DiscoverVersions(response),
+            },
+            Self::Encrypt(response) => ClientResponseView {
+                response: ClientResponseRef::Encrypt(response),
+            },
+            Self::Decrypt(response) => ClientResponseView {
+                response: ClientResponseRef::Decrypt(response),
             },
             Self::Activate(response) => ClientResponseView {
                 response: ClientResponseRef::Activate(response),
@@ -1420,6 +1519,8 @@ impl fmt::Debug for ClientBatchOutcome {
             Self::Completed(response) => {
                 formatter.debug_tuple("Completed").field(response).finish()
             }
+            Self::Encrypt(response) => formatter.debug_tuple("Encrypt").field(response).finish(),
+            Self::Decrypt(response) => formatter.debug_tuple("Decrypt").field(response).finish(),
             Self::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             Self::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
@@ -1475,6 +1576,8 @@ impl fmt::Display for ClientBatchOutcome {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Completed(response) => write!(formatter, "Completed({})", response.result()),
+            Self::Encrypt(response) => write!(formatter, "Encrypt({})", response.result()),
+            Self::Decrypt(response) => write!(formatter, "Decrypt({})", response.result()),
             Self::Activate(response) => write!(formatter, "Activate({})", response.result()),
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
@@ -1797,6 +1900,7 @@ impl Client {
                 error,
             )
         })?;
+        validate_cryptographic_request_shapes(&batch)?;
         validate_request_extension_ownership(&batch, &self.configuration).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -2669,6 +2773,7 @@ pub(super) enum BatchValidationError {
     EmptyBatch,
     MissingBatchItemId,
     DuplicateBatchItemId,
+    IneligibleIdPlaceholder,
     InvalidAsynchronousIndicator,
     RepeatedBatchErrorContinuation,
     SingleItemBatchErrorContinuation,
@@ -2682,6 +2787,9 @@ impl fmt::Display for BatchValidationError {
             Self::EmptyBatch => "client batch must contain an item",
             Self::MissingBatchItemId => "multi-item request requires every batch item ID",
             Self::DuplicateBatchItemId => "request batch item IDs must be unique",
+            Self::IneligibleIdPlaceholder => {
+                "omitted Unique Identifier has no eligible preceding ID Placeholder producer"
+            }
             Self::InvalidAsynchronousIndicator => "asynchronous indicator is unassigned",
             Self::RepeatedBatchErrorContinuation => "batch error continuation is repeated",
             Self::SingleItemBatchErrorContinuation => {
@@ -2716,7 +2824,59 @@ pub(super) fn validate_batch(
             _ => {}
         }
     }
+    validate_id_placeholder_eligibility(batch)?;
     Ok(options)
+}
+
+fn validate_cryptographic_request_shapes(batch: &ClientBatch) -> Result<(), ClientError> {
+    for item in &batch.items {
+        let validation = match &item.request {
+            ClientRequest::Encrypt(request) => request.validate_multipart_shape(),
+            ClientRequest::Decrypt(request) => request.validate_multipart_shape(),
+            _ => continue,
+        };
+        validation.map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
+    }
+    Ok(())
+}
+
+fn validate_id_placeholder_eligibility(batch: &ClientBatch) -> Result<(), BatchValidationError> {
+    let batch_ordered = batch.batch_order_option.unwrap_or(true);
+    for (index, item) in batch.items.iter().enumerate() {
+        if !request_omits_identifier_for_id_placeholder(&item.request) {
+            continue;
+        }
+
+        let has_preceding_producer = batch_ordered
+            && batch.items[..index]
+                .iter()
+                .any(|prior| request_is_id_placeholder_producer(&prior.request));
+        if !has_preceding_producer {
+            return Err(BatchValidationError::IneligibleIdPlaceholder);
+        }
+    }
+    Ok(())
+}
+
+fn request_omits_identifier_for_id_placeholder(request: &ClientRequest) -> bool {
+    match request {
+        ClientRequest::Encrypt(request) => request.unique_identifier().is_none(),
+        ClientRequest::Decrypt(request) => request.unique_identifier().is_none(),
+        _ => false,
+    }
+}
+
+fn request_is_id_placeholder_producer(request: &ClientRequest) -> bool {
+    matches!(
+        request,
+        ClientRequest::Create(_) | ClientRequest::CreateKeyPair(_) | ClientRequest::Recover(_)
+    )
 }
 
 fn validate_request_extension_ownership(
@@ -2798,7 +2958,9 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
-        | ClientRequest::Query(_) => false,
+        | ClientRequest::Query(_)
+        | ClientRequest::Encrypt(_)
+        | ClientRequest::Decrypt(_) => false,
     }
 }
 
@@ -3346,6 +3508,22 @@ fn response_outcome(
     item: ResponseBatchItemView<'_>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
     match operation {
+        ENCRYPT_OPERATION => read_operation_outcome(
+            ClientOperation::Encrypt,
+            item,
+            EncryptResponse::try_from_response_item,
+            EncryptResponse::result,
+            PendingResponse::Encrypt,
+            ClientBatchOutcome::Encrypt,
+        ),
+        DECRYPT_OPERATION => read_operation_outcome(
+            ClientOperation::Decrypt,
+            item,
+            DecryptResponse::try_from_response_item,
+            DecryptResponse::result,
+            PendingResponse::Decrypt,
+            ClientBatchOutcome::Decrypt,
+        ),
         ACTIVATE_OPERATION => read_operation_outcome(
             ClientOperation::Activate,
             item,
@@ -3657,7 +3835,9 @@ fn validate_async_response(
         | ClientOperation::GetAttributes
         | ClientOperation::GetAttributeList
         | ClientOperation::Ping
-        | ClientOperation::Query => {
+        | ClientOperation::Query
+        | ClientOperation::Encrypt
+        | ClientOperation::Decrypt => {
             return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
         }
         ClientOperation::Poll => {

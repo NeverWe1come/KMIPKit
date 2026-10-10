@@ -73,6 +73,24 @@ impl DecryptRequest {
         self.data.as_ref()
     }
 
+    /// Validates the Data, Correlation Value, and multipart indicator shape.
+    ///
+    /// This read-only check lets a typed client classify invalid caller input
+    /// before consuming the request to encode its payload.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized protocol error when the request does not match the
+    /// Decrypt single-part or multipart shape defined by §6.1.11 and Table 196.
+    pub fn validate_multipart_shape(&self) -> Result<(), ProtocolError> {
+        crate::multipart::validate_data_multipart_shape(
+            self.data.is_some(),
+            self.correlation_value.is_some(),
+            self.init_indicator,
+            self.final_indicator,
+        )
+    }
+
     /// Supplies the optional ordered Cryptographic Parameters Structure.
     #[must_use]
     pub fn with_cryptographic_parameters(mut self, parameters: Structure) -> Self {
