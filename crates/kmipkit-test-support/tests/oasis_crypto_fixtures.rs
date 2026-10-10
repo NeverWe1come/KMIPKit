@@ -468,6 +468,30 @@ fn fixture_adapter_rejects_mismatched_selected_request_and_response_operations()
 }
 
 #[test]
+fn fixture_adapter_rejects_unpaired_request_and_response_counts() {
+    let (request_message, _) = SEQUENCE_PAIRING_XML
+        .split_once("\n  <ResponseMessage>")
+        .expect("the synthetic fixture contains a response message");
+    let unpaired_xml = format!("{request_message}\n</KMIP>");
+
+    assert_eq!(
+        OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &unpaired_xml).unwrap_err(),
+        OasisCryptoFixtureError::UnpairedMessages
+    );
+}
+
+#[test]
+fn fixture_adapter_rejects_duplicate_selected_source_sequences() {
+    let duplicate_sequence_xml = SEQUENCE_PAIRING_XML.replace("step=1", "step=0");
+
+    assert_eq!(
+        OasisCryptoFixture::from_xml(SEQUENCE_PAIRING_CASE_ID, &duplicate_sequence_xml)
+            .unwrap_err(),
+        OasisCryptoFixtureError::DuplicateSequence
+    );
+}
+
+#[test]
 fn fixture_adapter_resolves_selected_symbols_deterministically() {
     let first = OasisCryptoFixture::from_xml(TC_ENC_1_21_ID, TC_ENC_1_21_XML)
         .expect("the fixture's out-of-scope setup symbols are not inspected");
