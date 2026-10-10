@@ -250,6 +250,10 @@ mod query_operation_tests;
 mod lifecycle_fixtures;
 
 #[cfg(test)]
+#[path = "../tests/support/managed_object_retrieval_fixtures.rs"]
+mod managed_object_retrieval_fixtures;
+
+#[cfg(test)]
 #[path = "../tests/unit/lifecycle_fixtures_tests.rs"]
 mod lifecycle_fixtures_tests;
 
