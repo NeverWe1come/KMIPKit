@@ -141,6 +141,10 @@ mod encrypt_parameter_structure_tests;
 mod decrypt_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/multipart_validation_tests.rs"]
+mod multipart_validation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/operation_failure_tests.rs"]
 mod operation_failure_tests;
 
