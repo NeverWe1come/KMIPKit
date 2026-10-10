@@ -203,6 +203,27 @@ fn successful_response_exposes_identifier_signature_data_and_unknown_fields() {
 }
 
 #[test]
+fn successful_multipart_response_preserves_correlation_without_signature_data() {
+    let correlation = [0x00, 0x81, 0xFF];
+    let response_payload = payload([
+        (
+            UNIQUE_IDENTIFIER,
+            Value::text_string("signing-key".to_owned()),
+        ),
+        (CORRELATION_VALUE, Value::byte_string(correlation.to_vec())),
+    ]);
+    let message = response_message(SIGN_OPERATION, SUCCESS, None, None, Some(response_payload));
+    let response = SignResponse::try_from_response_item(response_item(&message))
+        .expect("Table 335 permits multipart response framing without Signature Data");
+
+    assert!(response.signature_data().is_none());
+    response
+        .correlation_value()
+        .expect("the server returned the multipart correlation value")
+        .with_bytes(|actual| assert_eq!(actual, correlation));
+}
+
+#[test]
 fn successful_response_requires_one_well_typed_unique_identifier() {
     let cases = [
         payload([(SIGNATURE_DATA, Value::byte_string(b"signature".to_vec()))]),
@@ -275,6 +296,37 @@ fn successful_response_rejects_duplicate_or_malformed_signature_data() {
         assert_eq!(
             SignResponse::try_from_response_item(response_item(&message))
                 .expect_err("repeated or malformed Signature Data is rejected")
+                .kind(),
+            CryptographicOperationErrorKind::MalformedPayload
+        );
+    }
+}
+
+#[test]
+fn successful_response_rejects_duplicate_or_malformed_correlation_value() {
+    let cases = [
+        payload([
+            (
+                UNIQUE_IDENTIFIER,
+                Value::text_string("signing-key".to_owned()),
+            ),
+            (CORRELATION_VALUE, Value::byte_string(b"first".to_vec())),
+            (CORRELATION_VALUE, Value::byte_string(b"second".to_vec())),
+        ]),
+        payload([
+            (
+                UNIQUE_IDENTIFIER,
+                Value::text_string("signing-key".to_owned()),
+            ),
+            (CORRELATION_VALUE, Value::integer(17)),
+        ]),
+    ];
+
+    for response_payload in cases {
+        let message = response_message(SIGN_OPERATION, SUCCESS, None, None, Some(response_payload));
+        assert_eq!(
+            SignResponse::try_from_response_item(response_item(&message))
+                .expect_err("repeated or malformed Correlation Value is rejected")
                 .kind(),
             CryptographicOperationErrorKind::MalformedPayload
         );
