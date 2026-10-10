@@ -10,8 +10,8 @@
 use crate::async_operation_fixtures::response_message;
 use crate::operation_test_support::item;
 use crate::{
-    CryptographicOperationErrorKind, HashRequest, HashResponse, HashingAlgorithm, OperationData,
-    SecretBytes,
+    CryptographicOperationErrorKind, CryptographicOperationResponseContext, HashRequest,
+    HashResponse, HashingAlgorithm, OperationData, SecretBytes,
 };
 use kmipkit_ttlv::{Item, Structure, Value, ValueView};
 
@@ -231,8 +231,11 @@ fn successful_multipart_response_preserves_absent_data() {
             Value::byte_string(correlation.to_vec()),
         )])),
     );
-    let response = HashResponse::try_from_response_item(response_item(&message))
-        .expect("Table 236 permits Data omission for multipart results");
+    let response = HashResponse::try_from_response_item_with_context(
+        response_item(&message),
+        CryptographicOperationResponseContext::MultipartNonFinal,
+    )
+    .expect("Table 236 permits Data omission for multipart results");
 
     assert!(response.data().is_none());
     secret_bytes(response.correlation_value(), &correlation);

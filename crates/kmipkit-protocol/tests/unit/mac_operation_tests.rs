@@ -11,8 +11,8 @@ use crate::cryptographic_operation_test_support::{
     field_tags, output_bytes, payload, response_item, response_payload_tags, snapshot,
 };
 use crate::{
-    CryptographicAlgorithm, CryptographicOperationErrorKind, MacRequest, MacResponse,
-    OperationData, SecretBytes, UniqueIdentifier,
+    CryptographicAlgorithm, CryptographicOperationErrorKind, CryptographicOperationResponseContext,
+    MacRequest, MacResponse, OperationData, SecretBytes, UniqueIdentifier,
 };
 use kmipkit_ttlv::Value;
 
@@ -126,8 +126,11 @@ fn successful_multipart_response_preserves_correlation_without_mac_data() {
     ]);
     let message = response_message(MAC_OPERATION, SUCCESS, None, None, Some(response_payload));
     let item = response_item(&message);
-    let response = MacResponse::try_from_response_item(item)
-        .expect("Table 260 permits multipart response framing without MAC Data");
+    let response = MacResponse::try_from_response_item_with_context(
+        item,
+        CryptographicOperationResponseContext::MultipartNonFinal,
+    )
+    .expect("Table 260 permits multipart response framing without MAC Data");
 
     assert!(response.mac_data().is_none());
     response

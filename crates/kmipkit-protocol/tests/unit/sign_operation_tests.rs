@@ -12,8 +12,9 @@ use crate::cryptographic_operation_test_support::{
     field_tags, output_bytes, payload, response_item, response_payload_tags, snapshot,
 };
 use crate::{
-    CryptographicAlgorithm, CryptographicOperationErrorKind, DigitalSignatureAlgorithm,
-    OperationData, SecretBytes, SignRequest, SignResponse, UniqueIdentifier,
+    CryptographicAlgorithm, CryptographicOperationErrorKind, CryptographicOperationResponseContext,
+    DigitalSignatureAlgorithm, OperationData, SecretBytes, SignRequest, SignResponse,
+    UniqueIdentifier,
 };
 use kmipkit_ttlv::Value;
 
@@ -162,8 +163,11 @@ fn successful_multipart_response_preserves_correlation_without_signature_data() 
         (CORRELATION_VALUE, Value::byte_string(correlation.to_vec())),
     ]);
     let message = response_message(SIGN_OPERATION, SUCCESS, None, None, Some(response_payload));
-    let response = SignResponse::try_from_response_item(response_item(&message))
-        .expect("Table 335 permits multipart response framing without Signature Data");
+    let response = SignResponse::try_from_response_item_with_context(
+        response_item(&message),
+        CryptographicOperationResponseContext::MultipartNonFinal,
+    )
+    .expect("Table 335 permits multipart response framing without Signature Data");
 
     assert!(response.signature_data().is_none());
     response
