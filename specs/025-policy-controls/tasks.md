@@ -10,7 +10,7 @@ description: "Implementation tasks for KMIP 2.1 Policy and Usage Controls"
 
 **Tests**: Required by the approved acceptance criteria and `AGENTS.md`. Each operation and the usage guard have distinct Red, Green, and Refactor evidence commits. The listed official fixture inventory has no direct OASIS case for these operations; derive and label tests as project tests.
 
-**Organization**: Tasks are grouped by the five P1 user stories. Shared client dispatcher edits are integrated serially. Cross-language parity follows the approved KMIPKIT-0043 manifest contract.
+**Organization**: Tasks are grouped by four in-scope P1 user stories, the usage-allocation guard, and the Set Endpoint Role 1.0 scope resolution. Shared client dispatcher edits are integrated serially. Cross-language parity follows the approved KMIPKIT-0043 manifest contract.
 
 ## Format and path conventions
 
@@ -110,34 +110,34 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 - [x] T016 [US4] Refactor Set Defaults request/result handling in `crates/kmipkit-protocol/src/set_defaults.rs`, `crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs`, and `crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs` while preserving absent-vs-empty behavior; rerun focused tests and commit separately as Refactor. Kept production encoding unchanged after review found no beneficial wire-code cleanup; deduplicated Table 330's reason inventory and added tests for response ownership after source drop and Debug redaction. Verified 9 protocol and 7 client focused tests, focused Clippy (`-D warnings`), formatting, and `git diff --check`. Independent QA approved without behavior changes.
 
-## Phase 6: User Story 5 — Set Endpoint Role (Priority: P1)
+## Phase 6: Scope resolution — Set Endpoint Role deferred from 1.0
 
-**Goal**: Expose only client-to-server §6.1.54 using open Endpoint Role enumeration values.
+**Goal**: Resolve the conflict between §6.1.54's mandatory post-success role transition and KMIPKit's client-only 1.0 boundary; do not ship a partial operation.
 
-**Independent Test**: Fake transport captures required Table 331 role and returns required Table 332 role or Table 333 failure.
+**Independent Test**: Confirm that the 1.0 typed API and module registrations do not expose Set Endpoint Role, and that the normative catalog retains OASIS records while reflecting its 1.1 disposition.
 
-### Red commit
+### Normative review (Red evidence)
 
-- [x] T017 [US5] Add failing protocol/client tests in `crates/kmipkit-protocol/tests/unit/set_endpoint_role_tests.rs` and `crates/kmipkit-client/tests/unit/set_endpoint_role_execution_tests.rs`; register modules via protocol/client test module declarations; cite OASIS KMIP Specification v2.1 §6.1.54, Tables 331–333 and §11.19; cover required fields, open known/unknown/vendor Endpoint Role values, response requiredness, Table 333 errors, malformed payload, Pending, delivery, one exchange, and exclusion of server-initiated §6.2.5; record Red output separately. Red evidence: `cargo test -p kmipkit-protocol --lib set_endpoint_role_tests` exited 101 with E0432 for the absent role/model API; `cargo test -p kmipkit-client --lib set_endpoint_role_execution_tests` exited 101 with E0432/E0599 for the absent request, client request/outcome variants, and convenience method. No unrelated test compile errors remained. Both `cargo fmt --all --check` and `git diff --check` passed. Independent QA approved the final Red contract after adding the unassigned enum value `3` and explicit vendor tag/value/order preservation assertions.
+- [x] T017 Review the client-to-server Set Endpoint Role contract in OASIS KMIP 2.1 §6.1.54, Tables 331–333 and §11.19, Tables 451–452; identify whether typed request/response tests can satisfy the full success behavior inside the 1.0 client-only boundary. Initial Red tests demonstrated the API was not implemented (Red commit `07a118a2`); review then confirmed that successful completion requires the server to assume the Client role and KMIPKit to assume Server role over the current channel. §6.2.5 defines the reverse-direction operation. Independent QA confirmed no client-only interpretation that implements the full role transition. Decision: defer both directions to 1.1; do not implement a payload-only partial operation.
 
-### Green commit
+### Scope disposition (Green)
 
-- [ ] T018 [US5] Implement `SetEndpointRoleRequest`/`SetEndpointRoleResponse` in `crates/kmipkit-protocol/src/set_endpoint_role.rs`, export via protocol/facade `lib.rs`, and integrate the client-to-server typed path in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; pass T017 and commit separately as Green.
+- [x] T018 Record the 1.0 deferral and exact OASIS rationale in `spec.md`, `plan.md`, `research.md`, `data-model.md`, `traceability.md`, `contracts/operations.md`, `quickstart.md`, and the interoperability matrix. The spec states that a separate approved 1.1 specification is required for bidirectional channel behavior; T020 updates catalog release-scope metadata while preserving OASIS records.
 
-### Refactor commit
+### Cleanup and verification (Refactor)
 
-- [ ] T019 [US5] Refactor Endpoint Role open-value handling in `crates/kmipkit-protocol/src/set_endpoint_role.rs`, `crates/kmipkit-protocol/tests/unit/set_endpoint_role_tests.rs`, and `crates/kmipkit-client/tests/unit/set_endpoint_role_execution_tests.rs` without narrowing unknown values or adding §6.2.5; rerun focused tests and commit separately as Refactor.
+- [x] T019 Remove the exploratory Set Endpoint Role tests and their test-module registrations; verify there is no typed model, client method, dispatcher variant, or test module for this deferred operation in 1.0. Keep generic TTLV unknown-tag/enum preservation unchanged. Independent QA reviewed the code/API/module search and confirmed no 1.0 typed-surface remnants.
 
 ## Phase 7: Traceability, parity, and release evidence
 
 **Purpose**: Complete catalog traceability, cross-language capability, examples, interop record, and quality gates.
 
-- [ ] T020 Update `specification/catalog/kmip-2.1.json` with feature ID, implementation/verification references for all operation/tag/structure/enum elements and all four §6.1.23 client requirements; update `specs/025-policy-controls/traceability.md`, then run `python tools/normative_catalog/validate.py`, `python tools/normative_catalog/report.py --write`, and `--check`; do not edit generated report output by hand.
-- [ ] T021 Add failing C ABI and Java/Python parity tests for all five operations and the explicit caller guard in `bindings/c/tests/policy_controls.c`, `bindings/java/src/test/java/org/kmipkit/PolicyControlsParityTest.java`, `bindings/python/tests/test_policy_controls.py`, and `crates/kmipkit-ffi/tests/c_api_coverage.rs`; register the C test in `bindings/c/CMakeLists.txt`; do not begin until KMIPKIT-0043's manifest contract is approved and merged; record a separate Red evidence commit.
+- [x] T020 Update `specification/catalog/kmip-2.1.json` with feature ID, implementation/verification references for the four in-scope operation/tag/structure/enum elements and all four §6.1.23 client requirements. Retain Set Endpoint Role's normative record but mark its implementation scope `client_1_1` with the approved deferral rationale. Update `specs/025-policy-controls/traceability.md`, then run the pinned catalog validator and generated coverage report checks; do not edit generated report output by hand. Tags retain their original `KMIPKIT-0004` allocation ownership while gaining 025 implementation and verification references. Verified: `python tools/normative_catalog/validate.py` reports `Catalog valid: sources=4 clauses=1411 records=4044`; report `--write` and `--check` succeed; all 213 normative-catalog unit tests pass (7 platform skips). The operation-inventory regression confirms the normative Set Endpoint Role records remain present but scoped to `client_1_1`.
+- [ ] T021 Add failing C ABI and Java/Python parity tests for the four in-scope operations and explicit caller guard in `bindings/c/tests/policy_controls.c`, `bindings/java/src/test/java/org/kmipkit/PolicyControlsParityTest.java`, `bindings/python/tests/test_policy_controls.py`, and `crates/kmipkit-ffi/tests/c_api_coverage.rs`; register the C test in `bindings/c/CMakeLists.txt`; do not begin until KMIPKIT-0043's manifest contract is approved and merged; record a separate Red evidence commit.
 - [ ] T022 Add approved entries to `specification/api/public-api.json`, implement C/JNI/Java/Python adapters in `crates/kmipkit-ffi/src/lib.rs`, `bindings/java/native/kmipkit_jni.cpp`, `bindings/java/src/main/java/org/kmipkit/PolicyControls.java`, and `bindings/python/src/kmipkit/policy_controls.py`; regenerate C header and language metadata with `python tools/api_manifest/generate.py --write`; pass T021 and commit the manifest/adapters/generated outputs together as separate Green evidence.
 - [ ] T023 Refactor language parity adapters/tests in `crates/kmipkit-ffi/src/lib.rs`, `bindings/java/native/kmipkit_jni.cpp`, `bindings/java/src/main/java/org/kmipkit/PolicyControls.java`, `bindings/python/src/kmipkit/policy_controls.py`, and the parity test files without changing the manifest contract; run `python tools/api_manifest/generate.py --check` and binding tests, then commit separately as Refactor.
-- [ ] T024 Add executable English/Spanish operation and guard examples in `docs/user-guide/en/policy-controls.md` and `docs/user-guide/es/controles-de-uso.md`; compile/verify examples through `crates/kmipkit-protocol/tests/policy_controls_guide_examples.rs`; document caller cost/unit responsibility and local-only reservation limits without claiming conformance or remote consumption.
-- [ ] T025 Update `docs/development/kmip-interoperability.md` with operation rows and the exact integration evidence fields; leave results Pending until measured against identified server/version configurations; do not claim support based only on safe rejection.
+- [x] T024 Add English/Spanish operation and guard examples in `docs/user-guide/en/policy-controls.md` and `docs/user-guide/es/controles-de-uso.md`; compile-check a Rust mirror and verify its linkage to both guides in `crates/kmipkit-client/tests/unit/policy_controls_guide_examples.rs`; document caller cost/unit responsibility and local-only reservation limits without claiming conformance or remote consumption. The test compiles the mirrored code rather than extracting Markdown fences. Verified two guide tests pass; one exercises absent versus explicitly empty Defaults Information.
+- [x] T025 Update `docs/development/kmip-interoperability.md` with the four operation rows and exact integration evidence fields; leave results Pending until measured against identified server/version configurations; do not claim support based only on safe rejection. The Usage Allocation guard is local-only and is not a server interoperability result. Verified the matrix includes all four OASIS operation rows, leaves all server results Pending, and specifies revision, product/build/digest, listener configuration, transport/TLS, certificates, operation/request, response/delivery, UTC date, outcome, and workaround evidence.
 - [ ] T026 Run all focused tests and commands in `specs/025-policy-controls/quickstart.md`, plus `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, `cargo test --workspace --all-features`, and `cargo llvm-cov --workspace --all-features`; run API manifest unit tests, generated checks, relevant security checks, and both independent KMIP server integration gates where available; record exact outcomes and limitations in the PR.
 
 ## Dependencies and execution order
@@ -145,8 +145,8 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 - T001 precedes implementation; it verifies immutable sources and the release baseline.
 - US1 (T002–T004) establishes the first shared dispatcher integration.
 - US2 allocation (T005–T007) follows US1 because `execute.rs` and crate exports are shared. The guard (T008–T010) follows allocation and consumes its resolved success result.
-- US3, US4, and US5 follow the prior shared client integration sequence to avoid concurrent conflicting edits to `crates/kmipkit-client/src/execute.rs`, client exports, and protocol exports. Their payload models and isolated tests remain separable after their contracts are stable.
-- T020–T026 depend on all five operation stories and guard. Cross-language T021–T023 additionally require KMIPKIT-0043's approved manifest contract/merge; this does not block T002–T020 Rust implementation or the documentation prep.
+- US3 and US4 follow the prior shared client integration sequence to avoid concurrent conflicting edits to `crates/kmipkit-client/src/execute.rs`, client exports, and protocol exports. Their payload models and isolated tests remain separable after their contracts are stable. Set Endpoint Role is a documented scope disposition, not an implementation user story.
+- T020–T026 depend on the four in-scope operation stories, usage guard, and documented Set Endpoint Role deferral. Cross-language T021–T023 additionally require KMIPKIT-0043's approved manifest contract/merge; this does not block Rust implementation or documentation preparation.
 - T025 and external integration evidence can be prepared in parallel with parity after the Rust behavior is stable, but the interop matrix remains Pending until real measurements are recorded.
 
 ## Independent acceptance criteria
@@ -156,4 +156,4 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 - **US2 guard**: successful result plus explicit exact count/unit/ID context; positive caller cost only; matching ID; no over-budget transmission; delivery reservations; local-only accounting.
 - **US3**: Tables 325–327 and approved KMIPKIT-DISC-020 disposition.
 - **US4**: Tables 328–330; Table 328 says absent Defaults Information means removal; DISC-020 applies to Table 330 error attribution.
-- **US5**: Tables 331–333; unknown Endpoint Role values preserved; no server-initiated §6.2.5 behavior.
+- **Scope disposition**: Set Endpoint Role (§6.1.54) and reverse direction (§6.2.5) are not advertised as 1.0 capabilities; the normative catalog retains both OASIS operations and marks the client-to-server operation as deferred to 1.1 with rationale.
