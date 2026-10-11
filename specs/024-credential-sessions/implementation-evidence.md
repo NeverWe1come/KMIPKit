@@ -26,3 +26,13 @@ The tests use OASIS KMIP Specification v2.1 §6.1.30, Tables 253–255; Ticket u
 | Red | This commit | `cargo test -p kmipkit-protocol --lib login_operation_tests` | Expected compile failure: `LoginError`, `LoginRequest`, and `LoginResponse` are not implemented/exported. |
 | Red | This commit | `cargo test -p kmipkit-client --lib login_execution_tests` | Expected compile failures: Login request construction, operation classification, and typed response accessors do not exist. |
 | Red formatting | This commit | `cargo fmt --all --check`; `git diff --check` | PASS. |
+
+## T009 — Login GREEN
+
+The implementation encodes the optional Table 253 fields in order, returns the required secret-safe Ticket for Table 254 success, preserves Table 255 failure metadata, and routes Login through one typed client exchange. Login does not store or attach a Ticket to later requests.
+
+| Phase | Commit | Command | Result |
+|---|---|---|---|
+| Focused Green | This commit | `cargo test -p kmipkit-protocol --lib login_operation_tests`; `cargo test -p kmipkit-client --lib login_execution_tests` | PASS: 12 protocol tests and 12 client tests, including the pinned CN01 §2.48 fixture values. |
+| Green package checks | This commit | `cargo test -p kmipkit-protocol --all-features`; `cargo test -p kmipkit-client --all-features`; `cargo test -p kmipkit --all-features` | PASS: protocol and client package suites, integration/UI/doc tests, and facade API tests. |
+| Green quality gates | This commit | `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |

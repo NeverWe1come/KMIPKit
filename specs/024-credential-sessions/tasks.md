@@ -60,7 +60,7 @@ Every task uses the repository checklist form: checkbox, sequential task ID, opt
 
 ### Green commit
 
-- [ ] T009 Implement LoginRequest and LoginResponse in crates/kmipkit-protocol/src/login.rs; export the models from crates/kmipkit-protocol/src/lib.rs and integrate Login in crates/kmipkit-client/src/execute.rs, crates/kmipkit-client/src/lib.rs, and crates/kmipkit/src/lib.rs; make T008 pass and commit separately as Green.
+- [x] T009 Implement LoginRequest and LoginResponse in crates/kmipkit-protocol/src/login.rs; export the models from crates/kmipkit-protocol/src/lib.rs and integrate Login in crates/kmipkit-client/src/execute.rs, crates/kmipkit-client/src/lib.rs, and crates/kmipkit/src/lib.rs; make T008 pass and commit separately as Green.
 
 ### Refactor commit
 

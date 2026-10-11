@@ -26,7 +26,6 @@ const SUCCESS: u32 = 0;
 const FAILURE: u32 = 1;
 const PENDING: u32 = 2;
 const PERMISSION_DENIED: u32 = 5;
-const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const LEASE_TIME: u32 = 0x0042_0049;
@@ -214,7 +213,10 @@ fn failure_preserves_table_255_reason_without_retry() {
     let result = outcome.get(0).expect("one Login result exists").outcome();
     assert_eq!(result.result().status().raw(), FAILURE);
     assert_eq!(
-        result.result().reason().map(|reason| reason.raw()),
+        result
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(PERMISSION_DENIED)
     );
     assert_eq!(transport.borrow().exchange_count(), 1);

@@ -40,6 +40,7 @@ mod import;
 mod join_split_key;
 mod lifecycle;
 mod locate;
+mod login;
 mod mac;
 mod mac_verify;
 mod message;
@@ -119,6 +120,7 @@ pub use join_split_key::{
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
+pub use login::{LoginError, LoginRequest, LoginResponse};
 pub use mac::{MacError, MacRequest, MacResponse};
 pub use mac_verify::{MacVerifyError, MacVerifyRequest, MacVerifyResponse};
 pub use message::{

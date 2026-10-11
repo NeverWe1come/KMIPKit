@@ -164,7 +164,7 @@ fn pinned_cn01_2_48_fixture_matches_the_typed_request_and_response_contract() {
         .expect("fixture Login request has Request Payload");
     let request_fields = request_payload
         .children()
-        .filter(|node| node.is_element())
+        .filter(roxmltree::Node::is_element)
         .collect::<Vec<_>>();
     assert_eq!(
         request_fields
