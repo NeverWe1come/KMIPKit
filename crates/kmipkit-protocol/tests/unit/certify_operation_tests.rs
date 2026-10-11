@@ -95,6 +95,24 @@ fn request_emits_table_179_fields_once_and_in_order() {
 }
 
 #[test]
+fn request_may_omit_unique_identifier_when_certificate_request_value_is_present() {
+    let request = CertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(crate::SecretBytes::new(
+            b"request-without-public-key-id".to_vec(),
+        ));
+
+    let payload = request
+        .into_ttlv_payload()
+        .expect("a Certificate Request Value can identify the request without a public-key Unique Identifier");
+
+    assert_eq!(
+        field_tags(&payload),
+        [CERTIFICATE_REQUEST_TYPE, CERTIFICATE_REQUEST_VALUE]
+    );
+}
+
+#[test]
 fn request_requires_certificate_request_type_when_request_value_is_present() {
     let request = CertifyRequest::new().with_certificate_request_value(crate::SecretBytes::new(
         b"certificate-request-sentinel".to_vec(),
