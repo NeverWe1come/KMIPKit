@@ -9,6 +9,9 @@
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::{output_bytes, structure_contains_tag};
 use crate::operation_test_support::item;
+use crate::query_ping_fixtures::{
+    response_item as response_item_with_text, response_message as response_message_with_text,
+};
 use crate::{ResultMessage, RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse};
 use kmipkit_ttlv::{Structure, Value, ValueView};
 use quickcheck::{Arbitrary, Gen, QuickCheck};
@@ -60,10 +63,12 @@ fn request_roundtrips_table_316_data_length(case: DataLengthCase) -> bool {
     let Ok(payload) = RngRetrieveRequest::new(case.0).to_ttlv_payload() else {
         return false;
     };
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
     fields.len() == 1
         && fields[0].tag().raw() == DATA_LENGTH
-        && fields[0].with_value(|value| matches!(value, ValueView::Integer(actual) if *actual == case.0))
+        && fields[0]
+            .with_value(|value| matches!(value, ValueView::Integer(actual) if *actual == case.0))
 }
 
 #[test]
@@ -72,7 +77,8 @@ fn request_encodes_required_table_316_data_length_as_integer() {
     let payload = request
         .to_ttlv_payload()
         .expect("Table 316 contains one required Data Length Integer");
-    let fields = payload.view().children();
+    let view = payload.view();
+    let fields = view.children();
 
     assert_eq!(fields.len(), 1);
     assert_eq!(fields[0].tag().raw(), DATA_LENGTH);
@@ -122,35 +128,41 @@ fn successful_response_rejects_missing_wrong_type_and_duplicate_data() {
     ];
 
     for payload in cases {
-        let message = response_message(
-            RNG_RETRIEVE_OPERATION,
-            SUCCESS,
-            None,
-            None,
-            Some(payload),
-        );
+        let message = response_message(RNG_RETRIEVE_OPERATION, SUCCESS, None, None, Some(payload));
         let error = RngRetrieveResponse::try_from_response_item(response_item(&message))
             .expect_err("malformed Table 317 payloads are rejected");
-        assert_eq!(error, RngRetrieveError::new("RNG Retrieve", crate::CryptographicOperationErrorKind::MalformedPayload));
-        assert!(!error.to_string().contains("7"));
+        assert_eq!(
+            error,
+            RngRetrieveError::new(
+                "RNG Retrieve",
+                crate::CryptographicOperationErrorKind::MalformedPayload
+            )
+        );
+        assert!(!error.to_string().contains('7'));
     }
 }
 
 #[test]
 fn failure_response_preserves_common_result_without_success_data() {
-    let message = response_message(
+    let message = response_message_with_text(
         RNG_RETRIEVE_OPERATION,
         OPERATION_FAILED,
         Some(GENERAL_FAILURE),
-        Some(b"RNG request denied"),
+        Some("RNG request denied"),
         None,
     );
-    let response = RngRetrieveResponse::try_from_response_item(response_item(&message))
+    let response = RngRetrieveResponse::try_from_response_item(response_item_with_text(&message))
         .expect("Table 318 failure is represented by the common result");
 
     assert_eq!(response.result().status().raw(), OPERATION_FAILED);
-    assert_eq!(response.result().reason().map(crate::ResultReason::raw), Some(GENERAL_FAILURE));
-    assert_eq!(response.result().message().map(ResultMessage::as_str), Some("RNG request denied"));
+    assert_eq!(
+        response.result().reason().map(crate::ResultReason::raw),
+        Some(GENERAL_FAILURE)
+    );
+    assert_eq!(
+        response.result().message().map(ResultMessage::as_str),
+        Some("RNG request denied")
+    );
     assert!(response.data().is_none());
 }
 
@@ -162,17 +174,16 @@ fn pending_response_is_explicit_and_preserves_correlation_without_polling() {
         PENDING,
         None,
         Some(&correlation),
-        None,
+        Some(Structure::new()),
     );
     let response = RngRetrieveResponse::try_from_pending_response_item(response_item(&message))
         .expect("caller-controlled async handling retains the Pending response");
 
     assert_eq!(response.result().status().raw(), PENDING);
     assert!(response.data().is_none());
-    assert!(response.with_ttlv(|ttlv| structure_contains_tag(
-        &ttlv,
-        ASYNCHRONOUS_CORRELATION_VALUE
-    )));
+    assert!(
+        response.with_ttlv(|ttlv| structure_contains_tag(&ttlv, ASYNCHRONOUS_CORRELATION_VALUE))
+    );
     assert!(RngRetrieveResponse::try_from_response_item(response_item(&message)).is_err());
 }
 

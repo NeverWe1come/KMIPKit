@@ -55,6 +55,7 @@ mod rekey_key_pair;
 mod reprovision;
 mod result;
 mod revoke;
+mod rng_retrieve;
 mod set_attribute;
 mod sign;
 mod signature_verify;
@@ -129,6 +130,7 @@ pub use result::{
     KmipOperationResult, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
 };
 pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
+pub use rng_retrieve::{RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};

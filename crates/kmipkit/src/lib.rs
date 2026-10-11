@@ -10,6 +10,6 @@ pub use kmipkit_client::{
 pub use kmipkit_protocol::{
     CancelRequest, KmipOperationResult, PollRequest, ProcessRequest, ProtocolCauseCategory,
     ProtocolError, ProtocolErrorKind, QueryAsyncRequestsRequest, ResultMessage, ResultReason,
-    ResultStatus, ResultValidationError,
+    ResultStatus, ResultValidationError, RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse,
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
