@@ -23,9 +23,9 @@ description: "Implementation task list for KMIP 2.1 remote RNG operations"
 
 **Purpose**: Establish exact catalog and traceability inputs before coding.
 
-- [ ] T003 Map both operation elements, enum values, Table fields, errors, and KMIPKIT-REQ-SPEC-6.1.50-001 to source, implementation path, and named tests in specs/027-rng-operations/traceability.md.
-- [ ] T004 Verify Data Length and Data records and existing operation values in specification/catalog/kmip-2.1.json; add a catalog source record only if absent and regenerate with the pinned tool.
-- [ ] T005 Record shared Data field ownership and preserve its current catalog feature assignment in specs/027-rng-operations/traceability.md.
+- [x] T003 Map both operation elements, enum values, Table fields, errors, and KMIPKIT-REQ-SPEC-6.1.50-001 to source, implementation path, and named tests in specs/027-rng-operations/traceability.md.
+- [x] T004 Verify Data Length and Data records and existing operation values in specification/catalog/kmip-2.1.json; add a catalog source record only if absent and regenerate with the pinned tool.
+- [x] T005 Record shared Data field ownership and preserve its current catalog feature assignment in specs/027-rng-operations/traceability.md.
 
 ## Phase 3: User Story 1 — RNG Retrieve (Priority: P1)
 
