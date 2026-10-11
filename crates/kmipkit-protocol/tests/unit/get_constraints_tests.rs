@@ -107,18 +107,65 @@ fn table_230_rejects_missing_wrong_typed_and_duplicate_constraints() {
             item(CONSTRAINTS, Value::structure(Structure::new())),
             item(CONSTRAINTS, Value::structure(Structure::new())),
         ])),
-        Some(success_payload([
-            item(VENDOR_MEMBER, Value::integer(1)),
-            item(CONSTRAINTS, Value::structure(Structure::new())),
-        ])),
+        Some(success_payload([item(VENDOR_MEMBER, Value::integer(1))])),
     ];
     for payload in malformed {
         let message = response_message(GET_CONSTRAINTS, 0, None, None, payload);
         assert!(
             GetConstraintsResponse::try_from_response_item(response_item(&message)).is_err(),
-            "Table 230 requires one Constraints Structure as the only operation field"
+            "Table 230 requires one Constraints Structure"
         );
     }
+}
+
+#[test]
+fn table_230_preserves_unknown_sibling_fields_in_complete_response_ttlv() {
+    const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+    let message = response_message(
+        GET_CONSTRAINTS,
+        0,
+        None,
+        None,
+        Some(success_payload([
+            item(VENDOR_MEMBER, Value::integer(41)),
+            item(CONSTRAINTS, Value::structure(constraints())),
+            item(
+                VENDOR_MEMBER,
+                Value::text_string("opaque-sibling".to_owned()),
+            ),
+        ])),
+    );
+    let actual = GetConstraintsResponse::try_from_response_item(response_item(&message))
+        .expect("unknown siblings do not invalidate the required Constraints field");
+
+    actual.with_ttlv(|response_item| {
+        let payload = response_item
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == RESPONSE_PAYLOAD)
+            .expect("complete response item retains Response Payload");
+        payload.with_value(|value| {
+            let kmipkit_ttlv::ValueView::Structure(payload) = value else {
+                panic!("Response Payload is a Structure");
+            };
+            assert_eq!(
+                payload
+                    .children()
+                    .iter()
+                    .map(|field| field.tag().raw())
+                    .collect::<Vec<_>>(),
+                [VENDOR_MEMBER, CONSTRAINTS, VENDOR_MEMBER]
+            );
+            assert!(
+                payload.children()[0]
+                    .with_value(|value| matches!(value, kmipkit_ttlv::ValueView::Integer(41)))
+            );
+            assert!(payload.children()[2].with_value(|value| matches!(
+                value,
+                kmipkit_ttlv::ValueView::TextString("opaque-sibling")
+            )));
+        });
+    });
 }
 
 #[test]
