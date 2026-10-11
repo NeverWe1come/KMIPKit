@@ -39,6 +39,15 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 - The maintainer approved applying §6.1.7 to failed Check responses: preserve and type each returned `Usage Limits Count`, `Cryptographic Usage Mask`, and `Lease Time`; a failed response still does not require `Unique Identifier`.
 - Follow-up protocol and fake-client tests now exercise all three policy fields together on `Operation Failed`. `cargo test -p kmipkit-protocol policy_denial_response_returns_the_policy_value_without_a_success_identifier` and `cargo test -p kmipkit-client check_policy_denial_exposes_the_returned_mask_without_an_identifier` passed; focused Clippy, format, and diff checks passed.
 
+### Catalog and traceability closure (T035–T036)
+
+- `specs/022-object-lifecycle/traceability.md` maps all 44 normative ledger IDs and each of the 53 Request/Response payload rows to canonical catalog elements, implementation paths, and exact executable Rust test symbols. It also maps the nine operation error tables to shared Result Status/Reason elements and tests.
+- `python -B -m unittest tools.normative_catalog.tests.test_object_lifecycle_traceability -v` passes (2 tests). The audit checks the 44 requirement assignments, nine operation elements, all 53 payload rows, catalog element IDs, and every referenced test function.
+- Full catalog suite: `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py'` passes (209 tests, 7 platform skips).
+- `python tools/normative_catalog/validate.py` passes (4 sources, 1,411 clauses, 4,042 records).
+- Regenerated with `python tools/normative_catalog/report.py --repo-root . --write`; `python tools/normative_catalog/report.py --repo-root . --check` passes. Generated report changes are tool-produced.
+- Coverage labels distinguish `verified` client behavior from `scoped_verified` obligations that rely on caller sequencing, server policy/state, or material use outside this library. No OASIS profile or official Test Case conformance claim is made.
+
 ### Re-key Key Pair (US6)
 
 - RED protocol: `cargo test -p kmipkit-protocol rekey_key_pair_operation_tests --no-fail-fast` failed as expected because `RekeyKeyPairRequest`, `RekeyKeyPairResponse`, and `RekeyKeyPairError` were not yet exported.
@@ -70,3 +79,19 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 - REFACTOR commit: `f7831af5` (`refactor(022): reuse shared Revoke payload helpers`) removes duplicate TTLV-tag, item, error, and identifier helpers while preserving behavior.
 - Verification passed: focused Revoke protocol and client tests (10 and 6 tests), focused Archive protocol/client tests (12 and 4 tests), `cargo test -p kmipkit-protocol -p kmipkit-client` (420 client unit tests and all protocol tests passed), `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings`, `cargo fmt --all --check`, and `git diff --check`.
 - No direct OASIS Test Case is listed for Revoke; these table-derived tests cover §6.1.44 Tables 295–297, §4.47/Table 123, and §11.48/Table 481. Pinned upstream sources remain unchanged.
+
+
+### Final local verification (2026-10-11)
+
+- cargo fmt --all --check passes.
+- cargo clippy --workspace --all-targets --all-features -- -D warnings passes.
+- cargo test --workspace --all-features --quiet passes on the installed stable toolchain, including the 540 protocol unit tests and workspace integration/UI suites.
+- cargo llvm-cov --workspace --all-features --quiet --json --output-path target/022-final-coverage.json passes its tests and reports 21,955/24,929 workspace lines covered (88.07%), below the repository's 90% workspace gate. The nine operation protocol modules individually range from 95.35% to 98.48%; the lowest is Obtain Lease at 123/129 lines.
+- cargo +1.94 test --workspace --all-features --quiet passes the 540 protocol tests, but three loopback socket tests in kmipkit-test-support/tests/transport_fixtures.rs fail on this Windows host with PermissionDenied (OS error 10013). Re-run on supported CI hosts.
+- python scripts/coverage_gate.py preflight --workspace . --status-out target/022-coverage-status.json passes its source inventory check (99 Rust source files; 155 eligible files).
+- pwsh -File ./scripts/Test-DependencyPolicy.ps1 passes: the pinned cargo-deny policy, advisory database, exceptions, and lockfile hashes validate.
+- python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' passes (209 tests, 7 skips); python -B tools/normative_catalog/validate.py and python -B tools/normative_catalog/report.py --check pass.
+- python -B tools/api_manifest/generate.py --check verifies six generated files; python -B tools/extension_fixtures/generate.py --check passes. tools/api_manifest/tests/test_extension_fixtures.py passes 16 tests with 1 skip in the isolated Python 3.12.14 test environment.
+- The English and Spanish lifecycle guide command compiled all 18 marked examples. The focused Check denial policy tests pass with the approved §6.1.7 behavior.
+- git diff --check passes. The host lacks CMake/CTest/Ninja and a native C compiler, so the C consumer, ASan, and libFuzzer smoke checks were not run here. Linux/macOS gates also require CI.
+- Gate status: T037 remains open. The local workspace coverage gate is below 90%, and supported-platform/native C/fuzz checks remain outstanding. No profile conformance or certification claim is made.

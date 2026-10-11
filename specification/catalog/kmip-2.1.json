@@ -56804,15 +56804,28 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.6-001",
+        "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.6-002-003",
+        "KMIPKIT-REQ-SPEC-6.1.6-003",
+        "KMIPKIT-REQ-SPEC-6.1.6-007"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-COMPLETE-SERVER",
         "KMIPKIT-PROFILE-QUANTUM-SAFE-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/certify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -56840,7 +56853,15 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.7-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-003",
+        "KMIPKIT-REQ-SPEC-6.1.7-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-005"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-SERVER",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-SERVER",
@@ -56861,9 +56882,15 @@
         "KMIPKIT-PROFILE-XML-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58360,12 +58387,23 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-005"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/obtain_lease.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58659,15 +58697,29 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.45-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-004",
+        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+        "KMIPKIT-REQ-SPEC-6.1.45-006-002",
+        "KMIPKIT-REQ-SPEC-6.1.45-008"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-COMPLETE-SERVER",
         "KMIPKIT-PROFILE-QUANTUM-SAFE-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58695,7 +58747,11 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-COMPLETE-SERVER",
         "KMIPKIT-PROFILE-QUANTUM-SAFE-SERVER"
@@ -58714,9 +58770,15 @@
         "KMIPKIT-TEST-CN01-2-86",
         "KMIPKIT-TEST-CN01-2-87"
       ],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58744,15 +58806,25 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.47-001",
+        "KMIPKIT-REQ-SPEC-6.1.47-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.47-004-002"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-COMPLETE-SERVER",
         "KMIPKIT-PROFILE-QUANTUM-SAFE-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey_key_pair.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58780,12 +58852,22 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.48-001",
+        "KMIPKIT-REQ-SPEC-6.1.48-004",
+        "KMIPKIT-REQ-SPEC-6.1.48-006"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/reprovision.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58849,7 +58931,16 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-REQ-SPEC-6.1.43-011"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-SERVER",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-SERVER",
@@ -58870,9 +58961,15 @@
         "KMIPKIT-PROFILE-XML-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -58900,7 +58997,11 @@
       "direction": "client_to_server",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.44-001",
+        "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+        "KMIPKIT-REQ-SPEC-6.1.44-003-002"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-SERVER",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-SERVER",
@@ -58921,9 +59022,15 @@
         "KMIPKIT-PROFILE-XML-SERVER"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/revoke.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -92330,16 +92437,24 @@
       "direction": "server_to_client",
       "condition": "When returned Lease Time is zero.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/obtain_lease.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-001-002",
@@ -92360,16 +92475,24 @@
       "direction": "client_to_server",
       "condition": "When the lease expires.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/obtain_lease.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-002",
@@ -92390,16 +92513,24 @@
       "direction": "server_to_client",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/obtain_lease.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-005",
@@ -92420,16 +92551,24 @@
       "direction": "server_to_client",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/obtain_lease.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-001",
@@ -92685,16 +92824,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-005",
@@ -92715,16 +92862,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-007",
@@ -92745,16 +92900,24 @@
       "direction": "client_to_server",
       "condition": "When registering a cryptographic object.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-009-001",
@@ -92775,16 +92938,24 @@
       "direction": "client_to_server",
       "condition": "For applicable registered objects.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-009-002",
@@ -92805,16 +92976,24 @@
       "direction": "client_to_server",
       "condition": "When Algorithm is present.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-010-001",
@@ -92835,16 +93014,24 @@
       "direction": "client_to_server",
       "condition": "For applicable registered objects.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-010-002",
@@ -92865,16 +93052,24 @@
       "direction": "client_to_server",
       "condition": "When Length is present.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-011",
@@ -92895,16 +93090,24 @@
       "direction": "client_to_server",
       "condition": "When registering a Certificate.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REGISTER"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-001",
@@ -92925,16 +93128,24 @@
       "direction": "client_to_server",
       "condition": "For those revocation reasons.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REVOKE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/revoke.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-003-001",
@@ -92955,16 +93166,24 @@
       "direction": "client_to_server",
       "condition": "For those revocation reasons.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REVOKE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/revoke.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-003-002",
@@ -92985,16 +93204,24 @@
       "direction": "client_to_server",
       "condition": "For all other revocation reasons.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-REVOKE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/revoke.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-001",
@@ -93015,16 +93242,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-001",
@@ -93045,16 +93280,24 @@
       "direction": "client_to_server",
       "condition": "When omitting Certificate Request.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-002",
@@ -93075,16 +93318,24 @@
       "direction": "client_to_server",
       "condition": "When Certificate Request, Certificate Request Type, and Certificate Type in Attributes are omitted.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-004",
@@ -93105,16 +93356,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-006-001",
@@ -93135,16 +93394,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-006-002",
@@ -93165,16 +93432,24 @@
       "direction": "client_to_server",
       "condition": "When Offset is omitted.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-008",
@@ -93195,16 +93470,24 @@
       "direction": "client_to_server",
       "condition": "When Certificate Request is present.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.46-001",
@@ -93225,16 +93508,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.46-004-001",
@@ -93255,16 +93546,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.46-004-002",
@@ -93285,16 +93584,24 @@
       "direction": "client_to_server",
       "condition": "When Offset is omitted.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-001",
@@ -93315,16 +93622,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey_key_pair.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-004-001",
@@ -93345,16 +93660,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey_key_pair.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-004-002",
@@ -93375,16 +93698,24 @@
       "direction": "client_to_server",
       "condition": "When Offset is omitted.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/rekey_key_pair.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.48-001",
@@ -93405,16 +93736,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/reprovision.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.48-004",
@@ -93435,16 +93774,24 @@
       "direction": "client_to_server",
       "condition": "When choosing server-created credentials.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/reprovision.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.48-006",
@@ -93465,16 +93812,24 @@
       "direction": "client_to_server",
       "condition": "When new credentials are required.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/reprovision.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-001",
@@ -94101,16 +94456,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/certify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-002-001",
@@ -94131,16 +94494,24 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/certify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-002-002",
@@ -94161,16 +94532,24 @@
       "direction": "client_to_server",
       "condition": "When Certificate Request is omitted.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/certify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-013",
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-002-003",
@@ -94191,16 +94570,24 @@
       "direction": "client_to_server",
       "condition": "When both request fields are omitted.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/certify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-003",
@@ -94221,16 +94608,24 @@
       "direction": "client_to_server",
       "condition": "When retrieving the certificate in the same batch.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/certify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-007",
@@ -94251,16 +94646,24 @@
       "direction": "client_to_server",
       "condition": "When Certificate Request is present.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/certify.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-001",
@@ -94281,16 +94684,24 @@
       "direction": "client_to_server",
       "condition": "When using Check.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CHECK"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-001",
@@ -94311,16 +94722,24 @@
       "direction": "client_to_server",
       "condition": "When a batch contains Check.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CHECK"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-002",
@@ -94341,16 +94760,24 @@
       "direction": "client_to_server",
       "condition": "When a batch contains Check.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CHECK"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-003",
@@ -94371,16 +94798,24 @@
       "direction": "client_to_server",
       "condition": "In a Check request.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CHECK"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-004-001",
@@ -94401,16 +94836,24 @@
       "direction": "client_to_server",
       "condition": "In a Check request.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CHECK"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -94431,16 +94874,24 @@
       "direction": "client_to_server",
       "condition": "When Check concerns a different or narrower use.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CHECK"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-005",
@@ -94461,16 +94912,24 @@
       "direction": "client_to_server",
       "condition": "To evaluate a later Obtain Lease request.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CHECK"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-001-001",
