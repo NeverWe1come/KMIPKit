@@ -143,10 +143,10 @@ pub struct CheckResponse {
 impl CheckResponse {
     /// Converts one already validated Check response batch item.
     ///
-/// Known success and policy-denial payload fields are typed, while unknown
-/// fields remain available through the generic response item. A Unique
-/// Identifier is exposed only on success, as required by §6.1.7. Malformed or
-/// duplicate known fields are rejected without including server values.
+    /// Known success and policy-denial payload fields are typed, while unknown
+    /// fields remain available through the generic response item. A Unique
+    /// Identifier is exposed only on success, as required by §6.1.7. Malformed or
+    /// duplicate known fields are rejected without including server values.
     ///
     /// # Errors
     ///
@@ -173,7 +173,7 @@ impl CheckResponse {
             None if is_success => return Err(CheckError::MalformedResponsePayload),
             None => None,
         };
-        let (returned_identifier, usage_limits_count, cryptographic_usage_mask, lease_time) =
+        let (unique_identifier, usage_limits_count, cryptographic_usage_mask, lease_time) =
             match parsed_payload {
                 Some(payload) => (
                     payload.unique_identifier,
@@ -183,12 +183,6 @@ impl CheckResponse {
                 ),
                 None => (None, None, None, None),
             };
-        let unique_identifier = if is_success {
-            returned_identifier
-        } else {
-            None
-        };
-
         Ok(Self {
             result,
             response_ttlv,
@@ -285,7 +279,7 @@ struct ParsedCheckResponsePayload {
 
 fn parse_response_payload(
     payload: &StructureView<'_>,
-    require_identifier: bool,
+    is_success: bool,
 ) -> Result<ParsedCheckResponsePayload, CheckError> {
     let mut unique_identifier = None;
     let mut usage_limits_count = None;
@@ -345,12 +339,12 @@ fn parse_response_payload(
         }
     }
 
-    if require_identifier && unique_identifier.is_none() {
+    if is_success && unique_identifier.is_none() {
         return Err(CheckError::MalformedResponsePayload);
     }
 
     Ok(ParsedCheckResponsePayload {
-        unique_identifier,
+        unique_identifier: if is_success { unique_identifier } else { None },
         usage_limits_count,
         cryptographic_usage_mask,
         lease_time,
