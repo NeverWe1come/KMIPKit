@@ -3077,6 +3077,15 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "operation"):
             validate_catalog(raw, ROOT, require_complete=True)
 
+    def test_catalog_validator_accepts_documented_mixed_requirement_scope(self) -> None:
+        """Requirement scope may be mixed when one source clause spans actors."""
+        document = deviation_catalog(decision_record())
+        document["requirements"][0]["scope_state"] = "mixed"
+        document["source_clauses"][0]["scope_state"] = "mixed"
+        document["decisions"][0]["requirement_ids"] = [document["requirements"][0]["requirement_id"]]
+
+        self.assertGreater(validate(document)["record_count"], 0)
+
     def test_checked_in_catalog_reconciles_profile_and_official_test_evidence(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         raw = catalog_path.read_bytes()
@@ -13070,8 +13079,14 @@ class CatalogValidationTests(unittest.TestCase):
             )
             self.assertEqual(
                 requirements[requirement_id]["scope_state"],
-                "client_1_0 + server_only (split/shared)",
+                "mixed",
             )
+
+        for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"):
+            self.assertTrue(
+                all("(split/shared)" in row["scope_state"] for row in mappings[requirement_id])
+            )
+            self.assertEqual(requirements[requirement_id]["scope_state"], "mixed")
 
         verify_rows = mappings["KMIPKIT-REQ-SPEC-6.1.20-001-002"]
         verify_keywords = {row["source_keyword"] for row in verify_rows}
@@ -13101,6 +13116,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         obligations_by_locator: dict[tuple[str, int], list[dict[str, object]]] = {}
         obligations_by_id: dict[tuple[str, str], list[dict[str, object]]] = {}
+        crosswalk_by_requirement: dict[str, list[dict[str, object]]] = {}
         for review in oracle["source_requirement_reviews"]:
             for obligation in review["source_obligations"]:
                 locator_key = (review["source_clause_id"], obligation["source_order"])
@@ -13130,6 +13146,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         for mapping in oracle["requirement_crosswalk"]:
             requirement_id = mapping["requirement_id"]
+            crosswalk_by_requirement.setdefault(requirement_id, []).append(mapping)
             requirement = requirements.get(requirement_id)
             clause = source_clauses.get(mapping["source_clause_id"])
             audited_clause = audited_sources.get(mapping["source_id"], {}).get(mapping["source_clause_id"])
@@ -13187,11 +13204,32 @@ class CatalogValidationTests(unittest.TestCase):
                 violations.append(f"{requirement_id} keyword is absent from its pinned source locator")
             if mapping["source_clause_id"] not in requirement["source_clause_ids"]:
                 violations.append(f"{requirement_id} does not point back to its reviewed source clause")
-            for field, actual in (("role", requirement["role"]), ("scope_state", requirement["scope_state"]), ("source_keyword", requirement["source_keyword"])):
-                if mapping[field] != actual:
-                    violations.append(f"{requirement_id} {field} differs from its catalog record")
-            if mapping["source_keyword"] != requirement["source_keyword"]:
-                violations.append(f"{requirement_id} keyword differs between source review and catalog")
+            if mapping["role"] != requirement["role"]:
+                violations.append(f"{requirement_id} role differs from its catalog record")
+
+        for requirement_id, mappings in crosswalk_by_requirement.items():
+            requirement = requirements.get(requirement_id)
+            if requirement is None:
+                continue
+            ordered_mappings = sorted(
+                mappings,
+                key=lambda mapping: (
+                    mapping["source_id"],
+                    mapping["source_clause_id"],
+                    mapping["source_obligation_order"],
+                ),
+            )
+            aggregate_scopes = list(dict.fromkeys(mapping["scope_state"] for mapping in ordered_mappings))
+            mixed_source_scope = any("(split/shared)" in scope for scope in aggregate_scopes)
+            expected_scope = aggregate_scopes[0] if len(aggregate_scopes) == 1 and not mixed_source_scope else "mixed"
+            if requirement["scope_state"] != expected_scope:
+                violations.append(
+                    f"{requirement_id} aggregate scope differs from its source atoms: "
+                    f"expected={expected_scope!r}, actual={requirement['scope_state']!r}"
+                )
+            source_keywords = {mapping["source_keyword"] for mapping in mappings}
+            if requirement["source_keyword"] not in source_keywords:
+                violations.append(f"{requirement_id} catalog keyword is absent from its source atoms")
 
         for review in oracle["source_requirement_reviews"]:
             source_id = review["source_id"]
