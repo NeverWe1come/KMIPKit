@@ -3616,7 +3616,7 @@ impl Client {
         if let Some(indicator) = asynchronous_indicator {
             batch = batch.with_asynchronous_indicator(indicator);
         }
-        match self.execute(batch, limits) {
+        match self.execute_with_options(batch, limits, &RequestOptions::default()) {
             Ok(response) => Ok(take_single_response(response)?),
             Err(error) => {
                 context.settle_after_error(cost, error.delivery_state());
@@ -4169,11 +4169,11 @@ impl Client {
         &mut self,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::get_constraints())),
+        self.execute_one_typed_request(
+            ClientRequest::get_constraints(),
             limits,
-        )?;
-        take_single_item_response(response.items)
+            &RequestOptions::default(),
+        )
     }
 
     /// Executes one Set Constraints request through one transport exchange.
@@ -4187,13 +4187,11 @@ impl Client {
         request: SetConstraintsRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::set_constraints(
-                request,
-            ))),
+        self.execute_one_typed_request(
+            ClientRequest::set_constraints(request),
             limits,
-        )?;
-        take_single_item_response(response.items)
+            &RequestOptions::default(),
+        )
     }
 
     /// Executes one Set Defaults request through one transport exchange.
@@ -4207,11 +4205,11 @@ impl Client {
         request: SetDefaultsRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::set_defaults(request))),
+        self.execute_one_typed_request(
+            ClientRequest::set_defaults(request),
             limits,
-        )?;
-        take_single_item_response(response.items)
+            &RequestOptions::default(),
+        )
     }
 
     /// Executes one Get Usage Allocation request through one transport exchange.
@@ -4228,13 +4226,11 @@ impl Client {
         request: GetUsageAllocationRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::get_usage_allocation(
-                request,
-            ))),
+        self.execute_one_typed_request(
+            ClientRequest::get_usage_allocation(request),
             limits,
-        )?;
-        take_single_item_response(response.items)
+            &RequestOptions::default(),
+        )
     }
 
     /// Executes one client-to-server Ping request.
