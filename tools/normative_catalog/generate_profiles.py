@@ -50,6 +50,16 @@ class ProfileClosure:
 
     source_clause_ids: tuple[str, ...]
     requirement_ids: tuple[str, ...]
+    unresolved_scope_obligations: tuple[UnresolvedProfileScopeObligation, ...]
+
+
+@dataclass(frozen=True)
+class UnresolvedProfileScopeObligation:
+    """A client obligation whose applicability cannot yet be assigned safely."""
+
+    requirement_id: str
+    source_clause_id: str
+    scope_state: str
 
 
 @dataclass(frozen=True)
@@ -246,6 +256,7 @@ def compute_profile_closure(
         expand_scope(clause["source_id"], clause["section"], frozenset())
 
     requirement_ids: set[str] = set()
+    unresolved_scope_obligations: set[UnresolvedProfileScopeObligation] = set()
     for requirement in raw_requirements:
         if not isinstance(requirement, dict):
             raise ProfileGenerationError("catalog has an invalid requirement record")
@@ -254,6 +265,19 @@ def compute_profile_closure(
         if not isinstance(requirement_id, str) or not requirement_id or not isinstance(linked_clauses, list):
             raise ProfileGenerationError("catalog has an invalid requirement identity or clause links")
         scope_state = requirement.get("scope_state")
+        intersects_closure = [
+            clause_id for clause_id in linked_clauses
+            if isinstance(clause_id, str) and clause_id in source_clause_ids
+        ]
+        unresolved_scope = scope_state == "unclear" or (
+            scope_state == "profile_conditional"
+            and not requirement.get("profile_ids")
+        )
+        if requirement.get("role") in {"client", "both"} and unresolved_scope:
+            unresolved_scope_obligations.update(
+                UnresolvedProfileScopeObligation(requirement_id, clause_id, scope_state)
+                for clause_id in intersects_closure
+            )
         in_scope = scope_state in {"client_1_0", "mixed"} or (
             scope_state == "profile_conditional"
             and profile_id in requirement.get("profile_ids", [])
@@ -268,6 +292,10 @@ def compute_profile_closure(
     return ProfileClosure(
         tuple(sorted(source_clause_ids)),
         tuple(sorted(requirement_ids)),
+        tuple(sorted(
+            unresolved_scope_obligations,
+            key=lambda obligation: (obligation.requirement_id, obligation.source_clause_id),
+        )),
     )
 
 
@@ -387,6 +415,17 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub fixture_availability: &'static str,",
         "}",
         "",
+        "/// Client requirement whose applicability is unresolved for a profile.",
+        "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
+        "pub struct GeneratedProfileScopeBlocker {",
+        "    /// Stable catalog requirement identifier.",
+        "    pub requirement_id: &'static str,",
+        "    /// Exact catalog source clause that links the obligation to the profile.",
+        "    pub source_clause_id: &'static str,",
+        "    /// Catalog scope state that still requires a reviewed disposition.",
+        "    pub scope_state: &'static str,",
+        "}",
+        "",
         "/// Verification obligation derived from an exact normative keyword.",
         "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
         "pub enum GeneratedVerificationCategory {",
@@ -442,6 +481,8 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub source_clause_ids: &'static [&'static str],",
         "    /// Applicable stable normative requirement identifiers.",
         "    pub requirement_ids: &'static [&'static str],",
+        "    /// Client obligations in the clause closure whose scope is unresolved.",
+        "    pub unresolved_scope_obligations: &'static [GeneratedProfileScopeBlocker],",
         "    /// Profile dependencies resolved by the selection layer.",
         "    pub dependency_profile_ids: &'static [&'static str],",
         "    /// Transport requirements retained as metadata.",
@@ -500,6 +541,24 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         profile_id = profile.get("profile_id")
         if not isinstance(profile_id, str) or not profile_id:
             raise ProfileGenerationError("client profile lacks a stable identity")
+        direct_clause_ids = profile.get("direct_source_clause_ids")
+        closure = compute_profile_closure(
+            catalog,
+            direct_clause_ids,
+            profile_id=profile_id,
+        )
+        scope_blockers = [
+            "\n".join(
+                [
+                    "            GeneratedProfileScopeBlocker {",
+                    f"                requirement_id: {rust_string_literal(obligation.requirement_id)},",
+                    f"                source_clause_id: {rust_string_literal(obligation.source_clause_id)},",
+                    f"                scope_state: {rust_string_literal(obligation.scope_state)},",
+                    "            },",
+                ]
+            )
+            for obligation in closure.unresolved_scope_obligations
+        ]
         test_ids = profile.get("test_case_ids")
         if (
             not isinstance(test_ids, list)
@@ -533,6 +592,9 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
                 f"        direct_source_clause_ids: {_rust_string_array(profile, 'direct_source_clause_ids')},",
                 f"        source_clause_ids: {_rust_string_array(profile, 'source_clause_ids')},",
                 f"        requirement_ids: {_rust_string_array(profile, 'requirement_ids')},",
+                "        unresolved_scope_obligations: &[",
+                *scope_blockers,
+                "        ],",
                 f"        dependency_profile_ids: {_rust_string_array(profile, 'dependency_profile_ids')},",
                 f"        transport_requirements: {_rust_string_array(profile, 'transport_requirements')},",
                 f"        encoding_requirements: {_rust_string_array(profile, 'encoding_requirements')},",

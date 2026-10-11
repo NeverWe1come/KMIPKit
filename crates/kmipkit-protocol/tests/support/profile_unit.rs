@@ -69,6 +69,7 @@ fn profile(
         direct_source_clause_ids: &["TEST-CLAUSE"],
         source_clause_ids: &["TEST-CLAUSE"],
         requirement_ids,
+        unresolved_scope_obligations: &[],
         dependency_profile_ids,
         transport_requirements: &[],
         encoding_requirements: &[],
@@ -353,6 +354,10 @@ fn validation_error_codes_and_readiness_blockers_have_stable_text() {
             "missing_requirement_metadata",
         ),
         (
+            ProfileValidationErrorCode::UnresolvedRequirementScope,
+            "unresolved_requirement_scope",
+        ),
+        (
             ProfileValidationErrorCode::MissingRuleMapping,
             "missing_rule_mapping",
         ),
@@ -456,6 +461,16 @@ fn readiness_blockers_have_stable_text_and_requirement_ids() {
         assert_eq!(expected, blocker.as_str());
         assert_eq!(requirement_id, blocker.requirement_id());
     }
+    let unresolved = ProfileReadinessBlocker::UnresolvedRequirementScope {
+        requirement_id: "REQ-SCOPE-UNCLEAR",
+        source_clause_id: "CLAUSE-SCOPE-UNCLEAR",
+    };
+    assert_eq!(
+        "profile requirement applicability is unresolved",
+        unresolved.as_str()
+    );
+    assert_eq!(Some("REQ-SCOPE-UNCLEAR"), unresolved.requirement_id());
+    assert_eq!(Some("CLAUSE-SCOPE-UNCLEAR"), unresolved.source_clause_id());
 }
 
 #[test]

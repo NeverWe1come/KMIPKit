@@ -35,6 +35,8 @@ pub enum ProfileValidationErrorCode {
     DependencyCycle,
     /// A profile closure references a missing generated requirement record.
     MissingRequirementMetadata,
+    /// A linked client obligation has no reviewed applicability disposition.
+    UnresolvedRequirementScope,
     /// An applicable requirement has no complete typed rule mapping.
     MissingRuleMapping,
     /// A typed mapping is present but lacks an executable evaluator.
@@ -59,6 +61,7 @@ impl ProfileValidationErrorCode {
             Self::ConditionalProfileUnsatisfied => "conditional_profile_unsatisfied",
             Self::DependencyCycle => "dependency_cycle",
             Self::MissingRequirementMetadata => "missing_requirement_metadata",
+            Self::UnresolvedRequirementScope => "unresolved_requirement_scope",
             Self::MissingRuleMapping => "missing_rule_mapping",
             Self::IncompleteRuleMapping => "incomplete_rule_mapping",
             Self::RuleMappingMismatch => "rule_mapping_mismatch",
@@ -102,7 +105,8 @@ impl ProfileValidationSelection {
     /// # Errors
     ///
     /// Returns a stable source-backed error for unknown, duplicate,
-    /// unavailable, conditional, cyclic, incomplete, or empty selections.
+    /// unavailable, conditional, unresolved-scope, cyclic, incomplete, or
+    /// empty selections.
     pub fn validate(&self) -> Result<ProfileValidationResult, ProfileValidationError> {
         validate_selection(self, CLIENT_PROFILES, CLIENT_REQUIREMENTS)
     }
@@ -175,6 +179,11 @@ pub enum ProfileReadinessBlocker {
     MissingRequirementRecord { requirement_id: &'static str },
     /// A required catalog requirement has a failing local record.
     FailedRequirementRecord { requirement_id: &'static str },
+    /// A client obligation in the source closure has unresolved applicability.
+    UnresolvedRequirementScope {
+        requirement_id: &'static str,
+        source_clause_id: &'static str,
+    },
     /// Local evidence repeats one required requirement.
     DuplicateRequirementRecord { requirement_id: &'static str },
     /// Local evidence names a requirement outside the generated closure.
@@ -204,6 +213,9 @@ impl ProfileReadinessBlocker {
         match self {
             Self::MissingRequirementRecord { .. } => "required requirement evidence is missing",
             Self::FailedRequirementRecord { .. } => "required requirement evidence failed",
+            Self::UnresolvedRequirementScope { .. } => {
+                "profile requirement applicability is unresolved"
+            }
             Self::DuplicateRequirementRecord { .. } => "requirement evidence record is duplicated",
             Self::UnknownRequirementRecord => "requirement evidence record is unknown",
             Self::RuntimeValidationUnavailable => "runtime profile validation is unavailable",
@@ -226,6 +238,18 @@ impl ProfileReadinessBlocker {
             Self::MissingRequirementRecord { requirement_id }
             | Self::FailedRequirementRecord { requirement_id }
             | Self::DuplicateRequirementRecord { requirement_id } => Some(requirement_id),
+            Self::UnresolvedRequirementScope { requirement_id, .. } => Some(requirement_id),
+            _ => None,
+        }
+    }
+
+    /// Returns the exact source clause for an unresolved applicability blocker.
+    #[must_use]
+    pub const fn source_clause_id(self) -> Option<&'static str> {
+        match self {
+            Self::UnresolvedRequirementScope {
+                source_clause_id, ..
+            } => Some(source_clause_id),
             _ => None,
         }
     }
@@ -307,6 +331,17 @@ impl ProfileReadiness {
         }
 
         let mut blockers = Vec::new();
+        blockers.extend(
+            profile
+                .unresolved_scope_obligations
+                .iter()
+                .map(
+                    |obligation| ProfileReadinessBlocker::UnresolvedRequirementScope {
+                        requirement_id: obligation.requirement_id,
+                        source_clause_id: obligation.source_clause_id,
+                    },
+                ),
+        );
         let mut requirement_records_complete = true;
         for requirement_id in profile.requirement_ids {
             match evidence_by_requirement.get(requirement_id) {
@@ -611,6 +646,14 @@ fn validate_selection_with_registry(
                 profile_id,
             )
         })?;
+        if let Some(obligation) = profile.unresolved_scope_obligations.first() {
+            return Err(ProfileValidationError::for_requirement(
+                ProfileValidationErrorCode::UnresolvedRequirementScope,
+                profile_id,
+                obligation.requirement_id,
+                Some(obligation.source_clause_id),
+            ));
+        }
         if profile.requirement_ids.is_empty() {
             return Err(ProfileValidationError::for_profile(
                 ProfileValidationErrorCode::MissingRequirementMetadata,

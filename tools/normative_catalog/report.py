@@ -278,6 +278,11 @@ def _profile_requirement_coverage(
     }
     profiles_by_requirement: dict[str, set[str]] = defaultdict(set)
     profiles_by_id = {row.get("profile_id"): row for row in profiles if row.get("profile_id")}
+    unresolved_scope_by_profile = {
+        profile_id: _unresolved_profile_scope_blockers(catalog, profile)
+        for profile_id, profile in profiles_by_id.items()
+        if isinstance(profile_id, str)
+    }
     for profile in profiles:
         profile_id = profile.get("profile_id")
         if not isinstance(profile_id, str):
@@ -377,6 +382,9 @@ def _profile_requirement_coverage(
         if profile is None or profile.get("applicability") != "client_1_0":
             runtime_availability[profile_id] = False
             return False
+        if unresolved_scope_by_profile.get(profile_id):
+            runtime_availability[profile_id] = False
+            return False
         if typed_rule_mappings is None:
             runtime_availability[profile_id] = None
             return None
@@ -413,6 +421,42 @@ def _profile_applicability_blockers(profile: dict[str, Any]) -> list[str]:
     elif applicability != "client_1_0":
         blockers.append("profile is outside the KMIPKit 1.0 client scope")
     return blockers
+
+
+def _unresolved_profile_scope_blockers(
+    catalog: dict[str, Any],
+    profile: dict[str, Any],
+) -> list[str]:
+    """Identify unresolved client duties linked to a profile's clause closure."""
+    clause_ids = {
+        value
+        for value in profile.get("source_clause_ids") or []
+        if isinstance(value, str)
+    }
+    blockers: list[str] = []
+    for requirement in catalog.get("requirements", []):
+        if not isinstance(requirement, dict) or requirement.get("role") not in {"client", "both"}:
+            continue
+        scope_state = requirement.get("scope_state")
+        unresolved = scope_state == "unclear" or (
+            scope_state == "profile_conditional"
+            and not requirement.get("profile_ids")
+        )
+        if not unresolved:
+            continue
+        requirement_id = requirement.get("requirement_id")
+        if not isinstance(requirement_id, str):
+            continue
+        linked_clauses = sorted(
+            clause_id
+            for clause_id in requirement.get("source_clause_ids") or []
+            if isinstance(clause_id, str) and clause_id in clause_ids
+        )
+        blockers.extend(
+            f"unresolved applicability scope: {requirement_id} at {clause_id} ({scope_state})"
+            for clause_id in linked_clauses
+        )
+    return sorted(set(blockers))
 
 
 def _effective_catalog_evidence_state(
@@ -484,6 +528,7 @@ def evaluate_profile_readiness(
             blockers.append("current verification manifest is invalid or does not match this run")
 
     blockers.extend(_profile_applicability_blockers(profile))
+    blockers.extend(_unresolved_profile_scope_blockers(catalog, profile))
 
     requirement_rows, runtime_by_profile = _profile_requirement_coverage(
         catalog,
@@ -813,6 +858,7 @@ def render_report(
         )
         if unavailable_fixtures:
             blockers.append(f"mandatory fixtures unavailable: {len(unavailable_fixtures)}")
+        blockers.extend(_unresolved_profile_scope_blockers(catalog, profile))
         if profile.get("applicability") == "conditional":
             blockers.append("conditional profile conditions are not evaluated")
         unavailable_dependencies = sorted(

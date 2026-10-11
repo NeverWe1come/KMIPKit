@@ -20,6 +20,23 @@ fn baseline_target_membership_does_not_make_runtime_selection_available() {
         .find(|profile| profile.profile_id == BASELINE)
         .expect("the generated catalog includes Baseline Client");
     assert!(target.selected_target);
+    for (requirement_id, source_clause_id) in [
+        ("KMIPKIT-REQ-SPEC-2.3-001", "KMIPKIT-CLAUSE-SPEC-2.3-001"),
+        (
+            "KMIPKIT-REQ-SPEC-4.1-001-001",
+            "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        ),
+    ] {
+        assert!(
+            target
+                .unresolved_scope_obligations
+                .iter()
+                .any(|obligation| {
+                    obligation.requirement_id == requirement_id
+                        && obligation.source_clause_id == source_clause_id
+                })
+        );
+    }
     for inherited_requirement in [
         "KMIPKIT-REQ-PROF-3.1.1-002",
         "KMIPKIT-REQ-PROF-3.1.1-004",
@@ -32,14 +49,24 @@ fn baseline_target_membership_does_not_make_runtime_selection_available() {
 
     let error = ProfileValidationSelection::new([BASELINE])
         .validate()
-        .expect_err("Baseline has no complete typed rule registry yet");
+        .expect_err("Baseline scope must resolve before its rule registry is considered");
 
-    assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::UnresolvedRequirementScope
+    );
     assert_eq!(error.profile_id(), Some(BASELINE));
-    assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-PROF-3.1-001"));
+    let first_scope_blocker = target
+        .unresolved_scope_obligations
+        .first()
+        .expect("Baseline has an unresolved source-scope disposition");
+    assert_eq!(
+        error.requirement_id(),
+        Some(first_scope_blocker.requirement_id)
+    );
     assert_eq!(
         error.source_clause_id(),
-        Some("KMIPKIT-CLAUSE-PROF-3.1-001")
+        Some(first_scope_blocker.source_clause_id)
     );
 }
 
@@ -50,8 +77,18 @@ fn baseline_selection_reports_unresolved_applicability_before_rule_mapping() {
         .expect_err("unresolved applicability in the source closure must fail closed");
 
     assert_eq!(error.code().as_str(), "unresolved_requirement_scope");
-    assert!(error.requirement_id().is_some());
-    assert!(error.source_clause_id().is_some());
+    assert!(
+        CLIENT_PROFILES
+            .iter()
+            .find(|profile| profile.profile_id == BASELINE)
+            .is_some_and(|profile| profile
+                .unresolved_scope_obligations
+                .iter()
+                .any(|obligation| {
+                    Some(obligation.requirement_id) == error.requirement_id()
+                        && Some(obligation.source_clause_id) == error.source_clause_id()
+                }))
+    );
 }
 
 #[test]
@@ -59,10 +96,21 @@ fn profile_readiness_exposes_unresolved_applicability_blockers() {
     let readiness = kmipkit_protocol::ProfileReadiness::evaluate(BASELINE, &[])
         .expect("Baseline Client is present in generated profile metadata");
 
-    assert!(readiness
+    assert!(
+        readiness
+            .blockers()
+            .iter()
+            .any(|blocker| blocker.as_str() == "profile requirement applicability is unresolved")
+    );
+    let unresolved = readiness
         .blockers()
         .iter()
-        .any(|blocker| blocker.as_str() == "profile requirement applicability is unresolved"));
+        .find(|blocker| blocker.requirement_id() == Some("KMIPKIT-REQ-SPEC-4.1-001-001"))
+        .expect("the unresolved blocker retains its stable requirement ID");
+    assert_eq!(
+        Some("KMIPKIT-CLAUSE-SPEC-4.1-001"),
+        unresolved.source_clause_id()
+    );
     assert!(!readiness.runtime_validation_available());
 }
 
@@ -79,7 +127,10 @@ fn in_scope_non_target_profile_uses_dependency_closure_without_target_gating() {
         .validate()
         .expect_err("the Baseline dependency has no complete rule registry");
 
-    assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::UnresolvedRequirementScope
+    );
     assert_eq!(error.profile_id(), Some(BASELINE));
 }
 
