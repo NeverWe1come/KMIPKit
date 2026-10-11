@@ -1,0 +1,17 @@
+{
+  "catalog_id": "KMIPKIT-TEST-CN01-2-64",
+  "official_label": "TC-OFFSET-1-21",
+  "status": "derived-local-not-official",
+  "sample_values_synthetic": true,
+  "source_references": [
+    "OASIS KMIP Test Cases v2.1 CN01 \u00a72.64",
+    "OASIS KMIP Specification v2.1 \u00a76.1.28 Tables 247\u2013249"
+  ],
+  "limitations": "The official XML and exact offset are unavailable. Offset 1 is a synthetic representative client input; Locate results and offset behavior are server-authoritative and are not represented.",
+  "request_operations": [
+    "Locate"
+  ],
+  "request_payload_ttlv_hex": [
+    "42 00 79 01 00 00 00 18 42 00 d4 02 00 00 00 04 00 00 00 01 00 00 00 00 42 01 25 01 00 00 00 00"
+  ]
+}
