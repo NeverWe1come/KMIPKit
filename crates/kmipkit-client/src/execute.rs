@@ -19,19 +19,20 @@ use kmipkit_protocol::{
     CreateSplitKeyRequest, CreateSplitKeyResponse, CryptographicOperationResponseContext,
     DecryptRequest, DecryptResponse, DeleteAttributeRequest, DeleteAttributeResponse,
     DeriveKeyRequest, DeriveKeyResponse, DestroyRequest, DestroyResponse, DiscoverVersionsRequest,
-    DiscoverVersionsResponse, EncryptRequest, EncryptResponse, GetAttributeListRequest,
-    GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse, GetRequest, GetResponse,
-    HashRequest, HashResponse, KmipOperationResult, LocateRequest, LocateResponse, MacRequest,
-    MacResponse, MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
-    ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
-    PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
-    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
-    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
-    ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
-    RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
-    RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
-    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
+    DiscoverVersionsResponse, EncryptRequest, EncryptResponse, ExportRequest, ExportResponse,
+    GetAttributeListRequest, GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse,
+    GetRequest, GetResponse, HashRequest, HashResponse, KmipOperationResult, LocateRequest,
+    LocateResponse, MacRequest, MacResponse, MacVerifyRequest, MacVerifyResponse,
+    MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute,
+    ObtainLeaseRequest, ObtainLeaseResponse, PingRequest, PingResponse, PollRequest, PollResponse,
+    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
+    QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse,
+    RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest,
+    RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView,
+    ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest,
+    SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
+    SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -122,6 +123,7 @@ const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const ENCRYPT_OPERATION: u32 = 0x0000_001F; // KMIP v2.1 §6.1.17, Table 214.
 const DECRYPT_OPERATION: u32 = 0x0000_0020; // KMIP v2.1 §6.1.11, Table 196.
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005; // KMIP v2.1 §6.1.14, Table 205.
+const EXPORT_OPERATION: u32 = 0x0000_002B; // KMIP v2.1 §6.1.18, Table 217.
 const HASH_OPERATION: u32 = 0x0000_0027; // KMIP v2.1 §6.1.24, Table 235.
 const MAC_OPERATION: u32 = 0x0000_0023; // KMIP v2.1 §6.1.32, Table 259.
 const MAC_VERIFY_OPERATION: u32 = 0x0000_0024; // KMIP v2.1 §6.1.33, Table 262.
@@ -230,6 +232,8 @@ pub enum ClientRequest {
     Decrypt(DecryptRequest),
     /// An explicit client-to-server Derive Key request.
     DeriveKey(DeriveKeyRequest),
+    /// An explicit client-to-server Export request.
+    Export(ExportRequest),
     /// An explicit client-to-server Hash request.
     Hash(HashRequest),
     /// An explicit client-to-server MAC request.
@@ -277,6 +281,12 @@ impl ClientRequest {
     #[must_use]
     pub fn derive_key(request: DeriveKeyRequest) -> Self {
         Self::DeriveKey(request)
+    }
+
+    /// Creates a typed client-to-server Export request variant.
+    #[must_use]
+    pub fn export(request: ExportRequest) -> Self {
+        Self::Export(request)
     }
 
     /// Creates a typed client-to-server Hash request variant.
@@ -474,6 +484,7 @@ impl ClientRequest {
             Self::Encrypt(_) => ENCRYPT_OPERATION,
             Self::Decrypt(_) => DECRYPT_OPERATION,
             Self::DeriveKey(_) => DERIVE_KEY_OPERATION,
+            Self::Export(_) => EXPORT_OPERATION,
             Self::Hash(_) => HASH_OPERATION,
             Self::Mac(_) => MAC_OPERATION,
             Self::MacVerify(_) => MAC_VERIFY_OPERATION,
@@ -567,6 +578,7 @@ impl ClientRequest {
             Self::Encrypt(request) => request.to_ttlv_payload(),
             Self::Decrypt(request) => request.to_ttlv_payload(),
             Self::DeriveKey(request) => request.into_ttlv_payload(),
+            Self::Export(request) => request.into_ttlv_payload(),
             Self::Hash(request) => request.to_ttlv_payload(),
             Self::Mac(request) => request.to_ttlv_payload(),
             Self::MacVerify(request) => request.to_ttlv_payload(),
@@ -623,6 +635,7 @@ impl fmt::Debug for ClientRequest {
             Self::Encrypt(_) => formatter.write_str("Encrypt([REDACTED])"),
             Self::Decrypt(_) => formatter.write_str("Decrypt([REDACTED])"),
             Self::DeriveKey(request) => formatter.debug_tuple("DeriveKey").field(request).finish(),
+            Self::Export(_) => formatter.write_str("Export([REDACTED])"),
             Self::Hash(request) => formatter.debug_tuple("Hash").field(request).finish(),
             Self::Mac(request) => formatter.debug_tuple("MAC").field(request).finish(),
             Self::MacVerify(request) => formatter.debug_tuple("MAC Verify").field(request).finish(),
@@ -896,6 +909,7 @@ enum PendingResponse {
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
     DeriveKey(DeriveKeyResponse),
+    Export(ExportResponse),
     Hash(HashResponse),
     Mac(MacResponse),
     MacVerify(MacVerifyResponse),
@@ -937,6 +951,7 @@ impl PendingResponse {
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::DeriveKey(response) => ClientResponseRef::DeriveKey(response),
+            Self::Export(response) => ClientResponseRef::Export(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
             Self::Mac(response) => ClientResponseRef::Mac(response),
             Self::MacVerify(response) => ClientResponseRef::MacVerify(response),
@@ -1182,6 +1197,8 @@ pub enum ClientOperation {
     Decrypt,
     /// Derive key material on the KMIP server using caller-selected parameters.
     DeriveKey,
+    /// Export an object using caller-selected format and wrapping options.
+    Export,
     /// Hash data through the selected server-side operation.
     Hash,
     /// Calculate a MAC through the selected server-side object.
@@ -1328,6 +1345,7 @@ enum ClientResponseRef<'a> {
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
     DeriveKey(&'a DeriveKeyResponse),
+    Export(&'a ExportResponse),
     Hash(&'a HashResponse),
     Mac(&'a MacResponse),
     MacVerify(&'a MacVerifyResponse),
@@ -1386,6 +1404,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::DeriveKey(response) => response.result(),
+            ClientResponseRef::Export(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
             ClientResponseRef::Mac(response) => response.result(),
             ClientResponseRef::MacVerify(response) => response.result(),
@@ -1464,6 +1483,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn derive_key(&self) -> Option<&'a DeriveKeyResponse> {
         match self.response {
             ClientResponseRef::DeriveKey(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Export response when this view represents one.
+    #[must_use]
+    pub const fn export(&self) -> Option<&'a ExportResponse> {
+        match self.response {
+            ClientResponseRef::Export(response) => Some(response),
             _ => None,
         }
     }
@@ -1759,17 +1787,23 @@ fn debug_operation_response<T: fmt::Debug>(
 }
 
 impl fmt::Debug for ClientResponseView<'_> {
+    // Keep the exhaustive label mapping together so adding an operation cannot
+    // silently omit its public response name or redaction behavior.
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.response {
             ClientResponseRef::DiscoverVersions(response) => {
                 debug_operation_response(formatter, "DiscoverVersions", response)
             }
             ClientResponseRef::Encrypt(response) => {
-                formatter.debug_tuple("Encrypt").field(response).finish()
+                debug_operation_response(formatter, "Encrypt", response)
             }
             ClientResponseRef::Decrypt(r) => debug_operation_response(formatter, "Decrypt", r),
             ClientResponseRef::DeriveKey(response) => {
-                formatter.debug_tuple("DeriveKey").field(response).finish()
+                debug_operation_response(formatter, "DeriveKey", response)
+            }
+            ClientResponseRef::Export(response) => {
+                debug_operation_response(formatter, "Export", response)
             }
             ClientResponseRef::Hash(response) => {
                 debug_operation_response(formatter, "Hash", response)
@@ -1892,6 +1926,8 @@ pub enum ClientBatchOutcome {
     Decrypt(DecryptResponse),
     /// The server returned a Derive Key result.
     DeriveKey(DeriveKeyResponse),
+    /// The server returned an Export result.
+    Export(ExportResponse),
     /// The server returned a Hash result.
     Hash(HashResponse),
     /// The server returned a MAC result.
@@ -1960,6 +1996,7 @@ impl ClientBatchOutcome {
             | Self::Encrypt(_)
             | Self::Decrypt(_)
             | Self::DeriveKey(_)
+            | Self::Export(_)
             | Self::Hash(_)
             | Self::Mac(_)
             | Self::MacVerify(_)
@@ -2004,6 +2041,7 @@ impl ClientBatchOutcome {
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
             Self::DeriveKey(response) => response.result(),
+            Self::Export(response) => response.result(),
             Self::Hash(response) => response.result(),
             Self::Mac(response) => response.result(),
             Self::MacVerify(response) => response.result(),
@@ -2048,6 +2086,7 @@ impl ClientBatchOutcome {
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::DeriveKey(_) => ClientOperation::DeriveKey,
+            Self::Export(_) => ClientOperation::Export,
             Self::Hash(_) => ClientOperation::Hash,
             Self::Mac(_) => ClientOperation::Mac,
             Self::MacVerify(_) => ClientOperation::MacVerify,
@@ -2333,6 +2372,21 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Export response, including when its result is Pending.
+    #[must_use]
+    pub const fn export_response(&self) -> Option<&ExportResponse> {
+        match self {
+            Self::Export(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Export(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Returns the typed Hash response, when this is one.
     #[must_use]
     pub const fn hash_response(&self) -> Option<&HashResponse> {
@@ -2418,6 +2472,7 @@ impl ClientBatchOutcome {
             Self::DeriveKey(response) => {
                 ClientResponseView::new(ClientResponseRef::DeriveKey(response))
             }
+            Self::Export(response) => ClientResponseView::new(ClientResponseRef::Export(response)),
             Self::Hash(response) => ClientResponseView::new(ClientResponseRef::Hash(response)),
             Self::Mac(response) => ClientResponseView::new(ClientResponseRef::Mac(response)),
             Self::MacVerify(response) => {
@@ -2521,6 +2576,7 @@ impl fmt::Debug for ClientBatchOutcome {
             Self::DeriveKey(response) => {
                 formatter.debug_tuple("DeriveKey").field(response).finish()
             }
+            Self::Export(response) => formatter.debug_tuple("Export").field(response).finish(),
             Self::Hash(response) => formatter.debug_tuple("Hash").field(response).finish(),
             Self::Mac(response) => formatter.debug_tuple("MAC").field(response).finish(),
             Self::MacVerify(response) => {
@@ -2589,6 +2645,7 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Encrypt(response) => write!(formatter, "Encrypt({})", response.result()),
             Self::Decrypt(response) => write!(formatter, "Decrypt({})", response.result()),
             Self::DeriveKey(response) => write!(formatter, "Derive Key({})", response.result()),
+            Self::Export(response) => write!(formatter, "Export({})", response.result()),
             Self::Hash(response) => write!(formatter, "Hash({})", response.result()),
             Self::Mac(response) => write!(formatter, "MAC({})", response.result()),
             Self::MacVerify(response) => write!(formatter, "MAC Verify({})", response.result()),
@@ -3618,6 +3675,36 @@ impl Client {
         self.execute_one_typed_request(ClientRequest::DeriveKey(request), limits, options)
     }
 
+    /// Executes one typed Export request with caller-selected format and wrapping options.
+    ///
+    /// This method makes one server exchange. `KMIPKit` does not wrap,
+    /// compress, or convert the returned material locally and never retries.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn export(
+        &mut self,
+        request: ExportRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.export_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Export request with transport timeout overrides.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn export_with_options(
+        &mut self,
+        request: ExportRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Export(request), limits, options)
+    }
+
     /// Executes one Hash request through the shared writer and performs one
     /// exchange without calculating a hash locally or retrying.
     ///
@@ -4543,6 +4630,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Encrypt(_)
         | ClientRequest::Decrypt(_)
         | ClientRequest::DeriveKey(_)
+        | ClientRequest::Export(_)
         | ClientRequest::Hash(_)
         | ClientRequest::Mac(_)
         | ClientRequest::MacVerify(_)
@@ -5127,14 +5215,10 @@ fn response_outcome(
     item: ResponseBatchItemView<'_>,
     response_context: Option<CryptographicOperationResponseContext>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
+    if is_crypto_operation(operation) {
+        return crypto_response_outcome(operation, item, response_context);
+    }
     match operation {
-        ENCRYPT_OPERATION
-        | DECRYPT_OPERATION
-        | HASH_OPERATION
-        | MAC_OPERATION
-        | MAC_VERIFY_OPERATION
-        | SIGN_OPERATION
-        | SIGNATURE_VERIFY_OPERATION => crypto_response_outcome(operation, item, response_context),
         ACTIVATE_OPERATION => read_operation_outcome(
             ClientOperation::Activate,
             item,
@@ -5146,7 +5230,7 @@ fn response_outcome(
         operation if is_lifecycle_operation(operation) => {
             lifecycle_response_outcome(operation, item)
         }
-        DERIVE_KEY_OPERATION => derive_key_response_outcome(item),
+        DERIVE_KEY_OPERATION | EXPORT_OPERATION => key_material_response_outcome(operation, item),
         ARCHIVE_OPERATION => read_operation_outcome(
             ClientOperation::Archive,
             item,
@@ -5225,6 +5309,30 @@ fn response_outcome(
             PendingResponse::GetAttributeList,
             ClientBatchOutcome::GetAttributeList,
         ),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+const fn is_crypto_operation(operation: u32) -> bool {
+    matches!(
+        operation,
+        ENCRYPT_OPERATION
+            | DECRYPT_OPERATION
+            | HASH_OPERATION
+            | MAC_OPERATION
+            | MAC_VERIFY_OPERATION
+            | SIGN_OPERATION
+            | SIGNATURE_VERIFY_OPERATION
+    )
+}
+
+fn key_material_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        DERIVE_KEY_OPERATION => derive_key_response_outcome(item),
+        EXPORT_OPERATION => export_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }
@@ -5409,6 +5517,19 @@ fn derive_key_response_outcome(
         DeriveKeyResponse::result,
         PendingResponse::DeriveKey,
         ClientBatchOutcome::DeriveKey,
+    )
+}
+
+fn export_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Export,
+        item,
+        ExportResponse::try_from_response_item,
+        ExportResponse::result,
+        PendingResponse::Export,
+        ClientBatchOutcome::Export,
     )
 }
 

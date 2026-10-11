@@ -40,7 +40,7 @@
 **Independent Test**: Tables 217–219; all response object/attribute fields; secret redaction; no local transformation.
 
 - [x] T009 [P] [US2] Add failing Export request, success/error response, and fake-client tests in `crates/kmipkit-protocol/tests/unit/export_operation_tests.rs` and `crates/kmipkit-client/tests/unit/export_execution_tests.rs` for §6.1.18 Tables 217–219 and its traceability rows; commit Red.
-- [ ] T010 [US2] Implement `ExportRequest/Response/Error` in `crates/kmipkit-protocol/src/export.rs`, export it, and integrate dispatch/client convenience methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T009 passes.
+- [x] T010 [US2] Implement `ExportRequest/Response/Error` in `crates/kmipkit-protocol/src/export.rs`, export it, and integrate dispatch/client convenience methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T009 passes.
 - [ ] T011 [US2] Refactor Export model/dispatch/tests in `crates/kmipkit-protocol/src/export.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; commit Refactor separately.
 
 ## Phase 5: User Story 3 — Import (Priority: P1)

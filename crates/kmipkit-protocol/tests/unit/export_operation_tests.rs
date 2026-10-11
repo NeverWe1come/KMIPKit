@@ -114,7 +114,8 @@ fn request_preserves_all_explicit_optional_choices_and_omits_absent_fields() {
     let payload = request
         .into_ttlv_payload()
         .expect("all caller-selected options are structurally valid");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(
         fields
             .iter()
@@ -129,7 +130,8 @@ fn request_preserves_all_explicit_optional_choices_and_omits_absent_fields() {
         ]
     );
     assert!(
-        matches!(fields[1].with_value(|value| value), ValueView::Enumeration(v) if *v == 0xF123_4569)
+        fields[1]
+            .with_value(|value| matches!(value, ValueView::Enumeration(v) if *v == 0xF123_4569))
     );
 }
 
