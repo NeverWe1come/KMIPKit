@@ -5753,6 +5753,249 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_40_query_reviews_client_inputs_and_server_capabilities(self) -> None:
+        """Specification v2.1 §§6.1.40 and 6.1.40.1 distinguish Query inputs from server results."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        query_locators = [row for row in pinned_locators if row["section"] in ("6.1.40", "6.1.40.1")]
+        expected_locators = {
+            **{
+                f"KMIPKIT-CLAUSE-SPEC-6.1.40-{ordinal:03d}": ("6.1.40", ordinal, block_kind, keywords, line_range)
+                for ordinal, block_kind, keywords, line_range in (
+                    (1, "paragraph", ["SHALL"], [31750, 31751]),
+                    (2, "table_row", ["SHALL"], [31769, 31782]),
+                    (3, "table_row", ["SHALL"], [31783, 31796]),
+                    (4, "table_row", ["SHALL"], [31811, 31824]),
+                    (5, "table_row", ["SHALL"], [31825, 31841]),
+                    (6, "table_row", ["SHALL"], [31849, 31862]),
+                    (7, "table_row", ["SHALL"], [31863, 31878]),
+                    (8, "table_row", ["SHALL", "MAY"], [31879, 31895]),
+                    (9, "table_row", ["SHALL"], [31896, 31912]),
+                    (10, "table_row", ["SHALL"], [31926, 31943]),
+                    (11, "table_row", ["SHALL"], [31944, 31958]),
+                    (12, "paragraph", ["SHALL"], [31979, 31981]),
+                    (13, "paragraph", ["SHALL"], [31983, 31985]),
+                    (14, "paragraph", ["SHALL"], [31992, 31993]),
+                    (15, "table_row", ["REQUIRED"], [32006, 32024]),
+                    (16, "table_row", ["MAY"], [32025, 32042]),
+                    (17, "table_row", ["REQUIRED"], [32081, 32099]),
+                    (18, "table_row", ["MAY"], [32100, 32117]),
+                    (19, "table_row", ["MAY"], [32118, 32135]),
+                    (20, "table_row", ["SHALL"], [32136, 32155]),
+                    (21, "table_row", ["MAY"], [32175, 32193]),
+                    (22, "table_row", ["MAY", "SHALL"], [32194, 32212]),
+                    (23, "table_row", ["MAY"], [32213, 32231]),
+                    (24, "table_row", ["MAY"], [32232, 32249]),
+                    (25, "table_row", ["MAY"], [32250, 32268]),
+                    (26, "table_row", ["MAY"], [32269, 32287]),
+                    (27, "table_row", ["MAY"], [32288, 32306]),
+                    (28, "table_row", ["MAY"], [32307, 32325]),
+                    (29, "table_row", ["MAY"], [32345, 32364]),
+                )
+            },
+            "KMIPKIT-CLAUSE-SPEC-6.1.40.1-001": ("6.1.40.1", 1, "paragraph", ["SHALL"], [32375, 32376]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.40.1-002": ("6.1.40.1", 2, "table_row", ["REQUIRED"], [32396, 32410]),
+        }
+        self.assertEqual({row["clause_id"] for row in query_locators}, set(expected_locators))
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in ("6.1.40", "6.1.40.1")
+        }
+        self.assertEqual(set(reviews), set(expected_locators))
+        for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locators.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": block_kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            pinned = next(row for row in query_locators if row["clause_id"] == clause_id)
+            self.assertEqual(review["source_excerpt"], pinned["source_text"])
+            self.assertEqual(pinned["source_keywords"], keywords)
+
+        expected_source_atoms = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-001": [("SHALL", "For each Query Function specified in the request, the corresponding items SHALL be returned in the response.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-002": [("SHALL", "Contains Operation enumerated values, which SHALL list all the operations that the server supports.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-003": [("SHALL", "Contains Object Type enumerated values, which SHALL list all the object types that the server supports.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-004": [("SHALL", "Contains the namespaces that the server SHALL generate values for if requested by the client.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-005": [("SHALL", "If the request contains a Query Extension List and/or Query Extension Map value in the Query Function field, then the Extensions Information fields SHALL be returned in the response.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-006": [("SHALL", "Contains Attestation Type enumerated values, which SHALL list all the attestation types that the server supports.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-007": [
+                ("SHALL", "The response SHALL list all the Random Number Generators that the server supports."),
+                ("SHALL", "If the request contains a Query RNGs value in the Query Function field, then this field SHALL be returned in the response."),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-008": [
+                ("SHALL", "If the request contains a Query Validations value, then zero or more Validation Information fields SHALL be returned in the response."),
+                ("MAY", "A server MAY elect to return no validation information in the response."),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-009": [("SHALL", "If the request contains a Query Profiles value in the Query Function field, then this field SHALL be returned in the response if the server supports any Profiles.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-010": [
+                ("SHALL", "Contains Client Registration Method enumerated values, which SHALL list all the client registration methods that the server supports."),
+                ("SHALL", "If the request contains a Query Client Registration Method value in the Query Function field, then this field SHALL be returned in the response if the server supports any Client Registration Methods."),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-011": [("SHALL", "Defaults Information A structure containing Object Defaults structures, which list the default values that the server SHALL use on Cryptographic Objects if the client omits them.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-012": [
+                ("SHALL", "If both Query Extension List and Query Extension Map are specified in the request, then only the response to Query Extension Map SHALL be returned"),
+                ("SHALL", "the Query Extension List SHALL be ignored."),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-013": [("SHALL", "If the server is unable to specify details of the RNG then it SHALL return an RNG Parameters with the RNG Algorithm enumeration of Unspecified.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-014": [("SHALL", "The Query Function field in the request SHALL contain one or more of the following items:")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-016": [("MAY", "MAY be Repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-018": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-019": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-020": [
+                ("SHALL", "Vendor Identification No SHALL be returned if Query Server Information is requested."),
+                ("SHALL", "The Vendor Identification SHALL be a text string that uniquely identifies the vendor."),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-021": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-022": [
+                ("MAY", "MAY be repeated"),
+                ("SHALL", "SHALL be returned if Query Extension List or Query Extension Map is requested and supported by the server."),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-023": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-024": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-025": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-026": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-027": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-028": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-029": [("MAY", "A server MAY elect to provide an empty list in the Response if it is unable or unwilling to provide this information.")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40.1-001": [("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Operation.")],
+        }
+        self.assertEqual(set(expected_source_atoms), set(reviews) - {
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-015",
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-017",
+            "KMIPKIT-CLAUSE-SPEC-6.1.40.1-002",
+        })
+        for clause_id, expected_atoms in expected_source_atoms.items():
+            with self.subTest(source_clause_id=clause_id, assertion="complete normative atom inventory"):
+                self.assertEqual(
+                    [
+                        (atom["source_order"], atom["source_keyword"], atom["source_text"])
+                        for atom in reviews[clause_id]["source_obligations"]
+                    ],
+                    [(order, keyword, source_text) for order, (keyword, source_text) in enumerate(expected_atoms, 1)],
+                )
+
+        server_clause_ids = {
+            clause_id
+            for clause_id in expected_locators
+            if clause_id not in {
+                "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
+                "KMIPKIT-CLAUSE-SPEC-6.1.40-015",
+                "KMIPKIT-CLAUSE-SPEC-6.1.40-016",
+                "KMIPKIT-CLAUSE-SPEC-6.1.40-017",
+                "KMIPKIT-CLAUSE-SPEC-6.1.40.1-002",
+            }
+        }
+        for clause_id in server_clause_ids:
+            review = reviews[clause_id]
+            self.assertEqual(review["expected_client_requirement_ids"], [])
+            self.assertTrue(
+                all(
+                    atom["actor"] == "server"
+                    and atom["direction"].startswith("server→client")
+                    and atom["scope_disposition"] == "server_only"
+                    for atom in review["source_obligations"]
+                ),
+                clause_id,
+            )
+
+        query_count = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40-014"]
+        self.assertEqual(
+            [(atom["source_order"], atom["source_keyword"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
+             for atom in query_count["source_obligations"]],
+            [(1, "SHALL", "client", "client→server request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.40-014")],
+        )
+        self.assertEqual(query_count["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.40-014"])
+        query_function = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40-016"]
+        self.assertEqual(
+            [(atom["source_order"], atom["source_keyword"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
+             for atom in query_function["source_obligations"]],
+            [(1, "MAY", "client", "client→server request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.40-016")],
+        )
+        self.assertEqual(query_function["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.40-016"])
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["actor"], row["html_line_range"], row["source_requirement_ids"])
+             for row in query_function["source_request_rows"]],
+            [("Query Function", "Yes", "client", [32025, 32042], ["KMIPKIT-REQ-SPEC-6.1.40-014", "KMIPKIT-REQ-SPEC-6.1.40-016"])],
+        )
+
+        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40-015"]
+        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40-017"]
+        self.assertEqual(request_header["source_obligations"], [])
+        self.assertIn("header", request_header["review_note"].lower())
+        self.assertEqual(response_header["source_obligations"], [])
+        self.assertIn("header", response_header["review_note"].lower())
+        self.assertEqual(
+            [(row["row_label"], row["required"], row["actor"], row["html_line_range"]) for row in response_header["source_payload_rows"]],
+            [
+                ("Operation", "No", "server", [32100, 32117]),
+                ("Object Type", "No", "server", [32118, 32135]),
+                ("Vendor Identification", "No", "server", [32136, 32155]),
+                ("Server Information", "No", "server", [32156, 32174]),
+                ("Application Namespace", "No", "server", [32175, 32193]),
+                ("Extension Information", "No", "server", [32194, 32212]),
+                ("Attestation Type", "No", "server", [32213, 32231]),
+                ("RNG Parameters", "No", "server", [32232, 32249]),
+                ("Profile Information", "No", "server", [32250, 32268]),
+                ("Validation Information", "No", "server", [32269, 32287]),
+                ("Capability Information", "No", "server", [32288, 32306]),
+                ("Client Registration Method", "No", "server", [32307, 32325]),
+                ("Defaults Information", "No", "server", [32326, 32344]),
+                ("Protection Storage Masks", "Yes", "server", [32345, 32364]),
+            ],
+        )
+
+        object_groups_gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.40-OBJECT-GROUPS-OPTIONAL"
+        query_gaps = {
+            row["gap_id"]: row
+            for row in oracle["source_only_requirement_gaps"]
+            if row["source_section"] == "6.1.40"
+        }
+        self.assertEqual(set(query_gaps), {object_groups_gap_id})
+        object_groups_gap = query_gaps[object_groups_gap_id]
+        self.assertEqual(object_groups_gap["source_locator"], {
+            "kind": "table_body_row", "section": "6.1.40", "row_label": "Object Groups",
+            "table": "request_payload", "html_line_range": [32043, 32062],
+        })
+        self.assertEqual(object_groups_gap["source_excerpt"], pinned_source_excerpt(source_path, [32043, 32062]))
+        self.assertEqual(object_groups_gap["source_force"], "optional_table_body_value")
+        self.assertEqual(object_groups_gap["source_keywords"], [])
+        self.assertEqual(object_groups_gap["actor"], "client")
+        self.assertEqual(object_groups_gap["scope_disposition"], "client_1_0")
+        self.assertEqual(object_groups_gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.40-017")
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", {row["requirement_id"] for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
+
+        crosswalks = {
+            row["requirement_id"]: row
+            for row in oracle["requirement_crosswalk"]
+            if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.40-")
+        }
+        self.assertEqual(set(crosswalks), {"KMIPKIT-REQ-SPEC-6.1.40-014", "KMIPKIT-REQ-SPEC-6.1.40-016"})
+        self.assertEqual(crosswalks["KMIPKIT-REQ-SPEC-6.1.40-014"]["source_obligation_order"], 1)
+        self.assertEqual(crosswalks["KMIPKIT-REQ-SPEC-6.1.40-014"]["source_actor"], "client")
+        self.assertEqual(crosswalks["KMIPKIT-REQ-SPEC-6.1.40-016"]["source_obligation_order"], 1)
+        self.assertEqual(crosswalks["KMIPKIT-REQ-SPEC-6.1.40-016"]["source_actor"], "client")
+
+        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40.1-001"]
+        self.assertEqual(error_preamble["source_obligations"][0]["actor"], "server")
+        self.assertEqual(error_preamble["source_obligations"][0]["direction"], "server→client error response")
+        self.assertEqual(error_preamble["source_obligations"][0]["scope_disposition"], "server_only")
+        error_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40.1-002"]
+        self.assertEqual(error_inventory["source_obligations"], [])
+        self.assertEqual(
+            error_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
+            ["Attestation Failed", "Attestation Required", "Feature Not Supported", "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large", "Unknown Object Group"],
+        )
+        self.assertIn("non-exhaustive", error_inventory["review_note"].lower())
+        self.assertEqual(
+            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.40-")],
+            list(crosswalks.values()),
+        )
+        self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
+
     def test_spec_4_19_through_4_25_source_review_slice_preserves_actor_and_force(self) -> None:
         """The source audit separates server lifecycle rules and unresolved client wording."""
         oracle = json.loads(
@@ -10518,6 +10761,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.33-007",
                 "KMIPKIT-REQ-SPEC-6.1.33-008",
                 "KMIPKIT-REQ-SPEC-6.1.33-009",
+                "KMIPKIT-REQ-SPEC-6.1.40-017",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
             "KMIPKIT-REQ-SPEC-6.1.14-011",
