@@ -112,6 +112,10 @@ mod activate_execution_tests;
 mod archive_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/certify_execution_tests.rs"]
+mod certify_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/destroy_execution_tests.rs"]
 mod destroy_execution_tests;
 

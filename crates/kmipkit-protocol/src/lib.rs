@@ -132,6 +132,10 @@ mod activate_operation_tests;
 mod archive_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/certify_operation_tests.rs"]
+mod certify_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/destroy_operation_tests.rs"]
 mod destroy_operation_tests;
 
