@@ -269,8 +269,11 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
+    /// An explicit typed Interop request with caller-selected parameters.
     Interop(InteropRequest),
+    /// An explicit typed Log request with caller-selected parameters.
     Log(LogRequest),
+    /// An explicit typed Validate request with caller-selected parameters.
     Validate(ValidateRequest),
     /// An explicit client-to-server Get Constraints request.
     GetConstraints(GetConstraintsRequest),
@@ -2360,8 +2363,11 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
+    /// The server returned a typed Interop result.
     Interop(InteropResponse),
+    /// The server returned a typed Log result.
     Log(LogResponse),
+    /// The server returned a typed Validate result.
     Validate(ValidateResponse),
     /// The server returned a Get Constraints result.
     GetConstraints(GetConstraintsResponse),

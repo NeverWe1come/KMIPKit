@@ -10,7 +10,7 @@ Interop, Log, and Validate become distinct protocol request/response models and 
 
 ## Decision 3: Use approved KMIPKIT-DISC-017 for Log error handling
 
-The §6.1.29 error prose mistakenly says Query Operation. The approved disposition assigns it to Log, and the approved spec cites Table 252. Preserve Table 252 result reasons. The caller must not submit secrets; redact all Log Message diagnostics regardless.
+The §6.1.29 error prose mistakenly says Query Operation. Accepted KMIPKIT-DEC-006 records the approved disposition assigning it to Log, and the approved spec cites Table 252. Preserve Table 252 result reasons. The caller must not submit secrets; redact all Log Message diagnostics regardless.
 
 ## Decision 4: Validate forwards one chain without local certificate policy
 
@@ -23,3 +23,18 @@ Complete Rust protocol/client models independently. Wait for the approved 0043 c
 ## Evidence reviewed
 
 Pinned OASIS Specification v2.1 §§6.1.26, 6.1.29, 6.1.57 and Tables 241–243, 250–252, 340–342; approved spec 028; normative catalog; existing client/protocol conventions. The spec links no direct official Test Case.
+
+
+## Decision 6: Apply the existing normative Structure description order
+
+Pinned section 10.1.2, unnumbered Type table Structure row requires defined Structure fields in their
+description order (KMIPKIT-REQ-SPEC-10.1.2-001). Table 340 therefore encodes
+Certificates, then Unique Identifiers, then optional Validity Date. Preserve
+relative order within the two lists, including when builders are called in
+mixed order. Section 2.1, Table 2 likewise places Certificate Type before
+Certificate Value; reversed input is a local structural error/NotSent.
+This supersedes the earlier mixed insertion/wire-order design interpretation,
+using the existing normative rule rather than inventing a client requirement.
+The coordinator directed this correction under the authorized pinned-source
+workflow on 2026-10-12. DER contents and trust/server policy remain opaque.
+The global common-rule record is not claimed complete by this scoped proof.

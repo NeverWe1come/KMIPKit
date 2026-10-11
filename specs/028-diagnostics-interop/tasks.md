@@ -16,17 +16,17 @@ description: "Implementation task list for KMIP 2.1 interop and diagnostics"
 
 **Purpose**: Confirm source, branch, and existing operation conventions.
 
-- [ ] T001 [P] Verify the assigned branch and pinned OASIS sections/tables for specs 028 in specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html; run python tools/normative_catalog/validate.py.
-- [ ] T002 [P] Review existing protocol/client typed-operation patterns and response results in crates/kmipkit-protocol/src/ping.rs, crates/kmipkit-protocol/src/query.rs, crates/kmipkit-client/src/execute.rs, and crates/kmipkit-client/tests/unit/ping_execution_tests.rs.
+- [x] T001 [P] Verify the assigned branch and pinned OASIS sections/tables for specs 028 in specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html; run python tools/normative_catalog/validate.py.
+- [x] T002 [P] Review existing protocol/client typed-operation patterns and response results in crates/kmipkit-protocol/src/ping.rs, crates/kmipkit-protocol/src/query.rs, crates/kmipkit-client/src/execute.rs, and crates/kmipkit-client/tests/unit/ping_execution_tests.rs.
 
 ## Phase 2: Foundational
 
 **Purpose**: Establish source decisions and traceability before implementation.
 
-- [ ] T003 Map all Interop, Log, and Validate request/response/error table fields and stable element IDs in specs/028-diagnostics-interop/traceability.md.
-- [ ] T004 Map all six KMIPKIT-REQ-SPEC-6.1.57-* IDs to implementation and executable tests in specs/028-diagnostics-interop/traceability.md.
-- [ ] T005 Record KMIPKIT-DISC-017's approved Log Table 252 interpretation and the server-only Interop production restriction in specs/028-diagnostics-interop/research.md and specs/028-diagnostics-interop/traceability.md.
-- [ ] T006 Verify existing operation, tag, and Validity Indicator catalog records in specification/catalog/kmip-2.1.json; add source-backed catalog inputs only if a required record is absent.
+- [x] T003 Map all Interop, Log, and Validate request/response/error table fields and stable element IDs in specs/028-diagnostics-interop/traceability.md.
+- [x] T004 Map all six KMIPKIT-REQ-SPEC-6.1.57-* IDs to implementation and executable tests in specs/028-diagnostics-interop/traceability.md.
+- [x] T005 Record KMIPKIT-DISC-017's approved Log Table 252 interpretation and the server-only Interop production restriction in specs/028-diagnostics-interop/research.md and specs/028-diagnostics-interop/traceability.md.
+- [x] T006 Verify existing operation, tag, and Validity Indicator catalog records in specification/catalog/kmip-2.1.json; add source-backed catalog inputs only if a required record is absent.
 
 ## Phase 3: User Story 1 — Interop (Priority: P1)
 
@@ -36,21 +36,21 @@ description: "Implementation task list for KMIP 2.1 interop and diagnostics"
 
 ### Protocol Red/Green/Refactor
 
-- [ ] T007 [P] [US1] Add failing Table 241/242 tests in crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs for required Enumeration/Text String, empty success payload, unknown enum preservation, wrong types, and malformed input; run cargo test -p kmipkit-protocol interop_operation_tests and capture expected Red failure.
-- [ ] T008 [US1] Commit only failing protocol tests in crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs as the distinct Red evidence commit.
-- [ ] T009 [US1] Implement InteropRequest/Response/Error and table conversion in crates/kmipkit-protocol/src/interop.rs; export from crates/kmipkit-protocol/src/lib.rs; pass focused tests.
-- [ ] T010 [US1] Commit the minimal passing protocol implementation in crates/kmipkit-protocol/src/interop.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
-- [ ] T011 [US1] Refactor Interop conversion without behavior changes in crates/kmipkit-protocol/src/interop.rs; rerun its tests and formatting.
-- [ ] T012 [US1] Commit protocol refactoring in crates/kmipkit-protocol/src/interop.rs as the distinct Refactor evidence commit.
+- [x] T007 [P] [US1] Add failing Table 241/242 tests in crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs for required Enumeration/Text String, empty success payload, unknown enum preservation, wrong types, and malformed input; run cargo test -p kmipkit-protocol interop_operation_tests and capture expected Red failure.
+- [x] T008 [US1] Commit only failing protocol tests in crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs as the distinct Red evidence commit.
+- [x] T009 [US1] Implement InteropRequest/Response/Error and table conversion in crates/kmipkit-protocol/src/interop.rs; export from crates/kmipkit-protocol/src/lib.rs; pass focused tests.
+- [x] T010 [US1] Commit the minimal passing protocol implementation in crates/kmipkit-protocol/src/interop.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
+- [x] T011 [US1] Refactor Interop conversion without behavior changes in crates/kmipkit-protocol/src/interop.rs; rerun its tests and formatting.
+- [x] T012 [US1] Commit protocol refactoring in crates/kmipkit-protocol/src/interop.rs as the distinct Refactor evidence commit.
 
 ### Client Red/Green/Refactor
 
-- [ ] T013 [P] [US1] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/interop_execution_tests.rs for correct operation code, empty response, one exchange, result/Pending/delivery preservation, and no retry; capture expected Red failures.
-- [ ] T014 [US1] Commit only failing client tests in crates/kmipkit-client/tests/unit/interop_execution_tests.rs as the distinct Red evidence commit.
-- [ ] T015 [US1] Add Interop request selection, response association, explicit client method, and sanitized errors in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass the focused suite.
-- [ ] T016 [US1] Commit minimal passing Interop client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate the shared dispatcher.
-- [ ] T017 [US1] Refactor Interop dispatch without behavior changes in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/interop_execution_tests.rs; rerun focused suites.
-- [ ] T018 [US1] Commit client refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/interop_execution_tests.rs as the distinct Refactor evidence commit.
+- [x] T013 [P] [US1] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/interop_execution_tests.rs for correct operation code, empty response, one exchange, result/Pending/delivery preservation, and no retry; capture expected Red failures.
+- [x] T014 [US1] Commit only failing client tests in crates/kmipkit-client/tests/unit/interop_execution_tests.rs as the distinct Red evidence commit.
+- [x] T015 [US1] Add Interop request selection, response association, explicit client method, and sanitized errors in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass the focused suite.
+- [x] T016 [US1] Commit minimal passing Interop client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate the shared dispatcher.
+- [x] T017 [US1] Refactor Interop dispatch without behavior changes in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/interop_execution_tests.rs; rerun focused suites.
+- [x] T018 [US1] Commit client refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/interop_execution_tests.rs as the distinct Refactor evidence commit.
 
 ## Phase 4: User Story 2 — Log (Priority: P1)
 
@@ -60,21 +60,21 @@ description: "Implementation task list for KMIP 2.1 interop and diagnostics"
 
 ### Protocol Red/Green/Refactor
 
-- [ ] T019 [P] [US2] Add failing Table 250/251 tests in crates/kmipkit-protocol/tests/unit/log_operation_tests.rs for required Text String, empty success, malformed input, common result behavior, and secret sentinel redaction; run cargo test -p kmipkit-protocol log_operation_tests and capture expected Red failure.
-- [ ] T020 [US2] Commit only failing protocol tests in crates/kmipkit-protocol/tests/unit/log_operation_tests.rs as the distinct Red evidence commit.
-- [ ] T021 [US2] Implement LogRequest/Response/Error and Table 250/251 conversion in crates/kmipkit-protocol/src/log.rs; export from crates/kmipkit-protocol/src/lib.rs; use Table 252 and approved KMIPKIT-DISC-017.
-- [ ] T022 [US2] Commit minimal passing Log protocol implementation in crates/kmipkit-protocol/src/log.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
-- [ ] T023 [US2] Refactor Log conversion without behavior change in crates/kmipkit-protocol/src/log.rs; rerun protocol tests and formatting.
-- [ ] T024 [US2] Commit protocol refactoring in crates/kmipkit-protocol/src/log.rs as the distinct Refactor evidence commit.
+- [x] T019 [P] [US2] Add failing Table 250/251 tests in crates/kmipkit-protocol/tests/unit/log_operation_tests.rs for required Text String, empty success, malformed input, common result behavior, and secret sentinel redaction; run cargo test -p kmipkit-protocol log_operation_tests and capture expected Red failure.
+- [x] T020 [US2] Commit only failing protocol tests in crates/kmipkit-protocol/tests/unit/log_operation_tests.rs as the distinct Red evidence commit.
+- [x] T021 [US2] Implement LogRequest/Response/Error and Table 250/251 conversion in crates/kmipkit-protocol/src/log.rs; export from crates/kmipkit-protocol/src/lib.rs; use Table 252 and approved KMIPKIT-DISC-017.
+- [x] T022 [US2] Commit minimal passing Log protocol implementation in crates/kmipkit-protocol/src/log.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
+- [x] T023 [US2] Refactor Log conversion without behavior change in crates/kmipkit-protocol/src/log.rs; rerun protocol tests and formatting.
+- [x] T024 [US2] Commit protocol refactoring in crates/kmipkit-protocol/src/log.rs as the distinct Refactor evidence commit.
 
 ### Client Red/Green/Refactor
 
-- [ ] T025 [P] [US2] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/log_execution_tests.rs for operation code, one exchange, empty success, Table 252 result preservation, no retry, and message redaction; capture expected Red failures.
-- [ ] T026 [US2] Commit only failing client tests in crates/kmipkit-client/tests/unit/log_execution_tests.rs as the distinct Red evidence commit.
-- [ ] T027 [US2] Add Log request selection, response association, explicit client method, and redacted formatting in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass focused suite.
-- [ ] T028 [US2] Commit minimal passing Log client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate shared dispatcher edits.
-- [ ] T029 [US2] Refactor Log dispatch without behavior changes in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/log_execution_tests.rs; rerun focused protocol/client suites.
-- [ ] T030 [US2] Commit client refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/log_execution_tests.rs as the distinct Refactor evidence commit.
+- [x] T025 [P] [US2] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/log_execution_tests.rs for operation code, one exchange, empty success, Table 252 result preservation, no retry, and message redaction; capture expected Red failures.
+- [x] T026 [US2] Commit only failing client tests in crates/kmipkit-client/tests/unit/log_execution_tests.rs as the distinct Red evidence commit.
+- [x] T027 [US2] Add Log request selection, response association, explicit client method, and redacted formatting in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass focused suite.
+- [x] T028 [US2] Commit minimal passing Log client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate shared dispatcher edits.
+- [x] T029 [US2] Refactor Log dispatch without behavior changes in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/log_execution_tests.rs; rerun focused protocol/client suites.
+- [x] T030 [US2] Commit client refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/log_execution_tests.rs as the distinct Refactor evidence commit.
 
 ## Phase 5: User Story 3 — Validate (Priority: P1)
 
@@ -84,30 +84,30 @@ description: "Implementation task list for KMIP 2.1 interop and diagnostics"
 
 ### Protocol Red/Green/Refactor
 
-- [ ] T031 [P] [US3] Add failing Table 340/341 tests in crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs for one-chain model shape, Certificate-only/identifier-only/mixed and repeated inputs, optional date, omitted-date behavior without timestamp synthesis, required open Validity Indicator, wrong types, and unknown values; retain expected Red failure.
-- [ ] T032 [US3] Commit only failing protocol tests in crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs as the distinct Red evidence commit.
-- [ ] T033 [US3] Implement ValidateRequest/Response/Error in crates/kmipkit-protocol/src/validate.rs and export from crates/kmipkit-protocol/src/lib.rs; preserve repeated fields/order and avoid local chain/trust validation.
-- [ ] T034 [US3] Commit minimal passing Validate protocol implementation in crates/kmipkit-protocol/src/validate.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
-- [ ] T035 [US3] Refactor Validate conversion without changing behavior in crates/kmipkit-protocol/src/validate.rs; rerun all six requirement-linked tests and formatting.
-- [ ] T036 [US3] Commit protocol refactoring in crates/kmipkit-protocol/src/validate.rs as the distinct Refactor evidence commit.
+- [x] T031 [P] [US3] Add failing Table 340/341 tests in crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs for one-chain model shape, Certificate-only/identifier-only/mixed and repeated inputs, optional date, omitted-date behavior without timestamp synthesis, required open Validity Indicator, wrong types, and unknown values; retain expected Red failure.
+- [x] T032 [US3] Commit only failing protocol tests in crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs as the distinct Red evidence commit.
+- [x] T033 [US3] Implement ValidateRequest/Response/Error in crates/kmipkit-protocol/src/validate.rs and export from crates/kmipkit-protocol/src/lib.rs; preserve repeated fields/order and avoid local chain/trust validation.
+- [x] T034 [US3] Commit minimal passing Validate protocol implementation in crates/kmipkit-protocol/src/validate.rs and crates/kmipkit-protocol/src/lib.rs as the distinct Green evidence commit.
+- [x] T035 [US3] Refactor Validate conversion without changing behavior in crates/kmipkit-protocol/src/validate.rs; rerun all six requirement-linked tests and formatting.
+- [x] T036 [US3] Commit protocol refactoring in crates/kmipkit-protocol/src/validate.rs as the distinct Refactor evidence commit.
 
 ### Client Red/Green/Refactor
 
-- [ ] T037 [P] [US3] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/validate_execution_tests.rs for correct operation code, request/response association, one exchange, indicator/result/Pending/delivery preservation, redaction, and no retry; capture expected Red failures.
-- [ ] T038 [US3] Commit only failing client tests in crates/kmipkit-client/tests/unit/validate_execution_tests.rs as the distinct Red evidence commit.
-- [ ] T039 [US3] Add Validate request selection, response association, explicit client method, and sanitized errors in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass focused suite.
-- [ ] T040 [US3] Commit minimal passing Validate client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate the shared dispatcher.
-- [ ] T041 [US3] Refactor Validate dispatch without behavior changes in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/validate_execution_tests.rs; rerun all three operation suites.
-- [ ] T042 [US3] Commit client refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/validate_execution_tests.rs as the distinct Refactor evidence commit.
+- [x] T037 [P] [US3] Add failing fake-transport tests in crates/kmipkit-client/tests/unit/validate_execution_tests.rs for correct operation code, request/response association, one exchange, indicator/result/Pending/delivery preservation, redaction, and no retry; capture expected Red failures.
+- [x] T038 [US3] Commit only failing client tests in crates/kmipkit-client/tests/unit/validate_execution_tests.rs as the distinct Red evidence commit.
+- [x] T039 [US3] Add Validate request selection, response association, explicit client method, and sanitized errors in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs; pass focused suite.
+- [x] T040 [US3] Commit minimal passing Validate client integration in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/src/lib.rs as the distinct Green evidence commit; coordinate the shared dispatcher.
+- [x] T041 [US3] Refactor Validate dispatch without behavior changes in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/validate_execution_tests.rs; rerun all three operation suites.
+- [x] T042 [US3] Commit client refactoring in crates/kmipkit-client/src/execute.rs and crates/kmipkit-client/tests/unit/validate_execution_tests.rs as the distinct Refactor evidence commit.
 
 ## Phase 6: Polish and Cross-Cutting Concerns
 
 **Purpose**: Close traceability, parity, security, documentation, and quality evidence.
 
-- [ ] T043 Update implementation and verification references for operation fields and six Validate requirements in specification/catalog/kmip-2.1.json; regenerate specification/catalog/coverage-report.md using python tools/normative_catalog/report.py --write and validate/check it.
+- [x] T043 Update implementation and verification references for operation fields and six Validate requirements in specification/catalog/kmip-2.1.json; regenerate specification/catalog/coverage-report.md using python tools/normative_catalog/report.py --write and validate/check it.
 - [ ] T044 After KMIPKIT-0043's approved operation mapping is integrated, update specification/api/public-api.json, mapped C/Java/Python adapters and parity tests, and regenerate only with python tools/api_manifest/generate.py --write; keep this task gated until 0043 is available.
-- [ ] T045 Update specs/028-diagnostics-interop/traceability.md and specs/028-diagnostics-interop/quickstart.md with actual named tests, results, stable requirement coverage, DISC-017 evidence, and unavailable fixture status.
-- [ ] T046 Verify Log Message, certificate material, and generic payload sentinel values do not appear in Debug, Display, errors, or logs in crates/kmipkit-protocol/tests/unit/log_operation_tests.rs, crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs, and the client execution suites.
+- [x] T045 Update specs/028-diagnostics-interop/traceability.md and specs/028-diagnostics-interop/quickstart.md with actual named tests, results, stable requirement coverage, DISC-017 evidence, and unavailable fixture status.
+- [x] T046 Verify Log Message, certificate material, and generic payload sentinel values do not appear in Debug, Display, errors, or logs in crates/kmipkit-protocol/tests/unit/log_operation_tests.rs, crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs, and the client execution suites.
 - [ ] T047 Run required checks from specs/028-diagnostics-interop/quickstart.md; record command/results and enforce the documented coverage and 100% traceability gates. Before 1.0, exercise Interop, Log, and Validate against at least two independent KMIP server implementations and record evidence in docs/development/kmip-interoperability.md; unsupported cases remain SKIP/N/A, not passing evidence.
 
 ## Dependencies and Execution Order
@@ -135,3 +135,21 @@ Implement the Interop protocol/client vertical slice first, then Log with redact
 - Keep Red, Green, and Refactor evidence in distinct DCO-signed development commits.
 - Never edit generated files or pinned OASIS upstream files by hand.
 - Reuse shared structures/results; never retry, Poll automatically, or infer server policy.
+
+
+## Implementation status
+
+T001–T043, T045 and T046 are complete for the Rust scope, with distinct
+Red/Green/Refactor commits for each operation and layer. T044 remains gated
+until the approved KMIPKIT-0043 mapping is integrated into `release/1.0.0`.
+T047 remains open until required local gates and the independent two-server
+1.0 release evidence are complete. A published support statement or fake
+transport result is not a substitute for that evidence. See
+`implementation-evidence.md` for actual commands, results and remaining gates.
+
+
+## Supplemental normative-order correction
+
+- [x] T048 Record distinct Red evidence for Table 340 Certificate/identifier grouping and Table 2 Certificate Type-before-Value, citing section 10.1.2's unnumbered Type table Structure row.
+- [x] T049 Implement grouped request lists preserving each list's relative order and reject reversed Certificate fields structurally; record distinct Green evidence.
+- [x] T050 Clarify ordering state and redacted list formatting, rerun focused protocol/client suites, and record distinct Refactor evidence. Update specification, plan, data model, contract, research and traceability to supersede mixed insertion/wire-order wording.

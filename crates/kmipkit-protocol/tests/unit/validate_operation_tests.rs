@@ -49,7 +49,7 @@ fn field_tags(payload: &Structure) -> Vec<u32> {
 }
 
 #[test]
-fn req_001_models_one_collection_and_rejects_malformed_certificate_wrapper() {
+fn req_001_models_one_chain_and_rejects_malformed_certificate_wrapper() {
     let request = ValidateRequest::new()
         .with_certificate(certificate(SENTINEL))
         .with_unique_identifier(UniqueIdentifier::Integer(7))
@@ -382,7 +382,7 @@ fn request_extension_depth_limit_is_checked_before_encoding() {
     assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
 }
 
-// KMIPKIT-REQ-SPEC-10.1.2-001: section 10.1.2, Table 405 requires description order.
+// KMIPKIT-REQ-SPEC-10.1.2-001: section 10.1.2, unnumbered Type table Structure row requires description order.
 #[test]
 fn table_340_groups_certificates_before_identifiers_preserving_each_list_order() {
     let request = ValidateRequest::new()
@@ -392,12 +392,22 @@ fn table_340_groups_certificates_before_identifiers_preserving_each_list_order()
         .with_certificate(certificate(b"second-certificate"))
         .with_validity_date(17);
     let payload = request.into_ttlv_payload().unwrap();
-    assert_eq!(field_tags(&payload), [CERTIFICATE, CERTIFICATE, IDENTIFIER, IDENTIFIER, DATE]);
+    assert_eq!(
+        field_tags(&payload),
+        [CERTIFICATE, CERTIFICATE, IDENTIFIER, IDENTIFIER, DATE]
+    );
     let view = payload.view();
-    for (field, expected) in view.children()[..2].iter().zip([b"first-certificate".as_slice(), b"second-certificate".as_slice()]) {
+    for (field, expected) in view.children()[..2].iter().zip([
+        b"first-certificate".as_slice(),
+        b"second-certificate".as_slice(),
+    ]) {
         field.with_value(|v| {
-            let ValueView::Structure(cert) = v else { panic!("Certificate Structure") };
-            cert.children()[1].with_value(|v| assert!(matches!(v, ValueView::ByteString(bytes) if bytes == expected)));
+            let ValueView::Structure(cert) = v else {
+                panic!("Certificate Structure")
+            };
+            cert.children()[1].with_value(|v| {
+                assert!(matches!(v, ValueView::ByteString(bytes) if bytes == expected))
+            });
         });
     }
     view.children()[2].with_value(|v| assert!(matches!(v, ValueView::TextString("first-id"))));
@@ -411,7 +421,10 @@ fn table_2_certificate_value_before_type_is_rejected_structurally() {
         item(CERTIFICATE_VALUE, Value::byte_string(SENTINEL.to_vec())),
         item(CERTIFICATE_TYPE, Value::enumeration(1)),
     ]);
-    let error = ValidateRequest::new().with_certificate(reversed).into_ttlv_payload().unwrap_err();
+    let error = ValidateRequest::new()
+        .with_certificate(reversed)
+        .into_ttlv_payload()
+        .unwrap_err();
     assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
     assert!(!format!("{error:?} {error}").contains("validate-certificate-private-sentinel"));
 }

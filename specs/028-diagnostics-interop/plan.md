@@ -44,7 +44,7 @@ Rust protocol/client work can start before KMIPKIT-0043. Only public API manifes
 - Add interop.rs, log.rs, and validate.rs protocol modules with public exports.
 - Interop: required Interop Function Enumeration and Interop Identifier text; successful operation payload is empty. Keep future enum values lossless. The normative prohibition on an Interop operation being available on a production server applies to servers; KMIPKit is a client and does not implement or assert server availability.
 - Log: required Log Message text; successful operation payload is empty. Honor KMIPKIT-DISC-017 / approved spec: caller must not submit secrets. Regardless, redact the entire message from logs, Debug, Display, and errors. Use Table 252 for errors.
-- Validate: accept one certificate chain represented by the repeated Certificate and/or Unique Identifier fields, optionally with Validity Date. Preserve list/wire order and mixed representation. Do not perform local chain construction, date evaluation, or trust-anchor/policy validation. If Validity Date is omitted, leave it absent; the server assumes current time as specified. Successful response requires and exposes the open Validity Indicator enumeration.
+- Validate: accept one certificate chain represented by the repeated Certificate and/or Unique Identifier fields, optionally with Validity Date. Encode the Certificate list, Unique Identifier list and optional Validity Date in Table 340 description order (section 10.1.2, unnumbered Type table Structure row), preserving relative order within each list and allowing mixed representation. Require Certificate Type before Certificate Value under section 2.1, Table 2. Do not perform local chain construction, date evaluation, or trust-anchor/policy validation. If Validity Date is omitted, leave it absent; the server assumes current time as specified. Successful response requires and exposes the open Validity Indicator enumeration.
 - Preserve common Success/Failure/Pending, result reason/message, unknown values, delivery evidence, generic response tree, and no-retry/no-Poll behavior.
 
 ### Catalog, traceability, and tests
@@ -72,3 +72,13 @@ Implementation:
 ## Risks and mitigations
 
 Log text and Validate certificates may contain sensitive data: always redact generic payload diagnostics and use existing secret handling. Do not enforce a client-side certificate validation policy. Keep the Interop production-server restriction server-only. Apply approved DISC-017 error-table mapping. No constitution or architecture boundary change is proposed.
+
+
+## Normative-order correction (2026-10-12)
+
+Apply the existing KMIPKIT-REQ-SPEC-10.1.2-001 Structure-order rule. Mixed
+representation means the Certificate and identifier lists may both be present;
+it does not authorize interleaving the two field groups on the wire. This
+supersedes the former mixed insertion/wire-order interpretation. A dedicated
+Red/Green/Refactor cycle checks both Table 340 ordering and reversed Table 2
+Certificate fields. No local certificate content or trust evaluation is added.
