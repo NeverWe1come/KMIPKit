@@ -403,6 +403,22 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("Core matrix (3 OS × Rust 1.94 and stable)", markdown)
         self.assertIn("Dependency policy", markdown)
 
+    def test_protected_release_push_reports_failed_required_job(self) -> None:
+        summary_module = self.require_summary()
+        needs = self.successful_release_needs()
+        needs["core"] = {"result": "failure"}
+
+        markdown, exit_code = summary_module.build_summary(
+            event_name="push",
+            context=self.release_context(),
+            needs=needs,
+        )
+
+        self.assertEqual(1, exit_code)
+        self.assertIn("CI result: FAIL", markdown)
+        self.assertIn("Core matrix", markdown)
+        self.assertIn("❌ FAIL", markdown)
+
     def test_release_manifest_is_not_written_before_summary_rendering_succeeds(self) -> None:
         summary_module = self.require_summary()
         context = self.release_context()
