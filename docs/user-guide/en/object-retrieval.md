@@ -181,11 +181,13 @@ KMIPKit does not poll or wait automatically. If you choose a follow-up
 operation, issue it explicitly with the correlation value required by that
 workflow.
 
-For a completed Get, inspect only permitted metadata such as Object Type,
-Unique Identifier, and the generic Any Object's tag or structure. Treat object
-contents as secret: do not format or log the object, key material, or raw KMIP
-bodies. KMIPKit-owned TTLV storage is zeroized when dropped; caller-created
-copies are outside that guarantee.
+The Get response carries the complete Any Object as an opaque generic TTLV
+item. KMIPKit preserves its structure and values; it does not decode key
+material or perform cryptographic operations. Inspect only permitted metadata
+such as Object Type, Unique Identifier, and the generic Any Object's tag or
+structure. Treat object contents as secret: do not format or log the object,
+key material, or raw KMIP bodies. KMIPKit-owned TTLV storage is zeroized when
+dropped; caller-created copies are outside that guarantee.
 
 Server Failure is a typed operation result with Result Status, Result Reason,
 and optional Result Message, not a local `ClientError`. Inspect an untrusted
