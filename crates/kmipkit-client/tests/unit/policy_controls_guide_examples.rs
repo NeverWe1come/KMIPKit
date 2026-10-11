@@ -16,6 +16,21 @@ use crate::{Client, ClientBatchItemResponse, ClientError, ClientRequest, UsageAl
 const ENGLISH_GUIDE: &str = include_str!("../../../../docs/user-guide/en/policy-controls.md");
 const SPANISH_GUIDE: &str = include_str!("../../../../docs/user-guide/es/controles-de-uso.md");
 
+type AllocationExample = fn(
+    &mut Client,
+    UniqueIdentifier,
+    i64,
+    u32,
+    &CodecLimits,
+) -> Result<UsageAllocationContext, Box<dyn Error>>;
+type GuardedEncryptExample = fn(
+    &mut Client,
+    &mut UsageAllocationContext,
+    kmipkit_protocol::EncryptRequest,
+    i64,
+    &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError>;
+
 fn build_policy_payloads(
     object_id: UniqueIdentifier,
     constraints: Structure,
@@ -100,18 +115,6 @@ fn documented_policy_payloads_preserve_defaults_omission_semantics() {
 
 #[test]
 fn documented_guard_examples_compile_against_the_client_api() {
-    let _: fn(
-        &mut Client,
-        UniqueIdentifier,
-        i64,
-        u32,
-        &CodecLimits,
-    ) -> Result<UsageAllocationContext, Box<dyn Error>> = allocate_for_object;
-    let _: fn(
-        &mut Client,
-        &mut UsageAllocationContext,
-        kmipkit_protocol::EncryptRequest,
-        i64,
-        &CodecLimits,
-    ) -> Result<ClientBatchItemResponse, ClientError> = encrypt_with_allocation;
+    let _: AllocationExample = allocate_for_object;
+    let _: GuardedEncryptExample = encrypt_with_allocation;
 }
