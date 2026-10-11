@@ -25,7 +25,8 @@ fn get_request_exposes_optional_identifier_and_table_220_order() {
     let payload = request
         .to_ttlv_payload()
         .expect("the Table 220 Unique Identifier request is representable");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(fields.len(), 1);
     assert_eq!(fields[0].tag().raw(), UNIQUE_IDENTIFIER_TAG);
     assert_eq!(fields[0].item_type(), ItemType::TextString);
@@ -47,7 +48,8 @@ fn locate_request_keeps_empty_attributes_explicit_zero_and_table_247_order() {
     let payload = request
         .to_ttlv_payload()
         .expect("the required empty Attributes Structure is representable");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(
         fields
             .iter()
