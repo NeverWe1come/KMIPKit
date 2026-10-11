@@ -3086,6 +3086,15 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertGreater(validate(document)["record_count"], 0)
 
+    def test_catalog_validator_accepts_documented_unclear_requirement_scope(self) -> None:
+        """Requirement scope may remain unclear when source evidence does not name an actor."""
+        document = deviation_catalog(decision_record())
+        document["requirements"][0]["scope_state"] = "unclear"
+        document["source_clauses"][0]["scope_state"] = "unclear"
+        document["decisions"][0]["requirement_ids"] = [document["requirements"][0]["requirement_id"]]
+
+        self.assertGreater(validate(document)["record_count"], 0)
+
     def test_checked_in_catalog_reconciles_profile_and_official_test_evidence(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         raw = catalog_path.read_bytes()
