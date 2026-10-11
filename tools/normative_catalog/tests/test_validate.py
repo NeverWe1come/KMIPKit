@@ -6590,7 +6590,12 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Initial Date", date_review["source_context"])
         self.assertIn("current time", date_review["source_context"])
         self.assertIn("unresolved", date_review["review_note"].lower())
-        self.assertIn("replacement character", date_review["review_note"].lower())
+        self.assertIn("\u00A0IT2+", date_review["source_context"])
+        self.assertIn("non-breaking space", date_review["review_note"].lower())
+        self.assertIn("byte 0xA0", date_review["review_note"])
+        self.assertIn("Windows-1252", date_review["review_note"])
+        self.assertNotIn("replacement character", date_review["review_note"].lower())
+        self.assertNotIn("U+FFFD", date_review["review_note"])
 
         for clause_id in ("KMIPKIT-CLAUSE-SPEC-6.1.47-005", "KMIPKIT-CLAUSE-SPEC-6.1.47-006"):
             self.assertEqual(reviews[clause_id]["source_obligations"], [])
