@@ -65,10 +65,66 @@ The selected target is stored in the project-owned `specification/catalog/profil
 
 - The catalog contains 18 client profile records; 15 are marked `client_1_0` or `conditional`.
 - On 2026-10-07, the GitHub branch-protection API returned `Branch not protected` for `release/1.0.0`, and the repository ruleset listing returned no rulesets. Therefore the protected-push evidence gate is currently unsatisfied and MUST remain incomplete until an administrator-owned policy is configured and the read-only API check passes during each eligible run.
-- Baseline Client links 5 profile requirement IDs and 16 mandatory test IDs. All 16 fixture records currently have `fixture_availability: unavailable`.
+- Baseline Client's current catalog record links 10 Profile requirement IDs and 16 mandatory test IDs. All 16 fixture records have `fixture_availability: unavailable`.
 - HTTPS Client is marked `conditional`, links 19 requirement IDs and 17 mandatory test IDs, and depends on Baseline Client.
 - The source catalog currently marks profiles `not_claimed`; this feature records Baseline readiness as `evidence_incomplete` because its 16 mandatory fixtures are unavailable. No public profile claim is emitted.
 - The 1.0 target remains TTLV, KMIP 2.1, TLS 1.3 with mutual TLS, raw TLS and HTTP/1.1 over HTTPS. JSON/XML and server-initiated operations remain outside this feature's scope.
+
+## Pinned-source client-profile closure baseline (2026-10-11)
+
+This is a review snapshot of the catalog records against the pinned KMIP Specification v2.1 and Profiles v2.1 HTML, not a conformance result. The exact identifier sets remain in each profile's `direct_source_clause_ids`, `source_clause_ids`, `requirement_ids`, `dependency_profile_ids`, and `test_case_ids` arrays in `specification/catalog/kmip-2.1.json`; the counts below are cross-checks. The independent pinned-source oracle required by T003 is still absent, so the catalog-computed sets are not yet independently certified.
+
+Seventeen client-profile records directly include `KMIPKIT-CLAUSE-PROF-3.1-001`; HTTPS receives §3.1 transitively through its Baseline dependency, because its own §6.4 references §3.2 and Baseline §6.1. All 18 records directly include the shared Profiles §6.1 roots `KMIPKIT-CLAUSE-PROF-6.1-001` through `-004`; each also includes its profile-specific direct clause roots summarized in the table. Pinned Profiles §6.1 items 1 and 2 require support for KMIP-SPEC and the Basic Authentication Suite conditions in §3.1. The catalog's two normative inclusion edges attach to roots `KMIPKIT-CLAUSE-PROF-6.1-001` and `-002`, mapping respectively to the whole `KMIPKIT-SRC-spec` source and `KMIPKIT-SRC-profiles` §3.1 with its subclauses; these are not Baseline-only edges. The pinned Profiles text is at `specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html` lines 10479–10485; §§3.1, 3.1.1, and 3.1.2 begin at lines 3997, 4007, and 4058. Baseline's stored closure contains all 877 catalogued Specification clauses plus 20 Profiles clauses (897 total), and 344 Specification `client_1_0` requirements plus 10 Profile requirements (354 total). Its ten Profile requirement IDs include `KMIPKIT-REQ-PROF-3.1.1-002`, `-004`, `-005`, `KMIPKIT-REQ-PROF-3.1.2-002`, and `-005`; the earlier note that these five were missing is stale and corrected here.
+
+| Client profile | Applicability | Direct Profiles sections | Stored clauses | Stored requirements | Dependency | Linked test IDs | Fixture status |
+|---|---|---|---:|---:|---|---:|---|
+| AES XTS | `client_1_0` | 3.1, 5.13.1, 6.1, 6.30 | 904 | 356 | Baseline | 18 | all unavailable |
+| Asymmetric Key Lifecycle | `client_1_0` | 3.1, 5.8.1, 6.1, 6.16 | 904 | 357 | Baseline | 20 | all unavailable |
+| Baseline | `client_1_0` | 3.1, 5.1.1, 6.1 | 897 | 354 | none | 16 | all unavailable |
+| Cryptographic Advanced | `client_1_0` | 3.1, 5.9.2, 6.1, 6.19 | 905 | 358 | Baseline | 34 | all unavailable |
+| Cryptographic Basic | `client_1_0` | 3.1, 5.9.1, 6.1, 6.18 | 905 | 358 | Baseline | 37 | all unavailable |
+| Cryptographic RNG | `client_1_0` | 3.1, 5.9.3, 6.1, 6.20 | 905 | 358 | Baseline | 21 | all unavailable |
+| HTTPS | `conditional` | 3.2, 5.3.1, 6.1, 6.4 | 918 | 363 | Baseline | 17 | all unavailable |
+| JSON | `out_of_scope` | 3.1, 5.5.2, 6.1, 6.8 | 905 | 349 | Baseline | 17 | all unavailable |
+| Opaque Managed Object Store | `client_1_0` | 3.1, 5.10.1, 6.1, 6.24 | 904 | 357 | Baseline | 18 | all unavailable |
+| PKCS#11 | `out_of_scope` | 3.1, 5.18.3, 6.1, 6.34 | 906 | 358 | Baseline | 17 | all unavailable |
+| Quantum Safe | `client_1_0` | 3.1, 5.15, 5.17, 6.1, 6.32 | 910 | 359 | Baseline | 18 | all unavailable |
+| Storage Array with Self-Encrypting Drives | `client_1_0` | 3.1, 5.11.1, 6.1, 6.26 | 905 | 358 | Baseline | 19 | all unavailable |
+| Symmetric Key Foundry Advanced | `client_1_0` | 3.1, 5.7.3, 6.1, 6.14 | 904 | 356 | Baseline | 20 | all unavailable |
+| Symmetric Key Foundry Basic | `client_1_0` | 3.1, 5.7.1, 6.1, 6.12 | 904 | 357 | Baseline | 20 | all unavailable |
+| Symmetric Key Foundry Intermediate | `client_1_0` | 3.1, 5.7.2, 6.1, 6.13 | 904 | 356 | Baseline | 20 | all unavailable |
+| Symmetric Key Lifecycle | `client_1_0` | 3.1, 5.6.1, 6.1, 6.10 | 904 | 357 | Baseline | 17 | all unavailable |
+| Tape Library | `client_1_0` | 3.1, 5.12.2, 5.12.3, 5.12.4, 6.1, 6.28 | 922 | 374 | Baseline | 19 | all unavailable |
+| XML | `out_of_scope` | 3.1, 5.4.2, 6.1, 6.6 | 905 | 349 | Baseline | 17 | all unavailable |
+
+Every profile links the shared official IDs `BL-M-{1..13}-21` and `SKLC-M-{1..3}-21`. The following are the additional official IDs linked by each profile; numeric ranges are inclusive:
+
+| Client profile | Additional official case IDs |
+|---|---|
+| AES XTS | `AX-M-{1..2}-21` |
+| Asymmetric Key Lifecycle | `AKLC-M-{1..3}-21`, `AKLC-O-1-21` |
+| Baseline | none |
+| Cryptographic Advanced | `CS-AC-M-{1..8}-21`, `CS-AC-M-OAEP-{1..10}-21` |
+| Cryptographic Basic | `CS-BC-M-{1..14}-21`, `CS-BC-M-CHACHA20-{1..3}-21`, `CS-BC-M-CHACHA20POLY1305-1-21`, `CS-BC-M-GCM-{1..3}-21` |
+| Cryptographic RNG | `CS-RNG-M-1-21`, `CS-RNG-O-{1..4}-21` |
+| HTTPS | `MSGENC-HTTPS-M-1-21` |
+| JSON | `MSGENC-JSON-M-1-21` |
+| Opaque Managed Object Store | `OMOS-M-1-21`, `OMOS-O-1-21` |
+| PKCS#11 | `PKCS11-M-1-21` |
+| Quantum Safe | `QS-M-1-12`, `QS-M-2-21` |
+| Storage Array with Self-Encrypting Drives | `SASED-M-{1..3}-21` |
+| Symmetric Key Foundry Advanced | `SKFF-M-{9..12}-21` |
+| Symmetric Key Foundry Basic | `SKFF-M-{1..4}-21` |
+| Symmetric Key Foundry Intermediate | `SKFF-M-{5..8}-21` |
+| Symmetric Key Lifecycle | `SKLC-O-1-21` |
+| Tape Library | `TL-M-{1..3}-21` |
+| XML | `MSGENC-XML-M-1-21` |
+
+All non-Baseline client-profile records depend on Baseline. All 18 records together have 365 profile-to-test-ID associations and 93 distinct case IDs; every linked fixture record is marked unavailable. The audit found the linked IDs, labels, and hrefs in the pinned Profiles HTML, but presence does not establish correct label-to-href pairing. The pinned source has recorded mismatches: §5.9.7.13 labels `CS-BC-M-13-21` but points to `CS-BC-M-14-21.xml` and displays `CS-BC-M-21-21.xml`; §5.9.7.14 labels `CS-BC-M-14-21` but points to that same `CS-BC-M-14-21.xml` and displays `CS-BC-M-20-21.xml`; §5.17.1 labels `QS-M-1-12` but points to and displays `QS-M-1-21.xml`. These source defects are tracked as `KMIPKIT-DISC-027` and `KMIPKIT-DISC-028` in the catalog. None of the 93 IDs occurs in the separately pinned CN01 Test Cases HTML. The case IDs are present in Profiles, while the separate Test Cases document supplies no cross-reference for them; fixture execution remains unavailable and is not inferred. The catalog's normative closure follows only the two explicit inclusion edges described above; CN01 case links are evidence, and the Usage Guide has informative authority, so neither adds normative clauses or requirements. The source link details are in `specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html` lines 7910–7921 and 9386–9397.
+
+The catalog-level mapping audit found no unresolved profile clause or requirement IDs and no stored requirement whose `source_clause_ids` falls outside its profile's stored `source_clause_ids` closure. This confirms internal link consistency, not independent source closure. The applicability counts remain 14 `client_1_0`, one `conditional` (HTTPS), and three `out_of_scope` (JSON, PKCS#11, XML); server-only records remain outside client closures.
+
+The whole-Spec closure of every client profile includes clause `KMIPKIT-CLAUSE-SPEC-14.1-002`, whose requirement `KMIPKIT-REQ-SPEC-14.1-002` is marked `profile_conditional` and says a claimed client profile SHALL conform to its normative clauses and subclauses (pinned Specification §14.1, lines 66041–66047). No profile's current `requirement_ids` includes it because the requirement record has no `profile_ids`; it is not one of the 344 `client_1_0` Specification requirements. **Disposition:** for any of the 18 client-profile closures evaluated for a possible conformance claim, treat this requirement as the claim-level normative gate and include its ID in that profile's expected requirement closure. T003's independent oracle will list it for all 18 records, and T005 will map its `profile_ids` to all 18 so generated closure carries the condition into readiness evaluation. This meta-requirement is evaluated by checking every applicable profile-clause statement, not by adding a stand-alone operation rule or test fixture. For JSON, PKCS#11, and XML the mapping is future/conditional metadata and does not change their `out_of_scope` status or create a 1.0 evidence obligation. Its inclusion does not make the current client or profile conformant and does not publish a claim. The expected Baseline requirement closure after that correction is 345 Specification requirements (344 `client_1_0` plus this conditional claim requirement) and 10 Profile requirements, 355 total. The table above intentionally records the current stored count of 354. No profile claim is made.
 
 ## Security decisions from independent review
 
@@ -81,7 +137,7 @@ The selected target is stored in the project-owned `specification/catalog/profil
 
 - Represent explicit normative references as stable `normative_inclusions` catalog edges (`inclusion_id`, `source_clause_id`, `included_source_id`, nullable `included_section`). A null section includes every clause in the target source; a non-null section includes that section and its dot-delimited subclauses. Keep each profile's `direct_source_clause_ids` separate from its computed `source_clause_ids`; compute closure over included source sections and same-source subclauses. Keep informative references outside that closure, reject unknown/cyclic edges, and verify all 18 client profiles against the pinned sources before assigning feature ownership or generating Rust metadata.
 - Keep an independently reviewed, pinned-source closure oracle in `tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json` for all 18 client profiles. Tests compare catalog direct clauses, normative inclusion edges, closure clauses, and requirements against this oracle; the generator and runtime never read the oracle, so it is verification evidence rather than a second production source of truth.
-- Baseline Client's Profiles §6.1 item 1 says `SHALL support [KMIP-SPEC]`, so its closure includes every KMIP Specification v2.1 clause and all client-applicable requirements within the approved 1.0 scope. Add `KMIPKIT-CLAUSE-PROF-6.1-001` -> (`KMIPKIT-SRC-spec`, whole document) and prove the complete client requirement set against the independent pinned-source oracle; retain server-only and out-of-scope dispositions and existing protocol-spec ownership. Item 2 incorporates Basic Authentication Suite §3.1, including applicable §§3.1.1 and 3.1.2. The current catalog profile record does not link `KMIPKIT-REQ-PROF-3.1.1-002`, `-004`, `-005`, `KMIPKIT-REQ-PROF-3.1.2-002`, or `-005`; add `KMIPKIT-CLAUSE-PROF-6.1-002` -> (`KMIPKIT-SRC-profiles`, section `3.1`), their exact clause and profile links, and tests proving removal of any oracle-listed requirement blocks validation/readiness. Preserve each source keyword and conditional disposition; TLS 1.3-only product scope does not erase a normative source obligation.
+- All 18 client profiles directly include the shared §6.1 roots and their two catalogued normative inclusions; current closure counts and Baseline-specific inherited Profile requirements are recorded above. The five inherited Profile requirement IDs from §§3.1.1 and 3.1.2 are already present in the current catalog. T003/T005 must compare all stored IDs against the independent pinned-source oracle and apply the §14.1-002 claim-level disposition above. Retain server-only and out-of-scope dispositions and existing protocol-spec ownership; preserve each source keyword and conditional disposition. TLS 1.3-only product scope does not erase a normative source obligation.
 - A PR workflow cannot certify its own results: GitHub documents that `pull_request` executes the workflow file from the PR merge commit, while `push` runs against the pushed ref ([workflow event docs](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows), [securely using `pull_request_target`](https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target)). Accept evidence only from a `push` run on `refs/heads/release/1.0.0` with GitHub context `ref_protected: true`; this boolean alone does not prove adequate rules. Query branch protection on every run using `GET /repos/{owner}/{repo}/branches/release%2F1.0.0/protection` and a short-lived GitHub App installation token scoped to read-only Administration permission. GitHub documents that this endpoint exposes branch protection details and requires Administration:read ([branch protection API](https://docs.github.com/en/rest/branches/branch-protection)). Validate the live response for required human review, stale-review dismissal, an explicitly present `bypass_pull_request_allowances` object with empty `users`, `teams`, and `apps` arrays, admin enforcement, and disabled force pushes/deletions. GitHub documents that configured bypass actors can bypass required-pull-request-review rules, so missing, malformed, or non-empty allowances fail closed; fail closed also if the token, API, or any required field is unavailable. The API token is never available to PR/schedule jobs and is not logged. PR and `schedule` runs remain useful for checks but cannot produce eligible evidence.
 - Make verification manifests and current-run readiness ephemeral. The committed coverage report is regenerated only from stable checked-in inputs; no run ID, attempt, job conclusion, or temporary manifest is written into committed generated files or catalog lifecycle state. The aggregate CI job may expose its separate same-run result for the exact commit under evaluation.
 
