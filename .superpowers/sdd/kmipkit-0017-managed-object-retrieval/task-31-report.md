@@ -11,7 +11,7 @@ Red test commit: `b039361d77eff9e99ebe1ebc91eb7f679a5d9860`
 
 ## Normative and feature traceability
 
-- OASIS KMIP Specification v2.1 §10.1 requires defined Structure fields to
+- OASIS KMIP Specification v2.1 §10.1.2 requires defined Structure fields to
   appear in the order in which they appear in the Structure description.
   Section 6.1.19, Table 221 orders Get success fields as Object Type, Unique
   Identifier, then Any Object. The out-of-order vector also covers
@@ -60,7 +60,7 @@ cargo test -p kmipkit-protocol --test object_read_negative_vectors
 Result: exit code 1; 7 tests ran, 6 passed, and 1 failed. The sole expected
 failure is `get_success_payload_rejects_table_221_fields_out_of_order`.
 The current public conversion accepts Object Type, Any Object, then Unique
-Identifier and returns a successful `GetResponse`; this contradicts §10.1 and
+Identifier and returns a successful `GetResponse`; this contradicts §10.1.2 and
 Table 221 ordering as required by FR-002. No other failure remained in the
 final focused run.
 

@@ -2,7 +2,7 @@
 //!
 //! Get and Locate payload shapes follow OASIS KMIP v2.1 §6.1.19 Table 221
 //! and §6.1.28 Table 248. Structure fields follow their described order under
-//! §10.1. Field presence and ordering apply KMIPKIT-0017-FR-002; sanitized Get
+//! §10.1.2. Field presence and ordering apply KMIPKIT-0017-FR-002; sanitized Get
 //! errors apply FR-004 and FR-012. Decoder bounds and payload-free diagnostics
 //! apply FR-012 and the shared KMIPKIT-0005-FR-006–FR-009 decoder contract.
 //! These are project-derived negative vectors, not official OASIS test cases.
@@ -216,7 +216,7 @@ fn malformed_get_fields_reject_with_payload_free_diagnostics() {
 
 #[test]
 fn get_success_payload_rejects_table_221_fields_out_of_order() {
-    // OASIS KMIP v2.1 §10.1 requires Structure fields in description order;
+    // OASIS KMIP v2.1 §10.1.2 requires Structure fields in description order;
     // §6.1.19 Table 221 orders Object Type, Unique Identifier, then Any Object.
     let payload = structure([
         item(OBJECT_TYPE, Value::enumeration(2)),
