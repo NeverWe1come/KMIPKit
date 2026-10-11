@@ -5996,6 +5996,153 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_41_query_async_requests_keeps_server_results_and_optional_client_inputs(self) -> None:
+        """Specification v2.1 §§6.1.41 and 6.1.41.1 separate client filters from server results."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        query_async_locators = [row for row in pinned_locators if row["section"] in ("6.1.41", "6.1.41.1")]
+        expected_locators = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-001": ("6.1.41", 1, "table_row", ["REQUIRED"], [32437, 32455]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-002": ("6.1.41", 2, "paragraph", ["SHOULD"], [32500, 32505]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-003": ("6.1.41", 3, "table_row", ["REQUIRED"], [32518, 32536]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-004": ("6.1.41", 4, "table_row", ["MAY"], [32537, 32555]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-001": ("6.1.41.1", 1, "paragraph", ["SHALL"], [32566, 32567]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-002": ("6.1.41.1", 2, "table_row", ["REQUIRED"], [32587, 32600]),
+        }
+        self.assertEqual({row["clause_id"] for row in query_async_locators}, set(expected_locators))
+        reviews = {
+            row["source_clause_id"]: row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_section"] in ("6.1.41", "6.1.41.1")
+        }
+        self.assertEqual(set(reviews), set(expected_locators))
+        for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locators.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": block_kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            pinned = next(row for row in query_async_locators if row["clause_id"] == clause_id)
+            self.assertEqual(review["source_excerpt"], pinned["source_text"])
+            self.assertEqual(pinned["source_keywords"], keywords)
+
+        expected_source_atoms = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-002": [
+                ("SHOULD", "If no parameters are passed on this operation, the server SHOULD report any asynchronous requests whose results are still outstanding."),
+                ("SHOULD", "If Asynchronous Correlation Values are passed, the server SHOULD report the outstanding asynchronous requests whose values match."),
+                ("SHOULD", "If Operations are passed, the server SHOULD report the outstanding asynchronous requests whose Operation matches one of those contained in Operations."),
+            ],
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-004": [("MAY", "MAY be repeated")],
+            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-001": [
+                ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Asynchronous Requests Operation.")
+            ],
+        }
+        for clause_id, expected_atoms in expected_source_atoms.items():
+            with self.subTest(source_clause_id=clause_id, assertion="complete normative atom inventory"):
+                atoms = reviews[clause_id]["source_obligations"]
+                self.assertEqual(
+                    [(atom["source_order"], atom["source_keyword"], atom["source_text"]) for atom in atoms],
+                    [(order, keyword, text) for order, (keyword, text) in enumerate(expected_atoms, 1)],
+                )
+                self.assertTrue(
+                    all(
+                        atom["actor"] == "server"
+                        and atom["direction"].startswith("server→client")
+                        and atom["scope_disposition"] == "server_only"
+                        and atom["candidate_requirement_id"] is None
+                        for atom in atoms
+                    )
+                )
+                self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], [])
+
+        for clause_id in (
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-001",
+            "KMIPKIT-CLAUSE-SPEC-6.1.41-003",
+            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-002",
+        ):
+            self.assertEqual(reviews[clause_id]["source_obligations"], [])
+        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.41-001"]["review_note"].lower())
+        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.41-003"]["review_note"].lower())
+        self.assertIn("required", reviews["KMIPKIT-CLAUSE-SPEC-6.1.41.1-002"]["review_note"].lower())
+        self.assertEqual(
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.41.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
+            ["Attestation Failed", "Attestation Required", "Feature Not Supported", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large"],
+        )
+        self.assertIn("payload", reviews["KMIPKIT-CLAUSE-SPEC-6.1.41.1-002"]["review_note"].lower())
+
+        correlation_gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-ASYNC-CORRELATION-VALUES-OPTIONAL"
+        operations_gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-OPERATIONS-OPTIONAL"
+        expected_request_rows = [
+            ("Asynchronous Correlation Values", "No", [32456, 32474], correlation_gap_id, "KMIPKIT-REQ-SPEC-6.1.41-005"),
+            ("Operations", "No", [32475, 32492], operations_gap_id, "KMIPKIT-REQ-SPEC-6.1.41-006"),
+        ]
+        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.41-001"]
+        self.assertEqual(
+            [
+                (row["row_label"], row["required"], row["html_line_range"], row["source_gap_id"], row["source_requirement_ids"])
+                for row in request_header["source_request_rows"]
+            ],
+            [(label, required, span, gap_id, []) for label, required, span, gap_id, _ in expected_request_rows],
+        )
+        for row, (label, _, span, gap_id, proposed_id) in zip(request_header["source_request_rows"], expected_request_rows, strict=True):
+            self.assertEqual(row["actor"], "client")
+            self.assertEqual(row["disposition"], "optional_request_field_with_source_only_proposal")
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, span))
+            self.assertEqual(row["row_label"], label)
+            self.assertEqual(row["source_gap_id"], gap_id)
+            self.assertNotIn(proposed_id, {requirement["requirement_id"] for requirement in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
+
+        query_async_gaps = {
+            row["gap_id"]: row
+            for row in oracle["source_only_requirement_gaps"]
+            if row["source_section"] == "6.1.41"
+        }
+        self.assertEqual(set(query_async_gaps), {correlation_gap_id, operations_gap_id})
+        for row, (label, _, span, gap_id, proposed_id) in zip(request_header["source_request_rows"], expected_request_rows, strict=True):
+            gap = query_async_gaps[gap_id]
+            self.assertEqual(gap["source_locator"], {
+                "kind": "table_body_row", "section": "6.1.41", "row_label": label,
+                "table": "request_payload", "html_line_range": span,
+            })
+            self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, span))
+            self.assertEqual(gap["source_keywords"], [])
+            self.assertEqual(gap["source_force"], "optional_table_body_value")
+            self.assertEqual(gap["actor"], "client")
+            self.assertEqual(gap["scope_disposition"], "client_1_0")
+            self.assertEqual(gap["candidate_requirement_id"], None)
+            self.assertEqual(gap["proposed_requirement_id"], proposed_id)
+            self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
+
+        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.41-003"]
+        self.assertEqual(
+            response_header["source_payload_rows"],
+            [{
+                "row_label": "Asynchronous Request", "required": "No", "actor": "server",
+                "disposition": "response_payload_data",
+                "html_line_range": [32537, 32555],
+                "source_excerpt": pinned_source_excerpt(source_path, [32537, 32555]),
+                "source_note": "Table 286 is printed as PKCS#11 Response Payload; KMIPKIT-DISC-039 remains open and this evidence does not resolve the operation mapping.",
+            }],
+        )
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        caption_discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-039")
+        self.assertEqual(caption_discrepancy["state"], "open")
+        self.assertIsNone(caption_discrepancy["decision_id"])
+        async_operation = next(row for row in catalog["elements"] if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS")
+        self.assertEqual(
+            next(table for table in async_operation["payload_tables"] if table["role"] == "response"),
+            {"role": "response", "table_number": 286, "caption": "PKCS#11 Response Payload"},
+        )
+
+        self.assertEqual(
+            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.41-")],
+            [],
+            "server SHOULD/MAY/SHALL atoms and header keywords do not create client requirement mappings",
+        )
+        self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
+
     def test_spec_4_19_through_4_25_source_review_slice_preserves_actor_and_force(self) -> None:
         """The source audit separates server lifecycle rules and unresolved client wording."""
         oracle = json.loads(
