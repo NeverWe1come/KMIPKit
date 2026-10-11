@@ -27,6 +27,9 @@ const SALT: u32 = 0x0042_0084;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+const HASHING_ALGORITHM: u32 = 0x0042_0038;
+const DERIVATION_METHOD_PBKDF2: u32 = 1;
+const DERIVATION_METHOD_HASH: u32 = 2;
 
 /// A KMIP Derivation Method Enumeration that retains unknown future values.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -279,19 +282,22 @@ impl DerivationParameters {
     fn valid_for_method(&self, method: DerivationMethod) -> bool {
         match method.raw() {
             // §7.12 Table 364 requires both Salt and Iteration Count for PBKDF2.
-            1 => self.salt.is_some() && self.iteration_count.is_some(),
+            DERIVATION_METHOD_PBKDF2 => self.salt.is_some() && self.iteration_count.is_some(),
             // §7.12 requires an explicit Hashing Algorithm for HASH derivation.
-            2 => self
-                .cryptographic_parameters
-                .as_ref()
-                .is_some_and(|parameters| {
-                    parameters.view().children().iter().any(|field| {
-                        field.tag().raw() == 0x0042_0038
-                            && field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
-                    })
-                }),
+            DERIVATION_METHOD_HASH => self.has_hashing_algorithm(),
             _ => true,
         }
+    }
+
+    fn has_hashing_algorithm(&self) -> bool {
+        self.cryptographic_parameters
+            .as_ref()
+            .is_some_and(|parameters| {
+                parameters.view().children().iter().any(|field| {
+                    field.tag().raw() == HASHING_ALGORITHM
+                        && field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                })
+            })
     }
 }
 

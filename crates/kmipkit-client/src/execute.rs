@@ -1761,11 +1761,11 @@ impl fmt::Debug for ClientResponseView<'_> {
                 debug_operation_response(formatter, "DiscoverVersions", response)
             }
             ClientResponseRef::Encrypt(response) => {
-                debug_operation_response(formatter, "Encrypt", response)
+                formatter.debug_tuple("Encrypt").field(response).finish()
             }
             ClientResponseRef::Decrypt(r) => debug_operation_response(formatter, "Decrypt", r),
             ClientResponseRef::DeriveKey(response) => {
-                debug_operation_response(formatter, "DeriveKey", response)
+                formatter.debug_tuple("DeriveKey").field(response).finish()
             }
             ClientResponseRef::Hash(response) => {
                 debug_operation_response(formatter, "Hash", response)

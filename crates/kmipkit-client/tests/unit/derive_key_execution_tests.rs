@@ -75,6 +75,7 @@ fn server_error_response() -> Vec<u8> {
 
 #[test]
 fn both_derivation_inputs_reach_the_server_and_its_error_is_returned_once() {
+    assert_eq!(DERIVE_KEY_OPERATION, 0x0000_0005);
     let (mut client, fake, request_bytes) = client_for(ExchangeScript::Success {
         response: server_error_response(),
         request_write_chunks: vec![2, 7, 3],
