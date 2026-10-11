@@ -1,15 +1,17 @@
 # Managed-object lifecycle operations
 
 KMIPKit exposes explicit client calls for Activate, Archive, Destroy, Recover,
-and Re-certify. Each call sends one typed request, performs one exchange, and
-returns the server's operation result. The client does not simulate remote
-object state, retry requests, or issue Poll/Get follow-ups automatically. For
-connection setup and TLS policy, see the [production transport guide](production-transports.md).
+Re-certify, and Re-key. Each call sends one typed request, performs one
+exchange, and returns the server's operation result. The client does not
+simulate remote object state, retry requests, or issue Poll/Get follow-ups
+automatically. For connection setup and TLS policy, see the
+[production transport guide](production-transports.md).
 
 The operation payloads follow OASIS KMIP Specification v2.1 §6.1.1 Tables
 164–166 (Activate), §6.1.4 Tables 173–175 (Archive), §6.1.15 Tables 208–210
-(Destroy), and §6.1.42 Tables 288–290 (Recover). Unique Identifier forms and
-the assigned tag are defined by §4.58 Tables 145–146 and §11.56 Table 487.
+(Destroy), §6.1.42 Tables 288–290 (Recover), and §6.1.46 Tables 303–307
+(Re-key). Unique Identifier forms and the assigned tag are defined by §4.58
+Tables 145–146 and §11.56 Table 487.
 
 All four requests accept an optional typed `UniqueIdentifier`. KMIPKit sends
 the supplied representation as given; omitting it does not select or discover
@@ -194,6 +196,46 @@ fn recertify(
 
 fn main() {
     let _example = recertify;
+}
+```
+
+## Re-key
+
+Re-key asks the server to create a replacement Symmetric Key. The caller may
+identify the existing key explicitly or omit its Unique Identifier to use a
+preceding batch item's ID Placeholder. Offset, Attributes, and Protection
+Storage Masks are optional and are forwarded in KMIP-defined order. When
+Offset is omitted, the server applies the standard's lifecycle-date behavior.
+The server generates the replacement key and maintains its Replacement Object
+and Replaced Key links. KMIPKit does not generate key material or keep a local
+record of which keys were re-keyed; callers should issue Re-key no more than
+once for a given existing key.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{RekeyRequest, UniqueIdentifier};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn rekey(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), kmipkit_client::ClientError> {
+    let request = RekeyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("key-42".to_owned()));
+    let item = client.rekey(request, limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Rekey);
+    let response = outcome
+        .response()
+        .rekey()
+        .expect("Re-key returns its typed response");
+    let _server_status = response.result().status().raw();
+    let _replacement_identifier = response.unique_identifier();
+    Ok(())
+}
+
+fn main() {
+    let _example = rekey;
 }
 ```
 
