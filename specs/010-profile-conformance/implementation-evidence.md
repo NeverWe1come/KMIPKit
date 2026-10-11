@@ -512,3 +512,11 @@ The existing tag element `KMIPKIT-ELEM-TAG-420151` identifies Endpoint Role but 
 `KMIPKIT-DISC-052` remains open with no decision: successful role switching in §6.1.54 conflicts with the approved client-initiated-only 1.0 boundary, while server-initiated §6.2.5 remains a 1.1 exclusion. This slice makes no claim that the client supports post-switch server behavior or that the full operation is in the 1.0 profile. The independent profile oracle remains partial; global crosswalk and closure failures above block profile readiness. No CI run covers these unpushed commits; the last recorded predecessor CI run `38162579759` failed Script contracts on Ubuntu, Windows, and macOS.
 
 Fixture totals after this slice are 230 requirement crosswalks, 621 source reviews, 160 source-only gaps, and 130 proposals. `specification/catalog/coverage-report.md` was regenerated from the catalog; no generated output was edited by hand.
+
+### T003/T004 — §6.1.55 Sign source review (2026-10-11)
+
+| Phase | Command or evidence | Result |
+|---|---|---|
+| Red — Sign source rows, actors, client capabilities, and gap proposals | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_spec_6_1_55_sign_reviews_client_inputs_and_server_effects -v` | Expected Red: the pinned-source auditor found all eight §6.1.55/.1 clause candidates, while the fixture contains no corresponding source-review rows (`Ran 1 test`; `FAILED (failures=1)`). |
+
+An independent source auditor verified Specification v2.1 SHA-256 `8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf` and confirmed the client MAY `.55-001`, two server Usage Limits SHALL atoms, the server placeholder/error behavior, optional and conditional Table 334 request rows, Table 335 response rows, and server-to-client error SHALL. Existing `.55-005-001` is a retired false client candidate; `.55-005-002` is the server failure requirement. No new catalog requirement ID or official test case is inferred by this Red test.

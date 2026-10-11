@@ -7626,6 +7626,154 @@ class CatalogValidationTests(unittest.TestCase):
                           if row["source_section"] == "6.1.54.1"], [])
         self.assertIn("Table 333: Set Endpoint Role Errors", pinned_source_excerpt(source_path, [36294, 36295]))
 
+    def test_spec_6_1_55_sign_reviews_client_inputs_and_server_effects(self) -> None:
+        """Sign keeps client request capabilities separate from server behavior and output."""
+        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
+        expected = {
+            "KMIPKIT-CLAUSE-SPEC-6.1.55-001": ("6.1.55", 1, "paragraph", ["MAY"], [36304, 36308]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.55-002": ("6.1.55", 2, "paragraph", ["SHALL"], [36310, 36314]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.55-003": ("6.1.55", 3, "table_row", ["REQUIRED"], [36333, 36351]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.55-004": ("6.1.55", 4, "table_row", ["SHALL"], [36352, 36369]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.55-005": ("6.1.55", 5, "table_row", ["SHALL"], [36370, 36390]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.55-006": ("6.1.55", 6, "table_row", ["REQUIRED"], [36490, 36508]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.55.1-001": ("6.1.55.1", 1, "paragraph", ["SHALL"], [36573, 36574]),
+            "KMIPKIT-CLAUSE-SPEC-6.1.55.1-002": ("6.1.55.1", 2, "table_row", ["REQUIRED"], [36594, 36611]),
+        }
+        pinned_by_id = {row["clause_id"]: row for row in pinned if row["section"].startswith("6.1.55")}
+        self.assertEqual(set(pinned_by_id), set(expected))
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]
+                   if row["source_section"].startswith("6.1.55")}
+        self.assertEqual(set(reviews), set(expected))
+
+        for clause_id, (section, ordinal, kind, keywords, line_range) in expected.items():
+            review = reviews[clause_id]
+            self.assertEqual(review["source_section"], section)
+            self.assertEqual(review["source_id"], "KMIPKIT-SRC-spec")
+            self.assertEqual(review["source_path"], source_path)
+            self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": kind})
+            self.assertEqual(review["html_line_range"], line_range)
+            self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
+            self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
+
+        parameter_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-001"]
+        self.assertEqual(
+            [(row["source_keyword"], row["actor"], row["direction"], row["scope_disposition"],
+              row["candidate_requirement_id"], row["source_order"])
+             for row in parameter_review["source_obligations"]],
+            [("MAY", "client", "client_to_server", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.55-001", 1)],
+        )
+        self.assertEqual(parameter_review["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.55-001"])
+
+        usage_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-002"]
+        self.assertEqual(
+            [(row["source_keyword"], row["actor"], row["scope_disposition"], row["source_order"])
+             for row in usage_review["source_obligations"]],
+            [("SHALL", "server", "server_only", 1), ("SHALL", "server", "server_only", 2)],
+        )
+        self.assertEqual(usage_review["expected_client_requirement_ids"], [])
+
+        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-003"]
+        self.assertEqual(request_header["source_obligations"], [])
+        self.assertIn("header", request_header["review_note"])
+        request_rows = {row["row_label"]: row for row in request_header["source_request_rows"]}
+        self.assertEqual(
+            set(request_rows),
+            {"Unique Identifier", "Cryptographic Parameters", "Data", "Digested Data",
+             "Correlation Value", "Init Indicator", "Final Indicator"},
+        )
+        expected_request_rows = {
+            "Unique Identifier": ("No", [36352, 36369], "KMIPKIT-ELEM-TAG-420094", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL"),
+            "Cryptographic Parameters": ("No", [36370, 36390], "KMIPKIT-ELEM-TAG-42002B", None),
+            "Data": ("Yes for single-part, unless Digested Data is supplied.. No for multi-part.", [36391, 36406], "KMIPKIT-ELEM-TAG-4200C2", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL"),
+            "Digested Data": ("No", [36407, 36422], "KMIPKIT-ELEM-TAG-420107", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL"),
+            "Correlation Value": ("No", [36423, 36439], "KMIPKIT-ELEM-TAG-4200D6", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL"),
+            "Init Indicator": ("No", [36440, 36455], "KMIPKIT-ELEM-TAG-4200D7", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-INIT-INDICATOR-OPTIONAL"),
+            "Final Indicator": ("No", [36456, 36471], "KMIPKIT-ELEM-TAG-4200D8", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-FINAL-INDICATOR-OPTIONAL"),
+        }
+        for label, (required, line_range, element_id, gap_id) in expected_request_rows.items():
+            row = request_rows[label]
+            self.assertEqual((row["required"], row["actor"], row["direction"], row["scope_disposition"]),
+                             (required, "client", "client_to_server", "client_1_0"))
+            self.assertEqual(row["html_line_range"], line_range)
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, line_range))
+            self.assertEqual(row["source_element_id"], element_id)
+            self.assertEqual(row["source_gap_id"], gap_id)
+        self.assertEqual(request_rows["Cryptographic Parameters"]["source_requirement_ids"],
+                         ["KMIPKIT-REQ-SPEC-6.1.55-001"])
+
+        identifier_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-004"]
+        self.assertEqual(identifier_review["source_obligations"][0]["candidate_requirement_id"],
+                         "KMIPKIT-REQ-SPEC-6.1.55-004")
+        self.assertEqual(identifier_review["source_obligations"][0]["scope_disposition"], "server_only")
+        crypto_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-005"]
+        self.assertEqual(crypto_review["source_obligations"][0]["candidate_requirement_id"],
+                         "KMIPKIT-REQ-SPEC-6.1.55-005-002")
+        self.assertEqual(crypto_review["rejected_candidate_mappings"], [{
+            "requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-005-001",
+            "claimed_keyword": "SHALL",
+            "candidate_claim": "The client has a separate SHALL to include Cryptographic Parameters.",
+            "source_review": "The row marks Cryptographic Parameters optional; its SHALL requires a server failure only when the object has no associated parameters and the selected algorithm requires them.",
+            "expected_disposition": "not_a_normative_client_requirement",
+        }])
+
+        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-006"]
+        self.assertEqual(response_header["source_obligations"], [])
+        response_rows = {row["row_label"]: row for row in response_header["source_payload_rows"]}
+        self.assertEqual(set(response_rows), {"Unique Identifier", "Signature Data", "Correlation Value"})
+        for label, (required, span, element_id) in {
+            "Unique Identifier": ("Yes", [36509, 36526], "KMIPKIT-ELEM-TAG-420094"),
+            "Signature Data": ("Yes for single-part. No for multi-part.", [36527, 36543], "KMIPKIT-ELEM-TAG-4200C3"),
+            "Correlation Value": ("No", [36544, 36561], "KMIPKIT-ELEM-TAG-4200D6"),
+        }.items():
+            row = response_rows[label]
+            self.assertEqual((row["required"], row["actor"], row["direction"], row["scope_disposition"]),
+                             (required, "server", "server_to_client", "client_1_0"))
+            self.assertEqual(row["html_line_range"], span)
+            self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, span))
+            self.assertEqual(row["source_element_id"], element_id)
+
+        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]
+        self.assertEqual(error_review["source_obligations"][0]["source_keyword"], "SHALL")
+        self.assertEqual((error_review["source_obligations"][0]["actor"],
+                          error_review["source_obligations"][0]["direction"],
+                          error_review["source_obligations"][0]["scope_disposition"]),
+                         ("server", "server_to_client", "server_only"))
+        error_values = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        self.assertEqual(error_values.count("Invalid Object Type"), 2)
+        self.assertIn("Attestation Required", error_values)
+        self.assertIn("enum value", reviews["KMIPKIT-CLAUSE-SPEC-6.1.55.1-002"]["review_note"])
+
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"] if row["clause_id"] in expected}
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-001"]["scope_state"], "client_1_0")
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-002"]["disposition"], "server_only")
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-004"]["disposition"], "server_only")
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-005"]["disposition"], "server_only")
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]["direction"], "server_to_client")
+        crosswalk = {row["requirement_id"]: row for row in oracle["requirement_crosswalk"]}
+        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.55-001"]["source_actor"], "client")
+        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.55-004"]["source_actor"], "server")
+        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.55-005-002"]["source_actor"], "server")
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.55-005-001", crosswalk)
+
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]
+                if row["source_section"] == "6.1.55"}
+        self.assertEqual(set(gaps), {row[3] for row in expected_request_rows.values() if row[3] is not None})
+        for gap_id, gap in gaps.items():
+            self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, gap["html_line_range"]))
+            self.assertEqual(gap["actor"], "client")
+            self.assertEqual(gap["scope_disposition"], "client_1_0")
+            self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
+
+        self.assertEqual([row for row in oracle["requirement_crosswalk"] if row["source_section"].startswith("6.1.55.1")], [])
+        self.assertIn("Table 334: Sign Request Payload", pinned_source_excerpt(source_path, [36477, 36478]))
+        self.assertIn("Table 335: Sign Response Payload", pinned_source_excerpt(source_path, [36567, 36568]))
+        self.assertIn("Table 336: Sign Errors", pinned_source_excerpt(source_path, [36616, 36616]))
+
     def test_spec_6_1_45_recertify_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.45 and 6.1.45.1 preserve Re-certify source roles."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
