@@ -237,8 +237,8 @@ impl ProfileReadinessBlocker {
         match self {
             Self::MissingRequirementRecord { requirement_id }
             | Self::FailedRequirementRecord { requirement_id }
-            | Self::DuplicateRequirementRecord { requirement_id } => Some(requirement_id),
-            Self::UnresolvedRequirementScope { requirement_id, .. } => Some(requirement_id),
+            | Self::DuplicateRequirementRecord { requirement_id }
+            | Self::UnresolvedRequirementScope { requirement_id, .. } => Some(requirement_id),
             _ => None,
         }
     }

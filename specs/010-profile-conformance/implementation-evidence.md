@@ -545,6 +545,12 @@ An independent source auditor verified Specification v2.1 SHA-256 `8bf9d914c097e
 | Server-only exclusions lacked a direct negative closure assertion. | Added a focused case proving both server-role duties and server-only duties remain outside client requirements and do not become unresolved client blockers. | `python -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_closure_excludes_server_only_obligations -v` — PASS. |
 | The report runtime-block assertion also used an empty rule registry. | The unresolved-scope report test now supplies a valid typed rule mapping and first asserts that the otherwise identical resolved profile is runtime-available; then the linked unresolved duties make runtime availability false. | `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_readiness_blocks_unresolved_scope_in_its_clause_closure -v` — PASS. |
 
+### Refactor — lint after release-base update (2026-10-11)
+
+| Phase | Command | Result |
+|---|---|---|
+| Refactor — merge identical requirement-ID blocker match arms | `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo test -p kmipkit-protocol`; `cargo fmt --all --check`; `git diff --check` | PASS: Clippy initially identified identical match arms for the new unresolved-scope blocker. The patterns now share one arm; workspace Clippy and all 626 protocol unit tests, integration tests, and doctests pass. |
+
 ### T003/T004 — mixed-scope client closure regression (2026-10-11)
 
 | Phase | Command | Result |
