@@ -34,12 +34,20 @@ pub struct ValidateRequest {
     validity_date: Option<i64>,
 }
 
-enum ChainMember { Certificate(Structure), Identifier(UniqueIdentifier) }
+enum ChainMember {
+    Certificate(Structure),
+    Identifier(UniqueIdentifier),
+}
 
 impl ValidateRequest {
     /// Creates a request with the chain and evaluation date omitted.
     #[must_use]
-    pub const fn new() -> Self { Self { chain: Vec::new(), validity_date: None } }
+    pub const fn new() -> Self {
+        Self {
+            chain: Vec::new(),
+            validity_date: None,
+        }
+    }
 
     /// Appends one Certificate Structure, preserving its position in the chain.
     ///
@@ -47,26 +55,35 @@ impl ValidateRequest {
     /// are forwarded without local cryptographic or trust validation.
     #[must_use]
     pub fn with_certificate(mut self, certificate: Structure) -> Self {
-        self.chain.push(ChainMember::Certificate(certificate)); self
+        self.chain.push(ChainMember::Certificate(certificate));
+        self
     }
 
     /// Appends one Managed Certificate identifier in caller-selected order.
     #[must_use]
     pub fn with_unique_identifier(mut self, identifier: UniqueIdentifier) -> Self {
-        self.chain.push(ChainMember::Identifier(identifier)); self
+        self.chain.push(ChainMember::Identifier(identifier));
+        self
     }
 
     /// Supplies the exact evaluation date; no date is synthesized when omitted.
     #[must_use]
-    pub const fn with_validity_date(mut self, date: i64) -> Self { self.validity_date = Some(date); self }
+    pub const fn with_validity_date(mut self, date: i64) -> Self {
+        self.validity_date = Some(date);
+        self
+    }
 
     /// Returns the number of entries in the single ordered chain collection.
     #[must_use]
-    pub fn chain_len(&self) -> usize { self.chain.len() }
+    pub fn chain_len(&self) -> usize {
+        self.chain.len()
+    }
 
     /// Returns the supplied date or its preserved absence.
     #[must_use]
-    pub const fn validity_date(&self) -> Option<i64> { self.validity_date }
+    pub const fn validity_date(&self) -> Option<i64> {
+        self.validity_date
+    }
 
     /// Moves the chain and optional date into the ordered Table 340 payload.
     ///
@@ -79,33 +96,63 @@ impl ValidateRequest {
         for member in self.chain {
             match member {
                 ChainMember::Certificate(certificate) => {
-                    let mut has_type = false;
-                    let mut has_value = false;
-                    for field in certificate.view().children() {
-                        match field.tag().raw() {
-                            CERTIFICATE_TYPE if !has_type && field.item_type() == ItemType::Enumeration => has_type = true,
-                            CERTIFICATE_VALUE if !has_value && field.item_type() == ItemType::ByteString => has_value = true,
-                            CERTIFICATE_TYPE | CERTIFICATE_VALUE => return Err(cryptographic_operation::request_error()),
-                            _ => {}
-                        }
-                    }
-                    if !has_type || !has_value { return Err(cryptographic_operation::request_error()); }
-                    cryptographic_operation::push(&mut payload, CERTIFICATE, Value::structure(certificate))?;
+                    validate_certificate_shape(&certificate)?;
+                    cryptographic_operation::push(
+                        &mut payload,
+                        CERTIFICATE,
+                        Value::structure(certificate),
+                    )?;
                 }
-                ChainMember::Identifier(identifier) => cryptographic_operation::push(&mut payload, UNIQUE_IDENTIFIER, cryptographic_operation::unique_identifier_value(identifier))?,
+                ChainMember::Identifier(identifier) => cryptographic_operation::push(
+                    &mut payload,
+                    UNIQUE_IDENTIFIER,
+                    cryptographic_operation::unique_identifier_value(identifier),
+                )?,
             }
         }
-        if let Some(date) = self.validity_date { cryptographic_operation::push(&mut payload, VALIDITY_DATE, Value::date_time(date))?; }
+        if let Some(date) = self.validity_date {
+            cryptographic_operation::push(&mut payload, VALIDITY_DATE, Value::date_time(date))?;
+        }
         Ok(payload)
     }
 }
 
-impl Default for ValidateRequest { fn default() -> Self { Self::new() } }
+fn validate_certificate_shape(certificate: &Structure) -> Result<(), ProtocolError> {
+    let mut has_type = false;
+    let mut has_value = false;
+    for field in certificate.view().children() {
+        match field.tag().raw() {
+            CERTIFICATE_TYPE if !has_type && field.item_type() == ItemType::Enumeration => {
+                has_type = true
+            }
+            CERTIFICATE_VALUE if !has_value && field.item_type() == ItemType::ByteString => {
+                has_value = true
+            }
+            CERTIFICATE_TYPE | CERTIFICATE_VALUE => {
+                return Err(cryptographic_operation::request_error());
+            }
+            _ => {}
+        }
+    }
+    if !has_type || !has_value {
+        return Err(cryptographic_operation::request_error());
+    }
+    Ok(())
+}
+
+impl Default for ValidateRequest {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl fmt::Debug for ValidateRequest {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.debug_struct("ValidateRequest").field("chain", &"[REDACTED]")
-            .field("validity_date", &self.validity_date).finish()
+        formatter
+            .debug_struct("ValidateRequest")
+            .field("chain", &"[REDACTED]")
+            .field("validity_date", &self.validity_date)
+            .finish()
     }
 }
 
@@ -134,19 +181,32 @@ impl ValidateResponse {
         let result = validate_operation_result(item)?;
 
         let validity_indicator = if result.status().raw() == SUCCESS {
-            let indicator = item.with_response_payload(|payload| {
-                let mut indicator = None;
-                for field in payload.children() {
-                    if field.tag().raw() == VALIDITY_INDICATOR {
-                        if indicator.is_some() { return Err(ValidateError::MalformedResponsePayload); }
-                        indicator = field.with_value(|value| match value { ValueView::Enumeration(raw) => Some(ValidityIndicator::from_raw(*raw)), _ => None });
-                        if indicator.is_none() { return Err(ValidateError::MalformedResponsePayload); }
+            let indicator = item
+                .with_response_payload(|payload| {
+                    let mut indicator = None;
+                    for field in payload.children() {
+                        if field.tag().raw() == VALIDITY_INDICATOR {
+                            if indicator.is_some() {
+                                return Err(ValidateError::MalformedResponsePayload);
+                            }
+                            indicator = field.with_value(|value| match value {
+                                ValueView::Enumeration(raw) => {
+                                    Some(ValidityIndicator::from_raw(*raw))
+                                }
+                                _ => None,
+                            });
+                            if indicator.is_none() {
+                                return Err(ValidateError::MalformedResponsePayload);
+                            }
+                        }
                     }
-                }
-                indicator.ok_or(ValidateError::MalformedResponsePayload)
-            }).ok_or(ValidateError::MissingResponsePayload)??;
+                    indicator.ok_or(ValidateError::MalformedResponsePayload)
+                })
+                .ok_or(ValidateError::MissingResponsePayload)??;
             Some(indicator)
-        } else { None };
+        } else {
+            None
+        };
 
         let response_ttlv = cryptographic_operation::clone_response_item(item, "Validate")
             .map_err(|_| ValidateError::MalformedResponseItem)?;
@@ -164,7 +224,9 @@ impl ValidateResponse {
     }
     /// Returns the server's required open indicator on Success.
     #[must_use]
-    pub const fn validity_indicator(&self) -> Option<ValidityIndicator> { self.validity_indicator }
+    pub const fn validity_indicator(&self) -> Option<ValidityIndicator> {
+        self.validity_indicator
+    }
 
     /// Lends the complete generic response, preserving unknown fields and order.
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
@@ -172,8 +234,12 @@ impl ValidateResponse {
     }
 }
 
-fn validate_operation_result(item: ResponseBatchItemView<'_>) -> Result<KmipOperationResult, ValidateError> {
-    let status = item.result_status().ok_or(ValidateError::MissingResultStatus)?;
+fn validate_operation_result(
+    item: ResponseBatchItemView<'_>,
+) -> Result<KmipOperationResult, ValidateError> {
+    let status = item
+        .result_status()
+        .ok_or(ValidateError::MissingResultStatus)?;
 
     let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
 
@@ -213,7 +279,9 @@ impl fmt::Display for ValidateError {
                 formatter.write_str("successful Validate response payload is missing")
             }
 
-            Self::MalformedResponseItem => formatter.write_str("Validate response item is malformed"),
+            Self::MalformedResponseItem => {
+                formatter.write_str("Validate response item is malformed")
+            }
 
             Self::MalformedResponsePayload => {
                 formatter.write_str("successful Validate response payload is malformed")
