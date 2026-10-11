@@ -11,5 +11,6 @@ pub use kmipkit_protocol::{
     CancelRequest, KmipOperationResult, PollRequest, ProcessRequest, ProtocolCauseCategory,
     ProtocolError, ProtocolErrorKind, QueryAsyncRequestsRequest, ResultMessage, ResultReason,
     ResultStatus, ResultValidationError, RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse,
+    RngSeedError, RngSeedRequest, RngSeedResponse, SecretBytes,
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};

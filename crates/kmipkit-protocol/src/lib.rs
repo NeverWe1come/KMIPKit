@@ -56,6 +56,7 @@ mod reprovision;
 mod result;
 mod revoke;
 mod rng_retrieve;
+mod rng_seed;
 mod set_attribute;
 mod sign;
 mod signature_verify;
@@ -131,6 +132,7 @@ pub use result::{
 };
 pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use rng_retrieve::{RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse};
+pub use rng_seed::{RngSeedError, RngSeedRequest, RngSeedResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};

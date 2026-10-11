@@ -77,6 +77,7 @@ fn request_preserves_arbitrary_table_319_seed_bytes(case: SeedDataCase) -> bool 
 fn request_encodes_required_table_319_data_and_redacts_secret_bytes() {
     let secret = b"rng-seed-private".to_vec();
     let request = RngSeedRequest::new(SecretBytes::new(secret.clone()));
+    let debug = format!("{request:?}");
     let payload = request
         .to_ttlv_payload()
         .expect("Table 319 contains one required Data Byte String");
@@ -89,8 +90,8 @@ fn request_encodes_required_table_319_data_and_redacts_secret_bytes() {
         fields[0]
             .with_value(|value| matches!(value, ValueView::ByteString(actual) if actual == secret))
     );
-    assert!(!format!("{request:?}").contains("rng-seed-private"));
-    assert!(!format!("{request:?}").contains("private"));
+    assert!(!debug.contains("rng-seed-private"));
+    assert!(!debug.contains("private"));
 }
 
 #[test]
@@ -233,7 +234,10 @@ fn response_debug_and_conversion_errors_do_not_reveal_seed_contents() {
         SUCCESS,
         None,
         None,
-        Some(payload([(DATA_LENGTH, Value::integer(seed.len() as i32))])),
+        Some(payload([(
+            DATA_LENGTH,
+            Value::integer(i32::try_from(seed.len()).expect("test sentinel length fits i32")),
+        )])),
     );
     let response = RngSeedResponse::try_from_response_item(response_item(&message))
         .expect("the Table 320 length is a valid Integer");
