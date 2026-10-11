@@ -94297,7 +94297,7 @@
       "summary": "The server MAY elect not to accept seeding material supplied by the client.",
       "direction": "client_to_server",
       "condition": "The client provides RNG Seed material.",
-      "review_note": "This server capability is one of two MAY statements in the pinned §6.1.50 paragraph. It is outside client_1_0 implementation scope and must not be treated as a client obligation."
+      "review_note": "No entry in the pinned official Test Cases v2.1 Committee Note 01 inventory covers this server-side MAY in OASIS KMIP Specification v2.1 Section 6.1.50. It is outside client_1_0 implementation scope and must not be treated as a client obligation."
     },
     {
       "source_clause_ids": [
@@ -94327,7 +94327,7 @@
       "summary": "The server MAY indicate that it ignored seeding material by returning zero as the Data Length response value.",
       "direction": "server_to_client",
       "condition": "The server elects not to accept the supplied seeding material.",
-      "review_note": "This server capability is one of two MAY statements in the pinned §6.1.50 paragraph. It is outside client_1_0 implementation scope and is not a required response whenever the server ignores supplied seed data."
+      "review_note": "No entry in the pinned official Test Cases v2.1 Committee Note 01 inventory covers the server's optional zero Data Length response under OASIS KMIP Specification v2.1 Section 6.1.50. It is outside client_1_0 implementation scope and does not impose a client response obligation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.51-001",
