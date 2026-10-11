@@ -74,3 +74,17 @@ Ticket field selection now delegates the nested TTLV conversion to a dedicated h
 |---|---|---|---|
 | Refactor | This commit | `cargo test -p kmipkit-protocol --lib login_operation_tests`; `cargo test -p kmipkit-client --lib login_execution_tests` | PASS: protocol/fixture tests and client Login execution tests pass. |
 | Refactor quality gates | This commit | `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
+
+
+## T014 — Catalog and traceability
+
+Added implementation and verification references for Delegated Login, Login, Logout, their operation values, Ticket structure and members, and the shared payload/result tags. Existing KMIPKIT-0004 tag ownership and prior allocation references were preserved. The traceability document now reflects implemented Rust protocol/client modules and executable tests.
+
+| Command | Result |
+|---|---|
+| `python tools/normative_catalog/validate.py` | PASS: 4,044 catalog records valid. |
+| `python tools/normative_catalog/report.py --write` | PASS: regenerated the checked-in coverage report from catalog inputs. |
+| `python tools/normative_catalog/report.py --check` | PASS: generated report is current and deterministic. |
+| `git diff --check` | PASS. |
+
+Four-language manifest mappings remain blocked on the canonical KMIPKIT-0043 operation mapping tasks; T014 does not claim binding parity.
