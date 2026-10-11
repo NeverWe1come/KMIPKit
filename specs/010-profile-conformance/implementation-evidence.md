@@ -597,3 +597,9 @@ This correction closes only the two specific evidence-note failures. The full T0
 | Phase | Command or evidence | Result |
 |---|---|---|
 | Red — prevent an actor-ambiguous requirement from being applied to client profiles | `python -B -m unittest tools.normative_catalog.tests.test_import_actor_scope -v` | Expected Red: the catalog still labels `KMIPKIT-REQ-SPEC-6.1.25-001` as a verified client requirement although its pinned source review rejects that client attribution as ambiguous (`Ran 1 test`; `FAILED (failures=1)`). |
+
+### T003 — complete the fourth Active-state predicate mapping (2026-10-11)
+
+| Phase | Command or evidence | Result |
+|---|---|---|
+| Red — require the source-derived stop-date prohibition mapping | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_active_state_source_predicates_have_four_distinct_requirement_labels -v` | Expected Red: the pinned §4.57 paragraph contains four ordered predicates, but `KMIPKIT-REQ-SPEC-4.57-003-004` is absent from the catalog (`Ran 1 test`; `FAILED (failures=1)`). The strengthened regression also requires the exact `SHALL NOT`, client scope, conditional attribute, crosswalk order 4, open discrepancy linkage, and removal of its source-gap record. |

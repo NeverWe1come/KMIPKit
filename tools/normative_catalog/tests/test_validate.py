@@ -4161,6 +4161,46 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
+        requirements = {
+            requirement["requirement_id"]: requirement
+            for requirement in catalog["requirements"]
+        }
+        fourth_predicate = requirements.get("KMIPKIT-REQ-SPEC-4.57-003-004")
+        self.assertIsNotNone(fourth_predicate)
+        self.assertEqual(fourth_predicate["source_keyword"], "SHALL NOT")
+        self.assertEqual(fourth_predicate["normative_strength"], "prohibited")
+        self.assertEqual(fourth_predicate["role"], "client")
+        self.assertEqual(fourth_predicate["scope_state"], "client_1_0")
+        self.assertEqual(fourth_predicate["condition"], "Protect Stop attribute is set")
+        self.assertTrue(fourth_predicate["negative_verification_required"])
+        self.assertEqual(fourth_predicate["status"], "unassigned")
+
+        crosswalk = [
+            row
+            for row in oracle["requirement_crosswalk"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-4.57-003-004"
+        ]
+        self.assertEqual(len(crosswalk), 1)
+        self.assertEqual(crosswalk[0]["source_clause_id"], active_clause["clause_id"])
+        self.assertEqual(crosswalk[0]["source_obligation_order"], 4)
+        reviewed_clause = next(
+            row
+            for row in oracle["source_requirement_reviews"]
+            if row["source_clause_id"] == active_clause["clause_id"]
+        )
+        self.assertIn("KMIPKIT-REQ-SPEC-4.57-003-004", reviewed_clause["expected_client_requirement_ids"])
+        self.assertFalse(
+            any(
+                row["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-4.57-003-004"
+                for row in oracle["source_only_requirement_gaps"]
+            )
+        )
+        discrepancy = next(
+            row
+            for row in catalog["discrepancies"]
+            if row["discrepancy_id"] == "KMIPKIT-DISC-013"
+        )
+        self.assertIn("KMIPKIT-REQ-SPEC-4.57-003-004", discrepancy["affected_requirement_ids"])
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         missing = {
             profile["profile_id"]: sorted(expected_requirement_ids - set(profile["requirement_ids"]))
