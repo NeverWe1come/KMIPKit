@@ -5,7 +5,6 @@ use std::error::Error;
 use std::fmt;
 
 use crate::ClientErrorResponseTtlv;
-use kmipkit_protocol::{InteropRequest, InteropResponse};
 use kmipkit_protocol::attribute::{
     ClientAttributeMutation, client_attribute_mutation_is_prohibited,
     client_vendor_attribute_mutation_is_prohibited,
@@ -39,6 +38,7 @@ use kmipkit_protocol::{
     SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest, SetDefaultsResponse,
     SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
+use kmipkit_protocol::{InteropRequest, InteropResponse};
 
 #[cfg(test)]
 use kmipkit_transport::Transport;
@@ -316,7 +316,9 @@ impl ClientRequest {
 
     /// Selects one explicit typed Interop request.
     #[must_use]
-    pub fn interop(request: InteropRequest) -> Self { Self::Interop(request) }
+    pub fn interop(request: InteropRequest) -> Self {
+        Self::Interop(request)
+    }
 
     /// Creates an empty client-to-server Get Constraints request.
     #[must_use]
@@ -2026,7 +2028,10 @@ impl<'a> ClientResponseView<'a> {
     /// Returns an Interop response, including a Pending result.
     #[must_use]
     pub const fn interop(&self) -> Option<&InteropResponse> {
-        match self.response { ClientResponseRef::Interop(response) => Some(response), _ => None }
+        match self.response {
+            ClientResponseRef::Interop(response) => Some(response),
+            _ => None,
+        }
     }
 
     /// Returns the Ping response when this view represents it.
@@ -2981,7 +2986,9 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::GetAttributeList(response))
             }
             Self::Ping(response) => ClientResponseView::new(ClientResponseRef::Ping(response)),
-            Self::Interop(response) => ClientResponseView::new(ClientResponseRef::Interop(response)),
+            Self::Interop(response) => {
+                ClientResponseView::new(ClientResponseRef::Interop(response))
+            }
             Self::GetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::GetConstraints(response))
             }
@@ -4269,9 +4276,16 @@ impl Client {
     ///
     /// Returns a sanitized error with request-delivery evidence. The caller
     /// can use an asynchronous batch to accept Pending without an implicit Poll.
-    pub fn interop(&mut self, request: InteropRequest, limits: &CodecLimits) -> Result<ClientBatchItemResponse, ClientError> {
-        let response = self.execute(ClientBatch::new(ClientBatchItem::new(ClientRequest::Interop(request))), limits)?;
-        take_single_item_response(response.items)
+    pub fn interop(
+        &mut self,
+        request: InteropRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::interop(request),
+            limits,
+            &RequestOptions::default(),
+        )
     }
 
     /// Executes one client-to-server Ping request.

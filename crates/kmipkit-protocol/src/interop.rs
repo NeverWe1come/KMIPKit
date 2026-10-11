@@ -23,18 +23,14 @@ const INTEROP_IDENTIFIER: u32 = 0x0042_0161;
 ///
 /// The production-server restriction applies to servers. This client does
 /// not predict whether a server offers Interop.
-
 pub struct InteropRequest {
     interop_function: u32,
-
     interop_identifier: SecretText,
 }
 
 impl InteropRequest {
     /// Creates a request with an open Enumeration and the required identifier.
-
     #[must_use]
-
     pub const fn new(interop_function: u32, interop_identifier: SecretText) -> Self {
         Self {
             interop_function,
@@ -42,14 +38,11 @@ impl InteropRequest {
         }
     }
     /// Returns the exact caller-selected Interop Function Enumeration.
-
     #[must_use]
-
     pub const fn interop_function(&self) -> u32 {
         self.interop_function
     }
     /// Lends the required Interop Identifier without cloning it.
-
     pub fn with_interop_identifier<R>(&self, callback: impl for<'a> FnOnce(&'a str) -> R) -> R {
         self.interop_identifier.with_str(callback)
     }
@@ -58,7 +51,6 @@ impl InteropRequest {
     /// # Errors
     ///
     /// Returns a sanitized error if the TTLV model cannot represent the fields.
-
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
         let mut payload = Structure::new();
 
@@ -88,10 +80,8 @@ impl fmt::Debug for InteropRequest {
     }
 }
 /// A typed Interop result from §6.1.26, Tables 242–243.
-
 pub struct InteropResponse {
     result: KmipOperationResult,
-
     response_ttlv: cryptographic_operation::OwnedResponseTtlv,
 }
 
@@ -105,7 +95,6 @@ impl InteropResponse {
     ///
     /// Returns [`InteropError`] for another operation, inconsistent result
     /// metadata, or a missing/non-empty success payload.
-
     pub fn try_from_response_item(item: ResponseBatchItemView<'_>) -> Result<Self, InteropError> {
         if item.operation() != Some(OPERATION) {
             return Err(InteropError::UnexpectedOperation);
@@ -132,14 +121,11 @@ impl InteropResponse {
         })
     }
     /// Returns the complete KMIP result, including status and optional reason.
-
     #[must_use]
-
     pub const fn result(&self) -> &KmipOperationResult {
         &self.result
     }
     /// Lends the complete generic response, preserving unknown fields and order.
-
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
         self.response_ttlv.with_ttlv(callback)
     }
@@ -158,10 +144,8 @@ fn interop_operation_result(
         .map_err(InteropError::InvalidOperationResult)
 }
 /// A payload-free error converting an Interop response batch item.
-
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-
 pub enum InteropError {
     /// The response item identifies an operation other than Interop.
     UnexpectedOperation,
