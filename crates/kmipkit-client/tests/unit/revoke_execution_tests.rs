@@ -168,6 +168,13 @@ fn reason_fields(bytes: &[u8], batch_index: usize) -> (Vec<u32>, Option<u32>, Op
 
 #[test]
 fn revoke_sends_table_295_and_exposes_table_296_identifier_once() {
+    crate::execute_test_support::assert_lifecycle_request_debug(
+        &crate::ClientRequest::revoke(
+            revoke_request(KEY_COMPROMISE, Some(1_700_000_000))
+                .with_revocation_message("debug audit explanation".to_owned()),
+        ),
+        "Revoke",
+    );
     let response = asynchronous_response_bytes(
         REVOKE_OPERATION,
         SUCCESS,
@@ -191,6 +198,12 @@ fn revoke_sends_table_295_and_exposes_table_296_identifier_once() {
         )
         .expect("valid Revoke request receives typed Table 296 success");
     let outcome = item.outcome();
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        outcome,
+        ClientOperation::Revoke,
+        "Revoke(",
+        "Revoke(",
+    );
     let typed = outcome
         .response()
         .revoke()
@@ -277,6 +290,12 @@ fn revoke_pending_preserves_correlation_without_implicit_poll() {
         .execute(batch, &CodecLimits::defaults())
         .expect("caller-enabled typed batch preserves Revoke Pending");
     let item = response.get(0).expect("one Revoke result is associated");
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        item.outcome(),
+        ClientOperation::Revoke,
+        "Revoke(",
+        "Pending(",
+    );
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("server Operation Pending remains Pending");
     };

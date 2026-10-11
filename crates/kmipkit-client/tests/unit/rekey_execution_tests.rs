@@ -126,6 +126,10 @@ fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
 
 #[test]
 fn rekey_sends_one_table_305_request_and_exposes_replacement_identifier() {
+    crate::execute_test_support::assert_lifecycle_request_debug(
+        &crate::ClientRequest::rekey(rekey_request()),
+        "Rekey",
+    );
     let response = asynchronous_response_bytes(
         REKEY_OPERATION,
         SUCCESS,
@@ -142,6 +146,12 @@ fn rekey_sends_one_table_305_request_and_exposes_replacement_identifier() {
         .rekey(rekey_request(), &CodecLimits::defaults())
         .expect("Table 306 Re-key success returns the replacement identifier");
     let outcome = item.outcome();
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        outcome,
+        ClientOperation::Rekey,
+        "Rekey(",
+        "Re-key(",
+    );
     let typed = outcome
         .response()
         .rekey()
@@ -226,6 +236,12 @@ fn rekey_pending_preserves_correlation_without_implicit_poll() {
         .execute(batch, &CodecLimits::defaults())
         .expect("caller-enabled typed batch preserves Re-key Pending");
     let item = response.get(0).expect("one Re-key result is associated");
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        item.outcome(),
+        ClientOperation::Rekey,
+        "Rekey(",
+        "Pending(",
+    );
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("the server's Operation Pending result remains Pending");
     };

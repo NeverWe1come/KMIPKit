@@ -114,6 +114,10 @@ fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Ve
 
 #[test]
 fn register_sends_table_291_and_exposes_table_292_identifier_once() {
+    crate::execute_test_support::assert_lifecycle_request_debug(
+        &crate::ClientRequest::register(register_request()),
+        "Register",
+    );
     let response = asynchronous_response_bytes(
         REGISTER_OPERATION,
         SUCCESS,
@@ -133,6 +137,12 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
         .register(register_request(), &CodecLimits::defaults())
         .expect("valid Table 291 request receives typed Table 292 success");
     let outcome = item.outcome();
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        outcome,
+        ClientOperation::Register,
+        "Register(",
+        "Register(",
+    );
     let typed = outcome
         .response()
         .register()
@@ -231,6 +241,12 @@ fn register_pending_preserves_correlation_without_implicit_poll() {
         .execute(batch, &CodecLimits::defaults())
         .expect("caller-enabled typed batch preserves Register Pending");
     let item = response.get(0).expect("one Register result is associated");
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        item.outcome(),
+        ClientOperation::Register,
+        "Register(",
+        "Pending(",
+    );
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("server Operation Pending remains Pending");
     };

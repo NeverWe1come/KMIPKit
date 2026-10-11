@@ -120,6 +120,10 @@ fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
 
 #[test]
 fn obtain_lease_sends_table_268_and_exposes_required_table_269_values_once() {
+    crate::execute_test_support::assert_lifecycle_request_debug(
+        &crate::ClientRequest::obtain_lease(obtain_lease_request("debug-lease")),
+        "ObtainLease",
+    );
     let response = obtain_lease_response_bytes(
         SUCCESS,
         None,
@@ -138,6 +142,12 @@ fn obtain_lease_sends_table_268_and_exposes_required_table_269_values_once() {
         )
         .expect("a Table 269 success returns the required lease metadata");
     let outcome = item.outcome();
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        outcome,
+        ClientOperation::ObtainLease,
+        "ObtainLease(",
+        "ObtainLease(",
+    );
     let typed = outcome
         .response()
         .obtain_lease()
@@ -218,6 +228,12 @@ fn obtain_lease_pending_preserves_correlation_without_implicit_poll() {
     let item = response
         .get(0)
         .expect("one Obtain Lease result is associated");
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        item.outcome(),
+        ClientOperation::ObtainLease,
+        "ObtainLease(",
+        "Pending(",
+    );
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("the server's Operation Pending result remains Pending");
     };

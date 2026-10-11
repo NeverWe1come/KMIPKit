@@ -87,6 +87,12 @@ fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<u32>) {
 
 #[test]
 fn reprovision_sends_certificate_request_form_and_typed_identifier_once() {
+    crate::execute_test_support::assert_lifecycle_request_debug(
+        &crate::ClientRequest::reprovision(
+            ReProvisionRequest::new().with_certificate_request(certificate_material("debug-csr")),
+        ),
+        "ReProvision",
+    );
     let response = asynchronous_response_bytes(
         REPROVISION_OPERATION,
         SUCCESS,
@@ -109,6 +115,12 @@ fn reprovision_sends_certificate_request_form_and_typed_identifier_once() {
         )
         .expect("server returns a valid Re-Provision result");
     let outcome = item.outcome();
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        outcome,
+        ClientOperation::ReProvision,
+        "ReProvision(",
+        "Re-Provision(",
+    );
     let typed = outcome
         .response()
         .reprovision()
@@ -226,6 +238,12 @@ fn reprovision_pending_preserves_correlation_without_implicit_poll() {
         .execute(batch, &CodecLimits::defaults())
         .expect("caller-enabled typed batch preserves Re-Provision Pending");
     let item = response.get(0).expect("one result is associated");
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        item.outcome(),
+        ClientOperation::ReProvision,
+        "ReProvision(",
+        "Pending(",
+    );
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("Operation Pending remains Pending");
     };

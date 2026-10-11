@@ -133,6 +133,10 @@ fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
 
 #[test]
 fn recertify_sends_one_table_300_request_and_exposes_table_301_identifier() {
+    crate::execute_test_support::assert_lifecycle_request_debug(
+        &crate::ClientRequest::recertify(recertify_request()),
+        "Recertify",
+    );
     let response = asynchronous_response_bytes(
         RECERTIFY_OPERATION,
         SUCCESS,
@@ -149,6 +153,12 @@ fn recertify_sends_one_table_300_request_and_exposes_table_301_identifier() {
         .recertify(recertify_request(), &CodecLimits::defaults())
         .expect("Table 301 Re-certify success returns the new certificate identifier");
     let outcome = item.outcome();
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        outcome,
+        ClientOperation::Recertify,
+        "Recertify(",
+        "Re-certify(",
+    );
     let typed = outcome
         .response()
         .recertify()
@@ -244,6 +254,12 @@ fn recertify_pending_preserves_correlation_without_implicit_poll() {
     let item = response
         .get(0)
         .expect("one Re-certify result is associated");
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        item.outcome(),
+        ClientOperation::Recertify,
+        "Recertify(",
+        "Pending(",
+    );
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("the server's Operation Pending result remains Pending");
     };

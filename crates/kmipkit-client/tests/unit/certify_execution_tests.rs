@@ -183,6 +183,10 @@ fn enumeration_value(item: &Item) -> Option<u32> {
 
 #[test]
 fn certify_sends_table_179_request_once_and_exposes_identifier_and_generic_response() {
+    crate::execute_test_support::assert_lifecycle_request_debug(
+        &crate::ClientRequest::certify(certify_request()),
+        "Certify",
+    );
     let response = asynchronous_response_bytes(
         CERTIFY_OPERATION,
         SUCCESS,
@@ -199,6 +203,12 @@ fn certify_sends_table_179_request_once_and_exposes_identifier_and_generic_respo
         .certify(certify_request(), &CodecLimits::defaults())
         .expect("the Table 180 Certify success response is valid");
     let outcome = item.outcome();
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        outcome,
+        ClientOperation::Certify,
+        "Certify(",
+        "Certify(",
+    );
     let typed = outcome
         .response()
         .certify()
@@ -282,6 +292,12 @@ fn certify_pending_preserves_exact_correlation_without_poll_or_retry() {
         .execute(batch, &CodecLimits::defaults())
         .expect("caller-enabled typed batch preserves Certify Pending");
     let item = response.get(0).expect("one Certify result is associated");
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        item.outcome(),
+        ClientOperation::Certify,
+        "Certify(",
+        "Pending(",
+    );
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("the server's Operation Pending result remains Pending");
     };

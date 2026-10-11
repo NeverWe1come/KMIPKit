@@ -220,6 +220,10 @@ fn two_check_response_bytes() -> Vec<u8> {
 
 #[test]
 fn check_sends_table_183_fields_and_exposes_table_184_response_once() {
+    crate::execute_test_support::assert_lifecycle_request_debug(
+        &crate::ClientRequest::check(check_request("debug-check")),
+        "Check",
+    );
     let response = check_response_bytes(SUCCESS, None, Some(response_payload("checked-object")));
     let (mut client, fake, captured) = client_for(ExchangeScript::Success {
         response,
@@ -230,6 +234,12 @@ fn check_sends_table_183_fields_and_exposes_table_184_response_once() {
         .check(check_request("checked-object"), &CodecLimits::defaults())
         .expect("the Table 184 Check success response is valid");
     let outcome = item.outcome();
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        outcome,
+        ClientOperation::Check,
+        "Check(",
+        "Check(",
+    );
     let typed = outcome
         .response()
         .check()
@@ -340,6 +350,12 @@ fn check_pending_preserves_correlation_without_poll_or_retry() {
         .execute(batch, &CodecLimits::defaults())
         .expect("caller-enabled typed batch preserves Check Pending");
     let item = response.get(0).expect("one Check result is associated");
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        item.outcome(),
+        ClientOperation::Check,
+        "Check(",
+        "Pending(",
+    );
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("the server's Operation Pending result remains Pending");
     };

@@ -149,6 +149,10 @@ fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
 
 #[test]
 fn rekey_key_pair_sends_table_310_and_returns_both_identifiers_once() {
+    crate::execute_test_support::assert_lifecycle_request_debug(
+        &crate::ClientRequest::rekey_key_pair(rekey_key_pair_request()),
+        "RekeyKeyPair",
+    );
     let response = asynchronous_response_bytes(
         REKEY_KEY_PAIR_OPERATION,
         SUCCESS,
@@ -165,6 +169,12 @@ fn rekey_key_pair_sends_table_310_and_returns_both_identifiers_once() {
         .rekey_key_pair(rekey_key_pair_request(), &CodecLimits::defaults())
         .expect("Table 311 success returns both replacement key identifiers");
     let outcome = item.outcome();
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        outcome,
+        ClientOperation::RekeyKeyPair,
+        "RekeyKeyPair(",
+        "Re-key Key Pair(",
+    );
     let typed = outcome
         .response()
         .rekey_key_pair()
@@ -268,6 +278,12 @@ fn rekey_key_pair_pending_preserves_correlation_without_implicit_poll() {
     let item = response
         .get(0)
         .expect("one Re-key Key Pair result is associated");
+    crate::execute_test_support::assert_lifecycle_outcome_surface(
+        item.outcome(),
+        ClientOperation::RekeyKeyPair,
+        "RekeyKeyPair(",
+        "Pending(",
+    );
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {
         panic!("the server's Operation Pending result remains Pending");
     };
