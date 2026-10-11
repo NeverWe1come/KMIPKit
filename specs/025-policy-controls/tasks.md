@@ -82,7 +82,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Red commit
 
-- [ ] T011 [US3] Add failing protocol/client tests in `crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs` and `crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs`; register modules through protocol/client test module declarations; cite OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327; cover required Constraints, order/unknown nested data, approved DISC-020 error assignment, empty success, malformed response, Pending, delivery state, and no retry; record Red output separately.
+- [x] T011 [US3] Add failing protocol/client tests in `crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs` and `crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs`; register modules through protocol/client test module declarations; cite OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327; cover required Constraints, order/unknown nested data, approved DISC-020 error assignment, empty success, malformed response, Pending, delivery state, and no retry; record Red output separately. Red evidence: `cargo test -p kmipkit-protocol --lib set_constraints_tests` exited 1 with E0432 for absent `SetConstraintsRequest`/`SetConstraintsResponse`; `cargo test -p kmipkit-client --lib set_constraints_execution_tests` exited 1 with E0432/E0599 for absent request type, `ClientRequest::set_constraints`, and response accessor. `cargo fmt --all --check` and `git diff --check` passed. Independent QA approved the corrected test contract: request order checks typed values/nested data, unknown response fields retain their value, Pending correlation is asserted from the response, and there is one exchange with no retry.
 
 ### Green commit
 

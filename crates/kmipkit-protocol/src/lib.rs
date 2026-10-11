@@ -65,6 +65,9 @@ mod reprovision;
 mod result;
 mod revoke;
 mod set_attribute;
+#[cfg(test)]
+#[path = "../tests/unit/set_constraints_tests.rs"]
+mod set_constraints_tests;
 mod sign;
 mod signature_verify;
 mod ticket;
