@@ -75,15 +75,15 @@
     "profiles": 18,
     "specification_clause_records": 877,
     "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 203,
+    "requirement_crosswalk_records": 205,
     "requirement_crosswalk_complete": false,
     "common_baseline_official_cases": 16,
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 531,
+    "source_requirement_review_records": 536,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 137,
+    "source_only_requirement_gaps": 138,
     "source_only_requirement_gap_proposals": 108,
     "profile_unlabeled_source_rows": 22
   },
@@ -20654,6 +20654,40 @@
       "applies_to": "all_client_profiles",
       "review_note": "Specification v2.1 §6.1.40; the client MAY repeat Query Function.",
       "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.42",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.42; a Recover request MAY require asynchronous polling when retrieving an archived object is delayed.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.42",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.42; after Recover succeeds and the object is online, the client MAY obtain it with Get.",
+      "source_obligation_order": 2,
       "source_actor": "client"
     }
   ],
@@ -61821,6 +61855,192 @@
       "review_note": "This source row lists server error response payload Result Reason enum values. REQUIRED is an extractor false positive inside the enum Attestation Required, not normative force.",
       "source_request_rows": [],
       "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.42",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        32613,
+        32618
+      ],
+      "source_excerpt": "This operation is used to obtain access to a Managed Object that has been archived. This request MAY need asynchronous polling to obtain the response due to delays caused by retrieving the object from the archive. Once the response is received, the object is now on-line, and MAY be obtained (e.g., via a Get operation). Special authentication and authorization SHOULD be enforced to perform this request (see [KMIP-UG]).",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This request MAY need asynchronous polling to obtain the response due to delays caused by retrieving the object from the archive.",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "client→server Recover request",
+          "condition": "Delays are caused by retrieving the object from the archive.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.42-001-001"
+        },
+        {
+          "source_order": 2,
+          "source_text": "Once the response is received, the object is now on-line, and MAY be obtained (e.g., via a Get operation).",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "client→server Get request",
+          "condition": "The Recover response has been received and the object is now on-line.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.42-001-002"
+        },
+        {
+          "source_order": 3,
+          "source_text": "Special authentication and authorization SHOULD be enforced to perform this request (see [KMIP-UG]).",
+          "source_keyword": "SHOULD",
+          "actor": "unresolved",
+          "direction": "special authentication and authorization enforcement; actor unspecified",
+          "condition": "Special authentication and authorization are enforced to perform this request.",
+          "scope_disposition": "unresolved",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.42-001-002"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The first two MAY atoms describe client Recover and Get capabilities. The KMIP Usage Guide citation is informative and does not resolve the actor for the special authentication and authorization SHOULD; keep that atom unresolved.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.42",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.42-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32631,
+        32649
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This locator is the Recover request payload table header. REQUIRED is only a column heading. Unique Identifier is optional and reuses the generic conditional capability only for eligible later batched requests.",
+      "source_request_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_existing_conditional_capability",
+          "html_line_range": [
+            32650,
+            32668
+          ],
+          "source_excerpt": "Unique Identifier No Determines the object being recovered. If omitted, then the ID Placeholder value is used by the server as the Unique Identifier.",
+          "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1-003-002"
+          ],
+          "reuse_condition": "Reuse is limited to eligible subsequent requests in the same batch when an ID Placeholder is available from an earlier operation and the preceding operation and Batch Order Option permit it.",
+          "source_note": "If Unique Identifier is omitted, the server uses the ID Placeholder as the fallback. This records descriptive server behavior and does not create an additional SHALL.",
+          "source_gap_id": null
+        }
+      ],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.42",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.42-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32687,
+        32705
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This locator is the Recover response payload table header. REQUIRED is only a column heading; Unique Identifier Required=Yes is server response payload data.",
+      "source_request_rows": [],
+      "source_payload_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            32706,
+            32723
+          ],
+          "source_excerpt": "Unique Identifier Yes The Unique Identifier of the object."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.42.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.42.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        32735,
+        32736
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Recover Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Recover Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client error response",
+          "condition": "Errors are detected in a Recover operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The error-handling preamble assigns the listed Result Reasons to the server for errors detected in a Recover operation.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.42.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.42.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32756,
+        32770
+      ],
+      "source_excerpt": "Operation Failed Object Not Found, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This error payload row lists Result Reason enum values. Attestation Required is an enum name and REQUIRED is not normative force in this row.",
+      "source_request_rows": [],
+      "source_payload_rows": []
     }
   ],
   "source_only_requirement_gaps": [
@@ -66001,6 +66221,36 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.41-006",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "Source-only proposal for the optional Operations request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.42-RECOVER-AUTHENTICATION-SHOULD-ACTOR-UNRESOLVED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.42",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_locator_description": "§6.1.42 Recover paragraph containing the authentication and authorization SHOULD (HTML lines 32613-32618)",
+      "html_line_range": [
+        32613,
+        32618
+      ],
+      "source_excerpt": "This operation is used to obtain access to a Managed Object that has been archived. This request MAY need asynchronous polling to obtain the response due to delays caused by retrieving the object from the archive. Once the response is received, the object is now on-line, and MAY be obtained (e.g., via a Get operation). Special authentication and authorization SHOULD be enforced to perform this request (see [KMIP-UG]).",
+      "source_keywords": [
+        "SHOULD"
+      ],
+      "source_force": "formal_SHOULD_with_actor_unresolved",
+      "audited_statement": "Special authentication and authorization SHOULD be enforced to perform this Recover request; the actor is unspecified by the normative text.",
+      "actor": "unresolved",
+      "direction": "special authentication and authorization enforcement; actor unspecified",
+      "condition": "To perform this Recover request.",
+      "scope_disposition": "unresolved",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": null,
+      "status": "actor_and_scope_unresolved",
+      "review_note": "The KMIP Usage Guide citation is informative and does not resolve the actor or scope for this formal SHOULD; preserve both as unresolved."
     }
   ]
 }
