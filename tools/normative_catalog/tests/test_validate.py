@@ -6753,7 +6753,7 @@ class CatalogValidationTests(unittest.TestCase):
                  "server", None, "server_only"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.48-003": [
-                ("SHALL", "The server SHALL associate the certificate with the client as the client\ufffds link level credential.",
+                ("SHALL", "the server SHALL associate the certificate with the client as the client\u2019s link level credential.",
                  "server", None, "server_only"),
                 ("SHALL", "The server SHALL return the unique identifier for the certificate stored on the server.",
                  "server", None, "server_only"),
@@ -6795,6 +6795,9 @@ class CatalogValidationTests(unittest.TestCase):
                  for atom in atoms],
                 expected,
             )
+            normalized_excerpt = " ".join(reviews[clause_id]["source_excerpt"].split())
+            for atom in atoms:
+                self.assertIn(" ".join(atom["source_text"].split()), normalized_excerpt)
 
         no_parameter_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-004"]
         self.assertIn("client may then subsequently retrieve", no_parameter_review["source_excerpt"])
