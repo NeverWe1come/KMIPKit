@@ -81,10 +81,10 @@
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 525,
+    "source_requirement_review_records": 531,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 135,
-    "source_only_requirement_gap_proposals": 106,
+    "source_only_requirement_gaps": 137,
+    "source_only_requirement_gap_proposals": 108,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -61596,6 +61596,231 @@
       "review_note": "The Query error table lists nine Result Reasons. The list is non-exhaustive under the general Result Reason rules. REQUIRED is an extractor false positive embedded in the enum name Attestation Required, not a table obligation.",
       "source_request_rows": [],
       "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.41-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32437,
+        32455
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This locator is the Query Asynchronous Requests request payload table header. REQUIRED is only a column heading. Asynchronous Correlation Values and Operations are optional client request inputs with source-only proposals.",
+      "source_request_rows": [
+        {
+          "row_label": "Asynchronous Correlation Values",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            32456,
+            32474
+          ],
+          "source_excerpt": "Asynchronous Correlation Values No Structure containing zero or more Asynchronous Correlation Value.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-ASYNC-CORRELATION-VALUES-OPTIONAL",
+          "source_requirement_ids": []
+        },
+        {
+          "row_label": "Operations",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            32475,
+            32492
+          ],
+          "source_excerpt": "Operations No Structure Containing zero or more Operation.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-OPERATIONS-OPTIONAL",
+          "source_requirement_ids": []
+        }
+      ],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.41-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        32500,
+        32505
+      ],
+      "source_excerpt": "If no parameters are passed on this operation, the server SHOULD report any asynchronous requests whose results are still outstanding. If Asynchronous Correlation Values are passed, the server SHOULD report the outstanding asynchronous requests whose values match. If Operations are passed, the server SHOULD report the outstanding asynchronous requests whose Operation matches one of those contained in Operations.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "If no parameters are passed on this operation, the server SHOULD report any asynchronous requests whose results are still outstanding.",
+          "source_keyword": "SHOULD",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "No parameters are passed on this operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "If Asynchronous Correlation Values are passed, the server SHOULD report the outstanding asynchronous requests whose values match.",
+          "source_keyword": "SHOULD",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "Asynchronous Correlation Values are passed.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 3,
+          "source_text": "If Operations are passed, the server SHOULD report the outstanding asynchronous requests whose Operation matches one of those contained in Operations.",
+          "source_keyword": "SHOULD",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "Operations are passed.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The paragraph describes server SHOULD behavior for selecting outstanding asynchronous requests; it creates no client requirement mapping.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.41-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32518,
+        32536
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This locator is the Query Asynchronous Requests response payload table header. REQUIRED is only a column heading; the response body row is server response payload data. Table 286 retains its printed PKCS#11 caption while KMIPKIT-DISC-039 remains open.",
+      "source_request_rows": [],
+      "source_payload_rows": [
+        {
+          "row_label": "Asynchronous Request",
+          "required": "No",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            32537,
+            32555
+          ],
+          "source_excerpt": "Asynchronous Request No, MAY be repeated The details regarding a particular asynchronous request,",
+          "source_note": "Table 286 is printed as PKCS#11 Response Payload; KMIPKIT-DISC-039 remains open and this evidence does not resolve the operation mapping."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.41-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32537,
+        32555
+      ],
+      "source_excerpt": "Asynchronous Request No, MAY be repeated The details regarding a particular asynchronous request,",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The response contains repeated Asynchronous Request entries.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The MAY keyword describes repeatable server response payload data and does not create a client requirement.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.41.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        32566,
+        32567
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Asynchronous Requests Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Asynchronous Requests Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client error response",
+          "condition": "Errors are detected in a Query Asynchronous Requests operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The error-handling preamble assigns the listed Result Reasons to the server for errors detected in this operation.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.41.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32587,
+        32600
+      ],
+      "source_excerpt": "Operation Failed Attestation Failed, Attestation Required, Feature Not Supported, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This source row lists server error response payload Result Reason enum values. REQUIRED is an extractor false positive inside the enum Attestation Required, not normative force.",
+      "source_request_rows": [],
+      "source_payload_rows": []
     }
   ],
   "source_only_requirement_gaps": [
@@ -65708,6 +65933,74 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-017",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "Source-only proposal for the Optional Object Groups request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-ASYNC-CORRELATION-VALUES-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.41",
+        "row_label": "Asynchronous Correlation Values",
+        "table": "request_payload",
+        "html_line_range": [
+          32456,
+          32474
+        ]
+      },
+      "source_locator_description": "§6.1.41 Query Asynchronous Requests request payload body row for Asynchronous Correlation Values (HTML lines 32456-32474)",
+      "html_line_range": [
+        32456,
+        32474
+      ],
+      "source_excerpt": "Asynchronous Correlation Values No Structure containing zero or more Asynchronous Correlation Value.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Query Asynchronous Requests request payload marks Asynchronous Correlation Values Required=No and describes it as Structure containing zero or more Asynchronous Correlation Value.",
+      "actor": "client",
+      "direction": "optional Asynchronous Correlation Values request payload value",
+      "condition": "A client elects to filter Query Asynchronous Requests by Asynchronous Correlation Values.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.41-005",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "Source-only proposal for the optional Asynchronous Correlation Values request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-OPERATIONS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.41",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.41",
+        "row_label": "Operations",
+        "table": "request_payload",
+        "html_line_range": [
+          32475,
+          32492
+        ]
+      },
+      "source_locator_description": "§6.1.41 Query Asynchronous Requests request payload body row for Operations (HTML lines 32475-32492)",
+      "html_line_range": [
+        32475,
+        32492
+      ],
+      "source_excerpt": "Operations No Structure Containing zero or more Operation.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Query Asynchronous Requests request payload marks Operations Required=No and describes it as Structure Containing zero or more Operation.",
+      "actor": "client",
+      "direction": "optional Operations request payload value",
+      "condition": "A client elects to filter Query Asynchronous Requests by Operations.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.41-006",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "Source-only proposal for the optional Operations request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk."
     }
   ]
 }
