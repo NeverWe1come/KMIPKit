@@ -39,6 +39,11 @@ EVIDENCE_REQUIRED_JOB_IDS = (
     "coverage-gate",
     "dependency-policy",
 )
+RELEASE_EVIDENCE_REQUIRED_JOBS = tuple(
+    (label, job_id)
+    for label, job_id in PR_REQUIRED_JOBS
+    if job_id in EVIDENCE_REQUIRED_JOB_IDS
+)
 SCHEDULED_JOBS = (("Scheduled dependency policy", "scheduled-dependency-policy"),)
 PR_ONLY_JOBS = tuple(label for label, _ in PR_REQUIRED_JOBS)
 KNOWN_RESULTS = {"success", "failure", "cancelled", "skipped"}
@@ -530,7 +535,7 @@ def build_summary(
     server_url = context.get("server_url", "https://github.com").rstrip("/")
     repository = context.get("repository", "")
     run_id = context.get("run_id", "")
-    attempt = context.get("run_attempt", "1")
+    attempt = context.get("run_attempt", "")
     run_url = ""
     if re.fullmatch(r"[^/\s]+/[^/\s]+", repository) and run_id.isdecimal() and attempt.isdecimal():
         run_url = f"{server_url}/{repository}/actions/runs/{run_id}/attempts/{attempt}"
@@ -566,8 +571,8 @@ def build_summary(
         and context.get("ref") == RELEASE_REF
         and context.get("ref_protected") is True
     ):
-        rows, required_results = _render_required_rows(PR_REQUIRED_JOBS, needs)
-        job_group = PR_REQUIRED_JOBS
+        rows, required_results = _render_required_rows(RELEASE_EVIDENCE_REQUIRED_JOBS, needs)
+        job_group = RELEASE_EVIDENCE_REQUIRED_JOBS
         selected_jobs = {job_id for _, job_id in job_group}
         rows.extend(
             (
@@ -687,7 +692,7 @@ def main() -> int:
             "sha": os.environ.get("GITHUB_SHA", ""),
             "base_sha": os.environ.get("CI_PULL_REQUEST_BASE_SHA", ""),
             "run_id": os.environ.get("GITHUB_RUN_ID", ""),
-            "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
+            "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
             "ref_protected": os.environ.get("GITHUB_REF_PROTECTED", "").lower() == "true",
             "workflow_ref": os.environ.get("GITHUB_WORKFLOW_REF", ""),
             "server_url": os.environ.get("GITHUB_SERVER_URL", "https://github.com"),

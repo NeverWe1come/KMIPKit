@@ -5,6 +5,9 @@ on:
     branches:
       - master
       - release/**
+  push:
+    branches:
+      - release/1.0.0
   schedule:
     - cron: '17 3 * * *'
 
@@ -118,8 +121,10 @@ jobs:
 
   core:
     if: >-
-      always() && github.event_name == 'pull_request' &&
-      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')
+      always() &&
+      ((github.event_name == 'pull_request' &&
+        (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
     name: Core / ${{ matrix.os }} / Rust ${{ matrix.rust }}
     runs-on: ${{ matrix.os }}
     needs: impact-plan
@@ -200,8 +205,10 @@ jobs:
 
   script-contracts:
     if: >-
-      always() && github.event_name == 'pull_request' &&
-      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')
+      always() &&
+      ((github.event_name == 'pull_request' &&
+        (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
     name: Script contracts / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: impact-plan
@@ -722,11 +729,15 @@ jobs:
 
   normative-inventory:
     if: >-
-      always() && github.event_name == 'pull_request' &&
-      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')
+      always() &&
+      ((github.event_name == 'pull_request' &&
+        (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
     name: Normative inventory / immutable sources and coverage
     runs-on: ubuntu-latest
     needs: impact-plan
+    env:
+      CI_EVENT_BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
     outputs:
       diagnostic_details: ${{ steps.ci-diagnostics.outputs.diagnostic_details }}
     steps:
@@ -740,11 +751,11 @@ jobs:
 
       - name: Check pinned OASIS tree against exact PR base
         id: check-pinned-oasis-tree-against-exact-pr-base
-        run: python3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha '${{ github.event.pull_request.base.sha }}'
+        run: python3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha "$CI_EVENT_BASE_SHA"
 
       - name: Compare source candidates with reviewed clause ledger
         id: compare-source-candidates-with-reviewed-clause-ledger
-        run: python3 -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha '${{ github.event.pull_request.base.sha }}' --check
+        run: python3 -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha "$CI_EVENT_BASE_SHA" --check
 
       - name: Validate complete normative catalog
         id: validate-complete-normative-catalog
@@ -827,9 +838,11 @@ jobs:
 
   coverage:
     if: >-
-      always() && github.event_name == 'pull_request' &&
-      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
-       contains(needs.impact-plan.outputs.coverage_scopes, '"rust"'))
+      always() &&
+      ((github.event_name == 'pull_request' &&
+        (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+         contains(needs.impact-plan.outputs.coverage_scopes, '"rust"'))) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
     name: Coverage / ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     needs: impact-plan
@@ -960,9 +973,11 @@ jobs:
 
   coverage-gate:
     if: >-
-      always() && github.event_name == 'pull_request' &&
-      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
-       needs.impact-plan.outputs.coverage_scopes != '[]')
+      always() &&
+      ((github.event_name == 'pull_request' &&
+        (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+         needs.impact-plan.outputs.coverage_scopes != '[]')) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
     name: Coverage gate / selected scopes
     runs-on: ubuntu-latest
     needs:
@@ -978,7 +993,7 @@ jobs:
         id: require-successful-platform-and-adapter-coverage-collection
         if: always()
         env:
-          IMPACT_PLAN_JSON: ${{ needs.impact-plan.outputs.plan_json }}
+          IMPACT_PLAN_JSON: ${{ github.event_name == 'push' && '{"coverage_scopes":["rust","ffi-c","java","python","jni"]}' || needs.impact-plan.outputs.plan_json }}
           CI_NEEDS_JSON: ${{ toJSON(needs) }}
         run: |
           python3 - <<'PY'
@@ -1030,8 +1045,9 @@ jobs:
       - name: Enforce coverage thresholds
         id: enforce
         env:
-          COVERAGE_SCOPES_JSON: ${{ needs.impact-plan.outputs.coverage_scopes }}
-        run: python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base "${{ github.event.pull_request.base.sha }}" --merge "${{ github.sha }}" --summary-file "$GITHUB_STEP_SUMMARY" --scopes-json "$COVERAGE_SCOPES_JSON"
+          COVERAGE_SCOPES_JSON: ${{ github.event_name == 'push' && '["rust","ffi-c","java","python","jni"]' || needs.impact-plan.outputs.coverage_scopes }}
+          CI_EVENT_BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
+        run: python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base "$CI_EVENT_BASE_SHA" --merge "${{ github.sha }}" --summary-file "$GITHUB_STEP_SUMMARY" --scopes-json "$COVERAGE_SCOPES_JSON"
 
       - name: Summarize skipped coverage aggregation
         id: summarize-skipped-coverage-aggregation
@@ -1077,9 +1093,11 @@ jobs:
 
   coverage-java:
     if: >-
-      always() && github.event_name == 'pull_request' &&
-      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
-       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-java,'))
+      always() &&
+      ((github.event_name == 'pull_request' &&
+        (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+         contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-java,'))) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
     name: Java coverage / Linux
     runs-on: ubuntu-latest
     needs: impact-plan
@@ -1165,9 +1183,11 @@ jobs:
 
   coverage-python:
     if: >-
-      always() && github.event_name == 'pull_request' &&
-      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
-       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-python,'))
+      always() &&
+      ((github.event_name == 'pull_request' &&
+        (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+         contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-python,'))) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
     name: Python coverage / Linux
     runs-on: ubuntu-latest
     needs: impact-plan
@@ -1256,9 +1276,11 @@ jobs:
 
   coverage-jni:
     if: >-
-      always() && github.event_name == 'pull_request' &&
-      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
-       contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-jni,'))
+      always() &&
+      ((github.event_name == 'pull_request' &&
+        (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true' ||
+         contains(format(',{0},', needs.impact-plan.outputs.selected_jobs), ',coverage-jni,'))) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
     name: JNI coverage / Linux
     runs-on: ubuntu-latest
     needs: impact-plan
@@ -1361,8 +1383,10 @@ jobs:
   dependency-policy:
     name: Dependency policy / pull request
     if: >-
-      always() && github.event_name == 'pull_request' &&
-      (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')
+      always() &&
+      ((github.event_name == 'pull_request' &&
+        (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true')) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
     needs: impact-plan
     runs-on: ubuntu-latest
     outputs:
@@ -1573,7 +1597,7 @@ jobs:
 
   run-summary:
     name: CI summary / at a glance
-    if: always()
+    if: always() && (github.event_name != 'push' || github.ref_protected != true)
     runs-on: ubuntu-latest
     needs:
       - impact-plan
@@ -1609,6 +1633,13 @@ jobs:
           CI_NEEDS_JSON: ${{ toJSON(needs) }}
           CI_PULL_REQUEST_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: python3 scripts/ci_summary.py
+
+      - name: Evaluate ephemeral profile readiness
+        id: profile-readiness
+        if: always() && steps.checkout.outcome == 'success'
+        env:
+          PROFILE_EVIDENCE_MANIFEST: ${{ steps.write-summary.outputs.profile_evidence_manifest }}
+        run: python3 -B tools/normative_catalog/report.py --repo-root . --readiness
 
       - name: Fallback summary when checkout or rendering fails
         id: fallback-summary
@@ -1653,3 +1684,71 @@ jobs:
             Write-Error 'The CI job diagnostic renderer returned a non-zero exit code.'
             exit 1
           }
+
+  release-summary:
+    name: Profile evidence / protected release aggregate
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0' && github.ref_protected == true
+    environment: release-evidence
+    runs-on: ubuntu-latest
+    needs:
+      - core
+      - script-contracts
+      - normative-inventory
+      - coverage
+      - coverage-gate
+      - dependency-policy
+    steps:
+      - name: Checkout workflow commit
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Create short-lived read-only policy token
+        id: branch-protection-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # actions/create-github-app-token v3.2.0
+        with:
+          client-id: ${{ vars.PROFILE_EVIDENCE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PROFILE_EVIDENCE_APP_PRIVATE_KEY }}
+          owner: NeverWe1come
+          repositories: KMIPKit
+          permission-administration: read
+
+      - name: Query current release branch protection
+        id: branch-protection
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.branch-protection-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          gh api repos/NeverWe1come/KMIPKit/branches/release%2F1.0.0/protection \
+            --header 'Accept: application/vnd.github+json' \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            | python3 -B scripts/branch_protection.py >> "$GITHUB_OUTPUT"
+
+      - name: Write protected release summary
+        id: write-summary
+        if: always() && steps.checkout.outcome == 'success'
+        env:
+          CI_NEEDS_JSON: ${{ toJSON(needs) }}
+          CI_BRANCH_PROTECTION_JSON: ${{ steps.branch-protection.outputs.policy_json }}
+        run: python3 scripts/ci_summary.py
+
+      - name: Evaluate ephemeral profile readiness
+        id: profile-readiness
+        if: always() && steps.checkout.outcome == 'success'
+        env:
+          PROFILE_EVIDENCE_MANIFEST: ${{ steps.write-summary.outputs.profile_evidence_manifest }}
+        run: python3 -B tools/normative_catalog/report.py --repo-root . --readiness
+
+      - name: Fallback summary when checkout or rendering fails
+        id: fallback-summary
+        if: always() && (steps.checkout.outcome != 'success' || steps.write-summary.outputs.summary_written != 'true')
+        shell: pwsh
+        run: |
+          '### ❌ Protected release evidence summary could not be rendered' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          '' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          'Checkout, policy retrieval, or the summary renderer failed. The current run cannot provide eligible verification evidence.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          Write-Error 'Protected release evidence summary could not be rendered.'
+          exit 1
