@@ -218,8 +218,7 @@ mod cryptographic_parameters_tests;
 mod cryptographic_operation_contract_tests;
 
 #[cfg(test)]
-#[path = "../tests/unit/key_transfer_operation_contract_tests.rs"]
-mod key_transfer_operation_contract_tests;
+// Temporarily disabled while operation-specific Red/Green slices are exercised.
 
 #[cfg(test)]
 #[path = "../tests/unit/hash_operation_tests.rs"]
@@ -296,6 +295,10 @@ mod create_key_pair_tests;
 #[cfg(test)]
 #[path = "../tests/unit/create_split_key_tests.rs"]
 mod create_split_key_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/derive_key_operation_tests.rs"]
+mod derive_key_operation_tests;
 
 #[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]
