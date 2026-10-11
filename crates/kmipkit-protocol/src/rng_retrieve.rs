@@ -1,6 +1,6 @@
 //! Typed KMIP 2.1 RNG Retrieve request and response models.
 
-use kmipkit_ttlv::{Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{Structure, StructureView, Value};
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
@@ -134,17 +134,7 @@ fn parse_success_payload(payload: &StructureView<'_>) -> Result<SecretBytes, Rng
     let mut data = None;
     for field in payload.children() {
         if field.tag().raw() == DATA {
-            if data.is_some() {
-                return Err(malformed_response());
-            }
-            data = Some(
-                field
-                    .with_value(|value| match value {
-                        ValueView::ByteString(bytes) => Some(SecretBytes::new(bytes.to_vec())),
-                        _ => None,
-                    })
-                    .ok_or_else(malformed_response)?,
-            );
+            common::parse_optional_secret(&mut data, field, "RNG Retrieve")?;
         }
     }
     data.ok_or_else(malformed_response)
