@@ -75,16 +75,16 @@
     "profiles": 18,
     "specification_clause_records": 877,
     "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 201,
+    "requirement_crosswalk_records": 203,
     "requirement_crosswalk_complete": false,
     "common_baseline_official_cases": 16,
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 494,
+    "source_requirement_review_records": 525,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 134,
-    "source_only_requirement_gap_proposals": 105,
+    "source_only_requirement_gaps": 135,
+    "source_only_requirement_gap_proposals": 106,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -20621,6 +20621,40 @@
       "review_note": "Specification v2.1 §6.1.38; this SHALL NOT prohibits an asynchronous server response to Poll and is server_only. The catalog assignment to a client role is rejected.",
       "source_obligation_order": 2,
       "source_actor": "server"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-014",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.40",
+      "source_locator": {
+        "ordinal": 14,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.40; the client request SHALL contain one or more Query Function values.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-016",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-016",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.40",
+      "source_locator": {
+        "ordinal": 16,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 §6.1.40; the client MAY repeat Query Function.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
     }
   ],
   "profiles": [
@@ -60321,6 +60355,1247 @@
       "review_note": "The Process error table lists nine Result Reasons for Operation Failed. This list is non-exhaustive under the general Result Reason rules. Attestation Required is an enum value; any extracted keyword hit is not an additional formal clause obligation.",
       "source_request_rows": [],
       "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31750,
+        31751
+      ],
+      "source_excerpt": "For each Query Function specified in the request, the corresponding items SHALL be returned in the response.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "For each Query Function specified in the request, the corresponding items SHALL be returned in the response.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "For each Query Function specified in the client request.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31769,
+        31782
+      ],
+      "source_excerpt": "Operations Contains Operation enumerated values, which SHALL list all the operations that the server supports.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Contains Operation enumerated values, which SHALL list all the operations that the server supports.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The Operations response data lists supported operations.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31783,
+        31796
+      ],
+      "source_excerpt": "Object Type Contains Object Type enumerated values, which SHALL list all the object types that the server supports.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Contains Object Type enumerated values, which SHALL list all the object types that the server supports.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The Object Type response data lists supported object types.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31811,
+        31824
+      ],
+      "source_excerpt": "Application Namespace Contains the namespaces that the server SHALL generate values for if requested by the client.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Contains the namespaces that the server SHALL generate values for if requested by the client.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The client requested Application Namespace information.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-005",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31825,
+        31841
+      ],
+      "source_excerpt": "Extension List Contains the descriptions of Objects with Item Tag values in the Extensions range that are supported by the server. If the request contains a Query Extension List and/or Query Extension Map value in the Query Function field, then the Extensions Information fields SHALL be returned in the response.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "If the request contains a Query Extension List and/or Query Extension Map value in the Query Function field, then the Extensions Information fields SHALL be returned in the response.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The request includes Query Extension List or Query Extension Map.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-006",
+      "source_locator": {
+        "ordinal": 6,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31849,
+        31862
+      ],
+      "source_excerpt": "Attestation Type Contains Attestation Type enumerated values, which SHALL list all the attestation types that the server supports.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Contains Attestation Type enumerated values, which SHALL list all the attestation types that the server supports.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The Attestation Type response data lists supported attestation types.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-007",
+      "source_locator": {
+        "ordinal": 7,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31863,
+        31878
+      ],
+      "source_excerpt": "RNG Parameters Contains a listing of the RNGs supported. The response SHALL list all the Random Number Generators that the server supports. If the request contains a Query RNGs value in the Query Function field, then this field SHALL be returned in the response.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The response SHALL list all the Random Number Generators that the server supports.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The RNG Parameters response data lists supported RNGs.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "If the request contains a Query RNGs value in the Query Function field, then this field SHALL be returned in the response.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The request includes Query RNGs.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-008",
+      "source_locator": {
+        "ordinal": 8,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31879,
+        31895
+      ],
+      "source_excerpt": "Validation Information A structure containing details of each formal validation which the server asserts. If the request contains a Query Validations value, then zero or more Validation Information fields SHALL be returned in the response. A server MAY elect to return no validation information in the response.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "If the request contains a Query Validations value, then zero or more Validation Information fields SHALL be returned in the response.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The request includes Query Validations.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "A server MAY elect to return no validation information in the response.",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The server may elect to omit validation information.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL, MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-009",
+      "source_locator": {
+        "ordinal": 9,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31896,
+        31912
+      ],
+      "source_excerpt": "Profile Information A structure containing details of the profiles that a server supports including potentially how it supports that profile. If the request contains a Query Profiles value in the Query Function field, then this field SHALL be returned in the response if the server supports any Profiles.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "If the request contains a Query Profiles value in the Query Function field, then this field SHALL be returned in the response if the server supports any Profiles.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The request includes Query Profiles and the server supports at least one Profile.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-010",
+      "source_locator": {
+        "ordinal": 10,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31926,
+        31943
+      ],
+      "source_excerpt": "Client Registration Method Contains Client Registration Method enumerated values, which SHALL list all the client registration methods that the server supports. If the request contains a Query Client Registration Method value in the Query Function field, then this field SHALL be returned in the response if the server supports any Client Registration Methods.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Contains Client Registration Method enumerated values, which SHALL list all the client registration methods that the server supports.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The Client Registration Method response data lists supported methods.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "If the request contains a Query Client Registration Method value in the Query Function field, then this field SHALL be returned in the response if the server supports any Client Registration Methods.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The request includes Query Client Registration Method and the server supports at least one method.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-011",
+      "source_locator": {
+        "ordinal": 11,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31944,
+        31958
+      ],
+      "source_excerpt": "Defaults Information A structure containing Object Defaults structures, which list the default values that the server SHALL use on Cryptographic Objects if the client omits them.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Defaults Information A structure containing Object Defaults structures, which list the default values that the server SHALL use on Cryptographic Objects if the client omits them.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "The client omits defaults for a Cryptographic Object.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-012",
+      "source_locator": {
+        "ordinal": 12,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31979,
+        31981
+      ],
+      "source_excerpt": "If both Query Extension List and Query Extension Map are specified in the request, then only the response to Query Extension Map SHALL be returned and the Query Extension List SHALL be ignored.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "If both Query Extension List and Query Extension Map are specified in the request, then only the response to Query Extension Map SHALL be returned",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "Both Query Extension List and Query Extension Map are specified.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "the Query Extension List SHALL be ignored.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "Both Query Extension List and Query Extension Map are specified.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-013",
+      "source_locator": {
+        "ordinal": 13,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31983,
+        31985
+      ],
+      "source_excerpt": "If the Query Function RNG Parameters is specified in the request and If the server is unable to specify details of the RNG then it SHALL return an RNG Parameters with the RNG Algorithm enumeration of Unspecified.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "If the server is unable to specify details of the RNG then it SHALL return an RNG Parameters with the RNG Algorithm enumeration of Unspecified.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response",
+          "condition": "Query RNG Parameters is requested and the server cannot specify RNG details.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
+      "source_locator": {
+        "ordinal": 14,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31992,
+        31993
+      ],
+      "source_excerpt": "The Query Function field in the request SHALL contain one or more of the following items:",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The Query Function field in the request SHALL contain one or more of the following items:",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "client→server request",
+          "condition": "The Query request includes one or more Query Function values.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-014"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.40-014"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "This client SHALL requires one or more Query Function values in the request.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-015",
+      "source_locator": {
+        "ordinal": 15,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32006,
+        32024
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This locator is the Query request payload table header. REQUIRED is only a column heading. The Object Groups body row is recorded as optional client input with a source-only proposal.",
+      "source_request_rows": [
+        {
+          "row_label": "Object Groups",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            32043,
+            32062
+          ],
+          "source_excerpt": "Object Groups No Specified the list of Object Group(s) for which the Query is being performed",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.40-OBJECT-GROUPS-OPTIONAL",
+          "source_requirement_ids": []
+        }
+      ],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-016",
+      "source_locator": {
+        "ordinal": 16,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32025,
+        32042
+      ],
+      "source_excerpt": "Query Function Yes, MAY be Repeated Determines the information being queried.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be Repeated",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "client→server request",
+          "condition": "The client chooses to include multiple Query Function values.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-016"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.40-016"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Query Function body row exposes a client MAY to repeat the field; its request row links both the one-or-more SHALL and the repeat MAY.",
+      "source_request_rows": [
+        {
+          "row_label": "Query Function",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_mapped_to_client_requirement",
+          "html_line_range": [
+            32025,
+            32042
+          ],
+          "source_excerpt": "Query Function Yes, MAY be Repeated Determines the information being queried.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.40-014",
+            "KMIPKIT-REQ-SPEC-6.1.40-016"
+          ]
+        }
+      ],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-017",
+      "source_locator": {
+        "ordinal": 17,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32081,
+        32099
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "This locator is the Query response payload table header. REQUIRED is only a column heading; the response body rows below describe server response data.",
+      "source_request_rows": [],
+      "source_payload_rows": [
+        {
+          "row_label": "Operation",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32100,
+            32117
+          ],
+          "source_excerpt": "Operation No, MAY be repeated Specifies an Operation that is supported by the server."
+        },
+        {
+          "row_label": "Object Type",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32118,
+            32135
+          ],
+          "source_excerpt": "Object Type No, MAY be repeated Specifies a Managed Object Type that is supported by the server."
+        },
+        {
+          "row_label": "Vendor Identification",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_response_payload",
+          "html_line_range": [
+            32136,
+            32155
+          ],
+          "source_excerpt": "Vendor Identification No SHALL be returned if Query Server Information is requested. The Vendor Identification SHALL be a text string that uniquely identifies the vendor."
+        },
+        {
+          "row_label": "Server Information",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_response_payload",
+          "html_line_range": [
+            32156,
+            32174
+          ],
+          "source_excerpt": "Server Information No Contains vendor-specific information possibly be of interest to the client."
+        },
+        {
+          "row_label": "Application Namespace",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32175,
+            32193
+          ],
+          "source_excerpt": "Application Namespace No, MAY be repeated Specifies an Application Namespace supported by the server."
+        },
+        {
+          "row_label": "Extension Information",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32194,
+            32212
+          ],
+          "source_excerpt": "Extension Information No, MAY be repeated SHALL be returned if Query Extension List or Query Extension Map is requested and supported by the server."
+        },
+        {
+          "row_label": "Attestation Type",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32213,
+            32231
+          ],
+          "source_excerpt": "Attestation Type No, MAY be repeated Specifies an Attestation Type that is supported by the server."
+        },
+        {
+          "row_label": "RNG Parameters",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32232,
+            32249
+          ],
+          "source_excerpt": "RNG Parameters No, MAY be repeated Specifies the RNG that is supported by the server."
+        },
+        {
+          "row_label": "Profile Information",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32250,
+            32268
+          ],
+          "source_excerpt": "Profile Information No, MAY be repeated Specifies the Profiles that are supported by the server."
+        },
+        {
+          "row_label": "Validation Information",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32269,
+            32287
+          ],
+          "source_excerpt": "Validation Information No, MAY be repeated Specifies the validations that are supported by the server."
+        },
+        {
+          "row_label": "Capability Information",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32288,
+            32306
+          ],
+          "source_excerpt": "Capability Information No, MAY be repeated Specifies the capabilities that are supported by the server."
+        },
+        {
+          "row_label": "Client Registration Method",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_repeatable_response_payload",
+          "html_line_range": [
+            32307,
+            32325
+          ],
+          "source_excerpt": "Client Registration Method No, MAY be repeated Specifies a Client Registration Method that is supported by the server."
+        },
+        {
+          "row_label": "Defaults Information",
+          "required": "No",
+          "actor": "server",
+          "disposition": "optional_response_payload",
+          "html_line_range": [
+            32326,
+            32344
+          ],
+          "source_excerpt": "Defaults Information No Specifies the defaults that the server will use if the client omits them."
+        },
+        {
+          "row_label": "Protection Storage Masks",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            32345,
+            32364
+          ],
+          "source_excerpt": "Protection Storage Masks Yes Specifies the list of Protection Storage Mask values supported by the server. A server MAY elect to provide an empty list in the Response if it is unable or unwilling to provide this information.",
+          "source_note": "Required=Yes describes server response data. A separate server MAY allows an empty list when the server cannot or will not provide the information."
+        }
+      ]
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-018",
+      "source_locator": {
+        "ordinal": 18,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32100,
+        32117
+      ],
+      "source_excerpt": "Operation No, MAY be repeated Specifies an Operation that is supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server may repeat Operation values in the Query response.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-019",
+      "source_locator": {
+        "ordinal": 19,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32118,
+        32135
+      ],
+      "source_excerpt": "Object Type No, MAY be repeated Specifies a Managed Object Type that is supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server may repeat Object Type values in the Query response.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-020",
+      "source_locator": {
+        "ordinal": 20,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32136,
+        32155
+      ],
+      "source_excerpt": "Vendor Identification No SHALL be returned if Query Server Information is requested. The Vendor Identification SHALL be a text string that uniquely identifies the vendor.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Vendor Identification No SHALL be returned if Query Server Information is requested.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "Query Server Information is requested.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "The Vendor Identification SHALL be a text string that uniquely identifies the vendor.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server provides Vendor Identification response data.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-021",
+      "source_locator": {
+        "ordinal": 21,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32175,
+        32193
+      ],
+      "source_excerpt": "Application Namespace No, MAY be repeated Specifies an Application Namespace supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server elects to repeat the Application Namespace response data.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Application Namespace response row allows repeated server response data. This MAY is server_only and does not create a client request capability.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-022",
+      "source_locator": {
+        "ordinal": 22,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32194,
+        32212
+      ],
+      "source_excerpt": "Extension Information No, MAY be repeated SHALL be returned if Query Extension List or Query Extension Map is requested and supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server may repeat Extension Information in the Query response.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "SHALL be returned if Query Extension List or Query Extension Map is requested and supported by the server.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "Query Extension List or Query Extension Map is requested and supported by the server.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY, SHALL.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-023",
+      "source_locator": {
+        "ordinal": 23,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32213,
+        32231
+      ],
+      "source_excerpt": "Attestation Type No, MAY be repeated Specifies an Attestation Type that is supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server may repeat Attestation Type values in the Query response.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-024",
+      "source_locator": {
+        "ordinal": 24,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32232,
+        32249
+      ],
+      "source_excerpt": "RNG Parameters No, MAY be repeated Specifies the RNG that is supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server may repeat RNG Parameters in the Query response.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-025",
+      "source_locator": {
+        "ordinal": 25,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32250,
+        32268
+      ],
+      "source_excerpt": "Profile Information No, MAY be repeated Specifies the Profiles that are supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server may repeat Profile Information in the Query response.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-026",
+      "source_locator": {
+        "ordinal": 26,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32269,
+        32287
+      ],
+      "source_excerpt": "Validation Information No, MAY be repeated Specifies the validations that are supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server may repeat Validation Information in the Query response.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-027",
+      "source_locator": {
+        "ordinal": 27,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32288,
+        32306
+      ],
+      "source_excerpt": "Capability Information No, MAY be repeated Specifies the capabilities that are supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server may repeat Capability Information in the Query response.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-028",
+      "source_locator": {
+        "ordinal": 28,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32307,
+        32325
+      ],
+      "source_excerpt": "Client Registration Method No, MAY be repeated Specifies a Client Registration Method that is supported by the server.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "MAY be repeated",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server may repeat Client Registration Method values in the Query response.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+        {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40-029",
+      "source_locator": {
+        "ordinal": 29,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32345,
+        32364
+      ],
+      "source_excerpt": "Protection Storage Masks Yes Specifies the list of Protection Storage Mask values supported by the server. A server MAY elect to provide an empty list in the Response if it is unable or unwilling to provide this information.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "A server MAY elect to provide an empty list in the Response if it is unable or unwilling to provide this information.",
+          "source_keyword": "MAY",
+          "actor": "server",
+          "direction": "server→client response payload",
+          "condition": "The server is unable or unwilling to provide Protection Storage Masks information.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source locator describes server response behavior or supported capability; all formal obligations are server_only. Extracted keywords: MAY.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        32375,
+        32376
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client error response",
+          "condition": "Errors detected in a Query operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The error-handling preamble assigns the return of the listed Result Reasons to the server; it is server_only.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.40.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        32396,
+        32410
+      ],
+      "source_excerpt": "Operation Failed Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large, Unknown Object Group",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Query error table lists nine Result Reasons. The list is non-exhaustive under the general Result Reason rules. REQUIRED is an extractor false positive embedded in the enum name Attestation Required, not a table obligation.",
+      "source_request_rows": [],
+      "source_payload_rows": []
     }
   ],
   "source_only_requirement_gaps": [
@@ -64399,6 +65674,40 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.39-001",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "Source-only proposal for the Required=Yes Asynchronous Correlation Value Process request row. The stable ID is not present in the catalog and must not be added as a requirement crosswalk until catalog review."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.40-OBJECT-GROUPS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.40",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.40",
+        "row_label": "Object Groups",
+        "table": "request_payload",
+        "html_line_range": [
+          32043,
+          32062
+        ]
+      },
+      "source_locator_description": "§6.1.40 Query request payload body row for Object Groups (HTML lines 32043-32062)",
+      "html_line_range": [
+        32043,
+        32062
+      ],
+      "source_excerpt": "Object Groups No Specified the list of Object Group(s) for which the Query is being performed",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The Query request payload marks Object Groups Required=No and describes the object groups for which the Query is performed.",
+      "actor": "client",
+      "direction": "optional Object Groups request payload value",
+      "condition": "A client elects to restrict the Query to specified Object Group values.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-017",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "Source-only proposal for the Optional Object Groups request row. The row has no formal keyword and no active catalog requirement or source clause; do not create a requirement crosswalk."
     }
   ]
 }
