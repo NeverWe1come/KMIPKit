@@ -12237,6 +12237,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.31-001",
             "KMIPKIT-REQ-SPEC-6.1.29-003",
             "KMIPKIT-REQ-SPEC-6.1.44-004",
+            "KMIPKIT-REQ-SPEC-6.1.49-001",
         }
         conditional_body_proposals = {
             "KMIPKIT-REQ-SPEC-6.1.24-002",
@@ -12402,6 +12403,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-6.1.37-001",
                 "KMIPKIT-REQ-SPEC-6.1.39-001",
                 "KMIPKIT-REQ-SPEC-6.1.44-004",
+                "KMIPKIT-REQ-SPEC-6.1.49-001",
             }
             expected_scope = (
                 "client_1_0"

@@ -81,10 +81,10 @@
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 595,
+    "source_requirement_review_records": 599,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 153,
-    "source_only_requirement_gap_proposals": 123,
+    "source_only_requirement_gaps": 154,
+    "source_only_requirement_gap_proposals": 124,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -64893,6 +64893,139 @@
         "REQUIRED"
       ],
       "source_context": "Table 315: RNG Retrieve Errors"
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.49",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.49-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35302,
+        35320
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The extracted source clause is the Request Payload column header, not an obligation. Table 316 body row Data Length is REQUIRED=Yes and is recorded separately as a source-only client requirement proposal.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Data Length Yes The amount of random number generator output to be returned (in bytes). Table 316: RNG Retrieve Request Payload",
+      "source_request_rows": [
+        {
+          "row_label": "Data Length",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field",
+          "html_line_range": [
+            35321,
+            35339
+          ],
+          "source_excerpt": "Data Length Yes The amount of random number generator output to be returned (in bytes).",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.49-DATA-LENGTH-REQUIRED",
+          "source_requirement_ids": [],
+          "source_note": "The only Table 316 body field is required. No existing operation-specific stable client requirement ID is linked to this source row."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.49",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.49-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35358,
+        35376
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The extracted source clause is the Response Payload column header, not an obligation. Table 317 body row Data is required server response output and creates no client request rule.",
+      "source_keywords": [
+        "REQUIRED"
+      ],
+      "source_context": "Data Yes The random number generator output. Table 317: RNG Retrieve Response Payload",
+      "source_payload_rows": [
+        {
+          "row_label": "Data",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            35377,
+            35394
+          ],
+          "source_excerpt": "Data Yes The random number generator output.",
+          "source_requirement_ids": [],
+          "source_note": "Table 317 requires RNG output in the response; this server output row is not a client emission obligation."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.49.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.49.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        35406,
+        35407
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a RNG Retrieve Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a RNG Retrieve Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "return the specified RNG Retrieve Result Reasons in error responses",
+          "condition": "An error is detected in a RNG Retrieve operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The paragraph requires the listed Result Reasons to be returned for RNG Retrieve errors. The server actor and server-to-client direction are inferred from the response-header semantics at §6.1.49; this does not add a client requirement."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.49.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.49.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        35427,
+        35440
+      ],
+      "source_excerpt": "Operation Failed Cryptographic Failure, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source lists nine Operation Failed Result Reasons. The case-insensitive extractor also sees REQUIRED in the enum value Attestation Required; that title-case value is not a normative keyword.",
+      "source_keywords": [
+        "REQUIRED"
+      ]
     }
   ],
   "source_only_requirement_gaps": [
@@ -69609,6 +69742,40 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-013",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.49-DATA-LENGTH-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.49",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.49",
+        "row_label": "Data Length",
+        "table": "request_payload",
+        "html_line_range": [
+          35321,
+          35339
+        ]
+      },
+      "source_locator_description": "§6.1.49 Table 316 Required=Yes body row for Data Length (HTML lines 35321-35339)",
+      "html_line_range": [
+        35321,
+        35339
+      ],
+      "source_excerpt": "Data Length Yes The amount of random number generator output to be returned (in bytes).",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "Table 316 requires the client request to include Data Length, the requested quantity of RNG output in bytes.",
+      "actor": "client",
+      "direction": "include the requested RNG output quantity in the Data Length request field",
+      "condition": "A RNG Retrieve request is sent.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.49-001",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "The catalog source-clause candidates for §6.1.49 are table-header hits and have no stable requirement label for the Data Length body row. Preserve this required client field as a source-only gap; do not reuse a header candidate or invent an existing crosswalk."
     }
   ]
 }
