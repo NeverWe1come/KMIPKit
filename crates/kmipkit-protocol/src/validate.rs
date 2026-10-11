@@ -24,7 +24,7 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const VALIDITY_DATE: u32 = 0x0042_009a;
 const VALIDITY_INDICATOR: u32 = 0x0042_009b;
 
-/// One ordered certificate chain from section 6.1.57, Table 340.
+/// One certificate chain with ordered lists from section 6.1.57, Table 340.
 ///
 /// Certificate and identifier lists together form one chain; there is no
 /// second-chain field. Fields use Table 340 order as required by section 10.1.2. The server controls chain validation, trust anchors
@@ -72,7 +72,7 @@ impl ValidateRequest {
         self
     }
 
-    /// Returns the number of entries in the single ordered chain collection.
+    /// Returns the total entries in the two lists composing one chain.
     #[must_use]
     pub fn chain_len(&self) -> usize {
         self.certificates.len() + self.identifiers.len()
@@ -104,10 +104,18 @@ impl ValidateRequest {
         let mut payload = Structure::new();
         for certificate in self.certificates {
             validate_certificate_shape(&certificate)?;
-            cryptographic_operation::push(&mut payload, CERTIFICATE, Value::structure(certificate))?;
+            cryptographic_operation::push(
+                &mut payload,
+                CERTIFICATE,
+                Value::structure(certificate),
+            )?;
         }
         for identifier in self.identifiers {
-            cryptographic_operation::push(&mut payload, UNIQUE_IDENTIFIER, cryptographic_operation::unique_identifier_value(identifier))?;
+            cryptographic_operation::push(
+                &mut payload,
+                UNIQUE_IDENTIFIER,
+                cryptographic_operation::unique_identifier_value(identifier),
+            )?;
         }
         if let Some(date) = self.validity_date {
             cryptographic_operation::push(&mut payload, VALIDITY_DATE, Value::date_time(date))?;
@@ -122,15 +130,21 @@ impl ValidateRequest {
 }
 
 fn validate_certificate_shape(certificate: &Structure) -> Result<(), ProtocolError> {
-    let mut has_type = false;
-    let mut has_value = false;
+    let mut certificate_type_seen = false;
+    let mut certificate_value_seen = false;
     for field in certificate.view().children() {
         match field.tag().raw() {
-            CERTIFICATE_TYPE if !has_type && field.item_type() == ItemType::Enumeration => {
-                has_type = true;
+            CERTIFICATE_TYPE
+                if !certificate_type_seen && field.item_type() == ItemType::Enumeration =>
+            {
+                certificate_type_seen = true;
             }
-            CERTIFICATE_VALUE if has_type && !has_value && field.item_type() == ItemType::ByteString => {
-                has_value = true;
+            CERTIFICATE_VALUE
+                if certificate_type_seen
+                    && !certificate_value_seen
+                    && field.item_type() == ItemType::ByteString =>
+            {
+                certificate_value_seen = true;
             }
             CERTIFICATE_TYPE | CERTIFICATE_VALUE => {
                 return Err(cryptographic_operation::request_error());
@@ -138,7 +152,7 @@ fn validate_certificate_shape(certificate: &Structure) -> Result<(), ProtocolErr
             _ => {}
         }
     }
-    if !has_type || !has_value {
+    if !certificate_type_seen || !certificate_value_seen {
         return Err(cryptographic_operation::request_error());
     }
     Ok(())
@@ -154,7 +168,8 @@ impl fmt::Debug for ValidateRequest {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("ValidateRequest")
-            .field("chain", &"[REDACTED]")
+            .field("certificates", &"[REDACTED]")
+            .field("identifiers", &"[REDACTED]")
             .field("validity_date", &self.validity_date)
             .field("extensions", &"[REDACTED]")
             .finish()
