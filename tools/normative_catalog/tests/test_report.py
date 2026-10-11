@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import locale
+import os
 import shutil
 import subprocess
 import sys
@@ -64,6 +65,104 @@ def report_catalog() -> dict[str, object]:
 
 
 class CoverageReportTests(unittest.TestCase):
+    def test_readiness_cli_reports_missing_current_run_manifest_without_publishing(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "summary.md"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_REPOSITORY": "NeverWe1come/KMIPKit",
+                "GITHUB_REF": "refs/pull/42/merge",
+                "GITHUB_REF_PROTECTED": "false",
+                "GITHUB_SHA": "a" * 40,
+                "GITHUB_WORKFLOW_REF": "NeverWe1come/KMIPKit/.github/workflows/ci.yml@refs/pull/42/merge",
+                "GITHUB_RUN_ID": "123456789",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "PROFILE_EVIDENCE_MANIFEST": "",
+            }
+            with patch.dict(os.environ, environment, clear=True):
+                exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
+
+            summary = summary_path.read_text(encoding="utf-8")
+
+        self.assertEqual(0, exit_code)
+        self.assertIn("Current profile readiness", summary)
+        self.assertIn("current protected-release-push verification manifest is unavailable", summary)
+        self.assertIn("Public claim: no", summary)
+        self.assertNotIn("123456789", summary)
+
+    def test_readiness_cli_consumes_the_same_run_manifest_ephemerally(self) -> None:
+        from scripts.ci_summary import build_evidence_manifest
+        from tools.normative_catalog import report as report_module
+
+        head = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            check=True,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        context = {
+            "repository": "NeverWe1come/KMIPKit",
+            "ref": "refs/heads/release/1.0.0",
+            "ref_protected": True,
+            "sha": head,
+            "workflow_ref": "NeverWe1come/KMIPKit/.github/workflows/ci.yml@refs/heads/release/1.0.0",
+            "run_id": "123456789",
+            "run_attempt": "1",
+        }
+        needs = {job_id: {"result": "success"} for job_id in (
+            "core",
+            "script-contracts",
+            "normative-inventory",
+            "coverage",
+            "coverage-gate",
+            "dependency-policy",
+        )}
+        manifest = build_evidence_manifest(
+            event_name="push",
+            context=context,
+            needs=needs,
+            branch_protection={
+                "protected": True,
+                "required_pull_request_reviews": {
+                    "required_approving_review_count": 1,
+                    "dismiss_stale_reviews": True,
+                    "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
+                },
+                "enforce_admins": {"enabled": True},
+                "allow_force_pushes": {"enabled": False},
+                "allow_deletions": {"enabled": False},
+            },
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "summary.md"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_REPOSITORY": context["repository"],
+                "GITHUB_REF": context["ref"],
+                "GITHUB_REF_PROTECTED": "true",
+                "GITHUB_SHA": head,
+                "GITHUB_WORKFLOW_REF": context["workflow_ref"],
+                "GITHUB_RUN_ID": context["run_id"],
+                "GITHUB_RUN_ATTEMPT": context["run_attempt"],
+                "PROFILE_EVIDENCE_MANIFEST": json.dumps(manifest),
+            }
+            with patch.dict(os.environ, environment, clear=True):
+                exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
+
+            summary = summary_path.read_text(encoding="utf-8")
+
+        self.assertEqual(0, exit_code)
+        self.assertIn("Current profile readiness", summary)
+        self.assertNotIn("current verification manifest is invalid or does not match this run", summary)
+        self.assertIn("Public claim: no", summary)
+        self.assertNotIn("123456789", summary)
+
     def test_emits_fixed_sections_totals_and_unassigned_requirements(self) -> None:
         report = render_report(report_catalog())
         self.assertIn("## Source documents", report)
