@@ -122,7 +122,7 @@ fn operation_for(request: &ClientRequest) -> u32 {
         ClientRequest::Activate(_) => 0x0000_0012,
         ClientRequest::Archive(_) => 0x0000_0015,
         ClientRequest::Destroy(_) => 0x0000_0014,
-        ClientRequest::Recover(_) => 0x0000_002A,
+        ClientRequest::Recover(_) => 0x0000_0016,
         _ => unreachable!("test constructs only lifecycle requests"),
     }
 }
