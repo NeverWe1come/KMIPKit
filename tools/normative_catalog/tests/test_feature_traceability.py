@@ -693,6 +693,10 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                 for reference in record["source_refs"]
             )
         }
+        retired_false_client_claim = by_id["KMIPKIT-REQ-SPEC-9.8-001-001"]
+        self.assertEqual(retired_false_client_claim["status"], "retired")
+        self.assertEqual(retired_false_client_claim["scope"], "out_of_scope")
+        self.assertIn("client candidate", retired_false_client_claim["statement"].lower())
         self.assertTrue(source_requirements.issubset(by_id))
         self.assertEqual(
             by_id["KMIPKIT-REQ-SPEC-8-003-002"]["status"],
@@ -750,6 +754,10 @@ class MessageModelTraceabilityTests(unittest.TestCase):
             elif row["status"] == "server_only":
                 self.assertEqual(record["scope_state"], "server_only")
                 self.assertIn(record["feature_spec"], {None, MESSAGE_MODEL_FEATURE_SPEC})
+            elif row["status"] == "retired":
+                self.assertEqual(record["role"], "not_applicable")
+                self.assertEqual(record["scope_state"], "out_of_scope")
+                self.assertEqual(record["status"], "retired")
             else:
                 self.assertEqual(record["feature_spec"], row["scope"].split("; owner=")[1])
             for reference in record["verification_refs"]:
