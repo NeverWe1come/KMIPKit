@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value};
+use kmipkit_ttlv::{Structure, StructureView, Value};
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
@@ -144,24 +144,24 @@ impl RevokeRequest {
 
         let mut payload = Structure::new();
         if let Some(identifier) = self.unique_identifier {
-            push(
+            common::push(
                 &mut payload,
                 UNIQUE_IDENTIFIER,
-                identifier_value(identifier),
+                common::unique_identifier_value(identifier),
             )?;
         }
         let mut reason = Structure::new();
-        push(
+        common::push(
             &mut reason,
             REVOCATION_REASON_CODE,
             Value::enumeration(self.revocation_reason.raw()),
         )?;
         if let Some(message) = self.revocation_message {
-            push(&mut reason, REVOCATION_MESSAGE, Value::text_string(message))?;
+            common::push(&mut reason, REVOCATION_MESSAGE, Value::text_string(message))?;
         }
-        push(&mut payload, REVOCATION_REASON, Value::structure(reason))?;
+        common::push(&mut payload, REVOCATION_REASON, Value::structure(reason))?;
         if let Some(date_time) = self.compromise_occurrence_date {
-            push(
+            common::push(
                 &mut payload,
                 COMPROMISE_OCCURRENCE_DATE,
                 Value::date_time(date_time),
@@ -292,36 +292,9 @@ impl Error for RevokeError {
     }
 }
 
-fn identifier_value(identifier: UniqueIdentifier) -> Value {
-    match identifier {
-        UniqueIdentifier::TextString(value) => Value::text_string(value),
-        UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-        UniqueIdentifier::Integer(value) => Value::integer(value),
-    }
-}
-
 fn parse_success_identifier(payload: &StructureView<'_>) -> Result<UniqueIdentifier, RevokeError> {
     crate::lifecycle::successful_response_identifier(payload)
         .ok_or(RevokeError::MalformedSuccessPayload)
-}
-
-fn push(payload: &mut Structure, raw_tag: u32, value: Value) -> Result<(), ProtocolError> {
-    let item = Item::new(tag(raw_tag)?, value).map_err(model_error)?;
-    payload.try_push(item).map_err(model_error)
-}
-
-fn tag(raw_tag: u32) -> Result<Tag, ProtocolError> {
-    RawTag::new(raw_tag)
-        .and_then(|raw| raw.try_checked())
-        .map_err(model_error)
-}
-
-fn model_error(error: ModelError) -> ProtocolError {
-    ProtocolError::new(
-        ProtocolErrorKind::InvalidValue,
-        ProtocolCauseCategory::InvalidValue,
-        error,
-    )
 }
 
 fn invalid_request() -> ProtocolError {
