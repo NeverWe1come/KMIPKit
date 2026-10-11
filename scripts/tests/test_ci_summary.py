@@ -521,8 +521,10 @@ class CiSummaryTests(unittest.TestCase):
         self.assertGreater(encoded_needs.count('"core"'), 1)
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "step-summary.md"
+            github_output = Path(directory) / "github-output.txt"
             environment = {
                 "GITHUB_STEP_SUMMARY": str(output),
+                "GITHUB_OUTPUT": str(github_output),
                 "CI_NEEDS_JSON": encoded_needs,
                 "GITHUB_EVENT_NAME": "pull_request",
                 "GITHUB_REPOSITORY": "NeverWe1come/KMIPKit",
@@ -539,6 +541,7 @@ class CiSummaryTests(unittest.TestCase):
             markdown = output.read_text(encoding="utf-8")
             self.assertIn("CI summary could not be rendered", markdown)
             self.assertNotIn("CI result: PASS", markdown)
+            self.assertEqual("summary_written=false", github_output.read_text(encoding="utf-8").strip())
 
     def test_release_evidence_manifest_binds_exact_current_run_checks(self) -> None:
         summary_module = self.require_summary()
@@ -737,7 +740,7 @@ class CiSummaryTests(unittest.TestCase):
                         current_head=current_head,
                     )
 
-    def test_main_writes_only_ephemeral_release_manifest_output(self) -> None:
+    def test_main_writes_release_manifest_and_summary_status(self) -> None:
         summary_module = self.require_summary()
         context = self.release_context()
         with tempfile.TemporaryDirectory() as directory:
@@ -763,11 +766,13 @@ class CiSummaryTests(unittest.TestCase):
 
             self.assertEqual(0, exit_code)
             output = output_path.read_text(encoding="utf-8")
-            self.assertEqual(1, len(output.splitlines()))
-            key, encoded_manifest = output.strip().split("=", 1)
+            lines = output.splitlines()
+            self.assertEqual(2, len(lines))
+            key, encoded_manifest = lines[0].split("=", 1)
             self.assertEqual("profile_evidence_manifest", key)
+            self.assertEqual("summary_written=true", lines[1])
             manifest = json.loads(encoded_manifest)
-            self.assertEqual(6, len(manifest["checks"]))
+            self.assertEqual(len(summary_module.PR_REQUIRED_JOBS), len(manifest["checks"]))
             self.assertNotIn("CI_BRANCH_PROTECTION_JSON", output)
             self.assertNotIn("private-key", output.lower())
 
@@ -795,7 +800,7 @@ class CiSummaryTests(unittest.TestCase):
                 exit_code = summary_module.main()
 
             self.assertEqual(1, exit_code)
-            self.assertFalse(output_path.exists())
+            self.assertEqual("summary_written=false", output_path.read_text(encoding="utf-8").strip())
             self.assertIn(
                 "CI summary could not be rendered",
                 summary_path.read_text(encoding="utf-8"),
