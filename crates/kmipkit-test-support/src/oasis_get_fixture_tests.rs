@@ -112,11 +112,7 @@ fn selected_get_items_rejects_reordered_response_correlations() {
 #[test]
 fn selected_get_items_rejects_non_adjacent_request_response_messages() {
     let result = std::panic::catch_unwind(|| {
-        selected_get_items(
-            NON_ADJACENT_REQUEST_RESPONSE_XML,
-            "T037-ADJACENCY",
-            &[0, 1],
-        )
+        selected_get_items(NON_ADJACENT_REQUEST_RESPONSE_XML, "T037-ADJACENCY", &[0, 1])
     });
 
     assert!(
@@ -283,30 +279,53 @@ struct SelectedGetItem {
 fn selected_get_items(xml: &str, case_id: &str, steps: &[usize]) -> Vec<SelectedGetItem> {
     let document = Document::parse(xml).expect("pinned source XML parses");
     let root = document.root_element();
-    let requests: Vec<_> = root
-        .children()
-        .filter(Node::is_element)
-        .filter(|node| node.tag_name().name() == "RequestMessage")
-        .collect();
-    let responses: Vec<_> = root
-        .children()
-        .filter(Node::is_element)
-        .filter(|node| node.tag_name().name() == "ResponseMessage")
-        .collect();
+    let messages: Vec<_> = root.children().filter(Node::is_element).collect();
     assert_eq!(
-        requests.len(),
-        responses.len(),
-        "source messages pair by order"
+        messages.len() % 2,
+        0,
+        "every source request has an adjacent response message"
     );
 
     let catalog = CatalogMaps::load().expect("pinned catalog resolves source tags");
     let mut selected = Vec::new();
-    for (request_node, response_node) in requests.into_iter().zip(responses) {
+    for pair in messages.chunks_exact(2) {
+        let request_node = pair[0];
+        let response_node = pair[1];
+        assert!(
+            request_node.tag_name().name() == "RequestMessage",
+            "source message pairs begin with a request"
+        );
+        assert!(
+            response_node.tag_name().name() == "ResponseMessage",
+            "source request is immediately followed by its response"
+        );
+
         let header = unique_child(request_node, "RequestHeader").expect("request has a header");
         let identity = value_attribute(
             unique_child(header, "ClientCorrelationValue").expect("request has correlation id"),
         )
         .expect("correlation id has value");
+
+        let response_header =
+            unique_child(response_node, "ResponseHeader").expect("response has a header");
+        let mut response_correlations = response_header
+            .children()
+            .filter(Node::is_element)
+            .filter(|node| node.tag_name().name() == "ClientCorrelationValue");
+        let response_correlation = response_correlations.next();
+        assert!(
+            response_correlations.next().is_none(),
+            "response has at most one client correlation value"
+        );
+        if let Some(response_correlation) = response_correlation {
+            let response_identity =
+                value_attribute(response_correlation).expect("response correlation id has a value");
+            assert!(
+                response_identity == identity,
+                "response correlation id matches its adjacent request"
+            );
+        }
+
         let Some((identity_case, numeric_step)) = identity.rsplit_once(" step=") else {
             continue;
         };
