@@ -27,10 +27,12 @@ mod discover_versions;
 mod encrypt;
 mod error;
 pub mod extension;
+mod get;
 mod get_attribute_list;
 mod get_attributes;
 mod hash;
 mod lifecycle;
+mod locate;
 mod mac;
 mod mac_verify;
 mod message;
@@ -85,11 +87,15 @@ pub use discover_versions::{
 };
 pub use encrypt::{EncryptError, EncryptRequest, EncryptResponse};
 pub use error::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
+pub use get::{GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType};
 pub use get_attribute_list::{
     GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
 };
 pub use get_attributes::{GetAttributesError, GetAttributesRequest, GetAttributesResponse};
 pub use hash::{HashError, HashRequest, HashResponse};
+pub use locate::{
+    LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
+};
 pub use mac::{MacError, MacRequest, MacResponse};
 pub use mac_verify::{MacVerifyError, MacVerifyRequest, MacVerifyResponse};
 pub use message::{
@@ -258,6 +264,10 @@ mod query_operation_tests;
 mod lifecycle_fixtures;
 
 #[cfg(test)]
+#[path = "../tests/support/managed_object_retrieval_fixtures.rs"]
+mod managed_object_retrieval_fixtures;
+
+#[cfg(test)]
 #[path = "../tests/unit/lifecycle_fixtures_tests.rs"]
 mod lifecycle_fixtures_tests;
 
@@ -296,6 +306,14 @@ mod vendor_attribute_tests;
 #[cfg(test)]
 #[path = "../tests/unit/get_attributes_tests.rs"]
 mod get_attributes_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_tests.rs"]
+mod get_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/locate_tests.rs"]
+mod locate_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/get_attribute_list_tests.rs"]

@@ -24,6 +24,10 @@ const TEST_NOW: i64 = 1_700_000_000;
 const TEST_UNIQUE_IDENTIFIER_0: &str = "kmipkit-test-unique-id-0";
 const TEST_CORRELATION_VALUE: &[u8] = b"kmipkit-test-correlation-value-0";
 
+#[cfg(test)]
+#[path = "../tests/fixtures/oasis_get_fixture_tests.rs"]
+mod managed_object_fixture_tests;
+
 /// A selected client-side cryptographic operation in an OASIS fixture.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum OasisCryptoOperation {
@@ -333,21 +337,44 @@ fn parse_message(
     node: Node<'_, '_>,
     catalog: &CatalogMaps,
 ) -> Result<Structure, OasisCryptoFixtureError> {
+    parse_message_with_get_test_symbols(node, catalog, false)
+}
+
+#[cfg(test)]
+fn parse_get_message_with_test_symbols(
+    node: Node<'_, '_>,
+    catalog: &CatalogMaps,
+) -> Result<Structure, OasisCryptoFixtureError> {
+    parse_message_with_get_test_symbols(node, catalog, true)
+}
+
+fn parse_message_with_get_test_symbols(
+    node: Node<'_, '_>,
+    catalog: &CatalogMaps,
+    allow_get_test_symbols: bool,
+) -> Result<Structure, OasisCryptoFixtureError> {
     let mut message = Structure::new();
     let mut item_count = 0;
     for child in node.children().filter(Node::is_element) {
         message
-            .try_push(parse_item(child, catalog, 1, &mut item_count)?)
+            .try_push(parse_item_with_get_test_symbols(
+                child,
+                catalog,
+                1,
+                &mut item_count,
+                allow_get_test_symbols,
+            )?)
             .map_err(|_| OasisCryptoFixtureError::TtlvLimit)?;
     }
     Ok(message)
 }
 
-fn parse_item(
+fn parse_item_with_get_test_symbols(
     node: Node<'_, '_>,
     catalog: &CatalogMaps,
     depth: usize,
     item_count: &mut usize,
+    allow_get_test_symbols: bool,
 ) -> Result<Item, OasisCryptoFixtureError> {
     *item_count = item_count
         .checked_add(1)
@@ -381,18 +408,29 @@ fn parse_item(
             let mut structure = Structure::new();
             for child in node.children().filter(Node::is_element) {
                 structure
-                    .try_push(parse_item(child, catalog, depth + 1, item_count)?)
+                    .try_push(parse_item_with_get_test_symbols(
+                        child,
+                        catalog,
+                        depth + 1,
+                        item_count,
+                        allow_get_test_symbols,
+                    )?)
                     .map_err(|_| OasisCryptoFixtureError::TtlvLimit)?;
             }
             Value::structure(structure)
         }
         "Integer" => Value::integer(parse_scalar(node)?),
         "LongInteger" => Value::long_integer(parse_scalar(node)?),
-        "BigInteger" => Value::big_integer(parse_byte_string(node, "BigInteger")?),
+        // Test-only symbolic substitutions apply only to ByteString leaves.
+        "BigInteger" => Value::big_integer(parse_byte_string(node, "BigInteger", false)?),
         "Enumeration" => Value::enumeration(catalog.enumeration_value(node)?),
         "Boolean" => Value::boolean(parse_boolean(node)?),
-        "TextString" => Value::text_string(parse_text_string(node)?),
-        "ByteString" => Value::byte_string(parse_byte_string(node, "ByteString")?),
+        "TextString" => Value::text_string(parse_text_string(node, allow_get_test_symbols)?),
+        "ByteString" => Value::byte_string(parse_byte_string(
+            node,
+            "ByteString",
+            allow_get_test_symbols,
+        )?),
         "DateTime" => Value::date_time(parse_date_time(node)?),
         "Interval" => Value::interval(parse_scalar(node)?),
         "DateTimeExtended" => Value::date_time_extended(parse_scalar(node)?),
@@ -426,10 +464,23 @@ fn parse_boolean(node: Node<'_, '_>) -> Result<bool, OasisCryptoFixtureError> {
     }
 }
 
-fn parse_text_string(node: Node<'_, '_>) -> Result<String, OasisCryptoFixtureError> {
+fn parse_text_string(
+    node: Node<'_, '_>,
+    allow_get_test_symbols: bool,
+) -> Result<String, OasisCryptoFixtureError> {
+    #[cfg(not(test))]
+    let _ = allow_get_test_symbols;
     let value = value_attribute(node)?;
     if value == "$UNIQUE_IDENTIFIER_0" {
         return Ok(TEST_UNIQUE_IDENTIFIER_0.to_owned());
+    }
+    #[cfg(test)]
+    if allow_get_test_symbols
+        && normalize_name(node.tag_name().name()) == "uniqueidentifier"
+        && let Some(index) = value.strip_prefix("$UNIQUE_IDENTIFIER_")
+        && matches!(index, "1" | "2")
+    {
+        return Ok(format!("kmipkit-test-unique-id-{index}"));
     }
     reject_symbol(value)?;
     Ok(value.to_owned())
@@ -449,10 +500,24 @@ fn parse_date_time(node: Node<'_, '_>) -> Result<i64, OasisCryptoFixtureError> {
 fn parse_byte_string(
     node: Node<'_, '_>,
     item_type: &str,
+    allow_get_test_symbols: bool,
 ) -> Result<Vec<u8>, OasisCryptoFixtureError> {
+    #[cfg(not(test))]
+    let _ = allow_get_test_symbols;
     let value = value_attribute(node)?;
     if item_type == "ByteString" && value == "$CORRELATION_VALUE" {
         return Ok(TEST_CORRELATION_VALUE.to_vec());
+    }
+    #[cfg(test)]
+    if allow_get_test_symbols
+        && item_type == "ByteString"
+        && normalize_name(node.tag_name().name()) == "keymaterial"
+        && matches!(value, "$KEY_MATERIAL" | "$KEY_MATERIAL_1")
+    {
+        // The pinned XML uses an unresolved source symbol here. Keep its
+        // payload opaque while providing a zeroizing generic ByteString for
+        // structural Any Object preservation tests.
+        return Ok(vec![0xA5]);
     }
     reject_symbol(value)?;
     if value.len() % 2 != 0 {
