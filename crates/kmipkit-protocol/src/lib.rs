@@ -24,6 +24,7 @@ mod cryptographic_operation;
 mod cryptographic_parameters;
 mod decrypt;
 mod delete_attribute;
+mod derive_key;
 mod destroy;
 mod discover_versions;
 mod encrypt;
@@ -89,6 +90,9 @@ pub use cryptographic_operation::{
 };
 pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
+pub use derive_key::{
+    DerivationMethod, DerivationParameters, DeriveKeyError, DeriveKeyRequest, DeriveKeyResponse,
+};
 pub use destroy::{DestroyError, DestroyRequest, DestroyResponse};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
@@ -219,7 +223,6 @@ mod cryptographic_operation_contract_tests;
 
 #[cfg(test)]
 // Temporarily disabled while operation-specific Red/Green slices are exercised.
-
 #[cfg(test)]
 #[path = "../tests/unit/hash_operation_tests.rs"]
 mod hash_operation_tests;
