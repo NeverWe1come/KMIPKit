@@ -208,3 +208,23 @@ fn malformed_success_payload_is_rejected() {
         Err(JoinSplitKeyError::MalformedSuccessPayload)
     ));
 }
+
+#[test]
+fn request_and_response_debug_redact_identifier_values() {
+    let request = request(vec![reference("private-split-identifier", 1)]);
+    let request_debug = format!("{request:?}");
+    assert!(!request_debug.contains("private-split-identifier"));
+
+    let success = response_message(
+        SUCCESS,
+        None,
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("private-joined-identifier".to_owned()),
+        )])),
+    );
+    let response = JoinSplitKeyResponse::try_from_response_item(response_item(&success))
+        .expect("success response has its required identifier");
+    let response_debug = format!("{response:?}");
+    assert!(!response_debug.contains("private-joined-identifier"));
+}

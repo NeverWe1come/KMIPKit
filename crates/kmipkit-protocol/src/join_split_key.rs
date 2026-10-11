@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
+use kmipkit_ttlv::{ModelError, Structure, StructureView, Value, ValueView};
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
@@ -13,9 +13,7 @@ use crate::{
 };
 
 const OPERATION: u32 = 0x0000_0029; // KMIP v2.1 §11.36, Table 470.
-const SUCCESS: u32 = 0;
 const OBJECT_TYPE: u32 = 0x0042_0057;
-const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
@@ -161,34 +159,34 @@ impl JoinSplitKeyRequest {
         let maximum_threshold = validate_references(&self.references)?;
         let entry_count = self.references.len();
         if usize::try_from(maximum_threshold).map_or(true, |required| entry_count < required) {
-            return Err(invalid_request());
+            return Err(common::request_error());
         }
 
         let mut payload = Structure::new();
-        push(
+        common::push(
             &mut payload,
             OBJECT_TYPE,
             Value::enumeration(self.object_type.raw()),
         )?;
         for reference in self.references {
-            push(
+            common::push(
                 &mut payload,
-                UNIQUE_IDENTIFIER,
-                unique_identifier_value(reference.unique_identifier),
+                common::UNIQUE_IDENTIFIER,
+                common::unique_identifier_value(reference.unique_identifier),
             )?;
         }
         if let Some(value) = self.secret_data_type {
-            push(&mut payload, SECRET_DATA_TYPE, Value::enumeration(value))?;
+            common::push(&mut payload, SECRET_DATA_TYPE, Value::enumeration(value))?;
         }
         if let Some(attributes) = self.attributes {
             let mut fields = Structure::new();
             for attribute in attributes.into_items() {
                 fields.try_push(attribute).map_err(model_error)?;
             }
-            push(&mut payload, ATTRIBUTES, Value::structure(fields))?;
+            common::push(&mut payload, ATTRIBUTES, Value::structure(fields))?;
         }
         if let Some(masks) = self.protection_storage_masks {
-            push(
+            common::push(
                 &mut payload,
                 PROTECTION_STORAGE_MASKS,
                 Value::structure(masks),
@@ -247,7 +245,7 @@ impl JoinSplitKeyResponse {
         .map_err(JoinSplitKeyError::InvalidOperationResult)?;
         let response_ttlv = common::clone_response_item(item, "Join Split Key")
             .map_err(|_| JoinSplitKeyError::MalformedResponseItem)?;
-        let unique_identifier = if status.raw() == SUCCESS {
+        let unique_identifier = if status.raw() == common::SUCCESS {
             Some(
                 item.with_response_payload(|payload| parse_success_payload(&payload))
                     .ok_or(JoinSplitKeyError::MissingSuccessPayload)??,
@@ -343,12 +341,12 @@ impl Error for JoinSplitKeyError {
 
 fn validate_references(references: &[SplitKeyReference]) -> Result<u32, ProtocolError> {
     if references.is_empty() {
-        return Err(invalid_request());
+        return Err(common::request_error());
     }
     let mut maximum_threshold = 0;
     for reference in references {
         let Some(threshold) = reference.split_key_threshold else {
-            return Err(invalid_request());
+            return Err(common::request_error());
         };
         maximum_threshold = maximum_threshold.max(threshold);
     }
@@ -360,7 +358,7 @@ fn parse_success_payload(
 ) -> Result<UniqueIdentifier, JoinSplitKeyError> {
     let mut unique_identifier = None;
     for field in payload.children() {
-        if field.tag().raw() != UNIQUE_IDENTIFIER {
+        if field.tag().raw() != common::UNIQUE_IDENTIFIER {
             continue;
         }
         if unique_identifier.is_some() {
@@ -381,33 +379,6 @@ fn parse_unique_identifier(value: &ValueView<'_>) -> Option<UniqueIdentifier> {
         ValueView::Integer(value) => Some(UniqueIdentifier::Integer(**value)),
         _ => None,
     }
-}
-
-fn unique_identifier_value(identifier: UniqueIdentifier) -> Value {
-    match identifier {
-        UniqueIdentifier::TextString(value) => Value::text_string(value),
-        UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-        UniqueIdentifier::Integer(value) => Value::integer(value),
-    }
-}
-
-fn push(payload: &mut Structure, raw_tag: u32, value: Value) -> Result<(), ProtocolError> {
-    payload
-        .try_push(Item::new(tag(raw_tag)?, value).map_err(model_error)?)
-        .map_err(model_error)
-}
-
-fn tag(raw: u32) -> Result<Tag, ProtocolError> {
-    RawTag::new(raw)
-        .and_then(|raw| raw.try_checked())
-        .map_err(model_error)
-}
-
-fn invalid_request() -> ProtocolError {
-    ProtocolError::categorized(
-        ProtocolErrorKind::InvalidValue,
-        ProtocolCauseCategory::InvalidValue,
-    )
 }
 
 fn model_error(error: ModelError) -> ProtocolError {
