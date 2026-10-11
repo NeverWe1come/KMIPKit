@@ -52,4 +52,14 @@ During Green fixture development, an initial successful-response fixture include
 - The TLS loopback peer gives deterministic network behavior while exercising the actual client execution boundary.
 - Get object handling is limited to obtaining and comparing the object tag; the object itself is never debug-formatted, printed, or compared.
 - Locate results are neither sorted nor deduplicated by the test; the assertion matches the controlled server order.
-- No additional refactor was needed. The repository-wide coverage gate remains assigned to T043 and was not run for this task.
+- The post-Green review found no justified source refactor. Extracting fixture-specific logic would obscure the quickstart example coverage, and the test already reuses the established loopback/TLS helpers. The repository-wide coverage gate remains assigned to T043 and was not run for this task.
+
+## Review follow-up — Fix round 1
+
+The review noted that the initial report did not record Refactor evidence. A separate DCO-signed commit labeled `refactor(test): record T038 no-change disposition` documents the post-Green review and its no-change rationale above; it changes evidence only and adds no abstraction or test code.
+
+Post-update verification:
+
+- `cargo test -p kmipkit-client --test operation_boundary rust_quickstart_get_and_locate_examples_execute_through_the_client -- --exact` — passed, 1/1.
+- `cargo fmt --all --check` — passed.
+- `git diff --check` — passed.
