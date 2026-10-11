@@ -49,6 +49,15 @@ LIMIT_IDS = (
     "maxDepth",
 )
 REQUIREMENT_IDS = tuple(f"KMIPKIT-0012-FR-{number:03}" for number in range(1, 15))
+SHARED_PARITY_FIXTURE = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
+SHARED_PARITY_CAPABILITIES = {
+    "api_level_discovery",
+    "client_configuration_isolation",
+    "error_category_and_redaction",
+    "ordered_batch_outcomes",
+    "generic_ttlv_losslessness",
+    "extension_registry_recognition",
+}
 JAVA_KEYWORDS = {
     "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
     "class", "const", "continue", "default", "do", "double", "else", "enum",
@@ -70,6 +79,58 @@ class PublicApiParityTests(unittest.TestCase):
 
         for item in [*self.manifest["types"], *self.manifest["functions"]]:
             self.assertTrue(set(item["requirementIds"]).issubset(REQUIREMENT_IDS), item["id"])
+
+    def test_shared_capability_parity_fixtures_cover_rust_and_c_contracts(self) -> None:
+        self.assertTrue(
+            SHARED_PARITY_FIXTURE.is_file(),
+            "shared Rust/C API parity fixture corpus is missing",
+        )
+        fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
+
+        self.assertEqual(fixtures["format"], "kmipkit-shared-api-parity-fixtures")
+        self.assertEqual(fixtures["formatVersion"], 1)
+        self.assertEqual(fixtures["releaseLine"], "1.0.0")
+        self.assertEqual(fixtures["languages"], ["rust", "c"])
+
+        cases = fixtures["cases"]
+        case_ids = [case["id"] for case in cases]
+        self.assertEqual(len(case_ids), len(set(case_ids)))
+        self.assertEqual(
+            {case["capability"] for case in cases},
+            SHARED_PARITY_CAPABILITIES,
+        )
+
+        for case in cases:
+            with self.subTest(fixture=case["id"]):
+                self.assertTrue(case["requirementIds"])
+                self.assertTrue(case["input"])
+                self.assertTrue(case["expectedOutput"])
+                self.assertIn("cleanup", case)
+                self.assertEqual(set(case["consumerTests"]), {"rust", "c"})
+                self.assertTrue(case["consumerTests"]["rust"])
+                self.assertTrue(case["consumerTests"]["c"])
+
+        redaction = next(
+            case for case in cases
+            if case["capability"] == "error_category_and_redaction"
+        )
+        self.assertEqual(redaction["errorCategory"], "resource_limit")
+        self.assertTrue(redaction["expectedOutput"]["diagnosticOmitsInputMarker"])
+
+        batch = next(
+            case for case in cases
+            if case["capability"] == "ordered_batch_outcomes"
+        )
+        self.assertEqual(batch["expectedOutput"]["itemIndexes"], [0, 1, 2])
+        self.assertEqual(batch["expectedOutput"]["pendingCount"], 1)
+        self.assertFalse(batch["expectedOutput"]["automaticFollowUp"])
+
+        ttlv = next(
+            case for case in cases
+            if case["capability"] == "generic_ttlv_losslessness"
+        )
+        self.assertEqual(ttlv["expectedOutput"]["childTagsInOrder"], ["0x540001", "0x540002"])
+        self.assertTrue(ttlv["expectedOutput"]["unknownValuesPreserved"])
 
     def test_generated_rust_api_uses_rust_mapping_and_excludes_blocked_records(self) -> None:
         manifest = {
