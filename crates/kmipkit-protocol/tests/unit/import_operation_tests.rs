@@ -17,9 +17,12 @@ const KEY_WRAP_TYPE: u32 = 0x0042_00F8;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
 const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0043;
+const WRAPPING_METHOD: u32 = 0x0042_009E;
+const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_003D;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const FUTURE_RESULT_REASON: u32 = 0xF123_4567;
@@ -59,6 +62,32 @@ fn key_object() -> Item {
     let key_block = structure([
         item(KEY_FORMAT_TYPE, Value::enumeration(1)),
         item(KEY_VALUE, Value::structure(value)),
+    ]);
+    item(
+        SYMMETRIC_KEY,
+        Value::structure(structure([item(KEY_BLOCK, Value::structure(key_block))])),
+    )
+}
+
+fn wrapped_key_object() -> Item {
+    let key_wrapping_data = structure([
+        item(WRAPPING_METHOD, Value::enumeration(1)),
+        item(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(structure([item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ]);
+    let value = structure([item(
+        KEY_MATERIAL,
+        Value::byte_string(b"synthetic-import-material".to_vec()),
+    )]);
+    let key_block = structure([
+        item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+        item(KEY_VALUE, Value::structure(value)),
+        item(KEY_WRAPPING_DATA, Value::structure(key_wrapping_data)),
     ]);
     item(
         SYMMETRIC_KEY,
@@ -137,7 +166,7 @@ fn replacement_and_conditional_wrap_type_are_preserved_without_unwrapping() {
         UniqueIdentifier::TextString("replace-key".to_owned()),
         ObjectType::from_raw(2),
         attributes(),
-        key_object(),
+        wrapped_key_object(),
     )
     .with_replace_existing(true)
     .with_key_wrap_type(KeyWrapType::from_raw(0xF123_4568));
@@ -166,6 +195,26 @@ fn replacement_and_conditional_wrap_type_are_preserved_without_unwrapping() {
             |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0xF123_4568)
         )
     );
+}
+
+#[test]
+fn key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data() {
+    let wrapped_without_type = ImportRequest::new(
+        UniqueIdentifier::TextString("wrapped-key".to_owned()),
+        ObjectType::from_raw(2),
+        attributes(),
+        wrapped_key_object(),
+    );
+    assert!(wrapped_without_type.into_ttlv_payload().is_err());
+
+    let unwrapped_with_type = ImportRequest::new(
+        UniqueIdentifier::TextString("unwrapped-key".to_owned()),
+        ObjectType::from_raw(2),
+        attributes(),
+        key_object(),
+    )
+    .with_key_wrap_type(KeyWrapType::from_raw(1));
+    assert!(unwrapped_with_type.into_ttlv_payload().is_err());
 }
 
 #[test]
