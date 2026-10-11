@@ -29,6 +29,8 @@ tests, and the conformance matrix.
 - [Operaciones Query y Ping (Español)](user-guide/es/operaciones-query-ping.md)
 - [Managed-object lifecycle operations (English)](user-guide/en/lifecycle-operations.md)
 - [Operaciones de ciclo de vida de objetos (Español)](user-guide/es/operaciones-ciclo-vida.md)
+- [Lifecycle and certificate operations (English)](user-guide/en/lifecycle-and-certificates.md)
+- [Operaciones de ciclo de vida y certificados (Español)](user-guide/es/operaciones-ciclo-vida-y-certificados.md)
 - [Inspecting KMIP messages (English)](user-guide/en/message-model.md)
 - [Inspeccionar mensajes KMIP (Español)](user-guide/es/modelo-mensaje.md)
 
