@@ -1,4 +1,4 @@
-"""Tests for compiling the Rust examples published in the client guides."""
+"""Tests for compiling the Rust examples published in the user guides."""
 
 from __future__ import annotations
 
