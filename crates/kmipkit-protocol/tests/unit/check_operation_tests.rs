@@ -11,10 +11,11 @@ use crate::{
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
 
-const CHECK_OPERATION: u32 = 0x0000_0002;
+const CHECK_OPERATION: u32 = 0x0000_0009;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
+const INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0000_0029;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 const LEASE_TIME: u32 = 0x0042_0049;
@@ -85,6 +86,7 @@ fn request_emits_table_183_fields_once_in_order_and_preserves_each_value() {
         .with_cryptographic_usage_mask(2)
         .with_lease_time(60);
 
+    assert_eq!(request.unique_identifier(), Some(&identifier));
     let payload = request
         .into_ttlv_payload()
         .expect("the optional Table 183 policy fields form a valid Check request");
@@ -119,7 +121,6 @@ fn request_emits_table_183_fields_once_in_order_and_preserves_each_value() {
             });
         assert_eq!(actual, Some(expected));
     }
-    assert_eq!(request.unique_identifier(), Some(&identifier));
 }
 
 #[test]
@@ -190,6 +191,33 @@ fn failure_response_preserves_table_185_reason_without_success_identifier() {
     assert!(response.usage_limits_count().is_none());
     assert!(response.cryptographic_usage_mask().is_none());
     assert!(response.lease_time().is_none());
+}
+
+#[test]
+fn policy_denial_response_returns_the_policy_value_without_a_success_identifier() {
+    let message = response_message(
+        CHECK_OPERATION,
+        OPERATION_FAILED,
+        Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK),
+        None,
+        Some(structure([item(
+            CRYPTOGRAPHIC_USAGE_MASK,
+            Value::integer(2),
+        )])),
+    );
+    let response = CheckResponse::try_from_response_item(response_item(&message))
+        .expect("§6.1.7 returns policy attributes when Check denies use");
+
+    assert_eq!(response.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(
+        response
+            .result()
+            .reason()
+            .map(ResultReason::raw),
+        Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK)
+    );
+    assert!(response.unique_identifier().is_none());
+    assert_eq!(response.cryptographic_usage_mask(), Some(2));
 }
 
 #[test]
