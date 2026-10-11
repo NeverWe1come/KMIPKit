@@ -6940,6 +6940,17 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
         self.assertEqual(oracle["oracle_status"], "partial-source-reviewed; not complete T003 oracle")
 
+    def test_spec_6_1_49_rng_retrieve_error_clause_is_server_to_client(self) -> None:
+        """The RNG Retrieve error Result Reason obligation describes server response output."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        clause = next(row for row in catalog["source_clauses"]
+                      if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.49.1-001")
+        self.assertEqual(clause["disposition"], "server_only")
+        self.assertEqual(clause["role"], "server")
+        self.assertEqual(clause["direction"], "server_to_client")
+        self.assertEqual(clause["scope_state"], "server_only")
+        self.assertEqual(clause["requirement_ids"], [])
+
     def test_spec_6_1_45_recertify_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.45 and 6.1.45.1 preserve Re-certify source roles."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
