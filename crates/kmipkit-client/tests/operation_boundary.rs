@@ -235,6 +235,9 @@ fn spawn_peer(
             }
         };
         stream
+            .set_nonblocking(false)
+            .expect("accepted peer stream switches to blocking TLS I/O");
+        stream
             .set_read_timeout(Some(PEER_TIMEOUT))
             .expect("peer read timeout is configured");
         stream
@@ -312,7 +315,7 @@ fn response_bytes() -> Vec<u8> {
         2,
         None,
         Some(b"pending-locate-correlation"),
-        None,
+        Some(structure(RESPONSE_PAYLOAD, [])),
     );
     structure(
         0x0042_007B,
