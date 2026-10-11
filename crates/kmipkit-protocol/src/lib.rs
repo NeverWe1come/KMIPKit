@@ -493,3 +493,7 @@ mod logout_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/log_operation_tests.rs"]
 mod log_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/validate_operation_tests.rs"]
+mod validate_operation_tests;
