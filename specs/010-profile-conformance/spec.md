@@ -2,12 +2,12 @@
 
 **Feature Branch**: `feature/KMIPKIT-0010-profile-conformance`
 **Created**: 2026-10-07
-**Status**: Draft
+**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.
 **Input**: Roadmap item `KMIPKIT-0010-profile-conformance`; approved KMIPKit product boundaries, ADR-0009, and the KMIP 2.1 normative catalog.
 
 ## Scope and normative sources
 
-This feature defines how KMIPKit identifies applicable KMIP 2.1 client profiles, applies selected profile rules, records evidence, and determines whether a profile is eligible for a later release claim. Specification §14.1 requires a KMIP client to conform to one or more client profiles and requires every normative statement in a claimed profile's clauses and their subclauses to be met. The initial KMIPKit 1.0 target selected by this draft is the Baseline Client profile, giving the product a concrete candidate for §14.1. Selecting that target does not assert conformance or make a public claim.
+This feature defines how KMIPKit identifies applicable KMIP 2.1 client profiles, applies selected profile rules, records evidence, and determines whether a profile is eligible for a later release claim. Specification §14.1 requires a KMIP client to conform to one or more client profiles and requires every normative statement in a claimed profile's clauses and their subclauses to be met. The initial KMIPKit 1.0 target selected by this specification is the Baseline Client profile, giving the product a concrete candidate for §14.1. Selecting that target does not assert conformance or make a public claim.
 
 The feature uses the checked-in catalog as the canonical crosswalk to the pinned OASIS sources. It covers every client profile that the catalog marks `client_1_0` or `conditional`; server-only and out-of-scope client profiles remain visible as exclusions. Profile requirements are derived from the Specification and Profiles standards, not from informative Usage Guide text or test-case examples. Test cases are evidence. The feature does not edit the immutable OASIS source copies or fetch OASIS material during builds.
 
@@ -148,7 +148,7 @@ A release maintainer can determine whether a named profile is eligible for a lat
 ## Assumptions
 
 - The checked-in catalog remains the canonical map from profile records to pinned KMIP 2.1 Specification, Profiles, and Test Cases sources.
-- This draft selects Baseline Client as the initial target because it is a client profile applicable to the 1.0 scope; §14.1 requires one or more client profiles but does not mandate Baseline specifically. This is a target selection, not a conformance or certification claim.
+- This specification selects Baseline Client as the initial target because it is a client profile applicable to the 1.0 scope; §14.1 requires one or more client profiles but does not mandate Baseline specifically. This is a target selection, not a conformance or certification claim.
 - Runtime profile validation remains explicit, and Query and Discover Versions remain explicit operations, as recorded in the accepted API architecture.
 - The 1.0 product boundary remains KMIP 2.1, TTLV, TLS 1.3 with mutual TLS, raw TLS and HTTP/1.1 over HTTPS. JSON/XML and server-initiated operations remain outside 1.0.
 - All currently missing Baseline profile test fixtures remain evidence gaps until obtained and pinned through a separately reviewed source process. No current profile claim is considered complete.

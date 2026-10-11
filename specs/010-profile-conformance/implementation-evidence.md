@@ -2,11 +2,15 @@
 
 **Original implementation branch**: `feature/KMIPKIT-0010-profile-conformance-implementation`
 **Original implementation base**: `f3b4247789ad987c97e0874c81238e79b427eb9a` (`release/1.0.0`)
+**Recovery branch**: `feature/KMIPKIT-0010-profile-conformance-implementation-refresh`
+**Recovery base**: `8909653b9ed64dfc1938b7dfc655b4a08178d873` (`release/1.0.0`)
 **Status**: In progress; no profile conformance claim is made.
 
 ## Authorization and scope
 
 Implementation is authorized by the human task dispatch for KMIPKIT-0010, which directs work to proceed without approval prompts in the assigned worktree. Scope is limited to the approved feature specification, its plan/contracts/tasks, and the stated fail-closed audit rulings. Human review and approval before merge remain required.
+
+The approved specification was merged by the maintainer in [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49), merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`. This supersedes the historical `Draft` label; it does not change feature scope or represent a separate GitHub review event.
 
 ## Independent audit rulings
 
@@ -121,3 +125,7 @@ The parent task's read-only GitHub API check confirmed that the authenticated to
 ### T041 — cross-artifact QA checkpoint
 
 The Spec Kit prerequisite check resolved this feature's `spec.md`, `plan.md`, and `tasks.md`. A read-only cross-artifact pass found 18 unique functional requirements, 15 unique success criteria, and 44 unique tasks; all 33 requirement/success-criterion IDs appear in the task traceability map, and no placeholder markers or direct constitution/scope conflict were found. Twenty-one tasks are currently checked based on their recorded implementation, Red/Green/Refactor, fixture-inventory, generated-output, and verification evidence. The independent closure oracle named by `plan.md` and required by `spec.md` SC-012 and `tasks.md` T003/T041 does not exist at `tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json`. Catalog-derived closure tests do not substitute for this pinned-source oracle. This is a concrete acceptance gap, so T041 remains unchecked pending the independent Baseline/profile oracle and closure cross-check; no reviewer-owned checklist marker was changed.
+
+### Release refresh — deterministic profile closure correction
+
+Red `91a6eac0` added `test_checked_in_client_profile_closures_match_current_scope`; it failed for all 18 client profiles because each stored 25 stale requirement links. Green `fa3baeee` recomputed only the stored `requirement_ids` using `compute_profile_closure`. The direct source roots and all source-clause closures remained unchanged. The removed links were one nonexistent reference to table-header clause 4.16-004 (catalogued `non_applicable`) and 24 requirements now classified `server_only` or `out_of_scope` by the release catalog; no normative requirement or product scope was invented. The new test passes, catalog validation passes (4 sources, 1,411 clauses, 4,042 records), Rust profile evidence/validation tests pass (8 tests), and `generate_profiles.py --check` plus `report.py --check` pass after deterministic regeneration. Generated Rust profile metadata and the coverage report were regenerated from the corrected catalog. The remaining documentation cleanup is recorded separately from the Red/Green commits.
