@@ -6798,6 +6798,11 @@ class CatalogValidationTests(unittest.TestCase):
             normalized_excerpt = " ".join(reviews[clause_id]["source_excerpt"].split())
             for atom in atoms:
                 self.assertIn(" ".join(atom["source_text"].split()), normalized_excerpt)
+        for clause_id, requirement_id in (
+            ("KMIPKIT-CLAUSE-SPEC-6.1.48-001", "KMIPKIT-REQ-SPEC-6.1.48-001"),
+            ("KMIPKIT-CLAUSE-SPEC-6.1.48-006", "KMIPKIT-REQ-SPEC-6.1.48-006"),
+        ):
+            self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], [requirement_id])
 
         no_parameter_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-004"]
         self.assertIn("client may then subsequently retrieve", no_parameter_review["source_excerpt"])
