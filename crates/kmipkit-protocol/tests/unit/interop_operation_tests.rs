@@ -172,18 +172,30 @@ fn interop_function_standard_vendor_and_future_values_are_open() {
 #[test]
 fn unknown_request_extensions_preserve_order_without_overriding_table_fields() {
     let request = InteropRequest::new(1, SecretText::new("id".to_owned()))
-        .with_extension(item(0x541234, Value::byte_string(b"extension-private-sentinel".to_vec())))
+        .with_extension(item(
+            0x541234,
+            Value::byte_string(b"extension-private-sentinel".to_vec()),
+        ))
         .with_extension(item(0x541235, Value::enumeration(0xf1234567)));
     assert!(!format!("{request:?}").contains("extension-private-sentinel"));
     let payload = request.into_ttlv_payload().unwrap();
     let view = payload.view();
     let fields = view.children();
-    assert_eq!(fields[fields.len()-2].tag().raw(), 0x541234);
-    assert_eq!(fields[fields.len()-1].tag().raw(), 0x541235);
-    fields[fields.len()-2].with_value(|v| assert!(matches!(v, ValueView::ByteString(bytes) if bytes == b"extension-private-sentinel")));
-    fields[fields.len()-1].with_value(|v| assert!(matches!(v, ValueView::Enumeration(0xf1234567))));
+    assert_eq!(fields[fields.len() - 2].tag().raw(), 0x541234);
+    assert_eq!(fields[fields.len() - 1].tag().raw(), 0x541235);
+    fields[fields.len() - 2].with_value(|v| {
+        assert!(matches!(v, ValueView::ByteString(bytes) if bytes == b"extension-private-sentinel"))
+    });
+    fields[fields.len() - 1]
+        .with_value(|v| assert!(matches!(v, ValueView::Enumeration(0xf1234567))));
     for known in [4325728, 4325729] {
-        let error = InteropRequest::new(1, SecretText::new("id".to_owned())).with_extension(item(known, Value::text_string("extension-private-sentinel".to_owned()))).into_ttlv_payload().unwrap_err();
+        let error = InteropRequest::new(1, SecretText::new("id".to_owned()))
+            .with_extension(item(
+                known,
+                Value::text_string("extension-private-sentinel".to_owned()),
+            ))
+            .into_ttlv_payload()
+            .unwrap_err();
         assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
         assert!(!format!("{error:?} {error}").contains("extension-private-sentinel"));
     }
@@ -192,7 +204,12 @@ fn unknown_request_extensions_preserve_order_without_overriding_table_fields() {
 #[test]
 fn request_extension_depth_limit_is_checked_before_encoding() {
     let mut nested = Structure::new();
-    for _ in 0..63 { nested = structure([item(0x541234, Value::structure(nested))]); }
-    let error = InteropRequest::new(1, SecretText::new("id".to_owned())).with_extension(item(0x541234, Value::structure(nested))).into_ttlv_payload().unwrap_err();
+    for _ in 0..63 {
+        nested = structure([item(0x541234, Value::structure(nested))]);
+    }
+    let error = InteropRequest::new(1, SecretText::new("id".to_owned()))
+        .with_extension(item(0x541234, Value::structure(nested)))
+        .into_ttlv_payload()
+        .unwrap_err();
     assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
 }

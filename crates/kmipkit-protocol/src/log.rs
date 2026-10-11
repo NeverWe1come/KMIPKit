@@ -31,7 +31,10 @@ impl LogRequest {
     /// Creates a request with the caller-selected message.
     #[must_use]
     pub const fn new(log_message: SecretText) -> Self {
-        Self { log_message, extensions: Vec::new() }
+        Self {
+            log_message,
+            extensions: Vec::new(),
+        }
     }
 
     /// Lends the exact message without cloning it.
@@ -45,7 +48,8 @@ impl LogRequest {
     /// to override them fails locally while all other checked tags remain open.
     #[must_use]
     pub fn with_extension(mut self, extension: Item) -> Self {
-        self.extensions.push(extension); self
+        self.extensions.push(extension);
+        self
     }
 
     /// Moves the required Table 250 Text String into its payload.
@@ -60,10 +64,7 @@ impl LogRequest {
             LOG_MESSAGE,
             self.log_message.into_ttlv_value(),
         )?;
-        for extension in self.extensions {
-            if [LOG_MESSAGE].contains(&extension.tag().raw()) { return Err(cryptographic_operation::request_error()); }
-            payload.try_push(extension).map_err(|_| cryptographic_operation::request_error())?;
-        }
+        crate::diagnostics::append_extensions(&mut payload, self.extensions, &[LOG_MESSAGE])?;
         Ok(payload)
     }
 }

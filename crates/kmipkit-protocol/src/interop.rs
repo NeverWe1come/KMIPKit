@@ -54,7 +54,8 @@ impl InteropRequest {
     /// to override them fails locally while all other checked tags remain open.
     #[must_use]
     pub fn with_extension(mut self, extension: Item) -> Self {
-        self.extensions.push(extension); self
+        self.extensions.push(extension);
+        self
     }
 
     /// Moves the required Table 241 fields into their ordered payload.
@@ -77,10 +78,11 @@ impl InteropRequest {
             self.interop_identifier.into_ttlv_value(),
         )?;
 
-        for extension in self.extensions {
-            if [INTEROP_FUNCTION, INTEROP_IDENTIFIER].contains(&extension.tag().raw()) { return Err(cryptographic_operation::request_error()); }
-            payload.try_push(extension).map_err(|_| cryptographic_operation::request_error())?;
-        }
+        crate::diagnostics::append_extensions(
+            &mut payload,
+            self.extensions,
+            &[INTEROP_FUNCTION, INTEROP_IDENTIFIER],
+        )?;
         Ok(payload)
     }
 }

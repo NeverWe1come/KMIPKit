@@ -93,7 +93,8 @@ impl ValidateRequest {
     /// to override them fails locally while all other checked tags remain open.
     #[must_use]
     pub fn with_extension(mut self, extension: Item) -> Self {
-        self.extensions.push(extension); self
+        self.extensions.push(extension);
+        self
     }
 
     /// Moves the chain and optional date into the ordered Table 340 payload.
@@ -124,10 +125,11 @@ impl ValidateRequest {
         if let Some(date) = self.validity_date {
             cryptographic_operation::push(&mut payload, VALIDITY_DATE, Value::date_time(date))?;
         }
-        for extension in self.extensions {
-            if [CERTIFICATE, UNIQUE_IDENTIFIER, VALIDITY_DATE].contains(&extension.tag().raw()) { return Err(cryptographic_operation::request_error()); }
-            payload.try_push(extension).map_err(|_| cryptographic_operation::request_error())?;
-        }
+        crate::diagnostics::append_extensions(
+            &mut payload,
+            self.extensions,
+            &[CERTIFICATE, UNIQUE_IDENTIFIER, VALIDITY_DATE],
+        )?;
         Ok(payload)
     }
 }

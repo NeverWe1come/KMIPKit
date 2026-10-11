@@ -31,6 +31,7 @@ mod delegated_login;
 mod delete_attribute;
 mod derive_key;
 mod destroy;
+mod diagnostics;
 mod discover_versions;
 mod encrypt;
 mod error;
