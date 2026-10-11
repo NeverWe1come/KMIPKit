@@ -323,6 +323,10 @@ mod export_operation_tests;
 mod import_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/key_transfer_operation_contract_tests.rs"]
+mod key_transfer_operation_contract_tests;
+
+#[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]
 mod async_operation_fixtures;
 

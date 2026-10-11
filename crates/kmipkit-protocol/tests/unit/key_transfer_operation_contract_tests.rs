@@ -58,11 +58,11 @@ fn secret_operation_data_redacts_its_owned_bytes() {
 
 #[test]
 fn generic_ttlv_retains_repeated_unknown_children_in_order() {
-    let first_tag = RawTag::new(0x0055_1101)
+    let first_tag = RawTag::new(0x0054_1101)
         .expect("the vendor tag is in range")
         .try_checked()
         .expect("the vendor tag is structurally valid");
-    let second_tag = RawTag::new(0x0055_1102)
+    let second_tag = RawTag::new(0x0054_1102)
         .expect("the vendor tag is in range")
         .try_checked()
         .expect("the vendor tag is structurally valid");
@@ -80,7 +80,7 @@ fn generic_ttlv_retains_repeated_unknown_children_in_order() {
     let view = children.view();
     let entries = view.children();
     assert_eq!(entries.len(), 3);
-    assert_eq!(entries[0].tag().raw(), 0x0055_1101);
-    assert_eq!(entries[1].tag().raw(), 0x0055_1102);
-    assert_eq!(entries[2].tag().raw(), 0x0055_1101);
+    assert_eq!(entries[0].tag().raw(), 0x0054_1101);
+    assert_eq!(entries[1].tag().raw(), 0x0054_1102);
+    assert_eq!(entries[2].tag().raw(), 0x0054_1101);
 }

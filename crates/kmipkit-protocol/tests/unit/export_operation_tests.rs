@@ -3,9 +3,11 @@
 
 use crate::{
     ExportError, ExportRequest, ExportResponse, KeyCompressionType, KeyFormatType, KeyWrapType,
-    ObjectType, ResponseBatchItemView, ResponseMessage, ResultReason, UniqueIdentifier,
+    ObjectType, ResponseBatchItemView, ResponseMessage, ResultReason, ResultValidationError,
+    UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
+use std::error::Error as _;
 
 const EXPORT_OPERATION: u32 = 0x0000_002B;
 const SUCCESS: u32 = 0;
@@ -185,4 +187,126 @@ fn failure_keeps_unknown_result_reason_and_malformed_success_is_rejected() {
         ExportResponse::try_from_response_item(response_item(&malformed)),
         Err(ExportError::MalformedSuccessPayload)
     ));
+}
+
+#[test]
+fn export_response_accepts_generic_object_structure_and_all_identifier_forms() {
+    let generic_object_tag = 0x0054_1235;
+    for (identifier, identifier_value) in [
+        (
+            UniqueIdentifier::Enumeration(0xF123_4567),
+            Value::enumeration(0xF123_4567),
+        ),
+        (UniqueIdentifier::Integer(-8), Value::integer(-8)),
+    ] {
+        let message = response_message(
+            SUCCESS,
+            None,
+            Some(structure([
+                item(OBJECT_TYPE, Value::enumeration(0xF123_4568)),
+                item(UNIQUE_IDENTIFIER, identifier_value),
+                item(
+                    ATTRIBUTES,
+                    Value::structure(structure([item(UNKNOWN_VENDOR_TAG, Value::integer(4))])),
+                ),
+                item(generic_object_tag, Value::structure(structure([]))),
+                item(UNKNOWN_VENDOR_TAG, Value::text_string("ignored".to_owned())),
+            ])),
+        );
+        let response = ExportResponse::try_from_response_item(response_item(&message))
+            .expect("one otherwise-unknown structure can carry the object payload");
+        assert_eq!(
+            response.object_type(),
+            Some(ObjectType::from_raw(0xF123_4568))
+        );
+        assert_eq!(response.unique_identifier(), Some(&identifier));
+        assert_eq!(
+            response.attributes().map(Item::item_type),
+            Some(kmipkit_ttlv::ItemType::Structure)
+        );
+        assert_eq!(
+            response.object().map(Item::tag).map(|tag| tag.raw()),
+            Some(generic_object_tag)
+        );
+        assert!(!format!("{response:?}").contains("ignored"));
+    }
+}
+
+#[test]
+fn export_rejects_duplicate_wrongly_typed_and_ambiguous_success_fields() {
+    let base = || {
+        vec![
+            item(OBJECT_TYPE, Value::enumeration(2)),
+            item(UNIQUE_IDENTIFIER, Value::text_string("exported".to_owned())),
+            item(ATTRIBUTES, Value::structure(structure([]))),
+            exported_key(),
+        ]
+    };
+    let mut malformed = Vec::new();
+    let mut duplicate_object = base();
+    duplicate_object.push(exported_key());
+    malformed.push(structure(duplicate_object));
+    let mut duplicate_identifier = base();
+    duplicate_identifier.push(item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string("second".to_owned()),
+    ));
+    malformed.push(structure(duplicate_identifier));
+    let mut duplicate_attributes = base();
+    duplicate_attributes.push(item(ATTRIBUTES, Value::structure(structure([]))));
+    malformed.push(structure(duplicate_attributes));
+    let mut wrong_object_type = base();
+    wrong_object_type[0] = item(OBJECT_TYPE, Value::integer(2));
+    malformed.push(structure(wrong_object_type));
+    let mut wrong_identifier = base();
+    wrong_identifier[1] = item(UNIQUE_IDENTIFIER, Value::boolean(false));
+    malformed.push(structure(wrong_identifier));
+    let mut wrong_attributes = base();
+    wrong_attributes[2] = item(ATTRIBUTES, Value::integer(1));
+    malformed.push(structure(wrong_attributes));
+    let mut wrong_object = base();
+    wrong_object[3] = item(SYMMETRIC_KEY, Value::integer(1));
+    malformed.push(structure(wrong_object));
+    malformed.push(structure([
+        item(OBJECT_TYPE, Value::enumeration(2)),
+        item(UNIQUE_IDENTIFIER, Value::text_string("exported".to_owned())),
+        item(ATTRIBUTES, Value::structure(structure([]))),
+        item(UNKNOWN_VENDOR_TAG, Value::structure(structure([]))),
+        item(UNKNOWN_VENDOR_TAG + 1, Value::structure(structure([]))),
+    ]));
+
+    for payload in malformed {
+        let message = response_message(SUCCESS, None, Some(payload));
+        assert_eq!(
+            ExportResponse::try_from_response_item(response_item(&message)).unwrap_err(),
+            ExportError::MalformedSuccessPayload
+        );
+    }
+}
+
+#[test]
+fn export_error_formatting_and_failure_views_are_payload_free() {
+    let failed = response_message(OPERATION_FAILED, Some(FUTURE_RESULT_REASON), None);
+    let response = ExportResponse::try_from_response_item(response_item(&failed))
+        .expect("server failures preserve the shared result");
+    assert_eq!(response.object_type(), None);
+    assert_eq!(response.unique_identifier(), None);
+    assert!(response.attributes().is_none());
+    assert!(response.object().is_none());
+    assert!(response.with_ttlv(|value| !value.children().is_empty()));
+    assert!(format!("{response:?}").contains("ExportResponse"));
+
+    let invalid_result =
+        ExportError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason);
+    assert!(invalid_result.source().is_some());
+    for error in [
+        ExportError::UnexpectedOperation,
+        ExportError::MissingResultStatus,
+        invalid_result,
+        ExportError::MissingSuccessPayload,
+        ExportError::MalformedSuccessPayload,
+        ExportError::MalformedResponseItem,
+    ] {
+        assert_ne!(error.to_string(), "");
+    }
 }

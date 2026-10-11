@@ -74,6 +74,10 @@ mod export_execution_tests;
 mod import_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/key_transfer_operations_execution_tests.rs"]
+mod key_transfer_operations_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/hash_execution_tests.rs"]
 mod hash_execution_tests;
 

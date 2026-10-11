@@ -3,9 +3,10 @@
 
 use crate::{
     AttributeSet, ImportError, ImportRequest, ImportResponse, KeyWrapType, ObjectType,
-    ResponseBatchItemView, ResponseMessage, ResultReason, UniqueIdentifier,
+    ResponseBatchItemView, ResponseMessage, ResultReason, ResultValidationError, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
+use std::error::Error as _;
 
 const IMPORT_OPERATION: u32 = 0x0000_002A;
 const SUCCESS: u32 = 0;
@@ -100,6 +101,15 @@ fn response_message(
     reason: Option<u32>,
     payload: Option<Structure>,
 ) -> ResponseMessage {
+    response_message_for_operation(IMPORT_OPERATION, status, reason, payload)
+}
+
+fn response_message_for_operation(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    payload: Option<Structure>,
+) -> ResponseMessage {
     let version = structure([
         item(0x0042_006A, Value::integer(2)),
         item(0x0042_006B, Value::integer(1)),
@@ -110,7 +120,7 @@ fn response_message(
         item(0x0042_000D, Value::integer(1)),
     ]);
     let mut fields = vec![
-        item(0x0042_005C, Value::enumeration(IMPORT_OPERATION)),
+        item(0x0042_005C, Value::enumeration(operation)),
         item(0x0042_007F, Value::enumeration(status)),
     ];
     if let Some(reason) = reason {
@@ -141,6 +151,15 @@ fn request_preserves_required_fields_and_only_explicit_optional_choices() {
         attributes(),
         key_object(),
     );
+    assert_eq!(
+        request.unique_identifier(),
+        &UniqueIdentifier::TextString("import-key".to_owned())
+    );
+    assert_eq!(request.object_type(), ObjectType::from_raw(2));
+    assert_eq!(request.replace_existing(), None);
+    assert_eq!(request.key_wrap_type(), None);
+    assert_eq!(request.attributes().len(), 2);
+    assert_eq!(request.object().tag().raw(), SYMMETRIC_KEY);
     let debug = format!("{request:?}");
     assert!(!debug.contains("import-key"));
     assert!(!debug.contains("synthetic-import-material"));
@@ -250,4 +269,137 @@ fn malformed_success_payload_is_rejected() {
         ImportResponse::try_from_response_item(response_item(&malformed)),
         Err(ImportError::MalformedSuccessPayload)
     ));
+}
+
+#[test]
+fn import_accepts_non_key_objects_and_rejects_non_structure_and_invalid_wrap_state() {
+    let secret_data_tag = 0x0042_0085;
+    let secret_data = item(secret_data_tag, Value::structure(structure([])));
+    let request = ImportRequest::new(
+        UniqueIdentifier::Integer(-5),
+        ObjectType::from_raw(8),
+        attributes(),
+        secret_data,
+    )
+    .with_replace_existing(false);
+    assert_eq!(request.unique_identifier(), &UniqueIdentifier::Integer(-5));
+    assert_eq!(request.replace_existing(), Some(false));
+    assert!(request.into_ttlv_payload().is_ok());
+
+    let non_key_with_wrap_type = ImportRequest::new(
+        UniqueIdentifier::TextString("secret".to_owned()),
+        ObjectType::from_raw(8),
+        attributes(),
+        item(secret_data_tag, Value::structure(structure([]))),
+    )
+    .with_key_wrap_type(KeyWrapType::from_raw(1));
+    assert!(non_key_with_wrap_type.into_ttlv_payload().is_err());
+
+    let primitive_object = ImportRequest::new(
+        UniqueIdentifier::TextString("bad-object".to_owned()),
+        ObjectType::from_raw(8),
+        attributes(),
+        item(secret_data_tag, Value::integer(9)),
+    );
+    assert!(primitive_object.into_ttlv_payload().is_err());
+
+    let missing_key_block = ImportRequest::new(
+        UniqueIdentifier::TextString("missing-block".to_owned()),
+        ObjectType::from_raw(2),
+        attributes(),
+        item(SYMMETRIC_KEY, Value::structure(structure([]))),
+    )
+    .with_key_wrap_type(KeyWrapType::from_raw(1));
+    assert!(missing_key_block.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn import_response_accepts_all_wire_identifier_forms_and_rejects_malformed_ones() {
+    for (identifier, encoded) in [
+        (
+            UniqueIdentifier::Enumeration(0xF123_4567),
+            Value::enumeration(0xF123_4567),
+        ),
+        (UniqueIdentifier::Integer(-9), Value::integer(-9)),
+    ] {
+        let message = response_message(
+            SUCCESS,
+            None,
+            Some(structure([item(UNIQUE_IDENTIFIER, encoded)])),
+        );
+        let response = ImportResponse::try_from_response_item(response_item(&message))
+            .expect("unknown and integer identifier values are preserved");
+        assert_eq!(response.unique_identifier(), Some(&identifier));
+        assert!(response.with_ttlv(|ttlv| !ttlv.children().is_empty()));
+        assert!(format!("{response:?}").contains("ImportResponse"));
+    }
+
+    let duplicate = response_message(
+        SUCCESS,
+        None,
+        Some(structure([
+            item(UNIQUE_IDENTIFIER, Value::text_string("first".to_owned())),
+            item(UNIQUE_IDENTIFIER, Value::integer(2)),
+        ])),
+    );
+    assert_eq!(
+        ImportResponse::try_from_response_item(response_item(&duplicate)).unwrap_err(),
+        ImportError::MalformedSuccessPayload
+    );
+    let wrong_type = response_message(
+        SUCCESS,
+        None,
+        Some(structure([item(UNIQUE_IDENTIFIER, Value::boolean(true))])),
+    );
+    assert_eq!(
+        ImportResponse::try_from_response_item(response_item(&wrong_type)).unwrap_err(),
+        ImportError::MalformedSuccessPayload
+    );
+}
+
+#[test]
+fn import_error_formatting_exposes_only_safe_categories() {
+    let invalid_result =
+        ImportError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason);
+    assert!(invalid_result.source().is_some());
+    assert!(ImportError::UnexpectedOperation.source().is_none());
+    for error in [
+        ImportError::UnexpectedOperation,
+        ImportError::MissingResultStatus,
+        invalid_result,
+        ImportError::MissingSuccessPayload,
+        ImportError::MalformedSuccessPayload,
+        ImportError::MalformedResponseItem,
+    ] {
+        assert_ne!(error.to_string(), "");
+    }
+}
+
+#[test]
+fn import_response_ignores_unknown_payload_fields_and_rejects_other_operation() {
+    let success = response_message(
+        SUCCESS,
+        None,
+        Some(structure([
+            item(0x0054_1234, Value::integer(5)),
+            item(UNIQUE_IDENTIFIER, Value::text_string("imported".to_owned())),
+        ])),
+    );
+    assert_eq!(
+        ImportResponse::try_from_response_item(response_item(&success))
+            .expect("unknown extension fields remain in the generic response")
+            .unique_identifier(),
+        Some(&UniqueIdentifier::TextString("imported".to_owned()))
+    );
+
+    let other_operation = response_message_for_operation(
+        IMPORT_OPERATION + 1,
+        OPERATION_FAILED,
+        Some(FUTURE_RESULT_REASON),
+        None,
+    );
+    assert_eq!(
+        ImportResponse::try_from_response_item(response_item(&other_operation)).unwrap_err(),
+        ImportError::UnexpectedOperation
+    );
 }
