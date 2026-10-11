@@ -10,7 +10,7 @@ use crate::{
     ResultValidationError, UniqueIdentifier,
 };
 
-const ARCHIVE_OPERATION: u32 = 0x0000_0013;
+const ARCHIVE_OPERATION: u32 = 0x0000_0015;
 const SUCCESS: u32 = 0;
 
 /// A typed KMIP 2.1 Archive request payload from §6.1.4, Table 173.

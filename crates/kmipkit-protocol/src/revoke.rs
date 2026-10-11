@@ -11,7 +11,7 @@ use crate::{
     ResponseBatchItemView, ResultMessage, ResultValidationError, UniqueIdentifier,
 };
 
-const OPERATION: u32 = 0x0000_0011;
+const OPERATION: u32 = 0x0000_0013;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const REVOCATION_REASON: u32 = 0x0042_0081;
 const REVOCATION_MESSAGE: u32 = 0x0042_0080;
