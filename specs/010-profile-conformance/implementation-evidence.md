@@ -569,3 +569,9 @@ An independent source auditor verified Specification v2.1 SHA-256 `8bf9d914c097e
 | Generated and source checks | `python -B tools/normative_catalog/report.py --write`; `python -B -m tools.normative_catalog.validate --repo-root . --structural-only`; `python -B tools/normative_catalog/generate_profiles.py --check`; `python -B tools/normative_catalog/report.py --check`; `python -B -m tools.normative_catalog.check_immutable_sources --base-sha 4fba50ecbff0a6d2ab662bab4ba69031b80ba3c6`; `git diff --check` | PASS: report regenerated and current; catalog valid (4 sources / 1,411 clauses / 4,049 records); generated profile metadata current; pinned upstream sources unchanged. |
 
 This correction closes only the two specific evidence-note failures. The full T003 oracle, global crosswalk, source mapping, and client MAY/OPTIONAL evidence gates remain incomplete; this PR remains draft and is not ready to merge.
+
+### T003/T004 — align catalog roles for reviewed server-only duties (2026-10-11)
+
+| Phase | Command or evidence | Result |
+|---|---|---|
+| Red — enforce actor/role consistency for server-only mappings | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_server_only_source_obligations_use_server_catalog_role -v` | Expected Red: eight unique accepted requirement mappings in Specification v2.1 §§6.1.2, 6.1.3, 6.1.13, 6.1.17, 6.1.19, and 6.1.20 have source-reviewed `server_only` actors and catalog `scope_state: server_only`, but still carry `role: client`. Mixed-scope grouped obligations and unresolved actors are excluded from this invariant. |

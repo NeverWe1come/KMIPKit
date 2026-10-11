@@ -13661,6 +13661,31 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(unresolved_preface["scope_disposition"], "unresolved")
         self.assertEqual(unresolved_preface["proposed_requirement_id"], None)
 
+    def test_server_only_source_obligations_use_server_catalog_role(self) -> None:
+        """Source-reviewed server-only obligations retain a server catalog role."""
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+
+        server_only_requirement_ids = {
+            obligation["candidate_requirement_id"]
+            for review in oracle["source_requirement_reviews"]
+            for obligation in review["source_obligations"]
+            if obligation["candidate_requirement_id"] is not None
+            and obligation["scope_disposition"] == "server_only"
+            and requirements.get(obligation["candidate_requirement_id"], {}).get("scope_state") == "server_only"
+        }
+        for requirement_id in sorted(server_only_requirement_ids):
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements.get(requirement_id)
+                self.assertIsNotNone(requirement, f"missing catalog requirement {requirement_id}")
+                self.assertEqual(requirement["role"], "server")
+                self.assertEqual(requirement["scope_state"], "server_only")
+
     def test_reviewed_source_requirement_mappings_match_pinned_locators_and_scope(self) -> None:
         """Reviewed source atoms, stable labels, and client dispositions agree with pinned HTML."""
         oracle = json.loads(
