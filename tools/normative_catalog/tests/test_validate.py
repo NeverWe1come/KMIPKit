@@ -62,6 +62,12 @@ class _PlainTextParser(HTMLParser):
         return " ".join("".join(self.parts).split())
 
 
+_ORPHANED_HTML_ATTRIBUTE_PREFIX = re.compile(
+    r"^(?:style|class)\s*=\s*(['\"]).*?\1>",
+    re.IGNORECASE,
+)
+
+
 def pinned_source_excerpt(relative_path: str, line_range: list[int]) -> str:
     """Return normalized text from a one-based pinned HTML line range."""
     lines = _decode_document((ROOT / relative_path).read_bytes()).splitlines()
@@ -71,7 +77,7 @@ def pinned_source_excerpt(relative_path: str, line_range: list[int]) -> str:
     text = parser.normalized_text()
     # Table-row spans can begin in the middle of an HTML attribute when the
     # source wraps a cell across physical lines. Drop that orphaned markup.
-    return re.sub(r"^(?:style|class)\s*=\s*(['\"]).*?\1>", "", text, flags=re.IGNORECASE).strip()
+    return _ORPHANED_HTML_ATTRIBUTE_PREFIX.sub("", text).strip()
 
 
 OFFICIAL_NON_OPERATION_TEST_ELEMENTS = {
