@@ -1975,7 +1975,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-CREATE-KEY-PAIR-00000002 | Create Key Pair | enumeration\_value | both | client\_1\_0 | 00000002 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-CREATE-SPLIT-KEY-00000028 | Create Split Key | enumeration\_value | both | client\_1\_0 | 00000028 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-DECRYPT-00000020 | Decrypt | enumeration\_value | both | client\_1\_0 | 00000020 | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-DELEGATED-LOGIN-0000002F | Delegated Login | enumeration\_value | both | client\_1\_0 | 0000002F | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-DELETE-ATTRIBUTE-0000000F | Delete Attribute | enumeration\_value | both | client\_1\_0 | 0000000F | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-DERIVE-KEY-00000005 | Derive Key | enumeration\_value | both | client\_1\_0 | 00000005 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-DESTROY-00000014 | Destroy | enumeration\_value | both | client\_1\_0 | 00000014 | assigned | KMIPKIT-SRC-spec §11.36 |
@@ -1992,8 +1991,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-JOIN-SPLIT-KEY-00000029 | Join Split Key | enumeration\_value | both | client\_1\_0 | 00000029 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-LOCATE-00000008 | Locate | enumeration\_value | both | client\_1\_0 | 00000008 | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-LOG-0000002C | Log | enumeration\_value | both | client\_1\_0 | 0000002C | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-LOGIN-0000002D | Login | enumeration\_value | both | client\_1\_0 | 0000002D | assigned | KMIPKIT-SRC-spec §11.36 |
-| KMIPKIT-ELEM-ENUM-VALUE-OPERATION-LOGOUT-0000002E | Logout | enumeration\_value | both | client\_1\_0 | 0000002E | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-MODIFY-ATTRIBUTE-0000000E | Modify Attribute | enumeration\_value | both | client\_1\_0 | 0000000E | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-NOTIFY-0000001B | Notify | enumeration\_value | both | client\_1\_0 | 0000001B | assigned | KMIPKIT-SRC-spec §11.36 |
 | KMIPKIT-ELEM-ENUM-VALUE-OPERATION-OBTAIN-LEASE-00000010 | Obtain Lease | enumeration\_value | both | client\_1\_0 | 00000010 | assigned | KMIPKIT-SRC-spec §11.36 |
@@ -2290,7 +2287,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-ENUMERATION-SPLIT-KEY-METHOD | Split Key Method | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.54 |
 | KMIPKIT-ELEM-ENUMERATION-STATE | State | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.55 |
 | KMIPKIT-ELEM-ENUMERATION-TAG | Tag | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.56 |
-| KMIPKIT-ELEM-ENUMERATION-TICKET-TYPE | Ticket Type | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.57 |
 | KMIPKIT-ELEM-ENUMERATION-UNIQUE-IDENTIFIER | Unique Identifier | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.58 |
 | KMIPKIT-ELEM-ENUMERATION-UNWRAP-MODE | Unwrap Mode | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.59 |
 | KMIPKIT-ELEM-ENUMERATION-USAGE-LIMITS-UNIT | Usage Limits Unit | enumeration | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §11.60 |
@@ -2337,7 +2333,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR | Create Key Pair | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.9 |
 | KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY | Create Split Key | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.10 |
 | KMIPKIT-ELEM-OP-C2S-DECRYPT | Decrypt | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.11 |
-| KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN | Delegated Login | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.12 |
 | KMIPKIT-ELEM-OP-C2S-DESTROY | Destroy | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.15 |
 | KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS | Discover Versions | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.16 |
 | KMIPKIT-ELEM-OP-C2S-ENCRYPT | Encrypt | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.17 |
@@ -2347,8 +2342,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OP-C2S-INTEROP | Interop | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.26 |
 | KMIPKIT-ELEM-OP-C2S-LOCATE | Locate | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.28 |
 | KMIPKIT-ELEM-OP-C2S-LOG | Log | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.29 |
-| KMIPKIT-ELEM-OP-C2S-LOGIN | Login | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.30 |
-| KMIPKIT-ELEM-OP-C2S-LOGOUT | Logout | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.31 |
 | KMIPKIT-ELEM-OP-C2S-PKCS-11 | PKCS#11 | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.37 |
 | KMIPKIT-ELEM-OP-C2S-POLL | Poll | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.38 |
 | KMIPKIT-ELEM-OP-C2S-PROCESS | Process | operation | client\_to\_server | client\_1\_0 |  |  | KMIPKIT-SRC-spec §6.1.39 |
@@ -2394,7 +2387,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-35-RIGHTS | Rights | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.35 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-36-RNG-PARAMETERS | RNG Parameters | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.36 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION | Server Information | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.37 |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-39-TICKET | Ticket | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.39 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG | Authenticated Encryption Tag | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.4 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS | Usage Limits | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.40 |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-41-VALIDATION-INFORMATION | Validation Information | operation\_structure | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.41 |
@@ -2592,8 +2584,6 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-SERIAL-NUMBER | Server serial number | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.37 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-VERSION | Server version | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.37 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-VENDOR-SPECIFIC | Vendor-Specific | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.37 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-39-TICKET-TYPE | Ticket Type | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.39 |
-| KMIPKIT-ELEM-STRUCTURE-MEMBER-7-39-TICKET-VALUE | Ticket Value | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.39 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-COUNT | Usage Limits Count | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.40 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL | Usage Limits Total | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.40 |
 | KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-UNIT | Usage Limits Unit | structure\_member | both | client\_1\_0 |  |  | KMIPKIT-SRC-spec §7.40 |
