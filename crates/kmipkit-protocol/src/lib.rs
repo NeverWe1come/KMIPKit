@@ -35,6 +35,7 @@ pub mod extension;
 mod get;
 mod get_attribute_list;
 mod get_attributes;
+mod get_constraints;
 mod hash;
 mod import;
 mod join_split_key;
@@ -113,6 +114,7 @@ pub use get_attribute_list::{
     GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
 };
 pub use get_attributes::{GetAttributesError, GetAttributesRequest, GetAttributesResponse};
+pub use get_constraints::{GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse};
 pub use hash::{HashError, HashRequest, HashResponse};
 pub use import::{ImportError, ImportRequest, ImportResponse};
 pub use join_split_key::{

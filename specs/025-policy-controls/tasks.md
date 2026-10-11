@@ -34,7 +34,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Green commit
 
-- [ ] T003 [US1] Implement `GetConstraintsRequest`/`GetConstraintsResponse` in `crates/kmipkit-protocol/src/get_constraints.rs`, export from `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit/src/lib.rs`, and add the typed request/response path in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; pass T002 and commit separately as Green.
+- [x] T003 [US1] Implement `GetConstraintsRequest`/`GetConstraintsResponse` in `crates/kmipkit-protocol/src/get_constraints.rs`, export from `crates/kmipkit-protocol/src/lib.rs` and `crates/kmipkit/src/lib.rs`, and add the typed request/response path in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; pass T002 and commit separately as Green. Green evidence: `cargo test -p kmipkit-protocol -p kmipkit-client --lib get_constraints` passed 6 client and 6 protocol tests; `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit --all-targets --all-features -- -D warnings` passed. Repaired two Red fixture construction issues without changing required behavior: TTLV `Structure` has no equality implementation, so assertions inspect exact ordered members and values; the common response validator requires a Response Payload on Success/Pending, so missing Success payload is tested at that validator boundary.
 
 ### Refactor commit
 

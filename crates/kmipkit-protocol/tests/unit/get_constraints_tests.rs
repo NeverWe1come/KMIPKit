@@ -64,8 +64,25 @@ fn table_230_returns_required_constraints_without_reordering_unknown_nested_memb
         .expect("a Table 230 success is typed");
 
     assert_eq!(actual.result().status().raw(), 0);
-    assert_eq!(actual.constraints(), Some(&constraints()));
     let returned = actual.constraints().expect("success requires Constraints");
+    let view = returned.view();
+    let fields = view.children();
+    assert!(fields[0].with_value(|value| matches!(value, kmipkit_ttlv::ValueView::Integer(7))));
+    assert!(fields[2].with_value(|value| matches!(value, kmipkit_ttlv::ValueView::Integer(-3))));
+    fields[1].with_value(|value| {
+        let kmipkit_ttlv::ValueView::Structure(nested) = value else {
+            panic!("second field is a nested Structure");
+        };
+        assert_eq!(nested.children().len(), 2);
+        assert!(nested.children()[0].with_value(|value| matches!(
+            value,
+            kmipkit_ttlv::ValueView::TextString("opaque-first")
+        )));
+        assert!(nested.children()[1].with_value(|value| matches!(
+            value,
+            kmipkit_ttlv::ValueView::TextString("opaque-second")
+        )));
+    });
     assert_eq!(
         returned
             .view()
@@ -84,7 +101,6 @@ fn table_230_returns_required_constraints_without_reordering_unknown_nested_memb
 #[test]
 fn table_230_rejects_missing_wrong_typed_and_duplicate_constraints() {
     let malformed = [
-        None,
         Some(Structure::new()),
         Some(success_payload([item(CONSTRAINTS, Value::integer(1))])),
         Some(success_payload([
@@ -106,6 +122,30 @@ fn table_230_rejects_missing_wrong_typed_and_duplicate_constraints() {
 }
 
 #[test]
+fn table_230_missing_success_payload_is_rejected_by_common_message_validator() {
+    // The shared ResponseMessage validator rejects this malformed message
+    // before a typed ResponseBatchItemView can be constructed.
+    let version = structure([
+        item(0x0042_006A, Value::integer(2)),
+        item(0x0042_006B, Value::integer(1)),
+    ]);
+    let header = structure([
+        item(0x0042_0069, Value::structure(version)),
+        item(0x0042_0092, Value::date_time(1)),
+        item(0x0042_000D, Value::integer(1)),
+    ]);
+    let batch = structure([
+        item(0x0042_005C, Value::enumeration(GET_CONSTRAINTS)),
+        item(0x0042_007F, Value::enumeration(0)),
+    ]);
+    let message = structure([
+        item(0x0042_007A, Value::structure(header)),
+        item(0x0042_000F, Value::structure(batch)),
+    ]);
+    assert!(ResponseMessage::try_from_ttlv(message).is_err());
+}
+
+#[test]
 fn table_231_preserves_every_distinct_reason_and_open_result_reason() {
     // Table 231 repeats Invalid Field. One case per distinct listed value suffices.
     for reason in [0x07, 0x30, 0x15, 0x14, 0x08, 0x04, 0x05, 0x0C, 0x02, 0x54FF] {
@@ -123,7 +163,13 @@ fn table_231_preserves_every_distinct_reason_and_open_result_reason() {
 
 #[test]
 fn non_success_and_wrong_operation_do_not_fabricate_constraints() {
-    let pending = response_message(GET_CONSTRAINTS, 2, None, Some(b"opaque"), None);
+    let pending = response_message(
+        GET_CONSTRAINTS,
+        2,
+        None,
+        Some(b"opaque"),
+        Some(Structure::new()),
+    );
     let pending = GetConstraintsResponse::try_from_response_item(response_item(&pending))
         .expect("Pending uses common result handling");
     assert_eq!(pending.result().status().raw(), 2);

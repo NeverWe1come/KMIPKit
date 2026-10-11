@@ -21,20 +21,20 @@ use kmipkit_protocol::{
     DeleteAttributeRequest, DeleteAttributeResponse, DeriveKeyRequest, DeriveKeyResponse,
     DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
     EncryptRequest, EncryptResponse, ExportRequest, ExportResponse, GetAttributeListRequest,
-    GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse, GetRequest, GetResponse,
-    HashRequest, HashResponse, ImportRequest, ImportResponse, JoinSplitKeyRequest,
-    JoinSplitKeyResponse, KmipOperationResult, LocateRequest, LocateResponse, LoginRequest,
-    LoginResponse, LogoutRequest, LogoutResponse, MacRequest, MacResponse, MacVerifyRequest,
-    MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
-    NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest, PingResponse, PollRequest,
-    PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
-    QueryRequest, QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest,
-    RecertifyResponse, RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse,
-    RekeyKeyPairRequest, RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage,
-    ResponseBatchItemView, ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse,
-    SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse,
+    GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse, GetConstraintsRequest,
+    GetConstraintsResponse, GetRequest, GetResponse, HashRequest, HashResponse, ImportRequest,
+    ImportResponse, JoinSplitKeyRequest, JoinSplitKeyResponse, KmipOperationResult, LocateRequest,
+    LocateResponse, LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, MacRequest,
+    MacResponse, MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
+    ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
+    PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
+    ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
+    RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
+    RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
+    ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
+    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -181,6 +181,7 @@ const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
 const PING_OPERATION: u32 = 0x0000_003B;
+const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038; // KMIP v2.1 §6.1.22, Table 229.
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
@@ -256,6 +257,8 @@ pub enum ClientRequest {
     GetAttributeList(GetAttributeListRequest),
     /// An explicit client-to-server Ping request.
     Ping(PingRequest),
+    /// An explicit client-to-server Get Constraints request.
+    GetConstraints(GetConstraintsRequest),
     /// An explicit client-to-server Query request.
     Query(QueryRequest),
     /// An explicit client-to-server Encrypt request.
@@ -293,6 +296,12 @@ impl ClientRequest {
     #[must_use]
     pub const fn ping() -> Self {
         Self::Ping(PingRequest::new())
+    }
+
+    /// Creates an empty client-to-server Get Constraints request.
+    #[must_use]
+    pub const fn get_constraints() -> Self {
+        Self::GetConstraints(GetConstraintsRequest::new())
     }
 
     /// Creates a typed client-to-server Query request variant.
@@ -549,6 +558,7 @@ impl ClientRequest {
             Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
             Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
             Self::Ping(_) => PING_OPERATION,
+            Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
             Self::Query(_) => QUERY_OPERATION,
             Self::Encrypt(_) => ENCRYPT_OPERATION,
             Self::Decrypt(_) => DECRYPT_OPERATION,
@@ -650,6 +660,7 @@ impl ClientRequest {
             Self::GetAttributes(request) => request.to_ttlv_payload(),
             Self::GetAttributeList(request) => request.to_ttlv_payload(),
             Self::Ping(request) => request.to_ttlv_payload(),
+            Self::GetConstraints(request) => request.to_ttlv_payload(),
             Self::Query(request) => request.to_ttlv_payload(),
             Self::Encrypt(request) => request.to_ttlv_payload(),
             Self::Decrypt(request) => request.to_ttlv_payload(),
@@ -715,6 +726,7 @@ impl fmt::Debug for ClientRequest {
                 .field(request)
                 .finish(),
             Self::Ping(_) => formatter.write_str("Ping"),
+            Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
             Self::Query(_) => formatter.write_str("Query([REDACTED])"),
             Self::Encrypt(_) => formatter.write_str("Encrypt([REDACTED])"),
             Self::Decrypt(_) => formatter.write_str("Decrypt([REDACTED])"),
@@ -1026,6 +1038,7 @@ enum PendingResponse {
     GetAttributes(GetAttributesResponse),
     GetAttributeList(GetAttributeListResponse),
     Ping(PingResponse),
+    GetConstraints(GetConstraintsResponse),
     Query(QueryResponse),
 }
 
@@ -1073,6 +1086,7 @@ impl PendingResponse {
             Self::GetAttributes(response) => ClientResponseRef::GetAttributes(response),
             Self::GetAttributeList(response) => ClientResponseRef::GetAttributeList(response),
             Self::Ping(response) => ClientResponseRef::Ping(response),
+            Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
             Self::Query(response) => ClientResponseRef::Query(response),
         };
         ClientResponseView { response }
@@ -1294,6 +1308,8 @@ pub enum ClientOperation {
     GetAttributeList,
     /// Ping one server connection and observe its KMIP response.
     Ping,
+    /// Read the server's Constraints Structure.
+    GetConstraints,
     /// Query one server for explicitly requested protocol information.
     Query,
     /// Encrypt data with the explicitly selected server-side object.
@@ -1482,6 +1498,7 @@ enum ClientResponseRef<'a> {
     GetAttributes(&'a GetAttributesResponse),
     GetAttributeList(&'a GetAttributeListResponse),
     Ping(&'a PingResponse),
+    GetConstraints(&'a GetConstraintsResponse),
     Query(&'a QueryResponse),
 }
 
@@ -1546,6 +1563,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::GetAttributes(response) => response.result(),
             ClientResponseRef::GetAttributeList(response) => response.result(),
             ClientResponseRef::Ping(response) => response.result(),
+            ClientResponseRef::GetConstraints(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
         }
     }
@@ -1932,6 +1950,15 @@ impl<'a> ClientResponseView<'a> {
         }
     }
 
+    /// Returns a Get Constraints response, including a Pending result.
+    #[must_use]
+    pub const fn get_constraints(&self) -> Option<&GetConstraintsResponse> {
+        match self.response {
+            ClientResponseRef::GetConstraints(response) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns the Query response when this view represents it.
     #[must_use]
     pub const fn query(&self) -> Option<&QueryResponse> {
@@ -2051,6 +2078,9 @@ impl fmt::Debug for ClientResponseView<'_> {
                 debug_response(formatter, "GetAttributeList", response)
             }
             ClientResponseRef::Ping(response) => debug_response(formatter, "Ping", response),
+            ClientResponseRef::GetConstraints(response) => {
+                debug_response(formatter, "GetConstraints", response)
+            }
             ClientResponseRef::Query(response) => debug_response(formatter, "Query", response),
         }
     }
@@ -2143,6 +2173,8 @@ pub enum ClientBatchOutcome {
     GetAttributeList(GetAttributeListResponse),
     /// The server returned a Ping result.
     Ping(PingResponse),
+    /// The server returned a Get Constraints result.
+    GetConstraints(GetConstraintsResponse),
     /// The server returned a Query result.
     Query(QueryResponse),
 }
@@ -2193,6 +2225,7 @@ impl ClientBatchOutcome {
             | Self::GetAttributes(_)
             | Self::GetAttributeList(_)
             | Self::Ping(_)
+            | Self::GetConstraints(_)
             | Self::Query(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
@@ -2243,6 +2276,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(response) => response.result(),
             Self::GetAttributeList(response) => response.result(),
             Self::Ping(response) => response.result(),
+            Self::GetConstraints(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
@@ -2293,6 +2327,7 @@ impl ClientBatchOutcome {
             Self::GetAttributes(_) => ClientOperation::GetAttributes,
             Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
             Self::Ping(_) => ClientOperation::Ping,
+            Self::GetConstraints(_) => ClientOperation::GetConstraints,
             Self::Query(_) => ClientOperation::Query,
             Self::Pending(pending) => pending.operation(),
         }
@@ -2802,6 +2837,9 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::GetAttributeList(response))
             }
             Self::Ping(response) => ClientResponseView::new(ClientResponseRef::Ping(response)),
+            Self::GetConstraints(response) => {
+                ClientResponseView::new(ClientResponseRef::GetConstraints(response))
+            }
             Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
         }
     }
@@ -2917,6 +2955,10 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Ping(response) => formatter.debug_tuple("Ping").field(response).finish(),
+            Self::GetConstraints(response) => formatter
+                .debug_tuple("GetConstraints")
+                .field(response)
+                .finish(),
             Self::Query(response) => formatter.debug_tuple("Query").field(response).finish(),
         }
     }
@@ -3005,6 +3047,9 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "GetAttributeList({})", response.result())
             }
             Self::Ping(response) => write!(formatter, "Ping({})", response.result()),
+            Self::GetConstraints(response) => {
+                write!(formatter, "GetConstraints({})", response.result())
+            }
             Self::Query(response) => write!(formatter, "Query({})", response.result()),
         }
     }
@@ -3860,6 +3905,23 @@ impl Client {
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Recover(request))),
             limits,
             request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one Get Constraints request through one transport exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn get_constraints(
+        &mut self,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::get_constraints())),
+            limits,
         )?;
         take_single_item_response(response.items)
     }
@@ -4986,6 +5048,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::GetAttributes(_)
         | ClientRequest::GetAttributeList(_)
         | ClientRequest::Ping(_)
+        | ClientRequest::GetConstraints(_)
         | ClientRequest::Query(_)
         | ClientRequest::Encrypt(_)
         | ClientRequest::Decrypt(_)
@@ -5638,6 +5701,7 @@ fn response_outcome(
             PendingResponse::Ping,
             ClientBatchOutcome::Ping,
         ),
+        GET_CONSTRAINTS_OPERATION => get_constraints_response_outcome(item),
         DISCOVER_VERSIONS_OPERATION => {
             let response = DiscoverVersionsResponse::try_from_response_item(item)
                 .map_err(invalid_typed_response)?;
@@ -5671,6 +5735,19 @@ fn response_outcome(
         GET_ATTRIBUTE_LIST_OPERATION => get_attribute_list_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
+}
+
+fn get_constraints_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::GetConstraints,
+        item,
+        GetConstraintsResponse::try_from_response_item,
+        GetConstraintsResponse::result,
+        PendingResponse::GetConstraints,
+        ClientBatchOutcome::GetConstraints,
+    )
 }
 
 fn credential_session_response_outcome(

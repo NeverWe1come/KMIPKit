@@ -160,13 +160,16 @@ fn table_229_empty_request_and_table_230_constraints_use_one_exchange() {
 
     let response = completed(result.outcome());
     assert_eq!(response.result().status().raw(), 0);
-    assert_eq!(
-        response.constraints(),
-        Some(&test_structure([
-            test_item(VENDOR_MEMBER, Value::integer(1)),
-            test_item(VENDOR_MEMBER, Value::integer(2)),
-        ]))
-    );
+    let constraints = response
+        .constraints()
+        .expect("Table 230 returns Constraints");
+    let view = constraints.view();
+    let members = view.children();
+    assert_eq!(members.len(), 2);
+    assert_eq!(members[0].tag().raw(), VENDOR_MEMBER);
+    assert_eq!(members[1].tag().raw(), VENDOR_MEMBER);
+    assert!(members[0].with_value(|value| matches!(value, ValueView::Integer(1))));
+    assert!(members[1].with_value(|value| matches!(value, ValueView::Integer(2))));
 }
 
 #[test]
@@ -221,7 +224,14 @@ fn malformed_success_is_response_started_and_never_retried() {
 #[test]
 fn pending_keeps_exact_correlation_and_does_not_poll() {
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
-        response: response_bytes(2, None, None, Some(CORRELATION), Some(BATCH_ID), None),
+        response: response_bytes(
+            2,
+            None,
+            None,
+            Some(CORRELATION),
+            Some(BATCH_ID),
+            Some(Structure::new()),
+        ),
         request_write_chunks: Vec::new(),
     });
     let result = client
