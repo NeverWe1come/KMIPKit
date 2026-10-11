@@ -199,7 +199,6 @@ fn request_requires_certificate_length_and_allows_embedded_signature_algorithm()
     let request = RegisterRequest::new(
         ObjectType::from_raw(1),
         attrs([
-            item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(1)),
             item(CERTIFICATE_LENGTH, Value::integer(4096)),
             item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
         ]),

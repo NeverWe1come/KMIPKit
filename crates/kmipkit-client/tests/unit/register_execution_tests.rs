@@ -4,7 +4,7 @@
 //! Tables 291–294. Traceability: all `KMIPKIT-REQ-SPEC-6.1.43-*` rows.
 //! These are derived execution tests, not official fixture passes.
 
-use kmipkit_protocol::{AttributeSet, ObjectType, RegisterRequest};
+use kmipkit_protocol::{AttributeSet, CheckRequest, ObjectType, RegisterRequest};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
@@ -18,6 +18,7 @@ use crate::{
 };
 
 const REGISTER_OPERATION: u32 = 0x0000_0003;
+const CHECK_OPERATION: u32 = 0x0000_0009;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -48,7 +49,7 @@ fn register_request() -> RegisterRequest {
     )
 }
 
-fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<u32>, Vec<Vec<u32>>) {
+fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Vec<Vec<u32>>) {
     let message = decode(bytes).expect("captured request has valid TTLV framing");
     message.with_value(|value| {
         let ValueView::Structure(message) = value else {
@@ -57,8 +58,9 @@ fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<u32>, Vec<Vec<u32>>) {
         let batch = message
             .children()
             .iter()
-            .find(|field| field.tag().raw() == BATCH_ITEM)
-            .expect("request contains one Batch Item");
+            .filter(|field| field.tag().raw() == BATCH_ITEM)
+            .nth(item_index)
+            .expect("request contains the selected Batch Item");
         batch.with_value(|value| {
             let ValueView::Structure(batch) = value else {
                 panic!("Batch Item is a Structure");
@@ -145,7 +147,7 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
     );
     let request = captured.borrow();
     let request = request.as_deref().expect("fake transport captured request");
-    let (operation, fields, nested) = request_fields(request);
+    let (operation, fields, nested) = request_fields(request, 0);
     assert_eq!(
         operation,
         Some(REGISTER_OPERATION),
@@ -153,6 +155,30 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
     );
     assert_eq!(fields, [OBJECT_TYPE, ATTRIBUTES, CERTIFICATE]);
     assert_eq!(nested, [vec![CERTIFICATE_LENGTH], vec![UNKNOWN_VENDOR_TAG]]);
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn register_produces_id_placeholder_for_a_later_identifier_omitting_operation() {
+    let (mut client, fake, captured) = client_for(ExchangeScript::FailBeforeWrite);
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::Register(register_request()))
+            .with_unique_batch_item_id(b"register-item".to_vec()),
+        ClientBatchItem::new(ClientRequest::Check(CheckRequest::new()))
+            .with_unique_batch_item_id(b"check-item".to_vec()),
+    ]);
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("fake transport stops before any request bytes are sent");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    let request = captured.borrow();
+    let request = request.as_deref().expect("request reaches fake transport");
+    assert_eq!(
+        request_fields(request, 1),
+        (Some(CHECK_OPERATION), Vec::new(), Vec::new()),
+        "§4.1.2 permits Check to consume Register's returned ID Placeholder"
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
