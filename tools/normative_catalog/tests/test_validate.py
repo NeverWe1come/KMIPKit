@@ -6994,6 +6994,14 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(seed_behavior["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.50-001"])
         self.assertEqual(len(seed_behavior["rejected_candidate_mappings"]), 0)
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        mixed_clause = next(row for row in catalog["source_clauses"]
+                            if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.50-001")
+        self.assertEqual(mixed_clause["role"], "both")
+        self.assertEqual(mixed_clause["direction"], "both")
+        self.assertEqual(mixed_clause["scope_state"], "mixed")
+        self.assertEqual(mixed_clause["disposition"], "requirement")
+        self.assertEqual(mixed_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.50-001"])
 
         request_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-002"]
         request_rows = request_review["source_request_rows"]
