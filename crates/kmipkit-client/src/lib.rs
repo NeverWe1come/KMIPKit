@@ -208,6 +208,10 @@ mod attribute_execution_contract_tests;
 mod recertify_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/rekey_execution_tests.rs"]
+mod rekey_execution_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/object_read_execution_tests.rs"]
 mod object_read_execution_tests;
 

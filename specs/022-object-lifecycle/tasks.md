@@ -69,7 +69,7 @@
 
 **Independent Test**: Tables 303–307; explicit Offset/attributes; 12 linked Test Case IDs; no local key generation.
 
-- [ ] T018 [P] [US5] Add failing Re-key tests in `crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs` and `crates/kmipkit-client/tests/unit/rekey_execution_tests.rs` for §6.1.46, including the catalog cases KMIPKIT-TEST-CN01-2-76 through -87 as available; commit Red.
+- [X] T018 [P] [US5] Add failing Re-key tests in `crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs` and `crates/kmipkit-client/tests/unit/rekey_execution_tests.rs` for §6.1.46, including the catalog cases KMIPKIT-TEST-CN01-2-76 through -87 as available; commit Red.
 - [ ] T019 [US5] Implement `RekeyRequest/Response/Error` in `crates/kmipkit-protocol/src/rekey.rs`, export it, and integrate dispatch/client methods in `crates/kmipkit-client/src/execute.rs` and `crates/kmipkit-client/src/lib.rs`; commit Green after T018 passes.
 - [ ] T020 [US5] Refactor Re-key model/dispatch/tests in `crates/kmipkit-protocol/src/rekey.rs`, `crates/kmipkit-client/src/execute.rs`, and both test files; commit Refactor separately.
 
