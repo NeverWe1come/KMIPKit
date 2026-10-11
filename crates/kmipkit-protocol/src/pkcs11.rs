@@ -230,8 +230,9 @@ fn validate_payload(payload: &StructureView<'_>, response: bool) -> Result<(), P
         let valid = field.with_value(|v| match (tag, v) {
             (FUNCTION, ValueView::Structure(s)) => valid_required_value(&s, FUNCTION, true),
             (RETURN, ValueView::Structure(s)) => valid_required_value(&s, RETURN, false),
-            (CORRELATION, ValueView::ByteString(_))
-            | (INTERFACE | INPUT | OUTPUT, ValueView::Structure(_)) => true,
+            (CORRELATION, ValueView::ByteString(_)) => true,
+            (INTERFACE, ValueView::Structure(s)) => valid_optional_value(&s, tag, true),
+            (INPUT | OUTPUT, ValueView::Structure(s)) => valid_optional_value(&s, tag, false),
             _ => false,
         });
         if !valid {
@@ -254,6 +255,31 @@ fn valid_required_value(tree: &StructureView<'_>, tag: u32, integer_allowed: boo
                 || (integer_allowed && matches!(v, ValueView::Integer(_)))
         })
 }
+// §§7.27–7.29 Tables 379–381 give the known member 0..1 cardinality.
+// Unknown/profile members retain their generic representation and source order.
+fn valid_optional_value(tree: &StructureView<'_>, tag: u32, text: bool) -> bool {
+    let mut seen = false;
+    for child in tree
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == tag)
+    {
+        if seen
+            || !child.with_value(|value| {
+                if text {
+                    matches!(value, ValueView::TextString(_))
+                } else {
+                    matches!(value, ValueView::ByteString(_))
+                }
+            })
+        {
+            return false;
+        }
+        seen = true;
+    }
+    true
+}
+
 /// A sanitized PKCS#11 conversion error that never retains payload values.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
