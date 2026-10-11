@@ -31,6 +31,14 @@ PR_REQUIRED_JOBS = (
     ("Coverage gate", "coverage-gate"),
     ("Dependency policy", "dependency-policy"),
 )
+EVIDENCE_REQUIRED_JOB_IDS = (
+    "core",
+    "script-contracts",
+    "normative-inventory",
+    "coverage",
+    "coverage-gate",
+    "dependency-policy",
+)
 SCHEDULED_JOBS = (("Scheduled dependency policy", "scheduled-dependency-policy"),)
 PR_ONLY_JOBS = tuple(label for label, _ in PR_REQUIRED_JOBS)
 KNOWN_RESULTS = {"success", "failure", "cancelled", "skipped"}
@@ -168,7 +176,7 @@ def build_evidence_manifest(
         raise ValueError("required workflow checks are missing")
 
     checks: list[dict[str, str]] = []
-    for _, job_id in PR_REQUIRED_JOBS:
+    for job_id in EVIDENCE_REQUIRED_JOB_IDS:
         entry = needs.get(job_id)
         if not isinstance(entry, Mapping) or entry.get("result") != "success":
             raise ValueError(f"required workflow check {job_id} did not succeed")
@@ -264,7 +272,7 @@ def validate_evidence_manifest(
     checks = manifest.get("checks")
     if not isinstance(checks, list):
         raise ValueError("verification manifest checks are missing or malformed")
-    expected_job_ids = [job_id for _, job_id in PR_REQUIRED_JOBS]
+    expected_job_ids = list(EVIDENCE_REQUIRED_JOB_IDS)
     observed_jobs: list[str] = []
     observed_check_ids: list[str] = []
     for check in checks:
@@ -274,6 +282,8 @@ def validate_evidence_manifest(
         job_id = check.get("job_id")
         if not isinstance(check_id, str) or not check_id.strip() or not isinstance(job_id, str):
             raise ValueError("verification manifest check identity is malformed")
+        if check_id != job_id:
+            raise ValueError("verification manifest check ID does not match its job ID")
         if check.get("conclusion") != "success":
             raise ValueError("a required verification check did not succeed")
         observed_check_ids.append(check_id)
