@@ -2,7 +2,7 @@
 
 ## Source review
 
-The normative source is the pinned OASIS KMIP Specification v2.1 in `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`. The approved feature spec identifies these exact payload/error tables: Get Constraints §6.1.22, Tables 229–231; Get Usage Allocation §6.1.23, Tables 232–234; Set Constraints §6.1.52, Tables 325–327; Set Defaults §6.1.53, Tables 328–330; Set Endpoint Role §6.1.54, Tables 331–333. Nested structures are Constraints §7.7, Defaults Information §7.11, and Usage Limits §4.59/Table 148. The Usage Limits Unit enumeration is §11.60/Table 491. Pinned source files remain immutable.
+The normative source is the pinned OASIS KMIP Specification v2.1 in `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`. The four 1.0 implementation payload/error tables are: Get Constraints §6.1.22, Tables 229–231; Get Usage Allocation §6.1.23, Tables 232–234; Set Constraints §6.1.52, Tables 325–327; and Set Defaults §6.1.53, Tables 328–330. Set Endpoint Role §6.1.54, Tables 331–333 and reverse-direction §6.2.5 were also reviewed and are deferred to 1.1 due the normative role transition. Nested structures are Constraints §7.7, Defaults Information §7.11, and Usage Limits §4.59/Table 148. The Usage Limits Unit enumeration is §11.60/Table 491. Pinned source files remain immutable.
 
 The normative catalog has four client requirements for §6.1.23:
 
@@ -13,13 +13,17 @@ The normative catalog has four client requirements for §6.1.23:
 
 The pinned operation text additionally says the server assumes the entire requested amount will be consumed. The response table returns a required Unique Identifier but does not echo the requested count or Usage Limits Unit. The payload carries Usage Limits Count as a required Long Integer: §6.1.23 Table 232 establishes requiredness, and §4.59 Table 148 defines the attribute's TTLV type. The Usage Limits Unit comes from the Usage Limits attribute; standard values are Byte and Object and extensions remain open. The server decides whether the object is eligible, whether the window is open, whether capacity is available, and whether to accept the allocation. KMIPKit cannot establish those remote facts from the allocation request alone.
 
-The pinned source has no operation-specific official Test Cases catalog entry for any of the five operations. Tests are derived from the OASIS payload tables and labeled as project tests. Do not report an unavailable official case or fixture as passing.
+The pinned source has no operation-specific official Test Cases catalog entry for the four in-scope operations. Tests are derived from the OASIS payload tables and labeled as project tests. Do not report an unavailable official case or fixture as passing.
+
+### Set Endpoint Role release-scope ruling
+
+OASIS Specification v2.1 §6.1.54 states that the operation requests a server role over the current client-to-server channel; after success, the server assumes the client role and the client assumes the server role while that channel remains established. The corresponding §6.2.5 operation specifies the same transition. The role values are defined in §11.19, Tables 451–452. The 1.0 boundary excludes server-initiated behavior, so implementing only the request/response payload would not implement the full operation semantics. This operation is therefore omitted from 1.0 typed/public surfaces and deferred to a new 1.1 specification that defines both directions and post-transition channel behavior. This is a KMIPKit release-scope decision; it does not alter OASIS or remove the operation from the normative catalog.
 
 ## Design decisions
 
 ### Typed operation payloads
 
-Create one typed request/response model per operation and reuse the common message, result, and delivery contracts. Constraints and Defaults Information stay as ordered generic TTLV Structures: typed wrappers provide field boundaries while preserving unknown nested members and vendor extensions. Endpoint Role and Usage Limits Unit use open raw Enumeration values so unknown future/vendor values round-trip. Requiredness follows the approved spec tables exactly, including optional Unique Identifier and Defaults Information.
+Create one typed request/response model per in-scope operation and reuse the common message, result, and delivery contracts. Constraints and Defaults Information stay as ordered generic TTLV Structures: typed wrappers provide field boundaries while preserving unknown nested members and vendor extensions. Usage Limits Unit uses an open raw Enumeration value so unknown future/vendor values round-trip. Requiredness follows the approved spec tables exactly, including optional Unique Identifier and Defaults Information. No Endpoint Role model is added in 1.0.
 
 Alternative considered: make all fields opaque generic TTLV. This loses typed requiredness and discoverable operation APIs. Alternative considered: reject unknown nested fields or enumeration values. That would break forward compatibility and conflict with the constitution.
 

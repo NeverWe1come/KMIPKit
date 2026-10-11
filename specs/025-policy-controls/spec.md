@@ -16,7 +16,9 @@ OASIS Key Management Interoperability Protocol Specification Version 2.1 (OASIS 
 | Get Usage Allocation | KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION | §6.1.23 | 232 | 233 | 234 |
 | Set Constraints | KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS | §6.1.52 | 325 | 326 | 327 |
 | Set Defaults | KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS | §6.1.53 | 328 | 329 | 330 |
-| Set Endpoint Role | KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE | §6.1.54 | 331 | 332 | 333 |
+
+Set Endpoint Role (§6.1.54, Tables 331–333) is documented in the OASIS
+inventory but is deferred from KMIPKit 1.0.0; see the scope resolution below.
 
 ## Operation errors
 
@@ -28,7 +30,6 @@ Each operation error table is cited below with its Table number. Result Reason a
 | Get Usage Allocation | 234 | Operation Failed | Attribute Not Found, Invalid Message, Invalid Object Type, Object Not Found, Usage Limit Exceeded, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large |
 | Set Constraints | 327 | Operation Failed | Invalid Field, Invalid Object Type, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large |
 | Set Defaults | 330 | Operation Failed | Invalid Field, Invalid Object Type, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large |
-| Set Endpoint Role | 333 | Operation Failed | Permission Denied, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large |
 
 ## Product boundaries and dependencies
 
@@ -148,29 +149,21 @@ As a KMIPKit caller, I can send the §6.1.53 Set Defaults request and inspect th
 
 ---
 
-### User Story 5 — Set Endpoint Role (Priority: P1)
+### Deferred operation — Set Endpoint Role
 
-As a KMIPKit caller, I can send the §6.1.54 Set Endpoint Role request and inspect the typed result while controlling its parameters and sensitive values.
+KMIP 2.1 §6.1.54, Tables 331–333, is not part of KMIPKit 1.0.0's supported
+operation surface. The normative text states that after successful completion
+the server assumes the Client role and the client assumes the Server role for
+subsequent messages on the existing channel. §11.19, Tables 451–452, defines
+the two roles but provides no client-only mode that suppresses this transition.
+The corresponding server-to-client Set Endpoint Role operation is §6.2.5.
 
-**Why this priority**: This operation belongs to the complete 1.0.0 client-initiated inventory.
-
-**Independent Test**: A fake transport captures one Table 331 request and returns a Table 332 success and Table 333 failure; it checks field presence, order, result metadata, and no retry.
-
-**Acceptance Scenarios**:
-
-1. Given a valid Set Endpoint Role request, when encoded and sent, then exactly one operation with the Table 331 fields reaches the transport.
-2. Given a valid Table 332 success, when decoded, then every present field is inspectable and absent fields remain absent.
-3. Given a Table 333 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
-4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
-
-**Specific rules**: Only client-to-server §6.1.54 is covered; server-initiated §6.2.5 is outside 1.0.
-
-**Payload schema** (OASIS Specification v2.1 §6.1.54, Tables 331–332):
-
-| Side | Field | REQUIRED | Description or condition |
-| --- | --- | --- | --- |
-| Request | Endpoint Role | Yes | The endpoint role for the server to apply. |
-| Response | Endpoint Role | Yes | The accepted endpoint role as applied by the server. |
+KMIPKit 1.0.0 does not accept server-initiated operations. Exposing §6.1.54 as
+a complete client operation would therefore claim behavior the library cannot
+perform after success. This operation and its role transition are deferred to
+1.1, where a separate approved specification and ADR must cover both
+directions. The OASIS operation remains in the normative inventory; it is not
+advertised as implemented 1.0 capability.
 
 ---
 
@@ -185,7 +178,7 @@ As a KMIPKit caller, I can send the §6.1.54 Set Endpoint Role request and inspe
 
 ### Functional Requirements
 
-- **FR-001**: Expose typed request/response models and explicit client calls for Get Constraints, Get Usage Allocation, Set Constraints, Set Defaults, Set Endpoint Role using the common batch and delivery-state contract.
+- **FR-001**: Expose typed request/response models and explicit client calls for Get Constraints, Get Usage Allocation, Set Constraints, and Set Defaults using the common batch and delivery-state contract. Set Endpoint Role (§6.1.54) is deferred to 1.1 because its normative successful result changes endpoint roles and requires server-initiated operation handling, outside the 1.0 boundary.
 - **FR-002**: Validate payload structure and applicable client-side MUST/SHALL/SHALL NOT requirements that can be checked from local request data. Do not turn server-side requirements into client preconditions or infer remote object state or policy. When a caller explicitly supplies the approved usage-allocation context, enforce only its known local object, unit, allowance, and delivery reservations. Preserve unknown tags, enum values, bitmask bits, and extensions instead of rejecting them solely because KMIPKit does not recognize them.
 - **FR-003**: Preserve Success, Failure, Pending, Result Reason, permitted Result Message, correlation, unknown values, and extension data losslessly. Never retry or poll automatically.
 - **FR-004**: Expose equivalent Rust, C, Java, and Python capability by 1.0.0; retain generic structurally valid TTLV access alongside typed forms.
@@ -217,8 +210,8 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 
 ### Measurable Outcomes
 
-- **SC-001**: All 5 operations have typed request/response, an explicit client call, generic TTLV access, and Rust/C/Java/Python parity before 1.0.0.
-- **SC-002**: All Table-defined fields and error forms and all 4 catalog client requirement IDs have positive/relevant negative verification and exact source-to-test links, including tests for each §6.1.23 local guard boundary.
+- **SC-001**: All 4 in-scope operations have typed request/response, an explicit client call, generic TTLV access, and Rust/C/Java/Python parity before 1.0.0. Set Endpoint Role is not included in this count or the 1.0 API surface.
+- **SC-002**: All in-scope table-defined fields and error forms and all 4 catalog client requirement IDs have positive/relevant negative verification and exact source-to-test links, including tests for each §6.1.23 local guard boundary.
 - **SC-003**: Fake-transport cases confirm one exchange and preserved Success, Failure, Pending, unknown values, malformed response behavior, and delivery state.
 - **SC-004**: Required repository coverage, formatting, lint, security, generated-artifact, and two-independent-server integration gates pass before release.
 - **SC-005**: For explicitly guarded typed protection calls, no request whose caller-supplied positive cost exceeds the known local allocation reaches transport; delivery tests prove only NotSent releases a reservation and no result is reported as server-consumption evidence.
@@ -238,7 +231,6 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 | Get Usage Allocation | No direct catalog case ID |
 | Set Constraints | No direct catalog case ID |
 | Set Defaults | No direct catalog case ID |
-| Set Endpoint Role | No direct catalog case ID |
 
 ### Maintainer-approved interpretations (2026-10-10)
 
@@ -249,6 +241,19 @@ These are project interpretations, not official OASIS errata. The implementation
 | Get Constraints | KMIPKIT-DISC-016 | Empty request and required Constraints response; approved KMIPKIT-DISC-016 assigns the erroneous error introduction to this operation. |
 | Set Constraints | KMIPKIT-DISC-020 | Constraints is required; approved KMIPKIT-DISC-020 assigns the truncated error introduction to this operation. |
 | Set Defaults | KMIPKIT-DISC-020 | Table 328 normatively states that omission removes all Object Defaults. The approved KMIPKIT-DISC-020 disposition assigns the truncated error introduction to §6.1.53/Table 330. |
+
+### 1.0 scope resolution — Set Endpoint Role (2026-10-11)
+
+The implementation review found that the original 1.0 scope incorrectly treated
+client initiation of §6.1.54 as sufficient to satisfy its full behavior. OASIS
+§6.1.54 states without a value-dependent exception that successful completion
+switches the endpoint roles; §11.19 defines what Client and Server roles do;
+§6.2.5 describes the corresponding server-to-client operation. The KMIP 2.1
+Baseline Client profile does not require §6.1.54. To preserve the approved
+1.0 client-only boundary and avoid advertising a partial or misleading
+implementation, defer §6.1.54 and §6.2.5 to 1.1. This is a release-scope
+disposition, not an OASIS requirement change or an erratum. The normative
+catalog continues to inventory the OASIS operation.
 
 ### Maintainer-approved interpretation — Usage Allocation guard (2026-10-11)
 

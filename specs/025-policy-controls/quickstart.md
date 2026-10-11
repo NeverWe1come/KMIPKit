@@ -13,7 +13,7 @@ This checklist is for the future implementation PR. It makes no claim that the f
 
 1. Implement Get Constraints and its focused model/client tests.
 2. Implement Get Usage Allocation and its tests; then add the local caller guard and its delivery-state tests.
-3. Implement Set Constraints, Set Defaults, and client-to-server Set Endpoint Role in separate Red/Green/Refactor sequences.
+3. Implement Set Constraints and Set Defaults in separate Red/Green/Refactor sequences. Set Endpoint Role (§6.1.54) and server-to-client §6.2.5 are deferred from 1.0 because successful completion changes endpoint roles; do not expose a partial client-only API.
 4. Update requirement traceability and normative catalog implementation/verification references. Run the pinned catalog validator/report generator; never edit generated reports by hand.
 5. After 0043 merges, add public manifest entries, adapters, generated outputs, and C/Java/Python parity tests in a coordinated slice.
 6. Add English/Spanish examples and update the interop matrix. Record real server/version evidence only after the tests actually run.
@@ -29,7 +29,6 @@ cargo test -p kmipkit-protocol --lib get_usage_allocation
 cargo test -p kmipkit-client --lib usage_allocation_guard
 cargo test -p kmipkit-client --lib set_constraints
 cargo test -p kmipkit-client --lib set_defaults
-cargo test -p kmipkit-client --lib set_endpoint_role
 python tools/normative_catalog/validate.py
 python tools/normative_catalog/report.py --write
 python tools/normative_catalog/report.py --check
@@ -47,6 +46,10 @@ cargo llvm-cov --workspace --all-features
 ```
 
 Run API-manifest unit tests and all binding-specific build/parity commands listed in `docs/development/api-manifest.md` after 0043 is available. The generated manifest check is not a substitute for testing handwritten adapters.
+
+## 1.0 scope disposition
+
+The 1.0 feature implements four operations plus the §6.1.23 usage-allocation guard. Set Endpoint Role remains inventoried as an OASIS operation but is unsupported and unadvertised in 1.0. Its required post-success role transition (§6.1.54 and §11.19) and reverse-direction operation (§6.2.5) need a separate 1.1 specification.
 
 ## §6.1.23 focused acceptance checklist
 
