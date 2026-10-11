@@ -15,6 +15,7 @@ mod attribute_reference;
 mod attribute_types_generated;
 mod cancel;
 mod certify;
+mod check;
 mod create;
 mod create_key_pair;
 mod create_split_key;
@@ -62,6 +63,7 @@ pub use attribute::{AttributeSet, AttributeSetError, CurrentAttribute, NewAttrib
 pub use attribute_reference::AttributeReference;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use certify::{CertifyError, CertifyRequest, CertifyResponse};
+pub use check::{CheckError, CheckRequest, CheckResponse};
 pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
 pub use create_key_pair::{CreateKeyPairError, CreateKeyPairRequest, CreateKeyPairResponse};
 pub use create_split_key::{

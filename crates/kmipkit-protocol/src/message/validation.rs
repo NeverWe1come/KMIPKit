@@ -22,6 +22,7 @@ const BATCH_COUNT: u32 = 0x0042_000D;
 const BATCH_ERROR_CONTINUATION_OPTION: u32 = 0x0042_000E;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
+const CHECK_OPERATION: u32 = 0x0000_0009;
 const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
 const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
 const EPHEMERAL: u32 = 0x0042_0154;
@@ -601,6 +602,10 @@ fn validate_response_batch_item(
         .iter()
         .find(|child| child.tag().raw() == OPERATION)
         .and_then(enumeration_value);
+    // §6.1.7 says Check returns the policy attributes that caused a denial.
+    // This operation-specific response payload is the exception to §8.6's
+    // general success/failure Response Payload shape.
+    let check_denial_with_payload = is_failure && operation == Some(CHECK_OPERATION);
     // §6.1.38 gives Poll's still-Pending response a specific no-payload shape;
     // §8.6/Table 399 still requires its Asynchronous Correlation Value.
     let poll_pending_without_payload =
@@ -614,6 +619,7 @@ fn validate_response_batch_item(
         ));
     }
     if (is_failure == response_payload || (!is_failure && !response_payload))
+        && !check_denial_with_payload
         && !poll_pending_without_payload
     {
         return Err(error(

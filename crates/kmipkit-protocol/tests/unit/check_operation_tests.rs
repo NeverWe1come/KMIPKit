@@ -210,10 +210,7 @@ fn policy_denial_response_returns_the_policy_value_without_a_success_identifier(
 
     assert_eq!(response.result().status().raw(), OPERATION_FAILED);
     assert_eq!(
-        response
-            .result()
-            .reason()
-            .map(ResultReason::raw),
+        response.result().reason().map(ResultReason::raw),
         Some(INCOMPATIBLE_CRYPTOGRAPHIC_USAGE_MASK)
     );
     assert!(response.unique_identifier().is_none());
