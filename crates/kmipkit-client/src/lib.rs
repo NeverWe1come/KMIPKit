@@ -279,3 +279,7 @@ mod interop_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/log_execution_tests.rs"]
 mod log_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/validate_execution_tests.rs"]
+mod validate_execution_tests;
