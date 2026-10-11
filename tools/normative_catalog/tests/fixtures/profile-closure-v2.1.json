@@ -81,10 +81,10 @@
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 476,
+    "source_requirement_review_records": 482,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 132,
-    "source_only_requirement_gap_proposals": 103,
+    "source_only_requirement_gaps": 133,
+    "source_only_requirement_gap_proposals": 104,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -59616,6 +59616,275 @@
       "review_note": "The Response Payload table body is empty. REQUIRED appears only in the table heading; it creates no server payload row or client requirement.",
       "source_request_rows": [],
       "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.37",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.37-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31165,
+        31183
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The operation purpose is descriptive: This operation enables the server to perform a PKCS#11 operation. The table header is not itself a client requirement; the four request body rows are recorded below.",
+      "source_request_rows": [
+        {
+          "row_label": "PKCS#11 Interface",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field",
+          "html_line_range": [
+            31184,
+            31202
+          ],
+          "source_excerpt": "PKCS#11 Interface No The name of the interface. If absent, the default V3.0 interface which defines the functions supported."
+        },
+        {
+          "row_label": "PKCS#11 Function",
+          "required": "Yes",
+          "actor": "client",
+          "disposition": "required_request_field_with_source_only_proposal",
+          "html_line_range": [
+            31203,
+            31221
+          ],
+          "source_excerpt": "PKCS#11 Function Yes The function to perform. An Enumeration for PKCS#11 defined functions or an Integer for vendor defined function.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.37-PKCS11-FUNCTION-REQUIRED"
+        },
+        {
+          "row_label": "Correlation Value",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_lowercase_conditional_echo",
+          "html_line_range": [
+            31222,
+            31240
+          ],
+          "source_excerpt": "Correlation Value No Must be returned to the server if provided in a previous response.",
+          "source_note": "The description uses capitalized `Must`, not uppercase MUST; it is not a normative keyword under §1.2. It describes a conditional client echo when a value was provided in a previous response; the force remains lowercase and ambiguous, with no client requirement inferred."
+        },
+        {
+          "row_label": "PKCS#11 Input Parameters",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field",
+          "html_line_range": [
+            31241,
+            31259
+          ],
+          "source_excerpt": "PKCS#11 Input Parameters No The parameters to the function. The format is specified in the PKCS#11 Profile and the [PKCS#11] standard document"
+        }
+      ],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.37",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.37-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31222,
+        31240
+      ],
+      "source_excerpt": "Correlation Value No Must be returned to the server if provided in a previous response.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Must be returned to the server if provided in a previous response.",
+          "source_keyword": "Must (not uppercase RFC 2119 keyword; force unresolved)",
+          "actor": "client",
+          "direction": "client-to-server conditional Correlation Value echo",
+          "condition": "A Correlation Value was provided in a previous response.",
+          "scope_disposition": "unresolved",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Correlation Value row says `Must` with only initial capitalization. This lowercase relative to formal MUST is not a normative keyword; it describes conditional client echo only if the value appeared in a previous response. Keep force ambiguous and infer no client obligation.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.37",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.37-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31277,
+        31295
+      ],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The response header is not a client requirement; all five response payload rows are server-supplied response data.",
+      "source_request_rows": [],
+      "source_payload_rows": [
+        {
+          "row_label": "PKCS#11 Interface",
+          "required": "No",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            31296,
+            31315
+          ],
+          "source_excerpt": "PKCS#11 Interface No The name of the interface. If absent, the default V3.0 interface is used."
+        },
+        {
+          "row_label": "PKCS#11 Function",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            31316,
+            31339
+          ],
+          "source_excerpt": "PKCS#11 Function Yes The function that was performed. An Enumeration for PKCS#11 defined functions or an Integer for vendor defined function."
+        },
+        {
+          "row_label": "Correlation Value",
+          "required": "No",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            31340,
+            31359
+          ],
+          "source_excerpt": "Correlation Value No Server defined Byte String that the client must provide in the next request.",
+          "source_note": "The response row contains a server-defined value and says the client `must` provide it in the next request. Lowercase `must` is not a normative keyword under §1.2; it describes a conditional echo if returned, with ambiguous force and no client requirement inferred."
+        },
+        {
+          "row_label": "PKCS#11 Output Parameters",
+          "required": "No",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            31360,
+            31383
+          ],
+          "source_excerpt": "PKCS#11 Output Parameters No The parameters output from the function. The format is specified in the PKCS#11 Profile [KMIP-Prof] and the [PKCS#11] standard document."
+        },
+        {
+          "row_label": "PKCS#11 Return Code",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            31384,
+            31403
+          ],
+          "source_excerpt": "PKCS#11 Return Code Yes The PKCS#11 return code as specified in the CK_RV values in [PKCS#11]"
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.37",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.37-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31340,
+        31359
+      ],
+      "source_excerpt": "Correlation Value No Server defined Byte String that the client must provide in the next request.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Server defined Byte String that the client must provide in the next request.",
+          "source_keyword": "must (lowercase; not a §1.2 formal keyword)",
+          "actor": "client",
+          "direction": "conditional client echo in the next request",
+          "condition": "A Correlation Value is returned by the server.",
+          "scope_disposition": "unresolved",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The response Correlation Value is server-defined. Its lowercase `must` describes a conditional echo in the next client request, but is not a normative keyword under §1.2; force remains ambiguous and no client requirement is inferred.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.37.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.37.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        31413,
+        31414
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a PKCS#11 Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a PKCS#11 Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "server→client error response",
+          "condition": "An error is detected in a PKCS#11 operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Result Reasons preamble assigns error-result behavior to the server and creates no client requirement.",
+      "source_request_rows": [],
+      "source_payload_rows": []
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.37.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.37.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        31434,
+        31449
+      ],
+      "source_excerpt": "Operation Failed Invalid Asynchronous Correlation Value, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large, PKCS#11 Codec Error, PKCS#11 Invalid Function, PKCS#11 Invalid Interface",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The twelve listed Result Reasons are server response values. Attestation Required is a Result Reason enum value, and this operation-specific list is non-exhaustive under the general Result Reason rules.",
+      "source_request_rows": [],
+      "source_payload_rows": []
     }
   ],
   "source_only_requirement_gaps": [
@@ -63626,6 +63895,40 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-005",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "Source-only proposal for the Required=Yes New Attribute request field. It remains outside the catalog and profile closure arrays in Red."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.37-PKCS11-FUNCTION-REQUIRED",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.37",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.37",
+        "row_label": "PKCS#11 Function",
+        "table": "request_payload",
+        "html_line_range": [
+          31203,
+          31221
+        ]
+      },
+      "source_locator_description": "§6.1.37 PKCS#11 request payload body row for PKCS#11 Function (HTML lines 31203-31221)",
+      "html_line_range": [
+        31203,
+        31221
+      ],
+      "source_excerpt": "PKCS#11 Function Yes The function to perform. An Enumeration for PKCS#11 defined functions or an Integer for vendor defined function.",
+      "source_keywords": [],
+      "source_force": "required_table_body_value",
+      "audited_statement": "The PKCS#11 request payload marks PKCS#11 Function Required=Yes; the field identifies the function to perform.",
+      "actor": "client",
+      "direction": "include the PKCS#11 Function in the request payload",
+      "condition": "A PKCS#11 operation request is sent.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.37-001",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "Source-only proposal for the Required=Yes PKCS#11 Function request row. It remains outside the catalog and client profile closure arrays."
     }
   ]
 }
