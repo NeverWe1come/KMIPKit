@@ -52,6 +52,7 @@ const BATCH_ITEM_TAG: u32 = 0x0042_000F;
 const OPERATION_TAG: u32 = 0x0042_005C;
 const RESULT_STATUS_TAG: u32 = 0x0042_007F;
 const RESULT_REASON_TAG: u32 = 0x0042_007E;
+const RESULT_MESSAGE_TAG: u32 = 0x0042_007D;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -133,6 +134,15 @@ fn response_message(
     reason: Option<u32>,
     payload: Option<Structure>,
 ) -> ResponseMessage {
+    response_message_with_result_message(status, reason, payload, None)
+}
+
+fn response_message_with_result_message(
+    status: u32,
+    reason: Option<u32>,
+    payload: Option<Structure>,
+    result_message: Option<&str>,
+) -> ResponseMessage {
     let protocol_version = structure([
         item(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
         item(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
@@ -148,6 +158,12 @@ fn response_message(
     ];
     if let Some(reason) = reason {
         batch_fields.push(item(RESULT_REASON_TAG, Value::enumeration(reason)));
+    }
+    if let Some(result_message) = result_message {
+        batch_fields.push(item(
+            RESULT_MESSAGE_TAG,
+            Value::text_string(result_message.to_owned()),
+        ));
     }
     if let Some(payload) = payload {
         batch_fields.push(item(RESPONSE_PAYLOAD_TAG, Value::structure(payload)));
@@ -570,4 +586,25 @@ fn failed_locate_response_preserves_an_unknown_result_reason_raw_value() {
     );
     assert_eq!(response.located_items(), None);
     assert_eq!(response.unique_identifiers(), []);
+}
+
+#[test]
+fn failed_locate_response_preserves_result_message() {
+    const RESULT_MESSAGE: &str = "Locate result detail";
+
+    let message = response_message_with_result_message(
+        OPERATION_FAILED,
+        Some(0x0000_0001),
+        None,
+        Some(RESULT_MESSAGE),
+    );
+    let response = decode_locate(&message).expect("the failure result retains its common fields");
+
+    assert_eq!(
+        response
+            .result()
+            .message()
+            .map(crate::ResultMessage::as_str),
+        Some(RESULT_MESSAGE)
+    );
 }
