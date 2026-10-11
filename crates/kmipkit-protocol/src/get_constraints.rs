@@ -85,7 +85,7 @@ impl GetConstraintsResponse {
         &self.result
     }
 
-    /// Returns the ordered Constraints Structure for a successful response.
+    /// Returns the required Constraints Structure for a successful response.
     #[must_use]
     pub const fn constraints(&self) -> Option<&Structure> {
         self.constraints.as_ref()
@@ -103,23 +103,23 @@ impl GetConstraintsResponse {
 fn parse_success_constraints(
     payload: &StructureView<'_>,
 ) -> Result<Structure, GetConstraintsError> {
-    let mut constraints = None;
-    for field in payload.children() {
-        if field.tag().raw() == CONSTRAINTS_TAG {
-            if constraints.is_some() {
-                return Err(GetConstraintsError::MalformedSuccessPayload);
-            }
-            constraints = Some(field.with_value(|value| {
-                match value {
-                    ValueView::Structure(structure) => structure
-                        .try_clone()
-                        .map_err(GetConstraintsError::TtlvModel),
-                    _ => Err(GetConstraintsError::MalformedSuccessPayload),
-                }
-            })?);
-        }
+    let mut fields = payload
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == CONSTRAINTS_TAG);
+    let field = fields
+        .next()
+        .ok_or(GetConstraintsError::MalformedSuccessPayload)?;
+    if fields.next().is_some() {
+        return Err(GetConstraintsError::MalformedSuccessPayload);
     }
-    constraints.ok_or(GetConstraintsError::MalformedSuccessPayload)
+
+    field.with_value(|value| match value {
+        ValueView::Structure(structure) => structure
+            .try_clone()
+            .map_err(GetConstraintsError::TtlvModel),
+        _ => Err(GetConstraintsError::MalformedSuccessPayload),
+    })
 }
 
 impl fmt::Debug for GetConstraintsResponse {

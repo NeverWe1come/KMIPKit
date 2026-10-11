@@ -121,22 +121,24 @@ fn table_230_rejects_missing_wrong_typed_and_duplicate_constraints() {
 #[test]
 fn table_230_preserves_unknown_sibling_fields_in_complete_response_ttlv() {
     const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
-    let message = response_message(
-        GET_CONSTRAINTS,
-        0,
-        None,
-        None,
-        Some(success_payload([
-            item(VENDOR_MEMBER, Value::integer(41)),
-            item(CONSTRAINTS, Value::structure(constraints())),
-            item(
-                VENDOR_MEMBER,
-                Value::text_string("opaque-sibling".to_owned()),
-            ),
-        ])),
-    );
-    let actual = GetConstraintsResponse::try_from_response_item(response_item(&message))
-        .expect("unknown siblings do not invalidate the required Constraints field");
+    let actual = {
+        let message = response_message(
+            GET_CONSTRAINTS,
+            0,
+            None,
+            None,
+            Some(success_payload([
+                item(VENDOR_MEMBER, Value::integer(41)),
+                item(CONSTRAINTS, Value::structure(constraints())),
+                item(
+                    VENDOR_MEMBER,
+                    Value::text_string("opaque-sibling".to_owned()),
+                ),
+            ])),
+        );
+        GetConstraintsResponse::try_from_response_item(response_item(&message))
+            .expect("unknown siblings do not invalidate the required Constraints field")
+    };
 
     actual.with_ttlv(|response_item| {
         let payload = response_item
