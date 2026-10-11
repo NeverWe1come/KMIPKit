@@ -25,7 +25,7 @@ const TEST_UNIQUE_IDENTIFIER_0: &str = "kmipkit-test-unique-id-0";
 const TEST_CORRELATION_VALUE: &[u8] = b"kmipkit-test-correlation-value-0";
 
 #[cfg(test)]
-#[path = "oasis_get_fixture_tests.rs"]
+#[path = "../tests/fixtures/oasis_get_fixture_tests.rs"]
 mod managed_object_fixture_tests;
 
 /// A selected client-side cryptographic operation in an OASIS fixture.

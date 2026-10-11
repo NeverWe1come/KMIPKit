@@ -9,9 +9,9 @@ use super::*;
 // §6.1.19 Tables 220–222. These are four selected operation-item checks,
 // not complete official Test Case passes.
 const TC_PKCS12_1_21: &str =
-    include_str!("../../../specification/oasis/kmip-2.1/fixtures/TC-PKCS12-1-21.xml");
+    include_str!("../../../../specification/oasis/kmip-2.1/fixtures/TC-PKCS12-1-21.xml");
 const TC_PKCS12_2_21: &str =
-    include_str!("../../../specification/oasis/kmip-2.1/fixtures/TC-PKCS12-2-21.xml");
+    include_str!("../../../../specification/oasis/kmip-2.1/fixtures/TC-PKCS12-2-21.xml");
 
 const MISPAIRED_RESPONSE_CORRELATION_XML: &str = r#"
 <KMIP>
