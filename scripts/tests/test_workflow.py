@@ -107,6 +107,20 @@ class WorkflowContractTests(unittest.TestCase):
             r"(?m)^        run: python3 -B tools/normative_catalog/generate_attribute_policy\.py --repo-root \. --check$",
         )
 
+    def test_normative_inventory_checks_generated_client_profiles(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "normative-inventory")
+        step = re.search(
+            r"(?ms)^      - name: Verify generated client profiles\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step, "The normative inventory job must reject stale generated client profiles.")
+        self.assertRegex(step.group(1), r"(?m)^        id: verify-generated-client-profiles$")
+        self.assertRegex(
+            step.group(1),
+            r"(?m)^        run: python3 -B tools/normative_catalog/generate_profiles\.py --repo-root \. --check$",
+        )
+
     def test_external_actions_use_full_commit_sha_and_release_comment(self) -> None:
         contents = self.require_workflow()
         action_lines = [line for line in contents.splitlines() if " uses:" in line]
