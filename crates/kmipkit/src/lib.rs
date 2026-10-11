@@ -9,9 +9,10 @@ pub use kmipkit_client::{
 };
 pub use kmipkit_protocol::{
     CancelRequest, DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse,
-    GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse, KmipOperationResult,
-    LoginError, LoginRequest, LoginResponse, LogoutError, LogoutRequest, LogoutResponse,
-    PollRequest, ProcessRequest, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse, GetUsageAllocationError,
+    GetUsageAllocationRequest, GetUsageAllocationResponse, KmipOperationResult, LoginError,
+    LoginRequest, LoginResponse, LogoutError, LogoutRequest, LogoutResponse, PollRequest,
+    ProcessRequest, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
     QueryAsyncRequestsRequest, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
     Ticket, TicketType, TicketValidationError, TicketValidationErrorKind,
 };
