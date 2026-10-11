@@ -89,7 +89,6 @@ fn request_fields(bytes: &[u8], batch_index: usize) -> (Option<u32>, Vec<(u32, O
                         let raw_value = field.with_value(|value| match value {
                             ValueView::DateTime(value) => Some(*value),
                             ValueView::Enumeration(value) => Some(i64::from(*value)),
-                            ValueView::TextString(_) => None,
                             _ => None,
                         });
                         (field.tag().raw(), raw_value)
@@ -328,10 +327,7 @@ fn revoke_can_consume_a_preceding_register_id_placeholder() {
     let request = captured.as_deref().expect("request reaches fake transport");
     assert_eq!(
         request_fields(request, 1),
-        (
-            Some(REVOKE_OPERATION),
-            vec![(REVOCATION_REASON, None)],
-        ),
+        (Some(REVOKE_OPERATION), vec![(REVOCATION_REASON, None)],),
         "§4.1.2 and §6.1.44 allow Revoke to consume Register's ID Placeholder"
     );
     assert_eq!(fake.borrow().exchange_count(), 1);

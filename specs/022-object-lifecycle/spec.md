@@ -300,14 +300,14 @@ As a KMIPKit caller, I can send the §6.1.44 Revoke request and inspect the type
 3. Given a Table 297 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: Compromise Occurrence Date SHOULD accompany key/CA compromise and SHALL NOT accompany other reasons.
+**Specific rules**: `Revocation Reason` is the §4.47/Table 123 Structure, with required `Revocation Reason Code` and optional audit-only `Revocation Message`; it is not a direct Enumeration. Compromise Occurrence Date SHOULD accompany key/CA compromise and SHALL NOT accompany other reasons.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.44, Tables 295–296):
 
 | Side | Field | REQUIRED | Description or condition |
 | --- | --- | --- | --- |
 | Request | Unique Identifier | No | Determines the object being revoked. If omitted, then the ID Placeholder value is used by the server as the Unique Identifier. |
-| Request | Revocation Reason | Yes | Specifies the reason for revocation. |
+| Request | Revocation Reason | Yes | §4.47/Table 123 Structure containing the required Revocation Reason Code Enumeration and optional audit-only Revocation Message Text String. |
 | Request | Compromise Occurrence Date | No | SHOULD be specified if the Revocation Reason is 'key compromise' or ‘CA compromise’ and SHALL NOT be specified for other Revocation Reason enumerations . |
 | Response | Unique Identifier | Yes | The Unique Identifier of the object. |
 

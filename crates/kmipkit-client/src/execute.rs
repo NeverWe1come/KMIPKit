@@ -30,8 +30,8 @@ use kmipkit_protocol::{
     ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
     RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
     RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus, SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse,
-    SignatureVerifyRequest, SignatureVerifyResponse,
+    ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest, SetAttributeResponse,
+    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 
 #[cfg(test)]
@@ -127,6 +127,7 @@ const REKEY_OPERATION: u32 = 0x0000_0004; // KMIP v2.1 §6.1.46, Table 305.
 const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001d; // KMIP v2.1 §6.1.47, Table 310.
 const REPROVISION_OPERATION: u32 = 0x0000_0035; // KMIP v2.1 §6.1.48, Table 313.
 const REGISTER_OPERATION: u32 = 0x0000_0003; // KMIP v2.1 §6.1.43, Table 291.
+const REVOKE_OPERATION: u32 = 0x0000_0011; // KMIP v2.1 §6.1.44, Table 295.
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
 const ACTIVATE_OPERATION: u32 = 0x0000_0012; // KMIP v2.1 §6.1.1, Table 164.
@@ -180,6 +181,8 @@ pub enum ClientRequest {
     ReProvision(ReProvisionRequest),
     /// An explicit client-to-server Register request.
     Register(RegisterRequest),
+    /// An explicit client-to-server Revoke request.
+    Revoke(RevokeRequest),
     /// An explicit client-to-server Destroy request.
     Destroy(DestroyRequest),
     /// An explicit client-to-server Recover request.
@@ -349,6 +352,12 @@ impl ClientRequest {
         Self::Register(request)
     }
 
+    /// Creates an explicit client-to-server Revoke request variant.
+    #[must_use]
+    pub const fn revoke(request: RevokeRequest) -> Self {
+        Self::Revoke(request)
+    }
+
     /// Creates a typed Destroy request variant.
     #[must_use]
     pub fn destroy(request: DestroyRequest) -> Self {
@@ -428,6 +437,7 @@ impl ClientRequest {
             Self::RekeyKeyPair(_) => REKEY_KEY_PAIR_OPERATION,
             Self::ReProvision(_) => REPROVISION_OPERATION,
             Self::Register(_) => REGISTER_OPERATION,
+            Self::Revoke(_) => REVOKE_OPERATION,
             Self::Destroy(_) => DESTROY_OPERATION,
             Self::Recover(_) => RECOVER_OPERATION,
             Self::Get(_) => GET_OPERATION,
@@ -485,6 +495,7 @@ impl ClientRequest {
             Self::Recertify(request) => request.unique_identifier().is_none(),
             Self::Rekey(request) => request.unique_identifier().is_none(),
             Self::RekeyKeyPair(request) => request.private_key_unique_identifier().is_none(),
+            Self::Revoke(request) => request.unique_identifier().is_none(),
             Self::Encrypt(request) => request.unique_identifier().is_none(),
             Self::Decrypt(request) => request.unique_identifier().is_none(),
             _ => false,
@@ -518,6 +529,7 @@ impl ClientRequest {
             Self::RekeyKeyPair(request) => request.into_ttlv_payload(),
             Self::ReProvision(request) => request.into_ttlv_payload(),
             Self::Register(request) => request.into_ttlv_payload(),
+            Self::Revoke(request) => request.into_ttlv_payload(),
             Self::Destroy(request) => request.to_ttlv_payload(),
             Self::Recover(request) => request.to_ttlv_payload(),
             Self::Get(request) => request.to_ttlv_payload(),
@@ -566,6 +578,7 @@ impl fmt::Debug for ClientRequest {
                 formatter.debug_tuple("ReProvision").field(request).finish()
             }
             Self::Register(request) => formatter.debug_tuple("Register").field(request).finish(),
+            Self::Revoke(request) => formatter.debug_tuple("Revoke").field(request).finish(),
             Self::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
             Self::Recover(_) => formatter.write_str("Recover([REDACTED])"),
             Self::Get(_) => formatter.write_str("Get([REDACTED])"),
@@ -859,6 +872,7 @@ enum PendingResponse {
     RekeyKeyPair(RekeyKeyPairResponse),
     ReProvision(ReProvisionResponse),
     Register(RegisterResponse),
+    Revoke(RevokeResponse),
     Encrypt(EncryptResponse),
     Decrypt(DecryptResponse),
     Hash(HashResponse),
@@ -898,6 +912,7 @@ impl PendingResponse {
             Self::RekeyKeyPair(response) => ClientResponseRef::RekeyKeyPair(response),
             Self::ReProvision(response) => ClientResponseRef::ReProvision(response),
             Self::Register(response) => ClientResponseRef::Register(response),
+            Self::Revoke(response) => ClientResponseRef::Revoke(response),
             Self::Encrypt(response) => ClientResponseRef::Encrypt(response),
             Self::Decrypt(response) => ClientResponseRef::Decrypt(response),
             Self::Hash(response) => ClientResponseRef::Hash(response),
@@ -1103,6 +1118,8 @@ pub enum ClientOperation {
     ReProvision,
     /// Register.
     Register,
+    /// Revoke.
+    Revoke,
     /// Archive.
     Archive,
     /// Destroy.
@@ -1283,6 +1300,7 @@ enum ClientResponseRef<'a> {
     RekeyKeyPair(&'a RekeyKeyPairResponse),
     ReProvision(&'a ReProvisionResponse),
     Register(&'a RegisterResponse),
+    Revoke(&'a RevokeResponse),
     Encrypt(&'a EncryptResponse),
     Decrypt(&'a DecryptResponse),
     Hash(&'a HashResponse),
@@ -1339,6 +1357,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::RekeyKeyPair(response) => response.result(),
             ClientResponseRef::ReProvision(response) => response.result(),
             ClientResponseRef::Register(response) => response.result(),
+            ClientResponseRef::Revoke(response) => response.result(),
             ClientResponseRef::Encrypt(response) => response.result(),
             ClientResponseRef::Decrypt(response) => response.result(),
             ClientResponseRef::Hash(response) => response.result(),
@@ -1536,6 +1555,15 @@ impl<'a> ClientResponseView<'a> {
     pub const fn register(&self) -> Option<&'a RegisterResponse> {
         match self.response {
             ClientResponseRef::Register(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the Revoke response when this view represents it.
+    #[must_use]
+    pub const fn revoke(&self) -> Option<&'a RevokeResponse> {
+        match self.response {
+            ClientResponseRef::Revoke(response) => Some(response),
             _ => None,
         }
     }
@@ -1749,6 +1777,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Register(response) => {
                 debug_operation_response(formatter, "Register", response)
             }
+            ClientResponseRef::Revoke(response) => {
+                debug_operation_response(formatter, "Revoke", response)
+            }
             ClientResponseRef::Activate(_) => formatter.write_str("Activate([REDACTED])"),
             ClientResponseRef::Archive(_) => formatter.write_str("Archive([REDACTED])"),
             ClientResponseRef::Destroy(_) => formatter.write_str("Destroy([REDACTED])"),
@@ -1817,6 +1848,8 @@ pub enum ClientBatchOutcome {
     ReProvision(ReProvisionResponse),
     /// The server returned a Register result.
     Register(RegisterResponse),
+    /// The server returned a Revoke result.
+    Revoke(RevokeResponse),
     /// The server returned an Encrypt result.
     Encrypt(EncryptResponse),
     /// The server returned a Decrypt result.
@@ -1885,6 +1918,7 @@ impl ClientBatchOutcome {
             | Self::RekeyKeyPair(_)
             | Self::ReProvision(_)
             | Self::Register(_)
+            | Self::Revoke(_)
             | Self::Encrypt(_)
             | Self::Decrypt(_)
             | Self::Hash(_)
@@ -1927,6 +1961,7 @@ impl ClientBatchOutcome {
             Self::RekeyKeyPair(response) => response.result(),
             Self::ReProvision(response) => response.result(),
             Self::Register(response) => response.result(),
+            Self::Revoke(response) => response.result(),
             Self::Encrypt(response) => response.result(),
             Self::Decrypt(response) => response.result(),
             Self::Hash(response) => response.result(),
@@ -1969,6 +2004,7 @@ impl ClientBatchOutcome {
             Self::RekeyKeyPair(_) => ClientOperation::RekeyKeyPair,
             Self::ReProvision(_) => ClientOperation::ReProvision,
             Self::Register(_) => ClientOperation::Register,
+            Self::Revoke(_) => ClientOperation::Revoke,
             Self::Encrypt(_) => ClientOperation::Encrypt,
             Self::Decrypt(_) => ClientOperation::Decrypt,
             Self::Hash(_) => ClientOperation::Hash,
@@ -2120,6 +2156,21 @@ impl ClientBatchOutcome {
             Self::Pending(pending) => match pending.response() {
                 ClientResponseView {
                     response: ClientResponseRef::Register(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Revoke response, including when its result is Pending.
+    #[must_use]
+    pub const fn revoke_response(&self) -> Option<&RevokeResponse> {
+        match self {
+            Self::Revoke(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::Revoke(response),
                 } => Some(response),
                 _ => None,
             },
@@ -2301,6 +2352,7 @@ impl ClientBatchOutcome {
             Self::Register(response) => {
                 ClientResponseView::new(ClientResponseRef::Register(response))
             }
+            Self::Revoke(response) => ClientResponseView::new(ClientResponseRef::Revoke(response)),
             Self::Encrypt(response) => {
                 ClientResponseView::new(ClientResponseRef::Encrypt(response))
             }
@@ -2396,6 +2448,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::Register(response) => formatter.debug_tuple("Register").field(response).finish(),
+            Self::Revoke(response) => formatter.debug_tuple("Revoke").field(response).finish(),
             Self::GetCompleted(response) => formatter
                 .debug_tuple("GetCompleted")
                 .field(response)
@@ -2497,6 +2550,7 @@ impl fmt::Display for ClientBatchOutcome {
                 write!(formatter, "Re-Provision({})", response.result())
             }
             Self::Register(response) => write!(formatter, "Register({})", response.result()),
+            Self::Revoke(response) => write!(formatter, "Revoke({})", response.result()),
             Self::Archive(response) => write!(formatter, "Archive({})", response.result()),
             Self::Destroy(response) => write!(formatter, "Destroy({})", response.result()),
             Self::Recover(response) => write!(formatter, "Recover({})", response.result()),
@@ -3179,6 +3233,43 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let response = self.execute_with_options(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Register(request))),
+            limits,
+            request_options,
+        )?;
+        take_single_item_response(response.items)
+    }
+
+    /// Executes one typed Revoke request through the shared batch writer.
+    ///
+    /// The method reports the server result and does not simulate or track the
+    /// server-side lifecycle transition. It sends one exchange and never retries.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn revoke(
+        &mut self,
+        request: RevokeRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.revoke_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed Revoke request with transport timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn revoke_with_options(
+        &mut self,
+        request: RevokeRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Revoke(request))),
             limits,
             request_options,
         )?;
@@ -4342,6 +4433,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::RekeyKeyPair(_)
         | ClientRequest::ReProvision(_)
         | ClientRequest::Register(_)
+        | ClientRequest::Revoke(_)
         | ClientRequest::Destroy(_)
         | ClientRequest::Recover(_)
         | ClientRequest::Get(_)
@@ -5051,6 +5143,7 @@ const fn is_lifecycle_operation(operation: u32) -> bool {
             | REKEY_KEY_PAIR_OPERATION
             | REPROVISION_OPERATION
             | REGISTER_OPERATION
+            | REVOKE_OPERATION
     )
 }
 
@@ -5067,6 +5160,7 @@ fn lifecycle_response_outcome(
         REKEY_KEY_PAIR_OPERATION => rekey_key_pair_response_outcome(item),
         REPROVISION_OPERATION => reprovision_response_outcome(item),
         REGISTER_OPERATION => register_response_outcome(item),
+        REVOKE_OPERATION => revoke_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }
@@ -5192,6 +5286,19 @@ fn register_response_outcome(
         RegisterResponse::result,
         PendingResponse::Register,
         ClientBatchOutcome::Register,
+    )
+}
+
+fn revoke_response_outcome(
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    read_operation_outcome(
+        ClientOperation::Revoke,
+        item,
+        RevokeResponse::try_from_response_item,
+        RevokeResponse::result,
+        PendingResponse::Revoke,
+        ClientBatchOutcome::Revoke,
     )
 }
 
