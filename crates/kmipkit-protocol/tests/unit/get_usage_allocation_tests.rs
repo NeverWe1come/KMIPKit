@@ -152,7 +152,7 @@ fn table_233_preserves_integer_and_open_enumeration_identifiers() {
             Some(structure([item(UNIQUE_IDENTIFIER_TAG, wire_value)])),
         );
         let actual = GetUsageAllocationResponse::try_from_response_item(response_item(&message))
-            .expect("Table 146 Unique Identifier representations remain open");
+            .expect("Table 145 Unique Identifier representations remain open");
         assert_eq!(actual.unique_identifier(), Some(&expected));
     }
 }
