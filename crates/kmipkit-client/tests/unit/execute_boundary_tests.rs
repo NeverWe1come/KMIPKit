@@ -28,6 +28,16 @@ use syn::{
     Type, UseTree,
 };
 
+#[derive(Default)]
+struct MethodCallNames(HashSet<String>);
+
+impl<'ast> Visit<'ast> for MethodCallNames {
+    fn visit_expr_method_call(&mut self, call: &'ast ExprMethodCall) {
+        self.0.insert(call.method.to_string());
+        visit::visit_expr_method_call(self, call);
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum SourceCoverage {
     CandidateInspected,
@@ -3304,6 +3314,47 @@ fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_perm
     assert_eq!(audit.misplaced_exchange_calls, 0);
     assert_eq!(audit.permit_struct_constructions, 1);
     assert_eq!(audit.misplaced_permit_struct_constructions, 0);
+}
+
+#[test]
+fn policy_control_client_methods_do_not_call_the_public_execute_entry_point() {
+    let execute_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/execute.rs");
+    let source = fs::read_to_string(execute_path).expect("client executor source exists");
+    let syntax = syn::parse_file(&source).expect("client executor source parses");
+    let target_methods = [
+        "execute_guarded_protection_inner",
+        "get_constraints",
+        "get_usage_allocation",
+        "set_constraints",
+        "set_defaults",
+    ];
+
+    for method_name in target_methods {
+        let method = syntax.items.iter().find_map(|item| {
+            let Item::Impl(implementation) = item else {
+                return None;
+            };
+            let Type::Path(self_type) = implementation.self_ty.as_ref() else {
+                return None;
+            };
+            if self_type.path.segments.last()?.ident != "Client" {
+                return None;
+            }
+            implementation.items.iter().find_map(|item| {
+                let syn::ImplItem::Fn(method) = item else {
+                    return None;
+                };
+                (method.sig.ident == method_name).then_some(method)
+            })
+        });
+        let method = method.unwrap_or_else(|| panic!("Client::{method_name} exists"));
+        let mut calls = MethodCallNames::default();
+        calls.visit_impl_item_fn(method);
+        assert!(
+            !calls.0.contains("execute"),
+            "Client::{method_name} must use the approved typed execution helper"
+        );
+    }
 }
 
 fn candidate_rejects_boundary_fixture(fixture: &Fixture) -> bool {

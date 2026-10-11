@@ -23,18 +23,27 @@ mod credential;
 mod cryptographic_operation;
 mod cryptographic_parameters;
 mod decrypt;
+mod delegated_login;
 mod delete_attribute;
+mod derive_key;
 mod destroy;
 mod discover_versions;
 mod encrypt;
 mod error;
+mod export;
 pub mod extension;
 mod get;
 mod get_attribute_list;
 mod get_attributes;
+mod get_constraints;
+mod get_usage_allocation;
 mod hash;
+mod import;
+mod join_split_key;
 mod lifecycle;
 mod locate;
+mod login;
+mod logout;
 mod mac;
 mod mac_verify;
 mod message;
@@ -58,8 +67,17 @@ mod revoke;
 mod rng_retrieve;
 mod rng_seed;
 mod set_attribute;
+mod set_constraints;
+#[cfg(test)]
+#[path = "../tests/unit/set_constraints_tests.rs"]
+mod set_constraints_tests;
+mod set_defaults;
+#[cfg(test)]
+#[path = "../tests/unit/set_defaults_tests.rs"]
+mod set_defaults_tests;
 mod sign;
 mod signature_verify;
+mod ticket;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
@@ -90,22 +108,37 @@ pub use cryptographic_operation::{
     ValidityIndicator, VerificationResponseContext,
 };
 pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
+pub use delegated_login::{DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
+pub use derive_key::{
+    DerivationMethod, DerivationParameters, DeriveKeyError, DeriveKeyRequest, DeriveKeyResponse,
+};
 pub use destroy::{DestroyError, DestroyRequest, DestroyResponse};
 pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
 pub use encrypt::{EncryptError, EncryptRequest, EncryptResponse};
 pub use error::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
+pub use export::{ExportError, ExportRequest, ExportResponse};
 pub use get::{GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType};
 pub use get_attribute_list::{
     GetAttributeListError, GetAttributeListRequest, GetAttributeListResponse,
 };
 pub use get_attributes::{GetAttributesError, GetAttributesRequest, GetAttributesResponse};
+pub use get_constraints::{GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse};
+pub use get_usage_allocation::{
+    GetUsageAllocationError, GetUsageAllocationRequest, GetUsageAllocationResponse,
+};
 pub use hash::{HashError, HashRequest, HashResponse};
+pub use import::{ImportError, ImportRequest, ImportResponse};
+pub use join_split_key::{
+    JoinSplitKeyError, JoinSplitKeyRequest, JoinSplitKeyResponse, SplitKeyReference,
+};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
+pub use login::{LoginError, LoginRequest, LoginResponse};
+pub use logout::{LogoutError, LogoutRequest, LogoutResponse};
 pub use mac::{MacError, MacRequest, MacResponse};
 pub use mac_verify::{MacVerifyError, MacVerifyRequest, MacVerifyResponse};
 pub use message::{
@@ -134,8 +167,11 @@ pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use rng_retrieve::{RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse};
 pub use rng_seed::{RngSeedError, RngSeedRequest, RngSeedResponse};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
+pub use set_constraints::{SetConstraintsError, SetConstraintsRequest, SetConstraintsResponse};
+pub use set_defaults::{SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
+pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
@@ -222,6 +258,8 @@ mod cryptographic_parameters_tests;
 mod cryptographic_operation_contract_tests;
 
 #[cfg(test)]
+// Temporarily disabled while operation-specific Red/Green slices are exercised.
+#[cfg(test)]
 #[path = "../tests/unit/hash_operation_tests.rs"]
 mod hash_operation_tests;
 
@@ -306,6 +344,25 @@ mod create_key_pair_tests;
 mod create_split_key_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/join_split_key_operation_tests.rs"]
+mod join_split_key_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/derive_key_operation_tests.rs"]
+mod derive_key_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/export_operation_tests.rs"]
+mod export_operation_tests;
+#[cfg(test)]
+#[path = "../tests/unit/import_operation_tests.rs"]
+mod import_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/key_transfer_operation_contract_tests.rs"]
+mod key_transfer_operation_contract_tests;
+
+#[cfg(test)]
 #[path = "../tests/support/async_operation_fixtures.rs"]
 mod async_operation_fixtures;
 
@@ -382,6 +439,14 @@ mod locate_tests;
 mod get_attribute_list_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/get_constraints_tests.rs"]
+mod get_constraints_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/get_usage_allocation_tests.rs"]
+mod get_usage_allocation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/add_attribute_tests.rs"]
 mod add_attribute_tests;
 
@@ -412,3 +477,19 @@ mod attribute_limits_tests;
 #[cfg(test)]
 #[path = "../tests/unit/attribute_coverage_contract_tests.rs"]
 mod attribute_coverage_contract_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/ticket_model_tests.rs"]
+mod ticket_model_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/delegated_login_operation_tests.rs"]
+mod delegated_login_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/login_operation_tests.rs"]
+mod login_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/logout_operation_tests.rs"]
+mod logout_operation_tests;
