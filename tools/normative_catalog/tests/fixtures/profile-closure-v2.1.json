@@ -66040,7 +66040,7 @@
           "source_element_id": "KMIPKIT-ELEM-TAG-420094",
           "source_requirement_ids": [],
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL",
-          "source_note": "A Sign request may include or omit the key Unique Identifier. Omission uses the ID Placeholder only when one is valid."
+          "source_note": "A Sign request may include or omit the key Unique Identifier. Table 334 directs the server to use the ID Placeholder on omission; its availability and lifetime follow the general rule in KMIPKIT-CLAUSE-SPEC-6.1-002."
         },
         {
           "row_label": "Cryptographic Parameters",
