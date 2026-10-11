@@ -79,6 +79,34 @@ def closure_catalog() -> dict[str, object]:
 
 
 class ProfileMetadataGeneratorTests(unittest.TestCase):
+    def test_checked_in_client_profile_closures_match_current_scope(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+
+        violations = []
+        for profile in catalog["profiles"]:
+            if profile["role"] not in {"client", "both"}:
+                continue
+            closure = compute_profile_closure(
+                catalog,
+                profile["direct_source_clause_ids"],
+                profile_id=profile["profile_id"],
+            )
+            computed_ids = set(closure.requirement_ids)
+            stored_ids = set(profile["requirement_ids"])
+            stale_ids = sorted(stored_ids - computed_ids)
+            missing_ids = sorted(computed_ids - stored_ids)
+            if (
+                profile["source_clause_ids"] != list(closure.source_clause_ids)
+                or stale_ids
+                or missing_ids
+            ):
+                violations.append(
+                    f"{profile['profile_id']}: stale={stale_ids[:3]}, missing={missing_ids[:3]}"
+                )
+
+        self.assertEqual(violations, [], "client profile closures differ from current catalog scope")
+
     def test_closure_expands_whole_sources_sections_and_applicable_requirements(self) -> None:
         catalog = closure_catalog()
 
