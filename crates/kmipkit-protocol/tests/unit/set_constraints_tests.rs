@@ -10,6 +10,7 @@ use kmipkit_ttlv::{ItemType, Structure, Value, ValueView};
 const SET_CONSTRAINTS: u32 = 0x0000_0037;
 const CONSTRAINTS: u32 = 0x0042_0168;
 const VENDOR_MEMBER: u32 = 0x0054_1234;
+const TABLE_327_DISTINCT_REASONS: [u32; 9] = [0x07, 0x30, 0x15, 0x14, 0x08, 0x04, 0x05, 0x0C, 0x02];
 
 fn response_item(message: &ResponseMessage) -> crate::ResponseBatchItemView<'_> {
     message
@@ -136,18 +137,7 @@ fn table_326_retains_unknown_success_payload_fields() {
 #[test]
 fn table_327_preserves_all_distinct_reasons_and_open_unknown_reason() {
     // Table 327 repeats Invalid Field; test each distinct listed reason once.
-    for reason in [
-        0x07,
-        0x30,
-        0x15,
-        0x14,
-        0x08,
-        0x04,
-        0x05,
-        0x0C,
-        0x02,
-        0x8000_0054,
-    ] {
+    for reason in TABLE_327_DISTINCT_REASONS.into_iter().chain([0x8000_0054]) {
         let message = response_message(SET_CONSTRAINTS, 1, Some(reason), None, None);
         let response = SetConstraintsResponse::try_from_response_item(response_item(&message))
             .expect("Table 327 Failure uses the common result contract");
@@ -157,6 +147,59 @@ fn table_327_preserves_all_distinct_reasons_and_open_unknown_reason() {
             Some(ResultReason::from_raw(reason))
         );
     }
+}
+
+#[test]
+fn response_retains_unknown_payload_after_source_message_is_dropped() {
+    const OPAQUE_VALUE: &str = "opaque response field survives source drop";
+    let response = {
+        let payload = structure([item(
+            VENDOR_MEMBER,
+            Value::text_string(OPAQUE_VALUE.to_owned()),
+        )]);
+        let message = response_message(SET_CONSTRAINTS, 0, None, None, Some(payload));
+        SetConstraintsResponse::try_from_response_item(response_item(&message))
+            .expect("unknown Table 326 extension remains representable")
+    };
+
+    response.with_ttlv(|item| {
+        let payload = item
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == 0x0042_007C)
+            .expect("owned response retains its payload");
+        payload.with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                panic!("Response Payload is a Structure");
+            };
+            assert_eq!(payload.children().len(), 1);
+            assert!(
+                payload.children()[0]
+                    .with_value(|value| matches!(value, ValueView::TextString(OPAQUE_VALUE)))
+            );
+        });
+    });
+}
+
+#[test]
+fn request_and_response_debug_redact_constraint_and_extension_values() {
+    const SENSITIVE_VALUE: &str = "sensitive-constraint-value";
+    let request = SetConstraintsRequest::new(structure([item(
+        VENDOR_MEMBER,
+        Value::text_string(SENSITIVE_VALUE.to_owned()),
+    )]));
+    assert!(!format!("{request:?}").contains(SENSITIVE_VALUE));
+
+    let response = {
+        let payload = structure([item(
+            VENDOR_MEMBER,
+            Value::text_string(SENSITIVE_VALUE.to_owned()),
+        )]);
+        let message = response_message(SET_CONSTRAINTS, 0, None, None, Some(payload));
+        SetConstraintsResponse::try_from_response_item(response_item(&message))
+            .expect("unknown success payload is retained")
+    };
+    assert!(!format!("{response:?}").contains(SENSITIVE_VALUE));
 }
 
 #[test]

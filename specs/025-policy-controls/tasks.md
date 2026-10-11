@@ -90,7 +90,7 @@ Each task uses `[ ] T### [US#] action in exact/repository/path`. Every implement
 
 ### Refactor commit
 
-- [ ] T013 [US3] Refactor Set Constraints encoding and Table 327 result tests in `crates/kmipkit-protocol/src/set_constraints.rs`, `crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs`, and `crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs` without changing Table 325 behavior; rerun focused tests and commit separately as Refactor.
+- [x] T013 [US3] Refactor Set Constraints encoding and Table 327 result tests in `crates/kmipkit-protocol/src/set_constraints.rs`, `crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs`, and `crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs` without changing Table 325 behavior; rerun focused tests and commit separately as Refactor. Kept the production encoder unchanged after review found no beneficial wire-code cleanup; refactored the distinct Table 327 reason inventory and added owned-response lifetime plus request/response Debug-redaction coverage. Verified 8 protocol and 5 client tests, focused Clippy (`-D warnings`), formatting, and `git diff --check`. Independent QA approved with no behavior change.
 
 ## Phase 5: User Story 4 — Set Defaults (Priority: P1)
 
