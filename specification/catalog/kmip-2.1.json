@@ -94168,7 +94168,7 @@
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-013",
       "status": "unassigned",
       "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
     },
@@ -107557,6 +107557,35 @@
       "state": "resolved_by_approved_decision",
       "decision_id": "KMIPKIT-DEC-011",
       "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-050",
+      "summary": "Certify prose and Table 179 conflict on omitted Unique Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.6"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "normative_conflict",
+      "alternatives": [
+        "Follow §6.1.6 prose and require the public key's explicit Unique Identifier when Certificate Request is omitted.",
+        "Follow Table 179 and permit omission of Unique Identifier with server-side ID Placeholder substitution when Certificate Request is omitted."
+      ],
+      "affected_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.6-002-002"
+      ],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+        "KMIPKIT-ELEM-TAG-420094"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Certify request validation and whether an omitted public-key identifier can consume a prior ID Placeholder.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-013",
+      "erratum_source_refs": []
     }
   ],
   "decisions": [
@@ -107878,6 +107907,28 @@
       "approval_evidence": "On 2026-10-10 the maintainer selected the displayed .xml filename and authorized incorporating the fixture and checksum for KMIPKIT-DISC-030.",
       "approved_at": "2026-10-10",
       "consequence": "TC-LOGIN-1-21 maps to specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml; the exact fixture checksum is recorded in SOURCES.md. Fixture availability does not itself claim a conformance test pass.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-013",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.6"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.6-002-002"
+      ],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-050"
+      ],
+      "policy_ids": [],
+      "interpretation": "Follow the §6.1.6 prose: if Certificate Request is omitted, the client explicitly supplies the public key's Unique Identifier. Do not apply the conflicting Table 179 sentence as an ID Placeholder substitution for this request input. Unique Identifier may still be omitted when Certificate Request Value is present. The generated certificate's returned identifier may still be consumed by a subsequent Get in the same ordered batch through the ID Placeholder mechanism.",
+      "approver": "KMIPKit maintainer, direct clarification in current task",
+      "approval_evidence": "On 2026-10-11 the maintainer selected the §6.1.6 prose interpretation, requiring an explicit Unique Identifier when Certificate Request is omitted.",
+      "approved_at": "2026-10-11",
+      "consequence": "The client rejects Certify requests that omit both Certificate Request Value and Unique Identifier; it preserves omission of Unique Identifier when request material is present and retains the output ID Placeholder path for a following Get. Pinned OASIS source files remain unchanged.",
       "status": "accepted"
     }
   ]

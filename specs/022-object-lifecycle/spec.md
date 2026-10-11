@@ -59,13 +59,13 @@ As a KMIPKit caller, I can send the §6.1.6 Certify request and inspect the type
 3. Given a Table 181 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: One certificate per request. Certificate Request Type is required with Certificate Request; when no request object is supplied, identify the public key and specify Certificate Type as §6.1.6 requires.
+**Specific rules**: One certificate per request. Certificate Request Type is required with Certificate Request. If Certificate Request is omitted, the client MUST explicitly provide the public key's Unique Identifier; KMIPKit does not substitute an ID Placeholder for this input. If both Certificate Request Type and Certificate Request are omitted, specify Certificate Type in Attributes as §6.1.6 requires. The generated certificate's returned identifier may still be consumed by a subsequent Get in the same ordered batch through the ID Placeholder mechanism.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.6, Tables 179–180):
 
 | Side | Field | REQUIRED | Description or condition |
 | --- | --- | --- | --- |
-| Request | Unique Identifier | No | The Unique Identifier of the Public Key or the Certificate Request being certified. If omitted and Certificate Request is not present, then the ID Placeholder value is used by the server as the Unique Identifier. |
+| Request | Unique Identifier | No | The Unique Identifier of the Public Key or Certificate Request being certified. When Certificate Request is omitted, this field MUST explicitly identify the public key. KMIPKit follows the §6.1.6 prose for this condition; it does not apply Table 179's conflicting ID Placeholder sentence to the input identifier. |
 | Request | Certificate Request Type | No | An Enumeration object specifying the type of certificate request. It is REQUIRED if the Certificate Request is present. |
 | Request | Certificate Request Value | No | A Byte String object with the certificate request. |
 | Request | Attributes | No | Specifies desired object attributes. |
@@ -424,11 +424,12 @@ KMIPKIT-DEC-010 treats the one-replacement cardinality in §11.28/Table 464 as a
 | Register | No direct catalog case ID |
 | Revoke | No direct catalog case ID |
 
-### Maintainer-approved interpretations (2026-10-10)
+### Maintainer-approved interpretations (2026-10-11)
 
 These are accepted KMIPKit interpretations, not official OASIS errata. Their decision records are in the checked-in normative catalog; pinned upstream copies remain unchanged.
 
 | Operation | Discrepancy | Disposition |
 | --- | --- | --- |
+| Certify | KMIPKIT-DISC-050 | The §6.1.6 prose requires the public key's Unique Identifier when Certificate Request is omitted; this governs over the conflicting Table 179 ID Placeholder sentence. Decision: KMIPKIT-DEC-013. |
 | Re-Provision | KMIPKIT-DISC-040 | Support certificate-request, certificate, and parameterless server-credential paths. Table 315 has an errant RNG Retrieve caption in the Re-Provision error section. |
 | Unique Identifier | KMIPKIT-DISC-025 | The lowercase “may” in §11.58 is descriptive text, not a new normative client keyword. Explicit operation-specific identifier and batch rules remain in force. Decision: KMIPKIT-DEC-009. |

@@ -40,7 +40,8 @@ Each returns the existing per-item response/result type; options-bearing variant
 
 ## Operation behavior
 
-- **Certify / Re-certify**: preserve certificate request type and value separately; validate conditional type requirements and one-certificate scope. Never generate or parse a certificate locally.
+- **Certify**: preserve certificate request type and value separately; validate that the public key's Unique Identifier is explicitly supplied when Certificate Request is omitted (KMIPKIT-DEC-013), validate conditional type requirements and one-certificate scope. Never generate or parse a certificate locally.
+- **Re-certify**: preserve certificate request type and value separately; validate conditional type requirements and one-certificate scope. Never generate or parse a certificate locally.
 - **Check**: preserve policy request/response values and document caller-selected Batch Order and Stop/Undo options; do not alter caller batch options.
 - **Obtain Lease**: expose Lease Time and Last Change Date without timekeeping or lifecycle state.
 - **Re-key / Re-key Key Pair**: retain Offset and separate attribute/mask groups; do not query objects or synthesize links.
