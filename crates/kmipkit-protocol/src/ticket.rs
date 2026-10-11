@@ -182,16 +182,7 @@ impl Ticket {
                             TicketValidationErrorKind::DuplicateField,
                         ));
                     }
-                    let raw = field.with_value(|value| match value {
-                        ValueView::Enumeration(raw) => Some(*raw),
-                        _ => None,
-                    });
-                    let Some(raw) = raw else {
-                        return Err(TicketValidationError::new(
-                            TicketValidationErrorKind::WrongFieldType,
-                        ));
-                    };
-                    ticket_type = Some(TicketType::from_raw(raw));
+                    ticket_type = Some(read_ticket_type(field)?);
                 }
                 1 => {
                     if ticket_value.is_some() {
@@ -199,16 +190,7 @@ impl Ticket {
                             TicketValidationErrorKind::DuplicateField,
                         ));
                     }
-                    let bytes = field.with_value(|value| match value {
-                        ValueView::ByteString(bytes) => Some(bytes.to_vec()),
-                        _ => None,
-                    });
-                    let Some(bytes) = bytes else {
-                        return Err(TicketValidationError::new(
-                            TicketValidationErrorKind::WrongFieldType,
-                        ));
-                    };
-                    ticket_value = Some(SecretBytes::new(bytes));
+                    ticket_value = Some(read_ticket_value(field)?);
                 }
                 _ => {
                     return Err(TicketValidationError::new(
@@ -292,6 +274,24 @@ fn push_item(
         .map_err(|_| TicketValidationError::new(TicketValidationErrorKind::InvalidTtlvStructure))?;
     tree.try_push(item)
         .map_err(|_| TicketValidationError::new(TicketValidationErrorKind::InvalidTtlvStructure))
+}
+
+fn read_ticket_type(field: &Item) -> Result<TicketType, TicketValidationError> {
+    field
+        .with_value(|value| match value {
+            ValueView::Enumeration(raw) => Some(TicketType::from_raw(*raw)),
+            _ => None,
+        })
+        .ok_or_else(|| TicketValidationError::new(TicketValidationErrorKind::WrongFieldType))
+}
+
+fn read_ticket_value(field: &Item) -> Result<SecretBytes, TicketValidationError> {
+    field
+        .with_value(|value| match value {
+            ValueView::ByteString(bytes) => Some(SecretBytes::new(bytes.to_vec())),
+            _ => None,
+        })
+        .ok_or_else(|| TicketValidationError::new(TicketValidationErrorKind::WrongFieldType))
 }
 
 fn checked_tag(raw_tag: u32) -> Result<Tag, TicketValidationError> {

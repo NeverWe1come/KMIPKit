@@ -24,7 +24,7 @@ Every task uses the repository checklist form: checkbox, sequential task ID, opt
 
 - [x] T002 Add failing Ticket model tests in crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs and register the test module in crates/kmipkit-protocol/src/lib.rs for required Ticket Type and Ticket Value, open-enum and property-based TTLV round trips, malformed nested values, redacted formatting, and secret ownership; run the focused cargo test and commit the Red evidence separately.
 - [x] T003 Implement the typed Ticket structure and secret-safe Ticket Value in crates/kmipkit-protocol/src/ticket.rs; export it from crates/kmipkit-protocol/src/lib.rs and crates/kmipkit/src/lib.rs and make every T002 Red test pass; commit the Green evidence separately.
-- [ ] T004 Refactor Ticket parsing, redaction, and zeroization paths in crates/kmipkit-protocol/src/ticket.rs and crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs without changing wire behavior; rerun focused tests and commit the Refactor evidence separately.
+- [x] T004 Refactor Ticket parsing, redaction, and zeroization paths in crates/kmipkit-protocol/src/ticket.rs and crates/kmipkit-protocol/tests/unit/ticket_model_tests.rs without changing wire behavior; rerun focused tests and commit the Refactor evidence separately.
 
 **Checkpoint**: Ticket fields round-trip and remain secret-safe. Operation-specific work can proceed.
 
