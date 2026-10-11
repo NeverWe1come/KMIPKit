@@ -829,6 +829,35 @@ class CiSummaryTests(unittest.TestCase):
                 summary_path.read_text(encoding="utf-8"),
             )
 
+    def test_main_does_not_invent_missing_release_run_attempt(self) -> None:
+        summary_module = self.require_summary()
+        context = self.release_context()
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "step-summary.md"
+            output_path = Path(directory) / "step-output.txt"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_OUTPUT": str(output_path),
+                "CI_NEEDS_JSON": json.dumps(self.successful_release_needs()),
+                "CI_BRANCH_PROTECTION_JSON": json.dumps(self.branch_protection()),
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_REPOSITORY": context["repository"],
+                "GITHUB_REF": context["ref"],
+                "GITHUB_REF_PROTECTED": "true",
+                "GITHUB_WORKFLOW_REF": context["workflow_ref"],
+                "GITHUB_SHA": context["sha"],
+                "GITHUB_RUN_ID": context["run_id"],
+                "GITHUB_SERVER_URL": "https://github.com",
+            }
+            with mock.patch.dict(os.environ, environment, clear=True):
+                exit_code = summary_module.main()
+
+            self.assertEqual(1, exit_code)
+            self.assertIn("CI summary could not be rendered", summary_path.read_text(encoding="utf-8"))
+            output = output_path.read_text(encoding="utf-8")
+            self.assertNotIn("profile_evidence_manifest=", output)
+            self.assertEqual("summary_written=false", output.strip())
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
