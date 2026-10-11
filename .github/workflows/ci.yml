@@ -761,6 +761,10 @@ jobs:
         id: validate-complete-normative-catalog
         run: python3 -B tools/normative_catalog/validate.py --repo-root .
 
+      - name: Verify generated client profiles
+        id: verify-generated-client-profiles
+        run: python3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check
+
       - name: Verify generated coverage report
         id: verify-generated-coverage-report
         run: python3 -B tools/normative_catalog/report.py --repo-root . --check
