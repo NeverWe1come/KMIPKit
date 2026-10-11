@@ -9,7 +9,7 @@
 use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{
     DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse, ResponseMessage,
-    ResultReason,
+    ResultReason, ResultValidationError,
 };
 use kmipkit_ttlv::{Structure, Value, ValueView};
 
@@ -47,6 +47,15 @@ fn valid_rights() -> Structure {
     structure([item(RIGHT, Value::structure(Structure::new()))])
 }
 
+fn structure_at_depth(depth: usize) -> Structure {
+    assert!((1..=64).contains(&depth));
+    let mut nested = Structure::new();
+    for _ in 1..depth {
+        nested = structure([item(VENDOR_EXTENSION, Value::structure(nested))]);
+    }
+    nested
+}
+
 fn valid_ticket() -> Structure {
     structure([
         item(TICKET_TYPE, Value::enumeration(0x8000_0042)),
@@ -60,12 +69,26 @@ fn delegated_login_response(
     reason: Option<u32>,
     payload: Option<Structure>,
 ) -> Result<DelegatedLoginResponse, DelegatedLoginError> {
-    let message = response_message(DELEGATED_LOGIN, status, reason, None, payload);
+    delegated_login_response_for(DELEGATED_LOGIN, status, reason, payload)
+}
+
+fn delegated_login_response_for(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    payload: Option<Structure>,
+) -> Result<DelegatedLoginResponse, DelegatedLoginError> {
+    let message = response_message(operation, status, reason, None, payload);
     DelegatedLoginResponse::try_from_response_item(response_item(&message))
 }
 
 #[test]
 fn request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms() {
+    let rights_only = DelegatedLoginRequest::new(valid_rights())
+        .into_ttlv_payload()
+        .expect("all optional fields may be omitted");
+    assert_eq!(item_tags(&rights_only), [RIGHTS]);
+
     let interval = DelegatedLoginRequest::new(valid_rights())
         .with_lease_time_interval(60)
         .with_request_count(4)
@@ -100,8 +123,38 @@ fn request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms()
 }
 
 #[test]
+fn request_rejects_a_nested_optional_value_that_exceeds_ttlv_depth() {
+    let error = DelegatedLoginRequest::new(valid_rights())
+        .with_usage_limits(structure_at_depth(64))
+        .into_ttlv_payload()
+        .expect_err("adding Usage Limits would exceed the generic TTLV depth limit");
+
+    assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
+}
+
+#[test]
+fn request_debug_does_not_format_rights_ttlv_content() {
+    const RIGHTS_SECRET: &str = "rights-debug-sentinel";
+    let rights = structure([item(
+        RIGHT,
+        Value::structure(structure([item(
+            0x0042_0042,
+            Value::text_string(RIGHTS_SECRET.to_owned()),
+        )])),
+    )]);
+    let request = DelegatedLoginRequest::new(rights);
+    let debug = format!("{request:?}");
+
+    assert!(debug.contains("PRESERVED TTLV"));
+    assert!(!debug.contains(RIGHTS_SECRET));
+}
+
+#[test]
 fn successful_response_requires_ticket_and_preserves_open_type_and_extensions() {
-    let payload = structure([item(TICKET, Value::structure(valid_ticket()))]);
+    let payload = structure([
+        item(VENDOR_EXTENSION, Value::enumeration(42)),
+        item(TICKET, Value::structure(valid_ticket())),
+    ]);
     let response = delegated_login_response(SUCCESS, None, Some(payload))
         .expect("Table 200 success contains the required Ticket");
     let ticket = response
@@ -144,6 +197,44 @@ fn malformed_success_ticket_is_rejected_without_echoing_ticket_bytes() {
         .expect_err("Table 200 requires a structurally valid Ticket");
 
     assert!(!error.to_string().contains("delegated-login-ticket-secret"));
+}
+
+#[test]
+fn response_errors_have_payload_free_display_and_sources() {
+    assert_eq!(
+        delegated_login_response_for(DELEGATED_LOGIN + 1, OPERATION_FAILED, Some(2), None)
+            .unwrap_err(),
+        DelegatedLoginError::UnexpectedOperation
+    );
+
+    let error = DelegatedLoginError::UnexpectedOperation;
+    assert_eq!(error.to_string(), "response item is not Delegated Login");
+    assert!(std::error::Error::source(&error).is_none());
+
+    let error = DelegatedLoginError::MissingResultStatus;
+    assert_eq!(
+        error.to_string(),
+        "Delegated Login result status is missing"
+    );
+    assert!(std::error::Error::source(&error).is_none());
+
+    let cause = ResultValidationError::SuccessForbidsReason;
+    let error = DelegatedLoginError::InvalidOperationResult(cause);
+    assert_eq!(
+        error.to_string(),
+        "Delegated Login operation result is invalid: Success forbids a Result Reason"
+    );
+    assert_eq!(
+        std::error::Error::source(&error).unwrap().to_string(),
+        cause.to_string()
+    );
+
+    let error = DelegatedLoginError::MalformedSuccessPayload;
+    assert_eq!(
+        error.to_string(),
+        "successful Delegated Login Ticket payload is malformed"
+    );
+    assert!(std::error::Error::source(&error).is_none());
 }
 
 #[test]

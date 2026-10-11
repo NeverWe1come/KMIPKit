@@ -175,28 +175,20 @@ impl Ticket {
             }
             last_known_field = Some(index);
 
-            match index {
-                0 => {
-                    if ticket_type.is_some() {
-                        return Err(TicketValidationError::new(
-                            TicketValidationErrorKind::DuplicateField,
-                        ));
-                    }
-                    ticket_type = Some(read_ticket_type(field)?);
-                }
-                1 => {
-                    if ticket_value.is_some() {
-                        return Err(TicketValidationError::new(
-                            TicketValidationErrorKind::DuplicateField,
-                        ));
-                    }
-                    ticket_value = Some(read_ticket_value(field)?);
-                }
-                _ => {
+            if index == 0 {
+                if ticket_type.is_some() {
                     return Err(TicketValidationError::new(
-                        TicketValidationErrorKind::InvalidTtlvStructure,
+                        TicketValidationErrorKind::DuplicateField,
                     ));
                 }
+                ticket_type = Some(read_ticket_type(field)?);
+            } else {
+                if ticket_value.is_some() {
+                    return Err(TicketValidationError::new(
+                        TicketValidationErrorKind::DuplicateField,
+                    ));
+                }
+                ticket_value = Some(read_ticket_value(field)?);
             }
         }
 

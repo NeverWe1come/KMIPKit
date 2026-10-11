@@ -133,6 +133,14 @@ fn ttlv_parse_rejects_missing_duplicate_wrong_type_and_out_of_order_fields() {
         (
             structure([
                 item(TICKET_TYPE, Value::enumeration(1)),
+                item(TICKET_VALUE, Value::byte_string(vec![1])),
+                item(TICKET_VALUE, Value::byte_string(vec![2])),
+            ]),
+            TicketValidationErrorKind::DuplicateField,
+        ),
+        (
+            structure([
+                item(TICKET_TYPE, Value::enumeration(1)),
                 item(TICKET_VALUE, Value::structure(Structure::new())),
             ]),
             TicketValidationErrorKind::WrongFieldType,
@@ -151,6 +159,40 @@ fn ttlv_parse_rejects_missing_duplicate_wrong_type_and_out_of_order_fields() {
             Ticket::try_from_ttlv(ticket).expect_err("malformed Ticket structure is rejected");
         assert_eq!(error.kind(), expected_kind);
     }
+}
+
+#[test]
+fn validation_error_kinds_have_stable_payload_free_display() {
+    let cases = [
+        (
+            TicketValidationErrorKind::DuplicateField,
+            "duplicate KMIP Ticket field",
+        ),
+        (
+            TicketValidationErrorKind::MissingField,
+            "missing required KMIP Ticket field",
+        ),
+        (
+            TicketValidationErrorKind::WrongFieldType,
+            "KMIP Ticket field has an invalid Item Type",
+        ),
+        (
+            TicketValidationErrorKind::FieldOutOfOrder,
+            "KMIP Ticket fields are out of order",
+        ),
+        (
+            TicketValidationErrorKind::InvalidTtlvStructure,
+            "invalid generic KMIP TTLV structure",
+        ),
+    ];
+    for (kind, expected) in cases {
+        assert_eq!(kind.to_string(), expected);
+    }
+
+    let error = Ticket::try_from_ttlv(Structure::new())
+        .expect_err("an empty structure omits both required Ticket fields");
+    assert_eq!(error.kind(), TicketValidationErrorKind::MissingField);
+    assert_eq!(error.to_string(), "missing required KMIP Ticket field");
 }
 
 #[test]

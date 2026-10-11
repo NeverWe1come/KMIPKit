@@ -182,6 +182,9 @@ fn login_matches_pinned_fixture_request_and_returns_one_secret_safe_ticket() {
         .expect("the server returns the Login fixture success shape");
     let item = outcome.get(0).expect("one Login result exists");
     assert_eq!(item.outcome().operation(), ClientOperation::Login);
+    assert!(format!("{:?}", item.outcome()).contains("Login"));
+    assert!(format!("{:?}", item.outcome().response()).contains("Login"));
+    assert!(format!("{}", item.outcome()).contains("Login("));
     let ticket = item
         .outcome()
         .login_response()

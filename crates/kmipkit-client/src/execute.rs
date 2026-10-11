@@ -24,18 +24,17 @@ use kmipkit_protocol::{
     GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse, GetRequest, GetResponse,
     HashRequest, HashResponse, ImportRequest, ImportResponse, JoinSplitKeyRequest,
     JoinSplitKeyResponse, KmipOperationResult, LocateRequest, LocateResponse, LoginRequest,
-    LoginResponse, MacRequest, MacResponse, MacVerifyRequest, MacVerifyResponse,
-    MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute,
-    ObtainLeaseRequest, ObtainLeaseResponse, PingRequest, PingResponse, PollRequest, PollResponse,
-    ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
-    QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse,
-    RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest,
-    RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse, SetAttributeRequest,
-    SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
+    LoginResponse, LogoutRequest, LogoutResponse, MacRequest, MacResponse, MacVerifyRequest,
+    MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest, ModifyAttributeResponse,
+    NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest, PingResponse, PollRequest,
+    PollResponse, ProcessRequest, ProcessResponse, ProtocolCauseCategory, ProtocolError,
+    ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
+    QueryRequest, QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest,
+    RecertifyResponse, RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse,
+    RekeyKeyPairRequest, RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage,
+    ResponseBatchItemView, ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse,
+    SetAttributeRequest, SetAttributeResponse, SignRequest, SignResponse, SignatureVerifyRequest,
     SignatureVerifyResponse,
-    LogoutRequest, LogoutResponse,
 };
 
 #[cfg(test)]
@@ -1981,6 +1980,14 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Logout(response) => debug_response(formatter, "Logout", response),
             ClientResponseRef::Encrypt(response) => debug_response(formatter, "Encrypt", response),
             ClientResponseRef::Decrypt(response) => debug_response(formatter, "Decrypt", response),
+            ClientResponseRef::DeriveKey(response) => {
+                debug_response(formatter, "DeriveKey", response)
+            }
+            ClientResponseRef::Export(response) => debug_response(formatter, "Export", response),
+            ClientResponseRef::Import(response) => debug_response(formatter, "Import", response),
+            ClientResponseRef::JoinSplitKey(response) => {
+                debug_response(formatter, "JoinSplitKey", response)
+            }
             ClientResponseRef::Hash(response) => debug_response(formatter, "Hash", response),
             ClientResponseRef::Mac(response) => debug_response(formatter, "MAC", response),
             ClientResponseRef::MacVerify(response) => {
@@ -2689,6 +2696,8 @@ impl ClientBatchOutcome {
     /// Existing Discover Versions result access remains available through
     /// [`ClientResponseView::result`] and [`ClientResponseView::supported_versions`].
     #[must_use]
+    // Keep the exhaustive response-to-view mapping together for API review.
+    #[allow(clippy::too_many_lines)]
     pub const fn response(&self) -> ClientResponseView<'_> {
         match self {
             Self::Completed(response) => {

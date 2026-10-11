@@ -7,8 +7,8 @@
 
 use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{
-    LogoutError, LogoutRequest, LogoutResponse, ResponseMessage, ResultReason, SecretBytes, Ticket,
-    TicketType,
+    LogoutError, LogoutRequest, LogoutResponse, ResponseMessage, ResultReason,
+    ResultValidationError, SecretBytes, Ticket, TicketType,
 };
 use kmipkit_ttlv::{Structure, Value};
 
@@ -18,6 +18,7 @@ const OPERATION_FAILED: u32 = 1;
 const TICKET: u32 = 0x0042_0149;
 const TICKET_TYPE: u32 = 0x0042_014A;
 const TICKET_VALUE: u32 = 0x0042_014B;
+const VENDOR_EXTENSION: u32 = 0x0054_1234;
 const SECRET_SENTINEL: &[u8] = b"logout-ticket-secret-sentinel";
 
 fn response_item(message: &ResponseMessage) -> crate::ResponseBatchItemView<'_> {
@@ -33,6 +34,15 @@ fn ticket() -> Ticket {
         SecretBytes::new(SECRET_SENTINEL.to_vec()),
     )
     .expect("the required Ticket uses representable fields")
+}
+
+fn structure_at_depth(depth: usize) -> Structure {
+    assert!((1..=64).contains(&depth));
+    let mut nested = Structure::new();
+    for _ in 1..depth {
+        nested = structure([item(VENDOR_EXTENSION, Value::structure(nested))]);
+    }
+    nested
 }
 
 fn typed_response(
@@ -69,6 +79,22 @@ fn table_256_request_requires_and_preserves_the_explicit_secret_ticket() {
             assert_eq!(bytes, SECRET_SENTINEL);
         });
     });
+}
+
+#[test]
+fn request_rejects_a_ticket_that_exceeds_the_outer_ttlv_depth_limit() {
+    let ticket_tree = structure([
+        item(TICKET_TYPE, Value::enumeration(1)),
+        item(TICKET_VALUE, Value::byte_string(SECRET_SENTINEL.to_vec())),
+        item(VENDOR_EXTENSION, Value::structure(structure_at_depth(63))),
+    ]);
+    let deep_ticket = Ticket::try_from_ttlv(ticket_tree)
+        .expect("the Ticket structure itself stays within the TTLV depth limit");
+    let error = LogoutRequest::new(deep_ticket)
+        .into_ttlv_payload()
+        .expect_err("the outer Logout payload would exceed the TTLV depth limit");
+
+    assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
 }
 
 #[test]
@@ -133,5 +159,42 @@ fn wrong_operation_is_rejected_with_payload_free_error() {
     assert_eq!(
         typed_response(LOGOUT - 1, SUCCESS, None, Some(Structure::new())).unwrap_err(),
         LogoutError::UnexpectedOperation
+    );
+}
+
+#[test]
+fn response_errors_have_payload_free_display_and_sources() {
+    let cases = [
+        (
+            LogoutError::UnexpectedOperation,
+            "response item is not Logout",
+        ),
+        (
+            LogoutError::MissingResultStatus,
+            "Logout result status is missing",
+        ),
+        (
+            LogoutError::MissingResponsePayload,
+            "successful Logout response payload is missing",
+        ),
+        (
+            LogoutError::MalformedResponsePayload,
+            "successful Logout response payload is not empty",
+        ),
+    ];
+    for (error, expected) in cases {
+        assert_eq!(error.to_string(), expected);
+        assert!(std::error::Error::source(&error).is_none());
+    }
+
+    let cause = ResultValidationError::SuccessForbidsReason;
+    let error = LogoutError::InvalidOperationResult(cause);
+    assert_eq!(
+        error.to_string(),
+        "Logout operation result is invalid: Success forbids a Result Reason"
+    );
+    assert_eq!(
+        std::error::Error::source(&error).unwrap().to_string(),
+        cause.to_string()
     );
 }

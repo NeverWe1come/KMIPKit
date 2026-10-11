@@ -2,7 +2,9 @@
 //! §7.39/Table 391. The fixture case is pinned as KMIPKIT-TEST-CN01-2-48.
 //! These assertions do not claim that a KMIP server was run.
 
-use crate::{LoginError, LoginRequest, LoginResponse, ResponseMessage, ResultReason};
+use crate::{
+    LoginError, LoginRequest, LoginResponse, ResponseMessage, ResultReason, ResultValidationError,
+};
 use kmipkit_ttlv::{Structure, Value, ValueView};
 
 const LOGIN: u32 = 0x0000_002D;
@@ -33,19 +35,40 @@ fn typed_response(
     reason: Option<u32>,
     payload: Option<Structure>,
 ) -> Result<LoginResponse, LoginError> {
-    let message = response_message(LOGIN, status, reason, None, payload);
+    typed_response_for(LOGIN, status, reason, payload)
+}
+
+fn typed_response_for(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    payload: Option<Structure>,
+) -> Result<LoginResponse, LoginError> {
+    let message = response_message(operation, status, reason, None, payload);
     LoginResponse::try_from_response_item(response_item(&message))
 }
 
 fn ticket_payload() -> Structure {
-    structure([item(
-        TICKET,
-        Value::structure(structure([
-            item(TICKET_TYPE, Value::enumeration(1)),
-            item(TICKET_VALUE, Value::byte_string(SECRET_SENTINEL.to_vec())),
-            item(UNKNOWN_VENDOR_TAG, Value::enumeration(0xF123_4567)),
-        ])),
-    )])
+    structure([
+        item(UNKNOWN_VENDOR_TAG, Value::enumeration(1)),
+        item(
+            TICKET,
+            Value::structure(structure([
+                item(TICKET_TYPE, Value::enumeration(1)),
+                item(TICKET_VALUE, Value::byte_string(SECRET_SENTINEL.to_vec())),
+                item(UNKNOWN_VENDOR_TAG, Value::enumeration(0xF123_4567)),
+            ])),
+        ),
+    ])
+}
+
+fn structure_at_depth(depth: usize) -> Structure {
+    assert!((1..=64).contains(&depth));
+    let mut nested = Structure::new();
+    for _ in 1..depth {
+        nested = structure([item(UNKNOWN_VENDOR_TAG, Value::structure(nested))]);
+    }
+    nested
 }
 
 #[test]
@@ -54,6 +77,38 @@ fn empty_login_request_keeps_all_optional_table_253_fields_absent() {
         .into_ttlv_payload()
         .expect("Table 253 permits an empty Login request");
     assert!(payload.view().children().is_empty());
+
+    let default_payload = LoginRequest::default()
+        .into_ttlv_payload()
+        .expect("Default preserves the same valid empty Table 253 request");
+    assert!(default_payload.view().children().is_empty());
+}
+
+#[test]
+fn request_debug_reports_optional_presence_without_ttlv_payloads() {
+    let request = LoginRequest::new()
+        .with_lease_time_interval(5)
+        .with_request_count(2)
+        .with_usage_limits(structure([item(
+            0x0042_00C2,
+            Value::text_string("usage-limits-debug-sentinel".to_owned()),
+        )]));
+    let debug = format!("{request:?}");
+
+    assert!(debug.contains("lease_time: true"));
+    assert!(debug.contains("request_count: Some(2)"));
+    assert!(debug.contains("usage_limits: true"));
+    assert!(!debug.contains("usage-limits-debug-sentinel"));
+}
+
+#[test]
+fn request_rejects_usage_limits_that_exceed_ttlv_depth() {
+    let error = LoginRequest::new()
+        .with_usage_limits(structure_at_depth(64))
+        .into_ttlv_payload()
+        .expect_err("adding Usage Limits would exceed the generic TTLV depth limit");
+
+    assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
 }
 
 #[test]
@@ -143,6 +198,40 @@ fn malformed_success_ticket_is_rejected_without_disclosing_secret_bytes() {
     let error = typed_response(SUCCESS, None, Some(malformed))
         .expect_err("Table 254 requires a structurally valid Ticket");
     assert!(!error.to_string().contains("login-ticket-secret-sentinel"));
+}
+
+#[test]
+fn response_errors_have_payload_free_display_and_sources() {
+    assert_eq!(
+        typed_response_for(LOGIN + 1, OPERATION_FAILED, Some(2), None).unwrap_err(),
+        LoginError::UnexpectedOperation
+    );
+
+    let error = LoginError::UnexpectedOperation;
+    assert_eq!(error.to_string(), "response item is not Login");
+    assert!(std::error::Error::source(&error).is_none());
+
+    let error = LoginError::MissingResultStatus;
+    assert_eq!(error.to_string(), "Login result status is missing");
+    assert!(std::error::Error::source(&error).is_none());
+
+    let cause = ResultValidationError::FailureRequiresReason;
+    let error = LoginError::InvalidOperationResult(cause);
+    assert_eq!(
+        error.to_string(),
+        "Login operation result is invalid: Failure requires a Result Reason"
+    );
+    assert_eq!(
+        std::error::Error::source(&error).unwrap().to_string(),
+        cause.to_string()
+    );
+
+    let error = LoginError::MalformedSuccessPayload;
+    assert_eq!(
+        error.to_string(),
+        "successful Login Ticket payload is malformed"
+    );
+    assert!(std::error::Error::source(&error).is_none());
 }
 
 #[test]

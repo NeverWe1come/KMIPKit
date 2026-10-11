@@ -99,6 +99,9 @@ fn logout_sends_one_ticket_and_exposes_empty_success_without_leaking_it() {
         .expect("the server returns empty Table 257 success");
     let item = outcome.get(0).expect("one Logout result exists");
     assert_eq!(item.outcome().operation(), ClientOperation::Logout);
+    assert!(format!("{:?}", item.outcome()).contains("Logout"));
+    assert!(format!("{:?}", item.outcome().response()).contains("Logout"));
+    assert!(format!("{}", item.outcome()).contains("Logout("));
     let response = item
         .outcome()
         .logout_response()

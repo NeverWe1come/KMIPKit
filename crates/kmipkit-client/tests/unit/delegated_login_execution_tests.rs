@@ -141,6 +141,9 @@ fn delegated_login_sends_one_typed_request_and_exposes_secret_safe_ticket() {
     ticket.with_ticket_value(|actual| assert_eq!(actual, SECRET_SENTINEL));
 
     assert_eq!(item.outcome().operation(), ClientOperation::DelegatedLogin);
+    assert!(format!("{:?}", item.outcome()).contains("DelegatedLogin"));
+    assert!(format!("{:?}", item.outcome().response()).contains("DelegatedLogin"));
+    assert!(format!("{}", item.outcome()).contains("DelegatedLogin("));
     assert_eq!(state.borrow().calls, 1, "a KMIP request is never retried");
     assert_eq!(state.borrow().requests.len(), 1);
     let debug = format!("{result:?}");
