@@ -263,7 +263,7 @@ fn storage_status_mask_preserves_assigned_and_unknown_bits() {
                 (
                     STORAGE_STATUS_MASK_TAG,
                     ItemType::Integer,
-                    ValueSnapshot::Integer(raw_mask as i32),
+                    ValueSnapshot::Integer(raw_mask.cast_signed()),
                 ),
                 (
                     ATTRIBUTES_TAG,
@@ -465,7 +465,7 @@ fn successful_table_248_response_preserves_located_items_presence_separately_fro
             .expect("Table 248 accepts an empty identifier list and optional Located Items");
 
         assert_eq!(response.located_items(), expected_count);
-        assert!(response.unique_identifiers().is_empty());
+        assert_eq!(response.unique_identifiers(), []);
     }
 }
 
@@ -569,5 +569,5 @@ fn failed_locate_response_preserves_an_unknown_result_reason_raw_value() {
         Some(UNKNOWN_RESULT_REASON)
     );
     assert_eq!(response.located_items(), None);
-    assert!(response.unique_identifiers().is_empty());
+    assert_eq!(response.unique_identifiers(), []);
 }

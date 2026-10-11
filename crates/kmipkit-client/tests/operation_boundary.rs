@@ -118,7 +118,7 @@ fn get_and_locate_operations_keep_completed_and_pending_response_views() {
     let locate_response = locate_outcome
         .locate_response()
         .expect("the completed Locate result has its direct response accessor");
-    assert!(locate_response.unique_identifiers().is_empty());
+    assert_eq!(locate_response.unique_identifiers(), []);
     assert!(std::ptr::eq(
         locate_response,
         locate_outcome

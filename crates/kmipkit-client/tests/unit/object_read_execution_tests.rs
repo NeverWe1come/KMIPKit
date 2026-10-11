@@ -313,7 +313,10 @@ fn get_failure_preserves_result_status_reason_and_message_without_retry() {
     assert_eq!(outcome.operation(), ClientOperation::Get);
     assert_eq!(get_response.result().status().raw(), 1);
     assert_eq!(
-        get_response.result().reason().map(|reason| reason.raw()),
+        get_response
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(OBJECT_NOT_FOUND)
     );
     assert_eq!(
@@ -515,36 +518,7 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
         .expect("the submitted batch reaches the fake transport");
     let locate_request =
         request_item_snapshot(request, 0).expect("the first request frame is captured");
-    assert_eq!(locate_request.operation, LOCATE_OPERATION);
-    assert_eq!(locate_request.unique_batch_item_id, LOCATE_BATCH_ID);
-    assert_eq!(
-        wire_field(&locate_request.payload, MAXIMUM_ITEMS),
-        Some(&WireValue::Integer(9)),
-        "Maximum Items reaches the server unchanged"
-    );
-    assert_eq!(
-        wire_field(&locate_request.payload, OFFSET_ITEMS),
-        Some(&WireValue::Integer(0)),
-        "an explicit zero Offset Items remains present"
-    );
-    assert_eq!(
-        wire_field(&locate_request.payload, STORAGE_STATUS_MASK),
-        Some(&WireValue::Integer(3)),
-        "the caller's Storage Status Mask reaches the server unchanged"
-    );
-    assert_eq!(
-        wire_field(&locate_request.payload, OBJECT_GROUP_MEMBER),
-        Some(&WireValue::Enumeration(1)),
-        "the caller's Object Group Member reaches the server unchanged"
-    );
-    assert_eq!(
-        wire_field(&locate_request.payload, ATTRIBUTES),
-        Some(&WireValue::Structure(vec![
-            (ACTIVATION_DATE, WireValue::DateTime(100)),
-            (ACTIVATION_DATE, WireValue::DateTime(200)),
-        ])),
-        "repeated Locate criteria retain their input values and order"
-    );
+    assert_locate_request_preserves_criteria(&locate_request);
 
     let get_request =
         request_item_snapshot(request, 1).expect("the second request frame is captured");
@@ -578,5 +552,38 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
     assert!(
         get_result.outcome().get_response().is_some(),
         "the subsequent Get response is exposed without a client-selected identifier"
+    );
+}
+
+fn assert_locate_request_preserves_criteria(request: &RequestItemSnapshot) {
+    assert_eq!(request.operation, LOCATE_OPERATION);
+    assert_eq!(request.unique_batch_item_id, LOCATE_BATCH_ID);
+    assert_eq!(
+        wire_field(&request.payload, MAXIMUM_ITEMS),
+        Some(&WireValue::Integer(9)),
+        "Maximum Items reaches the server unchanged"
+    );
+    assert_eq!(
+        wire_field(&request.payload, OFFSET_ITEMS),
+        Some(&WireValue::Integer(0)),
+        "an explicit zero Offset Items remains present"
+    );
+    assert_eq!(
+        wire_field(&request.payload, STORAGE_STATUS_MASK),
+        Some(&WireValue::Integer(3)),
+        "the caller's Storage Status Mask reaches the server unchanged"
+    );
+    assert_eq!(
+        wire_field(&request.payload, OBJECT_GROUP_MEMBER),
+        Some(&WireValue::Enumeration(1)),
+        "the caller's Object Group Member reaches the server unchanged"
+    );
+    assert_eq!(
+        wire_field(&request.payload, ATTRIBUTES),
+        Some(&WireValue::Structure(vec![
+            (ACTIVATION_DATE, WireValue::DateTime(100)),
+            (ACTIVATION_DATE, WireValue::DateTime(200)),
+        ])),
+        "repeated Locate criteria retain their input values and order"
     );
 }
