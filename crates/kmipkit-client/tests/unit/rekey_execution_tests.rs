@@ -8,10 +8,12 @@
 use kmipkit_protocol::{
     AttributeSet, CheckRequest, CreateRequest, ObjectType, RekeyRequest, UniqueIdentifier,
 };
-use kmipkit_test_support::ExchangeScript;
+use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::{CodecLimits, decode};
 use kmipkit_ttlv::{Structure, StructureView, Value, ValueView};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute_test_support::{
@@ -50,6 +52,14 @@ fn rekey_request() -> RekeyRequest {
             Value::enumeration(1),
         )]))
         .with_protection_storage_masks(test_structure([test_item(0x0042_0160, Value::integer(3))]))
+}
+
+fn assert_one_exchange(fake: &Rc<RefCell<ScriptedTransport>>) {
+    assert_eq!(
+        fake.borrow().exchange_count(),
+        1,
+        "KMIPKit performs no implicit retry for Re-key"
+    );
 }
 
 fn response_payload(identifier: &str) -> Structure {
@@ -162,7 +172,7 @@ fn rekey_sends_one_table_305_request_and_exposes_replacement_identifier() {
             ]
         )
     );
-    assert_eq!(fake.borrow().exchange_count(), 1, "Re-key is never retried");
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -190,7 +200,7 @@ fn rekey_failure_preserves_table_307_result_without_retry() {
             .map(kmipkit_protocol::ResultReason::raw),
         Some(KEY_VALUE_NOT_PRESENT)
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -225,7 +235,7 @@ fn rekey_pending_preserves_correlation_without_implicit_poll() {
         pending.asynchronous_correlation_value(),
         PENDING_CORRELATION
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -276,7 +286,7 @@ fn rekey_can_consume_a_preceding_successful_create_placeholder() {
         request_fields(request, 1),
         (Some(REKEY_OPERATION), Vec::new())
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -304,7 +314,7 @@ fn rekey_can_produce_the_placeholder_for_a_later_check() {
         (Some(CHECK_OPERATION), Vec::new()),
         "§4.1.2 allows the next operation to use Re-key's returned ID Placeholder"
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }
 
 #[test]
@@ -321,5 +331,5 @@ fn rekey_transport_error_preserves_delivery_state_after_one_exchange() {
         error.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
     );
-    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_one_exchange(&fake);
 }

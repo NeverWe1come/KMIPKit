@@ -57,6 +57,10 @@ fn item(raw_tag: u32, value: Value) -> Item {
     .expect("the source-derived tag and value form a valid TTLV item")
 }
 
+fn identifier_item(value: &str) -> Item {
+    item(UNIQUE_IDENTIFIER, Value::text_string(value.to_owned()))
+}
+
 fn typed_response(
     status: u32,
     reason: Option<u32>,
@@ -111,10 +115,7 @@ fn request_can_omit_identifier_to_use_the_batch_id_placeholder() {
 #[test]
 fn successful_response_returns_replacement_identifier_and_preserves_unknown_fields() {
     let payload = structure([
-        item(
-            UNIQUE_IDENTIFIER,
-            Value::text_string("replacement-key".to_owned()),
-        ),
+        identifier_item("replacement-key"),
         item(UNKNOWN_VENDOR_TAG, Value::integer(-7)),
     ]);
     let response = typed_response(SUCCESS, None, Some(payload))
@@ -132,10 +133,7 @@ fn successful_response_returns_replacement_identifier_and_preserves_unknown_fiel
 fn successful_response_rejects_missing_or_duplicate_unique_identifier() {
     for payload in [
         Structure::new(),
-        structure([
-            item(UNIQUE_IDENTIFIER, Value::text_string("first".to_owned())),
-            item(UNIQUE_IDENTIFIER, Value::text_string("second".to_owned())),
-        ]),
+        structure([identifier_item("first"), identifier_item("second")]),
     ] {
         assert!(
             typed_response(SUCCESS, None, Some(payload)).is_err(),

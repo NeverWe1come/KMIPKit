@@ -4664,11 +4664,9 @@ fn response_outcome(
             PendingResponse::Activate,
             ClientBatchOutcome::Activate,
         ),
-        CERTIFY_OPERATION => certify_response_outcome(item),
-        CHECK_OPERATION => check_response_outcome(item),
-        OBTAIN_LEASE_OPERATION => obtain_lease_response_outcome(item),
-        RECERTIFY_OPERATION => recertify_response_outcome(item),
-        REKEY_OPERATION => rekey_response_outcome(item),
+        operation if is_lifecycle_operation(operation) => {
+            lifecycle_response_outcome(operation, item)
+        }
         ARCHIVE_OPERATION => read_operation_outcome(
             ClientOperation::Archive,
             item,
@@ -4747,6 +4745,31 @@ fn response_outcome(
             PendingResponse::GetAttributeList,
             ClientBatchOutcome::GetAttributeList,
         ),
+        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+const fn is_lifecycle_operation(operation: u32) -> bool {
+    matches!(
+        operation,
+        CERTIFY_OPERATION
+            | CHECK_OPERATION
+            | OBTAIN_LEASE_OPERATION
+            | RECERTIFY_OPERATION
+            | REKEY_OPERATION
+    )
+}
+
+fn lifecycle_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    match operation {
+        CERTIFY_OPERATION => certify_response_outcome(item),
+        CHECK_OPERATION => check_response_outcome(item),
+        OBTAIN_LEASE_OPERATION => obtain_lease_response_outcome(item),
+        RECERTIFY_OPERATION => recertify_response_outcome(item),
+        REKEY_OPERATION => rekey_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
     }
 }
