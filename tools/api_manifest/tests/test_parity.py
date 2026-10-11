@@ -102,13 +102,32 @@ class PublicApiParityTests(unittest.TestCase):
 
         for case in cases:
             with self.subTest(fixture=case["id"]):
+                self.assertRegex(case["id"], r"^[a-z0-9]+(?:[.-][a-z0-9]+)*\.v1$")
                 self.assertTrue(case["requirementIds"])
+                self.assertEqual(len(case["requirementIds"]), len(set(case["requirementIds"])))
+                self.assertTrue(
+                    all(
+                        requirement.startswith((
+                            "KMIPKIT-0043-FR-",
+                            "KMIPKIT-0003-FR-",
+                            "KMIPKIT-0004-FR-",
+                            "KMIPKIT-0006-FR-",
+                            "KMIPKIT-0007-FR-",
+                            "KMIPKIT-0012-FR-",
+                        ))
+                        for requirement in case["requirementIds"]
+                    ),
+                    case["id"],
+                )
                 self.assertTrue(case["input"])
                 self.assertTrue(case["expectedOutput"])
-                self.assertIn("cleanup", case)
+                self.assertTrue(case["cleanup"])
+                self.assertEqual(len(case["cleanup"]), len(set(case["cleanup"])))
                 self.assertEqual(set(case["consumerTests"]), {"rust", "c"})
                 self.assertTrue(case["consumerTests"]["rust"])
                 self.assertTrue(case["consumerTests"]["c"])
+                self.assertIn("::", case["consumerTests"]["rust"])
+                self.assertIn("::", case["consumerTests"]["c"])
 
         redaction = next(
             case for case in cases
@@ -130,7 +149,18 @@ class PublicApiParityTests(unittest.TestCase):
             if case["capability"] == "generic_ttlv_losslessness"
         )
         self.assertEqual(ttlv["expectedOutput"]["childTagsInOrder"], ["0x540001", "0x540002"])
+        self.assertEqual(ttlv["expectedOutput"]["enumerationValue"], 0xE1020304)
         self.assertTrue(ttlv["expectedOutput"]["unknownValuesPreserved"])
+
+        extension = next(
+            case for case in cases
+            if case["capability"] == "extension_registry_recognition"
+        )
+        extension_fixtures = json.loads(
+            (ROOT / extension["input"]["sourceFixture"]).read_text(encoding="utf-8")
+        )
+        source_case_ids = {case["id"] for case in extension_fixtures["cases"]}
+        self.assertTrue(set(extension["input"]["caseIds"]).issubset(source_case_ids))
 
     def test_generated_rust_api_uses_rust_mapping_and_excludes_blocked_records(self) -> None:
         manifest = {

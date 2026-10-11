@@ -1,0 +1,170 @@
+{
+  "format": "kmipkit-shared-api-parity-fixtures",
+  "formatVersion": 1,
+  "releaseLine": "1.0.0",
+  "languages": ["rust", "c"],
+  "cases": [
+    {
+      "id": "api-levels.shared.v1",
+      "capability": "api_level_discovery",
+      "requirementIds": ["KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010"],
+      "input": {"discovery": "local-api-levels"},
+      "expectedOutput": {
+        "apiLevels": ["high-level", "typed-protocol", "generic-ttlv"],
+        "networkCalls": 0
+      },
+      "errorCategory": null,
+      "cleanup": ["no-handle-or-network-resource-created"],
+      "consumerTests": {
+        "rust": "crates/kmipkit-ffi/tests/api_parity.rs::reports_all_public_api_levels",
+        "c": "bindings/c/tests/api_parity.c::reports_all_public_api_levels"
+      }
+    },
+    {
+      "id": "client-configuration.registry-isolation.v1",
+      "capability": "client_configuration_isolation",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0012-FR-001"
+      ],
+      "input": {
+        "configurations": [
+          {"id": "configuration-a", "registryId": "registry-a"},
+          {"id": "configuration-b", "registryId": "registry-b"}
+        ]
+      },
+      "expectedOutput": {
+        "configurationRegistryIds": ["registry-a", "registry-b"],
+        "registryStateIsShared": false
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "release-configuration-a-once",
+        "release-configuration-b-once",
+        "release-registry-a-once",
+        "release-registry-b-once"
+      ],
+      "consumerTests": {
+        "rust": "crates/kmipkit-ffi/tests/api_parity.rs::configurations_keep_registry_state_isolated",
+        "c": "bindings/c/tests/api_parity.c::configurations_keep_registry_state_isolated"
+      }
+    },
+    {
+      "id": "errors.resource-limit-redaction.v1",
+      "capability": "error_category_and_redaction",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0003-FR-004",
+        "KMIPKIT-0003-FR-005",
+        "KMIPKIT-0003-FR-006"
+      ],
+      "input": {
+        "maximumDefinitions": 1025,
+        "hardMaximumDefinitions": 1024,
+        "diagnosticMarker": "PARITY-REDACTION-MARKER-ONLY"
+      },
+      "expectedOutput": {
+        "errorCategory": "resource_limit",
+        "cStatusCode": 6,
+        "deliveryState": "not-sent",
+        "diagnosticOmitsInputMarker": true,
+        "diagnosticContainsPayload": false
+      },
+      "errorCategory": "resource_limit",
+      "cleanup": ["no-registry-handle-created", "clear-error-output-before-next-call"],
+      "consumerTests": {
+        "rust": "crates/kmipkit-ffi/tests/api_parity.rs::resource-limit-error-is-stable-and-redacted",
+        "c": "bindings/c/tests/api_parity.c::resource-limit-error-is-stable-and-redacted"
+      }
+    },
+    {
+      "id": "batch.ordered-completed-pending-failed.v1",
+      "capability": "ordered_batch_outcomes",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0006-FR-010",
+        "KMIPKIT-0007-FR-008"
+      ],
+      "input": {
+        "asynchronousIndicator": 1,
+        "operationIds": ["DiscoverVersions", "Create", "Create"],
+        "fakeResponseOutcomes": [
+          {"resultStatus": "Success"},
+          {"resultStatus": "Operation Pending", "correlationValueHex": "00a17f"},
+          {"resultStatus": "Operation Failed"}
+        ]
+      },
+      "expectedOutput": {
+        "itemIndexes": [0, 1, 2],
+        "resultStatuses": ["Success", "Operation Pending", "Operation Failed"],
+        "pendingCount": 1,
+        "correlationValueHex": "00a17f",
+        "automaticFollowUp": false,
+        "transportExchangeCount": 1
+      },
+      "errorCategory": null,
+      "cleanup": ["release-each-item-result-once", "zeroize-owned-correlation-storage-on-drop"],
+      "consumerTests": {
+        "rust": "crates/kmipkit-ffi/tests/api_parity.rs::preserves-ordered-heterogeneous-batch-outcomes",
+        "c": "bindings/c/tests/api_parity.c::preserves-ordered-heterogeneous-batch-outcomes"
+      }
+    },
+    {
+      "id": "ttlv.open-values-and-child-order.v1",
+      "capability": "generic_ttlv_losslessness",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0004-FR-004",
+        "KMIPKIT-0004-FR-006"
+      ],
+      "input": {
+        "structure": {
+          "type": "Structure",
+          "children": [
+            {"tag": "0x540001", "type": "Enumeration", "value": 3775005444},
+            {"tag": "0x540002", "type": "ByteString", "valueHex": "80ff01"}
+          ]
+        }
+      },
+      "expectedOutput": {
+        "childTagsInOrder": ["0x540001", "0x540002"],
+        "enumerationValue": 3775005444,
+        "byteStringHex": "80ff01",
+        "unknownValuesPreserved": true
+      },
+      "errorCategory": null,
+      "cleanup": ["release-structure-and-borrowed-views-once"],
+      "consumerTests": {
+        "rust": "crates/kmipkit-ffi/tests/api_parity.rs::preserves-unknown-ttlv-values-and-child-order",
+        "c": "bindings/c/tests/api_parity.c::preserves-unknown-ttlv-values-and-child-order"
+      }
+    },
+    {
+      "id": "extensions.recognition-and-generic-preservation.v1",
+      "capability": "extension_registry_recognition",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0012-FR-006",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "input": {
+        "sourceFixture": "tests/fixtures/extensions/cases.json",
+        "caseIds": ["valid-recognized", "unknown-preserved"]
+      },
+      "expectedOutput": {
+        "caseOutcomes": ["recognized", "unrecognized.no_match"],
+        "genericPayloadPreserved": true,
+        "registrationOrderAffectsResult": false
+      },
+      "errorCategory": null,
+      "cleanup": ["release-registry-recognition-value-and-payload-handles-once"],
+      "consumerTests": {
+        "rust": "crates/kmipkit-ffi/tests/api_parity.rs::recognizes-extensions-and-preserves-unknown-payloads",
+        "c": "bindings/c/tests/api_parity.c::recognizes-extensions-and-preserves-unknown-payloads"
+      }
+    }
+  ]
+}
