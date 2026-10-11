@@ -143,3 +143,58 @@ Result: exit 1 with four expected findings: missing Mandatory semantics,
 missing §11.3 Tables 431–432 citation, missing tag-only inspection wording,
 and the current text explicitly permitting structure inspection. No guide
 change was present when this Red check ran.
+
+The pinned OASIS KMIP v2.1 §11.3 Tables 431–432 confirm that value 1 is
+Mandatory and that the server SHALL process all request batch items
+asynchronously, returning an Asynchronous Correlation Value for each item.
+
+### Green evidence
+
+DCO-signed guide correction commit:
+`35f15795ea22657428c9693bc21d27ab0047b25d`.
+
+The guide now identifies value 1 as Mandatory, cites §9.2 Table 401 and §11.3
+Tables 431–432, states the per-item server requirement, and cross-references
+Pending semantics in §§9.1–9.2 and §8.6 Table 399. The Get note limits
+inspection to Object Type, Unique Identifier, and the generic Any Object tag;
+it explicitly prohibits inspection of the Any Object structure and
+descendants.
+
+The post-edit acceptance audit exited 0 with all four assertions passing:
+
+```text
+PASS: Mandatory value and request-field citation
+PASS: required server behavior
+PASS: tag-only opaque-object inspection
+PASS: no permissive structure guidance
+```
+
+Exact verification commands and results after the guide edit:
+
+```text
+python -B scripts/test_user_guide_examples.py --guide docs/user-guide/en/object-retrieval.md
+```
+
+Exit 0; compiled 3 marked examples offline and locked.
+
+```text
+python -B scripts/test_user_guide_examples.py
+```
+
+Exit 0; compiled all 11 marked examples in the default English and Spanish
+guide set.
+
+```text
+python -B -m unittest discover -s scripts/tests -p test_user_guide_examples.py -v
+```
+
+Exit 0; all 5 example-runner unit tests passed. `git diff --check` exited 0.
+
+### Refactor disposition
+
+Review after Green found no further restructuring that would improve the
+guide. The changes remain documentation-only: the response example already
+restricts access to the object tag, and the additional prose states the
+normative server requirement without changing API examples or runner behavior.
+No source refactor was justified; this disposition is recorded in the separate
+DCO-signed Refactor evidence commit.
