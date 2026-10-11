@@ -75,16 +75,16 @@
     "profiles": 18,
     "specification_clause_records": 877,
     "profiles_clause_records": 534,
-    "requirement_crosswalk_records": 215,
+    "requirement_crosswalk_records": 220,
     "requirement_crosswalk_complete": false,
     "common_baseline_official_cases": 16,
     "common_baseline_unavailable_fixtures": 16,
     "profile_test_associations": 365,
     "distinct_profile_test_case_ids": 93,
-    "source_requirement_review_records": 555,
+    "source_requirement_review_records": 566,
     "direct_root_exclusion_records": 4,
-    "source_only_requirement_gaps": 140,
-    "source_only_requirement_gap_proposals": 110,
+    "source_only_requirement_gaps": 145,
+    "source_only_requirement_gap_proposals": 115,
     "profile_unlabeled_source_rows": 22
   },
   "source_clause_crosswalk": [
@@ -20859,7 +20859,93 @@
       "review_note": "Specification v2.1 §6.1.44; client prohibition mapped from source obligation 2.",
       "source_obligation_order": 2,
       "source_actor": "client"
-    }],
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.45",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.45; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.45",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.45; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-004",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-004",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.45",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHOULD",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.45; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-006",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.45",
+      "source_locator": {
+        "ordinal": 6,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.45; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-008",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-008",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.45",
+      "source_locator": {
+        "ordinal": 8,
+        "block_kind": "table_row"
+      },
+      "source_keyword": "REQUIRED",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "Specification v2.1 section 6.1.45; client obligation mapped from source obligation 1.",
+      "source_obligation_order": 1,
+      "source_actor": "client"
+    }
+  ],
   "profiles": [
     {
       "profile_id": "KMIPKIT-PROFILE-AES-XTS-CLIENT",
@@ -63028,7 +63114,490 @@
       "review_note": "The Result Status and Result Reason entries are enum/value data, not independent REQUIRED-header obligations. Preserve the source's repeated Invalid Field value and do not infer individual error-to-reason mappings.",
       "source_request_rows": [],
       "source_payload_rows": []
-    }],
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33345,
+        33346
+      ],
+      "source_excerpt": "This request is used to renew an existing certificate for the same key pair. Only a single certificate SHALL be renewed at a time.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Only a single certificate SHALL be renewed at a time.",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "limit one certificate per Re-certify request",
+          "condition": "Every Re-certify request.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-001"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.45-001"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The one-certificate limit is a client request constraint."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33348,
+        33353
+      ],
+      "source_excerpt": "The Certificate Request object MAY be omitted, in which case the public key for which a Certificate object is generated SHALL be specified by its Unique Identifier only. If the Certificate Request Type and the Certificate Request objects are omitted and the Certificate Type is not specified using the Attributes object in the request, then the Certificate Type of the new certificate SHALL be the same as that of the existing certificate.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The Certificate Request object MAY be omitted",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "omit Certificate Request and identify the public key by Unique Identifier",
+          "condition": "When Certificate Request is omitted.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-001"
+        },
+        {
+          "source_order": 2,
+          "source_text": "the public key for which a Certificate object is generated SHALL be specified by its Unique Identifier only",
+          "source_keyword": "SHALL",
+          "actor": "client",
+          "direction": "identify the public key only by Unique Identifier when Certificate Request is omitted",
+          "condition": "When Certificate Request is omitted.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": null,
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY"
+        },
+        {
+          "source_order": 3,
+          "source_text": "the Certificate Type of the new certificate SHALL be the same as that of the existing certificate",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "use the existing certificate type for the new certificate when request type and Attributes omit it",
+          "condition": "Certificate Request Type and Certificate Request are omitted and Certificate Type is absent from Attributes.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.45-002-001"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The source assigns certificate-type fallback to the server. Existing catalog candidate KMIPKIT-REQ-SPEC-6.1.45-002-002 is an actor mismatch and is intentionally excluded from client crosswalk coverage."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-003",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33359,
+        33360
+      ],
+      "source_excerpt": "The server SHALL copy the Unique Identifier of the new certificate returned by this operation into the ID Placeholder variable.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "The server SHALL copy the Unique Identifier of the new certificate returned by this operation into the ID Placeholder variable.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "copy the new certificate Unique Identifier into the server ID Placeholder",
+          "condition": "A Re-certify operation returns a new certificate Unique Identifier.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "ID Placeholder assignment is server behavior and is retained without claiming a client requirement."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-004",
+      "source_locator": {
+        "ordinal": 4,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33366,
+        33368
+      ],
+      "source_excerpt": "As the new certificate takes over the name attribute of the existing certificate, Re-certify SHOULD only be performed once on a given (existing) certificate.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "Re-certify SHOULD only be performed once on a given (existing) certificate",
+          "source_keyword": "SHOULD",
+          "actor": "client",
+          "direction": "perform Re-certify no more than once for a given existing certificate",
+          "condition": "A given existing certificate is being re-certified.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-004"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.45-004"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "The client SHOULD is mapped to the stable Re-certify requirement."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-005",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33370,
+        33375
+      ],
+      "source_excerpt": "For the existing certificate, the server SHALL create a Link attribute of Link Type Replacement pointing to the new certificate. For the new certificate, the server SHALL create a Link attribute of Link Type Replaced pointing to the existing certificate. For the public key, the server SHALL change the Link attribute of Link Type Certificate to point to the new certificate.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "For the existing certificate, the server SHALL create a Link attribute of Link Type Replacement pointing to the new certificate.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "set Replacement link from the existing certificate to the new certificate",
+          "condition": "A Re-certify operation creates a new certificate.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 2,
+          "source_text": "For the new certificate, the server SHALL create a Link attribute of Link Type Replaced pointing to the existing certificate.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "set Replaced link from the new certificate to the existing certificate",
+          "condition": "A Re-certify operation creates a new certificate.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        },
+        {
+          "source_order": 3,
+          "source_text": "For the public key, the server SHALL change the Link attribute of Link Type Certificate to point to the new certificate.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "change the public key Certificate link to the new certificate",
+          "condition": "A Re-certify operation creates a new certificate.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "All three link updates are server-side effects of creating the replacement certificate."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-006",
+      "source_locator": {
+        "ordinal": 6,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33377,
+        33382
+      ],
+      "source_excerpt": "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the new certificate. If no Offset is specified, the Activation Date and Deactivation Date values are copied from the existing certificate. If Offset is set and dates exist for the existing certificate, then the dates of the new certificate SHALL be set based on the dates of the existing certificate as follows:",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the new certificate.",
+          "source_keyword": "MAY",
+          "actor": "client",
+          "direction": "include Offset in the Re-certify request to indicate the Initial Date and Activation Date difference",
+          "condition": "A client elects to specify Offset.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-006-001"
+        },
+        {
+          "source_order": 2,
+          "source_text": "then the dates of the new certificate SHALL be set based on the dates of the existing certificate as follows:",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "set new certificate dates from the existing certificate using Table 298",
+          "condition": "Offset is set and dates exist for the existing certificate.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.45-006-001"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "Offset is a client MAY; date transformation is server-side. Existing catalog candidate KMIPKIT-REQ-SPEC-6.1.45-006-002 is an actor mismatch and does not represent a client obligation and is intentionally excluded from client crosswalk coverage.",
+      "source_context": "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the new certificate. If no Offset is specified, the Activation Date and Deactivation Date values are copied from the existing certificate. If Offset is set and dates exist for the existing certificate, then the dates of the new certificate SHALL be set based on the dates of the existing certificate as follows: Attribute in Existing Certificate Attribute in New Certificate Initial Date (IT1) Initial Date (IT2) > IT1 Activation Date (AT1) Activation Date (AT2) = IT2+ Offset Deactivation Date (DT1) Deactivation Date = DT1+(AT2- AT1) Table 298: Computing New Dates from Offset during Re-certify"
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-007",
+      "source_locator": {
+        "ordinal": 7,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [33606, 33624],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The request payload header introduces Table 300; individual body fields are recorded as source_request_rows. Table 299 server-side attribute effects are retained as context.",
+      "source_context": "Attributes that are not copied from the existing certificate and that are handled in a specific way for the new certificate are: Attribute Action Initial Date Set to current time. Destroy Date Not set. Revocation Reason Not set. Unique Identifier New value generated. Name Set to the name(s) of the existing certificate; all name attributes are removed from the existing certificate. State Set based on attributes values, such as dates. Digest Recomputed from the new certificate value. Link Set to point to the existing certificate as the replaced certificate. Last Change Date Set to current time. Table 299: Re-certify Attribute Requirements",
+      "source_request_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_existing_conditional_capability",
+          "html_line_range": [
+            33625,
+            33644
+          ],
+          "source_excerpt": "Unique Identifier No The Unique Identifier of the Certificate being renewed. If omitted, then the ID Placeholder value is used by the server as the Unique Identifier.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1-003-002"
+          ],
+          "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+          "reuse_condition": "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
+          "source_note": "The row describes server fallback to ID Placeholder. It does not establish standalone omission; reuse the generic client capability only for an eligible subsequent batched request with the placeholder available."
+        },
+        {
+          "row_label": "Certificate Request Unique Identifier",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            33645,
+            33662
+          ],
+          "source_excerpt": "Certificate Request Unique Identifier No The Unique Identifier of the Certificate Request.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UNIQUE-IDENTIFIER-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        },
+        {
+          "row_label": "Certificate Request Type",
+          "required": "No",
+          "actor": "client",
+          "disposition": "conditionally_required_request_field_with_existing_stable_requirement",
+          "html_line_range": [
+            33663,
+            33681
+          ],
+          "source_excerpt": "Certificate Request Type No An Enumeration object specifying the type of certificate request. It is REQUIRED if the Certificate Request is present.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.45-008"
+          ],
+          "condition": "Certificate Request is present."
+        },
+        {
+          "row_label": "Certificate Request Value",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            33682,
+            33699
+          ],
+          "source_excerpt": "Certificate Request Value No A Byte String object with the certificate request.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-VALUE-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        },
+        {
+          "row_label": "Offset",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_covered_by_client_may",
+          "html_line_range": [
+            33700,
+            33719
+          ],
+          "source_excerpt": "Offset No An Interval object indicating the difference between the Initial Date of the new certificate and the Activation Date of the new certificate.",
+          "source_gap_id": null,
+          "source_requirement_ids": [
+            "KMIPKIT-REQ-SPEC-6.1.45-006-001"
+          ]
+        },
+        {
+          "row_label": "Attributes",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            33720,
+            33739
+          ],
+          "source_excerpt": "Attributes No Specifies desired object attributes.",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-ATTRIBUTES-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        },
+        {
+          "row_label": "Protection Storage Masks",
+          "required": "No",
+          "actor": "client",
+          "disposition": "optional_request_field_with_source_only_proposal",
+          "html_line_range": [
+            33740,
+            33758
+          ],
+          "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
+          "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-PROTECTION-STORAGE-MASKS-OPTIONAL",
+          "source_requirement_ids": [],
+          "source_note": "The request table marks this field optional but no stable client requirement ID currently represents its exposure."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-008",
+      "source_locator": {
+        "ordinal": 8,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [
+        33663,
+        33681
+      ],
+      "source_excerpt": "Certificate Request Type No An Enumeration object specifying the type of certificate request. It is REQUIRED if the Certificate Request is present.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "It is REQUIRED if the Certificate Request is present.",
+          "source_keyword": "REQUIRED",
+          "actor": "client",
+          "direction": "include Certificate Request Type when Certificate Request is present",
+          "condition": "Certificate Request is present.",
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-008"
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.45-008"
+      ],
+      "applies_to": "all_client_profiles",
+      "review_note": "Table row REQUIRED is conditional on Certificate Request being present."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-009",
+      "source_locator": {
+        "ordinal": 9,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [33777, 33795],
+      "source_excerpt": "Item REQUIRED Description",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The response payload header introduces the server-returned Unique Identifier; it is response data, not a client request obligation.",
+      "source_payload_rows": [
+        {
+          "row_label": "Unique Identifier",
+          "required": "Yes",
+          "actor": "server",
+          "disposition": "response_payload_data",
+          "html_line_range": [
+            33796,
+            33813
+          ],
+          "source_excerpt": "Unique Identifier Yes The Unique Identifier of the new certificate."
+        }
+      ]
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45.1-001",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "html_line_range": [
+        33825,
+        33826
+      ],
+      "source_excerpt": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-certify Operation.",
+      "source_obligations": [
+        {
+          "source_order": 1,
+          "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-certify Operation.",
+          "source_keyword": "SHALL",
+          "actor": "server",
+          "direction": "return the specified Re-certify Result Reasons in error responses",
+          "condition": "An error is detected in a Re-certify operation.",
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": null
+        }
+      ],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "Result Reason selection describes server error responses."
+    },
+    {
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45.1",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45.1-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "table_row"
+      },
+      "html_line_range": [33846, 33861],
+      "source_excerpt": "Operation Failed Invalid CSR, Invalid Message, Invalid Object Type, Object Not Found, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Protection Storage Unavailable, Response Too Large",
+      "source_obligations": [],
+      "rejected_candidate_mappings": [],
+      "expected_client_requirement_ids": [],
+      "applies_to": "all_client_profiles",
+      "review_note": "The Result Reason enumeration preserves the repeated Invalid Message entry and does not map individual reasons to error conditions."
+    }
+  ],
   "source_only_requirement_gaps": [
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011",
@@ -67305,5 +67874,172 @@
       "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-004",
       "status": "stable_label_proposed_not_in_catalog",
       "review_note": "This source-only proposal maps the Required=Yes Table 295 body value. The catalog's REQUIRED extractor hit for the request column heading is non-applicable; no client requirement ID currently represents this required field."
-    }]
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "source_locator_description": "Specification v2.1 §6.1.45 paragraph 2 (HTML lines 33348-33353)",
+      "html_line_range": [
+        33348,
+        33353
+      ],
+      "source_excerpt": "The Certificate Request object MAY be omitted, in which case the public key for which a Certificate object is generated SHALL be specified by its Unique Identifier only. If the Certificate Request Type and the Certificate Request objects are omitted and the Certificate Type is not specified using the Attributes object in the request, then the Certificate Type of the new certificate SHALL be the same as that of the existing certificate.",
+      "source_keywords": [
+        "SHALL"
+      ],
+      "source_force": "normative_SHALL",
+      "audited_statement": "The source requires the public key to be identified by Unique Identifier only when Certificate Request is omitted.",
+      "actor": "client",
+      "direction": "identify the public key only by Unique Identifier when Certificate Request is omitted",
+      "condition": "When Certificate Request is omitted.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UNIQUE-IDENTIFIER-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.45",
+        "row_label": "Certificate Request Unique Identifier",
+        "table": "request_payload",
+        "html_line_range": [
+          33645,
+          33662
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.45 Re-certify request payload body row for Certificate Request Unique Identifier (HTML lines 33645-33662)",
+      "html_line_range": [
+        33645,
+        33662
+      ],
+      "source_excerpt": "Certificate Request Unique Identifier No The Unique Identifier of the Certificate Request.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes an optional Certificate Request Unique Identifier field.",
+      "actor": "client",
+      "direction": "expose Certificate Request Unique Identifier as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-009",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-VALUE-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.45",
+        "row_label": "Certificate Request Value",
+        "table": "request_payload",
+        "html_line_range": [
+          33682,
+          33699
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.45 Re-certify request payload body row for Certificate Request Value (HTML lines 33682-33699)",
+      "html_line_range": [
+        33682,
+        33699
+      ],
+      "source_excerpt": "Certificate Request Value No A Byte String object with the certificate request.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes an optional Certificate Request Value field.",
+      "actor": "client",
+      "direction": "expose Certificate Request Value as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-010",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-ATTRIBUTES-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.45",
+        "row_label": "Attributes",
+        "table": "request_payload",
+        "html_line_range": [
+          33720,
+          33739
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.45 Re-certify request payload body row for Attributes (HTML lines 33720-33739)",
+      "html_line_range": [
+        33720,
+        33739
+      ],
+      "source_excerpt": "Attributes No Specifies desired object attributes.",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes an optional Attributes field.",
+      "actor": "client",
+      "direction": "expose Attributes as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-011",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    },
+    {
+      "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-PROTECTION-STORAGE-MASKS-OPTIONAL",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "source_section": "6.1.45",
+      "source_clause_id": null,
+      "source_locator": {
+        "kind": "table_body_row",
+        "section": "6.1.45",
+        "row_label": "Protection Storage Masks",
+        "table": "request_payload",
+        "html_line_range": [
+          33740,
+          33758
+        ]
+      },
+      "source_locator_description": "Specification v2.1 §6.1.45 Re-certify request payload body row for Protection Storage Masks (HTML lines 33740-33758)",
+      "html_line_range": [
+        33740,
+        33758
+      ],
+      "source_excerpt": "Protection Storage Masks No Specifies all permissible Protection Storage Mask selections for the new object",
+      "source_keywords": [],
+      "source_force": "optional_table_body_value",
+      "audited_statement": "The request table exposes optional Protection Storage Masks.",
+      "actor": "client",
+      "direction": "expose Protection Storage Masks as an optional client request field",
+      "condition": "A client elects to specify the optional field.",
+      "scope_disposition": "client_1_0",
+      "candidate_requirement_id": null,
+      "proposed_requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-012",
+      "status": "stable_label_proposed_not_in_catalog",
+      "review_note": "A source-only stable-label proposal remains outside the catalog until a separately approved normative catalog change assigns it."
+    }
+  ]
 }
