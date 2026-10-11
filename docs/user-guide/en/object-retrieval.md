@@ -52,6 +52,13 @@ protocol context where the server resolves an ID Placeholder. Optional key
 format, compression, wrap type, and wrapping specification are caller choices;
 KMIPKit forwards them without converting or wrapping an object locally.
 
+For Key Format Type, KMIP 2.1 §6.1.19 requires a server to be able to return a
+key in the same format in which that key was registered. The server MAY support
+conversion to another format; this does not mean every server supports every
+format or conversion. KMIPKit forwards the caller's requested Key Format Type
+and preserves the returned Any Object as opaque TTLV. It does not parse PKCS#12
+or other key formats, or convert key material locally.
+
 ```rust,kmipkit-test
 use kmipkit_protocol::{
     GetRequest, KeyFormatType, KeyWrapType, UniqueIdentifier,

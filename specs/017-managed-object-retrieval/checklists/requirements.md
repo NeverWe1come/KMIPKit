@@ -29,10 +29,11 @@
 - [x] Success criteria can be verified without claiming a profile or formal certification.
 - [x] No unresolved placeholder remains.
 
-- [ ] Is every one of the 15 direct catalog requirement rows assigned to this feature and represented in its traceability table? [Traceability]
-- [ ] Do prohibited server-response requirements distinguish client preservation from server conformance evidence? [Negative requirement]
+- [x] Is every one of the 15 direct catalog requirement rows assigned to this feature and represented in its traceability table? [Traceability]
+- [x] Do prohibited server-response requirements distinguish client preservation from server conformance evidence? [Negative requirement]
 
 ## Notes
 
 - The required Catalog-to-spec-to-code-to-test mapping, implementation plan, protocol checklist, and task sequence are produced in the remaining Spec Kit workflow and must be complete before the specification PR is review-ready.
-- The specification remains a draft until independent human review and approval.
+- At checklist creation, the specification was still awaiting review; PR #63 later merged the reviewed specification. This checklist records the specification-quality audit, while the implementation PR retains its own completion gates.
+- The 15 direct catalog rows are enumerated in `traceability.md`; server-only ID Placeholder and response-selection clauses are separated from client forwarding/preservation evidence, and the archived sequence is explicitly application-directed.

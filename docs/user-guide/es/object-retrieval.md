@@ -56,6 +56,14 @@ El formato de clave, la compresión, el tipo de envoltura y la especificación
 de envoltura son opciones explícitas del llamador; KMIPKit las transmite sin
 convertir ni envolver objetos localmente.
 
+Para `Key Format Type`, KMIP 2.1 §6.1.19 exige que el servidor pueda devolver
+una clave en el mismo formato en que se registró. El servidor MAY admitir la
+conversión a otro formato; esto no significa que todos los servidores admitan
+cualquier formato o conversión. KMIPKit transmite el `Key Format Type`
+solicitado por el llamador y conserva la respuesta como TTLV opaco. No analiza
+PKCS#12 ni otros formatos de clave, ni convierte localmente el material
+criptográfico.
+
 ```rust,kmipkit-test
 use kmipkit_protocol::{
     GetRequest, KeyFormatType, KeyWrapType, UniqueIdentifier,
