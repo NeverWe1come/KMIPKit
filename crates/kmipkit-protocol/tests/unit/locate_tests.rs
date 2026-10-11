@@ -13,8 +13,8 @@
 
 use crate::{
     AttributeSet, AttributeSetError, LocateError, LocateRequest, LocateResponse, ObjectGroupMember,
-    ResponseBatchItemView, ResponseMessage, ResultReason, ResultStatus, StorageStatusMask,
-    UniqueIdentifier,
+    ProtocolCauseCategory, ProtocolErrorKind, ResponseBatchItemView, ResponseMessage, ResultReason,
+    ResultStatus, ResultValidationError, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
@@ -42,6 +42,7 @@ const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const LOCATED_ITEMS_TAG: u32 = 0x0042_00D5;
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+const TEST_EXTENSION_TAG: u32 = 0x0054_1234;
 const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
 const PROTOCOL_VERSION_TAG: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR_TAG: u32 = 0x0042_006A;
@@ -143,6 +144,16 @@ fn response_message_with_result_message(
     payload: Option<Structure>,
     result_message: Option<&str>,
 ) -> ResponseMessage {
+    response_message_with_operation(LOCATE_OPERATION, status, reason, payload, result_message)
+}
+
+fn response_message_with_operation(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    payload: Option<Structure>,
+    result_message: Option<&str>,
+) -> ResponseMessage {
     let protocol_version = structure([
         item(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
         item(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
@@ -153,7 +164,7 @@ fn response_message_with_result_message(
         item(BATCH_COUNT_TAG, Value::integer(1)),
     ]);
     let mut batch_fields = vec![
-        item(OPERATION_TAG, Value::enumeration(LOCATE_OPERATION)),
+        item(OPERATION_TAG, Value::enumeration(operation)),
         item(RESULT_STATUS_TAG, Value::enumeration(status)),
     ];
     if let Some(reason) = reason {
@@ -215,6 +226,34 @@ fn request_always_encodes_the_required_empty_attributes_structure() {
             ValueSnapshot::Structure(vec![]),
         )]
     );
+}
+
+#[test]
+fn request_accessors_preserve_optional_search_criteria() {
+    let default = LocateRequest::new(AttributeSet::new());
+    assert_eq!(default.maximum_items(), None);
+    assert_eq!(default.offset_items(), None);
+    assert_eq!(default.storage_status_mask(), None);
+    assert_eq!(default.object_group_member(), None);
+    assert!(default.attributes().is_empty());
+
+    let request = LocateRequest::new(AttributeSet::new())
+        .with_maximum_items(-9)
+        .with_offset_items(0)
+        .with_storage_status_mask(StorageStatusMask::from_raw(0x8000_0007))
+        .with_object_group_member(ObjectGroupMember::from_raw(0xF123_4567));
+
+    assert_eq!(request.maximum_items(), Some(-9));
+    assert_eq!(request.offset_items(), Some(0));
+    assert_eq!(
+        request.storage_status_mask().map(StorageStatusMask::raw),
+        Some(0x8000_0007)
+    );
+    assert_eq!(
+        request.object_group_member().map(ObjectGroupMember::raw),
+        Some(0xF123_4567)
+    );
+    assert_eq!(format!("{request:?}"), "LocateRequest([REDACTED])");
 }
 
 #[test]
@@ -606,5 +645,106 @@ fn failed_locate_response_preserves_result_message() {
             .message()
             .map(crate::ResultMessage::as_str),
         Some(RESULT_MESSAGE)
+    );
+}
+
+#[test]
+fn response_debug_redacts_identifiers_while_displaying_the_result_count() {
+    let message = response_message(
+        SUCCESS,
+        None,
+        Some(locate_response_payload(
+            Some(2),
+            [
+                Value::text_string("first-id".to_owned()),
+                Value::text_string("second-id".to_owned()),
+            ],
+        )),
+    );
+    let response = decode_locate(&message).expect("the Table 248 result is valid");
+    let debug = format!("{response:?}");
+
+    assert!(debug.contains("LocateResponse"));
+    assert!(debug.contains("located_items: Some(2)"));
+    assert!(debug.contains("UniqueIdentifier([REDACTED])"));
+    assert!(!debug.contains("first-id"));
+    assert!(!debug.contains("second-id"));
+}
+
+#[test]
+fn locate_response_rejects_a_different_operation() {
+    const GET_OPERATION: u32 = 0x0000_000A;
+
+    let message = response_message_with_operation(
+        GET_OPERATION,
+        SUCCESS,
+        None,
+        Some(locate_response_payload(None, [])),
+        None,
+    );
+
+    assert!(matches!(
+        decode_locate(&message),
+        Err(LocateError::UnexpectedOperation)
+    ));
+}
+
+#[test]
+fn locate_error_display_and_source_are_payload_free() {
+    let unexpected = LocateError::UnexpectedOperation;
+    let missing = LocateError::MissingResultStatus;
+    let invalid = LocateError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason);
+    let missing_payload = LocateError::MissingSuccessPayload;
+    let malformed = LocateError::MalformedSuccessPayload;
+
+    assert_eq!(unexpected.to_string(), "response item is not Locate");
+    assert_eq!(missing.to_string(), "Locate result status is missing");
+    assert_eq!(
+        invalid.to_string(),
+        "Locate operation result is invalid: Success forbids a Result Reason"
+    );
+    assert_eq!(
+        missing_payload.to_string(),
+        "successful Locate response has no payload"
+    );
+    assert_eq!(
+        malformed.to_string(),
+        "Locate response payload is malformed"
+    );
+    assert!(std::error::Error::source(&invalid).is_some());
+    assert!(std::error::Error::source(&unexpected).is_none());
+}
+
+#[test]
+fn locate_reports_a_sanitized_error_when_attributes_exceed_ttlv_depth_limit() {
+    // KMIP 2.1 §6.1.28, Table 247 carries the required Attributes Structure;
+    // the rejected nesting is KMIPKit's local TTLV model limit, not an OASIS limit.
+    let mut nested = Structure::new();
+    nested
+        .try_push(item(TEST_EXTENSION_TAG, Value::integer(1)))
+        .expect("the initial extension structure is within the TTLV depth limit");
+    for _ in 1..64 {
+        let mut parent = Structure::new();
+        parent
+            .try_push(item(TEST_EXTENSION_TAG, Value::structure(nested)))
+            .expect("64 nested Structures are representable in the input attribute");
+        nested = parent;
+    }
+    let attribute = item(TEST_EXTENSION_TAG, Value::structure(nested));
+    let attributes = AttributeSet::try_new([attribute])
+        .expect("the vendor-range criterion remains a generic attribute");
+
+    let error = LocateRequest::new(attributes)
+        .to_ttlv_payload()
+        .expect_err("wrapping 64 nested Structures in Attributes exceeds model depth");
+
+    assert_eq!(error.kind(), ProtocolErrorKind::InvalidValue);
+    assert_eq!(error.cause_category(), ProtocolCauseCategory::InvalidValue);
+    assert_eq!(
+        std::error::Error::source(&error)
+            .map(ToString::to_string)
+            .as_deref(),
+        Some("invalid value"),
+        "the raw model error is discarded before it becomes public"
     );
 }

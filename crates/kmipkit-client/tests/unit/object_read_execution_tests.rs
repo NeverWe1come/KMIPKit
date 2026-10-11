@@ -243,10 +243,12 @@ fn get_success_preserves_completed_object_data_in_one_exchange() {
         response,
         request_write_chunks: vec![3, 7],
     });
+    let request = ClientRequest::get(GetRequest::new());
+    assert_eq!(format!("{request:?}"), "Get([REDACTED])");
 
     let response = client
         .execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))),
+            ClientBatch::new(ClientBatchItem::new(request)),
             &CodecLimits::defaults(),
         )
         .expect("the server returns a completed Get response");
@@ -281,6 +283,17 @@ fn get_success_preserves_completed_object_data_in_one_exchange() {
         get_response.object().map(|object| object.tag().raw()),
         Some(SYMMETRIC_KEY)
     );
+    assert_eq!(outcome.response().result().status().raw(), 0);
+
+    let response_debug = format!("{:?}", outcome.response());
+    let outcome_debug = format!("{outcome:?}");
+    let outcome_display = outcome.to_string();
+    assert!(response_debug.contains("Get"));
+    assert!(outcome_debug.contains("GetCompleted"));
+    assert!(outcome_display.contains("GetCompleted"));
+    assert!(outcome_display.contains("status 0"));
+    assert!(!response_debug.contains("opaque-get-response"));
+    assert!(!outcome_debug.contains("opaque-get-response"));
 }
 
 #[test]
@@ -327,6 +340,12 @@ fn get_failure_preserves_result_status_reason_and_message_without_retry() {
         Some(RESPONSE_MESSAGE)
     );
     assert!(get_response.object().is_none());
+    let response_debug = format!("{:?}", outcome.response());
+    let outcome_debug = format!("{outcome:?}");
+    let outcome_display = outcome.to_string();
+    assert!(!response_debug.contains(RESPONSE_MESSAGE));
+    assert!(!outcome_debug.contains(RESPONSE_MESSAGE));
+    assert!(!outcome_display.contains(RESPONSE_MESSAGE));
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
@@ -484,6 +503,8 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
         .with_offset_items(0)
         .with_storage_status_mask(StorageStatusMask::from_raw(3))
         .with_object_group_member(ObjectGroupMember::from_raw(1));
+    let locate_request = ClientRequest::locate(locate);
+    assert_eq!(format!("{locate_request:?}"), "Locate([REDACTED])");
     let response = operation_batch_response_bytes([
         (
             LOCATE_OPERATION,
@@ -501,8 +522,7 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
         request_write_chunks: vec![7, 13],
     });
     let batch = ClientBatch::from_items([
-        ClientBatchItem::new(ClientRequest::Locate(locate))
-            .with_unique_batch_item_id(LOCATE_BATCH_ID.to_vec()),
+        ClientBatchItem::new(locate_request).with_unique_batch_item_id(LOCATE_BATCH_ID.to_vec()),
         ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))
             .with_unique_batch_item_id(LOCATE_GET_BATCH_ID.to_vec()),
     ]);
@@ -549,6 +569,19 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
         ],
         "Locate identifiers preserve server order and repetitions"
     );
+    assert_eq!(
+        locate_result.outcome().response().result().status().raw(),
+        0
+    );
+    let response_debug = format!("{:?}", locate_result.outcome().response());
+    let outcome_debug = format!("{:?}", locate_result.outcome());
+    let outcome_display = locate_result.outcome().to_string();
+    assert!(response_debug.contains("Locate"));
+    assert!(outcome_debug.contains("LocateCompleted"));
+    assert!(outcome_display.contains("LocateCompleted"));
+    assert!(outcome_display.contains("status 0"));
+    assert!(!response_debug.contains("server-id-z"));
+    assert!(!response_debug.contains("server-id-a"));
     assert!(
         get_result.outcome().get_response().is_some(),
         "the subsequent Get response is exposed without a client-selected identifier"

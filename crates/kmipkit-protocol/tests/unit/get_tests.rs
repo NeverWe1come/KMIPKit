@@ -13,7 +13,7 @@
 use crate::{
     GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType, ObjectType,
     ResponseBatchItemView, ResponseMessage, ResultMessage, ResultReason, ResultStatus,
-    UniqueIdentifier,
+    ResultValidationError, UniqueIdentifier,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
@@ -177,6 +177,16 @@ fn response_message(
     result_message: Option<&str>,
     payload: Option<Structure>,
 ) -> ResponseMessage {
+    response_message_for_operation(GET_OPERATION, status, reason, result_message, payload)
+}
+
+fn response_message_for_operation(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    result_message: Option<&str>,
+    payload: Option<Structure>,
+) -> ResponseMessage {
     let protocol_version = structure([
         item(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
         item(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
@@ -187,7 +197,7 @@ fn response_message(
         item(BATCH_COUNT_TAG, Value::integer(1)),
     ]);
     let mut batch_fields = vec![
-        item(OPERATION_TAG, Value::enumeration(GET_OPERATION)),
+        item(OPERATION_TAG, Value::enumeration(operation)),
         item(RESULT_STATUS_TAG, Value::enumeration(status)),
     ];
     if let Some(reason) = reason {
@@ -287,6 +297,80 @@ fn request_preserves_the_optional_unique_identifier() {
     assert!(fields[0].with_value(
         |value| matches!(value, ValueView::TextString(actual) if actual == "object-123")
     ));
+}
+
+#[test]
+fn request_accessors_preserve_optional_selectors_and_default_to_absent() {
+    let default = GetRequest::default();
+    assert!(default.unique_identifier().is_none());
+    assert!(default.key_format_type().is_none());
+    assert!(default.key_wrap_type().is_none());
+    assert!(default.key_compression_type().is_none());
+    assert!(default.key_wrapping_specification().is_none());
+
+    let mut specification = Structure::new();
+    specification
+        .try_push(item(TEST_EXTENSION_TAG, Value::integer(17)))
+        .expect("the wrapping selector structure is within the TTLV depth limit");
+    let request = GetRequest::default()
+        .with_unique_identifier(UniqueIdentifier::Integer(-17))
+        .with_key_format_type(KeyFormatType::from_raw(0xF123_4567))
+        .with_key_wrap_type(KeyWrapType::from_raw(0xF123_4568))
+        .with_key_compression_type(KeyCompressionType::from_raw(0xF123_4569))
+        .with_key_wrapping_specification(specification);
+
+    assert_eq!(
+        request.unique_identifier(),
+        Some(&UniqueIdentifier::Integer(-17))
+    );
+    assert_eq!(
+        request.key_format_type().map(KeyFormatType::raw),
+        Some(0xF123_4567)
+    );
+    assert_eq!(
+        request.key_wrap_type().map(KeyWrapType::raw),
+        Some(0xF123_4568)
+    );
+    assert_eq!(
+        request.key_compression_type().map(KeyCompressionType::raw),
+        Some(0xF123_4569)
+    );
+    assert_eq!(
+        request.key_wrapping_specification().map(field_signature),
+        Some(vec![(TEST_EXTENSION_TAG, ItemType::Integer)])
+    );
+}
+
+#[test]
+fn request_preserves_enumeration_and_integer_unique_identifier_wire_forms() {
+    for (identifier, expected_type, expected_raw) in [
+        (
+            UniqueIdentifier::Enumeration(0xF123_4567),
+            ItemType::Enumeration,
+            0xF123_4567,
+        ),
+        (
+            UniqueIdentifier::Integer(-12_345),
+            ItemType::Integer,
+            (-12_345_i32).cast_unsigned(),
+        ),
+    ] {
+        let payload = GetRequest::new()
+            .with_unique_identifier(identifier)
+            .to_ttlv_payload()
+            .expect("each permitted identifier form is representable");
+        let view = payload.view();
+        let fields = view.children();
+
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].tag().raw(), UNIQUE_IDENTIFIER_TAG);
+        assert_eq!(fields[0].item_type(), expected_type);
+        assert!(fields[0].with_value(|value| match value {
+            ValueView::Enumeration(value) => *value == expected_raw,
+            ValueView::Integer(value) => value.to_be_bytes() == expected_raw.to_be_bytes(),
+            _ => false,
+        }));
+    }
 }
 
 #[test]
@@ -495,6 +579,42 @@ fn failed_table_222_response_preserves_result_message_and_omits_success_fields()
     assert!(response.object_type().is_none());
     assert!(response.unique_identifier().is_none());
     assert!(response.object().is_none());
+}
+
+#[test]
+fn get_response_rejects_a_different_operation() {
+    const LOCATE_OPERATION: u32 = 0x0000_0008;
+
+    let message =
+        response_message_for_operation(LOCATE_OPERATION, SUCCESS, None, None, Some(structure([])));
+
+    assert!(matches!(
+        decode_get(&message),
+        Err(GetError::UnexpectedOperation)
+    ));
+}
+
+#[test]
+fn get_error_display_and_source_are_payload_free() {
+    let unexpected = GetError::UnexpectedOperation;
+    let missing = GetError::MissingResultStatus;
+    let invalid = GetError::InvalidOperationResult(ResultValidationError::SuccessForbidsReason);
+    let missing_payload = GetError::MissingSuccessPayload;
+    let malformed = GetError::MalformedSuccessPayload;
+
+    assert_eq!(unexpected.to_string(), "response item is not Get");
+    assert_eq!(missing.to_string(), "Get result status is missing");
+    assert_eq!(
+        invalid.to_string(),
+        "Get operation result is invalid: Success forbids a Result Reason"
+    );
+    assert_eq!(
+        missing_payload.to_string(),
+        "successful Get response has no payload"
+    );
+    assert_eq!(malformed.to_string(), "Get response payload is malformed");
+    assert!(std::error::Error::source(&invalid).is_some());
+    assert!(std::error::Error::source(&unexpected).is_none());
 }
 
 #[test]
